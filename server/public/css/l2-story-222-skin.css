@@ -1,0 +1,197 @@
+/**
+ * story.html: рамка 222.png (9-slice). У border-image-slice — fill, щоб центр PNG
+ * збігався з бордером; без окремих плашок/тіней поверх.
+ */
+body.l2-page-story {
+  --l2s-in222-slice-y: 52;
+  --l2s-in222-slice-x: 104;
+  --l2s-in222-w-y: 9;
+  --l2s-in222-w-x: 15;
+  --l2s-in222-w-map-y: 5;
+  --l2s-in222-w-map-x: 8;
+}
+
+/* Той самий radial + void, що l2-outer-sframe / l2-app-chrome-skin (єдина колонка на всіх екранах) */
+body.l2-page-story .l2-screen.l2-outer-sframe-host {
+  background:
+    radial-gradient(ellipse 100% 40% at 50% 0%, rgba(55, 40, 22, 0.1) 0%, transparent 48%),
+    linear-gradient(
+      180deg,
+      var(--l2s-outer-void-top, #15130f) 0%,
+      var(--l2s-outer-void-mid, #12100d) 40%,
+      var(--l2s-outer-void, #0f0d0a) 100%
+    ) !important;
+  background-color: var(--l2s-outer-void-mid, #12100d) !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-page-story .l2-screen::before {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
+
+/* Внутрішня колонка без власного тла; між панелями — void (--l2s-outer-void-mid) */
+body.l2-page-story .l2-screen-inner.l2-story {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Зерно — вимкнено, щоб не було «другого» шару */
+body.l2-page-story .l2-story-article.l2-story-panel::before {
+  display: none;
+}
+
+body.l2-page-story .l2-hud-panel::before {
+  display: none;
+}
+
+/* Вкладених плашок бути не повинно — лише текст/іконка поверх void */
+body.l2-page-story .l2-hud-panel .l2-hud-top,
+body.l2-page-story .l2-hud-panel .l2-hud-identity,
+body.l2-page-story .l2-hud-panel .l2-hud-identity-text,
+body.l2-page-story .l2-hud-panel .l2-hud-exp-wrap,
+body.l2-page-story .l2-hud-panel .l2-hud-vitals {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* !important: перекриває .l2-story-article (градієнти) і l2-hud (fill) у будь-якому порядку завантаження */
+body.l2-page-story .l2-hud-panel,
+body.l2-page-story .l2-story-article.l2-story-panel,
+body.l2-page-story .l2-story-loc.l2-story-panel,
+body.l2-page-story a.l2-story-choice,
+body.l2-page-story button.l2-story-choice {
+  border-color: transparent !important;
+  border-style: solid;
+  border-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
+  border-radius: var(--l2s-paper-radius, 3px);
+  border-image-source: url("/ref/222.png") !important;
+  /* fill: центр спрайта як фон (як у /ref/222.png), не void колонки */
+  border-image-slice: var(--l2s-in222-slice-y) var(--l2s-in222-slice-x) var(--l2s-in222-slice-y) var(--l2s-in222-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Ще вища специфічність: пергамент/плашка з .l2-story-panel не лишаються */
+body.l2-page-story .l2-screen-inner.l2-story .l2-hud-panel,
+body.l2-page-story .l2-screen-inner.l2-story .l2-story-article.l2-story-panel,
+body.l2-page-story .l2-screen-inner.l2-story .l2-story-loc.l2-story-panel,
+body.l2-page-story .l2-screen-inner.l2-story a.l2-story-choice,
+body.l2-page-story .l2-screen-inner.l2-story button.l2-story-choice {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* «Карта» — тонша рамка, ті ж slice + fill */
+body.l2-page-story .l2-story-loc-map {
+  border-color: transparent !important;
+  border-style: solid;
+  border-width: calc(1px * var(--l2s-in222-w-map-y)) calc(1px * var(--l2s-in222-w-map-x)) !important;
+  border-radius: 2px;
+  border-image-source: url("/ref/222.png") !important;
+  border-image-slice: var(--l2s-in222-slice-y) var(--l2s-in222-slice-x) var(--l2s-in222-slice-y) var(--l2s-in222-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-in222-w-map-y)) calc(1px * var(--l2s-in222-w-map-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #d4b870;
+}
+
+body.l2-page-story a.l2-story-choice,
+body.l2-page-story button.l2-story-choice {
+  position: relative;
+  z-index: 0;
+  border-radius: var(--l2s-paper-radius, 2px);
+}
+
+body.l2-page-story a.l2-story-choice:hover,
+body.l2-page-story button.l2-story-choice:hover,
+body.l2-page-story a.l2-story-choice:focus,
+body.l2-page-story button.l2-story-choice:focus,
+body.l2-page-story a.l2-story-choice:focus-visible,
+body.l2-page-story button.l2-story-choice:focus-visible {
+  border-color: transparent !important;
+  /* не background/background-image — знімають заливку border-image fill */
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: none;
+  outline: none;
+}
+
+body.l2-page-story .l2-story-loc.l2-story-panel {
+  overflow: visible;
+  position: relative;
+  z-index: 0;
+}
+
+body.l2-page-story .l2-story-article.l2-story-panel {
+  position: relative;
+  z-index: 0;
+  isolation: auto;
+}
+
+body.l2-page-story .l2-story-loc-art {
+  background: transparent;
+  border-right: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: none;
+}
+
+body.l2-page-story .l2-story-loc-text {
+  background: transparent;
+}
+
+body.l2-page-story .l2-story-loc-map:hover,
+body.l2-page-story .l2-story-loc-map:focus {
+  border-color: transparent !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: none;
+  outline: none;
+}
+
+/* Іконка варіанту — без окремого темного кола (залишається лише рамка 222 на кнопці) */
+body.l2-page-story .l2-story-choice-ic {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Рядок Exp + золота риска під ним (реф. story-ref) */
+body.l2-page-story .l2-hud-exp-head {
+  border-bottom: 1px solid rgba(196, 168, 96, 0.42);
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+}
+
+/* Герб трохи нижче — над панеллю 222 */
+body.l2-page-story .l2-screen.l2-outer-sframe-host > .l2-game-chrome-crest {
+  top: calc(
+    var(--l2s-sframe-ch) - var(--l2s-sframe-side-w) * 0.5 + var(--l2s-sframe-topline-nudge, 0px) + 14px
+  );
+}
+
+/* Смужки: лише заливка (exp / HP / MP / SP), без треку й обводок — тоді «плашки» не видно */
+body.l2-page-story .l2-hud-exp-bar {
+  background: transparent !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-page-story .l2-hud-stat-bar {
+  background: transparent !important;
+  border: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}

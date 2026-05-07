@@ -1,0 +1,442 @@
+import type { FastifyInstance } from 'fastify';
+import { requireAuth } from '../lib/auth.js';
+import {
+  applyEquipFromBag,
+  applyPersistedCombatBuffs,
+  applyUnequip,
+  castActiveSelfBuff,
+  toggleSelfStance,
+  GameConflictError,
+} from '../services/charService.js';
+import { learnSkillForUser } from '../services/skillLearnService.js';
+
+/** POST skills/learn, persisted-combat-buffs, equip. */
+export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): void {
+  app.post(
+    '/skills/learn',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const raw = request.body;
+      if (!raw || typeof raw !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = raw as Record<string, unknown>;
+      const er = b.expectedRevision;
+      const battleId = b.battleId;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      if (typeof battleId !== 'string' || !battleId.trim()) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен battleId скіла.',
+        });
+      }
+      try {
+        const character = await learnSkillForUser(
+          userId,
+          battleId.trim(),
+          er
+        );
+        return reply.send({ character });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          return reply.code(409).send({
+            error: 'revision_conflict',
+            messageUk: 'Дані застаріли — онови сторінку.',
+          });
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'skill_unknown' || msg === 'skill_wrong_class') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Невідомий скіл або не для твоєї гілки.',
+          });
+        }
+        if (msg === 'skill_already_maxed') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Досягнуто максимального рангу цього скіла.',
+          });
+        }
+        if (msg === 'skill_level_too_low') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Рівень замалий для цього скіла.',
+          });
+        }
+        if (msg === 'skill_not_enough_sp') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Недостатньо SP.',
+          });
+        }
+        if (msg === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        request.log.error({ err }, 'POST /character/skills/learn');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося вивчити скіл.',
+        });
+      }
+    }
+  );
+
+  /**
+   * Геройський режим / Zealot у БД (cs1 $heroic / $zealot). Потрібен для геройських бафів з activeBuffsJson.
+   */
+  app.post(
+    '/persisted-combat-buffs',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const raw = request.body;
+      if (!raw || typeof raw !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = raw as Record<string, unknown>;
+      const er = b.expectedRevision;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      const ht = b.buffHeroicTier;
+      const zs = b.buffZealotStacks;
+      if (!('buffHeroicTier' in b) || !('buffZealotStacks' in b)) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Передай buffHeroicTier і buffZealotStacks (null або число).',
+        });
+      }
+      if (ht != null && (typeof ht !== 'number' || !Number.isInteger(ht))) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'buffHeroicTier: очікується null або 1/2/3.',
+        });
+      }
+      if (zs != null && (typeof zs !== 'number' || !Number.isInteger(zs))) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'buffZealotStacks: очікується null або 1–3.',
+        });
+      }
+      try {
+        const character = await applyPersistedCombatBuffs(
+          userId,
+          er,
+          ht as number | null,
+          zs as number | null
+        );
+        return reply.send({ character });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          return reply.code(409).send({
+            error: 'revision_conflict',
+            messageUk: 'Дані застаріли — онови сторінку.',
+          });
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'invalid_heroic_tier') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Режим героя: лише 1 (атака), 2 (захист), 3 (підмога) або вимкнено.',
+          });
+        }
+        if (msg === 'invalid_zealot_stacks') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Zealot: лише 1–3 верстви або вимкнено.',
+          });
+        }
+        if (msg === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        request.log.error({ err }, 'POST /character/persisted-combat-buffs');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося зберегти налаштування.',
+        });
+      }
+    }
+  );
+
+  /**
+   * Каст активного селф-бафа поза боєм (War Cry 78, Battle Roar 121, Thrill Fight 130 тощо).
+   * Тіло: `{ battleId: string, expectedRevision: number }`. Якщо гравець у бою — 400.
+   */
+  app.post(
+    '/skills/cast',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const raw = request.body;
+      if (!raw || typeof raw !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = raw as Record<string, unknown>;
+      const er = b.expectedRevision;
+      const battleId = b.battleId;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      if (typeof battleId !== 'string' || !battleId.trim()) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен battleId скіла (наприклад, l2_78).',
+        });
+      }
+      try {
+        const character = await castActiveSelfBuff(userId, battleId.trim(), er);
+        return reply.send({ character });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          return reply.code(409).send({
+            error: 'revision_conflict',
+            messageUk: 'Дані застаріли — онови сторінку.',
+          });
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'skill_unknown') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Невідомий скіл (немає в каталозі чи без MP-таблиці).',
+          });
+        }
+        if (msg === 'skill_not_learned') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Цей скіл ще не вивчено.',
+          });
+        }
+        if (msg === 'skill_not_self_buff') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Для цього скіла немає Interlude-тривалості — поза боєм не кастується.',
+          });
+        }
+        if (msg === 'skill_in_battle') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Кастити поза боєм — лише коли ти не в бою.',
+          });
+        }
+        if (msg === 'skill_on_cooldown') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Скіл ще перезаряджається.',
+          });
+        }
+        if (msg === 'skill_not_enough_mp') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Недостатньо MP.',
+          });
+        }
+        if (msg === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        request.log.error({ err }, 'POST /character/skills/cast');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося застосувати скіл.',
+        });
+      }
+    }
+  );
+
+  /**
+   * Перемикання toggle-стійки **поза боєм** (Accuracy 256, Vicious 312, Parry 364).
+   * Тіло: `{ battleId: string, expectedRevision: number }`. У бою — 400.
+   */
+  app.post(
+    '/skills/toggle',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const raw = request.body;
+      if (!raw || typeof raw !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = raw as Record<string, unknown>;
+      const er = b.expectedRevision;
+      const battleId = b.battleId;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      if (typeof battleId !== 'string' || !battleId.trim()) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен battleId стійки (наприклад, l2_256).',
+        });
+      }
+      try {
+        const character = await toggleSelfStance(userId, battleId.trim(), er);
+        return reply.send({ character });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          return reply.code(409).send({
+            error: 'revision_conflict',
+            messageUk: 'Дані застаріли — онови сторінку.',
+          });
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'skill_in_battle') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'У бою стійка вмикається через її екшн на панелі.',
+          });
+        }
+        if (msg === 'skill_unknown') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Стійки з такою назвою не існує.',
+          });
+        }
+        if (msg === 'skill_not_learned') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Цю стійку ще не вивчено.',
+          });
+        }
+        if (msg === 'skill_not_toggle') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Цей скіл — не toggle-стійка.',
+          });
+        }
+        if (msg === 'stance_not_supported') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Стійка для цієї раси/гілки поки доступна тільки в бою.',
+          });
+        }
+        if (msg === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        request.log.error({ err }, 'POST /character/skills/toggle');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося перемкнути стійку.',
+        });
+      }
+    }
+  );
+
+      /** Одягнути предмет із сумки у відповідний слот (l1/l2/l3/l4, lr1/lr2, neck, le1/le2). */
+  app.post(
+    '/equip',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const body = request.body as {
+        action?: string;
+        itemId?: number;
+        /** Заточка стеку в сумці (l2dop eqbonus), 0 за замовчуванням */
+        enchant?: number;
+        slot?: string;
+        expectedRevision?: number;
+      };
+      const rev = body.expectedRevision;
+      if (typeof rev !== 'number' || !Number.isFinite(rev)) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Передай expectedRevision з відповіді /character.',
+        });
+      }
+      try {
+        if (body.action === 'equip' && body.itemId != null) {
+          const itemId = Number(body.itemId);
+          if (!Number.isFinite(itemId) || itemId <= 0) {
+            return reply.code(400).send({
+              error: 'invalid_input',
+              messageUk: 'Некоректний itemId.',
+            });
+          }
+          const enRaw = body.enchant;
+          const enchant =
+            typeof enRaw === 'number' && Number.isFinite(enRaw)
+              ? Math.max(0, Math.min(20, Math.floor(enRaw)))
+              : 0;
+          const character = await applyEquipFromBag(userId, itemId, rev, enchant);
+          return reply.send({ character });
+        }
+        if (body.action === 'unequip' && typeof body.slot === 'string') {
+          const character = await applyUnequip(userId, body.slot, rev);
+          return reply.send({ character });
+        }
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Очікується action: "equip" + itemId або action: "unequip" + slot.',
+        });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          return reply.code(409).send({
+            error: 'revision_conflict',
+            messageUk: 'Дані застаріли — онови сторінку.',
+          });
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'not_in_bag' || msg === 'unknown_item') {
+          return reply.code(400).send({
+            error: 'invalid_input',
+            messageUk:
+              msg === 'not_in_bag'
+                ? 'Предмета немає в сумці.'
+                : 'Невідомий предмет.',
+          });
+        }
+        if (msg === 'slot_empty') {
+          return reply.code(400).send({
+            error: 'invalid_input',
+            messageUk: 'Слот порожній.',
+          });
+        }
+        request.log.error({ err }, 'POST /character/equip');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося змінити екіп.',
+        });
+      }
+    }
+  );
+}

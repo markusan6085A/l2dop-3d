@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="battle_title">Бій — L2DOP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css?v=20260503skillLogColors" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
+  </head>
+  <body class="l2-body l2-page-city l2-page-battle l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome">
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-battle-root">
+          <div id="l2-nav-top"></div>
+          <div id="l2-hud-panel-mount"></div>
+
+          <p class="err" id="battle-load-err" hidden></p>
+
+          <div id="battle-content" hidden>
+            <div class="l2-battle-toast" id="battle-toast" hidden role="status"></div>
+
+            <div class="l2-battle-top l2-battle-top--aux">
+              <div
+                id="battle-buff-strip"
+                class="l2-battle-buff-strip"
+                hidden
+                data-i18n-attr="aria-label:battle_buffs_aria"
+                aria-label="Активні ефекти на персонажі"
+              ></div>
+              <div
+                id="battle-sonic-charges"
+                class="l2-battle-sonic-charges"
+                hidden
+                aria-label="Sonic Focus заряди"
+              ></div>
+            </div>
+
+            <div id="battle-active-root">
+            <section
+              class="l2-battle-mob-panel"
+              data-i18n-attr="aria-label:battle_enemy_aria"
+              aria-label="Ворог"
+            >
+              <h2 class="l2-battle-mob-title" id="battle-mob-title"></h2>
+              <p class="l2-battle-buffs l2-battle-buffs--sr" id="battle-active-buffs" hidden aria-live="polite"></p>
+              <div class="l2-battle-bar-row l2-battle-bar-row--mob l2-battle-mob-bars">
+                <div class="l2-battle-mob-hp-wrap">
+                  <span class="l2-battle-bar-lbl" data-i18n="battle_lbl_hp">HP</span>
+                  <div class="l2-pers-bar-outer l2-battle-bar-outer l2-battle-mob-hp-outer" aria-hidden="true">
+                    <div
+                      class="l2-pers-bar-inner l2-battle-mob-hp-inner"
+                      id="battle-mob-hp-inner"
+                    ></div>
+                    <span class="l2-battle-bar-innertext" id="battle-mob-hp-val"></span>
+                  </div>
+                </div>
+                <div
+                  id="battle-whirlwind-extras"
+                  class="l2-battle-whirlwind-extras"
+                  hidden
+                  aria-label="Додаткові цілі Вихору"
+                ></div>
+              </div>
+              <div
+                class="l2-battle-mob-debuff-strip"
+                id="battle-mob-debuff-strip"
+                hidden
+                aria-live="polite"
+              ></div>
+              <div class="l2-battle-skills" id="battle-skills"></div>
+
+              <div class="l2-battle-log-wrap">
+                <div class="l2-battle-log-title" data-i18n="battle_log_title">Лог бою</div>
+                <div class="l2-battle-log l2-battle-log--colored" id="battle-log"></div>
+              </div>
+
+              <div class="l2-battle-footer-actions">
+                <button type="button" class="l2-battle-back-map" id="battle-back-map" data-i18n="battle_back_map">
+                  Назад на карту
+                </button>
+              </div>
+            </section>
+            </div>
+
+            <section
+              id="battle-victory-root"
+              class="l2-battle-victory-root"
+              hidden
+              data-i18n-attr="aria-label:battle_victory_aria"
+              aria-label="Перемога"
+            >
+              <p class="l2-battle-victory-mobhead" id="battle-victory-mobhead"></p>
+
+              <div class="l2-battle-victory-notify">
+                <div class="l2-battle-victory-notify__title-row">
+                  <span class="l2-battle-victory-notify__swords" aria-hidden="true">⚔</span>
+                  <span class="l2-battle-victory-notify__shout" data-i18n="battle_victory_shout"
+                    >Ти переміг монстра!</span
+                  >
+                </div>
+                <p class="l2-battle-victory-notify__levelup" id="battle-victory-levelup" hidden></p>
+                <div class="l2-battle-victory-notify__divider" aria-hidden="true"></div>
+                <p class="l2-battle-victory-notify__loot" id="battle-victory-lootline"></p>
+                <div class="l2-battle-victory-notify__divider" aria-hidden="true"></div>
+                <div class="l2-battle-victory-notify__links">
+                  <button
+                    type="button"
+                    class="l2-battle-victory-link l2-battle-victory-link--primary"
+                    id="battle-victory-continue"
+                    data-i18n="battle_continue"
+                  >
+                    Продовжити
+                  </button>
+                  <button
+                    type="button"
+                    class="l2-battle-victory-link l2-battle-victory-link--muted"
+                    id="battle-victory-hunt"
+                    data-i18n="battle_hunt_more"
+                  >
+                    Полювати далі
+                  </button>
+                </div>
+              </div>
+
+              <div class="l2-battle-victory-loghead">
+                <span class="l2-battle-victory-loghead__line l2-battle-victory-loghead__line--left" aria-hidden="true"></span>
+                <span class="l2-battle-victory-loghead__text" data-i18n="battle_log_title">Лог бою</span>
+                <span class="l2-battle-victory-loghead__line l2-battle-victory-loghead__line--right" aria-hidden="true"></span>
+              </div>
+              <div class="l2-battle-victory-logbox">
+                <div
+                  class="l2-battle-log l2-battle-log--colored l2-battle-log--victory"
+                  id="battle-victory-log"
+                ></div>
+              </div>
+              <div class="l2-battle-victory-logfoot">
+                <button
+                  type="button"
+                  class="l2-battle-victory-backloc"
+                  id="battle-victory-map"
+                  data-i18n="battle_back_map"
+                >
+                  Назад на карту
+                </button>
+              </div>
+            </section>
+
+            <section
+              id="battle-defeat-root"
+              class="l2-battle-defeat-root"
+              hidden
+              data-i18n-attr="aria-label:battle_defeat_aria"
+              aria-label="Поразка"
+            >
+              <p class="l2-battle-defeat-mobhead" id="battle-defeat-mobhead"></p>
+              <div class="l2-battle-defeat-notify">
+                <div class="l2-battle-defeat-notify__title-row">
+                  <span class="l2-battle-defeat-notify__skull" aria-hidden="true">☠</span>
+                  <span class="l2-battle-defeat-notify__shout" data-i18n="battle_defeat_shout"
+                    >Тебе переміг монстр!</span
+                  >
+                </div>
+                <p class="l2-battle-defeat-notify__hint" id="battle-defeat-town-hint"></p>
+                <div class="l2-battle-defeat-notify__divider" aria-hidden="true"></div>
+                <div class="l2-battle-defeat-loghead">
+                  <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--left" aria-hidden="true"></span>
+                  <span class="l2-battle-defeat-loghead__text" data-i18n="battle_log_title">Лог бою</span>
+                  <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--right" aria-hidden="true"></span>
+                </div>
+                <div class="l2-battle-defeat-logbox">
+                  <div
+                    class="l2-battle-log l2-battle-log--colored l2-battle-log--defeat"
+                    id="battle-defeat-log"
+                  ></div>
+                </div>
+                <button
+                  type="button"
+                  class="l2-battle-defeat-tocity"
+                  id="battle-defeat-tocity"
+                  data-i18n="battle_defeat_tocity"
+                >
+                  Повернутися в місто!
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js"></script>
+    <script src="/battle-hotbar.js?v=20260421c"></script>
+    <script src="/battle.js?v=20260503skillLogFmt"></script>
+  </body>
+</html>

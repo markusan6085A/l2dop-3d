@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @default(uuid())
+  login      String      @unique
+  password   String
+  characters Character[]
+}
+
+model Character {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  level      Int      @default(1)
+  hp         Int      @default(100)
+  maxHp      Int      @default(100)
+  /** Як у text-rpg DEFAULT_PLAYER_CITY_ID — старт у Gludio */
+  cityId     String   @default("l2dop_gludio")
+  /** Раса / гілка 1 профи (як у L2): fighter | mystic */
+  race       String   @default("Human")
+  classBranch String  @default("fighter")
+  /** human_fighter → гілки 1–3 профи (rogue→hawkeye|th→sagittarius|adventurer; scout→hawkeye тощо) */
+  l2Profession String  @default("human_fighter")
+  adena      BigInt   @default(0)
+  /** Накопичений досвід (як у l2dop / lineage npc.exp за кілл) */
+  exp        BigInt   @default(0)
+  /** Накопичені очки вмінь (npc.sp) */
+  sp         Int      @default(0)
+  /** Інвентар + екіп: stacks [{ itemId, qty, enchant? }], eq слот: itemId або { itemId, enchant? } — як l2dop eqbonus */
+  inventoryJson Json?
+  /** l2dop map.php: світові координати та рух до цілі */
+  worldX      Int      @default(83400)
+  worldY      Int      @default(147943)
+  targetX     Int      @default(0)
+  targetY     Int      @default(0)
+  moveStartAt DateTime?
+  moveFromX   Int      @default(83400)
+  moveFromY   Int      @default(147943)
+  /** Активний бій на карті: spawnId, mobHp, log — джерело правди на сервері */
+  battleJson  Json?
+  /** Вивчені бойові скіли (id як у BattleActionId), напр. ["power_strike","war_cry"] */
+  skillsLearnedJson Json?
+  /**
+   * Активні бафи: `[{ skillId, level, expiresAt? }]` як у l2dop (users_buffs / cs1.php + rawdata).
+   * `expiresAt` — мс epoch (див. `l2dopBuffDurations.ts`); без поля — постійний до cancel/смерті.
+   */
+  activeBuffsJson Json?
+  /**
+   * Перезарядки скілів: `[{ skillId, readyAt }]` (мс epoch). Джерело правди для cooldown
+   * поза боєм, переживає F5/вихід з бою (Revival 3h, Battle Roar 10m тощо).
+   */
+  skillCooldownsJson Json?
+  /**
+   * Поза боєм: копія battleMods + playerMp після виходу з бою; тики MP/часу — `worldCombatState.ts`.
+   * У бою джерело правди лише `battleJson`.
+   */
+  worldCombatStateJson Json?
+  /** cs1.php $heroic: 1 — «атака», 2 — «захист», 3 — «підмога» (геройські скіли 395…). */
+  buffHeroicTier    Int?
+  /** cs1.php $zealot для скіла 420 (Zealot). */
+  buffZealotStacks  Int?
+  revision   Int      @default(1)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastUpdate DateTime @updatedAt
+}

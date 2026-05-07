@@ -1,0 +1,359 @@
+import type { BattleActionId, BattleJsonState } from '../domain/battle.js';
+import { ZEALOT_EFFECT_DURATION_MS } from '../domain/battleTypes.js';
+import type { InventoryState } from '../data/inventory.js';
+import {
+  HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ,
+  isFighterClassBranch,
+  legacyMeleeSkillBar,
+  resolveL2ProfessionForSkillsRow,
+} from '../data/l2dopHumanFighterBattleSkills.js';
+import {
+  defaultMysticL2ProfessionForRace,
+  humanMysticBattleSkillBar,
+  isMysticClassBranch,
+  mysticBattleActionAllowed,
+} from '../data/l2dopHumanMysticBattleSkills.js';
+import {
+  battleActionNamedFromL2IfMapped,
+  canonicalBattleSkillId,
+  filterBattleSkillBarRows,
+  humanFighterCatalogEntry,
+  learnedHumanFighterHotbarPickSkills,
+  l2SkillIdForBattleActionIcon,
+} from '../data/humanFighterSkillCatalog.js';
+import { fighterCatalogEntryForRace } from '../data/fighterSkillCatalog.byRace.js';
+import { mysticCatalogEntryForRace } from '../data/mysticSkillCatalog.byRace.js';
+import { mysticGlobalSkillCooldownSec } from '../data/mysticSkillCooldown.js';
+import type { BattleView } from './battleServiceTypes.js';
+import {
+  battleBuffLinesUk,
+  battleBuffIconsForUi,
+  battleMobDebuffIconsForUi,
+} from './battleServiceBattleBuffs.js';
+import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
+import { cooldownSecForSkillId, type SkillCooldownEntry } from '../data/skillCooldowns.js';
+
+/** Та сама нормалізація профи, що й у `parseSkillsLearnedJson` — інакше зникають бафи/гілкові скіли з `battle.skills`. */
+function effectiveBattleProfession(
+  l2Profession: string | undefined,
+  classBranch: string,
+  race: string
+): string {
+  const resolved = resolveL2ProfessionForSkillsRow({
+    l2Profession,
+    classBranch,
+    race,
+  });
+  const t = String(resolved || '').trim();
+  if (t) return t;
+  return isMysticClassBranch(classBranch)
+    ? defaultMysticL2ProfessionForRace(race)
+    : 'human_fighter';
+}
+
+function mysticCooldownSecForBattleAction(
+  id: BattleActionId,
+  race: string
+): number | undefined {
+  const s = String(id);
+  if (!/^l2_\d+$/.test(s)) return undefined;
+  const e = mysticCatalogEntryForRace(race, canonicalBattleSkillId(s));
+  if (e?.kind === 'toggle') return 1;
+  const c = e?.cooldownSec;
+  if (typeof c === 'number' && c > 0) return c;
+  if (e && e.kind !== 'passive') {
+    return mysticGlobalSkillCooldownSec(500);
+  }
+  return undefined;
+}
+
+/**
+ * КД воїна / расового файтера з каталогу (Zealot, Earthquake, …).
+ * Дія може приходити або як `l2_<id>`, або як канонічне ім'я (`war_cry`, `battle_roar`,
+ * `thrill_fight`, …). Для іменованих конвертуємо через `l2SkillIdForBattleActionIcon`.
+ */
+function fighterCooldownSecForBattleAction(
+  id: BattleActionId,
+  race: string,
+  classBranch: string
+): number | undefined {
+  let bid = canonicalBattleSkillId(String(id));
+  if (!/^l2_\d+$/.test(bid)) {
+    const l2Id = l2SkillIdForBattleActionIcon(id);
+    if (!Number.isFinite(l2Id) || l2Id <= 0) return undefined;
+    bid = 'l2_' + l2Id;
+  }
+  const e =
+    humanFighterCatalogEntry(bid) ??
+    fighterCatalogEntryForRace(race, classBranch, bid);
+  if (e?.kind === 'toggle') return 1;
+  const c = e?.cooldownSec;
+  if (typeof c === 'number' && c > 0) return c;
+  /**
+   * Fallback до автогенерованих XML cooldown'ів: каталожний `cooldownSec` можна
+   * не заповнювати, якщо він збігається з XML (sonic-скіли). Дзеркалить логіку
+   * `applyStandardFighterCooldown` у turn-резолвері, щоб хотбар показував ту
+   * саму лічильну смужку, яку потім виставить сервер після каста.
+   */
+  const m = /^l2_(\d+)$/.exec(bid);
+  if (m) {
+    const sid = parseInt(m[1]!, 10);
+    if (Number.isFinite(sid) && sid > 0) {
+      const xmlCd = cooldownSecForSkillId(sid);
+      if (typeof xmlCd === 'number' && xmlCd > 0) return xmlCd;
+    }
+  }
+  return undefined;
+}
+
+export function battleSkillBarForChar(
+  level: number,
+  _race: string,
+  classBranch: string,
+  learnedBattle: string[],
+  l2Profession: string,
+  _inv?: InventoryState | null
+): {
+  id: BattleActionId;
+  labelUk: string;
+  l2SkillId?: number;
+  cooldownSec?: number;
+}[] {
+  const prof = effectiveBattleProfession(l2Profession, classBranch, _race);
+  if (isMysticClassBranch(classBranch)) {
+    const learnedSet = new Set(
+      learnedBattle.map((x) => canonicalBattleSkillId(x))
+    );
+    const bar = humanMysticBattleSkillBar(level, learnedSet, prof, _race);
+    const out: {
+      id: BattleActionId;
+      labelUk: string;
+      l2SkillId: number;
+      cooldownSec?: number;
+    }[] = bar.map((s) => {
+      const cdSec = mysticCooldownSecForBattleAction(s.id, _race);
+      return {
+        id: s.id,
+        labelUk: s.labelUk,
+        l2SkillId: l2SkillIdForBattleActionIcon(s.id),
+        ...(cdSec != null ? { cooldownSec: cdSec } : {}),
+      };
+    });
+    return filterBattleSkillBarRows(out);
+  }
+  if (isFighterClassBranch(classBranch)) {
+    /**
+     * Як text-rpg `SkillBar` / `useLearnedActive`: усі вивчені battle/toggle з каталогу, без пасивок.
+     * Обмеження зброї — лише при застосуванні скіла на сервері.
+     */
+    const out: {
+      id: BattleActionId;
+      labelUk: string;
+      l2SkillId: number;
+      cooldownSec?: number;
+    }[] = [
+      {
+        id: 'attack',
+        labelUk: 'Атака',
+        l2SkillId: l2SkillIdForBattleActionIcon('attack'),
+      },
+    ];
+    const seen = new Set<BattleActionId>(['attack']);
+    for (const row of learnedHumanFighterHotbarPickSkills(
+      learnedBattle,
+      prof,
+      _race,
+      classBranch
+    )) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+      const cdPick = fighterCooldownSecForBattleAction(
+        row.id,
+        _race,
+        classBranch
+      );
+      out.push({
+        id: row.id,
+        labelUk: row.labelUk,
+        l2SkillId: row.l2SkillId,
+        ...(cdPick != null ? { cooldownSec: cdPick } : {}),
+      });
+    }
+    return filterBattleSkillBarRows(out);
+  }
+  return filterBattleSkillBarRows(
+    legacyMeleeSkillBar().map((s) => ({
+      id: s.id,
+      labelUk: s.labelUk,
+      l2SkillId: l2SkillIdForBattleActionIcon(s.id),
+    }))
+  );
+}
+
+export function stanceBattleActionAllowed(
+  action: BattleActionId,
+  learnedBattle: string[],
+  l2Profession: string,
+  classBranch: string
+): boolean {
+  const learned = new Set(
+    learnedBattle.map((x) => canonicalBattleSkillId(x))
+  );
+  const prof = String(l2Profession || '').trim();
+  const fighterBranch = isFighterClassBranch(classBranch);
+  const wTrack =
+    prof === 'human_warrior' ||
+    prof === 'human_warlord' ||
+    prof === 'human_dreadnought' ||
+    prof === 'human_gladiator' ||
+    prof === 'human_duelist' ||
+    prof === 'human_knight' ||
+    prof === 'human_paladin' ||
+    prof === 'human_phoenix_knight' ||
+    prof === 'human_dark_avenger' ||
+    prof === 'human_hell_knight' ||
+    prof === 'human_rogue' ||
+    prof === 'human_treasure_hunter' ||
+    prof === 'human_adventurer' ||
+    prof === 'human_hawkeye' ||
+    prof === 'human_sagittarius' ||
+    (HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ && prof === 'human_fighter') ||
+    fighterBranch;
+  if (action === 'accuracy_stance') {
+    return learned.has('l2_256') && wTrack;
+  }
+  if (action === 'vicious_stance') {
+    return learned.has('l2_312') && wTrack;
+  }
+  if (action === 'parry_stance') {
+    return (
+      learned.has('l2_339') &&
+      (        prof === 'human_dreadnought' ||
+        prof === 'human_duelist' ||
+        prof === 'human_phoenix_knight' ||
+        prof === 'human_hell_knight' ||
+        (HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ && prof === 'human_fighter') ||
+        fighterBranch)
+    );
+  }
+  return false;
+}
+
+export function battleViewFromState(
+  spawnId: string,
+  st: BattleJsonState,
+  spawnMeta: { name: string; level: number; aggressive: boolean; kind: string },
+  charLevel: number,
+  race: string,
+  classBranch: string,
+  learnedBattle: string[],
+  l2Profession: string,
+  inv?: InventoryState | null,
+  activeBuffs: readonly ActiveBuffEntry[] = [],
+  skillCooldowns: readonly SkillCooldownEntry[] = []
+): BattleView {
+  const buffs = battleBuffLinesUk(st, activeBuffs);
+  const mobDebuffIcons = battleMobDebuffIconsForUi(st);
+  const isSonicClass =
+    l2Profession === 'human_gladiator' || l2Profession === 'human_duelist';
+  const buffIcons = battleBuffIconsForUi(st, activeBuffs).filter((x) =>
+    x.key === 'sonic_focus_charges' ? isSonicClass : true
+  );
+  /**
+   * Об'єднуємо in-battle `st.mysticSkillCdUntil` (ключі `l2_<id>`, readyAt ms) з
+   * персистентними `skillCooldownsJson` — щоб хотбар (`applySkillCdOverlay`) показав
+   * кулдаун War Cry/Battle Roar/Thrill Fight навіть після F5 або при вході в бій
+   * після out-of-battle касту. Вибираємо `max(readyAt)` як фактичну межу.
+   */
+  const mergedCd: Record<string, number> = { ...(st.mysticSkillCdUntil ?? {}) };
+  for (const cd of skillCooldowns) {
+    const key = 'l2_' + cd.skillId;
+    const prev = mergedCd[key];
+    if (typeof prev !== 'number' || cd.readyAt > prev) {
+      mergedCd[key] = cd.readyAt;
+    }
+  }
+  return {
+    spawnId,
+    mobName: spawnMeta.name,
+    mobLevel: spawnMeta.level,
+    mobHp: st.mobHp,
+    mobMaxHp: st.mobMaxHp,
+    ...(typeof st.mobCp === 'number' &&
+    typeof st.mobMaxCp === 'number' &&
+    st.mobMaxCp > 0
+      ? { mobCp: st.mobCp, mobMaxCp: st.mobMaxCp }
+      : {}),
+    aggressive: spawnMeta.aggressive,
+    kind: spawnMeta.kind,
+    log: st.log,
+    zealotEffectDurationMs: ZEALOT_EFFECT_DURATION_MS,
+    skills: battleSkillBarForChar(
+      charLevel,
+      race,
+      classBranch,
+      learnedBattle,
+      l2Profession,
+      inv
+    ),
+    ...(st.battleMods ? { battleMods: st.battleMods } : {}),
+    ...(buffs.length > 0 ? { battleBuffsUk: buffs } : {}),
+    ...(mobDebuffIcons.length > 0 ? { mobDebuffIcons } : {}),
+    ...(buffIcons.length > 0 ? { battleBuffIcons: buffIcons } : {}),
+    ...(Object.keys(mergedCd).length > 0
+      ? { mysticSkillCdUntil: mergedCd }
+      : {}),
+    ...(st.whirlwindExtras && st.whirlwindExtras.length > 0
+      ? {
+          whirlwindExtras: st.whirlwindExtras.map((e) => ({
+            spawnId: e.spawnId,
+            name: e.name,
+            mobHp: e.mobHp,
+            mobMaxHp: e.mobMaxHp,
+          })),
+        }
+      : {}),
+    ...(typeof st.sonicCharges === 'number' && st.sonicCharges > 0
+      ? { sonicCharges: Math.floor(st.sonicCharges) }
+      : {}),
+    ...(typeof st.maxSonicCharges === 'number' && st.maxSonicCharges > 0
+      ? { sonicMaxCharges: Math.floor(st.maxSonicCharges) }
+      : {}),
+  };
+}
+
+export function battleActionAllowed(
+  action: BattleActionId,
+  level: number,
+  _race: string,
+  classBranch: string,
+  learnedBattle: string[],
+  l2Profession: string,
+  _inv?: InventoryState | null
+): boolean {
+  const prof = effectiveBattleProfession(l2Profession, classBranch, _race);
+  if (isMysticClassBranch(classBranch)) {
+    return mysticBattleActionAllowed(action, level, learnedBattle, prof, _race);
+  }
+  if (isFighterClassBranch(classBranch)) {
+    const act = battleActionNamedFromL2IfMapped(action);
+    if (act === 'attack') return true;
+    if (
+      learnedHumanFighterHotbarPickSkills(
+        learnedBattle,
+        prof,
+        _race,
+        classBranch
+      ).some((s) => s.id === act)
+    ) {
+      return true;
+    }
+    return stanceBattleActionAllowed(act, learnedBattle, prof, classBranch);
+  }
+  return (
+    action === 'attack' ||
+    action === 'power' ||
+    action === 'bolt' ||
+    action === 'stun'
+  );
+}

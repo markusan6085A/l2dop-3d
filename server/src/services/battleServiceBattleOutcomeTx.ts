@@ -1,0 +1,350 @@
+import { Prisma } from '@prisma/client';
+import {
+  L2DOP_MAX_TOTAL_EXP_INCLUSIVE,
+  levelFromTotalExp,
+} from '../data/l2dopExpgain.js';
+import {
+  computeCombatStats,
+  effectiveMaxHpWithJewelFlat,
+  effectiveMaxMpWithJewelFlat,
+} from '../data/l2dopCombatFormulas.js';
+import { computeVitals } from '../data/l2dopVitals.js';
+import type { InventoryState } from '../data/inventory.js';
+import type { BattleJsonState } from '../domain/battle.js';
+import { MAX_BATTLE_LOG } from '../domain/battle.js';
+import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
+import { rollKillLoot } from '../domain/killLoot.js';
+import { resolveL2dopNpcIdByMobName } from './spawnCatalogService.js';
+import {
+  combatOptsFromRow,
+  GameConflictError,
+  toSnapshot,
+  type CharacterRow,
+  type CharacterSnapshot,
+} from './charService.js';
+import { nearestMapTown } from '../data/mapLocalities.js';
+import type {
+  BattleDefeatSummary,
+  BattleVictorySummary,
+  BattleView,
+} from './battleServiceTypes.js';
+import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
+import { battleViewFromState } from './battleServiceBattleUi.js';
+import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
+import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+
+type Tx = Prisma.TransactionClient;
+
+export async function persistBattleVictoryInTx(
+  tx: Tx,
+  args: {
+    userId: string;
+    expectedRevision: number;
+    char: CharacterRow;
+    bj: { spawnId: string };
+    spawn: { name: string; level: number; aggressive: boolean };
+    inv: InventoryState;
+    cr: CharacterRow;
+    preLevel: number;
+    playerHp: number;
+    currentMp: number;
+    st: BattleJsonState;
+    log: string[];
+    /** Якщо останній ход оновив self-buffs — записуємо разом з перемогою. */
+    activeBuffsJson?: Prisma.InputJsonValue;
+    /** Якщо останній ход пробудив новий кулдаун — персистимо його. */
+    skillCooldownsJson?: Prisma.InputJsonValue;
+  }
+): Promise<{ character: CharacterSnapshot; victory: BattleVictorySummary }> {
+  const {
+    userId,
+    expectedRevision,
+    char,
+    bj,
+    spawn,
+    inv,
+    cr,
+    preLevel,
+    playerHp,
+    currentMp,
+    st,
+    log,
+    activeBuffsJson,
+    skillCooldownsJson,
+  } = args;
+
+  const npcId = resolveL2dopNpcIdByMobName(spawn.name) ?? null;
+  const loot = rollKillLoot(npcId, spawn.level, inv);
+  log.push('Перемога!');
+  for (const line of loot.logLines) {
+    log.push(line);
+  }
+
+  let newExp = char.exp + loot.expGain;
+  if (newExp > L2DOP_MAX_TOTAL_EXP_INCLUSIVE) {
+    newExp = L2DOP_MAX_TOTAL_EXP_INCLUSIVE;
+  }
+  const newLevel = levelFromTotalExp(newExp);
+  const combatAfter = computeCombatStats(
+    newLevel,
+    char.race,
+    char.classBranch,
+    inv,
+    combatOptsFromRow(cr)
+  );
+  const vitAfter = computeVitals(
+    newLevel,
+    char.race,
+    char.classBranch,
+    combatAfter.con,
+    combatAfter.men
+  );
+  const maxHpAfter = effectiveMaxHpWithJewelFlat(
+    vitAfter.maxHp,
+    combatAfter
+  );
+  const maxMpAfter = effectiveMaxMpWithJewelFlat(
+    vitAfter.maxMp,
+    combatAfter
+  );
+  let nextHp: number;
+  if (newLevel > preLevel) {
+    nextHp = maxHpAfter;
+    log.push('Рівень ' + newLevel + '!');
+  } else {
+    nextHp = Math.max(1, playerHp);
+  }
+
+  const stWorld: BattleJsonState = {
+    ...st,
+    playerMp: Math.min(maxMpAfter, currentMp),
+  };
+  const worldVictory = worldCombatStateFromBattleJson(
+    stWorld,
+    maxMpAfter,
+    Date.now()
+  );
+
+  const updated = await tx.character.updateMany({
+    where: {
+      id: char.id,
+      userId,
+      revision: expectedRevision,
+    },
+    data: {
+      hp: nextHp,
+      maxHp: maxHpAfter,
+      level: newLevel,
+      adena: { increment: loot.adena },
+      exp: newExp,
+      sp: { increment: loot.spGain },
+      inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
+      battleJson: Prisma.JsonNull,
+      worldCombatStateJson:
+        worldVictory != null
+          ? (JSON.parse(JSON.stringify(worldVictory)) as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+      ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
+      ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
+      revision: { increment: 1 },
+    },
+  });
+  if (updated.count === 0) throw new GameConflictError();
+  const row = await tx.character.findUniqueOrThrow({
+    where: { id: char.id },
+  });
+  const victory: BattleVictorySummary = {
+    spawnId: bj.spawnId,
+    mobName: spawn.name,
+    mobLevel: spawn.level,
+    aggressive: spawn.aggressive,
+    fullLog: log.map((x) => String(x)),
+    adenaGain: loot.adena.toString(),
+    expGain: loot.expGain.toString(),
+    spGain: loot.spGain,
+    items: loot.items.map((it) => ({ ...it })),
+    levelUp: newLevel > preLevel ? newLevel : null,
+  };
+  return {
+    character: toSnapshot(row as CharacterRow),
+    victory,
+  };
+}
+
+export async function persistBattleDefeatInTx(
+  tx: Tx,
+  args: {
+    userId: string;
+    expectedRevision: number;
+    char: CharacterRow;
+    bj: { spawnId: string };
+    spawn: { name: string; level: number; aggressive: boolean };
+    maxHpEff: number;
+    maxMpEff: number;
+    st: BattleJsonState;
+    log: string[];
+  }
+): Promise<{ character: CharacterSnapshot; defeat: BattleDefeatSummary }> {
+  const { userId, expectedRevision, char, bj, spawn, maxHpEff, maxMpEff, st, log } =
+    args;
+
+  const recoverHp = Math.max(1, Math.floor(maxHpEff * 0.15));
+  log.push('Ти знепритомнів… Бій завершено.');
+  log.push('Всі бафи злетіли від смерті.');
+  st.log = log.slice(-MAX_BATTLE_LOG);
+
+  /**
+   * L2 Interlude: при смерті всі активні бафи злітають (Noblesse / Bless of Soul
+   * збережемо пізніше через окрему мітку). Clear `battleMods` (через stripBattleMods),
+   * `activeBuffsJson` (ставимо порожній список → Prisma.JsonNull), а також очистимо
+   * legacy-експірації через `worldCombatStateFromBattleJson` (stripBattleMods = true).
+   *
+   * Passive-скіли не в `activeBuffsJson`, тож вони залишаються (правильна L2-поведінка).
+   * `skillCooldownsJson` лишаємо — у L2 CD не скидаються при смерті.
+   */
+  const worldDefeat = worldCombatStateFromBattleJson(
+    st,
+    maxMpEff,
+    Date.now(),
+    { stripBattleMods: true }
+  );
+
+  const lost = await tx.character.updateMany({
+    where: {
+      id: char.id,
+      userId,
+      revision: expectedRevision,
+    },
+    data: {
+      hp: recoverHp,
+      battleJson: Prisma.JsonNull,
+      worldCombatStateJson:
+        worldDefeat != null
+          ? (JSON.parse(JSON.stringify(worldDefeat)) as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+      activeBuffsJson: Prisma.JsonNull,
+      revision: { increment: 1 },
+    },
+  });
+  if (lost.count === 0) throw new GameConflictError();
+  const rowLost = await tx.character.findUniqueOrThrow({
+    where: { id: char.id },
+  });
+  const crLost = rowLost as CharacterRow;
+  const near = nearestMapTown(crLost.worldX, crLost.worldY);
+  const defeat: BattleDefeatSummary = {
+    spawnId: bj.spawnId,
+    mobName: spawn.name,
+    mobLevel: spawn.level,
+    aggressive: spawn.aggressive,
+    fullLog: log.map((x) => String(x)),
+    nearestTownLabelUk: near.labelUk,
+    nearestTeleportId: near.teleportId,
+  };
+  return {
+    character: toSnapshot(crLost),
+    defeat,
+  };
+}
+
+/** Зберегти стан бою після ходу гравця та контратаки моба (без перемоги/поразки). */
+export async function persistBattleContinueTurnInTx(
+  tx: Tx,
+  args: {
+    userId: string;
+    expectedRevision: number;
+    char: CharacterRow;
+    bj: { spawnId: string };
+    spawn: { name: string; level: number; aggressive: boolean; kind: string };
+    preLevel: number;
+    learnedBattle: string[];
+    profAct: string;
+    inv: InventoryState;
+    st: BattleJsonState;
+    playerHp: number;
+    mobHp: number;
+    log: string[];
+    maxMpEff: number;
+    /** Якщо ход додав/зняв self-buff (War Cry / Battle Roar / Thrill Fight) — нова картина `activeBuffsJson`. */
+    activeBuffsJson?: Prisma.InputJsonValue;
+    /** Якщо ход поклав скіл на КД — оновлений `skillCooldownsJson`. */
+    skillCooldownsJson?: Prisma.InputJsonValue;
+  }
+): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
+  const {
+    userId,
+    expectedRevision,
+    char,
+    bj,
+    spawn,
+    preLevel,
+    learnedBattle,
+    profAct,
+    inv,
+    st,
+    playerHp,
+    mobHp,
+    log,
+    maxMpEff,
+    activeBuffsJson,
+    skillCooldownsJson,
+  } = args;
+
+  st.mobHp = mobHp;
+  st.log = log.slice(-MAX_BATTLE_LOG);
+
+  /** Дзеркалимо battleMods у worldCombatStateJson — інакше після виходу в місто GET /character губить бафи. */
+  const worldMirrorMid = worldCombatStateFromBattleJson(
+    st,
+    maxMpEff,
+    Date.now()
+  );
+
+  const updated = await tx.character.updateMany({
+    where: {
+      id: char.id,
+      userId,
+      revision: expectedRevision,
+    },
+    data: {
+      hp: playerHp,
+      battleJson: serializeBattleJsonForDb(st),
+      worldCombatStateJson:
+        worldMirrorMid != null
+          ? (JSON.parse(JSON.stringify(worldMirrorMid)) as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+      ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
+      ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
+      revision: { increment: 1 },
+    },
+  });
+  if (updated.count === 0) throw new GameConflictError();
+
+  const row = await tx.character.findUniqueOrThrow({
+    where: { id: char.id },
+  });
+  const snap = toSnapshot(row as CharacterRow);
+  const nowForView = Date.now();
+  const view = battleViewFromState(
+    bj.spawnId,
+    st,
+    {
+      name: spawn.name,
+      level: spawn.level,
+      aggressive: spawn.aggressive,
+      kind: spawn.kind,
+    },
+    preLevel,
+    char.race,
+    char.classBranch,
+    learnedBattle,
+    profAct,
+    inv,
+    persistableActiveBuffsFromJson(
+      (row as CharacterRow).activeBuffsJson,
+      nowForView
+    ),
+    parseSkillCooldowns((row as CharacterRow).skillCooldownsJson, nowForView)
+  );
+  return { character: snap, battle: view };
+}

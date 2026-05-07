@@ -1,0 +1,34 @@
+/**
+ * l2-game-chrome — «головна» оболонка: зовнішня ref-рамка (l2-outer-sframe) + герб /ref/2.png.
+ * Підключай ОДНИМ файлом замість окремо l2-outer-sframe.css, якщо на сторінці потрібен і герб.
+ * story.html: + /css/l2-story-222-skin.css (єдина 222+тло внутрі панелей).
+ * Панель ніку/барів: /css/l2-hud-panel.css + /partials/l2-hud-panel.html.
+ * HTML: /partials/l2-game-chrome.html; шаблон: /template-l2-chrome-page.html
+ */
+@import url("l2-outer-sframe.css");
+
+/* Герб: одне ціле з ref-рамкою; токени --l2s-sframe-* з .l2-outer-sframe-host; z-index > рамки (5) */
+.l2-outer-sframe-host > .l2-game-chrome-crest {
+  position: absolute;
+  left: 50%;
+  top: calc(
+    var(--l2s-sframe-ch) - var(--l2s-sframe-side-w) * 0.5 + var(--l2s-sframe-topline-nudge, 0px) + 4px
+  );
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  line-height: 0;
+}
+
+.l2-outer-sframe-host > .l2-game-chrome-crest .l2-game-chrome-crest__img {
+  display: block;
+  width: auto;
+  height: clamp(24px, 8vw, 44px);
+  max-width: min(100%, 120px);
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+}

@@ -1,0 +1,137 @@
+/**
+ * Місто: l2-app-chrome-skin + сітка навігації; кнопки сервісів — border-image /ref/8585.png.
+ * Ширина: --l2s-city-town-btn-w. Slice під реальний PNG.
+ */
+@import url('l2-app-chrome-skin.css?v=29');
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive {
+  --l2s-city-town-slice-y: 30;
+  --l2s-city-town-slice-x: 40;
+  --l2s-city-town-bd-y: 12;
+  /* Було 14px — боки рамки майже не було видно; трохи ширше для «повної» 9-slice. */
+  --l2s-city-town-bd-x: 20;
+}
+
+body.l2-app-l2-chrome.l2-page-city .l2-wap-grid {
+  border-color: rgba(100, 80, 48, 0.55);
+  background: linear-gradient(165deg, rgba(26, 22, 14, 0.94) 0%, rgba(8, 6, 4, 0.97) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 200, 120, 0.06);
+}
+
+body.l2-app-l2-chrome.l2-page-city .l2-wap-grid.l2-wap-grid--bottom {
+  border-top-color: rgba(100, 80, 48, 0.45);
+  background: linear-gradient(to top, rgba(12, 10, 8, 0.97), rgba(18, 14, 10, 0.93));
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive #l2-nav-bottom .l2-wap-grid,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive #l2-nav-bottom .l2-wap-grid.l2-wap-grid--bottom {
+  border: 1px solid rgba(100, 80, 48, 0.55) !important;
+  margin-top: 0 !important;
+  padding-top: 8px !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 200, 120, 0.06) !important;
+  background: linear-gradient(165deg, rgba(26, 22, 14, 0.94) 0%, rgba(8, 6, 4, 0.97) 100%) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city .l2-wap-cell:hover,
+body.l2-app-l2-chrome.l2-page-city .l2-wap-cell:focus {
+  background: rgba(100, 75, 40, 0.38) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city .l2-wap-lbl {
+  color: #d8c8a4 !important;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 8px rgba(180, 140, 80, 0.12);
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main {
+  --l2s-city-town-btn-w: min(7cm, calc(100% - 24px));
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0 12px;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn {
+  box-sizing: border-box !important;
+  width: var(--l2s-city-town-btn-w) !important;
+  min-width: var(--l2s-city-town-btn-w) !important;
+  max-width: var(--l2s-city-town-btn-w) !important;
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 !important;
+  padding: 7px 14px !important;
+  font-size: 11.5px !important;
+  line-height: 1.28 !important;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  border-color: transparent !important;
+  border-style: solid;
+  border-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
+  border-radius: 0 !important;
+  border-image-source: url('/ref/8585.png') !important;
+  /* «fill» — центр тайлу теж малюється (ціла рамка + серединка з PNG, без «обірваних» боків). */
+  border-image-slice: var(--l2s-city-town-slice-y) var(--l2s-city-town-slice-x) var(--l2s-city-town-slice-y)
+    var(--l2s-city-town-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  color: #f0e6b8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  filter: none !important;
+  -webkit-filter: none !important;
+  transition:
+    transform 0.16s ease,
+    color 0.16s ease;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main .l2-town-btn:nth-child(even) {
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn::before,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn:focus {
+  border-color: transparent !important;
+  border-style: solid !important;
+  border-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
+  border-image-source: url('/ref/8585.png') !important;
+  border-image-slice: var(--l2s-city-town-slice-y) var(--l2s-city-town-slice-x) var(--l2s-city-town-slice-y)
+    var(--l2s-city-town-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
+  border-image-repeat: stretch !important;
+  outline: none;
+  transform: translateY(-1px);
+  filter: none !important;
+  -webkit-filter: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  color: #fff4d6;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn:active {
+  transform: translateY(0);
+  filter: none !important;
+  -webkit-filter: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Перс — L2DOP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css?v=20260503equipBtnHalf" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=6" />
+  </head>
+  <body
+    class="l2-body l2-page-city l2-page-char l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-char-root">
+          <div id="l2-hud-panel-mount"></div>
+
+          <div id="l2-nav-top"></div>
+
+          <p class="err" id="char-load-err" hidden></p>
+
+          <div id="char-content" hidden>
+            <div class="l2-char-mobi">
+              <div class="l2-char-title-row">
+                <span class="l2-char-title-empty">Порожній титул</span>
+                <span class="l2-char-name-bracket" id="char-name-bracket"></span>
+              </div>
+
+              <div class="l2-char-photo-wrap" aria-label="Персонаж">
+                <!-- Внутрішній блок як text-rpg CharacterEquipmentFrame (герой + слоти) -->
+                <div class="l2-char-equip-frame">
+                  <div class="l2-char-equip-bg">
+                    <img
+                      id="char-hero-img"
+                      class="l2-char-equip-hero"
+                      src="/characters/Human-voin.jpg"
+                      width="300"
+                      height="220"
+                      alt=""
+                    />
+                  </div>
+                  <div class="l2-char-equip-slots l2-char-equip-slots--left">
+                    <img data-l2-slot="head" data-l2-eq-key="lh" class="l2-char-slot-icon" src="/icons/slot_head.png" alt="" />
+                    <img data-l2-slot="armor" data-l2-eq-key="l3" class="l2-char-slot-icon" src="/icons/slot_armor.png" alt="" />
+                    <img data-l2-slot="legs" data-l2-eq-key="l4" class="l2-char-slot-icon" src="/icons/slot_legs.png" alt="" />
+                    <img data-l2-slot="gloves" data-l2-eq-key="lg" class="l2-char-slot-icon" src="/icons/slot_gloves.png" alt="" />
+                    <img data-l2-slot="boots" data-l2-eq-key="lf" class="l2-char-slot-icon" src="/icons/slot_boots.png" alt="" />
+                    <img data-l2-slot="belt" class="l2-char-slot-icon" src="/icons/slot_belt.png" alt="" />
+                    <div class="l2-char-equip-weapons-row">
+                      <img data-l2-slot="weapon" data-l2-eq-key="l1" class="l2-char-slot-icon" src="/icons/slot_weapon.png" alt="" />
+                      <img data-l2-slot="shield" data-l2-eq-key="l2" class="l2-char-slot-icon" src="/icons/slot_shield.png" alt="" />
+                    </div>
+                  </div>
+                  <div class="l2-char-equip-slots l2-char-equip-slots--right">
+                    <img data-l2-slot="jewelry" class="l2-char-slot-icon" src="/icons/slot_jewelry.png" alt="" />
+                    <img data-l2-slot="necklace" data-l2-eq-key="neck" class="l2-char-slot-icon" src="/icons/slot_necklace.png" alt="" />
+                    <img data-l2-slot="earring_left" data-l2-eq-key="le1" class="l2-char-slot-icon" src="/icons/slot_earring_left.png" alt="" />
+                    <img data-l2-slot="earring_right" data-l2-eq-key="le2" class="l2-char-slot-icon" src="/icons/slot_earring_right.png" alt="" />
+                    <img data-l2-slot="ring_left" data-l2-eq-key="lr1" class="l2-char-slot-icon" src="/icons/slot_ring_left.png" alt="" />
+                    <img data-l2-slot="ring_right" data-l2-eq-key="lr2" class="l2-char-slot-icon" src="/icons/slot_ring_right.png" alt="" />
+                    <div class="l2-char-equip-weapons-row">
+                      <img data-l2-slot="tattoo" class="l2-char-slot-icon" src="/icons/slot_tattoo.png" alt="" />
+                      <img data-l2-slot="cloak" class="l2-char-slot-icon" src="/icons/slot_cloak.png" alt="" />
+                    </div>
+                  </div>
+                </div>
+                <div class="l2-char-currency">
+                  <span class="l2-char-currency-seg" title="Адена">
+                    <img
+                      class="l2-char-currency-ico"
+                      src="/assets/l2dop/etc_adena_i00.png"
+                      width="16"
+                      height="16"
+                      alt=""
+                    />
+                    <span class="l2-char-adena-label">Адена</span>
+                    <span id="char-adena">0</span>
+                  </span>
+                  <span class="l2-char-currency-seg" title="Досвід">
+                    <img
+                      class="l2-char-currency-ico"
+                      src="/assets/l2dop/etc_exp_point_i00.png"
+                      width="16"
+                      height="16"
+                      alt=""
+                    />
+                    <span class="l2-char-adena-label">EXP</span>
+                    <span id="char-exp">0</span>
+                  </span>
+                  <span class="l2-char-currency-seg" title="Очки вмінь">
+                    <img
+                      class="l2-char-currency-ico"
+                      src="/assets/l2dop/etc_sp_point_i00.png"
+                      width="16"
+                      height="16"
+                      alt=""
+                    />
+                    <span class="l2-char-adena-label">SP</span>
+                    <span id="char-sp">0</span>
+                  </span>
+                  <span class="l2-char-weight" title="Вага інвентаря"
+                    >(<span id="char-w-cur">2</span>/<span id="char-w-max">250</span>)</span
+                  >
+                </div>
+              </div>
+
+              <div class="l2-char-bag-block" aria-label="Сумка">
+                <p class="l2-char-bag-title">У сумці</p>
+                <div class="l2-char-inv-filters" aria-label="Категорії сумки">
+                  <div class="l2-char-inv-row" role="tablist" aria-label="Категорія">
+                    <button type="button" class="l2-char-inv-link l2-char-inv-link--active" data-inv-cat="all" role="tab" aria-selected="true">Усі</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="weapon" role="tab" aria-selected="false">Зброя</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="armor" role="tab" aria-selected="false">Броня</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="neck" role="tab" aria-selected="false">Намисто</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="earring" role="tab" aria-selected="false">Сережки</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="ring" role="tab" aria-selected="false">Обручки</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="elements" role="tab" aria-selected="false">Стихії</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="upgrades" role="tab" aria-selected="false">Покращ. речей</button>
+                  </div>
+                  <div class="l2-char-inv-row" role="tablist" aria-label="Інше">
+                    <button type="button" class="l2-char-inv-link" data-inv-cat="consumable" role="tab" aria-selected="false">Розхід</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="resource" role="tab" aria-selected="false">Рес</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="recipe" role="tab" aria-selected="false">Рецепти</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="quest" role="tab" aria-selected="false">Сюжетне</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="book" role="tab" aria-selected="false">Книги</button>
+                  </div>
+                  <div class="l2-char-inv-row l2-char-inv-row--grades" id="char-bag-inv-grades" role="group" aria-label="Грейд" hidden>
+                    <button type="button" class="l2-char-inv-grade l2-char-inv-grade--active" data-inv-grade="all">Усі</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="d">D</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="c">C</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="b">B</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="a">A</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="s">S</button>
+                  </div>
+                </div>
+                <div id="char-bag-list" class="l2-char-bag-list"></div>
+                <p class="l2-char-bag-hint" id="char-bag-empty" hidden>Сумка порожня.</p>
+                <p class="l2-char-bag-hint" id="char-bag-filter-empty" hidden>Немає предметів за цим фільтром.</p>
+              </div>
+
+              <div id="l2-foot-links"></div>
+
+              <p class="l2-pers-newbie">
+                <button type="button" class="l2-pers-newbie-link" data-stub="Новачкам">Новачкам!</button>
+              </p>
+            </div>
+          </div>
+
+          <p class="l2-city-stub-msg" id="char-stub-msg" hidden></p>
+
+          <div id="char-bag-modal-overlay" class="l2-gm-modal-overlay" hidden aria-hidden="true">
+            <div class="l2-gm-modal" role="dialog" aria-modal="true" aria-labelledby="char-bag-modal-title">
+              <button type="button" class="l2-gm-modal-close" id="char-bag-modal-close" aria-label="Закрити">
+                ×
+              </button>
+              <div class="l2-gm-modal-head">
+                <img id="char-bag-modal-icon" class="l2-gm-modal-icon" width="48" height="48" alt="" />
+                <div>
+                  <h2 id="char-bag-modal-title" class="l2-gm-modal-title"></h2>
+                  <p class="l2-gm-modal-sub">
+                    <span id="char-bag-modal-grade">—</span> · <span id="char-bag-modal-kind"></span>
+                  </p>
+                </div>
+              </div>
+              <dl class="l2-gm-modal-stats" id="char-bag-modal-stats"></dl>
+              <p class="l2-gm-modal-price" id="char-bag-modal-qty"></p>
+              <div id="char-bag-modal-armor-sets" class="l2-drops-stats-modal__armor-sets" hidden></div>
+              <button type="button" class="l2-gm-modal-buy" id="char-bag-modal-equip">Одіти</button>
+            </div>
+          </div>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js"></script>
+    <script src="/armor-set-bonuses-ui.js?v=5"></script>
+    <script src="/char.js?v=20260503shieldSlot"></script>
+  </body>
+</html>

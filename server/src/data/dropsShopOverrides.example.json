@@ -1,0 +1,14 @@
+{
+  "weapon_d/atuba_hammer.jpg": {
+    "itemId": 12345,
+    "priceAdena": 50000
+  },
+  "arrom_d/shield_bronze_shield_i00_0.jpg": {
+    "itemId": 12347,
+    "priceAdena": 22000
+  },
+  "arrom_d/shadow_boots.jpg": {
+    "itemId": 12346,
+    "priceAdena": 75000
+  }
+}

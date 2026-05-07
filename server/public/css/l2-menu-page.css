@@ -1,0 +1,91 @@
+/**
+ * Меню: «Крафт» — ref/541.png; «Назад до міста» — ref/4187.png (як перший ряд футера).
+ */
+body.l2-page-menu .l2-menu-craft-wrap {
+  text-align: center;
+  margin: 0.35rem 0 0.25rem;
+}
+
+body.l2-page-menu .l2-teleport-panel__back {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+body.l2-page-menu a.l2-town-btn.l2-menu-btn-541 {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 50%;
+  max-width: 148px;
+  padding: 5px 8px !important;
+  font-size: 11px !important;
+  line-height: 1.25;
+  margin: 0.25rem 0;
+  text-align: center;
+  --l2s-menu541-slice-y: 30;
+  --l2s-menu541-slice-x: 40;
+  --l2s-menu541-bd-y: 3;
+  --l2s-menu541-bd-x: 5;
+  border-radius: 0 !important;
+  border-color: transparent !important;
+  border-style: solid !important;
+  border-width: calc(1px * var(--l2s-menu541-bd-y)) calc(1px * var(--l2s-menu541-bd-x)) !important;
+  border-image-source: url('/ref/541.png') !important;
+  border-image-slice: var(--l2s-menu541-slice-y) var(--l2s-menu541-slice-x) var(--l2s-menu541-slice-y)
+    var(--l2s-menu541-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-menu541-bd-y)) calc(1px * var(--l2s-menu541-bd-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  color: #f0e6b8 !important;
+  text-decoration: none !important;
+}
+
+body.l2-page-menu a.l2-town-btn.l2-menu-btn-541:hover,
+body.l2-page-menu a.l2-town-btn.l2-menu-btn-541:focus {
+  filter: brightness(1.08);
+  border-image-source: url('/ref/541.png') !important;
+}
+
+body.l2-page-menu a.l2-town-btn.l2-menu-btn-4187 {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 50%;
+  max-width: 148px;
+  padding: 5px 8px !important;
+  font-size: 11px !important;
+  line-height: 1.25;
+  margin: 0.25rem 0;
+  text-align: center;
+  --l2-menu4187-slice-y: 30;
+  --l2-menu4187-slice-x: 40;
+  /* ~половина від футера (12×14), щоб збігалося з компактністю «Крафт». */
+  --l2-menu4187-bd-y: 6;
+  --l2-menu4187-bd-x: 7;
+  border-radius: 0 !important;
+  border-color: transparent !important;
+  border-style: solid !important;
+  border-width: calc(1px * var(--l2-menu4187-bd-y)) calc(1px * var(--l2-menu4187-bd-x)) !important;
+  border-image-source: url('/ref/4187.png') !important;
+  border-image-slice: var(--l2-menu4187-slice-y) var(--l2-menu4187-slice-x) var(--l2-menu4187-slice-y)
+    var(--l2-menu4187-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2-menu4187-bd-y)) calc(1px * var(--l2-menu4187-bd-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  color: #f0e6b8 !important;
+  text-decoration: none !important;
+}
+
+body.l2-page-menu a.l2-town-btn.l2-menu-btn-4187:hover,
+body.l2-page-menu a.l2-town-btn.l2-menu-btn-4187:focus {
+  filter: brightness(1.08);
+  border-image-source: url('/ref/4187.png') !important;
+}

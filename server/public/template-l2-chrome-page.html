@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!-- Шаблон нової сторінки: скопіюй у foo.html, зміни title, body- та inner-клас, встав свій вміст у l2-screen-inner. -->
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>— L2DOP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
+    <!-- панель нік/бари: -->
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
+  </head>
+  <body class="l2-body l2-page-your-page l2-page-has-fixed-nav">
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <!-- @include з /partials/l2-game-chrome.html (або встав вміст тут) -->
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+
+        <div class="l2-screen-inner l2-your-content-root">
+          <!-- HUD: <div id="l2-hud-panel-mount"></div> + /common.js (L2.getHudPanelMarkup збігається з /partials/l2-hud-panel.html) -->
+          <p style="color: #a08c70; padding: 1rem; margin: 0">Вміст сторінки — сюди.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

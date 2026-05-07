@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Сюжет — L2DOP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
+    <link rel="stylesheet" href="/css/l2-story-222-skin.css?v=14" />
+  </head>
+  <body class="l2-body l2-page-story l2-page-has-fixed-nav">
+    <div class="l2-shell">
+      <div class="l2-screen l2-story-screen l2-outer-sframe-host">
+        <!-- l2-game-chrome: /css/l2-game-chrome.css + фрагмент /partials/l2-game-chrome.html -->
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-story">
+          <!-- HUD: common.js mountStandardHudPanel → те саме, що /partials/l2-hud-panel.html -->
+          <div id="l2-hud-panel-mount"></div>
+
+          <section class="l2-story-loc l2-story-panel" aria-label="Поточна локація">
+            <span class="l2-story-orn l2-story-orn--tl" aria-hidden="true"></span>
+            <span class="l2-story-orn l2-story-orn--tr" aria-hidden="true"></span>
+            <span class="l2-story-orn l2-story-orn--br" aria-hidden="true"></span>
+            <span class="l2-story-orn l2-story-orn--bl" aria-hidden="true"></span>
+            <div class="l2-story-loc-art" role="img" aria-label="Селечко на рівнині Адену">
+              <!-- Банер локації: окремий файл; можна замінити на JPG/WebP тієї ж ширини (напр. heine.jpg) -->
+              <img
+                class="l2-story-loc-svg"
+                src="/story-assets/locations/story-loc-banner.svg"
+                alt=""
+                width="200"
+                height="100"
+                decoding="async"
+                loading="lazy"
+              />
+            </div>
+            <div class="l2-story-loc-text">
+              <h2 class="l2-story-loc-title" id="story-loc-title">Деревня Глудин</h2>
+              <p class="l2-story-loc-desc" id="story-loc-desc">
+                Мирне селище на рівнинах Адену. Тут починається твій шлях.
+              </p>
+            </div>
+            <a class="l2-story-loc-map" href="/city.html" title="Місто" aria-label="Місто"
+              ><svg class="l2-story-map-ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="16" rx="1" fill="none" stroke="currentColor" stroke-width="1.2" />
+                <path
+                  d="M6 8h5M6 12h7M6 16h4"
+                  stroke="currentColor"
+                  stroke-width="1"
+                />
+                <path d="M16 5v14l-2-2-2 2V5" fill="currentColor" opacity="0.35" />
+              </svg>
+            </a>
+          </section>
+
+          <article class="l2-story-article l2-story-panel">
+            <span class="l2-story-orn l2-story-orn--tl" aria-hidden="true"></span>
+            <span class="l2-story-orn l2-story-orn--tr" aria-hidden="true"></span>
+            <span class="l2-story-orn l2-story-orn--br" aria-hidden="true"></span>
+            <span class="l2-story-orn l2-story-orn--bl" aria-hidden="true"></span>
+            <p>
+              Ти прокидаєшся: дим на ранковому вітрі, ворота села й прапор Королівства Аден. До
+              тебе підходить <strong>староста</strong> — каже, що після вибуху в руїнах ти був
+              без тяма, а монстри вже не раз нападали на глудінських рибалок. Він питає, як
+              кликати тебе, і куди далі хочеш податись. Ти говориш йому своє ім’я, і староста
+              киває: «Поки що допоможи селу — доведи, чого вартуєш.»
+            </p>
+            <div class="l2-story-filigree" role="separator" aria-hidden="true">
+              <span class="l2-story-filigree--line"></span>
+              <span class="l2-story-filigree--dia"></span>
+              <span class="l2-story-filigree--line"></span>
+            </div>
+            <p class="l2-story-article-q"><strong>Що ти зробиш?</strong></p>
+          </article>
+
+          <div class="l2-story-choices" role="list">
+            <button type="button" class="l2-story-choice" data-stub>
+              <span class="l2-story-choice-num">1</span>
+              <span class="l2-story-choice-ic" aria-hidden="true">⚔</span>
+              <span class="l2-story-choice-txt"
+                >Згодитися допомогти селу.</span
+              >
+              <span class="l2-story-choice-chev" aria-hidden="true">›</span>
+            </button>
+            <button type="button" class="l2-story-choice" data-stub>
+              <span class="l2-story-choice-num">2</span>
+              <span class="l2-story-choice-ic" aria-hidden="true">💬</span>
+              <span class="l2-story-choice-txt"
+                >Розпитати більше про напад. <em>(Дізнатися інформацію)</em></span
+              >
+              <span class="l2-story-choice-chev" aria-hidden="true">›</span>
+            </button>
+            <a class="l2-story-choice" href="/city.html">
+              <span class="l2-story-choice-num">3</span>
+              <span class="l2-story-choice-ic" aria-hidden="true">🪙</span>
+              <span class="l2-story-choice-txt"
+                >Піти до мешканців і торгівців. <em>(Місто · торг)</em></span
+              >
+              <span class="l2-story-choice-chev" aria-hidden="true">›</span>
+            </a>
+            <a class="l2-story-choice" href="/city.html">
+              <span class="l2-story-choice-num">4</span>
+              <span class="l2-story-choice-ic" aria-hidden="true">🚪</span>
+              <span class="l2-story-choice-txt"
+                >Покинути селище. <em>(Інша місцевість)</em></span
+              >
+              <span class="l2-story-choice-chev" aria-hidden="true">›</span>
+            </a>
+          </div>
+
+          <p class="l2-story-footnote" id="story-demo-hint" hidden>
+            Демо-текст. Після логіна зверху підставляються дані персонажа з сервера.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="l2-story-dock" id="l2-story-dock" aria-label="Головне меню">
+      <a href="/char.html" class="l2-story-dock__btn">
+        <span class="l2-story-dock__ic" aria-hidden="true">⛑</span>
+        <span class="l2-story-dock__lbl">Герой</span>
+      </a>
+      <a href="/char.html" class="l2-story-dock__btn">
+        <span class="l2-story-dock__ic" aria-hidden="true">🎒</span>
+        <span class="l2-story-dock__lbl">Інвентар</span>
+      </a>
+      <a href="/city.html" class="l2-story-dock__btn">
+        <span class="l2-story-dock__ic" aria-hidden="true">🏘</span>
+        <span class="l2-story-dock__lbl">Місто</span>
+      </a>
+      <a href="/options.html" class="l2-story-dock__btn">
+        <span class="l2-story-dock__ic" aria-hidden="true">☰</span>
+        <span class="l2-story-dock__lbl">Меню</span>
+      </a>
+    </nav>
+
+    <script src="/common.js"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/story.js"></script>
+  </body>
+</html>

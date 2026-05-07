@@ -1,0 +1,58 @@
+<!--
+  Панель героя (рамка 222): нік, Lv/клас, HP/MP/CP.
+  Єдине джерело розмітки разом із common.js → L2.getHudPanelMarkup().
+  У HTML-сторінках: <div id="l2-hud-panel-mount"></div> після завантаження common.js підставляє цей вміст на DOMContentLoaded.
+-->
+<header class="l2-hud-panel l2-hud-panel--city-strip" aria-label="Персонаж">
+  <div class="l2-hud-top l2-hud-top--city">
+    <div class="l2-hud-identity">
+      <div class="l2-hud-identity-text">
+        <div class="l2-hud-nick" id="l2-hud-nick">—</div>
+        <p class="l2-hud-meta">
+          <img
+            class="l2-hud-meta-ic"
+            src="/ref/sheld.png"
+            width="20"
+            height="20"
+            alt=""
+            decoding="async"
+          />
+          <span class="l2-hud-meta-txt"
+            >Lv. <span id="l2-hud-lvl">—</span> ·
+            <span class="l2-hud-class">Клас: <span id="l2-hud-class-val">—</span></span></span
+          >
+        </p>
+        <p class="l2-hud-prof-line">
+          <span class="l2-hud-prof-label">Професія:</span>
+          <span id="l2-hud-prof-val">—</span>
+        </p>
+      </div>
+    </div>
+    <div class="l2-hud-city-bars" role="group" aria-label="Життя, мана, CP">
+      <div class="l2-hud-stat l2-hud-stat--hp l2-hud-city-bar">
+        <div class="l2-hud-stat-bar">
+          <div class="l2-hud-stat-inner" id="l2-hud-hp-inner" style="width: 0%"></div>
+          <span class="l2-hud-city-bar-nums"
+            ><span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></span
+          >
+        </div>
+      </div>
+      <div class="l2-hud-stat l2-hud-stat--mp l2-hud-city-bar">
+        <div class="l2-hud-stat-bar">
+          <div class="l2-hud-stat-inner" id="l2-hud-mp-inner" style="width: 0%"></div>
+          <span class="l2-hud-city-bar-nums"
+            ><span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></span
+          >
+        </div>
+      </div>
+      <div class="l2-hud-stat l2-hud-stat--cp l2-hud-city-bar">
+        <div class="l2-hud-stat-bar">
+          <div class="l2-hud-stat-inner" id="l2-hud-cp-inner" style="width: 0%"></div>
+          <span class="l2-hud-city-bar-nums"
+            ><span id="l2-hud-cp-cur">—</span>/<span id="l2-hud-cp-max">—</span></span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

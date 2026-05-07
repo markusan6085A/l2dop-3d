@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Магістр — L2DOP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
+  </head>
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-magister l2-page-has-fixed-nav l2-app-l2-chrome">
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-magister-root">
+          <div id="l2-hud-panel-mount"></div>
+
+          <div id="l2-nav-top"></div>
+
+          <p class="err" id="magister-load-err" hidden></p>
+
+          <main class="l2-magister-panel" id="magister-panel" hidden>
+            <p class="l2-magister-back">
+              <a class="l2-town-btn" href="/city.html">Назад до міста</a>
+            </p>
+            <h1 class="l2-magister-panel__title" id="magister-title">Магістр</h1>
+            <p class="l2-magister-panel__sub" id="magister-sub"></p>
+            <p class="l2-magister-hint-passive">
+              Пасивні скіли (майстерність броні/зброї тощо) змінюють цифри в профілі. Бойові скіли й тогли діють у бою — у таблицю параметрів у місті не входять.
+            </p>
+            <p class="l2-magister-note" id="magister-note" hidden></p>
+            <div class="l2-magister-profession" id="magister-profession" hidden></div>
+            <p class="err" id="magister-err" hidden></p>
+            <ul class="l2-magister-list" id="magister-list"></ul>
+          </main>
+
+          <div id="l2-foot-links"></div>
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js"></script>
+    <script src="/magister.js"></script>
+  </body>
+</html>

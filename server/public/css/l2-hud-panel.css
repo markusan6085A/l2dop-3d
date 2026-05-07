@@ -1,0 +1,486 @@
+/**
+ * l2-hud-panel — панель героя: рівень/клас, HP/MP/CP (city-strip у common.js).
+ * v=24: рядок «Професія» (l2Profession) під Lv/клас.
+ * Порядок: після /styles.css і (за потреби) l2-game-chrome.css.
+ * Рамка: /ref/222.png (905×231) — 9-slice, розтягування під ширину/висоту блоку.
+ * slice = виріз у PNG; --l2h-frame-w-* = товщина рамки на екрані (окремо, тоншу/толсту).
+ * На story: той самий «пергамент», що .l2-story-article (див. styles.css)
+ */
+.l2-hud-panel {
+  --l2h-hp: #c41818;
+  --l2h-mp: #1e7ae8;
+  --l2h-sp: #e6b800;
+  --l2h-cp: #d4a020;
+  --l2h-gold: #e4c87a;
+  /* 9-slice: лише бордер з PNG, без fill — інакше центр спрайта = зайвий «підколір» */
+  --l2h-frame-slice-y: 52;
+  --l2h-frame-slice-x: 104;
+  /* товщина ліній рамки на екрані (не плутати з slice — вони з PNG у пікселях) */
+  --l2h-frame-w-y: 9;
+  --l2h-frame-w-x: 15;
+  --l2h-ui-frame: url("/ref/222.png");
+  position: relative;
+  z-index: 0;
+  margin: 0 0 14px;
+  padding: 12px 12px 12px;
+  border-radius: 1px;
+  /* Без власного тла/тіні: лише 222 + контент; тло = те, що під панеллю (колонка) */
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  border-color: transparent;
+  border-style: solid;
+  border-width: calc(1px * var(--l2h-frame-w-y)) calc(1px * var(--l2h-frame-w-x));
+  border-image-source: var(--l2h-ui-frame);
+  border-image-slice: var(--l2h-frame-slice-y) var(--l2h-frame-slice-x) var(--l2h-frame-slice-y)
+    var(--l2h-frame-slice-x);
+  border-image-width: calc(1px * var(--l2h-frame-w-y)) calc(1px * var(--l2h-frame-w-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* story: нуль власного тла/тіні — видно тло .l2-outer-sframe-host; zерно вимкнено */
+body.l2-page-story .l2-hud-panel {
+  padding: 14px 12px 12px;
+  border-radius: var(--l2s-paper-radius, 3px);
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+  border-style: solid;
+  border-width: calc(1px * var(--l2h-frame-w-y)) calc(1px * var(--l2h-frame-w-x)) !important;
+  border-image-source: var(--l2h-ui-frame) !important;
+  border-image-slice: var(--l2h-frame-slice-y) var(--l2h-frame-slice-x) var(--l2h-frame-slice-y) var(--l2h-frame-slice-x) !important;
+  border-image-width: calc(1px * var(--l2h-frame-w-y)) calc(1px * var(--l2h-frame-w-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+}
+
+body.l2-page-story .l2-hud-panel::before {
+  content: none;
+  display: none;
+}
+
+.l2-hud-exp-wrap,
+.l2-hud-vitals {
+  position: relative;
+  z-index: 1;
+}
+
+.l2-hud-top {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-bottom: 6px;
+}
+
+.l2-hud-identity {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+}
+.l2-hud-identity-text {
+  min-width: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.l2-hud-nick {
+  margin: 0;
+  font-family: var(--l2-font-display, Georgia, serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--l2s-gold-bright, var(--l2h-gold));
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-shadow:
+    0 0 6px rgba(200, 160, 80, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-hud-meta {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #b0a080;
+  font-weight: 500;
+  text-align: left;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.l2-hud-meta-ic {
+  display: block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+}
+.l2-hud-meta-txt {
+  min-width: 0;
+}
+.l2-hud-class {
+  display: inline;
+  font-weight: 500;
+  color: #c8b898;
+}
+
+.l2-hud-prof-line {
+  margin: 4px 0 0;
+  padding: 0 0 0 30px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #a89878;
+  font-weight: 500;
+  text-align: left;
+}
+.l2-hud-prof-label {
+  color: #8a7a60;
+  margin-right: 4px;
+}
+
+.l2-hud-exp-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0 0 10px;
+  text-align: left;
+  direction: ltr;
+}
+.l2-hud-exp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+  width: 100%;
+}
+.l2-hud-exp-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b8a878;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.l2-hud-exp-nums {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8a8d94;
+  font-variant-numeric: tabular-nums;
+}
+.l2-hud-exp-bar {
+  position: relative;
+  width: calc(100% / 3);
+  max-width: calc(100% / 3);
+  height: 3px;
+  min-height: 3px;
+  border-radius: 1px;
+  background: #1a1c20;
+  box-shadow: 0 0 0 1px rgba(55, 58, 65, 0.65);
+  overflow: hidden;
+  direction: ltr;
+  margin: 0;
+}
+.l2-hud-exp-fill {
+  position: relative;
+  left: 0;
+  top: 0;
+  display: block;
+  height: 100%;
+  min-height: 100%;
+  border-radius: 0;
+  background: linear-gradient(180deg, #c4a86a 0%, #7a5c30 50%, #4a3a1a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform-origin: left center;
+  transition: width 0.25s ease;
+}
+
+.l2-hud-vitals {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.l2-hud-stat {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Вужча колонка SP — один ряд HP | MP | SP акуратніше на телефоні */
+.l2-hud-stat--sp {
+  flex: 0 1 26%;
+  max-width: 30%;
+  min-width: 56px;
+}
+
+.l2-hud-stat--sp .l2-hud-stat-bar {
+  min-height: 6px;
+}
+
+.l2-hud-stat--sp .l2-hud-stat-hd {
+  font-size: 9px;
+  gap: 2px 4px;
+}
+
+.l2-hud-stat--sp .l2-hud-stat-nums {
+  font-size: 8px;
+}
+
+.l2-hud-stat--sp .l2-hud-vi-svg {
+  width: 13px;
+  height: 13px;
+}
+.l2-hud-stat-hd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #c8c4b8;
+  width: 100%;
+}
+.l2-hud-stat-ic {
+  display: flex;
+  flex: 0 0 auto;
+}
+.l2-hud-vi-svg {
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.75));
+}
+.l2-hud-stat-lbl {
+  color: #a8a090;
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+  flex: 0 0 auto;
+}
+.l2-hud-stat-nums {
+  color: #e8e4dc;
+  font-variant-numeric: tabular-nums;
+  font-size: 9px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.l2-hud-stat-bar {
+  position: relative;
+  width: 100%;
+  min-height: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  background: #050508;
+  border: 1px solid rgba(35, 32, 28, 0.95);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.l2-hud-stat-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  border-radius: 2px;
+  transition: width 0.2s ease;
+  pointer-events: none;
+}
+.l2-hud-stat--hp .l2-hud-stat-inner {
+  background: linear-gradient(180deg, #ff4a40 0%, var(--l2s-hp, var(--l2h-hp)) 45%, #4a0808 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.l2-hud-stat--mp .l2-hud-stat-inner {
+  background: linear-gradient(180deg, #7ec8ff 0%, var(--l2s-mp, var(--l2h-mp)) 45%, #0d4a9c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.l2-hud-stat--sp .l2-hud-stat-inner {
+  background: linear-gradient(180deg, #fff0a0 0%, var(--l2s-sp, var(--l2h-sp)) 50%, #7a5a00 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* CP (бій): у ряду з HP/MP */
+.l2-hud-stat--cp .l2-hud-stat-inner {
+  background: linear-gradient(180deg, #ffe8a0 0%, var(--l2h-cp) 48%, #6a4810 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+@media (max-width: 360px) {
+  .l2-hud-stat-hd {
+    font-size: 9px;
+  }
+  .l2-hud-vitals {
+    gap: 4px;
+  }
+}
+
+/* story: без темного треку (його видно крізь 222, інакше здається другою «плашкою») */
+body.l2-page-story .l2-hud-exp-bar {
+  background: transparent !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-page-story .l2-hud-stat-bar {
+  background: transparent !important;
+  border: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Шапка .l2-hud-panel: без смужок (старий макет). Виняток: city-strip. */
+.l2-hud-panel:not(.l2-hud-panel--city-strip) .l2-hud-exp-bar,
+.l2-hud-panel:not(.l2-hud-panel--city-strip) .l2-hud-stat-bar {
+  display: none !important;
+}
+
+/**
+ * Уніфікований HUD: нік + Lv/клас зліва, HP/MP/CP (4cm) справа, червона підсвітка рамки 222.
+ * Джерело розмітки: common.js getHudPanelMarkup + partials/l2-hud-panel.html (той самий вміст).
+ */
+.l2-hud-panel.l2-hud-panel--city-strip {
+  --l2h-frame-w-y: 5;
+  padding: 5px 8px 6px;
+  margin-bottom: 10px;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel.l2-hud-panel--city-strip,
+body.l2-page-story .l2-screen-inner.l2-story .l2-hud-panel.l2-hud-panel--city-strip {
+  -webkit-box-shadow:
+    0 0 0 1px rgba(255, 42, 42, 0.92),
+    0 0 8px rgba(255, 32, 32, 0.88),
+    0 0 14px rgba(255, 20, 20, 0.45) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 42, 42, 0.92),
+    0 0 8px rgba(255, 32, 32, 0.88),
+    0 0 14px rgba(255, 20, 20, 0.45) !important;
+}
+
+.l2-hud-panel--city-strip .l2-hud-top--city {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.l2-hud-panel--city-strip .l2-hud-identity {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+.l2-hud-panel--city-strip .l2-hud-nick {
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+.l2-hud-panel--city-strip .l2-hud-meta {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.l2-hud-panel--city-strip .l2-hud-meta-ic {
+  width: 18px;
+  height: 18px;
+}
+
+.l2-hud-panel--city-strip .l2-hud-prof-line {
+  margin: 2px 0 0;
+  padding-left: 24px;
+  font-size: 10px;
+}
+
+.l2-hud-city-bars {
+  flex: 0 0 auto;
+  width: 4cm;
+  min-width: 4cm;
+  max-width: 4cm;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.l2-hud-panel--city-strip .l2-hud-city-bar.l2-hud-stat {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  gap: 0;
+}
+
+.l2-hud-panel--city-strip .l2-hud-city-bar.l2-hud-stat--cp {
+  flex: 0 0 auto;
+  max-width: none;
+  min-width: 0;
+}
+
+.l2-hud-panel--city-strip .l2-hud-city-bar .l2-hud-stat-bar {
+  display: block !important;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.l2-hud-panel--city-strip .l2-hud-city-bar .l2-hud-stat-inner {
+  z-index: 1;
+}
+
+.l2-hud-panel--city-strip .l2-hud-city-bar-nums {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #f4f0e8;
+  text-shadow:
+    0 0 4px rgba(0, 0, 0, 1),
+    0 1px 2px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+/* story: глобально прибрано трек барів — для city-strip повертаємо читабельну смугу */
+body.l2-page-story .l2-hud-panel--city-strip .l2-hud-stat-bar {
+  background: #050508 !important;
+  border: 1px solid rgba(35, 32, 28, 0.95) !important;
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85) !important;
+}

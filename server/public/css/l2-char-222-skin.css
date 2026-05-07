@@ -1,0 +1,112 @@
+/**
+ * char.html — лише локальні правки перса (прозорий .l2-char-mobi, сумка, кнопки).
+ * Тло колонки — у l2-app-chrome-skin.css для всіх сторінок з l2-app-l2-chrome.
+ * Підключати після l2-app-chrome-skin.css.
+ */
+body.l2-app-l2-chrome.l2-page-char .l2-char-mobi {
+  margin: 10px 0 0;
+  padding: 14px 10px 16px;
+  border-radius: 0 !important;
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-mobi::before {
+  opacity: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-title-row {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(180, 140, 80, 0.4);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-title-empty {
+  color: #b8a890;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-name-bracket {
+  color: #f0d880;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 10px rgba(200, 150, 60, 0.25);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-frame {
+  border-radius: 8px !important;
+  border: 1px solid rgba(200, 160, 70, 0.28) !important;
+  border-image: none !important;
+  background: transparent !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-frame::before {
+  opacity: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg {
+  background: rgba(12, 10, 8, 0.28);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-slot-icon {
+  border: 1px solid rgba(200, 160, 95, 0.5);
+  background: rgba(8, 6, 5, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 180, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-currency {
+  margin-top: 12px;
+  padding: 9px 10px;
+  border-radius: var(--l2s-paper-radius, 3px);
+  border: 1px solid rgba(160, 120, 60, 0.3);
+  background: rgba(8, 6, 5, 0.22);
+  box-shadow: none;
+  color: #e4dcc8;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-adena-label {
+  color: #c4b090;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-block {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding: 12px 8px 10px;
+  border-radius: 0 !important;
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-title {
+  color: #e8c878;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.88);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-filters {
+  border: 1px solid rgba(130, 100, 55, 0.32);
+  background: rgba(6, 5, 4, 0.24);
+  box-shadow: none;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-row--grades {
+  border-top-color: rgba(140, 110, 60, 0.4);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--click:hover,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--click:focus {
+  background: rgba(40, 28, 12, 0.42);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-equip {
+  border: 1px solid rgba(180, 145, 70, 0.55);
+  background: linear-gradient(180deg, rgba(48, 38, 22, 0.95), rgba(12, 10, 8, 0.98));
+}

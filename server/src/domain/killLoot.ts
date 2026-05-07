@@ -1,0 +1,122 @@
+import { addItemToBag, type InventoryState } from '../data/inventory.js';
+import type { DropEntry } from '../types/combatDrop.js';
+import {
+  ensureMobDropBag,
+  rewardExpSpForSpawn,
+  syntheticAdenaDropEntry,
+} from './spawnSyntheticRewards.js';
+import { rollProceduralResourceLoot } from './mobResourceLoot.js';
+import { dropDisplayNameShort } from '../utils/dropDisplayName.js';
+
+function rollInt(min: number, max: number): number {
+  return Math.floor(min + Math.random() * (max - min + 1));
+}
+
+/** Ймовірність успіху: prefer chancePerMillion з дампу XML. */
+function rollDropLine(d: DropEntry): number {
+  const p =
+    d.chancePerMillion != null ? d.chancePerMillion / 1_000_000 : d.chance;
+  if (!Number.isFinite(p) || p <= 0) return 0;
+  if (Math.random() >= p) return 0;
+  return rollInt(Math.max(0, d.min), Math.max(d.min, d.max));
+}
+
+export interface KillLootItemLine {
+  l2ItemId: number;
+  qty: number;
+  spoil: boolean;
+  label: string;
+}
+
+export interface KillLootResult {
+  adena: bigint;
+  expGain: bigint;
+  spGain: number;
+  inventory: InventoryState;
+  logLines: string[];
+  /** Для UI перемоги (іконки `/game/item-icon/`). */
+  items: KillLootItemLine[];
+}
+
+/**
+ * Нагорода за кілл: базова адена за рівнем (+ колишній fallback), EXP/SP з npc або формула.
+ */
+export function rollKillLoot(
+  npcId: number | null,
+  spawnLevel: number,
+  inv: InventoryState
+): KillLootResult {
+  let adena = BigInt(0);
+  let next = inv;
+  const itemLog: string[] = [];
+  const adenaLog: string[] = [];
+  const items: KillLootItemLine[] = [];
+
+  const bag = ensureMobDropBag(npcId, spawnLevel);
+  for (const d of bag.drops) {
+    const qty = rollDropLine(d);
+    if (qty <= 0) continue;
+    if (d.kind === 'adena') {
+      adena += BigInt(qty);
+      adenaLog.push(`+${qty} аден`);
+    } else if (d.l2ItemId) {
+      next = addItemToBag(next, d.l2ItemId, qty);
+      const label = dropDisplayNameShort(d.displayName ?? d.id, d.l2ItemId);
+      itemLog.push(`+${qty}× ${label}`);
+      items.push({ l2ItemId: d.l2ItemId, qty, spoil: false, label });
+    }
+  }
+
+  for (const line of rollProceduralResourceLoot(spawnLevel)) {
+    next = addItemToBag(next, line.l2ItemId, line.qty);
+    const prefix = line.spoil ? '(спойл) ' : '';
+    itemLog.push(`${prefix}+${line.qty}× ${line.label}`);
+    items.push({
+      l2ItemId: line.l2ItemId,
+      qty: line.qty,
+      spoil: line.spoil,
+      label: line.label,
+    });
+  }
+
+  for (const d of bag.spoil) {
+    const qty = rollDropLine(d);
+    if (qty <= 0) continue;
+    if (d.kind === 'adena') {
+      adena += BigInt(qty);
+      adenaLog.push(`(спойл) +${qty} аден`);
+    } else if (d.l2ItemId) {
+      next = addItemToBag(next, d.l2ItemId, qty);
+      const label = dropDisplayNameShort(d.displayName ?? d.id, d.l2ItemId);
+      itemLog.push(`(спойл) +${qty}× ${label}`);
+      items.push({ l2ItemId: d.l2ItemId, qty, spoil: true, label });
+    }
+  }
+
+  /** Якщо з рядків адени не випало — ще раз базова адена за рівнем (як у старій логіці). */
+  if (adena === BigInt(0)) {
+    const syn = syntheticAdenaDropEntry(spawnLevel);
+    const qty = rollDropLine(syn);
+    if (qty > 0) {
+      adena += BigInt(qty);
+      adenaLog.push(`+${qty} аден`);
+    }
+  }
+
+  const rw = rewardExpSpForSpawn(npcId, spawnLevel);
+  let expGain = BigInt(rw.exp);
+  let spGain = rw.sp;
+
+  const expSpLog: string[] = [];
+  if (expGain > BigInt(0)) {
+    expSpLog.push(`+${expGain.toString()} EXP`);
+  }
+  if (spGain > 0) {
+    expSpLog.push(`+${spGain} SP`);
+  }
+
+  /** Лог: спочатку ресурси (предмети), потім EXP/SP, в кінці адена — як у зручному підсумку. */
+  const log = [...itemLog, ...expSpLog, ...adenaLog];
+
+  return { adena, expGain, spGain, inventory: next, logLines: log, items };
+}

@@ -1,0 +1,306 @@
+/**
+ * Зовнішня ref-рамка колонки (12/4/8, кути 19/18).
+ * Підключай після /styles.css. Хост: .l2-outer-sframe-host на .l2-screen.
+ * HTML-фрагмент: /partials/l2-outer-sframe.html
+ */
+.l2-outer-sframe-host {
+  /* Тло колонки (токени void може перевизначати body) */
+  --l2s-outer-void: #0f0d0a;
+  --l2s-outer-void-mid: #12100d;
+  --l2s-outer-void-top: #15130f;
+  --l2s-sframe-cw: min(14vw, 52px);
+  --l2s-sframe-ch: min(14vw, 52px);
+  --l2s-sframe-side-w: calc(var(--l2s-sframe-cw) / 10);
+  --l2s-sframe-url-bl: url("/ref/4.jpg");
+  --l2s-sframe-url-bot: url("/ref/8.jpg");
+  --l2s-sframe-url-side: url("/ref/12.png");
+  --l2s-sframe-url-top: url("/ref/25.jpg");
+  /* верхня смуга: затемнення (1 = як у файлі) */
+  --l2s-sframe-top-brightness: 0.68;
+  --l2s-sframe-url-cap-tl: url("/ref/19.png");
+  --l2s-sframe-url-cap-tr: url("/ref/18.png");
+  --l2s-sframe-cap-box: 28px;
+  --l2s-sframe-cap-tl-box: 28px;
+  --l2s-sframe-cap-tl-top: 0;
+  --l2s-sframe-cap-tl-h-delta: 0;
+  /* 19.png: трохи вліво (стик із смугою 12) */
+  --l2s-sframe-cap-tl-left: -3px;
+  --l2s-sframe-cap-tr-right: calc(-4px + 0.5mm);
+  /* верхня 12: трохи довше вправо + вище; кути не чіпає */
+  --l2s-sframe-topline-nudge: -14px;
+  --l2s-sframe-t-extend: calc(32px + 0.5cm);
+  /* 4.jpg: фон трохи вправо (стик з 8) */
+  --l2s-sframe-bl-bg-nudge: 3px;
+  --l2s-story-pad-l: calc(5px + var(--l2s-sframe-side-w));
+  --l2s-story-pad-r: calc(5px + var(--l2s-sframe-side-w));
+  --l2s-story-pad-below-cap: calc(2px + var(--l2s-sframe-ch));
+  /* розмір згладжування стиків у кутах (нащадок .l2-outer-sframe::before) */
+  --l2s-sframe-seam: min(25vw, 64px);
+  max-width: 420px;
+  margin: 0 auto;
+  min-height: 100vh;
+  border-radius: 0;
+  position: relative;
+  overflow: visible !important;
+  border: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+  background:
+    radial-gradient(ellipse 100% 40% at 50% 0%, rgba(55, 40, 22, 0.1) 0%, transparent 48%),
+    linear-gradient(180deg, var(--l2s-outer-void-top) 0%, var(--l2s-outer-void-mid) 40%, var(--l2s-outer-void) 100%);
+}
+
+.l2-outer-sframe {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  min-height: 0;
+  overflow: visible;
+}
+
+/* Згладжування ref-стиків у 4 кутах: м’яке затемнення + друга «хмара» (імітація блюру); кути не рухаємо */
+.l2-outer-sframe::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  --l2s-s: var(--l2s-sframe-seam, 56px);
+  --l2s-s2: calc(var(--l2s-s) * 0.7);
+  background:
+    radial-gradient(
+      ellipse var(--l2s) var(--l2s) at 0 0,
+      rgba(10, 8, 5, 0.22) 0%,
+      rgba(10, 8, 5, 0) 70%
+    ),
+    radial-gradient(
+      ellipse var(--l2s) var(--l2s) at 100% 0,
+      rgba(10, 8, 5, 0.22) 0%,
+      rgba(10, 8, 5, 0) 70%
+    ),
+    radial-gradient(
+      ellipse var(--l2s) var(--l2s) at 0 100%,
+      rgba(10, 8, 5, 0.24) 0%,
+      rgba(10, 8, 5, 0) 70%
+    ),
+    radial-gradient(
+      ellipse var(--l2s) var(--l2s) at 100% 100%,
+      rgba(10, 8, 5, 0.24) 0%,
+      rgba(10, 8, 5, 0) 70%
+    ),
+    radial-gradient(
+      ellipse var(--l2s2) var(--l2s2) at 0 0,
+      rgba(6, 5, 3, 0.38) 0%,
+      rgba(6, 5, 3, 0) 64%
+    ),
+    radial-gradient(
+      ellipse var(--l2s2) var(--l2s2) at 100% 0,
+      rgba(6, 5, 3, 0.38) 0%,
+      rgba(6, 5, 3, 0) 64%
+    ),
+    radial-gradient(
+      ellipse var(--l2s2) var(--l2s2) at 0 100%,
+      rgba(6, 5, 3, 0.4) 0%,
+      rgba(6, 5, 3, 0) 64%
+    ),
+    radial-gradient(
+      ellipse var(--l2s2) var(--l2s2) at 100% 100%,
+      rgba(6, 5, 3, 0.4) 0%,
+      rgba(6, 5, 3, 0) 64%
+    );
+  mix-blend-mode: multiply;
+  opacity: 0.88;
+}
+
+.l2-outer-sframe__g {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: var(--l2s-sframe-cw) 1fr var(--l2s-sframe-cw);
+  grid-template-rows: var(--l2s-sframe-ch) 1fr var(--l2s-sframe-ch);
+  min-height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.l2-outer-sframe__cap-tr {
+  display: block;
+  position: absolute;
+  right: var(--l2s-sframe-cap-tr-right, 0);
+  top: 0;
+  width: var(--l2s-sframe-cap-box);
+  height: var(--l2s-sframe-ch);
+  z-index: 20;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.l2-outer-sframe__cap-tr .l2-outer-sframe__cap-tr-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right bottom;
+  pointer-events: none;
+}
+
+.l2-outer-sframe__n {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  background-repeat: no-repeat;
+}
+
+.l2-outer-sframe__tl {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 8;
+  background: none;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.l2-outer-sframe__tl .l2-outer-sframe__cap-tl-img {
+  position: absolute;
+  left: var(--l2s-sframe-cap-tl-left, 0);
+  bottom: 0;
+  width: var(--l2s-sframe-cap-tl-box, var(--l2s-sframe-cap-box));
+  height: var(--l2s-sframe-ch);
+  object-fit: contain;
+  object-position: left bottom;
+  display: block;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.l2-outer-sframe__t {
+  grid-column: 1 / 3;
+  grid-row: 1;
+  align-self: end;
+  justify-self: start;
+  z-index: 1;
+  transform: translateY(var(--l2s-sframe-topline-nudge, 0));
+  width: calc(100% + var(--l2s-sframe-t-extend, 0px));
+  max-width: none;
+  box-sizing: border-box;
+  padding-left: calc(var(--l2s-sframe-cap-tl-left, 0) + var(--l2s-sframe-cap-tl-box, var(--l2s-sframe-cap-box)));
+  background-clip: content-box;
+  min-width: 0;
+  min-height: 0;
+  height: var(--l2s-sframe-side-w);
+  background-image: var(--l2s-sframe-url-top);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center bottom;
+  filter: brightness(var(--l2s-sframe-top-brightness));
+  pointer-events: none;
+}
+
+.l2-outer-sframe__tr {
+  grid-column: 3;
+  grid-row: 1;
+  z-index: 1;
+  background: none;
+  pointer-events: none;
+}
+
+.l2-outer-sframe__l {
+  grid-column: 1;
+  grid-row: 2;
+  z-index: 1;
+  position: relative;
+  width: var(--l2s-sframe-side-w);
+  min-width: 0;
+  max-width: 100%;
+  justify-self: start;
+  align-self: stretch;
+  box-sizing: border-box;
+  background-image: var(--l2s-sframe-url-side);
+  background-size: 100% 100%;
+  background-position: left center;
+}
+
+.l2-outer-sframe__l::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -6px;
+  width: calc(100% + 12px);
+  height: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 9, 7, 0) 0%,
+    rgba(14, 12, 10, 0.5) 50%,
+    rgba(10, 9, 7, 0) 100%
+  );
+  filter: blur(3px);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.l2-outer-sframe__r {
+  grid-column: 3;
+  grid-row: 2;
+  z-index: 1;
+  position: relative;
+  width: var(--l2s-sframe-side-w);
+  min-width: 0;
+  max-width: 100%;
+  justify-self: end;
+  align-self: stretch;
+  box-sizing: border-box;
+  background-image: var(--l2s-sframe-url-side);
+  background-size: 100% 100%;
+  background-position: right center;
+  pointer-events: none;
+  transform: scaleX(-1);
+}
+
+.l2-outer-sframe__bl {
+  grid-column: 1;
+  grid-row: 3;
+  z-index: 2;
+  background-image: var(--l2s-sframe-url-bl);
+  background-size: cover;
+  background-position: var(--l2s-sframe-bl-bg-nudge, 0) bottom;
+}
+
+.l2-outer-sframe__b {
+  grid-column: 2;
+  grid-row: 3;
+  z-index: 1;
+  background-image: var(--l2s-sframe-url-bot);
+  background-size: 100% 100%;
+  background-position: center bottom;
+}
+
+.l2-outer-sframe__br {
+  grid-column: 3;
+  grid-row: 3;
+  z-index: 1;
+  background: none;
+  pointer-events: none;
+}
+
+/* story: без другої золотої обводки, коли рамка ref уже є */
+body.l2-page-story .l2-outer-sframe-host .l2-story-orn {
+  display: none;
+}
+
+body.l2-page-story .l2-outer-sframe-host::before,
+body.l2-page-story .l2-outer-sframe-host::after {
+  display: none;
+}
+
+/* story: зона над гербом/верх колонки — той самий плоский «void», що й боки #12100d, без 1px обводки й оверлея з l2-outer-sframe::before (не «смикає» в очі) */
+body.l2-page-story .l2-outer-sframe-host {
+  background: var(--l2s-outer-void-mid);
+  box-shadow: none;
+}
+
+body.l2-page-story .l2-outer-sframe::before {
+  display: none;
+}

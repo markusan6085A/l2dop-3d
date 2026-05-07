@@ -1,0 +1,18 @@
+# Локальна PostgreSQL для l2dop-3d (порт 5432).
+# Запуск з кореня репо: npm run db:up
+# Потім: npm run db:push
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: l2dop-3d-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: l2reborn
+    volumes:
+      - l2dop_3d_pgdata:/var/lib/postgresql/data
+
+volumes:
+  l2dop_3d_pgdata:

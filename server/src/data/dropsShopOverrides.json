@@ -1,0 +1,1071 @@
+{
+  "_source": "Магазин дропів: зброя/броня — як раніше; біжутерія NG–S — ціни автора (травень 2026). S Tateossian; A Inferno/Phoenix i02 — sealed (6323–6328) з l2dop items.",
+  "weapon_ng/weapon_apprentices_rod_i00.png": {
+    "itemId": 7,
+    "priceAdena": 4000000
+  },
+  "weapon_ng/weapon_apprentices_spellbook_i00.png": {
+    "itemId": 99,
+    "priceAdena": 3000000
+  },
+  "weapon_ng/weapon_apprentices_staff_i00.png": {
+    "itemId": 176,
+    "priceAdena": 7000000
+  },
+  "weapon_ng/weapon_apprentices_wand_i00.png": {
+    "itemId": 6,
+    "priceAdena": 5000000
+  },
+  "weapon_ng/weapon_bone_dagger_i00.png": {
+    "itemId": 11,
+    "priceAdena": 5000000
+  },
+  "weapon_ng/weapon_bow_i00.png": {
+    "itemId": 14,
+    "priceAdena": 8000000
+  },
+  "weapon_ng/weapon_broad_sword_i00.png": {
+    "itemId": 3,
+    "priceAdena": 8000000
+  },
+  "weapon_ng/weapon_buffalo_horn_i00.png": {
+    "itemId": 308,
+    "priceAdena": 5000000
+  },
+  "weapon_ng/weapon_buzdygan_i00.png": {
+    "itemId": 155,
+    "priceAdena": 8000000
+  },
+  "weapon_ng/weapon_cedar_staff_i00.png": {
+    "itemId": 9,
+    "priceAdena": 9000000
+  },
+  "weapon_ng/weapon_club_i00.png": {
+    "itemId": 4,
+    "priceAdena": 4000000
+  },
+  "weapon_ng/weapon_composition_bow_i00.png": {
+    "itemId": 273,
+    "priceAdena": 12000000
+  },
+  "weapon_ng/weapon_crucifix_of_blessing_i00.png": {
+    "itemId": 311,
+    "priceAdena": 8000000
+  },
+  "weapon_ng/weapon_dirk_i00.png": {
+    "itemId": 216,
+    "priceAdena": 6000000
+  },
+  "weapon_ng/weapon_doomed_dagger_i00.png": {
+    "itemId": 215,
+    "priceAdena": 7000000
+  },
+  "weapon_ng/weapon_dwarven_mace_i00.png": {
+    "itemId": 154,
+    "priceAdena": 11000000
+  },
+  "weapon_ng/weapon_falchion_i00.png": {
+    "itemId": 68,
+    "priceAdena": 9000000
+  },
+  "weapon_ng/weapon_foxs_nail_i00.png": {
+    "itemId": 255,
+    "priceAdena": 6000000
+  },
+  "weapon_ng/weapon_gladius_i00.png": {
+    "itemId": 66,
+    "priceAdena": 7000000
+  },
+  "weapon_ng/weapon_handmade_sword_i00.png": {
+    "itemId": 122,
+    "priceAdena": 6000000
+  },
+  "weapon_ng/weapon_heavy_chisel_i00.png": {
+    "itemId": 152,
+    "priceAdena": 10000000
+  },
+  "weapon_ng/weapon_hunting_bow_i00.png": {
+    "itemId": 271,
+    "priceAdena": 10000000
+  },
+  "weapon_ng/weapon_iron_glove_i00.png": {
+    "itemId": 254,
+    "priceAdena": 7000000
+  },
+  "weapon_ng/weapon_iron_hammer_i00.png": {
+    "itemId": 87,
+    "priceAdena": 9000000
+  },
+  "weapon_ng/weapon_knife_i00.png": {
+    "itemId": 12,
+    "priceAdena": 4000000
+  },
+  "weapon_ng/weapon_long_spear_i00.png": {
+    "itemId": 16,
+    "priceAdena": 10000000
+  },
+  "weapon_ng/weapon_long_sword_i00.png": {
+    "itemId": 2,
+    "priceAdena": 10000000
+  },
+  "weapon_ng/weapon_mace_i00.png": {
+    "itemId": 5,
+    "priceAdena": 6000000
+  },
+  "weapon_ng/weapon_orcish_sword_i00.png": {
+    "itemId": 67,
+    "priceAdena": 11000000
+  },
+  "weapon_ng/weapon_shining_knife_i00.png": {
+    "itemId": 217,
+    "priceAdena": 8000000
+  },
+  "weapon_ng/weapon_short_bow_i00.png": {
+    "itemId": 13,
+    "priceAdena": 6000000
+  },
+  "weapon_ng/weapon_short_spear_i00.png": {
+    "itemId": 15,
+    "priceAdena": 7000000
+  },
+  "weapon_ng/weapon_sickle_i00.png": {
+    "itemId": 153,
+    "priceAdena": 5000000
+  },
+  "weapon_ng/weapon_small_sword_i00.png": {
+    "itemId": 1,
+    "priceAdena": 4000000
+  },
+  "weapon_ng/weapon_spike_glove_i00.png": {
+    "itemId": 253,
+    "priceAdena": 8000000
+  },
+  "weapon_ng/weapon_sword_breaker_i00.png": {
+    "itemId": 219,
+    "priceAdena": 9000000
+  },
+  "weapon_ng/weapon_sword_of_watershadow_i00.png": {
+    "itemId": 121,
+    "priceAdena": 10000000
+  },
+  "weapon_ng/weapon_tears_of_eva_i00.png": {
+    "itemId": 309,
+    "priceAdena": 11000000
+  },
+  "weapon_ng/weapon_throw_knife_i00.png": {
+    "itemId": 218,
+    "priceAdena": 3000000
+  },
+  "weapon_ng/weapon_vipers_canine_i00.png": {
+    "itemId": 257,
+    "priceAdena": 10000000
+  },
+  "weapon_ng/weapon_voodoo_doll_i00.png": {
+    "itemId": 100,
+    "priceAdena": 10000000
+  },
+  "weapon_ng/weapon_willow_staff_i00.png": {
+    "itemId": 8,
+    "priceAdena": 11000000
+  },
+  "weapon_a/apprentices_spellbook.jpg": {
+    "itemId": 900201,
+    "priceAdena": 60000000
+  },
+  "weapon_a/baguette_s_dualsword.jpg": {
+    "itemId": 900202,
+    "priceAdena": 230000000
+  },
+  "weapon_a/barakiel_s_axe.jpg": {
+    "itemId": 900203,
+    "priceAdena": 260000000
+  },
+  "weapon_a/behemoth_s_tuning_fork.jpg": {
+    "itemId": 900204,
+    "priceAdena": 240000000
+  },
+  "weapon_a/blood_tornado.jpg": {
+    "itemId": 900205,
+    "priceAdena": 180000000
+  },
+  "weapon_a/bloody_orchid.jpg": {
+    "itemId": 900206,
+    "priceAdena": 190000000
+  },
+  "weapon_a/branch_of_the_mother_tree.jpg": {
+    "itemId": 900207,
+    "priceAdena": 230000000
+  },
+  "weapon_a/carnage_bow.jpg": {
+    "itemId": 900209,
+    "priceAdena": 240000000
+  },
+  "weapon_a/daimon_crystal.jpg": {
+    "itemId": 900210,
+    "priceAdena": 260000000
+  },
+  "weapon_a/dark_legion_s_edge.jpg": {
+    "itemId": 2500,
+    "priceAdena": 220000000
+  },
+  "weapon_a/dasparion_s_staff.jpg": {
+    "itemId": 210,
+    "priceAdena": 280000000
+  },
+  "weapon_a/dragon_grinder.jpg": {
+    "itemId": 231,
+    "priceAdena": 210000000
+  },
+  "weapon_a/dragon_slayer.jpg": {
+    "itemId": 900211,
+    "priceAdena": 260000000
+  },
+  "weapon_a/elysian.jpg": {
+    "itemId": 290,
+    "priceAdena": 260000000
+  },
+  "weapon_a/halberd.jpg": {
+    "itemId": 304,
+    "priceAdena": 260000000
+  },
+  "weapon_a/infernal_master.jpg": {
+    "itemId": 900212,
+    "priceAdena": 240000000
+  },
+  "weapon_a/meteor_shower.jpg": {
+    "itemId": 2504,
+    "priceAdena": 220000000
+  },
+  "weapon_a/naga_storm.jpg": {
+    "itemId": 900213,
+    "priceAdena": 210000000
+  },
+  "weapon_a/shyeed_s_bow.jpg": {
+    "itemId": 900214,
+    "priceAdena": 240000000
+  },
+  "weapon_a/sirra_s_blade.jpg": {
+    "itemId": 900215,
+    "priceAdena": 200000000
+  },
+  "weapon_a/sobekk_s_hurricane.jpg": {
+    "itemId": 900216,
+    "priceAdena": 240000000
+  },
+  "weapon_a/soul_bow.jpg": {
+    "itemId": 7575,
+    "priceAdena": 280000000
+  },
+  "weapon_a/spiritual_eye.jpg": {
+    "itemId": 900218,
+    "priceAdena": 250000000
+  },
+  "weapon_a/sword_of_ipos.jpg": {
+    "itemId": 900219,
+    "priceAdena": 210000000
+  },
+  "weapon_a/sword_of_miracles.jpg": {
+    "itemId": 88,
+    "priceAdena": 280000000
+  },
+  "weapon_a/tallum_blade.jpg": {
+    "itemId": 900220,
+    "priceAdena": 210000000
+  },
+  "weapon_a/tallum_glaive.jpg": {
+    "itemId": 900221,
+    "priceAdena": 240000000
+  },
+  "weapon_a/themis_tongue.jpg": {
+    "itemId": 900222,
+    "priceAdena": 260000000
+  },
+  "weapon_a/tiphon_s_spear.jpg": {
+    "itemId": 900223,
+    "priceAdena": 260000000
+  },
+  "weapon_c/apprentices_spellbook.jpg": {
+    "itemId": 99,
+    "priceAdena": 30000000
+  },
+  "weapon_c/akat_long_bow.jpg": {
+    "itemId": 283,
+    "priceAdena": 95000000
+  },
+  "weapon_c/baguette_s_dualsword.jpg": {
+    "itemId": 900224,
+    "priceAdena": 95000000
+  },
+  "weapon_c/battle_axe.jpg": {
+    "itemId": 160,
+    "priceAdena": 100000000
+  },
+  "weapon_c/berserker_blade.jpg": {
+    "itemId": 5286,
+    "priceAdena": 100000000
+  },
+  "weapon_c/big_hammer.jpg": {
+    "itemId": 89,
+    "priceAdena": 80000000
+  },
+  "weapon_c/crystal_dagger.jpg": {
+    "itemId": 228,
+    "priceAdena": 70000000
+  },
+  "weapon_c/dark_screamer.jpg": {
+    "itemId": 233,
+    "priceAdena": 75000000
+  },
+  "weapon_c/demon_s_staff.jpg": {
+    "itemId": 206,
+    "priceAdena": 110000000
+  },
+  "weapon_c/dwarven_hammer.jpg": {
+    "itemId": 7897,
+    "priceAdena": 85000000
+  },
+  "weapon_c/ecliptic_sword.jpg": {
+    "itemId": 7888,
+    "priceAdena": 80000000
+  },
+  "weapon_c/eminence_bow.jpg": {
+    "itemId": 286,
+    "priceAdena": 85000000
+  },
+  "weapon_c/fisted_blade.jpg": {
+    "itemId": 265,
+    "priceAdena": 70000000
+  },
+  "weapon_c/great_pata.jpg": {
+    "itemId": 266,
+    "priceAdena": 75000000
+  },
+  "weapon_c/heavy_doom_axe.jpg": {
+    "itemId": 194,
+    "priceAdena": 110000000
+  },
+  "weapon_c/heavy_doom_hammer.jpg": {
+    "itemId": 191,
+    "priceAdena": 90000000
+  },
+  "weapon_c/heathens_book.jpg": {
+    "itemId": 326,
+    "priceAdena": 85000000
+  },
+  "weapon_c/homunkulus_s_sword.jpg": {
+    "itemId": 84,
+    "priceAdena": 100000000
+  },
+  "weapon_c/knuckle_duster.jpg": {
+    "itemId": 4233,
+    "priceAdena": 65000000
+  },
+  "weapon_c/orcish_poleaxe.jpg": {
+    "itemId": 299,
+    "priceAdena": 100000000
+  },
+  "weapon_c/pa_agrian_sword.jpg": {
+    "itemId": 7882,
+    "priceAdena": 90000000
+  },
+  "weapon_c/samurai_longsword.jpg": {
+    "itemId": 135,
+    "priceAdena": 90000000
+  },
+  "weapon_c/scorpion.jpg": {
+    "itemId": 301,
+    "priceAdena": 65000000
+  },
+  "weapon_c/war_axe.jpg": {
+    "itemId": 162,
+    "priceAdena": 100000000
+  },
+  "weapon_c/widow_maker.jpg": {
+    "itemId": 303,
+    "priceAdena": 110000000
+  },
+  "weapon_c/yaksa_mace.jpg": {
+    "itemId": 2503,
+    "priceAdena": 85000000
+  },
+  "weapon_d/atuba_hammer.jpg": {
+    "itemId": 187,
+    "priceAdena": 60000000
+  },
+  "weapon_d/baguette_s_dualsword.jpg": {
+    "itemId": 261,
+    "priceAdena": 55000000
+  },
+  "weapon_d/dark_elven_bow.jpg": {
+    "itemId": 277,
+    "priceAdena": 55000000
+  },
+  "weapon_d/knight_s_sword.jpg": {
+    "itemId": 128,
+    "priceAdena": 50000000
+  },
+  "weapon_d/shilen_knife.jpg": {
+    "itemId": 241,
+    "priceAdena": 45000000
+  },
+  "weapon_d/tomahawk.jpg": {
+    "itemId": 86,
+    "priceAdena": 50000000
+  },
+  "weapon_d/tome_of_blood.jpg": {
+    "itemId": 317,
+    "priceAdena": 40000000
+  },
+  "weapon_d/triple-edged_jamadhr.jpg": {
+    "itemId": 260,
+    "priceAdena": 45000000
+  },
+  "weapon_d/two_handed_sword.jpg": {
+    "itemId": 124,
+    "priceAdena": 65000000
+  },
+  "weapon_d/war_hammer.jpg": {
+    "itemId": 293,
+    "priceAdena": 65000000
+  },
+  "weapon_b/apprentices_spellbook.jpg": {
+    "itemId": 78,
+    "priceAdena": 40000000
+  },
+  "weapon_b/art_of_battle_axe.jpg": {
+    "itemId": 7834,
+    "priceAdena": 180000000
+  },
+  "weapon_b/baguette_s_dualsword.jpg": {
+    "itemId": 7792,
+    "priceAdena": 150000000
+  },
+  "weapon_b/bellion_cestus.jpg": {
+    "itemId": 7893,
+    "priceAdena": 130000000
+  },
+  "weapon_b/bow_of_peril.jpg": {
+    "itemId": 7891,
+    "priceAdena": 150000000
+  },
+  "weapon_b/dark_elven_long_bow.jpg": {
+    "itemId": 7890,
+    "priceAdena": 170000000
+  },
+  "weapon_b/deadman_s_glory.jpg": {
+    "itemId": 7791,
+    "priceAdena": 160000000
+  },
+  "weapon_b/great_axe.jpg": {
+    "itemId": 7894,
+    "priceAdena": 180000000
+  },
+  "weapon_b/great_sword.jpg": {
+    "itemId": 7895,
+    "priceAdena": 180000000
+  },
+  "weapon_b/guardian_sword.jpg": {
+    "itemId": 7883,
+    "priceAdena": 140000000
+  },
+  "weapon_b/hell_knife.jpg": {
+    "itemId": 7813,
+    "priceAdena": 120000000
+  },
+  "weapon_b/ice_storm_hammer.jpg": {
+    "itemId": 7900,
+    "priceAdena": 160000000
+  },
+  "weapon_b/kaim_vanul_s_bones.jpg": {
+    "itemId": 8340,
+    "priceAdena": 150000000
+  },
+  "weapon_b/kris.jpg": {
+    "itemId": 7783,
+    "priceAdena": 110000000
+  },
+  "weapon_b/lance.jpg": {
+    "itemId": 7784,
+    "priceAdena": 180000000
+  },
+  "weapon_b/spell_breaker.jpg": {
+    "itemId": 7892,
+    "priceAdena": 160000000
+  },
+  "weapon_b/spirit_s_staff.jpg": {
+    "itemId": 7889,
+    "priceAdena": 180000000
+  },
+  "weapon_b/staff_of_evil_spirits.jpg": {
+    "itemId": 7896,
+    "priceAdena": 160000000
+  },
+  "weapon_b/star_buster.jpg": {
+    "itemId": 7901,
+    "priceAdena": 140000000
+  },
+  "weapon_b/sword_of_damascus.jpg": {
+    "itemId": 79,
+    "priceAdena": 170000000
+  },
+  "weapon_b/sword_of_valhalla.jpg": {
+    "itemId": 7722,
+    "priceAdena": 170000000
+  },
+  "weapon_b/wizard_s_tear.jpg": {
+    "itemId": 8336,
+    "priceAdena": 180000000
+  },
+  "weapon_b/arthro_nail.jpg": {
+    "itemId": 7788,
+    "priceAdena": 120000000
+  },
+  "weapon_s/angel_slayer.jpg": {
+    "itemId": 20167,
+    "priceAdena": 38000000
+  },
+  "weapon_s/apprentices_spellbook.jpg": {
+    "itemId": 910201,
+    "priceAdena": 35000000
+  },
+  "weapon_s/arcana_mace.jpg": {
+    "itemId": 20170,
+    "priceAdena": 35000000
+  },
+  "weapon_s/baguette_s_dualsword.jpg": {
+    "itemId": 910202,
+    "priceAdena": 40000000
+  },
+  "weapon_s/basalt_battlehammer.jpg": {
+    "itemId": 20168,
+    "priceAdena": 35000000
+  },
+  "weapon_s/demon_splinter.jpg": {
+    "itemId": 20172,
+    "priceAdena": 40000000
+  },
+  "weapon_s/draconic_bow.jpg": {
+    "itemId": 20173,
+    "priceAdena": 40000000
+  },
+  "weapon_s/dragon_hunter_axe.jpg": {
+    "itemId": 20169,
+    "priceAdena": 40000000
+  },
+  "weapon_s/god_s_blade.jpg": {
+    "itemId": 82,
+    "priceAdena": 38000000
+  },
+  "weapon_s/heaven_s_divider.jpg": {
+    "itemId": 20166,
+    "priceAdena": 40000000
+  },
+  "weapon_s/imperial_staff.jpg": {
+    "itemId": 20171,
+    "priceAdena": 40000000
+  },
+  "weapon_s/saint_spear.jpg": {
+    "itemId": 20174,
+    "priceAdena": 40000000
+  },
+  "weapon_s/shining_bow.jpg": {
+    "itemId": 910203,
+    "priceAdena": 40000000
+  },
+  "arrom_ng/shield_leather_shield_i00_0.jpg": {
+    "itemId": 18,
+    "priceAdena": 50000
+  },
+  "arrom_d/shield_bronze_shield_i00_0.jpg": {
+    "itemId": 626,
+    "priceAdena": 250000
+  },
+  "arrom_d/shield_hoplon_i00_0.jpg": {
+    "itemId": 628,
+    "priceAdena": 400000
+  },
+  "arrom_d/shield_plate_shield_i00_0.jpg": {
+    "itemId": 2494,
+    "priceAdena": 650000
+  },
+  "arrom_c/shield_composite_shield_i00_0.jpg": {
+    "itemId": 107,
+    "priceAdena": 2500000
+  },
+  "arrom_c/shield_full_plate_shield_i00_0.jpg": {
+    "itemId": 2497,
+    "priceAdena": 4000000
+  },
+  "arrom_b/shield_avadon_shield_i00_0.jpg": {
+    "itemId": 673,
+    "priceAdena": 8500000
+  },
+  "arrom_b/shield_doom_shield_i00_0.jpg": {
+    "itemId": 110,
+    "priceAdena": 11500000
+  },
+  "arrom_b/shield_shield_of_pledge_i00_0.jpg": {
+    "itemId": 111,
+    "priceAdena": 18000000
+  },
+  "arrom_а/shield_dark_crystal_shield_i00_0.jpg": {
+    "itemId": 641,
+    "priceAdena": 24000000
+  },
+  "arrom_а/shield_shield_of_nightmare_i00_0.jpg": {
+    "itemId": 2498,
+    "priceAdena": 30000000
+  },
+  "arrom_s/imperial_crusader_shield.jpg": {
+    "itemId": 6377,
+    "priceAdena": 55000000
+  },
+  "earring_s/accessory_tateossian_earring_i00.png": {
+    "itemId": 858,
+    "priceAdena": 38000000
+  },
+  "earring_s/accessory_tateossian_necklace_i00.png": {
+    "itemId": 920,
+    "priceAdena": 55000000
+  },
+  "earring_s/accessory_tateossian_ring_i00.png": {
+    "itemId": 889,
+    "priceAdena": 30000000
+  },
+  "earring_a/accessary_cerberuss_earing_i00.png": {
+    "itemId": 872,
+    "priceAdena": 24000000
+  },
+  "earring_a/accessary_cerberuss_necklace_i00.png": {
+    "itemId": 934,
+    "priceAdena": 35000000
+  },
+  "earring_a/accessary_cerberuss_ring_i00.png": {
+    "itemId": 903,
+    "priceAdena": 19000000
+  },
+  "earring_a/accessary_earing_of_phantom_i00.png": {
+    "itemId": 868,
+    "priceAdena": 20000000
+  },
+  "earring_a/accessary_necklace_of_phantom_i00.png": {
+    "itemId": 930,
+    "priceAdena": 30000000
+  },
+  "earring_a/accessary_ring_of_phantom_i00.png": {
+    "itemId": 899,
+    "priceAdena": 16000000
+  },
+  "earring_a/accessary_inferno_earing_i00.png": {
+    "itemId": 862,
+    "priceAdena": 22000000
+  },
+  "earring_a/accessary_inferno_necklace_i00.png": {
+    "itemId": 924,
+    "priceAdena": 32000000
+  },
+  "earring_a/accessary_inferno_ring_i00.png": {
+    "itemId": 893,
+    "priceAdena": 18000000
+  },
+  "earring_a/accessary_phoenixs_earing_i00.png": {
+    "itemId": 871,
+    "priceAdena": 22000000
+  },
+  "earring_a/accessary_phoenixs_necklace_i00.png": {
+    "itemId": 933,
+    "priceAdena": 32000000
+  },
+  "earring_a/accessary_phoenixs_ring_i00.png": {
+    "itemId": 902,
+    "priceAdena": 18000000
+  },
+  "earring_a/accessary_inferno_earing_i02.png": {
+    "itemId": 6327,
+    "priceAdena": 27000000
+  },
+  "earring_a/accessary_inferno_necklace_i02.png": {
+    "itemId": 6326,
+    "priceAdena": 39000000
+  },
+  "earring_a/accessary_inferno_ring_i02.png": {
+    "itemId": 6328,
+    "priceAdena": 22000000
+  },
+  "earring_a/accessary_phoenixs_earing_i02.png": {
+    "itemId": 6324,
+    "priceAdena": 27000000
+  },
+  "earring_a/accessary_phoenixs_necklace_i02.png": {
+    "itemId": 6323,
+    "priceAdena": 39000000
+  },
+  "earring_a/accessary_phoenixs_ring_i02.png": {
+    "itemId": 6325,
+    "priceAdena": 22000000
+  },
+  "earring_b/accessary_adamantite_earing_i00.png": {
+    "itemId": 856,
+    "priceAdena": 8500000
+  },
+  "earring_b/accessary_adamantite_necklace_i00.png": {
+    "itemId": 918,
+    "priceAdena": 12500000
+  },
+  "earring_b/accessary_adamantite_ring_i00.png": {
+    "itemId": 887,
+    "priceAdena": 6500000
+  },
+  "earring_b/accessary_another_worlds_earing_i00.png": {
+    "itemId": 866,
+    "priceAdena": 9500000
+  },
+  "earring_b/accessary_another_worlds_necklace_i00.png": {
+    "itemId": 928,
+    "priceAdena": 14000000
+  },
+  "earring_b/accessary_another_worlds_ring_i00.png": {
+    "itemId": 897,
+    "priceAdena": 7500000
+  },
+  "earring_b/accessary_earing_of_black_ore_i00.png": {
+    "itemId": 864,
+    "priceAdena": 11000000
+  },
+  "earring_b/accessary_necklace_of_black_ore_i00.png": {
+    "itemId": 926,
+    "priceAdena": 16000000
+  },
+  "earring_b/accessary_ring_of_black_ore_i00.png": {
+    "itemId": 895,
+    "priceAdena": 8800000
+  },
+  "earring_b/accessary_elemental_earing_i00.png": {
+    "itemId": 867,
+    "priceAdena": 9000000
+  },
+  "earring_b/accessary_elemental_necklace_i00.png": {
+    "itemId": 929,
+    "priceAdena": 13500000
+  },
+  "earring_b/accessary_elemental_ring_i00.png": {
+    "itemId": 898,
+    "priceAdena": 7000000
+  },
+  "earring_b/accessary_paradia_earing_i00.png": {
+    "itemId": 861,
+    "priceAdena": 9500000
+  },
+  "earring_b/accessary_paradia_necklace_i00.png": {
+    "itemId": 923,
+    "priceAdena": 14000000
+  },
+  "earring_b/accessary_paradia_ring_i00.png": {
+    "itemId": 892,
+    "priceAdena": 7500000
+  },
+  "earring_b/accessary_sages_earing_i00.png": {
+    "itemId": 860,
+    "priceAdena": 8800000
+  },
+  "earring_b/accessary_sages_necklace_i00.png": {
+    "itemId": 922,
+    "priceAdena": 13000000
+  },
+  "earring_b/accessary_sages_ring_i00.png": {
+    "itemId": 891,
+    "priceAdena": 6800000
+  },
+  "earring_b/accessary_earing_of_assistance_i00.png": {
+    "itemId": 873,
+    "priceAdena": 8000000
+  },
+  "earring_b/accessary_necklace_of_assistance_i00.png": {
+    "itemId": 935,
+    "priceAdena": 12000000
+  },
+  "earring_b/accessary_ring_of_assistance_i00.png": {
+    "itemId": 904,
+    "priceAdena": 6000000
+  },
+  "earring_b/accessary_earing_of_blessing_i00.png": {
+    "itemId": 874,
+    "priceAdena": 8000000
+  },
+  "earring_b/accessary_necklace_of_blessing_i00.png": {
+    "itemId": 936,
+    "priceAdena": 12000000
+  },
+  "earring_b/accessary_ring_of_blessing_i00.png": {
+    "itemId": 905,
+    "priceAdena": 6000000
+  },
+  "earring_b/accessary_earing_of_grace_i00.png": {
+    "itemId": 869,
+    "priceAdena": 8000000
+  },
+  "earring_b/accessary_necklace_of_grace_i00.png": {
+    "itemId": 931,
+    "priceAdena": 12000000
+  },
+  "earring_b/accessary_ring_of_grace_i00.png": {
+    "itemId": 900,
+    "priceAdena": 6000000
+  },
+  "earring_b/accessary_earing_of_holy_spirit_i00.png": {
+    "itemId": 870,
+    "priceAdena": 8000000
+  },
+  "earring_b/accessary_necklace_of_holy_spirit_i00.png": {
+    "itemId": 932,
+    "priceAdena": 12000000
+  },
+  "earring_b/accessary_ring_of_holy_spirit_i00.png": {
+    "itemId": 901,
+    "priceAdena": 6000000
+  },
+  "earring_b/accessary_earing_of_mana_i00.png": {
+    "itemId": 859,
+    "priceAdena": 8000000
+  },
+  "earring_b/accessary_necklace_of_mana_i00.png": {
+    "itemId": 921,
+    "priceAdena": 12000000
+  },
+  "earring_b/accessary_ring_of_mana_i00.png": {
+    "itemId": 117,
+    "priceAdena": 6000000
+  },
+  "earring_b/accessary_earing_of_sola_eclipse_i00.png": {
+    "itemId": 863,
+    "priceAdena": 8000000
+  },
+  "earring_b/accessary_necklace_of_sola_eclipse_i00.png": {
+    "itemId": 925,
+    "priceAdena": 12000000
+  },
+  "earring_b/accessary_ring_of_sola_eclipse_i00.png": {
+    "itemId": 894,
+    "priceAdena": 6000000
+  },
+  "earring_b/accessary_earing_of_summons_i00.png": {
+    "itemId": 865,
+    "priceAdena": 8000000
+  },
+  "earring_b/accessary_necklace_of_summons_i00.png": {
+    "itemId": 927,
+    "priceAdena": 12000000
+  },
+  "earring_b/accessary_ring_of_summons_i00.png": {
+    "itemId": 896,
+    "priceAdena": 6000000
+  },
+  "earring_c/accessary_aquastone_necklace_i00.png": {
+    "itemId": 915,
+    "priceAdena": 3500000
+  },
+  "earring_c/accessary_aquastone_ring_i00.png": {
+    "itemId": 883,
+    "priceAdena": 1900000
+  },
+  "earring_c/accessary_blessed_earing_i00.png": {
+    "itemId": 857,
+    "priceAdena": 2700000
+  },
+  "earring_c/accessary_blessed_necklace_i00.png": {
+    "itemId": 919,
+    "priceAdena": 4000000
+  },
+  "earring_c/accessary_blessed_ring_i00.png": {
+    "itemId": 888,
+    "priceAdena": 2200000
+  },
+  "earring_c/accessary_earing_of_binding_i00.png": {
+    "itemId": 854,
+    "priceAdena": 2400000
+  },
+  "earring_c/accessary_necklace_of_binding_i00.png": {
+    "itemId": 119,
+    "priceAdena": 3600000
+  },
+  "earring_c/accessary_ring_of_binding_i00.png": {
+    "itemId": 886,
+    "priceAdena": 2000000
+  },
+  "earring_c/accessary_earing_of_protection_i00.png": {
+    "itemId": 853,
+    "priceAdena": 2800000
+  },
+  "earring_c/accessary_necklace_of_protection_i00.png": {
+    "itemId": 916,
+    "priceAdena": 4200000
+  },
+  "earring_c/accessary_ring_of_protection_i00.png": {
+    "itemId": 884,
+    "priceAdena": 2300000
+  },
+  "earring_c/accessary_moonstone_earing_i00.png": {
+    "itemId": 852,
+    "priceAdena": 2300000
+  },
+  "earring_c/accessary_nassens_earing_i00.png": {
+    "itemId": 855,
+    "priceAdena": 3000000
+  },
+  "earring_c/accessary_necklace_of_mermaid_i00.png": {
+    "itemId": 917,
+    "priceAdena": 3800000
+  },
+  "earring_c/accessary_ring_of_ages_i00.png": {
+    "itemId": 885,
+    "priceAdena": 1800000
+  },
+  "earring_d/accessary_elven_earing_i00.png": {
+    "itemId": 850,
+    "priceAdena": 800000
+  },
+  "earring_d/accessary_elven_necklace_i00.png": {
+    "itemId": 913,
+    "priceAdena": 1200000
+  },
+  "earring_d/accessary_elven_ring_i00.png": {
+    "itemId": 881,
+    "priceAdena": 650000
+  },
+  "earring_d/accessary_enchanted_earing_i00.png": {
+    "itemId": 848,
+    "priceAdena": 950000
+  },
+  "earring_d/accessary_enchanted_necklace_i00.png": {
+    "itemId": 911,
+    "priceAdena": 1400000
+  },
+  "earring_d/accessary_enchanted_ring_i00.png": {
+    "itemId": 879,
+    "priceAdena": 750000
+  },
+  "earring_d/accessary_onyxbeastseye_earing_i00.png": {
+    "itemId": 851,
+    "priceAdena": 700000
+  },
+  "earring_d/accessary_red_cresent_earing_i00.png": {
+    "itemId": 847,
+    "priceAdena": 600000
+  },
+  "earring_d/accessary_tigerseye_earing_i00.png": {
+    "itemId": 849,
+    "priceAdena": 550000
+  },
+  "earring_d/accessary_mithril_ring_i00.png": {
+    "itemId": 882,
+    "priceAdena": 500000
+  },
+  "earring_d/accessary_black_pearl_ring_i00.png": {
+    "itemId": 880,
+    "priceAdena": 450000
+  },
+  "earring_d/accessary_ring_of_devotion_i00.png": {
+    "itemId": 890,
+    "priceAdena": 550000
+  },
+  "earring_d/accessary_near_forest_necklace_i00.png": {
+    "itemId": 912,
+    "priceAdena": 900000
+  },
+  "earring_d/accessary_necklace_of_darkness_i00.png": {
+    "itemId": 914,
+    "priceAdena": 850000
+  },
+  "earring_d/accessary_necklace_of_devotion_i00.png": {
+    "itemId": 910,
+    "priceAdena": 950000
+  },
+  "earring_ng/accessary_apprentices_earing_i00.png": {
+    "itemId": 112,
+    "priceAdena": 90000
+  },
+  "earring_ng/accessary_catseye_earing_i00.png": {
+    "itemId": 845,
+    "priceAdena": 120000
+  },
+  "earring_ng/accessary_coral_earing_i00.png": {
+    "itemId": 846,
+    "priceAdena": 150000
+  },
+  "earring_ng/accessary_mage_earing_i00.png": {
+    "itemId": 113,
+    "priceAdena": 180000
+  },
+  "earring_ng/accessary_earing_of_strength_i00.png": {
+    "itemId": 114,
+    "priceAdena": 160000
+  },
+  "earring_ng/accessary_earing_of_wisdom_i00.png": {
+    "itemId": 115,
+    "priceAdena": 160000
+  },
+  "earring_ng/accessary_blue_diamond_necklace_i00.png": {
+    "itemId": 909,
+    "priceAdena": 300000
+  },
+  "earring_ng/accessary_necklace_of_anguish_i00.png": {
+    "itemId": 907,
+    "priceAdena": 180000
+  },
+  "earring_ng/accessary_necklace_of_courage_i00.png": {
+    "itemId": 1506,
+    "priceAdena": 220000
+  },
+  "earring_ng/accessary_necklace_of_knowledge_i00.png": {
+    "itemId": 906,
+    "priceAdena": 240000
+  },
+  "earring_ng/accessary_necklace_of_magic_i00.png": {
+    "itemId": 118,
+    "priceAdena": 260000
+  },
+  "earring_ng/accessary_necklace_of_valor_i00.png": {
+    "itemId": 1507,
+    "priceAdena": 220000
+  },
+  "earring_ng/accessary_necklace_of_wisdom_i00.png": {
+    "itemId": 908,
+    "priceAdena": 240000
+  },
+  "earring_ng/accessary_blue_coral_ring_i00.png": {
+    "itemId": 878,
+    "priceAdena": 80000
+  },
+  "earring_ng/accessary_magic_ring_i00.png": {
+    "itemId": 116,
+    "priceAdena": 120000
+  },
+  "earring_ng/accessary_ring_of_anguish_i00.png": {
+    "itemId": 876,
+    "priceAdena": 90000
+  },
+  "earring_ng/accessary_ring_of_firefly_i00.png": {
+    "itemId": 1509,
+    "priceAdena": 100000
+  },
+  "earring_ng/accessary_ring_of_knowledge_i00.png": {
+    "itemId": 875,
+    "priceAdena": 130000
+  },
+  "earring_ng/accessary_ring_of_raccoon_i00.png": {
+    "itemId": 1508,
+    "priceAdena": 90000
+  },
+  "earring_ng/accessary_ring_of_wisdom_i00.png": {
+    "itemId": 877,
+    "priceAdena": 130000
+  },
+  "consumable/greater_healing_potion": {
+    "itemId": 1539,
+    "priceAdena": 5000
+  },
+  "consumable/soulshot_ng": {
+    "itemId": 1835,
+    "priceAdena": 2000
+  }
+}
