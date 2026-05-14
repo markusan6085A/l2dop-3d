@@ -19,6 +19,7 @@ import {
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 const CRAFT_L2_PROFESSION = new Set([
   'dwarf_scavenger',
@@ -109,31 +110,29 @@ export async function performResourceCraft(
     if (lv < tierDef.unlockLevel) {
       throw new Error('level_too_low');
     }
-    let inv = parseInventory(char.inventoryJson);
-    try {
-      inv = applyRecipeQty(inv, recipe, q);
-    } catch (e) {
-      if (e instanceof Error && e.message === 'insufficient_materials') {
-        throw new Error('insufficient_materials');
+    const result = await mutateCharacterWithRevision(
+      trx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        let inv = parseInventory((current as CharacterRow).inventoryJson);
+        try {
+          inv = applyRecipeQty(inv, recipe, q);
+        } catch (e) {
+          if (e instanceof Error && e.message === 'insufficient_materials') {
+            throw new Error('insufficient_materials');
+          }
+          throw e;
+        }
+        return {
+          changed: true,
+          data: {
+            inventoryJson: inv as unknown as Prisma.InputJsonValue,
+          },
+        };
       }
-      throw e;
-    }
-
-    const updated = await trx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        inventoryJson: inv as unknown as Prisma.InputJsonValue,
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-    const next = await trx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(next as CharacterRow);
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }

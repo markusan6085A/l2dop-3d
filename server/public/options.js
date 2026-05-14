@@ -21,15 +21,6 @@
     if (!window.L2) return;
     var title = $('opt-page-title');
     if (title) title.textContent = L2.t('Опції', 'Опции');
-    var head = $('opt-lang-heading');
-    if (head) head.textContent = L2.t('Мова інтерфейсу', 'Язык интерфейса');
-    var hint = $('opt-lang-hint');
-    if (hint) {
-      hint.textContent = L2.t(
-        'Українська або російська підписи в інтерфейсі. Після зміни оновіть відкриті сторінки (F5), щоб заголовки й підказки підхопились.',
-        'Украинский или русский язык подписей. После смены обновите открытые страницы (F5).'
-      );
-    }
     var lang = L2.getUiLang();
     var uk = $('opt-lang-uk');
     var ru = $('opt-lang-ru');

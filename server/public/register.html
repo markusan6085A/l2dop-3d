@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Реєстрація — L2DOP</title>
+    <title>Реєстрація — L2MuLti</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,7 +12,7 @@
     />
     <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
   </head>
   <body class="l2-body l2-page-city l2-page-townlive l2-page-auth l2-app-l2-chrome">
     <div class="l2-shell">
@@ -62,8 +62,7 @@
           <div class="l2-townlive-column">
             <header class="l2-city-head" aria-label="Заголовок">
               <p class="l2-city-head-tagline">Онлайн гра Lineage II</p>
-              <h1 class="l2-logo">L2DOP</h1>
-              <p class="l2-auth-sub">Новий персонаж</p>
+              <h1 class="l2-logo">L2MuLti</h1>
             </header>
 
             <div class="l2-auth-back">
@@ -130,10 +129,13 @@
               </div>
             </div>
 
-            <nav class="l2-dock l2-dock--auth" aria-label="Навігація">
-              <a href="/">Головна</a>
-              <a href="/city.html">Місто</a>
-              <a href="#">Про сервер</a>
+            <nav
+              class="l2-dock l2-dock--auth"
+              data-i18n-attr="aria-label:auth_dock_aria"
+              aria-label="Швидкі посилання"
+            >
+              <a href="/" class="l2-dock-tile"><span data-i18n="auth_dock_home">Головна</span></a>
+              <a href="#" class="l2-dock-tile"><span data-i18n="auth_dock_about">Про сервер</span></a>
             </nav>
 
             <p class="footer-links">L2DOP</p>

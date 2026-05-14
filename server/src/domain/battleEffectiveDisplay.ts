@@ -140,7 +140,12 @@ export function effectiveBattlePatkDisplay(
   const fpMul = fpm !== undefined && fpm > 1 ? fpm : 1;
   const mys = jsonFiniteNum(mods?.mysticPatkBuffMul);
   const mysMul = mys !== undefined && mys > 1 ? mys : 1;
-  /** Як у `rollPlayerPhysicalDmg`: WC → Thrill → Rage → Frenzy → баф мага → стійка; далі +Snipe; потім ×Focus Power. Zealot — лише ASPD/біг/точн./крит, не P.Atk. */
+  /**
+   * ВАЖЛИВО: soulshot-множник не показуємо у статах.
+   * Соски мають впливати лише на фактичний кидок урону (`rollPlayerPhysicalDmg`),
+   * а не на відображуваний P.Atk у профілі/HUD.
+   */
+  /** Як у `rollPlayerPhysicalDmg` (без soulshot у display): WC → Thrill → Rage → Frenzy → баф мага → стійка; далі +Snipe; потім ×Focus Power. Zealot — лише ASPD/біг/точн./крит, не P.Atk. */
   let atkEff = Math.max(
     1,
     Math.floor(basePatk * wcEff * tfMul * rgMul * fzMul * mysMul * stanceM)
@@ -159,6 +164,10 @@ export function effectiveBattleMatkDisplay(
   const mods = resolveDisplayBattleMods(rawBattleJson, worldBattleMods);
   const mm = jsonFiniteNum(mods?.mysticMatkBuffMul);
   const mul = mm !== undefined && mm > 1 ? mm : 1;
+  /**
+   * ВАЖЛИВО: blessed spiritshot-множник не показуємо у статах.
+   * Він застосовується лише в бойовому розрахунку маг-урону, не в HUD M.Atk.
+   */
   return Math.max(1, Math.floor(baseMatk * mul));
 }
 

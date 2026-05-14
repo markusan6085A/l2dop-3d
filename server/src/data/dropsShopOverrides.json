@@ -1060,12 +1060,92 @@
     "itemId": 877,
     "priceAdena": 130000
   },
-  "consumable/greater_healing_potion": {
-    "itemId": 1539,
-    "priceAdena": 5000
+  "consumable/potion_lesser_healing": {
+    "itemId": 1060,
+    "priceAdena": 35
   },
-  "consumable/soulshot_ng": {
+  "consumable/potion_healing": {
+    "itemId": 1061,
+    "priceAdena": 85
+  },
+  "consumable/potion_mana_small": {
+    "itemId": 726,
+    "priceAdena": 90
+  },
+  "consumable/potion_mana_large": {
+    "itemId": 728,
+    "priceAdena": 2200
+  },
+  "consumable/blessed_spiritshot_ng": {
+    "itemId": 3947,
+    "priceAdena": 2400
+  },
+  "consumable/blessed_spiritshot_d": {
+    "itemId": 3948,
+    "priceAdena": 3800
+  },
+  "consumable/blessed_spiritshot_c": {
+    "itemId": 3949,
+    "priceAdena": 6600
+  },
+  "consumable/blessed_spiritshot_b": {
+    "itemId": 3950,
+    "priceAdena": 16500
+  },
+  "consumable/blessed_spiritshot_a": {
+    "itemId": 3951,
+    "priceAdena": 42000
+  },
+  "consumable/blessed_spiritshot_s": {
+    "itemId": 3952,
+    "priceAdena": 105000
+  },
+  "consumable/arrow_ng": {
+    "itemId": 17,
+    "priceAdena": 2
+  },
+  "consumable/arrow_d": {
+    "itemId": 1341,
+    "priceAdena": 3
+  },
+  "consumable/arrow_c": {
+    "itemId": 1342,
+    "priceAdena": 6
+  },
+  "consumable/arrow_b": {
+    "itemId": 1343,
+    "priceAdena": 8
+  },
+  "consumable/arrow_a": {
+    "itemId": 1344,
+    "priceAdena": 10
+  },
+  "consumable/arrow_s": {
+    "itemId": 1345,
+    "priceAdena": 11
+  },
+  "consumable/fighter_soulshot_ng": {
     "itemId": 1835,
     "priceAdena": 2000
+  },
+  "consumable/fighter_soulshot_d": {
+    "itemId": 1463,
+    "priceAdena": 3200
+  },
+  "consumable/fighter_soulshot_c": {
+    "itemId": 1464,
+    "priceAdena": 5500
+  },
+  "consumable/fighter_soulshot_b": {
+    "itemId": 1465,
+    "priceAdena": 14000
+  },
+  "consumable/fighter_soulshot_a": {
+    "itemId": 1466,
+    "priceAdena": 36000
+  },
+  "consumable/fighter_soulshot_s": {
+    "itemId": 1467,
+    "priceAdena": 88000
   }
 }

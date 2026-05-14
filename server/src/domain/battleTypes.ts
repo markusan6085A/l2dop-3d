@@ -159,6 +159,24 @@ export interface BattleBattleMods {
   mysticCastSpdBuffIconSkillId?: number;
   mysticPdefBuffIconSkillId?: number;
   mysticMdefBuffIconSkillId?: number;
+  /**
+   * Заряд душі воїна (фіз. соска): множник до фіз. атаки в цьому бою після активації на хотбарі.
+   * Списання патронів — при успішному фіз. попаданні по мобу.
+   */
+  fighterSoulshotPatkMul?: number;
+  fighterSoulshotItemId?: number;
+  /**
+   * Благословений заряд духу (маг): множник до M.Atk у магічних кидках після активації на хотбарі.
+   */
+  mysticBlessedSpiritshotMatkMul?: number;
+  mysticBlessedSpiritshotItemId?: number;
+}
+
+/** Бойове зілля: відновлення HP/MP імпульсами (див. `battleCombatPotions.ts`). */
+export interface BattlePotionHoTEntry {
+  remaining: number;
+  perTick: number;
+  nextTickAtMs: number;
 }
 
 /** Додаткові «поруч» для Вихору (36): той самий фіз. урон, що й по головній цілі. */
@@ -221,6 +239,11 @@ export interface BattleJsonState {
    */
   whirlwindExtras?: WhirlwindExtraMobJson[];
   /**
+   * Після успішного Вихору: скільки наступних базових автоатак мають cleave по `whirlwindExtras`.
+   * Зараз використовуємо 1 (лише наступна автоатака).
+   */
+  whirlwindNextAutoCleaveHits?: number;
+  /**
    * Timestamp (unix ms) останньої базової дії `attack` гравця у цьому бою.
    * Потрібен для «накопичувальної атаки»: кількість ударів = floor(dt / interval).
    */
@@ -230,6 +253,14 @@ export interface BattleJsonState {
    * Коли доходить до 0 — моб б'є у відповідь, а лічильник скидається у випадкове 1..3.
    */
   mobHitsUntilRetaliation?: number;
+  /**
+   * Зілля зцілення в бою: імпульси HP раз на 1 с після використання з хотбара.
+   */
+  battlePotionHpHoT?: BattlePotionHoTEntry;
+  /**
+   * Зілля мани в бою: імпульси MP раз на 1 с.
+   */
+  battlePotionMpHoT?: BattlePotionHoTEntry;
   /**
    * Sonic Focus (Gladiator/Duelist, id 8): поточна кількість накопичених зарядів.
    * Додається при касті Sonic Focus; витрачається при касті sonic-скілів
@@ -322,6 +353,12 @@ export type BattleActionId =
   | 'vengeance'
   /** Zealot (420) — орк: Destroyer, Titan, Tyrant, Grand Khavatari. */
   | 'zealot'
+  /** Тогл заряду душі (фіз.) з хотбара — лише для гілки воїна, перевірка itemId на сервері. */
+  | 'fighter_soulshot_toggle'
+  /** Тогл благословенного заряду духу з хотбара — лише для гілки мага. */
+  | 'mystic_spiritshot_toggle'
+  /** Використати бойове зілля з хотбара (HP/MP банки). */
+  | 'battle_potion_use'
   /** Gladiator / Duelist (гілка подвійних мечів, text-rpg + l2db). */
   | 'triple_slash'
   | 'double_sonic_slash'
@@ -341,6 +378,8 @@ export type BattleActionId =
  */
 export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'war_cry',
+  'fighter_soulshot_toggle',
+  'mystic_spiritshot_toggle',
   'dash',
   'rapid_shot',
   'snipe',

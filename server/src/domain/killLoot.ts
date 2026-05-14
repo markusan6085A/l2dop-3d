@@ -7,6 +7,8 @@ import {
 } from './spawnSyntheticRewards.js';
 import { rollProceduralResourceLoot } from './mobResourceLoot.js';
 import { dropDisplayNameShort } from '../utils/dropDisplayName.js';
+import { viewerMaySeeSpoilLoot } from './dwarfSpoilerLootGate.js';
+import type { Prisma } from '@prisma/client';
 
 function rollInt(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1));
@@ -19,6 +21,13 @@ function rollDropLine(d: DropEntry): number {
   if (!Number.isFinite(p) || p <= 0) return 0;
   if (Math.random() >= p) return 0;
   return rollInt(Math.max(0, d.min), Math.max(d.min, d.max));
+}
+
+/** Контекст персонажа для правил спойлу при перемозі в бою. */
+export interface KillLootCharacterContext {
+  race: string;
+  l2Profession: string;
+  skillsLearnedJson?: Prisma.JsonValue | null;
 }
 
 export interface KillLootItemLine {
@@ -44,13 +53,18 @@ export interface KillLootResult {
 export function rollKillLoot(
   npcId: number | null,
   spawnLevel: number,
-  inv: InventoryState
+  inv: InventoryState,
+  charCtx?: KillLootCharacterContext | null
 ): KillLootResult {
   let adena = BigInt(0);
   let next = inv;
   const itemLog: string[] = [];
   const adenaLog: string[] = [];
   const items: KillLootItemLine[] = [];
+
+  const allowKillSpoil =
+    charCtx != null &&
+    viewerMaySeeSpoilLoot(charCtx.race, charCtx.l2Profession, charCtx.skillsLearnedJson ?? null);
 
   const bag = ensureMobDropBag(npcId, spawnLevel);
   for (const d of bag.drops) {
@@ -67,7 +81,9 @@ export function rollKillLoot(
     }
   }
 
-  for (const line of rollProceduralResourceLoot(spawnLevel)) {
+  for (const line of rollProceduralResourceLoot(spawnLevel, {
+    allowSpoil: allowKillSpoil,
+  })) {
     next = addItemToBag(next, line.l2ItemId, line.qty);
     const prefix = line.spoil ? '(спойл) ' : '';
     itemLog.push(`${prefix}+${line.qty}× ${line.label}`);
@@ -79,17 +95,19 @@ export function rollKillLoot(
     });
   }
 
-  for (const d of bag.spoil) {
-    const qty = rollDropLine(d);
-    if (qty <= 0) continue;
-    if (d.kind === 'adena') {
-      adena += BigInt(qty);
-      adenaLog.push(`(спойл) +${qty} аден`);
-    } else if (d.l2ItemId) {
-      next = addItemToBag(next, d.l2ItemId, qty);
-      const label = dropDisplayNameShort(d.displayName ?? d.id, d.l2ItemId);
-      itemLog.push(`(спойл) +${qty}× ${label}`);
-      items.push({ l2ItemId: d.l2ItemId, qty, spoil: true, label });
+  if (allowKillSpoil) {
+    for (const d of bag.spoil) {
+      const qty = rollDropLine(d);
+      if (qty <= 0) continue;
+      if (d.kind === 'adena') {
+        adena += BigInt(qty);
+        adenaLog.push(`(спойл) +${qty} аден`);
+      } else if (d.l2ItemId) {
+        next = addItemToBag(next, d.l2ItemId, qty);
+        const label = dropDisplayNameShort(d.displayName ?? d.id, d.l2ItemId);
+        itemLog.push(`(спойл) +${qty}× ${label}`);
+        items.push({ l2ItemId: d.l2ItemId, qty, spoil: true, label });
+      }
     }
   }
 

@@ -1,11 +1,15 @@
 /**
  * Каталоги воїнів (elf / dark elf / orc / dwarf) з text-rpg → `*FighterSkillCatalog.generated.ts`.
- * Гном: підмножина HumanFighter (common + Rogue/TH/Adv + Warrior/Warlord/Dreadnought), профи — dwarf_*.
+ * Гном: лише `skills/classes/DwarvenFighter` (як у text-rpg `getSkillModulesForProfession`), без HumanFighter Warlord/Dreadnought.
  * Запуск з кореня репо: `npm run gen:race-fighter-skills`
  */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  EXCLUDE_COMMON_CRAFT_FROM_ELVEN_AND_DARK_FIGHTER,
+  EXCLUDE_DWARF_ONLY_CRAFT_BOOK_SKILLS,
+} from './magisterExcludedSkillIds.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEXT_RPG_ROOT = path.resolve(
@@ -128,25 +132,16 @@ const DWARF_ALL = set(
   'dwarf_maestro'
 );
 
+/** Верхні папки в text-rpg `classes/DwarvenFighter/` → l2dop `dwarf_*` (ланцюжок як у professionChain). */
 const DWARF_FOLDER_PROFS = {
   common: DWARF_ALL,
-  Rogue: set('dwarf_scavenger', 'dwarf_bounty_hunter', 'dwarf_fortune_seeker'),
-  TreasureHunter: set('dwarf_bounty_hunter', 'dwarf_fortune_seeker'),
-  Adventurer: set('dwarf_fortune_seeker'),
-  Warrior: set('dwarf_artisan', 'dwarf_warsmith', 'dwarf_maestro'),
-  Warlord: set('dwarf_warsmith', 'dwarf_maestro'),
-  Dreadnought: set('dwarf_maestro'),
+  Scavenger: set('dwarf_scavenger', 'dwarf_bounty_hunter', 'dwarf_fortune_seeker'),
+  BountyHunter: set('dwarf_bounty_hunter', 'dwarf_fortune_seeker'),
+  FortuneSeeker: set('dwarf_fortune_seeker'),
+  Artisan: set('dwarf_artisan', 'dwarf_warsmith', 'dwarf_maestro'),
+  Warsmith: set('dwarf_warsmith', 'dwarf_maestro'),
+  Maestro: set('dwarf_maestro'),
 };
-
-const DWARF_ALLOWED_TOP = new Set([
-  'common',
-  'Rogue',
-  'TreasureHunter',
-  'Adventurer',
-  'Warrior',
-  'Warlord',
-  'Dreadnought',
-]);
 
 function walkTs(root) {
   const out = [];
@@ -158,17 +153,6 @@ function walkTs(root) {
     } else if (/\.ts$/.test(ent.name) && ent.name !== 'index.ts') {
       out.push(p);
     }
-  }
-  return out;
-}
-
-/** Лише файли з дозволених верхніх папок (для гнома). */
-function walkTsDwarfHumanFighter(textRoot, allowedTop) {
-  const out = [];
-  for (const top of allowedTop) {
-    const d = path.join(textRoot, top);
-    if (!fs.existsSync(d)) continue;
-    out.push(...walkTs(d));
   }
   return out;
 }
@@ -261,14 +245,10 @@ function loadHumanFighterUkHints() {
   return byId;
 }
 
-function buildCatalog(
-  { textSubdir, folderProfs, allProfsSet, allowedTop, isDwarfSubset },
-  uk
-) {
+function buildCatalog({ textSubdir, folderProfs, allProfsSet, excludeSkillIds }, uk) {
+  const skipIds = excludeSkillIds ?? new Set();
   const textRoot = path.join(TEXT_RPG_ROOT, textSubdir);
-  const files = isDwarfSubset
-    ? walkTsDwarfHumanFighter(textRoot, [...allowedTop])
-    : walkTs(textRoot);
+  const files = walkTs(textRoot);
 
   const byId = new Map();
   for (const filePath of files) {
@@ -276,6 +256,7 @@ function buildCatalog(
     const idM = s.match(/\bid:\s*(\d+)/);
     if (!idM) continue;
     const id = Number(idM[1]);
+    if (skipIds.has(id)) continue;
     const nameM = s.match(/name:\s*"([^"]+)"/);
     const catM = s.match(/category:\s*"([^"]+)"/);
     const cdM = s.match(/cooldown:\s*(\d+)/);
@@ -400,8 +381,7 @@ const JOBS = [
     outFile: 'elvenFighterSkillCatalog.generated.ts',
     folderProfs: ELF_FOLDER_PROFS,
     allProfsSet: ELF_ALL,
-    allowedTop: null,
-    isDwarfSubset: false,
+    excludeSkillIds: EXCLUDE_COMMON_CRAFT_FROM_ELVEN_AND_DARK_FIGHTER,
   },
   {
     constPrefix: 'DARK_FIGHTER',
@@ -409,8 +389,7 @@ const JOBS = [
     outFile: 'darkFighterSkillCatalog.generated.ts',
     folderProfs: DARK_FOLDER_PROFS,
     allProfsSet: DARK_ALL,
-    allowedTop: null,
-    isDwarfSubset: false,
+    excludeSkillIds: EXCLUDE_COMMON_CRAFT_FROM_ELVEN_AND_DARK_FIGHTER,
   },
   {
     constPrefix: 'ORC_FIGHTER',
@@ -418,17 +397,15 @@ const JOBS = [
     outFile: 'orcFighterSkillCatalog.generated.ts',
     folderProfs: ORC_FOLDER_PROFS,
     allProfsSet: ORC_ALL,
-    allowedTop: null,
-    isDwarfSubset: false,
+    excludeSkillIds: new Set(),
   },
   {
     constPrefix: 'DWARF_FIGHTER',
-    textSubdir: 'HumanFighter',
+    textSubdir: 'DwarvenFighter',
     outFile: 'dwarfFighterSkillCatalog.generated.ts',
     folderProfs: DWARF_FOLDER_PROFS,
     allProfsSet: DWARF_ALL,
-    allowedTop: DWARF_ALLOWED_TOP,
-    isDwarfSubset: true,
+    excludeSkillIds: EXCLUDE_DWARF_ONLY_CRAFT_BOOK_SKILLS,
   },
 ];
 

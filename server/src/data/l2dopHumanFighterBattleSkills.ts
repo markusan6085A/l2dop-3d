@@ -7,6 +7,8 @@ import type { InventoryState } from './inventory.js';
 import { normalizeEqSlot } from './inventory.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import type { BattleActionId } from '../domain/battle.js';
+import type { GmShopGrade } from './l2dopGmShopCatalog.generated.js';
+import { gmShopGradeForWeaponItemId } from './l2dopItemGradeRank.js';
 import {
   isL2DarkElfRace,
   isL2ElfRace,
@@ -21,6 +23,17 @@ export function equippedWeaponKind(inv: InventoryState): string | undefined {
   const id = w?.itemId;
   if (typeof id !== 'number' || id <= 0) return undefined;
   return ITEM_CATALOG[id]?.weaponType;
+}
+
+/** Грейд зброї в правій руці — лише якщо предмет у каталозі як зброя (`weaponType`). */
+export function equippedWeaponGmGrade(
+  inv: InventoryState
+): GmShopGrade | undefined {
+  const w = normalizeEqSlot(inv.eq?.l1);
+  const id = w?.itemId;
+  if (typeof id !== 'number' || id <= 0) return undefined;
+  if (!ITEM_CATALOG[id]?.weaponType) return undefined;
+  return gmShopGradeForWeaponItemId(id);
 }
 
 /** Мін. рівень персонажа для Power Strike (перший ряд XML / магістр). */

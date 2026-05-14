@@ -265,6 +265,36 @@ export function normalizeBattleModsNumsInPlace(m: BattleBattleMods): void {
     else delete m.mysticMdefBuffIconSkillId;
   }
 
+  const ssN = jsonFiniteNum(m.fighterSoulshotPatkMul);
+  const ssItem = jsonFiniteNum(m.fighterSoulshotItemId);
+  if (
+    ssN === undefined ||
+    ssN <= 1 ||
+    ssItem === undefined ||
+    ssItem <= 0
+  ) {
+    delete m.fighterSoulshotPatkMul;
+    delete m.fighterSoulshotItemId;
+  } else {
+    m.fighterSoulshotPatkMul = ssN;
+    m.fighterSoulshotItemId = Math.floor(ssItem);
+  }
+
+  const msN = jsonFiniteNum(m.mysticBlessedSpiritshotMatkMul);
+  const msItem = jsonFiniteNum(m.mysticBlessedSpiritshotItemId);
+  if (
+    msN === undefined ||
+    msN <= 1 ||
+    msItem === undefined ||
+    msItem <= 0
+  ) {
+    delete m.mysticBlessedSpiritshotMatkMul;
+    delete m.mysticBlessedSpiritshotItemId;
+  } else {
+    m.mysticBlessedSpiritshotMatkMul = msN;
+    m.mysticBlessedSpiritshotItemId = Math.floor(msItem);
+  }
+
   const fzPatkN = jsonFiniteNum(m.frenzyBattlePatkMul);
   if (fzPatkN === undefined || fzPatkN <= 1) {
     delete m.frenzyBattlePatkMul;

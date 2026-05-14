@@ -2,6 +2,8 @@
  * Окрема сторінка телепорту: список пунктів англійською, POST /game/teleport.
  */
 (function () {
+  var teleportInFlight = false;
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -22,7 +24,39 @@
     }
   }
 
+  async function resyncCharacter(errEl) {
+    var t = localStorage.getItem('token');
+    if (!t || !window.L2) return null;
+    try {
+      var rr = await fetch('/character', {
+        headers: { Authorization: 'Bearer ' + t },
+      });
+      if (rr.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return null;
+      }
+      if (!rr.ok) return null;
+      var jj = await rr.json();
+      if (!jj || !jj.character) return null;
+      if (typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(jj.character);
+      }
+      if (typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(jj.character);
+      }
+      return jj.character;
+    } catch (_e) {
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent = 'Не вдалося синхронізувати персонажа.';
+      }
+      return null;
+    }
+  }
+
   async function doTeleport(teleportId, errEl, okEl) {
+    if (teleportInFlight) return;
     var t = localStorage.getItem('token');
     if (!t || !window.L2 || typeof L2.lastSnapshot !== 'function') return;
     var snap = L2.lastSnapshot();
@@ -41,51 +75,73 @@
       okEl.hidden = true;
       okEl.textContent = '';
     }
-    var r = await fetch('/game/teleport', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + t,
-      },
-      body: JSON.stringify({
-        teleportId: teleportId,
-        expectedRevision: snap.revision,
-      }),
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
-    }
-    if (r.status === 409) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent = 'Конфлікт ревізії — онови сторінку й спробуй ще раз.';
+    teleportInFlight = true;
+    try {
+      async function callTeleportWithRevision(revision) {
+        return fetch('/game/teleport', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + t,
+          },
+          body: JSON.stringify({
+            teleportId: teleportId,
+            expectedRevision: revision,
+          }),
+        });
       }
-      return;
-    }
-    if (!r.ok) {
-      var msg = 'Не вдалося телепортуватися.';
-      try {
-        var ej = await r.json();
-        if (ej && ej.messageUk) msg = ej.messageUk;
-      } catch (e) {
-        /* ignore */
+
+      var r = await callTeleportWithRevision(snap.revision);
+      if (r.status === 409) {
+        var synced = await resyncCharacter(errEl);
+        if (!synced || synced.revision == null) {
+          if (errEl) {
+            errEl.hidden = false;
+            errEl.textContent = 'Дані оновлено. Спробуй телепорт ще раз.';
+          }
+          return;
+        }
+        r = await callTeleportWithRevision(synced.revision);
       }
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent = msg;
+
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
       }
-      return;
-    }
-    var out = await r.json();
-    if (out.character && typeof L2.setLastSnapshot === 'function') {
-      L2.setLastSnapshot(out.character);
-    }
-    if (okEl) {
-      okEl.hidden = false;
-      okEl.textContent =
-        'Телепорт виконано — ти на карті в новій точці. Відкрий «Карту», щоб перевірити.';
+      if (r.status === 409) {
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent = 'Не вдалося виконати телепорт через конфлікт стану. Спробуй ще раз.';
+        }
+        return;
+      }
+      if (!r.ok) {
+        var msg = 'Не вдалося телепортуватися.';
+        try {
+          var ej = await r.json();
+          if (ej && ej.messageUk) msg = ej.messageUk;
+        } catch (e) {
+          /* ignore */
+        }
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent = msg;
+        }
+        return;
+      }
+
+      var out = await r.json();
+      if (out.character && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(out.character);
+      }
+      if (out.character && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(out.character);
+      }
+      await resyncCharacter(errEl);
+      window.location.href = '/map.html';
+    } finally {
+      teleportInFlight = false;
     }
   }
 
@@ -149,6 +205,9 @@
     }
     if (j.gearCatalog && window.L2 && typeof L2.mergeGearCatalog === 'function') {
       L2.mergeGearCatalog(j.gearCatalog);
+    }
+    if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
+      L2.mergeCraftResourceIconHints(j);
     }
 
     var locR = await fetch('/game/teleport/locations', {

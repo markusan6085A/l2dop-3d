@@ -5,9 +5,9 @@ import { isFighterClassBranch } from './l2dopHumanFighterBattleSkills.js';
 import { isL2HumanRace, isMysticClassBranch } from './l2dopHumanMysticBattleSkills.js';
 import { fighterCatalogEntryForRace } from './fighterSkillCatalog.byRace.js';
 import { filterLearnedSkillEntriesForProfession } from './humanFighterSkillCatalog.professionRules.js';
-import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
 import { filterLearnedMysticSkillEntriesForProfession } from './humanMysticSkillCatalog.learnedRanks.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
+import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import type { LearnedSkillEntry } from './humanFighterSkillCatalog.types.js';
 
 export function filterLearnedSkillEntriesForCharacter(
@@ -36,7 +36,7 @@ export function filterLearnedSkillEntriesForCharacter(
         canonicalBattleSkillId(e.battleId)
       );
       if (!cat) return false;
-      return mysticCatalogEntryVisibleForProfession(cat, p);
+      return raceFighterCatalogEntryVisibleForProfession(cat, p);
     });
   }
   return filterLearnedSkillEntriesForProfession(entries, l2Profession);

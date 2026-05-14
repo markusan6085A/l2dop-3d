@@ -1,21 +1,22 @@
 /**
- * Сторінка «Магістри»: тільки НПС з навчанням умінь (фільтр з /character/town).
+ * Сторінка «Магістри»: хаб навчання навичок лише через посилання magister.html
+ * (без заглушок «Вивчити…» без href і без квестів із town — одна поведінка для всіх пристроїв).
  */
 (function () {
   function $(id) {
     return document.getElementById(id);
   }
 
-  /** Хоч одна дія веде до магістра або явно про вивчення навичок. */
+  /** Лише дії з реальним переходом на сторінку магістра (як хаб навчання навичок на ПК). */
+  function isMagisterLearnHref(a) {
+    return !!(a && a.href && String(a.href).indexOf('magister.html') !== -1);
+  }
+
+  /** У списк потрапляє лише НПС з хоч одним робочим посиланням на magister.html (без текстових заглушок). */
   function npcTeachesSkills(n) {
     var acts = n.actions || [];
     for (var i = 0; i < acts.length; i++) {
-      var a = acts[i];
-      if (a.href && String(a.href).indexOf('magister.html') !== -1) return true;
-      var lab = String(a.labelUk || '').toLowerCase();
-      if (lab.indexOf('вивчити') !== -1) return true;
-      if (lab.indexOf('навич') !== -1) return true;
-      if (lab.indexOf('умінн') !== -1) return true;
+      if (isMagisterLearnHref(acts[i])) return true;
     }
     return false;
   }
@@ -32,6 +33,12 @@
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(c);
     }
+  }
+
+  function magisterLearnedHref(learnHref) {
+    var base = String(learnHref || '').trim();
+    if (!base) return '/char.html';
+    return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'mode=learned';
   }
 
   function renderSkillTrainerNpcs(payload) {
@@ -54,39 +61,34 @@
     npcs.forEach(function (n) {
       var li = document.createElement('li');
       li.className = 'l2-city-npc-card';
-      var head = document.createElement('div');
-      head.className = 'l2-city-npc-card__head';
-      var line = document.createElement('strong');
-      line.textContent = n.titleUk + ' · ' + n.nameUk;
-      head.appendChild(line);
-      if (n.l2NpcId != null) {
-        var sid = document.createElement('span');
-        sid.className = 'l2-city-npc-card__id';
-        sid.textContent = 'L2 npc ' + n.l2NpcId;
-        head.appendChild(sid);
-      }
-      li.appendChild(head);
       var actionsWrap = document.createElement('div');
       actionsWrap.className = 'l2-city-npc-card__actions';
       (n.actions || []).forEach(function (a) {
-        if (a.href) {
-          var link = document.createElement('a');
-          link.className = 'l2-town-btn';
-          link.href = a.href;
-          link.textContent = a.labelUk;
-          actionsWrap.appendChild(link);
-        } else {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'l2-town-btn';
-          btn.textContent = a.labelUk;
-          btn.setAttribute('data-stub', a.stubUk || 'Незабаром.');
-          btn.addEventListener('click', function () {
-            showStub(btn.getAttribute('data-stub') || '');
-          });
-          actionsWrap.appendChild(btn);
-        }
+        if (!isMagisterLearnHref(a)) return;
+        var link = document.createElement('a');
+        link.className = 'l2-town-btn';
+        link.href = a.href;
+        link.textContent = a.labelUk;
+        actionsWrap.appendChild(link);
+
+        var learnedLink = document.createElement('a');
+        learnedLink.className = 'l2-town-btn l2-town-btn--learned-skills';
+        learnedLink.href = magisterLearnedHref(a.href);
+        var icon = document.createElement('img');
+        icon.className = 'l2-town-btn__icon';
+        icon.alt = '';
+        icon.decoding = 'async';
+        icon.width = 18;
+        icon.height = 18;
+        icon.src = '/ref/77777.png';
+        icon.addEventListener('error', function () {
+          icon.src = '/icons/drops/other.svg';
+        });
+        learnedLink.appendChild(icon);
+        learnedLink.appendChild(document.createTextNode('Вивчені скіли'));
+        actionsWrap.appendChild(learnedLink);
       });
+      if (!actionsWrap.childNodes.length) return;
       li.appendChild(actionsWrap);
       list.appendChild(li);
     });

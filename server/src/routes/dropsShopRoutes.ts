@@ -34,6 +34,7 @@ export const dropsShopRoutes: FastifyPluginAsync = async (app) => {
       const b = body as Record<string, unknown>;
       const shopKey = b.shopKey;
       const er = b.expectedRevision;
+      const qtyRaw = b.qty ?? b.quantity;
       if (typeof shopKey !== 'string' || !shopKey.trim()) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -47,7 +48,7 @@ export const dropsShopRoutes: FastifyPluginAsync = async (app) => {
         });
       }
       try {
-        const character = await applyDropsShopPurchase(userId, shopKey, er);
+        const character = await applyDropsShopPurchase(userId, shopKey, er, qtyRaw);
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
@@ -80,6 +81,12 @@ export const dropsShopRoutes: FastifyPluginAsync = async (app) => {
               error: m,
               messageUk:
                 'Предмет не знайдено в ITEM_CATALOG — додай дані предмета на сервері.',
+            });
+          }
+          if (m === 'drops_shop_bad_qty') {
+            return reply.code(400).send({
+              error: m,
+              messageUk: 'Вкажи кількість від 1 до 9999.',
             });
           }
           if (m === 'drops_shop_category_mismatch') {

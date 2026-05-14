@@ -12,6 +12,7 @@ import {
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 //==== Warrior → Warlord / Dreadnought · Gladiator / Duelist ====
 
@@ -52,23 +53,14 @@ export async function performSecondProfessionHumanWarlord(
       throw new Error('profession_requires_level');
     }
 
-    const updated = await tx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        l2Profession: 'human_warlord',
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const next = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(next as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({ changed: true, data: { l2Profession: 'human_warlord' } })
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
@@ -109,23 +101,14 @@ export async function performThirdProfessionHumanDreadnought(
       throw new Error('profession_requires_level');
     }
 
-    const updated = await tx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        l2Profession: 'human_dreadnought',
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const next = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(next as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({ changed: true, data: { l2Profession: 'human_dreadnought' } })
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
@@ -167,23 +150,14 @@ export async function performSecondProfessionHumanGladiator(
       throw new Error('profession_requires_level');
     }
 
-    const updated = await tx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        l2Profession: 'human_gladiator',
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const next = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(next as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({ changed: true, data: { l2Profession: 'human_gladiator' } })
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
@@ -224,22 +198,13 @@ export async function performThirdProfessionHumanDuelist(
       throw new Error('profession_requires_level');
     }
 
-    const updated = await tx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        l2Profession: 'human_duelist',
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const next = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(next as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({ changed: true, data: { l2Profession: 'human_duelist' } })
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }

@@ -44,9 +44,17 @@ function clampRank(battleId: string, level: number): number {
 export function learnedPassivesBuffDelta(
   entries: LearnedSkillEntry[],
   inv: InventoryState,
-  l2Profession: string
+  l2Profession: string,
+  currentHp?: number,
+  currentMaxHp?: number
 ): Partial<L2dopCombatBuffModifiers> {
   const prof = String(l2Profession || '').trim() || 'human_fighter';
+  const hp = typeof currentHp === 'number' && Number.isFinite(currentHp) ? currentHp : undefined;
+  const maxHp =
+    typeof currentMaxHp === 'number' && Number.isFinite(currentMaxHp) && currentMaxHp > 0
+      ? currentMaxHp
+      : undefined;
+  const hpRatio = hp != null && maxHp != null ? hp / maxHp : undefined;
 
   let acc: L2dopCombatBuffModifiers = neutralCombatBuffs();
 
@@ -60,6 +68,13 @@ export function learnedPassivesBuffDelta(
     const r = clampRank(e.battleId, e.level);
     const row = TEXT_RPG_PASSIVE_BY_BATTLE_ID.get(bid);
     if (!row) continue;
+    /**
+     * Final Frenzy (290): пасив має діяти лише на low HP (Interlude, <=30% HP),
+     * а не постійно.
+     */
+    if (row.l2SkillId === 290) {
+      if (hpRatio == null || hpRatio > 0.3 + 1e-9) continue;
+    }
 
     if (row.l2SkillId === 142) {
       const d = textRpgWeaponMastery142Delta(row, r);

@@ -45,6 +45,7 @@ import { parseInventory } from '../data/inventory.js';
 import { normalizeLearnedSkillsJson } from '../data/humanFighterSkillCatalog.js';
 import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 export type ToggleSelfStanceError =
   | 'no_character'
@@ -184,19 +185,20 @@ export async function toggleSelfStance(
       expiresAt: nowMs + WORLD_COMBAT_MAX_MS,
     };
 
-    const upd: Prisma.CharacterUncheckedUpdateManyInput = {
-      worldCombatStateJson: JSON.parse(
-        JSON.stringify(nextWorld)
-      ) as unknown as Prisma.InputJsonValue,
-      revision: { increment: 1 },
-    };
-    const updated = await tx.character.updateMany({
-      where: { id: char.id, userId, revision: expectedRevision },
-      data: upd,
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const next = await tx.character.findUniqueOrThrow({ where: { id: char.id } });
-    return toSnapshot(next as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({
+        changed: true,
+        data: {
+          worldCombatStateJson: JSON.parse(
+            JSON.stringify(nextWorld)
+          ) as unknown as Prisma.InputJsonValue,
+        } as Prisma.CharacterUpdateManyMutationInput,
+      })
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }

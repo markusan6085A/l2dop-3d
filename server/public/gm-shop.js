@@ -2,7 +2,7 @@
  * Магазин екіпу: GET /game/drops-shop.
  * Ряд 1: Зброя / Щити / Броня / Аксесуари / Розхідники.
  * Ряд 2: грейд NG…S для обраної вкладки.
- * Ряд 3: підтип лише для Зброя / Броня / Аксесуарів (у інших вкладках приховано).
+ * Ряд 3: підтип для Зброя / Броня / Аксесуари / Розхідники (інші вкладки — приховано).
  */
 (function () {
   var SS_UI = 'drops-shop-ui';
@@ -68,6 +68,16 @@
     ring: 'Кільця',
   };
 
+  /** Підвкладки «Розхідники» (відповідає `consumableSubtype` у відповіді API). */
+  var CONSUMABLE_SUB_KEYS = ['all', 'vials', 'arrows', 'charges'];
+
+  var CONSUMABLE_SUB_LABEL_UK = {
+    all: 'Усі',
+    vials: 'Банки',
+    arrows: 'Стріли',
+    charges: 'Заряди',
+  };
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -79,6 +89,28 @@
     } catch (_) {
       return String(s);
     }
+  }
+
+  function resolveShopItemIcon(it) {
+    var fallback = (it && it.iconUrl) || '/icons/drops/other.svg';
+    var id =
+      it && it.previewItemId != null
+        ? it.previewItemId
+        : it && it.itemId != null
+          ? it.itemId
+          : 0;
+    if (window.L2 && typeof window.L2.rememberItemIconHint === 'function') {
+      if (it && it.itemId != null && it.iconUrl) {
+        window.L2.rememberItemIconHint(it.itemId, it.iconUrl);
+      }
+      if (it && it.previewItemId != null && it.iconUrl) {
+        window.L2.rememberItemIconHint(it.previewItemId, it.iconUrl);
+      }
+    }
+    if (window.L2 && typeof window.L2.resolveItemIconUrl === 'function') {
+      return window.L2.resolveItemIconUrl(id, fallback);
+    }
+    return fallback;
   }
 
   var STATS_MODAL_ID = 'l2-drops-shop-stats-modal';
@@ -154,6 +186,293 @@
     return el;
   }
 
+  var BUY_QTY_MODAL_ID = 'l2-drops-shop-buy-qty-modal';
+  var buyQtyKeybound = false;
+
+  function closeBuyQtyModal() {
+    var el = $(BUY_QTY_MODAL_ID);
+    if (!el || el.hidden) return;
+    el.hidden = true;
+    try {
+      document.body.style.overflow = '';
+    } catch (_) {}
+    if (buyQtyKeybound) {
+      document.removeEventListener('keydown', buyQtyEsc);
+      buyQtyKeybound = false;
+    }
+  }
+
+  function buyQtyEsc(e) {
+    if (e.key === 'Escape') closeBuyQtyModal();
+  }
+
+  function ensureBuyQtyModalDom() {
+    var el = $(BUY_QTY_MODAL_ID);
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = BUY_QTY_MODAL_ID;
+    el.className = 'l2-drops-stats-modal';
+    el.hidden = true;
+    var bd = document.createElement('button');
+    bd.type = 'button';
+    bd.className = 'l2-drops-stats-modal__backdrop';
+    bd.setAttribute('aria-label', 'Закрити');
+    bd.addEventListener('click', closeBuyQtyModal);
+    var pan = document.createElement('div');
+    pan.className = 'l2-drops-stats-modal__panel';
+    pan.setAttribute('role', 'dialog');
+    pan.setAttribute('aria-modal', 'true');
+    pan.setAttribute('aria-labelledby', 'l2-drops-buy-qty-title');
+    var clo = document.createElement('button');
+    clo.type = 'button';
+    clo.className = 'l2-drops-stats-modal__close';
+    clo.setAttribute('aria-label', 'Закрити');
+    clo.appendChild(document.createTextNode('\u00D7'));
+    clo.addEventListener('click', closeBuyQtyModal);
+    var head = document.createElement('div');
+    head.className = 'l2-drops-stats-modal__head';
+    var tit = document.createElement('div');
+    tit.className = 'l2-drops-stats-modal__title';
+    tit.id = 'l2-drops-buy-qty-title';
+    tit.setAttribute('data-buy-title', '');
+    head.appendChild(tit);
+    var unit = document.createElement('p');
+    unit.className = 'l2-drops-stats-modal__hint';
+    unit.setAttribute('data-buy-unit', '');
+    unit.style.marginTop = '6px';
+    var lab = document.createElement('label');
+    lab.className = 'l2-drops-buy-qty-label';
+    lab.setAttribute('for', 'l2-drops-buy-qty-input');
+    lab.textContent = 'Кількість';
+    var inp = document.createElement('input');
+    inp.type = 'number';
+    inp.id = 'l2-drops-buy-qty-input';
+    inp.className = 'l2-drops-buy-qty-input';
+    inp.min = '1';
+    inp.max = '9999';
+    inp.step = '1';
+    inp.value = '1';
+    inp.setAttribute('data-buy-qty-input', '');
+    var total = document.createElement('p');
+    total.className = 'l2-drops-stats-modal__hint';
+    total.setAttribute('data-buy-total', '');
+    total.style.marginTop = '4px';
+    var row = document.createElement('div');
+    row.className = 'l2-drops-buy-qty-actions';
+    var cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'l2-drops-buy-qty-btn l2-drops-buy-qty-btn--muted';
+    cancel.textContent = 'Скасувати';
+    cancel.addEventListener('click', closeBuyQtyModal);
+    var ok = document.createElement('button');
+    ok.type = 'button';
+    ok.className = 'l2-drops-buy-qty-btn l2-drops-buy-qty-btn--primary';
+    ok.textContent = 'Купити';
+    ok.setAttribute('data-buy-qty-confirm', '');
+    row.appendChild(cancel);
+    row.appendChild(ok);
+    pan.appendChild(clo);
+    pan.appendChild(head);
+    pan.appendChild(unit);
+    pan.appendChild(lab);
+    pan.appendChild(inp);
+    pan.appendChild(total);
+    pan.appendChild(row);
+    el.appendChild(bd);
+    el.appendChild(pan);
+    document.body.appendChild(el);
+    return el;
+  }
+
+  /**
+   * POST /game/drops-shop/buy; lockElts — елементи, які блокувати під час запиту.
+   * closeModalOnSuccess — закрити модалку кількості; focusAfterBtn — повернути фокус після успіху.
+   */
+  function performDropsShopBuy(
+    it,
+    qty,
+    snap,
+    tok,
+    rerender,
+    metaEl,
+    mount,
+    shopData,
+    lockElts,
+    closeModalOnSuccess,
+    focusAfterBtn
+  ) {
+    var lock =
+      lockElts == null ? [] : Array.isArray(lockElts) ? lockElts : [lockElts];
+    function setLocked(dis) {
+      for (var li = 0; li < lock.length; li++) {
+        if (lock[li]) lock[li].disabled = dis;
+      }
+    }
+    setLocked(true);
+    fetch('/game/drops-shop/buy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + tok,
+      },
+      body: JSON.stringify({
+        shopKey: it.shopKey,
+        expectedRevision: snap.revision,
+        qty: qty,
+      }),
+    })
+      .then(function (r) {
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return null;
+        }
+        return r.json().then(function (j) {
+          return { r: r, j: j };
+        });
+      })
+      .then(function (pair) {
+        setLocked(false);
+        if (!pair) return;
+        if (pair.r.status === 409) {
+          return fetch('/character', {
+            headers: { Authorization: 'Bearer ' + tok },
+          })
+            .then(function (rx) {
+              return rx.ok ? rx.json() : null;
+            })
+            .then(function (jch) {
+              if (jch && jch.character && window.L2) {
+                if (window.L2.setLastSnapshot)
+                  window.L2.setLastSnapshot(jch.character);
+                if (typeof window.L2.applyHudFromSnapshot === 'function')
+                  window.L2.applyHudFromSnapshot(jch.character);
+              }
+              alert(
+                pair.j.messageUk ||
+                  'Конфлікт ревізії — дані оновлено, спробуй ще раз.'
+              );
+              if (jch && jch.character)
+                rerender(metaEl, mount, shopData, jch.character);
+            });
+        }
+        if (!pair.r.ok) {
+          var msgUk =
+            (pair.j && pair.j.messageUk) ||
+            (pair.j && pair.j.error) ||
+            pair.r.status;
+          alert(String(msgUk));
+          return;
+        }
+        if (closeModalOnSuccess) closeBuyQtyModal();
+        var nc = pair.j.character;
+        if (window.L2 && window.L2.setLastSnapshot)
+          window.L2.setLastSnapshot(nc);
+        if (
+          window.L2 &&
+          typeof window.L2.applyHudFromSnapshot === 'function'
+        )
+          window.L2.applyHudFromSnapshot(nc);
+        rerender(metaEl, mount, shopData, nc);
+        cloFocus(focusAfterBtn);
+      })
+      .catch(function () {
+        setLocked(false);
+        alert('Помилка мережі.');
+      });
+  }
+
+  function openDropsShopBuyQty(
+    it,
+    snap,
+    tok,
+    rerender,
+    metaEl,
+    mount,
+    shopData,
+    srcBtn
+  ) {
+    var modal = ensureBuyQtyModalDom();
+    var titleEl = modal.querySelector('[data-buy-title]');
+    var unitEl = modal.querySelector('[data-buy-unit]');
+    var inp = modal.querySelector('[data-buy-qty-input]');
+    var totalEl = modal.querySelector('[data-buy-total]');
+    var okBtn = modal.querySelector('[data-buy-qty-confirm]');
+    if (
+      !titleEl ||
+      !unitEl ||
+      !inp ||
+      !totalEl ||
+      !okBtn ||
+      !snap ||
+      snap.revision == null
+    ) {
+      return;
+    }
+    titleEl.textContent = it.nameUk || it.shopKey || '';
+    var unitTxt =
+      it.priceAdena != null
+        ? fmtAdena(String(it.priceAdena)) + ' аден.'
+        : '—';
+    unitEl.textContent = 'За одиницю: ' + unitTxt;
+    inp.value = '1';
+
+    function syncTotal() {
+      var raw = parseInt(String(inp.value || '1'), 10);
+      var q = Number.isFinite(raw) && raw >= 1 ? raw : 1;
+      if (it.priceAdena == null) {
+        totalEl.textContent = '—';
+        return;
+      }
+      try {
+        var t = BigInt(String(it.priceAdena)) * BigInt(q);
+        totalEl.textContent =
+          'Разом: ' + fmtAdena(String(t)) + ' аден.';
+      } catch (_) {
+        totalEl.textContent = '—';
+      }
+    }
+
+    inp.oninput = syncTotal;
+    syncTotal();
+
+    okBtn.onclick = function () {
+      var rawQ = parseInt(String(inp.value || '1'), 10);
+      var qty =
+        Number.isFinite(rawQ) && rawQ >= 1 && rawQ <= 9999 ? rawQ : NaN;
+      if (!Number.isFinite(qty)) {
+        alert('Вкажи кількість від 1 до 9999.');
+        return;
+      }
+      performDropsShopBuy(
+        it,
+        qty,
+        snap,
+        tok,
+        rerender,
+        metaEl,
+        mount,
+        shopData,
+        okBtn,
+        true,
+        srcBtn
+      );
+    };
+
+    modal.hidden = false;
+    try {
+      document.body.style.overflow = 'hidden';
+    } catch (_) {}
+    if (!buyQtyKeybound) {
+      document.addEventListener('keydown', buyQtyEsc);
+      buyQtyKeybound = true;
+    }
+    try {
+      inp.focus();
+      inp.select();
+    } catch (_) {}
+  }
+
   function cloFocus(btn) {
     try {
       if (btn && btn.focus) btn.focus();
@@ -169,7 +488,7 @@
 
     titleEl.textContent = it.nameUk || it.shopKey || '';
     if (ico) {
-      ico.src = it.iconUrl || '/icons/drops/other.svg';
+      ico.src = resolveShopItemIcon(it);
       ico.onerror = function () {
         ico.src = '/icons/drops/other.svg';
       };
@@ -314,7 +633,16 @@
             o.asub && typeof o.asub === 'string' ? o.asub : 'all';
           var jsub =
             o.jsub && typeof o.jsub === 'string' ? o.jsub : 'all';
-          return { cat: o.cat, grade: o.grade, wsub: wsub, asub: asub, jsub: jsub };
+          var csub =
+            o.csub && typeof o.csub === 'string' ? o.csub : 'all';
+          return {
+            cat: o.cat,
+            grade: o.grade,
+            wsub: wsub,
+            asub: asub,
+            jsub: jsub,
+            csub: csub,
+          };
         }
       }
       var legacy = sessionStorage.getItem('drops-shop-grade');
@@ -325,13 +653,21 @@
           wsub: 'all',
           asub: 'all',
           jsub: 'all',
+          csub: 'all',
         };
       }
     } catch (_) {}
     return null;
   }
 
-  function saveUiState(cat, grade, weaponSub, armorSub, jewelrySub) {
+  function saveUiState(
+    cat,
+    grade,
+    weaponSub,
+    armorSub,
+    jewelrySub,
+    consumableSub
+  ) {
     try {
       if (typeof sessionStorage !== 'undefined') {
         var sto = {
@@ -340,6 +676,7 @@
           wsub: weaponSub != null ? weaponSub : 'all',
           asub: armorSub != null ? armorSub : 'all',
           jsub: jewelrySub != null ? jewelrySub : 'all',
+          csub: consumableSub != null ? consumableSub : 'all',
         };
         sessionStorage.setItem(SS_UI, JSON.stringify(sto));
       }
@@ -365,7 +702,8 @@
     shopData,
     metaEl,
     mount,
-    rerender
+    rerender,
+    shopCategory
   ) {
     var rev = snap && snap.revision != null ? snap.revision : null;
     for (var ii = 0; ii < items.length; ii++) {
@@ -381,7 +719,7 @@
         var img = document.createElement('img');
         img.alt = '';
         img.className = 'l2-gm-shop-icon-img';
-        img.src = it.iconUrl || '/icons/drops/other.svg';
+        img.src = resolveShopItemIcon(it);
         img.addEventListener('error', function () {
           this.src = '/icons/drops/other.svg';
         });
@@ -412,78 +750,33 @@
         btn.addEventListener('click', function () {
           if (btn.disabled) return;
           var tok = localStorage.getItem('token');
-          btn.disabled = true;
-          fetch('/game/drops-shop/buy', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + tok,
-            },
-            body: JSON.stringify({
-              shopKey: it.shopKey,
-              expectedRevision: rev,
-            }),
-          })
-            .then(function (r) {
-              if (r.status === 401) {
-                localStorage.removeItem('token');
-                window.location.href = '/';
-                return null;
-              }
-              return r.json().then(function (j) {
-                return { r: r, j: j };
-              });
-            })
-            .then(function (pair) {
-              if (!pair) return;
-              if (pair.r.status === 409) {
-                return fetch('/character', {
-                  headers: { Authorization: 'Bearer ' + tok },
-                })
-                  .then(function (rx) {
-                    return rx.ok ? rx.json() : null;
-                  })
-                  .then(function (jch) {
-                    if (jch && jch.character && window.L2) {
-                      if (window.L2.setLastSnapshot)
-                        window.L2.setLastSnapshot(jch.character);
-                      if (
-                        typeof window.L2.applyHudFromSnapshot === 'function'
-                      )
-                        window.L2.applyHudFromSnapshot(jch.character);
-                    }
-                    btn.disabled = false;
-                    alert(
-                      pair.j.messageUk ||
-                        'Конфлікт ревізії — дані оновлено, спробуй ще раз.'
-                    );
-                    if (jch && jch.character)
-                      rerender(metaEl, mount, shopData, jch.character);
-                  });
-              }
-              if (!pair.r.ok) {
-                btn.disabled = false;
-                var msgUk =
-                  (pair.j && pair.j.messageUk) ||
-                  (pair.j && pair.j.error) ||
-                  pair.r.status;
-                alert(String(msgUk));
-                return;
-              }
-              var nc = pair.j.character;
-              if (window.L2 && window.L2.setLastSnapshot)
-                window.L2.setLastSnapshot(nc);
-              if (
-                window.L2 &&
-                typeof window.L2.applyHudFromSnapshot === 'function'
-              )
-                window.L2.applyHudFromSnapshot(nc);
-              rerender(metaEl, mount, shopData, nc);
-            })
-            .catch(function () {
-              btn.disabled = false;
-              alert('Помилка мережі.');
-            });
+          if (!tok) return;
+          if (shopCategory === 'consumable') {
+            openDropsShopBuyQty(
+              it,
+              snap,
+              tok,
+              rerender,
+              metaEl,
+              mount,
+              shopData,
+              btn
+            );
+            return;
+          }
+          performDropsShopBuy(
+            it,
+            1,
+            snap,
+            tok,
+            rerender,
+            metaEl,
+            mount,
+            shopData,
+            btn,
+            false,
+            btn
+          );
         });
 
         row.appendChild(iconWrap);
@@ -580,6 +873,13 @@
     jewelryKindBar.setAttribute('aria-label', 'Тип аксесуара');
     jewelryKindBar.hidden = true;
 
+    var consumableSubBar = document.createElement('div');
+    consumableSubBar.className =
+      'l2-drops-shop-tablist l2-drops-shop-tablist--consumable-sub';
+    consumableSubBar.setAttribute('role', 'tablist');
+    consumableSubBar.setAttribute('aria-label', 'Підкатегорія розхідників');
+    consumableSubBar.hidden = true;
+
     var panelWrap = document.createElement('div');
     panelWrap.className = 'l2-drops-shop-panels';
 
@@ -601,6 +901,12 @@
     var stateJewelrySub =
       saved && saved.jsub && JEWELRY_SUB_KEYS.indexOf(saved.jsub) !== -1
         ? saved.jsub
+        : 'all';
+    var stateConsumableSub =
+      saved &&
+      saved.csub &&
+      CONSUMABLE_SUB_KEYS.indexOf(saved.csub) !== -1
+        ? saved.csub
         : 'all';
 
     function filterWeaponItems(master, subKey) {
@@ -670,6 +976,28 @@
       return outJ;
     }
 
+    function filterConsumableItems(master, subKey) {
+      if (
+        master.length &&
+        CONSUMABLE_SUB_KEYS.indexOf(subKey) === -1
+      )
+        subKey = 'all';
+      if (subKey === 'all') return master;
+      var outC = [];
+      for (var ci = 0; ci < master.length; ci++) {
+        var itc = master[ci];
+        var cs =
+          itc &&
+          itc.consumableSubtype != null &&
+          itc.consumableSubtype !== ''
+            ? itc.consumableSubtype
+            : null;
+        if (!cs) continue;
+        if (cs === subKey) outC.push(itc);
+      }
+      return outC;
+    }
+
     function paint() {
       var catUk = categoryUkFromData(gradesSorted, stateCat);
       var availGrades = gradesWithItemsForCategory(gradesSorted, stateCat);
@@ -686,9 +1014,11 @@
       weaponKindBar.innerHTML = '';
       armorPieceBar.innerHTML = '';
       jewelryKindBar.innerHTML = '';
+      consumableSubBar.innerHTML = '';
       weaponKindBar.hidden = stateCat !== 'weapon';
       armorPieceBar.hidden = stateCat !== 'armor';
       jewelryKindBar.hidden = stateCat !== 'earring';
+      consumableSubBar.hidden = stateCat !== 'consumable';
 
       if (!availGrades.length) {
         var emptyGr = document.createElement('p');
@@ -701,7 +1031,8 @@
           stateGrade,
           stateWeaponSub,
           stateArmorSub,
-          stateJewelrySub
+          stateJewelrySub,
+          stateConsumableSub
         );
         return;
       }
@@ -766,7 +1097,8 @@
                 stateGrade,
                 stateWeaponSub,
                 stateArmorSub,
-                stateJewelrySub
+                stateJewelrySub,
+                stateConsumableSub
               );
               paint();
             });
@@ -812,7 +1144,8 @@
                 stateGrade,
                 stateWeaponSub,
                 stateArmorSub,
-                stateJewelrySub
+                stateJewelrySub,
+                stateConsumableSub
               );
               paint();
             });
@@ -858,11 +1191,52 @@
                 stateGrade,
                 stateWeaponSub,
                 stateArmorSub,
-                stateJewelrySub
+                stateJewelrySub,
+                stateConsumableSub
               );
               paint();
             });
           })(jbtns[jb]);
+        }
+      } else if (stateCat === 'consumable') {
+        if (CONSUMABLE_SUB_KEYS.indexOf(stateConsumableSub) === -1) {
+          stateConsumableSub = 'all';
+        }
+        items = filterConsumableItems(itemsAll, stateConsumableSub);
+
+        for (var ci2 = 0; ci2 < CONSUMABLE_SUB_KEYS.length; ci2++) {
+          var ck = CONSUMABLE_SUB_KEYS[ci2];
+          var cbCons = document.createElement('button');
+          cbCons.type = 'button';
+          cbCons.className = 'l2-drops-shop-tab';
+          cbCons.setAttribute('role', 'tab');
+          cbCons.setAttribute('data-consumablesub', ck);
+          cbCons.textContent = CONSUMABLE_SUB_LABEL_UK[ck] || ck;
+          var onCs = ck === stateConsumableSub;
+          cbCons.setAttribute('aria-selected', onCs ? 'true' : 'false');
+          if (onCs) cbCons.classList.add('l2-drops-shop-tab--active');
+          consumableSubBar.appendChild(cbCons);
+        }
+
+        var consBtns =
+          consumableSubBar.querySelectorAll('[data-consumablesub]');
+        for (var ib = 0; ib < consBtns.length; ib++) {
+          (function (btnCons) {
+            btnCons.addEventListener('click', function () {
+              var csx = btnCons.getAttribute('data-consumablesub');
+              if (!csx) return;
+              stateConsumableSub = csx;
+              saveUiState(
+                stateCat,
+                stateGrade,
+                stateWeaponSub,
+                stateArmorSub,
+                stateJewelrySub,
+                stateConsumableSub
+              );
+              paint();
+            });
+          })(consBtns[ib]);
         }
       }
 
@@ -893,7 +1267,8 @@
           shopData,
           metaEl,
           mount,
-          render
+          render,
+          stateCat
         );
         pane.appendChild(list);
       }
@@ -904,7 +1279,8 @@
         stateGrade,
         stateWeaponSub,
         stateArmorSub,
-        stateJewelrySub
+        stateJewelrySub,
+        stateConsumableSub
       );
       var gb = gradeBar.querySelectorAll('.l2-drops-shop-tab');
       for (var b = 0; b < gb.length; b++) {
@@ -918,7 +1294,8 @@
               stateGrade,
               stateWeaponSub,
               stateArmorSub,
-              stateJewelrySub
+              stateJewelrySub,
+              stateConsumableSub
             );
             paint();
           });
@@ -967,7 +1344,8 @@
             stateGrade,
             stateWeaponSub,
             stateArmorSub,
-            stateJewelrySub
+            stateJewelrySub,
+            stateConsumableSub
           );
           syncCatTabs();
           paint();
@@ -980,13 +1358,15 @@
     mount.appendChild(weaponKindBar);
     mount.appendChild(armorPieceBar);
     mount.appendChild(jewelryKindBar);
+    mount.appendChild(consumableSubBar);
     mount.appendChild(panelWrap);
     saveUiState(
       stateCat,
       stateGrade,
       stateWeaponSub,
       stateArmorSub,
-      stateJewelrySub
+      stateJewelrySub,
+      stateConsumableSub
     );
     paint();
   }

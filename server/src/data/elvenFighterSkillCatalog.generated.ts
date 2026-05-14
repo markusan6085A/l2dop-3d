@@ -92,7 +92,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -168,7 +168,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -286,7 +286,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.2,
+    cooldownSec: 12,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -573,7 +573,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.5,
+    cooldownSec: 60,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -707,7 +707,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 11,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -986,7 +986,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.2,
+    cooldownSec: 3,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1265,7 +1265,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 3,
+    cooldownSec: 25,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1307,7 +1307,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1544,7 +1544,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 3.2,
+    cooldownSec: 25,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1630,7 +1630,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 2.5,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1910,7 +1910,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1,
+    cooldownSec: 3,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2189,7 +2189,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 11,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2216,7 +2216,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2350,7 +2350,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 3.2,
+    cooldownSec: 25,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2638,7 +2638,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2665,7 +2665,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2707,7 +2707,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2776,7 +2776,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2817,7 +2817,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2858,7 +2858,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2909,7 +2909,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2964,7 +2964,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 2,
+    cooldownSec: 60,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2994,7 +2994,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3281,7 +3281,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 3,
+    cooldownSec: 10,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3419,7 +3419,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "percent"
       }
     ],
-    cooldownSec: 3,
+    cooldownSec: 7,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3507,7 +3507,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 2,
+    cooldownSec: 40,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3551,7 +3551,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 1
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3587,7 +3587,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 20
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3627,7 +3627,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "percent"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3663,7 +3663,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 200
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3715,7 +3715,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3758,7 +3758,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3832,7 +3832,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 3
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3892,7 +3892,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3926,7 +3926,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4213,7 +4213,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4253,7 +4253,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4289,7 +4289,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 7
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4372,43 +4372,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 0
       }
     ],
-    cooldownSec: 0,
-    skipMobHp: true,
-    hideAtBaseFighterUntilFirstProf: false
-  },
-  {
-    battleId: "l2_172",
-    l2SkillId: 172,
-    minLevel: 1,
-    spCost: 0,
-    nameUk: "Common Craft",
-    hintUk: "Common Craft",
-    kind: "passive",
-    category: "passive",
-    visibleForProfessions: [
-      "elf_elven_knight",
-      "elf_elven_scout",
-      "elf_evas_templar",
-      "elf_fighter",
-      "elf_moonlight_sentinel",
-      "elf_plainswalker",
-      "elf_silver_ranger",
-      "elf_sword_muse",
-      "elf_swordsinger",
-      "elf_temple_knight",
-      "elf_wind_rider"
-    ],
-    levels: [
-      {
-        level: 1,
-        requiredLevel: 1,
-        spCost: 0,
-        mpCost: 0,
-        power: 0
-      }
-    ],
-    effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4472,7 +4436,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 1
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4508,7 +4472,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4544,7 +4508,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 60
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4576,7 +4540,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4616,7 +4580,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 7
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4659,7 +4623,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4946,7 +4910,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5233,7 +5197,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5520,7 +5484,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5552,7 +5516,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5595,7 +5559,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 4
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5886,7 +5850,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5927,7 +5891,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 20
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6212,7 +6176,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6248,7 +6212,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 3
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6527,7 +6491,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 11,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6559,7 +6523,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6591,7 +6555,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6624,7 +6588,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 3
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6656,7 +6620,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6689,7 +6653,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 20
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6721,7 +6685,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6753,7 +6717,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6811,7 +6775,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 50
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6913,7 +6877,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6940,7 +6904,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6993,7 +6957,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7025,7 +6989,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7058,7 +7022,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 20
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7090,7 +7054,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7122,7 +7086,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7255,7 +7219,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7288,7 +7252,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 100
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7384,7 +7348,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 40
       }
     ],
-    cooldownSec: 1.08,
+    cooldownSec: 180,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7451,7 +7415,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7478,7 +7442,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 3,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7505,7 +7469,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 3,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7550,7 +7514,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7588,7 +7552,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7621,7 +7585,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7654,7 +7618,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 10
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7691,7 +7655,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 30
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7733,7 +7697,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 30
       }
     ],
-    cooldownSec: 1.8,
+    cooldownSec: 1200,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7759,7 +7723,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 30,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7785,7 +7749,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     effects: [],
-    cooldownSec: 1.8,
+    cooldownSec: 15,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7822,7 +7786,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 10
       }
     ],
-    cooldownSec: 2,
+    cooldownSec: 600,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7853,7 +7817,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 10,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7884,7 +7848,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 60,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7919,7 +7883,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "percent"
       }
     ],
-    cooldownSec: 2,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7950,7 +7914,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "percent"
       }
     ],
-    cooldownSec: 2,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7981,7 +7945,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         mode: "flat"
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 30,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -8028,7 +7992,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 1
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -8060,7 +8024,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         value: 6
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 300,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -8157,42 +8121,6 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       }
     ],
     cooldownSec: 10,
-    skipMobHp: true,
-    hideAtBaseFighterUntilFirstProf: false
-  },
-  {
-    battleId: "l2_1320",
-    l2SkillId: 1320,
-    minLevel: 5,
-    spCost: 0,
-    nameUk: "Create Common Item",
-    hintUk: "Create Common Item",
-    kind: "passive",
-    category: "passive",
-    visibleForProfessions: [
-      "elf_elven_knight",
-      "elf_elven_scout",
-      "elf_evas_templar",
-      "elf_fighter",
-      "elf_moonlight_sentinel",
-      "elf_plainswalker",
-      "elf_silver_ranger",
-      "elf_sword_muse",
-      "elf_swordsinger",
-      "elf_temple_knight",
-      "elf_wind_rider"
-    ],
-    levels: [
-      {
-        level: 1,
-        requiredLevel: 5,
-        spCost: 0,
-        mpCost: 0,
-        power: 0
-      }
-    ],
-    effects: [],
-    cooldownSec: 0,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   }

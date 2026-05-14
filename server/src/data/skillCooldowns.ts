@@ -1,8 +1,8 @@
 /**
  * Перезарядки скілів на персонажі: `[{ skillId, readyAt }]` у БД.
  *
- * Чому не в `battleJson`: у L2 частина скілів має cd > тривалість бою (Revival 3h,
- * Battle Roar 10 min, Touch of Life 5 min). Вони мають переживати вихід з бою і F5.
+ * Чому не в `battleJson`: у L2 частина скілів має cd > тривалість бою
+ * (напр., Battle Roar 10 min, Touch of Life 5 min). Вони мають переживати вихід з бою і F5.
  * Джерело `cooldownSec`: `humanFighterSkillCooldowns.generated.ts` (автоген з XML l2dop,
  * скрипт `gen:hf-cooldowns`).
  */

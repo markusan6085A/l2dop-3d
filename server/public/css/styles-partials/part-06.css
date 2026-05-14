@@ -1,0 +1,1149 @@
+.l2-gm-shop-badge {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(200, 175, 120, 0.75);
+}
+
+.l2-gm-shop-title {
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #f8f4e8, #c4a860);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* .l2-pers-headline нижче в файлі задає color — треба перебити для градієнта */
+.l2-gm-shop-card .l2-pers-headline.l2-gm-shop-title {
+  color: transparent;
+  text-shadow: none;
+}
+
+.l2-gm-shop-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 12px;
+  font-size: 12px;
+  color: #c4bcb0;
+}
+
+.l2-gm-shop-adena strong {
+  color: #e8c56e;
+  font-weight: 600;
+}
+
+.l2-gm-shop-rev {
+  opacity: 0.75;
+  font-size: 11px;
+}
+
+.l2-gm-shop-hint {
+  margin: 0 0 12px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #9a9080;
+}
+
+.l2-gm-shop-hint--muted {
+  color: #6a7a8c;
+  font-style: italic;
+}
+
+/* Перший ряд категорій (як у старому клієнті) — компактні таби, палітра .l2-gm-shop */
+.l2-gm-shop-cat-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(100, 80, 52, 0.28);
+}
+
+.l2-gm-shop-cat-row .l2-gm-shop-cat {
+  margin: 0;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #9a9080;
+  box-shadow: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.l2-gm-shop-cat-row .l2-gm-shop-cat:hover,
+.l2-gm-shop-cat-row .l2-gm-shop-cat:focus {
+  color: #f2ead8;
+  outline: none;
+}
+
+.l2-gm-shop-cat-row .l2-gm-shop-cat--active {
+  color: #e8c56e;
+  background: transparent;
+  box-shadow: none;
+}
+
+.l2-gm-shop-cat-sep {
+  color: rgba(100, 80, 52, 0.5);
+  user-select: none;
+  margin: 0 1px;
+  font-size: 11px;
+}
+
+.l2-gm-shop-cat-sep--grade {
+  margin: 0 3px;
+  font-size: 11px;
+}
+
+.l2-gm-shop-grades .l2-gm-shop-grade[data-grade='D'] {
+  color: #e4e2de;
+}
+
+.l2-gm-shop-grades .l2-gm-shop-grade[data-grade='C'] {
+  color: #5fd868;
+}
+
+.l2-gm-shop-grades .l2-gm-shop-grade[data-grade='B'] {
+  color: #c49bff;
+}
+
+.l2-gm-shop-grades .l2-gm-shop-grade[data-grade='A'] {
+  color: #ff9c3d;
+}
+
+.l2-gm-shop-grades .l2-gm-shop-grade[data-grade='S'] {
+  color: #ffd48a;
+}
+
+.l2-gm-shop-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+.l2-gm-shop-pager-btn {
+  min-width: 34px;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid rgba(100, 80, 52, 0.45);
+  background: rgba(20, 16, 12, 0.65);
+  color: #d4c8a8;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.l2-gm-shop-pager-btn:hover:not(:disabled),
+.l2-gm-shop-pager-btn:focus:not(:disabled) {
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #f5ecd0;
+  outline: none;
+}
+
+.l2-gm-shop-pager-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.l2-gm-shop-pager-pages {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.l2-gm-shop-pager-num {
+  min-width: 30px;
+  padding: 5px 9px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid rgba(100, 80, 52, 0.4);
+  background: rgba(16, 12, 10, 0.55);
+  color: #a89888;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.l2-gm-shop-pager-num--active {
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #e8c56e;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+}
+
+.l2-gm-shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.l2-gm-shop-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 80, 52, 0.38);
+  background: linear-gradient(180deg, rgba(32, 26, 18, 0.72), rgba(14, 11, 8, 0.52));
+  box-sizing: border-box;
+}
+
+.l2-gm-shop-row--jewelry {
+  border-color: rgba(180, 140, 200, 0.35);
+  background: linear-gradient(180deg, rgba(28, 18, 38, 0.55), rgba(12, 8, 22, 0.42));
+}
+
+.l2-gm-shop-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 2px;
+  border: 1px solid rgba(100, 80, 52, 0.4);
+  background: rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.l2-gm-shop-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.l2-gm-shop-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e6e2d8;
+  word-break: break-word;
+}
+
+.l2-gm-shop-price {
+  font-size: 11px;
+  color: #9eb8a8;
+}
+
+.l2-gm-shop-buy {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid rgba(200, 160, 90, 0.45);
+  color: #f0e6b8;
+  background: linear-gradient(180deg, #3a3028, #181410);
+}
+
+.l2-gm-shop-buy:hover,
+.l2-gm-shop-buy:focus {
+  border-color: #d4af37;
+  outline: none;
+}
+
+.l2-gm-shop-buy:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Модалка кількості покупки (drops-shop). */
+.l2-drops-buy-qty-label {
+  display: block;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #c9dccf;
+}
+
+.l2-drops-buy-qty-input {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 200px;
+  margin-top: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  border: 1px solid rgba(120, 99, 70, 0.85);
+  background: rgba(12, 10, 8, 0.95);
+  color: #f0ead8;
+}
+
+.l2-drops-buy-qty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.l2-drops-buy-qty-btn {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid rgba(200, 160, 90, 0.45);
+  color: #f0e6b8;
+  background: linear-gradient(180deg, #3a3028, #181410);
+}
+
+.l2-drops-buy-qty-btn--muted {
+  opacity: 0.85;
+}
+
+.l2-drops-buy-qty-btn--primary {
+  border-color: #d4af37;
+}
+
+.l2-drops-buy-qty-btn:hover,
+.l2-drops-buy-qty-btn:focus {
+  border-color: #e8c66b;
+  outline: none;
+}
+
+.l2-gm-shop-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.l2-gm-shop-cat {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 80, 52, 0.4);
+  background: rgba(18, 14, 10, 0.6);
+  color: #d0c4a8;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.l2-gm-shop-cat--active {
+  color: #f5ecd0;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.l2-gm-shop-grades {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(100, 80, 52, 0.22);
+}
+
+.l2-gm-shop-grade {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 80, 52, 0.35);
+  background: rgba(16, 12, 10, 0.45);
+  color: #9a9080;
+}
+
+.l2-gm-shop-grade--active {
+  color: #e8c56e;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.l2-gm-shop-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.l2-gm-shop-filters--armor .l2-gm-shop-filter[data-armor-slot='head'],
+.l2-gm-shop-filters--armor .l2-gm-shop-filter[data-armor-slot='gloves'],
+.l2-gm-shop-filters--armor .l2-gm-shop-filter[data-armor-slot='feet'],
+.l2-gm-shop-filters--armor .l2-gm-shop-filter[data-armor-slot='fullarmor'] {
+  font-size: 10px;
+  padding: 5px 8px;
+}
+
+.l2-gm-shop-filter {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 80, 52, 0.35);
+  background: rgba(16, 12, 10, 0.45);
+  color: #c0b4a0;
+}
+
+.l2-gm-shop-filter--active {
+  color: #e8c56e;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Таби магазину: категорії, грейди NG…S, фільтри (Усі, Мечі…) — 9-slice /ref/541.png */
+.l2-gm-shop .l2-gm-shop-cat,
+.l2-gm-shop-cat-row .l2-gm-shop-cat,
+.l2-gm-shop .l2-gm-shop-grade,
+.l2-gm-shop .l2-gm-shop-filter,
+.l2-gm-shop .l2-drops-shop-tab {
+  --l2s-gm541-slice-y: 30;
+  --l2s-gm541-slice-x: 40;
+  --l2s-gm541-bd-y: 5;
+  --l2s-gm541-bd-x: 9;
+  box-sizing: border-box;
+  border-radius: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(1px * var(--l2s-gm541-bd-y)) calc(1px * var(--l2s-gm541-bd-x));
+  border-image-source: url('/ref/541.png');
+  border-image-slice: var(--l2s-gm541-slice-y) var(--l2s-gm541-slice-x) var(--l2s-gm541-slice-y)
+    var(--l2s-gm541-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-gm541-bd-y)) calc(1px * var(--l2s-gm541-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent;
+  box-shadow: none;
+}
+
+.l2-gm-shop .l2-drops-shop-tab {
+  min-width: 0;
+}
+
+.l2-gm-shop-cat--active,
+.l2-gm-shop-grade--active,
+.l2-gm-shop-filter--active,
+.l2-gm-shop .l2-drops-shop-tab--active {
+  filter: brightness(1.12);
+}
+.l2-gm-shop .l2-gm-shop-cat:hover,
+.l2-gm-shop-cat-row .l2-gm-shop-cat:hover,
+.l2-gm-shop .l2-gm-shop-cat:focus,
+.l2-gm-shop-cat-row .l2-gm-shop-cat:focus,
+.l2-gm-shop .l2-gm-shop-grade:hover,
+.l2-gm-shop .l2-gm-shop-grade:focus,
+.l2-gm-shop .l2-gm-shop-filter:hover,
+.l2-gm-shop .l2-gm-shop-filter:focus,
+.l2-gm-shop .l2-drops-shop-tab:hover,
+.l2-gm-shop .l2-drops-shop-tab:focus {
+  filter: brightness(1.06);
+  outline: none;
+}
+
+.l2-gm-shop-row--click {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.l2-gm-shop-row--click:hover,
+.l2-gm-shop-row--click:focus {
+  border-color: rgba(200, 160, 90, 0.45);
+  background: rgba(0, 24, 48, 0.45);
+  outline: none;
+}
+
+.l2-gm-shop-row-type {
+  font-size: 10px;
+  color: #7a8aa0;
+}
+
+/* Таби грейдів у магазині /gm-shop (drops) */
+.l2-drops-shop-tablist {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 10px 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(100, 80, 52, 0.28);
+}
+
+/* Компактний GM-шоп: менші відступи між рядками табів */
+.l2-gm-shop .l2-drops-shop-tablist {
+  gap: 2px;
+  margin: 2px 0 4px;
+  padding-bottom: 4px;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--cats,
+.l2-gm-shop .l2-drops-shop-tablist--grades {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--cats .l2-drops-shop-tab {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  min-width: 0;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--grades {
+  margin-top: 0;
+  margin-bottom: 4px;
+  padding-top: 0;
+  padding-bottom: 4px;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--weapon-kind {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px 3px;
+  flex-wrap: unset;
+  align-items: stretch;
+  justify-content: stretch;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
+  width: 100%;
+  min-width: 0;
+  padding: 2px 3px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--armor-piece,
+.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub,
+.l2-gm-shop .l2-drops-shop-tablist--consumable-sub {
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab,
+.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab,
+.l2-gm-shop .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.l2-drops-shop-tablist--cats .l2-drops-shop-tab {
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.l2-drops-shop-tablist--grades {
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-top: 0;
+}
+
+.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='NG'] {
+  color: #fff59d;
+}
+.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='D'] {
+  color: #e4e2de;
+}
+.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='C'] {
+  color: #5fd868;
+}
+.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='B'] {
+  color: #c49bff;
+}
+.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='A'] {
+  color: #ff9c3d;
+}
+.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='S'] {
+  color: #ffd48a;
+}
+
+/* Другий ряд під грейдом: зброя / броня / аксесуари */
+.l2-drops-shop-tablist--weapon-kind,
+.l2-drops-shop-tablist--armor-piece,
+.l2-drops-shop-tablist--jewelry-sub,
+.l2-drops-shop-tablist--consumable-sub {
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-top: 0;
+}
+
+.l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab,
+.l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab,
+.l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab,
+.l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+.l2-drops-shop-pane-head {
+  margin: 0 0 12px;
+}
+
+.l2-drops-shop-pane-cat {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.l2-drops-shop-empty {
+  margin: 12px 0;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #8a9099;
+}
+
+button.l2-gm-shop-icon-btn {
+  flex-shrink: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 0;
+}
+
+button.l2-gm-shop-icon-btn:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.75);
+  outline-offset: 2px;
+}
+
+.l2-gm-shop-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 2px;
+  border: 1px solid rgba(100, 80, 52, 0.45);
+  background: rgba(0, 0, 0, 0.35);
+  vertical-align: middle;
+  pointer-events: none;
+}
+
+button.l2-gm-shop-icon-btn:hover .l2-gm-shop-icon-img {
+  border-color: rgba(200, 160, 90, 0.65);
+}
+
+.l2-drops-stats-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.l2-drops-stats-modal[hidden] {
+  display: none !important;
+}
+
+.l2-drops-stats-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+
+.l2-drops-stats-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  max-height: min(88vh, 520px);
+  overflow-y: auto;
+  padding: 16px 18px 18px;
+  box-sizing: border-box;
+  /* Рамка ref/541.png (9-slice), узгоджено з l2-app-chrome-skin WAP-grid */
+  --l2s-item-modal541-slice-y: 30;
+  --l2s-item-modal541-slice-x: 40;
+  --l2s-item-modal541-bd-y: 11;
+  --l2s-item-modal541-bd-x: 22;
+  border-radius: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(1px * var(--l2s-item-modal541-bd-y))
+    calc(1px * var(--l2s-item-modal541-bd-x));
+  border-image-source: url('/ref/541.png');
+  border-image-slice: var(--l2s-item-modal541-slice-y)
+    var(--l2s-item-modal541-slice-x) var(--l2s-item-modal541-slice-y)
+    var(--l2s-item-modal541-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-item-modal541-bd-y))
+    calc(1px * var(--l2s-item-modal541-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.65));
+}
+
+.l2-drops-stats-modal__close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: #c9a860;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.l2-drops-stats-modal__close:hover,
+.l2-drops-stats-modal__close:focus {
+  outline: none;
+  color: #fff4d6;
+}
+
+.l2-drops-stats-modal__head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-right: 28px;
+}
+
+.l2-drops-stats-modal__ico {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border: 1px solid rgba(107, 84, 63, 0.75);
+  border-radius: 4px;
+  background: #0a1018;
+}
+
+.l2-drops-stats-modal__title {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #ffd9a6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-drops-stats-modal__stats-mount {
+  margin: 0;
+}
+
+.l2-drops-stats-modal__stats {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  font-size: 12px;
+  color: #c8beb0;
+}
+
+/** Один рядок без підпису (наприклад D-grade у магазині дропів). */
+.l2-drops-stats-modal__stats dt:empty {
+  display: none;
+}
+
+.l2-drops-stats-modal__stats dt:empty + dd {
+  grid-column: 1 / -1;
+  text-align: left;
+}
+
+.l2-drops-stats-modal__k {
+  margin: 0;
+  font-weight: 600;
+  color: #94a8b8;
+}
+
+.l2-drops-stats-modal__v {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #e8e2d8;
+}
+
+.l2-drops-stats-modal__empty {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9a9590;
+}
+
+.l2-drops-stats-modal__hint {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(100, 80, 52, 0.28);
+  font-size: 11px;
+  line-height: 1.45;
+  color: #bf9f7a;
+}
+
+.l2-drops-stats-modal__armor-sets {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(100, 80, 52, 0.22);
+  max-height: min(40vh, 260px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.l2-drops-stats-modal__armor-sets[hidden] {
+  display: none !important;
+}
+
+.l2-armor-set-bonuses__title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e8dcc4;
+  margin: 0 0 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.l2-armor-set-bonuses__list {
+  margin: 0;
+  padding: 0 0 0 1.1em;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #c8c0b4;
+}
+
+.l2-armor-set-bonuses__list li {
+  margin-bottom: 6px;
+}
+
+.l2-armor-set-bonuses__list li:last-child {
+  margin-bottom: 0;
+}
+
+.l2-armor-set-bonuses__list strong {
+  color: #e8e2d8;
+  font-weight: 600;
+}
+
+.l2-gm-modal .l2-drops-stats-modal__armor-sets {
+  max-height: min(36vh, 220px);
+}
+
+.l2-drops-shop-tab {
+  min-width: 2.25rem;
+  padding: 6px 11px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 80, 52, 0.35);
+  background: rgba(16, 12, 10, 0.5);
+  color: #a89a88;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-drops-shop-tab:hover,
+.l2-drops-shop-tab:focus {
+  border-color: rgba(200, 160, 90, 0.42);
+  color: #d8c8a8;
+  outline: none;
+}
+
+.l2-drops-shop-tab--active {
+  border-color: rgba(200, 160, 90, 0.55);
+  color: #f0d078;
+  box-shadow: 0 0 0 1px rgba(200, 160, 70, 0.12);
+}
+
+.l2-gm-shop .l2-drops-shop-tab--active {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.l2-drops-shop-panels .l2-drops-grade {
+  margin: 0 0 12px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* Магазин /icons/drops — секції за грейдом */
+.l2-drops-grade {
+  margin: 14px 0 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(200, 160, 70, 0.22);
+}
+
+.l2-drops-grade:last-child {
+  border-bottom: none;
+}
+
+.l2-drops-grade__title {
+  margin: 0 0 10px;
+  font-family: var(--l2-font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffd78a;
+}
+
+.l2-drops-sec__title {
+  margin: 10px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+body.l2-gm-modal-open {
+  overflow: hidden;
+}
+
+/*
+ * Не задавати display:flex на .l2-gm-modal-overlay без :not([hidden]) —
+ * інакше правило з тією ж специфічністю, що й UA [hidden], перебиває
+ * приховування модалки, і вона лишається на екрані «порожня» після F5.
+ */
+.l2-gm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.l2-gm-modal-overlay:not([hidden]) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.l2-gm-modal-overlay[hidden] {
+  display: none !important;
+}
+
+.l2-gm-modal {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 18px 20px 20px;
+  /* Та сама рамка 541.png, що й модалка магазину */
+  --l2s-item-modal541-slice-y: 30;
+  --l2s-item-modal541-slice-x: 40;
+  --l2s-item-modal541-bd-y: 11;
+  --l2s-item-modal541-bd-x: 22;
+  border-radius: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(1px * var(--l2s-item-modal541-bd-y))
+    calc(1px * var(--l2s-item-modal541-bd-x));
+  border-image-source: url('/ref/541.png');
+  border-image-slice: var(--l2s-item-modal541-slice-y)
+    var(--l2s-item-modal541-slice-x) var(--l2s-item-modal541-slice-y)
+    var(--l2s-item-modal541-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-item-modal541-bd-y))
+    calc(1px * var(--l2s-item-modal541-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.65));
+  box-sizing: border-box;
+}
+
+.l2-gm-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  color: #c8c4b8;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.l2-gm-modal-close:hover,
+.l2-gm-modal-close:focus {
+  color: #fff;
+  outline: none;
+}
+
+.l2-gm-modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-right: 28px;
+}
+
+.l2-gm-modal-icon {
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 80, 52, 0.45);
+  background: rgba(0, 0, 0, 0.35);
+  object-fit: contain;
+}
+
+.l2-gm-modal-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f5ead8;
+  line-height: 1.3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.l2-gm-modal-sub {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #9a9080;
+}
+
+.l2-gm-modal-stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #d4ccc0;
+}
+
+.l2-gm-modal-stats dt {
+  margin: 0;
+  color: #9a9080;
+}
+
+.l2-gm-modal-stats dd {
+  margin: 0;
+  font-weight: 600;
+  color: #ebe6dc;
+}
+
+.l2-gm-modal-price {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #9eb8a8;
+}
+
+.l2-gm-modal-buy {
+  display: block;
+  width: 50%;
+  margin: 0 auto;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid rgba(200, 160, 90, 0.45);
+  color: #f0e6b8;
+  background: linear-gradient(180deg, #3a3028, #181410);
+}
+
+.l2-gm-modal-buy:hover,
+.l2-gm-modal-buy:focus {
+  border-color: #d4af37;
+  outline: none;
+}
+
+@media (max-width: 480px) {
+  .l2-foot-linkbar {
+    gap: 8px;
+    padding: 10px 4px 6px;
+  }
+
+  .l2-foot-linkbar__btn {
+    min-width: 80px;
+    padding: 9px 14px;
+  }
+
+  .l2-foot-linkbar__label {
+    font-size: 12px;
+    letter-spacing: 0.7px;
+  }
+}
+
+.l2-pers-headline {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #e8d89a;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.l2-pers-bars-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-bottom: 4px;
+}
+
+.l2-pers-bars-col {
+  min-width: 0;
+}
+
+.l2-pers-bars-col .l2-pers-bar-row {
+  margin-bottom: 7px;
+}
+
+.l2-pers-bars-col .l2-pers-bar-row:last-child {
+  margin-bottom: 0;
+}
+

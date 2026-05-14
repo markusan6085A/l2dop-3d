@@ -36,6 +36,9 @@ import type { BattleView } from './battleServiceTypes.js';
 import { applyPassiveAndMove } from './battleServiceApplyPassive.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
+import { applyPassiveHpRegen } from './charPassiveRegen.js';
+import { resolveMapMovement } from '../domain/mapMovement.js';
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
@@ -103,21 +106,6 @@ export async function startBattle(
     throw new Error('battle_spawn_unknown');
   }
 
-  let pre = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!pre) throw new Error('no_character');
-  pre = (await applyPassiveAndMove(pre as CharacterRow)) as CharacterRow;
-
-  const dist = Math.hypot(
-    pre.worldX - spawn.worldX,
-    pre.worldY - spawn.worldY
-  );
-  if (dist > BATTLE_RANGE) {
-    throw new Error('battle_too_far');
-  }
-
   const mc = mobCombatFromSpawn(spawn);
   const startLog = [
     'Бій розпочато: [' + spawn.name + '] (ур. ' + spawn.level + ').',
@@ -129,29 +117,35 @@ export async function startBattle(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
-
-    const inv0 = parseInventory((char as CharacterRow).inventoryJson);
-    const effLv0 = levelFromTotalExp(char.exp);
     const cr0 = char as CharacterRow;
+    const base = resolveMapMovement(applyPassiveHpRegen(cr0));
+    const distAtCommit = Math.hypot(
+      base.worldX - spawn.worldX,
+      base.worldY - spawn.worldY
+    );
+    if (distAtCommit > BATTLE_RANGE) {
+      throw new Error('battle_too_far');
+    }
+    const inv0 = parseInventory(base.inventoryJson);
+    const effLv0 = levelFromTotalExp(base.exp);
     const combat0 = computeCombatStats(
       effLv0,
-      char.race,
-      char.classBranch,
+      base.race,
+      base.classBranch,
       inv0,
-      combatOptsFromRow(cr0)
+      combatOptsFromRow(base)
     );
     const vit0 = computeVitals(
       effLv0,
-      char.race,
-      char.classBranch,
+      base.race,
+      base.classBranch,
       combat0.con,
       combat0.men
     );
     const maxMp0 = effectiveMaxMpWithJewelFlat(vit0.maxMp, combat0);
 
     const wTick = tickWorldCombatState(
-      parseWorldCombatState((char as CharacterRow).worldCombatStateJson),
+      parseWorldCombatState(base.worldCombatStateJson),
       maxMp0,
       Date.now(),
       combat0.regenMp
@@ -206,34 +200,39 @@ export async function startBattle(
       st.warCryPatkMul = wcSync;
     }
 
-    const updated = await tx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        battleJson: serializeBattleJsonForDb(st),
-        worldCombatStateJson: Prisma.JsonNull,
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const row = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    const snap = toSnapshot(row as CharacterRow);
-    const crSt = char as CharacterRow;
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({
+        changed: true,
+        data: {
+          hp: base.hp,
+          worldX: base.worldX,
+          worldY: base.worldY,
+          targetX: base.targetX,
+          targetY: base.targetY,
+          moveStartAt: base.moveStartAt,
+          moveFromX: base.moveFromX,
+          moveFromY: base.moveFromY,
+          battleJson: serializeBattleJsonForDb(st),
+          worldCombatStateJson: Prisma.JsonNull,
+        },
+      })
+    );
+    if (!result.ok) throw new GameConflictError();
+    const row = result.character as CharacterRow;
+    const snap = toSnapshot(row);
+    const crSt = base;
     const prof0 =
       typeof crSt.l2Profession === 'string' && crSt.l2Profession.trim()
         ? crSt.l2Profession.trim()
         : 'human_fighter';
     const learned0 = parseSkillsLearnedJson(
-      char.skillsLearnedJson,
+      base.skillsLearnedJson,
       prof0,
-      char.race,
-      char.classBranch
+      base.race,
+      base.classBranch
     );
     const view = battleViewFromState(
       spawnId,
@@ -245,19 +244,16 @@ export async function startBattle(
         kind: spawn.kind,
       },
       effLv0,
-      char.race,
-      char.classBranch,
+      base.race,
+      base.classBranch,
       learned0,
       prof0,
-      parseInventory((char as CharacterRow).inventoryJson),
+      parseInventory(base.inventoryJson),
       persistableActiveBuffsFromJson(
-        (row as CharacterRow).activeBuffsJson,
+        row.activeBuffsJson,
         Date.now()
       ),
-      parseSkillCooldowns(
-        (row as CharacterRow).skillCooldownsJson,
-        Date.now()
-      )
+      parseSkillCooldowns(row.skillCooldownsJson, Date.now())
     );
     return { character: snap, battle: view };
   });
@@ -297,25 +293,31 @@ export async function leaveBattle(
     const worldLeave =
       bj != null ? worldCombatStateFromBattleJson(bj, maxMpL, Date.now()) : null;
 
-    const updated = await tx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        battleJson: Prisma.JsonNull,
-        worldCombatStateJson:
-          worldLeave != null
-            ? (JSON.parse(JSON.stringify(worldLeave)) as Prisma.InputJsonValue)
-            : Prisma.JsonNull,
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-    const row = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(row as CharacterRow);
+    /** Якщо бою вже немає (перемога очистила battleJson), не затирати світовий стан — там лишаються соски/заряди між боями. */
+    let nextWorldJson: Prisma.InputJsonValue | typeof Prisma.JsonNull =
+      Prisma.JsonNull;
+    if (worldLeave != null) {
+      nextWorldJson = JSON.parse(JSON.stringify(worldLeave)) as Prisma.InputJsonValue;
+    } else if (
+      cr.worldCombatStateJson != null &&
+      typeof cr.worldCombatStateJson === 'object'
+    ) {
+      nextWorldJson = cr.worldCombatStateJson as Prisma.InputJsonValue;
+    }
+
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({
+        changed: true,
+        data: {
+          battleJson: Prisma.JsonNull,
+          worldCombatStateJson: nextWorldJson,
+        },
+      })
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }

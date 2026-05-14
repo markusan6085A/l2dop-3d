@@ -41,6 +41,7 @@ export const LEARNABLE_IDS = new Set([
   ...ORC_MYSTIC_SKILL_CATALOG_GENERATED.map((e) => e.battleId),
 ]);
 
+/** Каталог навичок для рядка персонажа (без фільтра рівня/«наступної профи» — це в `getMagisterDialogForUser`). */
 export function offersForCharacter(row: CharacterRow): {
   noteUk: string | null;
   offers: readonly MagisterRawOffer[];

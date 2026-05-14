@@ -21,6 +21,7 @@ import type {
 import { resolveLegacyMeleeTurn } from './legacyMeleeTurn.js';
 import { mysticCatalogEntryVisibleForProfession } from '../../data/humanMysticSkillCatalog.js';
 import { mysticCatalogEntryForRace } from '../../data/mysticSkillCatalog.byRace.js';
+import { MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS } from '../../data/mysticBlessedSpiritshot.js';
 import { canonicalBattleSkillId } from '../../data/humanFighterSkillCatalog.legacyIds.js';
 import type { HumanMysticSkillCatalogEntry } from '../../data/humanMysticSkillCatalog.types.js';
 import { l2dopXmlSkillRow } from '../../data/l2dopXmlSkillLevels.lookup.js';
@@ -33,7 +34,13 @@ import { mysticDebuffSpotChanceMultiplier } from '../../data/l2dopMysticDebuffSp
 import {
   applyCooldownReductionMul,
   mysticGlobalSkillCooldownSec,
+  scaleSkillCooldownByCastSpeed,
 } from '../../data/mysticSkillCooldown.js';
+import { L2DB_INTERLUDE_SKILL_COOLDOWN_SEC } from '../../data/l2dbSkillCooldowns.generated.js';
+import {
+  assertSkillCooldownReady,
+  isCooldownBlocked,
+} from './humanFighterTurnHelpers.js';
 
 function mysticCdKey(skillId: number): string {
   return `l2_${skillId}`;
@@ -331,7 +338,15 @@ export function mysticBuffPatch(
           : fx.value != null
             ? fx.value / 100
             : pctFromPower;
-    const v = clamp(vRaw, -0.6, 1.2);
+    let v = clamp(vRaw, -0.6, 1.2);
+    /**
+     * L2 Interlude: Arcane Power (337) має давати відчутний бонус M.Atk.
+     * У частині расових каталогів зустрічається `power: 0` + без `value`,
+     * через що toggle виходить з множником 1.0 і виглядає "не вмикається".
+     */
+    if (entry.l2SkillId === 337 && fx.stat === 'mAtk' && v <= 0) {
+      v = 0.3;
+    }
     if (fx.stat === 'pAtk') {
       patch.mysticPatkBuffMul = 1 + v;
       patch.mysticPatkBuffIconSkillId = iconId;
@@ -470,7 +485,30 @@ function isControlDebuff(entry: HumanMysticSkillCatalogEntry): boolean {
 
 function hasDebuffPayload(entry: HumanMysticSkillCatalogEntry): boolean {
   const fx = entry.effects ?? [];
-  if (fx.length > 0) return true;
+  const hasTargetDebuffStat = fx.some((e) => {
+    const stat = String(e.stat || '');
+    if (CONTROL_STATS.has(stat)) return true;
+    if (
+      [
+        'runSpeed',
+        'moveSpeed',
+        'attackSpeed',
+        'atkSpeed',
+        'castSpeed',
+        'pAtk',
+        'mAtk',
+        'hpRegen',
+        'evasion',
+        'skillCritRate',
+        'pDef',
+        'mDef',
+      ].includes(stat)
+    ) {
+      return true;
+    }
+    return stat.endsWith('Resist');
+  });
+  if (hasTargetDebuffStat) return true;
   if (
     NAME_HARD_CONTROL_RE.test(entry.nameUk) || NAME_SOFT_CONTROL_RE.test(entry.nameUk)
   ) {
@@ -592,11 +630,10 @@ export function resolveHumanMysticTurn(
       : false;
   const cdUntil = readMysticCd(st, entry.l2SkillId);
   if (
-    cdUntil !== undefined &&
-    Date.now() < cdUntil &&
+    isCooldownBlocked(cdUntil) &&
     !(entry.kind === 'toggle' && toggleOnNow)
   ) {
-    throw new Error('battle_skill_not_allowed');
+    assertSkillCooldownReady(cdUntil);
   }
 
   const mpCost = Math.max(
@@ -613,20 +650,29 @@ export function resolveHumanMysticTurn(
           entry.category === 'heal'
         ? xmlRow.p
         : rowPower;
+  const effectiveCastSpd = Math.max(
+    1,
+    Math.floor(
+      combat.castSpd * (jsonFiniteNum(st.battleMods?.mysticCastSpdBuffMul) ?? 1)
+    )
+  );
+  const fixedCdRaw =
+    typeof entry.cooldownSec === 'number' && entry.cooldownSec > 0
+      ? entry.cooldownSec
+      : typeof L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] === 'number' &&
+          (L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] as number) > 0
+        ? (L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] as number)
+        : null;
   const cdSec =
     entry.kind === 'toggle'
       ? 1
-      : typeof entry.cooldownSec === 'number' && entry.cooldownSec > 0
-        ? Math.max(0.1, entry.cooldownSec)
+      : fixedCdRaw != null
+        ? applyCooldownReductionMul(
+            scaleSkillCooldownByCastSpeed(fixedCdRaw, effectiveCastSpd),
+            combat.cooldownReductionMul
+          )
         : applyCooldownReductionMul(
-            mysticGlobalSkillCooldownSec(
-              Math.max(
-                1,
-                Math.floor(
-                  combat.castSpd * (jsonFiniteNum(st.battleMods?.mysticCastSpdBuffMul) ?? 1)
-                )
-              )
-            ),
+            mysticGlobalSkillCooldownSec(effectiveCastSpd),
             combat.cooldownReductionMul
           );
   const mysticSkillCdUntilPatch: Record<string, number> = {};
@@ -680,7 +726,22 @@ export function resolveHumanMysticTurn(
 
   if (entry.category === 'magic_attack') {
     const mMul = jsonFiniteNum(st.battleMods?.mysticMatkBuffMul) ?? 1;
-    const mAtkEff = Math.max(1, Math.floor(combat.mAtk * (mMul > 1 ? mMul : 1)));
+    let mAtkEff = Math.max(1, Math.floor(combat.mAtk * (mMul > 1 ? mMul : 1)));
+    const blessMul = jsonFiniteNum(st.battleMods?.mysticBlessedSpiritshotMatkMul);
+    const blessRaw = st.battleMods?.mysticBlessedSpiritshotItemId;
+    const blessId =
+      typeof blessRaw === 'number' && Number.isFinite(blessRaw)
+        ? Math.floor(blessRaw)
+        : undefined;
+    if (
+      blessMul !== undefined &&
+      blessMul > 1 &&
+      blessId !== undefined &&
+      blessId > 0 &&
+      MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS.has(blessId)
+    ) {
+      mAtkEff = Math.max(1, Math.floor(mAtkEff * blessMul));
+    }
     const mobMdefMul = jsonFiniteNum(st.battleMods?.mobTargetMDefMul) ?? 1;
     const mobMDefEff =
       mobMdefMul > 0 && mobMdefMul < 1

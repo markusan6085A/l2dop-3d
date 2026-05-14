@@ -6,6 +6,47 @@
   var HOTBAR_SLOTS = 41;
   var HOTBAR_GRID_COLS = 7;
 
+  /** ItemId зарядів душі воїна — узгоджено з `fighterPhysicalSoulshot.ts`. */
+  var FIGHTER_SOULSHOT_ITEM_IDS = {
+    1835: true,
+    1463: true,
+    1464: true,
+    1465: true,
+    1466: true,
+    1467: true,
+  };
+
+  /** Благословені заряди духу (маг) — узгоджено з `mysticBlessedSpiritshot.ts`. */
+  var MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS = {
+    3947: true,
+    3948: true,
+    3949: true,
+    3950: true,
+    3951: true,
+    3952: true,
+  };
+
+  /** HP/MP зілля в бою — `battleCombatPotions.ts`. */
+  var BATTLE_POTION_ITEM_IDS = {
+    1060: true,
+    1061: true,
+    726: true,
+    728: true,
+  };
+
+  function bagQtyPlain(character, itemId) {
+    var inv = character && character.inventory;
+    if (!inv || !Array.isArray(inv.stacks)) return 0;
+    var n = 0;
+    for (var qi = 0; qi < inv.stacks.length; qi++) {
+      var st = inv.stacks[qi];
+      if (!st || st.itemId !== itemId) continue;
+      if ((st.enchant || 0) !== 0) continue;
+      n += st.qty || 0;
+    }
+    return n;
+  }
+
   /**
    * Fallback, якщо в /game/battle немає l2SkillId (має завжди бути з сервера).
    * Числа збігаються з `l2SkillIdForBattleActionIcon` у humanFighterSkillCatalog.ts і каталогом магістра.
@@ -232,6 +273,9 @@
     if (j.gearCatalog && L2.mergeGearCatalog) {
       L2.mergeGearCatalog(j.gearCatalog);
     }
+    if (L2.mergeCraftResourceIconHints) {
+      L2.mergeCraftResourceIconHints(j);
+    }
     if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && L2.itemNameById) {
       Object.keys(j.itemNamesUk).forEach(function (k) {
         L2.itemNameById[k] = j.itemNamesUk[k];
@@ -241,6 +285,17 @@
       Object.keys(j.itemSlotHints).forEach(function (k) {
         if (L2.itemSlotById[k] == null) {
           L2.itemSlotById[k] = j.itemSlotHints[k];
+        }
+      });
+    }
+    if (
+      j.itemInventoryTabHints &&
+      typeof j.itemInventoryTabHints === 'object' &&
+      L2.itemInventoryTabById
+    ) {
+      Object.keys(j.itemInventoryTabHints).forEach(function (k) {
+        if (L2.itemInventoryTabById[k] == null) {
+          L2.itemInventoryTabById[k] = j.itemInventoryTabHints[k];
         }
       });
     }
@@ -273,6 +328,15 @@
     if (actionId === 'attack') {
       return '/skills/attack.jpg';
     }
+    if (global.L2 && typeof L2.resolveSkillIconUrl === 'function') {
+      var fallbackN =
+        typeof l2SkillId === 'number' && l2SkillId > 0
+          ? l2SkillId
+          : ACTION_L2_ICON[actionId] != null
+            ? ACTION_L2_ICON[actionId]
+            : 1;
+      return L2.resolveSkillIconUrl(fallbackN, null);
+    }
     if (typeof l2SkillId === 'number' && l2SkillId > 0) {
       return '/game/skill-icon/' + l2SkillId;
     }
@@ -281,8 +345,15 @@
   }
 
   function itemIconUrl(itemId) {
+    if (global.L2 && typeof L2.resolveItemIconUrl === 'function') {
+      return L2.resolveItemIconUrl(itemId, '/icons/drops/other.svg');
+    }
     if (itemId > 0) return '/game/item-icon/' + itemId;
     return '/icons/drops/other.svg';
+  }
+
+  function itemIconUrlForBattleItem(itemId) {
+    return itemIconUrl(itemId);
   }
 
   function itemNameUk(itemId) {
@@ -336,6 +407,9 @@
     }
     if (typeof x === 'object' && x.k === 'i' && typeof x.id === 'number') {
       return { k: 'i', id: x.id, e: typeof x.e === 'number' ? x.e : 0 };
+    }
+    if (typeof x === 'object' && x.k === 'u' && typeof x.id === 'number') {
+      return { k: 'u', id: Math.floor(x.id) };
     }
     return null;
   }
@@ -404,12 +478,16 @@
   /**
    * Лише явно заборонені id (не синхронізуємо з battle.skills — інакше стійки/рідкі дії зникали з панелі).
    */
-  function sanitizeSlotsAgainstBattle(slots, characterId) {
+  function sanitizeSlotsAgainstBattle(slots, characterId, character) {
     var out = slots.slice();
     var changed = false;
     for (var i = 0; i < out.length; i++) {
       var s = out[i];
       if (s && s.k === 'a' && s.a === 'duelist_spirit') {
+        out[i] = null;
+        changed = true;
+      }
+      if (s && (s.k === 'i' || s.k === 'u') && bagQtyPlain(character, s.id) < 1) {
         out[i] = null;
         changed = true;
       }
@@ -436,8 +514,33 @@
     return out;
   }
 
+  function isConsumableBagRow(itemId) {
+    var sl = global.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (sl === 'consumable') return true;
+    var tab =
+      global.L2 && L2.itemInventoryTabById && L2.itemInventoryTabById[itemId];
+    return tab === 'consumable';
+  }
+
+  function consumableStacksFromInventory(character) {
+    var inv = character && character.inventory;
+    if (!inv || !Array.isArray(inv.stacks)) return [];
+    var out = [];
+    for (var i = 0; i < inv.stacks.length; i++) {
+      var s = inv.stacks[i];
+      if (!s || s.qty < 1) continue;
+      var id = s.itemId;
+      if (!isConsumableBagRow(id)) continue;
+      out.push({ itemId: id, qty: s.qty });
+    }
+    out.sort(function (a, b) {
+      return a.itemId - b.itemId;
+    });
+    return out;
+  }
+
   /**
-   * @param {{ container: HTMLElement, getBattle: function(): object, getCharacter: function(): object, setCharacter: function(c: object): void, onBattleAction: function(actionId: string): void, getToken: function(): string|null, showToast: function(msg: string): void }} opts
+   * @param {{ container: HTMLElement, getBattle: function(): object, getCharacter: function(): object, setCharacter: function(c: object): void, onBattleAction: function(actionId: string): void, onFighterSoulshotToggle?: function(itemId: number): void, onMysticSpiritshotToggle?: function(itemId: number): void, onBattlePotionUse?: function(itemId: number): void, getToken: function(): string|null, showToast: function(msg: string): void }} opts
    */
   function mountBattleHotbar(opts) {
     var modal = null;
@@ -445,6 +548,7 @@
     var category = 'magic';
     var slotsCache = [];
     var cdTimer = null;
+    var equipInFlight = false;
 
     function clearCdTimer() {
       if (cdTimer != null) {
@@ -480,8 +584,11 @@
         until = m['l2_' + ACTION_L2_ICON[aid]];
       }
       if (typeof until !== 'number' || !Number.isFinite(until)) return null;
-      /** Прострочені записи `mysticSkillCdUntil` — не породжуємо оверлей зовсім. */
-      if (until - Date.now() <= 0) return null;
+      /**
+       * На межі КД (останні ~50мс) не тримаємо оверлей, щоб UX збігався
+       * з серверною перевіркою і не було раннього "готово".
+       */
+      if (until - Date.now() <= 50) return null;
       return { until: until, cdMs: cdSec * 1000 };
     }
 
@@ -635,7 +742,7 @@
           tabsEl.appendChild(b);
         }
         addTab('magic', 'Магія', tabMagic);
-        addTab('consumable', 'Витратні', tabUse);
+        addTab('consumable', 'Розхідники', tabUse);
         addTab('item', 'Предмети', tabItem);
         addTab('remove', 'Прибрати', tabRm);
       }
@@ -676,11 +783,38 @@
           bodyEl.appendChild(grid);
         }
       } else if (category === 'consumable') {
-        var p = document.createElement('p');
-        p.className = 'l2-battle-hotbar-empty';
-        p.textContent =
-          'Витратні предмети з панелі в бою ще не підключені до сервера. Слідкуйте за оновленнями.';
-        bodyEl.appendChild(p);
+        var cs = consumableStacksFromInventory(character);
+        if (cs.length === 0) {
+          var pe = document.createElement('p');
+          pe.className = 'l2-battle-hotbar-empty';
+          pe.textContent =
+            'У сумці немає розхідників (зілля, стріли, заряди з крамниці дропів тощо).';
+          bodyEl.appendChild(pe);
+        } else {
+          var gridC = document.createElement('div');
+          gridC.className = 'l2-battle-hotbar-grid';
+          for (var ci = 0; ci < cs.length; ci++) {
+            (function (row) {
+              var bc = document.createElement('button');
+              bc.type = 'button';
+              bc.className = 'l2-battle-hotbar-pick';
+              bc.title = itemNameUk(row.itemId) + ' ×' + row.qty;
+              bc.innerHTML =
+                '<img src="' +
+                itemIconUrlForBattleItem(row.itemId) +
+                '" alt="" class="l2-battle-hotbar-pick-img" loading="lazy"/>';
+              bc.addEventListener('click', function () {
+                if (pickerSlot == null) return;
+                slotsCache[pickerSlot] = { k: 'u', id: row.itemId };
+                saveSlots(character.id, slotsCache);
+                closeModal();
+                render();
+              });
+              gridC.appendChild(bc);
+            })(cs[ci]);
+          }
+          bodyEl.appendChild(gridC);
+        }
       } else if (category === 'item') {
         var ws = weaponStacksFromInventory(character);
         if (ws.length === 0) {
@@ -699,7 +833,7 @@
               b2.title = itemNameUk(row.itemId);
               b2.innerHTML =
                 '<img src="' +
-                itemIconUrl(row.itemId) +
+                itemIconUrlForBattleItem(row.itemId) +
                 '" alt="" class="l2-battle-hotbar-pick-img" loading="lazy"/>';
               b2.addEventListener('click', function () {
                 if (pickerSlot == null) return;
@@ -739,7 +873,7 @@
                 src = skillIconUrl(ca, l2SkillIdForBattleAction(battle, ca));
                 tit = labelForBattleAction(battle, ca);
               } else {
-                src = itemIconUrl(s.id);
+                src = itemIconUrlForBattleItem(s.id);
                 tit = itemNameUk(s.id);
               }
               b3.title = tit;
@@ -790,7 +924,7 @@
       return out;
     }
 
-    function appendFilledSlot(grid, idx, slot, battle) {
+    function appendFilledSlot(grid, idx, slot, battle, character) {
       var allowed = allowedActionsSet(battle);
       var toggleSkillIds = activeToggleSkillIdSet(battle);
       var btn = document.createElement('button');
@@ -848,14 +982,108 @@
         var imgI = document.createElement('img');
         imgI.className = 'l2-battle-hotbar-slot-img';
         imgI.alt = '';
-        imgI.src = itemIconUrl(slot.id);
+        imgI.src = itemIconUrlForBattleItem(slot.id);
         imgI.addEventListener('error', function () {
           imgI.src = '/icons/drops/other.svg';
         });
         btn.appendChild(imgI);
         btn.title = itemNameUk(slot.id);
         btn.addEventListener('click', function () {
+          var iid = Math.floor(Number(slot.id));
+          if (opts.onBattlePotionUse && BATTLE_POTION_ITEM_IDS[iid]) {
+            opts.onBattlePotionUse(iid);
+            return;
+          }
           equipFromBar(slot);
+        });
+      } else if (slot.k === 'u') {
+        var wrapU = document.createElement('span');
+        wrapU.className = 'l2-battle-hotbar-slot-iconwrap';
+        var imgU = document.createElement('img');
+        imgU.className = 'l2-battle-hotbar-slot-img';
+        imgU.alt = '';
+        imgU.src = itemIconUrlForBattleItem(slot.id);
+        imgU.addEventListener('error', function () {
+          imgU.src = '/icons/drops/other.svg';
+        });
+        wrapU.appendChild(imgU);
+        btn.appendChild(wrapU);
+        var bmU = battle && battle.battleMods;
+        var mulU =
+          bmU &&
+          bmU.fighterSoulshotPatkMul != null &&
+          Number(bmU.fighterSoulshotPatkMul) > 1
+            ? Number(bmU.fighterSoulshotPatkMul)
+            : 0;
+        var idU =
+          bmU && bmU.fighterSoulshotItemId != null
+            ? Math.floor(Number(bmU.fighterSoulshotItemId))
+            : 0;
+        var soulOn =
+          mulU > 1 &&
+          idU === slot.id &&
+          FIGHTER_SOULSHOT_ITEM_IDS[slot.id] === true;
+
+        var blessedMul =
+          bmU &&
+          bmU.mysticBlessedSpiritshotMatkMul != null &&
+          Number(bmU.mysticBlessedSpiritshotMatkMul) > 1
+            ? Number(bmU.mysticBlessedSpiritshotMatkMul)
+            : 0;
+        var blessedIdU =
+          bmU && bmU.mysticBlessedSpiritshotItemId != null
+            ? Math.floor(Number(bmU.mysticBlessedSpiritshotItemId))
+            : 0;
+        var blessedOn =
+          blessedMul > 1 &&
+          blessedIdU === slot.id &&
+          MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS[slot.id] === true;
+
+        if (soulOn || blessedOn) {
+          btn.className += ' l2-battle-hotbar-slot--soulshot-on';
+        }
+
+        var isSoulRow = FIGHTER_SOULSHOT_ITEM_IDS[slot.id] === true;
+        var isBlessRow = MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS[slot.id] === true;
+
+        if (isSoulRow || isBlessRow) {
+          var qtyEl = document.createElement('span');
+          qtyEl.className = 'l2-battle-hotbar-slot-uqty';
+          qtyEl.setAttribute('aria-hidden', 'true');
+          qtyEl.textContent = String(bagQtyPlain(character, slot.id));
+          btn.appendChild(qtyEl);
+        }
+
+        if (isSoulRow) {
+          btn.title = soulOn
+            ? itemNameUk(slot.id) + ' — активний'
+            : itemNameUk(slot.id) + ' — заряд душі: натисни для активації';
+        } else if (isBlessRow) {
+          btn.title = blessedOn
+            ? itemNameUk(slot.id) + ' — активний'
+            : itemNameUk(slot.id) + ' — благословений заряд духу: натисни для активації';
+        } else {
+          btn.title = itemNameUk(slot.id);
+        }
+
+        btn.addEventListener('click', function () {
+          if (isSoulRow) {
+            if (typeof opts.onFighterSoulshotToggle === 'function') {
+              opts.onFighterSoulshotToggle(slot.id);
+            }
+            return;
+          }
+          if (isBlessRow) {
+            if (typeof opts.onMysticSpiritshotToggle === 'function') {
+              opts.onMysticSpiritshotToggle(slot.id);
+            }
+            return;
+          }
+          if (typeof opts.showToast === 'function') {
+            opts.showToast(
+              'Цей розхідник з панелі ще не підтримується — лише заряд душі (воїн) або благословений заряд духу (маг).'
+            );
+          }
         });
       }
       grid.appendChild(btn);
@@ -889,7 +1117,8 @@
       var allowed = allowedActionsSet(battle);
       slotsCache = sanitizeSlotsAgainstBattle(
         slotsCache,
-        character && character.id
+        character && character.id,
+        character
       );
 
       var wrap = document.createElement('div');
@@ -912,7 +1141,7 @@
       });
       for (var fi = 0; fi < filledIdx.length; fi++) {
         var ix = filledIdx[fi];
-        appendFilledSlot(grid, ix, slotsCache[ix], battle);
+        appendFilledSlot(grid, ix, slotsCache[ix], battle, character);
       }
       var fe = firstEmptySlotIndex(slotsCache);
       if (fe >= 0) {
@@ -945,9 +1174,11 @@
     }
 
     async function equipFromBar(slot) {
+      if (equipInFlight) return;
       var c = opts.getCharacter();
       var t = opts.getToken();
       if (!t || !c) return;
+      equipInFlight = true;
       try {
         var r = await fetch('/character/equip', {
           method: 'POST',
@@ -988,11 +1219,16 @@
           if (global.L2 && L2.setLastSnapshot) {
             L2.setLastSnapshot(j.character);
           }
+          if (global.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+            L2.applyHudFromSnapshot(j.character);
+          }
         }
         opts.showToast('Зброю змінено.');
         render();
       } catch (e) {
         opts.showToast('Помилка мережі.');
+      } finally {
+        equipInFlight = false;
       }
     }
 

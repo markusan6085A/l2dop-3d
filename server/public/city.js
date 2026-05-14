@@ -42,6 +42,7 @@
     }
   }
 
+
   function setHudLoading() {
     var nick = $('l2-hud-nick');
     if (nick) {
@@ -119,6 +120,9 @@
     window.L2.setLastSnapshot(c);
     if (j.gearCatalog && window.L2 && typeof L2.mergeGearCatalog === 'function') {
       L2.mergeGearCatalog(j.gearCatalog);
+    }
+    if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
+      L2.mergeCraftResourceIconHints(j);
     }
 
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {

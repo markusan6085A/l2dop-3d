@@ -8,7 +8,9 @@ import type {
   DropsShopGradeUk,
 } from '../data/dropsShopCatalog.generated.js';
 import { DROPS_SHOP_CATALOG } from '../data/dropsShopCatalog.generated.js';
+import { DROPS_SHOP_ARROW_ROWS } from '../data/dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.js';
+import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
 import { prisma } from '../lib/prisma.js';
 import { GameConflictError } from './charErrors.js';
 import { toSnapshot } from './charSnapshotLogic.js';
@@ -17,6 +19,7 @@ import { addItemToBag, parseInventory } from '../data/inventory.js';
 import type { Prisma } from '@prisma/client';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 import { dropsGmPurchaseByShopKeyLower } from '../domain/dropsShopGmItemIdByShopKey.js';
 import { buildDropsShopStatsPreviewUk } from '../domain/dropsShopStatsPreviewUk.js';
 import {
@@ -64,6 +67,9 @@ export type {
   DropsShopArmorPiece,
   DropsShopJewelrySubtype,
 } from '../domain/dropsShopGearSubtypes.js';
+
+/** Підвкладки «Розхідники» в gm-shop (фільтр по полю в відповіді). */
+export type DropsShopConsumableSubtype = 'vials' | 'arrows' | 'charges';
 
 export interface DropsShopOverrideEntry {
   itemId: number;
@@ -196,6 +202,8 @@ export interface DropsShopItemResponse {
   armorPiece?: DropsShopArmorPiece;
   /** Лише аксесуари (category `earring`): амулет / сережки / кільця. */
   jewelrySubtype?: DropsShopJewelrySubtype;
+  /** Лише розхідники: «Банки» / «Стріли» / «Заряди» (соски воїна, благословенний заряд духу). */
+  consumableSubtype?: DropsShopConsumableSubtype;
 }
 
 function rowToClient(
@@ -323,6 +331,19 @@ function rowToClient(
     if (jp) out.jewelrySubtype = jp;
   }
 
+  if (row.category === 'consumable') {
+    if (keyNorm.startsWith('consumable/potion_')) {
+      out.consumableSubtype = 'vials';
+    } else if (keyNorm.startsWith('consumable/arrow_')) {
+      out.consumableSubtype = 'arrows';
+    } else if (
+      keyNorm.startsWith('consumable/fighter_soulshot_') ||
+      keyNorm.startsWith('consumable/blessed_spiritshot_')
+    ) {
+      out.consumableSubtype = 'charges';
+    }
+  }
+
   if (statsPreviewChosen?.lines?.length) {
     out.statsPreview = statsPreviewChosen;
   }
@@ -344,7 +365,11 @@ export function buildDropsShopCatalogForClient(): {
   const overrides = loadDropsShopOverrides();
   const byGrade = new Map<DropsShopGradeUk, DropsShopCatalogRow[]>();
   for (const g of DROPS_SHOP_GRADE_ORDER) byGrade.set(g, []);
-  const allCatalogRows = DROPS_SHOP_CATALOG.concat(DROPS_SHOP_CONSUMABLE_ROWS);
+  const allCatalogRows = DROPS_SHOP_CATALOG.concat(
+    DROPS_SHOP_CONSUMABLE_ROWS,
+    DROPS_SHOP_ARROW_ROWS,
+    DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+  );
   for (const row of allCatalogRows) {
     const arr = byGrade.get(row.grade);
     if (arr) arr.push(row);
@@ -384,12 +409,17 @@ export function buildDropsShopCatalogForClient(): {
 export async function applyDropsShopPurchase(
   userId: string,
   shopKeyRaw: string,
-  expectedRevision: number
+  expectedRevision: number,
+  qtyRaw?: unknown
 ): Promise<CharacterSnapshot> {
   const normalized = String(shopKeyRaw || '')
     .trim()
     .replace(/\\/g, '/');
-  const allRows = DROPS_SHOP_CATALOG.concat(DROPS_SHOP_CONSUMABLE_ROWS);
+  const allRows = DROPS_SHOP_CATALOG.concat(
+    DROPS_SHOP_CONSUMABLE_ROWS,
+    DROPS_SHOP_ARROW_ROWS,
+    DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+  );
   const row = allRows.find((r) => {
     const rk = r.shopKey.replace(/\\/g, '/');
     return rk === normalized || rk.toLowerCase() === normalized.toLowerCase();
@@ -417,13 +447,19 @@ export async function applyDropsShopPurchase(
     throw new Error('drops_shop_category_mismatch');
   }
 
-  let pre = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!pre) throw new Error('no_character');
-  pre = await applyPassiveHpRegen(pre as CharacterRow);
-  pre = (await resolveMapMovement(pre as CharacterRow)) as CharacterRow;
+  let qty = 1;
+  if (qtyRaw !== undefined) {
+    const q =
+      typeof qtyRaw === 'number' && Number.isInteger(qtyRaw)
+        ? qtyRaw
+        : typeof qtyRaw === 'string' && /^\d+$/.test(String(qtyRaw).trim())
+          ? parseInt(String(qtyRaw).trim(), 10)
+          : NaN;
+    if (!Number.isFinite(q) || q < 1 || q > 9999) {
+      throw new Error('drops_shop_bad_qty');
+    }
+    qty = q;
+  }
 
   return prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
@@ -431,29 +467,48 @@ export async function applyDropsShopPurchase(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
-
-    const adena = BigInt(char.adena);
-    if (adena < priceAdena) throw new Error('drops_shop_no_adena');
-
-    const inv = parseInventory((char as CharacterRow).inventoryJson);
-    const nextInv = addItemToBag(inv, itemId, 1);
-    const nextAdena = adena - priceAdena;
-
-    const upd: Prisma.CharacterUncheckedUpdateManyInput = {
-      inventoryJson: nextInv as unknown as Prisma.InputJsonValue,
-      adena: nextAdena,
-      revision: { increment: 1 },
-    };
-    const updated = await tx.character.updateMany({
-      where: { id: char.id, userId, revision: expectedRevision },
-      data: upd,
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const rowOut = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(rowOut as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = resolveMapMovement(applyPassiveHpRegen(current as CharacterRow));
+        const adena = BigInt(base.adena);
+        const totalPrice = priceAdena * BigInt(qty);
+        if (adena < totalPrice) throw new Error('drops_shop_no_adena');
+        const inv = parseInventory(base.inventoryJson);
+        const nextInv = addItemToBag(inv, itemId, qty);
+        const nextAdena = adena - totalPrice;
+        const changed =
+          base.hp !== current.hp ||
+          base.worldX !== current.worldX ||
+          base.worldY !== current.worldY ||
+          base.targetX !== current.targetX ||
+          base.targetY !== current.targetY ||
+          (base.moveStartAt?.getTime() ?? 0) !==
+            ((current as CharacterRow).moveStartAt?.getTime() ?? 0) ||
+          base.moveFromX !== current.moveFromX ||
+          base.moveFromY !== current.moveFromY ||
+          nextAdena !== current.adena;
+        if (!changed) return { changed: false };
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: base.worldX,
+            worldY: base.worldY,
+            targetX: base.targetX,
+            targetY: base.targetY,
+            moveStartAt: base.moveStartAt,
+            moveFromX: base.moveFromX,
+            moveFromY: base.moveFromY,
+            adena: nextAdena,
+            inventoryJson: nextInv as unknown as Prisma.InputJsonValue,
+          },
+        };
+      }
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }

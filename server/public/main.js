@@ -18,7 +18,57 @@
     el.textContent = t;
   }
 
-  $('btn-login').addEventListener('click', async function () {
+  function loadRememberedLogin() {
+    var inp = $('in-login');
+    if (!inp) return;
+    var saved = localStorage.getItem('auth_saved_login');
+    if (!saved) return;
+    inp.value = saved;
+    var rem = $('auth-remember');
+    if (rem) rem.checked = true;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadRememberedLogin);
+  } else {
+    loadRememberedLogin();
+  }
+
+  var passToggle = $('btn-pass-toggle');
+  var inpPass = $('in-pass');
+  if (passToggle && inpPass) {
+    passToggle.addEventListener('click', function () {
+      inpPass.type = inpPass.type === 'password' ? 'text' : 'password';
+    });
+  }
+
+  var forgot = $('auth-forgot-pass');
+  if (forgot) {
+    forgot.addEventListener('click', function (e) {
+      e.preventDefault();
+      showErr(
+        window.L2 && L2.tr
+          ? L2.tr('auth_forgot_stub')
+          : 'Відновлення пароля ще не підключено — зверніться до адміністрації сервера.'
+      );
+    });
+  }
+
+  var btnLogin = $('btn-login');
+  if (!btnLogin) return;
+
+  ;['in-login', 'in-pass'].forEach(function (id) {
+    var el = $(id);
+    if (!el) return;
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnLogin.click();
+      }
+    });
+  });
+
+  btnLogin.addEventListener('click', async function () {
     showErr('');
     var loginVal = $('in-login').value.trim();
     var password = $('in-pass').value;
@@ -45,6 +95,12 @@
               (j.error || r.status)
       );
       return;
+    }
+    var rem = $('auth-remember');
+    if (rem && rem.checked) {
+      localStorage.setItem('auth_saved_login', loginVal);
+    } else {
+      localStorage.removeItem('auth_saved_login');
     }
     localStorage.setItem('token', j.token);
     window.location.href = '/city.html';

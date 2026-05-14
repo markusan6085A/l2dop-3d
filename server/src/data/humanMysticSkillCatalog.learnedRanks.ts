@@ -4,6 +4,8 @@ import { elvenMysticCatalogEntry } from './elvenMysticSkillCatalog.lookup.js';
 import { darkMysticCatalogEntry } from './darkMysticSkillCatalog.lookup.js';
 import { orcMysticCatalogEntry } from './orcMysticSkillCatalog.lookup.js';
 import { mysticCatalogEntryForRace } from './mysticSkillCatalog.byRace.js';
+import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
+import { L2DB_SKILL_LEVELS_BY_ID } from './l2dbSkillLevelsById.generated.js';
 import type {
   HumanMysticSkillCatalogEntry,
 } from './humanMysticSkillCatalog.types.js';
@@ -12,6 +14,7 @@ import type { LearnedSkillEntry } from './humanFighterSkillCatalog.types.js';
 /** Макс. ранг з обох каталогів (нормалізація JSON без раси). */
 export function maxMysticSkillRankAcrossCatalogs(battleId: string): number {
   const c = canonicalBattleSkillId(battleId);
+  const skillId = Number.parseInt(c.replace(/^l2_/, ''), 10);
   let r = 1;
   const h = humanMysticCatalogEntry(c);
   if (h && h.levels.length >= 1) r = Math.max(r, h.levels.length);
@@ -21,6 +24,11 @@ export function maxMysticSkillRankAcrossCatalogs(battleId: string): number {
   if (d && d.levels.length >= 1) r = Math.max(r, d.levels.length);
   const o = orcMysticCatalogEntry(c);
   if (o && o.levels.length >= 1) r = Math.max(r, o.levels.length);
+  const l2dbRows =
+    Number.isFinite(skillId) && skillId > 0
+      ? L2DB_SKILL_LEVELS_BY_ID[skillId]
+      : undefined;
+  if (l2dbRows && l2dbRows.length >= 1) r = Math.max(r, l2dbRows.length);
   return r;
 }
 
@@ -29,8 +37,11 @@ export function maxMysticSkillRankForBattleId(
   race: string
 ): number {
   const e = mysticCatalogEntryForRace(race, battleId);
-  if (!e || e.levels.length < 1) return 1;
-  return e.levels.length;
+  const l2dbRows =
+    e && e.l2SkillId > 0 ? L2DB_SKILL_LEVELS_BY_ID[e.l2SkillId] : undefined;
+  const local = !e || e.levels.length < 1 ? 1 : e.levels.length;
+  const remote = l2dbRows && l2dbRows.length >= 1 ? l2dbRows.length : 1;
+  return Math.max(local, remote);
 }
 
 export function minCharLevelForMysticSkillRank(
@@ -40,6 +51,8 @@ export function minCharLevelForMysticSkillRank(
   const r = Math.max(1, Math.floor(rank)) - 1;
   const row = entry.levels[r];
   if (row) return Math.max(1, row.requiredLevel);
+  const l2dbRow = L2DB_SKILL_LEVELS_BY_ID[entry.l2SkillId]?.[r];
+  if (l2dbRow) return Math.max(1, l2dbRow.requiredLevel);
   return entry.minLevel + Math.max(0, r);
 }
 
@@ -50,6 +63,8 @@ export function spCostForMysticSkillRankUpgrade(
   const r = Math.max(1, Math.floor(targetRank)) - 1;
   const row = entry.levels[r];
   if (row && row.spCost >= 1) return row.spCost;
+  const l2dbRow = L2DB_SKILL_LEVELS_BY_ID[entry.l2SkillId]?.[r];
+  if (l2dbRow && l2dbRow.spCost >= 1) return l2dbRow.spCost;
   return entry.spCost;
 }
 
@@ -73,7 +88,7 @@ export function filterLearnedMysticSkillEntriesForProfession(
     const bid = canonicalBattleSkillId(e.battleId);
     const cat = mysticCatalogEntryForRace(race, bid);
     if (!cat) continue;
-    if (!cat.visibleForProfessions.includes(p)) continue;
+    if (!mysticCatalogEntryVisibleForProfession(cat, p)) continue;
     out.push(e);
   }
   return out;

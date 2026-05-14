@@ -1,0 +1,22 @@
+/**
+ * Константи ефектів контрольних / debuff меж у fighter-turn (розбиття humanFighterTurn).
+ */
+export const SHOCK_BLAST_PDEF_DEBUFF_MS = 10_000;
+export const HAMMER_CRUSH_BASE_STUN_CHANCE_PCT = 45;
+export const HAMMER_CRUSH_STUN_PER_RANK_PCT = 2;
+export const HAMMER_CRUSH_STUN_CHANCE_CAP_PCT = 75;
+export const STUN_SHOT_BASE_STUN_CHANCE_PCT = 40;
+export const STUN_SHOT_STUN_PER_RANK_PCT = 2;
+export const STUN_SHOT_STUN_CHANCE_CAP_PCT = 70;
+export const THUNDER_STORM_BASE_STUN_CHANCE_PCT = 20;
+export const THUNDER_STORM_STUN_PER_RANK_PCT = 1;
+export const THUNDER_STORM_STUN_CHANCE_CAP_PCT = 30;
+export const EARTHQUAKE_BASE_STUN_CHANCE_PCT = 24;
+export const EARTHQUAKE_STUN_PER_RANK_PCT = 1;
+export const EARTHQUAKE_STUN_CHANCE_CAP_PCT = 32;
+export const SHOCK_STOMP_BASE_STUN_CHANCE_PCT = 55;
+export const SHOCK_STOMP_STUN_PER_RANK_PCT = 2;
+export const SHOCK_STOMP_STUN_CHANCE_CAP_PCT = 70;
+export const HAMSTRING_SHOT_BASE_CONTROL_CHANCE_PCT = 45;
+export const HAMSTRING_SHOT_CONTROL_PER_RANK_PCT = 2;
+export const HAMSTRING_SHOT_CONTROL_CHANCE_CAP_PCT = 70;

@@ -2,6 +2,7 @@ import { HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ } from './l2dopHumanFighterBatt
 import { mapFighterProfessionToHumanSkillCatalog } from './fighterProfessionHumanCatalogMap.js';
 import { HUMAN_FIGHTER_PROFESSION_WARRIOR_MIN_LEVEL } from './humanFighterSkillCatalog.constants.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
+import { isL2dbRgSkillAllowedForProfession } from './l2dbRgProfessionSkillGate.js';
 import {
   humanFighterCatalogEntry,
 } from './humanFighterSkillCatalog.lookup.js';
@@ -89,10 +90,11 @@ export function catalogEntryVisibleForProfession(
   entry: HumanFighterSkillCatalogEntry,
   l2Profession: string
 ): boolean {
-  if (entry.professionReq == null) return true;
   const p = mapFighterProfessionToHumanSkillCatalog(
     String(l2Profession || '').trim()
   );
+  if (!isL2dbRgSkillAllowedForProfession(p, entry.l2SkillId)) return false;
+  if (entry.professionReq == null) return true;
   if (entry.professionReq === 'human_warrior') {
     return isHumanWarriorSubclassProfession(p);
   }

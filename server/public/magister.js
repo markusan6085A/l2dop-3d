@@ -2,6 +2,8 @@
  * Сторінка магістра: іконка + назва, рівень, SP, опис, MP / сила скіла.
  */
 (function () {
+  var magisterActionInFlight = false;
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -24,12 +26,25 @@
     return q ? '/character/magister?npcId=' + encodeURIComponent(q) : '/character/magister';
   }
 
+  function magisterViewModeQuery() {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var v = String(p.get('mode') || '').trim().toLowerCase();
+      return v;
+    } catch (e) {
+      return '';
+    }
+  }
+
   /** Узгоджено з server skillIconAssetIdForDisplay: 141↔142 у файлах іконок. */
   function magisterSkillIconUrl(s) {
-    if (s.iconUrl && String(s.iconUrl).charAt(0) === '/') return s.iconUrl;
     var id = s.l2SkillId;
     if (id === 141) id = 142;
     else if (id === 142) id = 141;
+    if (window.L2 && typeof L2.resolveSkillIconUrl === 'function') {
+      return L2.resolveSkillIconUrl(id, s.iconUrl);
+    }
+    if (s.iconUrl && String(s.iconUrl).charAt(0) === '/') return s.iconUrl;
     return '/game/skill-icon/' + id;
   }
 
@@ -38,6 +53,18 @@
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(c);
     }
+  }
+
+  function applyMagisterSnapshot(snapshot) {
+    if (!snapshot) return;
+    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+      L2.applyCharacterSnapshot(snapshot);
+      return;
+    }
+    if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+      L2.setLastSnapshot(snapshot);
+    }
+    updateHeroLine(snapshot);
   }
 
   async function refreshCharacterSnapshot() {
@@ -50,10 +77,7 @@
     var j = await r.json().catch(function () {
       return {};
     });
-    if (j.character && window.L2 && L2.setLastSnapshot) {
-      L2.setLastSnapshot(j.character);
-    }
-    if (j.character) updateHeroLine(j.character);
+    if (j.character) applyMagisterSnapshot(j.character);
   }
 
   function setMagisterSkillIconFrameOuter(frame, logicalW, logicalH) {
@@ -122,8 +146,12 @@
     img.onload = function () {
       var nw = img.naturalWidth || 1;
       var nh = img.naturalHeight || 1;
-      var logW = Math.max(1, Math.round(nw / dpr));
-      var logH = Math.max(1, Math.round(nh / dpr));
+      /**
+       * Деякі старі іконки приходять дуже дрібними; тримаємо мін. 32x32,
+       * щоб у картці магістра іконка не виглядала «порожньою».
+       */
+      var logW = Math.max(32, Math.round(nw / dpr));
+      var logH = Math.max(32, Math.round(nh / dpr));
       img.style.width = logW + 'px';
       img.style.height = logH + 'px';
       setMagisterSkillIconFrameOuter(frame, logW, logH);
@@ -133,8 +161,8 @@
       img.onload = function () {
         var nw2 = img.naturalWidth || 32;
         var nh2 = img.naturalHeight || 32;
-        var w = nw2 * 1;
-        var h = nh2 * 1;
+        var w = Math.max(32, nw2 * 1);
+        var h = Math.max(32, nh2 * 1);
         img.style.width = w + 'px';
         img.style.height = h + 'px';
         setMagisterSkillIconFrameOuter(frame, w, h);
@@ -167,6 +195,78 @@
     return lines.join('\n');
   }
 
+  function renderLearnedOnlyList(list, d) {
+    var snap =
+      window.L2 && typeof L2.lastSnapshot === 'function'
+        ? L2.lastSnapshot()
+        : null;
+    var learned = snap && Array.isArray(snap.learnedBattleSkillsDetail)
+      ? snap.learnedBattleSkillsDetail
+      : [];
+    var byBattleId = Object.create(null);
+    (d.skills || []).forEach(function (s) {
+      var k = String((s && s.battleId) || '').trim();
+      if (k) byBattleId[k] = s;
+    });
+
+    if (!learned.length) {
+      var empty = document.createElement('li');
+      empty.className = 'l2-magisters-empty';
+      empty.textContent = 'Ще немає вивчених скілів.';
+      list.appendChild(empty);
+      return;
+    }
+
+    learned.forEach(function (e) {
+      if (!e || Number(e.level) < 1) return;
+      var bid = String(e.battleId || '').trim();
+      if (!bid) return;
+      var s = byBattleId[bid] || null;
+      var li = document.createElement('li');
+      li.className = 'l2-magister-skill-card';
+
+      var head = document.createElement('div');
+      head.className = 'l2-magister-skill-card__head';
+      var frame = document.createElement('span');
+      frame.className = 'l2-magister-skill-icon-frame';
+      var iconSkillId = s && Number.isFinite(Number(s.l2SkillId))
+        ? Number(s.l2SkillId)
+        : (function () {
+            var m = /^l2_(\d+)$/.exec(bid);
+            return m ? parseInt(m[1], 10) : 1;
+          })();
+      mountMagisterSkillIconCrisp(frame, magisterSkillIconUrl({ l2SkillId: iconSkillId, iconUrl: null }));
+      head.appendChild(frame);
+      var name = document.createElement('h2');
+      name.className = 'l2-magister-skill-card__name';
+      name.textContent = s && s.nameUk ? s.nameUk : bid;
+      head.appendChild(name);
+      li.appendChild(head);
+
+      var meta = document.createElement('p');
+      meta.className = 'l2-magister-skill-card__meta';
+      var maxPart =
+        s && s.maxSkillLevel != null && Number(s.maxSkillLevel) > 1
+          ? '/' + String(Math.floor(Number(s.maxSkillLevel)))
+          : '';
+      var kindUk = s && s.kind === 'passive' ? 'пасив' : 'активний';
+      meta.textContent = 'Ранг: ' + Math.floor(Number(e.level)) + maxPart + ' · ' + kindUk;
+      li.appendChild(meta);
+
+      var desc = document.createElement('p');
+      desc.className = 'l2-magister-skill-card__desc';
+      if (s && s.hintUk && String(s.hintUk).trim()) {
+        desc.textContent = String(s.hintUk).trim();
+      } else if (s && s.statsNoteUk && String(s.statsNoteUk).trim()) {
+        desc.textContent = String(s.statsNoteUk).trim();
+      } else {
+        desc.textContent = 'Вивчений скіл.';
+      }
+      li.appendChild(desc);
+      list.appendChild(li);
+    });
+  }
+
   async function loadMagisterPage() {
     var errEl = $('magister-err');
     var loadErr = $('magister-load-err');
@@ -176,6 +276,7 @@
     var list = $('magister-list');
     var title = $('magister-title');
     var sub = $('magister-sub');
+    var introEl = panel.querySelector('.l2-magister-intro');
     if (errEl) {
       errEl.hidden = true;
       errEl.textContent = '';
@@ -195,6 +296,7 @@
 
     var r = await fetch(magisterApiUrl(), {
       headers: { Authorization: 'Bearer ' + t },
+      cache: 'no-store',
     });
     if (r.status === 401) {
       localStorage.removeItem('token');
@@ -213,11 +315,36 @@
     panel.hidden = false;
 
     var d = await r.json();
+    var snapNowHeader =
+      window.L2 && typeof L2.lastSnapshot === 'function'
+        ? L2.lastSnapshot()
+        : null;
+    var spNow = Number(snapNowHeader && snapNowHeader.sp);
     if (title) {
-      title.textContent = d.npc.nameUk + ' (' + d.npc.nameEn + ')';
+      title.hidden = true;
+      title.textContent = '';
     }
     if (sub) {
-      sub.textContent = d.npc.titleUk;
+      var left = d && d.npc && d.npc.titleUk ? String(d.npc.titleUk) : '';
+      var spText = Number.isFinite(spNow) ? String(Math.floor(spNow)) : '—';
+      sub.innerHTML =
+        '<span class="l2-magister-panel__sub-left">' +
+        left +
+        '</span>' +
+        '<span class="l2-magister-panel__sub-right">SP: ' +
+        spText +
+        '</span>';
+    }
+    if (magisterViewModeQuery() === 'learned') {
+      if (title) title.textContent = 'Вивчені скіли';
+      if (sub) sub.textContent = 'Список твоїх вивчених умінь';
+      if (introEl) {
+        introEl.innerHTML =
+          '<p>Тут відображаються всі скіли, які ти вже вивчив у магістрів.</p>' +
+          '<p>Перевіряй ранги умінь і повертайся до навчання, коли збереш рівень та SP.</p>';
+      }
+      renderLearnedOnlyList(list, d);
+      return;
     }
     if (noteEl) {
       if (d.noteUk) {
@@ -233,10 +360,6 @@
       profEl.innerHTML = '';
       if (d.profession) {
         profEl.hidden = false;
-        var pMsg = document.createElement('p');
-        pMsg.className = 'l2-magister-profession-msg';
-        pMsg.textContent = d.profession.messageUk;
-        profEl.appendChild(pMsg);
         var nhFight = d.profession.fighterProfessionChoices;
         if (nhFight && nhFight.length) {
           nhFight.forEach(function (ch) {
@@ -711,6 +834,9 @@
           });
           profEl.appendChild(odc);
         }
+        if (profEl.childElementCount === 0) {
+          profEl.hidden = true;
+        }
       } else {
         profEl.hidden = true;
       }
@@ -732,6 +858,12 @@
       head.appendChild(name);
       li.appendChild(head);
 
+      var metaRow = document.createElement('div');
+      metaRow.className = 'l2-magister-skill-card__meta-row';
+
+      var metaStack = document.createElement('div');
+      metaStack.className = 'l2-magister-skill-card__meta-stack';
+
       var meta = document.createElement('p');
       meta.className = 'l2-magister-skill-card__meta';
       meta.textContent =
@@ -745,45 +877,57 @@
             '/' +
             s.maxSkillLevel
           : '') +
-        (s.kind === 'passive' ? ' · пасив' : ' · активний бійовий');
-      li.appendChild(meta);
-
-      var desc = document.createElement('p');
-      desc.className = 'l2-magister-skill-card__desc';
-      desc.textContent = s.hintUk;
-      li.appendChild(desc);
+        (s.kind === 'passive' ? ' · пасив' : ' · активний бойовий');
+      metaStack.appendChild(meta);
 
       var combat = document.createElement('p');
       combat.className = 'l2-magister-skill-card__combat';
       combat.textContent = combatLine(s);
-      li.appendChild(combat);
+      metaStack.appendChild(combat);
+
+      metaRow.appendChild(metaStack);
 
       var actions = document.createElement('div');
       actions.className = 'l2-magister-skill-card__actions';
       if (s.learnedMax) {
         var ok = document.createElement('span');
+        ok.className =
+          'l2-magister-skill-card__status-msg l2-magister-skill-card__status-msg--max';
         ok.textContent = 'Максимальний ранг';
-        ok.style.color = '#8cdb8c';
         actions.appendChild(ok);
-      } else if (s.canLearn) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'btn-l2 btn-l2-primary';
-        b.textContent =
+      } else {
+        var learnBtn = document.createElement('button');
+        learnBtn.type = 'button';
+        learnBtn.className =
+          'btn-l2 btn-l2-primary l2-magister-skill-card__learn-btn';
+        learnBtn.textContent =
           s.skillLevel != null && s.skillLevel >= 1
             ? 'Підвищити ранг (' + s.spCost + ' SP)'
             : 'Вивчити (' + s.spCost + ' SP)';
-        b.addEventListener('click', function () {
-          learnMagisterSkill(s.battleId);
-        });
-        actions.appendChild(b);
-      } else {
-        var need = document.createElement('span');
-        need.style.color = '#c8a878';
-        need.textContent = 'Недостатньо умов (рівень або SP).';
-        actions.appendChild(need);
+        if (!s.canLearn) {
+          learnBtn.disabled = true;
+          learnBtn.title = 'Недостатньо умов (рівень або SP).';
+        } else {
+          learnBtn.addEventListener('click', function () {
+            learnMagisterSkill(s.battleId);
+          });
+        }
+        actions.appendChild(learnBtn);
       }
-      li.appendChild(actions);
+      metaRow.appendChild(actions);
+      li.appendChild(metaRow);
+
+      var hintRaw = s.hintUk != null ? String(s.hintUk) : '';
+      var hint = hintRaw.replace(/\s+/g, ' ').trim();
+      var nameForDup =
+        s.nameUk != null ? String(s.nameUk).replace(/\s+/g, ' ').trim() : '';
+      if (hint !== '' && hint !== nameForDup) {
+        var desc = document.createElement('p');
+        desc.className = 'l2-magister-skill-card__desc';
+        desc.textContent = hintRaw.trim();
+        li.appendChild(desc);
+      }
+
       list.appendChild(li);
     });
   }
@@ -1630,6 +1774,8 @@
 
   /** Зміна профи: slug на кшталт elf-elven-wizard → POST /character/profession/{slug}. */
   async function postCharacterProfessionSlug(slug) {
+    if (magisterActionInFlight) return;
+    magisterActionInFlight = true;
     var errEl = $('magister-err');
     if (errEl) {
       errEl.hidden = true;
@@ -1647,45 +1793,52 @@
       return;
     }
     var t = localStorage.getItem('token');
-    var r = await fetch('/character/profession/' + slug, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + t,
-      },
-      body: JSON.stringify({ expectedRevision: snap.revision }),
-    });
-    var j = await r.json().catch(function () {
-      return {};
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
-    }
-    if (!r.ok) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent =
-          j.messageUk ||
-          (j.error === 'revision_conflict'
-            ? 'Конфлікт даних — синхронізація…'
-            : j.error || 'Помилка зміни профи.');
+    try {
+      var r = await fetch('/character/profession/' + slug, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + t,
+        },
+        body: JSON.stringify({ expectedRevision: snap.revision }),
+      });
+      var j = await r.json().catch(function () {
+        return {};
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
       }
-      if (r.status === 409) {
-        await refreshCharacterSnapshot();
-        loadMagisterPage();
+      if (!r.ok) {
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent =
+            j.messageUk ||
+            (j.error === 'revision_conflict'
+              ? 'Конфлікт даних — синхронізація…'
+              : j.error || 'Помилка зміни профи.');
+        }
+        if (r.status === 409) {
+          if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+            await L2.resyncCharacterAfterConflict();
+          } else {
+            await refreshCharacterSnapshot();
+          }
+          loadMagisterPage();
+        }
+        return;
       }
-      return;
+      if (j.character) applyMagisterSnapshot(j.character);
+      loadMagisterPage();
+    } finally {
+      magisterActionInFlight = false;
     }
-    if (j.character && window.L2 && L2.setLastSnapshot) {
-      L2.setLastSnapshot(j.character);
-    }
-    if (j.character) updateHeroLine(j.character);
-    loadMagisterPage();
   }
 
   async function learnMagisterSkill(battleId) {
+    if (magisterActionInFlight) return;
+    magisterActionInFlight = true;
     var errEl = $('magister-err');
     if (errEl) {
       errEl.hidden = true;
@@ -1703,45 +1856,50 @@
       return;
     }
     var t = localStorage.getItem('token');
-    var r = await fetch('/character/skills/learn', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + t,
-      },
-      body: JSON.stringify({
-        battleId: battleId,
-        expectedRevision: snap.revision,
-      }),
-    });
-    var j = await r.json().catch(function () {
-      return {};
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
-    }
-    if (!r.ok) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent =
-          j.messageUk ||
-          (j.error === 'revision_conflict'
-            ? 'Конфлікт даних — синхронізація…'
-            : j.error || 'Помилка вивчення.');
+    try {
+      var r = await fetch('/character/skills/learn', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + t,
+        },
+        body: JSON.stringify({
+          battleId: battleId,
+          expectedRevision: snap.revision,
+        }),
+      });
+      var j = await r.json().catch(function () {
+        return {};
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
       }
-      if (r.status === 409) {
-        await refreshCharacterSnapshot();
-        loadMagisterPage();
+      if (!r.ok) {
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent =
+            j.messageUk ||
+            (j.error === 'revision_conflict'
+              ? 'Конфлікт даних — синхронізація…'
+              : j.error || 'Помилка вивчення.');
+        }
+        if (r.status === 409) {
+          if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+            await L2.resyncCharacterAfterConflict();
+          } else {
+            await refreshCharacterSnapshot();
+          }
+          loadMagisterPage();
+        }
+        return;
       }
-      return;
+      if (j.character) applyMagisterSnapshot(j.character);
+      loadMagisterPage();
+    } finally {
+      magisterActionInFlight = false;
     }
-    if (j.character && window.L2 && L2.setLastSnapshot) {
-      L2.setLastSnapshot(j.character);
-    }
-    if (j.character) updateHeroLine(j.character);
-    loadMagisterPage();
   }
 
   async function init() {

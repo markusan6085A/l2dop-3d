@@ -43,6 +43,8 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
   const mysCastGap = jsonFiniteNum(next.mysticCastSpdBuffMul);
   const mysPdefGap = jsonFiniteNum(next.mysticPdefBuffMul);
   const mysMdefGap = jsonFiniteNum(next.mysticMdefBuffMul);
+  const ssGap = jsonFiniteNum(next.fighterSoulshotPatkMul);
+  const mystBlessSsGap = jsonFiniteNum(next.mysticBlessedSpiritshotMatkMul);
   const hasWeaknessDetects = Object.keys(getWeaknessDetectMap(next)).length > 0;
   const hasRaceToggles =
     !!next.raceToggleRanks &&
@@ -88,7 +90,9 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
     (mysMatkGap !== undefined && mysMatkGap > 1) ||
     (mysCastGap !== undefined && mysCastGap > 1) ||
     (mysPdefGap !== undefined && mysPdefGap > 1) ||
-    (mysMdefGap !== undefined && mysMdefGap > 1)
+    (mysMdefGap !== undefined && mysMdefGap > 1) ||
+    (ssGap !== undefined && ssGap > 1) ||
+    (mystBlessSsGap !== undefined && mystBlessSsGap > 1)
   );
 }
 
@@ -351,6 +355,31 @@ export function applyBattleModsPatch(
     const v = jsonFiniteNum(patch.bluffCritDmgMul);
     if (v !== undefined && v > 1) next.bluffCritDmgMul = v;
     else delete next.bluffCritDmgMul;
+  }
+  if (patch.fighterSoulshotPatkMul !== undefined || patch.fighterSoulshotItemId !== undefined) {
+    const m = jsonFiniteNum(patch.fighterSoulshotPatkMul);
+    const iid = jsonFiniteNum(patch.fighterSoulshotItemId);
+    if (m !== undefined && m > 1 && iid !== undefined && iid > 0) {
+      next.fighterSoulshotPatkMul = m;
+      next.fighterSoulshotItemId = Math.floor(iid);
+    } else {
+      delete next.fighterSoulshotPatkMul;
+      delete next.fighterSoulshotItemId;
+    }
+  }
+  if (
+    patch.mysticBlessedSpiritshotMatkMul !== undefined ||
+    patch.mysticBlessedSpiritshotItemId !== undefined
+  ) {
+    const m = jsonFiniteNum(patch.mysticBlessedSpiritshotMatkMul);
+    const iid = jsonFiniteNum(patch.mysticBlessedSpiritshotItemId);
+    if (m !== undefined && m > 1 && iid !== undefined && iid > 0) {
+      next.mysticBlessedSpiritshotMatkMul = m;
+      next.mysticBlessedSpiritshotItemId = Math.floor(iid);
+    } else {
+      delete next.mysticBlessedSpiritshotMatkMul;
+      delete next.mysticBlessedSpiritshotItemId;
+    }
   }
   if (patch.silentMoveActive !== undefined) {
     if (patch.silentMoveActive) {

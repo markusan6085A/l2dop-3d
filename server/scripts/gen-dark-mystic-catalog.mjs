@@ -9,6 +9,7 @@ import {
   HUMAN_MYSTIC_HINT_UK,
   MYSTIC_SKILL_HINT_UK,
 } from './mysticSkillHintsUk.mjs';
+import { EXCLUDE_FROM_MYSTIC_MAGISTER_CATALOG } from './magisterExcludedSkillIds.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEXT_DM = path.resolve(
@@ -311,6 +312,7 @@ for (const filePath of walkTs(TEXT_DM)) {
   const idM = s.match(/\bid:\s*(\d+)/);
   if (!idM) continue;
   const id = Number(idM[1]);
+  if (EXCLUDE_FROM_MYSTIC_MAGISTER_CATALOG.has(id)) continue;
   const nameM = s.match(/name:\s*"([^"]+)"/);
   const catM = s.match(/category:\s*"([^"]+)"/);
   const cdM = s.match(/cooldown:\s*(\d+)/);

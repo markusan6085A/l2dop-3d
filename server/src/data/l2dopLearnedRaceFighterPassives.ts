@@ -21,7 +21,7 @@ import { fighterCatalogEntryForRace } from './fighterSkillCatalog.byRace.js';
 import {
   maxRaceFighterSkillRankForBattleId,
 } from './fighterSkillCatalog.byRace.js';
-import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
+import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from './l2dopXmlSkillLevels.lookup.js';
 
 function clampRank(
@@ -130,7 +130,7 @@ export function learnedRaceFighterPassivesBuffDelta(
     const bid = canonicalBattleSkillId(e.battleId);
     const cat = fighterCatalogEntryForRace(race, classBranch, bid);
     if (!cat || cat.kind !== 'passive') continue;
-    if (!mysticCatalogEntryVisibleForProfession(cat, prof)) continue;
+    if (!raceFighterCatalogEntryVisibleForProfession(cat, prof)) continue;
     const r = clampRank(bid, e.level, race, classBranch);
     const row = cat.levels[r - 1];
     if (!row) continue;

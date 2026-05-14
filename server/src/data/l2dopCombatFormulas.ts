@@ -554,6 +554,8 @@ export function computeCombatStatsOptionsForCharacter(row: {
   activeBuffsJson: unknown;
   buffHeroicTier: number | null | undefined;
   buffZealotStacks: number | null | undefined;
+  hp?: number;
+  maxHp?: number;
   skillsLearnedJson?: unknown;
   l2Profession?: string;
   inventoryJson?: unknown;
@@ -584,7 +586,10 @@ export function computeCombatStatsOptionsForCharacter(row: {
     prof
   );
   let acc = neutralCombatBuffs();
-  acc = applyBuffDelta(acc, learnedPassivesBuffDelta(entries, inv, prof));
+  acc = applyBuffDelta(
+    acc,
+    learnedPassivesBuffDelta(entries, inv, prof, row.hp, row.maxHp)
+  );
   acc = applyBuffDelta(
     acc,
     learnedMysticPassivesBuffDelta(

@@ -11,19 +11,34 @@ export function l2dopUniformRandom(low: number, high: number): number {
   return a + Math.random() * (b - a);
 }
 
-/** `function.php`: floor((70 * pAtk) / ePdef); SOS/бафи вже в `attackerAtk`, якщо потрібно. */
+/** Розкид фіз. урону після формули l2dop (~±10%, як просили для бою з мобами). */
+export const L2DOP_PHYSICAL_DAMAGE_VARIANCE = 0.1;
+
+function physicalDamageAfterVariance(rawBeforeFloor: number): number {
+  const raw = Number.isFinite(rawBeforeFloor) ? rawBeforeFloor : 1;
+  const low = raw * (1 - L2DOP_PHYSICAL_DAMAGE_VARIANCE);
+  const high = raw * (1 + L2DOP_PHYSICAL_DAMAGE_VARIANCE);
+  return Math.max(1, Math.floor(l2dopUniformRandom(low, high)));
+}
+
+/**
+ * Базовий фіз. урон як у `function.php`: спочатку (70×P.Atk)/P.Def, потім випадковий
+ * множник у діапазоні [1−{@link L2DOP_PHYSICAL_DAMAGE_VARIANCE},
+ * 1+{@link L2DOP_PHYSICAL_DAMAGE_VARIANCE}].
+ */
 export function l2dopPhysicalBaseDamage(
   attackerAtk: number,
   targetPDef: number
 ): number {
   const def = Math.max(1, Math.floor(targetPDef));
   const atk = Math.max(1, Math.floor(attackerAtk));
-  return Math.max(1, Math.floor((70 * atk) / def));
+  const raw = (70 * atk) / def;
+  return physicalDamageAfterVariance(raw);
 }
 
 /**
- * Крит з `function.php`: floor((((2*70*pAtk)/ePdef)*bonusSOS)*critdmg + AddCritDmg).
- * `critDmgMul` відповідає добутку `$critdmg` після бафів.
+ * Крит з `function.php`: ((2×70×P.Atk)/P.Def)×critdmg + AddCritDmg; на суму накладається
+ * той самий ±розкид, що й на звичайний удар.
  */
 export function l2dopPhysicalCritDamage(
   attackerAtk: number,
@@ -34,10 +49,9 @@ export function l2dopPhysicalCritDamage(
   const def = Math.max(1, Math.floor(targetPDef));
   const atk = Math.max(1, Math.floor(attackerAtk));
   const core = (2 * 70 * atk) / def;
-  return Math.max(
-    1,
-    Math.floor(core * Math.max(1, critDmgMul) + Math.max(0, addCritDmg))
-  );
+  const raw =
+    core * Math.max(1, critDmgMul) + Math.max(0, addCritDmg);
+  return physicalDamageAfterVariance(raw);
 }
 
 /**

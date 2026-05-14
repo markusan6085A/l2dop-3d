@@ -13,6 +13,7 @@ import { fighterCatalogEntryForRace } from '../../data/fighterSkillCatalog.byRac
 import {
   applyCooldownReductionMul,
   mysticGlobalSkillCooldownSec,
+  scaleSkillCooldownByCastSpeed,
 } from '../../data/mysticSkillCooldown.js';
 import { jsonFiniteNum } from '../battle.js';
 import type {
@@ -25,6 +26,10 @@ import {
   mysticBuffPatch,
   mysticDebuffPatch,
 } from './humanMysticTurn.js';
+import {
+  assertSkillCooldownReady,
+  isCooldownBlocked,
+} from './humanFighterTurnHelpers.js';
 
 function mysticCdKey(skillId: number): string {
   return `l2_${skillId}`;
@@ -114,6 +119,11 @@ function assertWeaponRaceFighterPhysical(
   entry: HumanMysticSkillCatalogEntry,
   wk: string | undefined
 ): void {
+  /**
+   * За геймплейним правилом у цій гілці: toggle-скіли можна вмикати
+   * з будь-якою зброєю (без weapon gate).
+   */
+  if (entry.kind === 'toggle') return;
   if (entry.category !== 'physical_attack') return;
   const id = entry.l2SkillId;
   if (BOW_PHYS_L2.has(id)) {
@@ -145,6 +155,7 @@ function assertWeaponRaceFighterMagic(
   entry: HumanMysticSkillCatalogEntry,
   wk: string | undefined
 ): void {
+  if (entry.kind === 'toggle') return;
   if (entry.category !== 'magic_attack') return;
   if (POLE_MAGIC_L2.has(entry.l2SkillId) && wk !== 'pole') {
     throw new Error('battle_skill_not_allowed');
@@ -226,10 +237,10 @@ export function tryResolveFighterRaceCatalogTurn(
   const cdUntil = readMysticCd(ctx.st, entry.l2SkillId);
   if (
     cdUntil !== undefined &&
-    Date.now() < cdUntil &&
+    isCooldownBlocked(cdUntil) &&
     !(entry.kind === 'toggle' && toggleOnNow)
   ) {
-    throw new Error('battle_skill_not_allowed');
+    assertSkillCooldownReady(cdUntil);
   }
 
   const mpCost = Math.max(0, Math.floor(xmlRow?.m ?? row?.mpCost ?? 0));
@@ -245,13 +256,22 @@ export function tryResolveFighterRaceCatalogTurn(
         : rowPower;
 
   const { combat, st, preLevel, l2Profession } = ctx;
+  const effectiveCastSpd = Math.max(
+    1,
+    Math.floor(
+      combat.castSpd * (jsonFiniteNum(st.battleMods?.mysticCastSpdBuffMul) ?? 1)
+    )
+  );
   const cdSec =
     entry.kind === 'toggle'
       ? 1
       : typeof entry.cooldownSec === 'number' && entry.cooldownSec > 0
-        ? Math.max(0.1, entry.cooldownSec)
+        ? applyCooldownReductionMul(
+            scaleSkillCooldownByCastSpeed(entry.cooldownSec, effectiveCastSpd),
+            combat.cooldownReductionMul
+          )
         : applyCooldownReductionMul(
-            mysticGlobalSkillCooldownSec(combat.castSpd),
+            mysticGlobalSkillCooldownSec(effectiveCastSpd),
             combat.cooldownReductionMul
           );
   const mysticSkillCdUntilPatch: Record<string, number> = {};

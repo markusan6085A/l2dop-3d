@@ -1,11 +1,5 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
-import { parseInventory } from '../data/inventory.js';
-import {
-  computeCombatStats,
-  effectiveMaxHpWithJewelFlat,
-} from '../data/l2dopCombatFormulas.js';
-import { computeVitals } from '../data/l2dopVitals.js';
 import {
   MAX_MAP_MOVE_DISTANCE,
   resolveMapMovement,
@@ -14,34 +8,32 @@ import {
   getTeleportDestination,
   nearestMapTown,
 } from '../data/mapLocalities.js';
-import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { GameConflictError } from './charErrors.js';
-import {
-  applyPassiveHpRegen,
-  PASSIVE_REGEN_MAX_SECONDS,
-  PASSIVE_REGEN_TICK_SECONDS,
-} from './charPassiveRegen.js';
-import {
-  combatOptsFromRow,
-  effectiveMaxHpWithBattleRoar,
-  toSnapshot,
-} from './charSnapshotLogic.js';
+import { applyPassiveHpRegen } from './charPassiveRegen.js';
+import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
+
+function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
+  return resolveMapMovement(applyPassiveHpRegen(row));
+}
+
+function movementFieldsChanged(a: CharacterRow, b: CharacterRow): boolean {
+  return (
+    a.worldX !== b.worldX ||
+    a.worldY !== b.worldY ||
+    a.targetX !== b.targetX ||
+    a.targetY !== b.targetY ||
+    (a.moveStartAt?.getTime() ?? 0) !== (b.moveStartAt?.getTime() ?? 0) ||
+    a.moveFromX !== b.moveFromX ||
+    a.moveFromY !== b.moveFromY
+  );
+}
 
 export async function performHunt(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  let pre = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!pre) {
-    throw new Error('no_character');
-  }
-  pre = await applyPassiveHpRegen(pre as CharacterRow);
-  pre = (await resolveMapMovement(pre as CharacterRow)) as CharacterRow;
-
   return prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
@@ -50,68 +42,40 @@ export async function performHunt(
     if (!char) {
       throw new Error('no_character');
     }
-    if (char.revision !== expectedRevision) {
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        const adenaGain = BigInt(Math.floor(Math.random() * 50) + 1);
+        const dmg = Math.floor(Math.random() * 6) + 1;
+        const newHp = Math.max(0, base.hp - dmg);
+        const changed =
+          movementFieldsChanged(current as CharacterRow, base) ||
+          newHp !== current.hp ||
+          adenaGain > 0n;
+        if (!changed) return { changed: false };
+        return {
+          changed: true,
+          data: {
+            hp: newHp,
+            adena: { increment: adenaGain },
+            worldX: base.worldX,
+            worldY: base.worldY,
+            targetX: base.targetX,
+            targetY: base.targetY,
+            moveStartAt: base.moveStartAt,
+            moveFromX: base.moveFromX,
+            moveFromY: base.moveFromY,
+          },
+        };
+      }
+    );
+    if (!result.ok) {
       throw new GameConflictError();
     }
-
-    const cr = char as CharacterRow;
-    const inv = parseInventory(cr.inventoryJson);
-    const huntLv = levelFromTotalExp(cr.exp);
-    const combat = computeCombatStats(
-      huntLv,
-      char.race,
-      char.classBranch,
-      inv,
-      combatOptsFromRow(cr)
-    );
-    const vit = computeVitals(
-      huntLv,
-      char.race,
-      char.classBranch,
-      combat.con,
-      combat.men
-    );
-    const maxHpBase = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
-    const maxHp = effectiveMaxHpWithBattleRoar(cr, maxHpBase);
-    const elapsedMs = Date.now() - char.lastUpdate.getTime();
-    const sec = Math.min(
-      PASSIVE_REGEN_MAX_SECONDS,
-      Math.max(
-        0,
-        Math.floor(elapsedMs / (PASSIVE_REGEN_TICK_SECONDS * 1000)) *
-          PASSIVE_REGEN_TICK_SECONDS
-      )
-    );
-    const hpAfterRegen =
-      combat.regenHp > 0
-        ? Math.min(maxHp, char.hp + combat.regenHp * sec)
-        : Math.min(char.hp, maxHp);
-
-    const adenaGain = BigInt(Math.floor(Math.random() * 50) + 1);
-    const dmg = Math.floor(Math.random() * 6) + 1;
-    const newHp = Math.max(0, hpAfterRegen - dmg);
-
-    const updated = await tx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        adena: { increment: adenaGain },
-        hp: newHp,
-        revision: { increment: 1 },
-      },
-    });
-
-    if (updated.count === 0) {
-      throw new GameConflictError();
-    }
-
-    const row = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(row as CharacterRow);
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
@@ -130,51 +94,42 @@ export async function performMapMove(
   const tgx = Math.floor(targetX);
   const tgy = Math.floor(targetY);
 
-  let row = (await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  })) as CharacterRow | null;
-  if (!row) throw new Error('no_character');
-  row = await applyPassiveHpRegen(row);
-  row = (await resolveMapMovement(row)) as CharacterRow;
-
-  const dist = Math.hypot(tgx - row.worldX, tgy - row.worldY);
-  if (dist > MAX_MAP_MOVE_DISTANCE) {
-    throw new Error('map_target_too_far');
-  }
-  if (dist < 8) {
-    throw new Error('map_target_too_close');
-  }
-
   return prisma.$transaction(async (trx) => {
     const char = (await trx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
     })) as CharacterRow | null;
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) {
-      throw new GameConflictError();
-    }
-    const updated = await trx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        targetX: tgx,
-        targetY: tgy,
-        moveStartAt: new Date(),
-        moveFromX: char.worldX,
-        moveFromY: char.worldY,
-        revision: { increment: 1 },
-      } as unknown as Prisma.CharacterUpdateManyMutationInput,
-    });
-    if (updated.count === 0) throw new GameConflictError();
-    const next = await trx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(next as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      trx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        const dist = Math.hypot(tgx - base.worldX, tgy - base.worldY);
+        if (dist > MAX_MAP_MOVE_DISTANCE) {
+          throw new Error('map_target_too_far');
+        }
+        if (dist < 8) {
+          throw new Error('map_target_too_close');
+        }
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: base.worldX,
+            worldY: base.worldY,
+            targetX: tgx,
+            targetY: tgy,
+            moveStartAt: new Date(),
+            moveFromX: base.worldX,
+            moveFromY: base.worldY,
+          } as Prisma.CharacterUpdateManyMutationInput,
+        };
+      }
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
@@ -194,47 +149,50 @@ export async function performTeleport(
   const wx = Math.floor(dest.worldX);
   const wy = Math.floor(dest.worldY);
 
-  let row = (await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  })) as CharacterRow | null;
-  if (!row) throw new Error('no_character');
-  row = await applyPassiveHpRegen(row);
-  row = (await resolveMapMovement(row)) as CharacterRow;
-
   return prisma.$transaction(async (trx) => {
     const char = (await trx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
     })) as CharacterRow | null;
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) {
-      throw new GameConflictError();
-    }
-    const updated = await trx.character.updateMany({
-      where: {
-        id: char.id,
-        userId,
-        revision: expectedRevision,
-      },
-      data: {
-        worldX: wx,
-        worldY: wy,
-        targetX: 0,
-        targetY: 0,
-        moveStartAt: null,
-        moveFromX: wx,
-        moveFromY: wy,
-        cityId: dest.cityId,
-        battleJson: Prisma.JsonNull,
-        revision: { increment: 1 },
-      } as unknown as Prisma.CharacterUpdateManyMutationInput,
-    });
-    if (updated.count === 0) throw new GameConflictError();
-    const next = await trx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(next as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      trx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        const changed =
+          base.hp !== current.hp ||
+          movementFieldsChanged(current as CharacterRow, base) ||
+          base.worldX !== wx ||
+          base.worldY !== wy ||
+          base.targetX !== 0 ||
+          base.targetY !== 0 ||
+          base.moveStartAt != null ||
+          base.moveFromX !== wx ||
+          base.moveFromY !== wy ||
+          base.cityId !== dest.cityId ||
+          base.battleJson != null;
+        if (!changed) return { changed: false };
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: wx,
+            worldY: wy,
+            targetX: 0,
+            targetY: 0,
+            moveStartAt: null,
+            moveFromX: wx,
+            moveFromY: wy,
+            cityId: dest.cityId,
+            battleJson: Prisma.JsonNull,
+          } as Prisma.CharacterUpdateManyMutationInput,
+        };
+      }
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
@@ -246,17 +204,55 @@ export async function performReturnToNearestTown(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  let row = (await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  })) as CharacterRow | null;
-  if (!row) throw new Error('no_character');
-  row = (await applyPassiveHpRegen(row)) as CharacterRow;
-  row = (await resolveMapMovement(row)) as CharacterRow;
-  if (row.revision !== expectedRevision) throw new GameConflictError();
-  if (row.battleJson != null) {
-    throw new Error('battle_still_active');
-  }
-  const near = nearestMapTown(row.worldX, row.worldY);
-  return performTeleport(userId, near.teleportId, row.revision);
+  return prisma.$transaction(async (tx) => {
+    const char = (await tx.character.findFirst({
+      where: { userId },
+      orderBy: { lastUpdate: 'desc' },
+    })) as CharacterRow | null;
+    if (!char) throw new Error('no_character');
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        if (base.battleJson != null) {
+          throw new Error('battle_still_active');
+        }
+        const near = nearestMapTown(base.worldX, base.worldY);
+        const dest = getTeleportDestination(near.teleportId);
+        if (!dest) throw new Error('teleport_unknown');
+        const wx = Math.floor(dest.worldX);
+        const wy = Math.floor(dest.worldY);
+        const changed =
+          base.hp !== current.hp ||
+          movementFieldsChanged(current as CharacterRow, base) ||
+          base.worldX !== wx ||
+          base.worldY !== wy ||
+          base.targetX !== 0 ||
+          base.targetY !== 0 ||
+          base.moveStartAt != null ||
+          base.moveFromX !== wx ||
+          base.moveFromY !== wy ||
+          base.cityId !== dest.cityId;
+        if (!changed) return { changed: false };
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: wx,
+            worldY: wy,
+            targetX: 0,
+            targetY: 0,
+            moveStartAt: null,
+            moveFromX: wx,
+            moveFromY: wy,
+            cityId: dest.cityId,
+          } as Prisma.CharacterUpdateManyMutationInput,
+        };
+      }
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
+  });
 }

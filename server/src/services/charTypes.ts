@@ -126,7 +126,7 @@ export interface CharacterSnapshot {
   weaponGradeMatchesArmor: boolean;
   vampiricPct: number;
   reflectPct: number;
-  /** Реген за тик (calc_stats.php 4683–4693, floor). Пасивне відновлення HP у БД — applyPassiveHpRegen (квант 2с). */
+  /** Реген за тик (calc_stats.php 4683–4693, floor). Пасивне відновлення HP — applyPassiveHpRegenPure (квант 2с). */
   regenCp: number;
   regenHp: number;
   regenMp: number;

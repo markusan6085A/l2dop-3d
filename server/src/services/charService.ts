@@ -8,7 +8,7 @@ export {
   combatOptsFromRow,
   toSnapshot,
 } from './charSnapshotLogic.js';
-export { applyPassiveHpRegen } from './charPassiveRegen.js';
+export { applyPassiveHpRegen, applyPassiveHpRegenPure } from './charPassiveRegen.js';
 export { ensureSanitizedSkillsLearnedRow } from './charSkillsSanitize.js';
 export {
   applyPersistedCombatBuffs,
@@ -18,6 +18,7 @@ export {
 } from './charMutations.js';
 export { castActiveSelfBuff } from './castActiveSelfBuff.js';
 export { toggleSelfStance } from './toggleSelfStance.js';
+export { applyTownBuffer } from './townBufferService.js';
 export {
   performHunt,
   performMapMove,

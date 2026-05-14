@@ -21,6 +21,7 @@ import {
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function assertElfMysticRow(row: CharacterRow): void {
   if (!isL2ElfRace(row.race) || !isMysticClassBranch(row.classBranch)) {
@@ -45,20 +46,20 @@ async function commitL2Profession(
   expectedRevision: number,
   nextProf: string
 ): Promise<CharacterSnapshot> {
-  const updated = await tx.character.updateMany({
-    where: {
-      id: charId,
-      userId,
-      revision: expectedRevision,
-    },
-    data: {
-      l2Profession: nextProf,
-      revision: { increment: 1 },
-    },
-  });
-  if (updated.count === 0) throw new GameConflictError();
-  const next = await tx.character.findUniqueOrThrow({ where: { id: charId } });
-  return toSnapshot(next as CharacterRow);
+  void userId;
+  const result = await mutateCharacterWithRevision(
+    tx,
+    charId,
+    expectedRevision,
+    () => ({
+      changed: true,
+      data: {
+        l2Profession: nextProf,
+      },
+    })
+  );
+  if (!result.ok) throw new GameConflictError();
+  return toSnapshot(result.character as CharacterRow);
 }
 
 //==== 1-ша профа: elf_mage → Elven Wizard | Elven Oracle (20+) ====

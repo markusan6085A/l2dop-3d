@@ -16,6 +16,7 @@ import { catalogEntryVisibleForProfession } from './humanFighterSkillCatalog.pro
 import { fighterCatalogEntryForRace } from './fighterSkillCatalog.byRace.js';
 import { mysticCatalogEntryForRace } from './mysticSkillCatalog.byRace.js';
 import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
+import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import { cooldownSecForSkillId } from './skillCooldowns.js';
 
 export type SelfBuffEntryKind = 'battle' | 'toggle' | 'passive';
@@ -57,7 +58,7 @@ export function resolveAnyCatalogEntry(
   }
 
   const rf = fighterCatalogEntryForRace(race, classBranch, canon);
-  if (rf && mysticCatalogEntryVisibleForProfession(rf, prof)) {
+  if (rf && raceFighterCatalogEntryVisibleForProfession(rf, prof)) {
     return {
       battleId: rf.battleId,
       l2SkillId: rf.l2SkillId,

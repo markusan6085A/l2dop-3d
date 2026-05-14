@@ -32,6 +32,23 @@ function rankFromUkString(raw: string): number | null {
   return null;
 }
 
+/** Грейд зброї за itemId (GM-каталог + ручні доповнення L2DOP_ITEM_GRADE_UK). */
+export function gmShopGradeForWeaponItemId(
+  itemId: number
+): GmShopGrade | undefined {
+  if (!Number.isFinite(itemId) || itemId <= 0) return undefined;
+  for (const row of L2DOP_GM_SHOP_WEAPONS) {
+    if (row.itemId === itemId) return row.grade;
+  }
+  const uk = L2DOP_ITEM_GRADE_UK[itemId];
+  if (uk == null || String(uk).trim() === '') return undefined;
+  const s = String(uk).trim().toUpperCase();
+  if (s === 'NG' || s === 'D' || s === 'C' || s === 'B' || s === 'A' || s === 'S') {
+    return s as GmShopGrade;
+  }
+  return undefined;
+}
+
 const ITEM_GRADE_RANK = (() => {
   const m = new Map<number, number>();
   for (const row of L2DOP_GM_SHOP_WEAPONS) {

@@ -138,7 +138,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 20,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -230,7 +230,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -364,7 +364,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 11,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -643,7 +643,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.2,
+    cooldownSec: 3,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -922,7 +922,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 3,
+    cooldownSec: 25,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -991,7 +991,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1049,7 +1049,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 2.5,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1329,7 +1329,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1,
+    cooldownSec: 3,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1405,7 +1405,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1539,7 +1539,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 3.2,
+    cooldownSec: 25,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1833,7 +1833,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 20
       }
     ],
-    cooldownSec: 3,
+    cooldownSec: 15,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1874,7 +1874,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1915,7 +1915,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.83,
+    cooldownSec: 60,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1956,7 +1956,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1993,7 +1993,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2023,7 +2023,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2310,7 +2310,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 3,
+    cooldownSec: 10,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2358,7 +2358,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.5,
+    cooldownSec: 20,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2545,7 +2545,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 3,
+    cooldownSec: 8,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2584,7 +2584,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 1350
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2620,7 +2620,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 20
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2660,7 +2660,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2696,7 +2696,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 200
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2834,7 +2834,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.2,
+    cooldownSec: 8,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2968,7 +2968,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 1.2,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3024,7 +3024,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 3,
+    cooldownSec: 9,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3083,7 +3083,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3157,7 +3157,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 3
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3191,7 +3191,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3200,8 +3200,8 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 144,
     minLevel: 40,
     spCost: 14000,
-    nameUk: "Dual Weapon Mastery",
-    hintUk: "Dual Weapon Mastery",
+    nameUk: "Майстерність дуального меча (Dual Weapon Mastery)",
+    hintUk: "Пасив: підвищує ефективність ударів дуальним мечем.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3475,7 +3475,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3762,7 +3762,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3802,7 +3802,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3838,7 +3838,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 7
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3921,43 +3921,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 0
       }
     ],
-    cooldownSec: 0,
-    skipMobHp: true,
-    hideAtBaseFighterUntilFirstProf: false
-  },
-  {
-    battleId: "l2_172",
-    l2SkillId: 172,
-    minLevel: 1,
-    spCost: 0,
-    nameUk: "Common Craft",
-    hintUk: "Common Craft",
-    kind: "passive",
-    category: "passive",
-    visibleForProfessions: [
-      "dark_elf_abyss_walker",
-      "dark_elf_assassin",
-      "dark_elf_bladedancer",
-      "dark_elf_fighter",
-      "dark_elf_ghost_hunter",
-      "dark_elf_ghost_sentinel",
-      "dark_elf_palus_knight",
-      "dark_elf_phantom_ranger",
-      "dark_elf_shillien_knight",
-      "dark_elf_shillien_templar",
-      "dark_elf_spectral_dancer"
-    ],
-    levels: [
-      {
-        level: 1,
-        requiredLevel: 1,
-        spCost: 0,
-        mpCost: 0,
-        power: 0
-      }
-    ],
-    effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4020,7 +3984,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4062,7 +4026,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4098,7 +4062,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4134,7 +4098,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 60
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4170,7 +4134,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4457,7 +4421,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4541,7 +4505,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4826,7 +4790,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5113,7 +5077,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 11,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5156,7 +5120,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 4
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5448,7 +5412,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 4
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5733,7 +5697,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5769,7 +5733,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 3
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5801,7 +5765,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5834,7 +5798,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 4
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5866,7 +5830,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5898,7 +5862,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5930,7 +5894,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5966,7 +5930,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5998,7 +5962,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6060,7 +6024,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6120,7 +6084,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 3,
+    cooldownSec: 120,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6309,7 +6273,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 80
       }
     ],
-    cooldownSec: 3,
+    cooldownSec: 15,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6411,7 +6375,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6453,7 +6417,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 3
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6506,7 +6470,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6538,7 +6502,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6570,7 +6534,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6603,7 +6567,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 8
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6636,7 +6600,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 30
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6769,7 +6733,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6901,7 +6865,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 3,
+    cooldownSec: 20,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6934,7 +6898,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 100
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7035,7 +6999,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7071,7 +7035,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7103,7 +7067,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7129,7 +7093,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7203,7 +7167,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.8,
+    cooldownSec: 600,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7229,7 +7193,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 30,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7266,7 +7230,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 10
       }
     ],
-    cooldownSec: 2,
+    cooldownSec: 600,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7297,7 +7261,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 10,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7328,7 +7292,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 60,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7359,7 +7323,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7394,7 +7358,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 10,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7445,7 +7409,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7496,7 +7460,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 1
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 1800,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -7528,44 +7492,8 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 6
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 300,
     skipMobHp: false,
-    hideAtBaseFighterUntilFirstProf: false
-  },
-  {
-    battleId: "l2_1320",
-    l2SkillId: 1320,
-    minLevel: 5,
-    spCost: 0,
-    nameUk: "Create Common Item",
-    hintUk: "Create Common Item",
-    kind: "passive",
-    category: "passive",
-    visibleForProfessions: [
-      "dark_elf_abyss_walker",
-      "dark_elf_assassin",
-      "dark_elf_bladedancer",
-      "dark_elf_fighter",
-      "dark_elf_ghost_hunter",
-      "dark_elf_ghost_sentinel",
-      "dark_elf_palus_knight",
-      "dark_elf_phantom_ranger",
-      "dark_elf_shillien_knight",
-      "dark_elf_shillien_templar",
-      "dark_elf_spectral_dancer"
-    ],
-    levels: [
-      {
-        level: 1,
-        requiredLevel: 5,
-        spCost: 0,
-        mpCost: 0,
-        power: 0
-      }
-    ],
-    effects: [],
-    cooldownSec: 0,
-    skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   }
 ];

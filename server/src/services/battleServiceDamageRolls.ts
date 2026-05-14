@@ -90,9 +90,11 @@ export function rollPlayerPhysicalDmg(
   const frenzyAtk = fzRaw !== undefined && fzRaw > 1 ? fzRaw : 1;
   const mysPatk = jsonFiniteNum(mods?.mysticPatkBuffMul);
   const mysPatkMul = mysPatk !== undefined && mysPatk > 1 ? mysPatk : 1;
+  const ssPatk = jsonFiniteNum(mods?.fighterSoulshotPatkMul);
+  const ssPatkMul = ssPatk !== undefined && ssPatk > 1 ? ssPatk : 1;
   let atkEff = Math.max(
     1,
-    Math.floor(atk * wc * weakMul * thrill * rageAtk * frenzyAtk * mysPatkMul)
+    Math.floor(atk * wc * weakMul * thrill * rageAtk * frenzyAtk * mysPatkMul * ssPatkMul)
   );
   let acc = combat.accuracy;
   let critRate = combat.critRate;

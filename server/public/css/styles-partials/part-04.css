@@ -1,0 +1,1195 @@
+.l2-battle-hotbar-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.l2-battle-hotbar-modal__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0e0c0;
+  line-height: 1.35;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Перекриває глобальний .btn-l2 { width:100%; display:block }, щоб не накривати заголовок */
+.l2-battle-hotbar-modal__close.btn-l2 {
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: auto;
+  max-width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-size: 11px;
+  padding: 5px 10px;
+  line-height: 1.2;
+}
+
+.l2-battle-hotbar-modal__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.l2-battle-hotbar-tab {
+  font-size: 12px;
+  padding: 5px 10px;
+  color: #c7a46a;
+  cursor: pointer;
+  border: 1px solid rgba(92, 74, 50, 0.65);
+  border-radius: 5px;
+  background: #1a1814;
+}
+
+.l2-battle-hotbar-tab:hover {
+  border-color: rgba(199, 173, 128, 0.45);
+}
+
+.l2-battle-hotbar-tab--on {
+  color: #fff8e8;
+  border-color: rgba(199, 173, 128, 0.55);
+  background: #252018;
+}
+
+.l2-battle-hotbar-modal__body {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.l2-battle-hotbar-modal__foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.l2-battle-hotbar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.l2-battle-hotbar-pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(92, 74, 50, 0.65);
+  border-radius: 5px;
+  background: #1f160c;
+}
+
+.l2-battle-hotbar-pick:hover {
+  border-color: rgba(212, 175, 85, 0.55);
+}
+
+.l2-battle-hotbar-pick-img {
+  width: 100%;
+  height: 100%;
+  max-width: 32px;
+  max-height: 32px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.l2-battle-hotbar-empty {
+  margin: 12px 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #a09080;
+  text-align: center;
+}
+
+.l2-battle-toast {
+  position: relative;
+  z-index: 50;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #e8e4dc;
+  background: rgba(22, 16, 12, 0.94);
+  border: 1px solid rgba(140, 110, 65, 0.5);
+  border-radius: 4px;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 200, 120, 0.06);
+}
+
+.l2-battle-log-wrap {
+  margin: 0 0 10px;
+}
+
+.l2-battle-log-title {
+  margin: 0 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+}
+
+.l2-battle-log {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px 14px;
+  max-height: min(36vh, 220px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #d4ccc0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 1px solid rgba(120, 95, 55, 0.4);
+  border-radius: 4px;
+  background: rgba(18, 14, 10, 0.72);
+}
+
+.l2-battle-log--colored {
+  white-space: normal;
+}
+
+.l2-battle-log-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding: 0;
+}
+
+/* Маленька іконка дропу + повний рядок тексту (як +1× Animal Skin) */
+.l2-battle-log-line--drop {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex-wrap: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+.l2-battle-log-line__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+.l2-battle-log-line__text {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Лог бою — семантичні кольори (рядки та фрагменти комбо) */
+.l2-battle-log--colored .log-normal {
+  color: #d7d7d7 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-player-damage {
+  color: #ff8a65 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: 0 0 4px rgba(255, 138, 101, 0.35);
+}
+
+.l2-battle-log--colored .log-enemy-damage {
+  color: #ff6b6b !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: 0 0 4px rgba(255, 107, 107, 0.3);
+}
+
+.l2-battle-log--colored .log-crit {
+  color: #ff5252 !important;
+  font-weight: 700;
+  font-style: normal;
+  text-shadow: 0 0 6px rgba(255, 59, 48, 0.6);
+}
+
+.l2-battle-log--colored .log-miss {
+  color: #9e9e9e !important;
+  font-weight: normal;
+  font-style: italic;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-skill {
+  color: #90caf9 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: 0 0 5px rgba(144, 202, 249, 0.35);
+}
+
+/* Удар скілом — рядок назви перед уроном (маркер U+2060 на сервері). */
+.l2-battle-log--colored .log-skill-hit {
+  color: #90caf9 !important;
+  font-weight: 600;
+  font-style: normal;
+  text-shadow: none;
+}
+
+/* Число урона («10 урона.») у рядку гравця та в комбо. */
+.l2-battle-log--colored .log-damage-dealt {
+  color: #ff8a65 !important;
+  font-weight: 600;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-combo {
+  color: #d7d7d7 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-combo-damage {
+  color: #ff8a65 !important;
+  font-weight: 600;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-heal {
+  color: #7ee787 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-debuff {
+  color: #ba68c8 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: 0 0 5px rgba(186, 104, 200, 0.35);
+}
+
+.l2-battle-log--colored .log-loot {
+  color: #ffb347 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-system {
+  color: #d7d7d7 !important;
+  font-weight: normal;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.l2-battle-log--colored .log-exp {
+  color: #64b5f6 !important;
+}
+
+.l2-battle-log--colored .log-sp {
+  color: #7ee787 !important;
+}
+
+.l2-battle-log--colored .log-adena {
+  color: #ffd166 !important;
+}
+
+.l2-battle-log--colored .log-item-loot {
+  color: #ffb347 !important;
+}
+
+.l2-battle-log--colored .log-cp-damage {
+  color: #ff6b6b !important;
+}
+
+.l2-battle-log--colored .log-toggle {
+  color: #90caf9 !important;
+  font-weight: 600;
+  font-style: normal;
+  text-shadow: 0 0 6px rgba(144, 202, 249, 0.45);
+}
+
+/* Екран перемоги — структура як у text-rpg Battle.tsx (modern / l2), 10 останніх рядків логу */
+.l2-battle-log--victory {
+  max-height: min(28vh, 200px);
+  margin: 0;
+  padding: 10px 14px;
+}
+
+.l2-battle-victory-root {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 6px;
+}
+
+.l2-battle-victory-mobhead {
+  margin: 0 0 8px;
+  padding: 0 10px;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+  color: #8a7860;
+}
+
+.l2-battle-victory-mobhead__name {
+  font-weight: 600;
+  color: #e85c5c;
+}
+
+.l2-battle-victory-mobhead__agr {
+  font-weight: 600;
+  color: #8b2020;
+}
+
+.l2-battle-victory-mobhead__lvl {
+  font-weight: 500;
+  color: #8a7860;
+}
+
+.l2-battle-victory-notify {
+  padding: 12px 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--l2-gold-frame);
+  background: rgba(6, 10, 16, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 215, 0, 0.06);
+}
+
+.l2-battle-victory-notify__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.l2-battle-victory-notify__swords {
+  font-size: 18px;
+  line-height: 1;
+  color: #9d8265;
+  user-select: none;
+}
+
+.l2-battle-victory-notify__shout {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #3bd16f;
+  line-height: 1.25;
+}
+
+.l2-battle-victory-notify__levelup {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.l2-battle-victory-notify__divider {
+  margin-top: 10px;
+  margin-bottom: 0;
+  border: 0;
+  border-top: 1px solid rgba(199, 173, 128, 0.25);
+}
+
+.l2-battle-victory-notify__loot {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: left;
+  color: #d4c4a8;
+  font-variant-numeric: tabular-nums;
+}
+
+.l2-battle-victory-notify__loot--icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.l2-battle-victory-loot__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.l2-battle-victory-loot__val {
+  font-weight: 600;
+}
+
+.l2-battle-victory-loot__val--adena {
+  color: #facc15;
+}
+
+.l2-battle-victory-loot__val--exp {
+  color: #22c55e;
+}
+
+.l2-battle-victory-loot__val--sp {
+  color: #22c55e;
+}
+
+.l2-battle-victory-notify__links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(199, 173, 128, 0.25);
+}
+
+.l2-battle-victory-link {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  margin: 0;
+  padding: 5px 14px;
+  text-align: center;
+  font-family: var(--l2-font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--l2-gold-frame);
+  text-decoration: none;
+  transition:
+    border-color 0.12s ease,
+    filter 0.12s ease;
+}
+
+.l2-battle-victory-link--primary {
+  color: #fff4d6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+  background: linear-gradient(180deg, var(--btn-blue-top) 0%, var(--btn-blue-mid) 50%, var(--btn-blue-bot) 100%);
+  border-color: rgba(200, 160, 90, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 10px rgba(120, 80, 40, 0.2);
+}
+
+.l2-battle-victory-link--primary:hover,
+.l2-battle-victory-link--primary:focus {
+  filter: brightness(1.08);
+  border-color: rgba(232, 200, 120, 0.55);
+  outline: none;
+}
+
+.l2-battle-victory-link--muted {
+  color: #e8dcc8;
+  background: rgba(8, 12, 22, 0.92);
+  border-color: var(--l2-gold-frame);
+  box-shadow: inset 0 1px 0 rgba(255, 215, 0, 0.06);
+}
+
+.l2-battle-victory-link--muted:hover,
+.l2-battle-victory-link--muted:focus {
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #fff4e0;
+  outline: none;
+}
+
+.l2-battle-victory-loghead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 8px;
+  padding: 0 4px;
+}
+
+.l2-battle-victory-loghead__text {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d4b878;
+}
+
+.l2-battle-victory-loghead__line {
+  flex: 1;
+  height: 1px;
+  min-width: 24px;
+}
+
+.l2-battle-victory-loghead__line--left {
+  background: linear-gradient(90deg, rgba(199, 173, 128, 0.5), transparent);
+}
+
+.l2-battle-victory-loghead__line--right {
+  background: linear-gradient(270deg, rgba(199, 173, 128, 0.5), transparent);
+}
+
+.l2-battle-victory-logbox {
+  border-radius: 6px;
+  border: 1px solid rgba(92, 74, 50, 0.7);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(199, 173, 128, 0.12);
+  overflow: hidden;
+}
+
+.l2-battle-victory-logbox .l2-battle-log {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 10px 14px;
+}
+
+.l2-battle-victory-logfoot {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* «Назад на карту» — як панель міста / моб: золота рамка, темний фон */
+.l2-battle-back-map,
+.l2-battle-victory-backloc {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 5px 14px;
+  font-family: var(--l2-font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #f0e8d8;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--l2-gold-frame);
+  background: rgba(8, 12, 22, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 215, 0, 0.08);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.l2-battle-back-map:hover,
+.l2-battle-back-map:focus,
+.l2-battle-victory-backloc:hover,
+.l2-battle-victory-backloc:focus {
+  border-color: rgba(212, 175, 55, 0.65);
+  color: #fff4e0;
+  outline: none;
+}
+
+.l2-battle-footer-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* Екран поразки в бою */
+.l2-battle-defeat-root {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 6px;
+}
+
+.l2-battle-defeat-mobhead {
+  margin: 0 0 8px;
+  padding: 0 10px;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+  color: #8a7860;
+}
+
+.l2-battle-defeat-mobhead__name {
+  font-weight: 600;
+  color: #f87171;
+}
+
+.l2-battle-defeat-mobhead__agr {
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.l2-battle-defeat-mobhead__lvl {
+  font-weight: 500;
+  color: #8a7860;
+}
+
+.l2-battle-defeat-notify {
+  padding: 12px 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(180, 60, 60, 0.45);
+  background: rgba(24, 8, 8, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 120, 120, 0.08);
+}
+
+.l2-battle-defeat-notify__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.l2-battle-defeat-notify__skull {
+  font-size: 20px;
+  line-height: 1;
+  color: #b91c1c;
+  user-select: none;
+}
+
+.l2-battle-defeat-notify__shout {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #f87171;
+  line-height: 1.25;
+}
+
+.l2-battle-defeat-notify__hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+  color: #d4c4a8;
+}
+
+.l2-battle-defeat-notify__divider {
+  margin-top: 12px;
+  margin-bottom: 0;
+  border: 0;
+  border-top: 1px solid rgba(199, 173, 128, 0.2);
+}
+
+.l2-battle-defeat-loghead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 8px;
+  padding: 0 4px;
+}
+
+.l2-battle-defeat-loghead__text {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c9a090;
+}
+
+.l2-battle-defeat-loghead__line {
+  flex: 1;
+  height: 1px;
+  min-width: 24px;
+}
+
+.l2-battle-defeat-loghead__line--left {
+  background: linear-gradient(90deg, rgba(200, 100, 100, 0.45), transparent);
+}
+
+.l2-battle-defeat-loghead__line--right {
+  background: linear-gradient(270deg, rgba(200, 100, 100, 0.45), transparent);
+}
+
+.l2-battle-log--defeat {
+  max-height: min(28vh, 200px);
+  margin: 0;
+  padding: 10px 14px;
+}
+
+.l2-battle-defeat-logbox {
+  border-radius: 6px;
+  border: 1px solid rgba(120, 50, 50, 0.5);
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.l2-battle-defeat-logbox .l2-battle-log {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 10px 14px;
+}
+
+.l2-battle-defeat-tocity {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 280px;
+  margin: 14px auto 0;
+  padding: 5px 14px;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff4e8;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid rgba(220, 100, 100, 0.55);
+  background: linear-gradient(180deg, #5a1e1e 0%, #3a1010 55%, #220808 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 200, 200, 0.12),
+    0 2px 10px rgba(0, 0, 0, 0.45);
+  transition:
+    filter 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.l2-battle-defeat-tocity:hover,
+.l2-battle-defeat-tocity:focus {
+  filter: brightness(1.08);
+  border-color: rgba(248, 113, 113, 0.65);
+  outline: none;
+}
+
+.l2-townlive-services {
+  margin: 0;
+  padding: 0;
+}
+
+/* Телепорт: окрема сторінка teleport.html */
+.l2-teleport-panel {
+  margin: 0;
+  padding: 8px 0 16px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.l2-teleport-panel__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e8d4a0;
+}
+
+.l2-teleport-panel__sub {
+  margin: 0 0 12px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #a09080;
+}
+
+.l2-teleport-panel__back {
+  margin: 0 0 12px;
+}
+
+/* Магістр: окрема сторінка magister.html */
+.l2-magister-panel {
+  margin: 0;
+  padding: 8px 0 16px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.l2-magister-panel__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e8d4a0;
+}
+
+.l2-magister-panel__sub {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #a09080;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.l2-magister-panel__sub-left {
+  min-width: 0;
+}
+
+.l2-magister-panel__sub-right {
+  margin-left: auto;
+  color: #cdb67e;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.l2-magister-back {
+  margin: 0 0 12px;
+}
+
+.l2-magister-intro {
+  margin: 0 0 14px;
+}
+
+.l2-magister-intro p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(232, 228, 212, 0.9);
+}
+
+.l2-magister-intro p:last-child {
+  margin-bottom: 0;
+}
+
+.l2-magister-note {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: #b8c8d4;
+}
+
+.l2-magister-profession {
+  margin: 0 0 12px;
+  padding: 10px;
+  border: 1px solid rgba(201, 168, 96, 0.35);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.l2-magister-profession-msg {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #d8d0c4;
+}
+
+.l2-magister-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.l2-magister-skill-card {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid rgba(201, 168, 96, 0.35);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.l2-magister-skill-card__head {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+/* Іконки магістра: узгоджений розмір (не змінювати «на око» без оновлення magister.js). */
+.l2-magister-skill-icon-frame {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  line-height: 0;
+  border: 1px solid rgba(201, 168, 96, 0.55);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.l2-magister-skill-icon {
+  display: block;
+  box-sizing: border-box;
+  max-width: 26px;
+  max-height: 26px;
+  margin: 0;
+  padding: 0;
+  object-fit: contain;
+  border: none;
+  border-radius: 4px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.l2-magister-skill-card__name {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e8d4a0;
+}
+
+.l2-magister-skill-card__meta-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin: 0 0 8px;
+}
+
+.l2-magister-skill-card__meta-stack {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.l2-magister-skill-card__meta-row .l2-magister-skill-card__meta-stack .l2-magister-skill-card__meta {
+  margin: 0 0 4px;
+}
+
+.l2-magister-skill-card__meta-row .l2-magister-skill-card__meta-stack .l2-magister-skill-card__combat {
+  margin: 0;
+}
+
+.l2-magister-skill-card__meta-row .l2-magister-skill-card__actions {
+  flex: 0 0 auto;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: right;
+  align-self: flex-start;
+}
+
+.l2-magister-skill-card__status-msg {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.3;
+  max-width: 140px;
+  text-align: right;
+}
+
+.l2-magister-skill-card__status-msg--max {
+  color: #8cdb8c;
+}
+
+.l2-magister-skill-card__status-msg--need {
+  color: #c8a878;
+}
+
+.l2-magister-skill-card__meta {
+  margin: 0;
+  font-size: 12px;
+  color: #a09080;
+}
+
+.l2-magister-skill-card__desc {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #d8d0c4;
+}
+
+.l2-magister-skill-card__combat {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #a8d4a8;
+  white-space: pre-line;
+}
+
+.l2-magister-skill-card__actions {
+  margin: 0;
+}
+
+/* Компактна кнопка справа в рядку метаданих */
+.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2 {
+  width: auto;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 9px;
+  line-height: 1.2;
+  padding: 2px 6px;
+}
+
+.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+}
+
+.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:hover,
+.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:focus {
+  filter: grayscale(0.2);
+}
+
+@media (max-width: 520px) {
+  .l2-magister-skill-card__status-msg {
+    white-space: normal;
+    max-width: min(130px, 42vw);
+  }
+}
+
+.l2-page-teleport .l2-city-tp-list {
+  max-height: min(65vh, 520px);
+}
+
+/* Телепорт (модалка — залишено для сумісності стилів кнопок списку) */
+.l2-city-tp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.l2-city-tp-modal[hidden] {
+  display: none !important;
+}
+
+.l2-city-tp-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+}
+
+.l2-city-tp-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  max-height: min(88vh, 520px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--l2-gold-frame, #c9a860);
+  border-radius: 10px;
+  background: rgba(8, 14, 20, 0.97);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75);
+}
+
+.l2-city-tp-modal__close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: #c9a860;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.l2-city-tp-modal__close:hover,
+.l2-city-tp-modal__close:focus {
+  outline: none;
+  color: #fff4d6;
+}
+
+.l2-city-tp-modal__title {
+  margin: 0 28px 6px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e8d4a0;
+}
+
+.l2-city-tp-modal__sub {
+  margin: 0 0 12px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #a09080;
+}
+
+.l2-city-tp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: min(60vh, 360px);
+}
+
+.l2-city-tp-list li {
+  margin: 0 0 6px;
+}
+
+.l2-city-tp-item {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-family: var(--l2-font-display);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  color: #e8e4d4;
+  cursor: pointer;
+  border: 1px solid rgba(120, 95, 55, 0.42);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #2a2218 0%, #100d08 100%);
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+
+.l2-city-tp-item:hover,
+.l2-city-tp-item:focus {
+  outline: none;
+  border-color: rgba(201, 168, 96, 0.65);
+  background: linear-gradient(180deg, #3a3024 0%, #16120c 100%);
+}
+
+.l2-city-tp-modal__err {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+/* Сторінка «Магістри» (hub наставників) */
+.l2-magisters-main {
+  padding: 4px 0 12px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.l2-magisters-back {
+  margin: 0 0 12px;
+}
+
+.l2-magisters-back .l2-town-btn {
+  margin: 0;
+}
+
+.l2-magisters-intro {
+  margin: 0 0 12px;
+}
+
+.l2-magisters-intro p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(232, 228, 212, 0.92);
+}
+
+.l2-magisters-intro p:last-child {
+  margin-bottom: 0;
+}
+

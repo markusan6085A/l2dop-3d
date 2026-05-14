@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
   </head>
   <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-magister l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
@@ -70,11 +70,23 @@
             <p class="l2-magister-back">
               <a class="l2-town-btn" href="/city.html">Назад до міста</a>
             </p>
+            <div class="l2-magister-intro">
+              <p data-i18n="magister_page_intro_p1">
+                Привіт, мандрівнику. Бачу, ти вже дістався сюди — отже настав час стати сильнішим.
+              </p>
+              <p data-i18n="magister_page_intro_p2">
+                Тут досвідчені магістри навчають героїв мистецтву бою, могутнім технікам і секретам свого класу.
+              </p>
+              <p data-i18n="magister_page_intro_p3">
+                Вивчай активні навички, що допоможуть нищити ворогів у бою, та пасивні вміння, які підвищать твою
+                силу, захист і витривалість.
+              </p>
+              <p data-i18n="magister_page_intro_p4">
+                Кожна нова навичка зробить тебе небезпечнішим суперником на шляху до слави.
+              </p>
+            </div>
             <h1 class="l2-magister-panel__title" id="magister-title">Магістр</h1>
             <p class="l2-magister-panel__sub" id="magister-sub"></p>
-            <p class="l2-magister-hint-passive">
-              Пасивні скіли (майстерність броні/зброї тощо) змінюють цифри в профілі. Бойові скіли й тогли діють у бою — у таблицю параметрів у місті не входять.
-            </p>
             <p class="l2-magister-note" id="magister-note" hidden></p>
             <div class="l2-magister-profession" id="magister-profession" hidden></div>
             <p class="err" id="magister-err" hidden></p>
@@ -89,7 +101,7 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js"></script>
+    <script src="/l2-nav.js?v=20260509city59621"></script>
     <script src="/magister.js"></script>
   </body>
 </html>

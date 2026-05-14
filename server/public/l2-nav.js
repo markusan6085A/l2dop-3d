@@ -1,6 +1,8 @@
 /**
  * Верхня й нижня сітки іконок. Підписи — L2.tr (ui-i18n.js після common.js).
  * Верх: рамка /ref/2121.png (Lv · клас, HP/MP на мапі) + ряд іконок /ref/35–41.png.
+ * Низ (док): /ref/8484541 · 985952 · 59621 · 5885582 · 424524 · 222414.png —
+ * Профіль, Магія, Місто, Меню, Маммон, Опції.
  */
 (function (global) {
   var L2 = global.L2 || (global.L2 = {});
@@ -68,7 +70,7 @@
 
   var BOTTOM = [
     {
-      icon: 'parameters.jpg',
+      iconPath: '/ref/8484541.png',
       href: '/pers.html',
       stub: null,
       i18nKey: 'nav_profile',
@@ -76,7 +78,7 @@
       lbl: 'p1',
     },
     {
-      icon: 'skills.jpg',
+      iconPath: '/ref/985952.png',
       href: '/magisters.html',
       stub: null,
       i18nKey: 'nav_magic',
@@ -84,7 +86,7 @@
       lbl: 'p2',
     },
     {
-      icon: 'town_big.jpg',
+      iconPath: '/ref/59621.png',
       href: '/city.html',
       stub: null,
       i18nKey: 'nav_town',
@@ -92,31 +94,23 @@
       lbl: 'p3',
     },
     {
-      icon: 'rift.jpg',
-      href: null,
-      i18nKey: 'nav_mammon',
-      i18nTitleKey: 'nav_mammon_title',
-      stubKey: 'nav_mammon',
-      lbl: 'p4',
-    },
-    {
-      icon: 'hand_big.jpg',
+      iconPath: '/ref/5885582.png',
       href: '/menu.html',
       stub: null,
       i18nKey: 'nav_menu',
       i18nTitleKey: 'nav_menu_title',
+      lbl: 'p4',
+    },
+    {
+      iconPath: '/ref/424524.png',
+      href: '/mammon.html',
+      stub: null,
+      i18nKey: 'nav_mammon',
+      i18nTitleKey: 'nav_mammon_title',
       lbl: 'p5',
     },
     {
-      icon: 'inv_small.jpg',
-      href: null,
-      i18nKey: 'nav_inventory',
-      i18nTitleKey: 'nav_inventory_title',
-      stubKey: 'nav_inventory',
-      lbl: 'p6',
-    },
-    {
-      icon: 'mol_big.jpg',
+      iconPath: '/ref/222414.png',
       href: '/options.html',
       stub: null,
       i18nKey: 'nav_options',

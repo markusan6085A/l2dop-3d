@@ -2,23 +2,6 @@
  * Крафт ресурсів: рецепти з сервера, іконки `/icons/drops/resours/l2dop-by-itemid/`.
  */
 (function () {
-  var ICON_DIR = '/icons/drops/resours/l2dop-by-itemid/';
-  /** Якщо немає `{id}.jpg`, підставляємо іменний файл з твоєї папки. */
-  var ICON_ALT = {
-    1883: 'Varnish_of_Purity.jpg',
-    1886: 'Synthetic_Cokes.jpg',
-    1887: 'Silver_Mold.jpg',
-    1888: 'Steel_Mold.jpg',
-    1890: 'Mithril_Alloy.jpg',
-    1891: 'Blacksmith_Frame.jpg',
-    1892: 'Artisans_Frame.jpg',
-    1893: 'Oriharukon.jpg',
-    1896: 'Maestro_Mold.jpg',
-    1897: 'Craftsman_Mold.jpg',
-    1898: 'Maestro_Holder.jpg',
-    1899: 'Maestro_Anvil_Lock.jpg',
-  };
-
   function $(id) {
     return document.getElementById(id);
   }
@@ -36,17 +19,15 @@
     if (!img) return;
     img.alt = '';
     var id = Number(itemId);
-    var tryAlt = false;
     img.onerror = function () {
-      if (!tryAlt && ICON_ALT[id]) {
-        tryAlt = true;
-        img.src = ICON_DIR + ICON_ALT[id];
-        return;
-      }
       img.onerror = null;
-      img.src = '/game/item-icon/' + id;
+      img.src = '/icons/drops/other.svg';
     };
-    img.src = ICON_DIR + id + '.jpg';
+    if (window.L2 && typeof L2.resolveItemIconUrl === 'function') {
+      img.src = L2.resolveItemIconUrl(id, '/icons/drops/other.svg');
+      return;
+    }
+    img.src = id > 0 ? '/game/item-icon/' + id : '/icons/drops/other.svg';
   }
 
   function bagQty(inv, itemId) {
@@ -91,6 +72,21 @@
     el.textContent = msg || '';
   }
 
+  function applyCraftSnapshot(snapshot, tiers, namesUk, token) {
+    if (!snapshot) return;
+    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+      L2.applyCharacterSnapshot(snapshot);
+    } else {
+      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(snapshot);
+      }
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(snapshot);
+      }
+    }
+    renderBook(tiers, snapshot, namesUk, token);
+  }
+
   function postCraft(tier, recipeIndex, qty, token, revision, onOk, onFail) {
     fetch('/game/resource-craft', {
       method: 'POST',
@@ -118,6 +114,16 @@
       .then(function (pack) {
         if (!pack) return;
         if (pack.status === 409) {
+          if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+            L2.resyncCharacterAfterConflict()
+              .then(function () {
+                onFail('Стан персонажа оновлено. Повтори дію.');
+              })
+              .catch(function () {
+                onFail('Конфлікт ревізії — не вдалося синхронізувати стан.');
+              });
+            return;
+          }
           onFail('Конфлікт ревізії — онови сторінку.');
           return;
         }
@@ -283,11 +289,7 @@
           ctx.rev,
           function (nextChar) {
             closeCraftModal();
-            L2.setLastSnapshot && L2.setLastSnapshot(nextChar);
-            L2.applyHudFromSnapshot &&
-              typeof L2.applyHudFromSnapshot === 'function' &&
-              L2.applyHudFromSnapshot(nextChar);
-            renderBook(ctx.tiers, nextChar, ctx.namesUk, ctx.token);
+            applyCraftSnapshot(nextChar, ctx.tiers, ctx.namesUk, ctx.token);
             showErr('');
           },
           function (msg) {
@@ -462,6 +464,9 @@
         }
         charJson = j.character;
         namesUk = j.itemNamesUk || {};
+        if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
+          L2.mergeCraftResourceIconHints(j);
+        }
         if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
         if (typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(j.character);

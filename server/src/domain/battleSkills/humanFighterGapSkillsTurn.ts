@@ -30,6 +30,10 @@ import type {
   BattleSkillTurnResult,
   PhysicalRollFn,
 } from './types.js';
+import {
+  assertSkillCooldownReady,
+  isCooldownBlocked,
+} from './humanFighterTurnHelpers.js';
 
 function reqEntry(
   action: BattleActionId,
@@ -211,8 +215,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'ultimate_evasion') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_111'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const UE_DURATION_SEC = buffDurationSecForSkillId(111) ?? 30;
     const cdPatch = cooldownPatchForSkill(111);
@@ -279,8 +283,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'focus_chance') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_356'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const FCC = 35;
     const FC_DURATION_SEC = buffDurationSecForSkillId(356) ?? 300;
@@ -300,8 +304,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'focus_power') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_357'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const FPM = 1.12;
     const FP_DURATION_SEC = buffDurationSecForSkillId(357) ?? 300;
@@ -321,8 +325,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'bluff') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_358'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const BLUFF_PDEF = 0.9;
     const BLUFF_CRIT = 1.25;
@@ -347,8 +351,8 @@ export function resolveHumanFighterGapSkillsTurn(
     reqEntry(action, String(l2Profession));
     if (!swordOrBlunt(wk)) throw new Error('battle_skill_not_allowed');
     const cd = ctx.st.mysticSkillCdUntil?.['l2_18'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const AGG_DEBUFF = 0.92;
     const AGG_DURATION_SEC = buffDurationSecForSkillId(18) ?? 15;
@@ -395,8 +399,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'sanctuary') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_97'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const SAN_MUL = 0.82;
     const SAN_DURATION_SEC = buffDurationSecForSkillId(97) ?? 30;
@@ -444,8 +448,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'horror') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_65'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const HOR_DEBUFF = 0.82;
     const HOR_DURATION_SEC = buffDurationSecForSkillId(65) ?? 20;
@@ -465,8 +469,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'reflect_damage') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_86'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const REFL = 0.18;
     const REFL_DURATION_SEC = buffDurationSecForSkillId(86) ?? 60;
@@ -518,8 +522,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'summon_dark_panther') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_283'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const PANTHER_THRILL = 1.06;
     const PANTHER_DURATION_SEC = buffDurationSecForSkillId(283) ?? 60;
@@ -540,8 +544,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'shield_fortress') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_322'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const SHIELD_MUL = 1.14;
     const SHIELD_DURATION_SEC = buffDurationSecForSkillId(322) ?? 30;
@@ -561,8 +565,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'touch_of_life') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_341'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const row = touchOfLifeMpAndPower(rk);
     const heal = Math.floor(
@@ -583,8 +587,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'touch_of_death') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_342'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     if (!swordOrBlunt(wk)) throw new Error('battle_skill_not_allowed');
     const row = touchOfDeathMpAndPower(rk);
@@ -605,8 +609,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'physical_mirror') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_350'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const MIR = 0.22;
     const MIR_DURATION_SEC = buffDurationSecForSkillId(350) ?? 60;
@@ -627,8 +631,8 @@ export function resolveHumanFighterGapSkillsTurn(
   if (action === 'vengeance') {
     reqEntry(action, String(l2Profession));
     const cd = ctx.st.mysticSkillCdUntil?.['l2_368'];
-    if (typeof cd === 'number' && Date.now() < cd) {
-      throw new Error('battle_skill_not_allowed');
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const VIM = 0.88;
     const VRR = 0.12;

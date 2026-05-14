@@ -15,6 +15,8 @@ import {
   resolveMobIconFromName,
 } from '../utils/mobPublicIcon.js';
 import { dropDisplayNameShort } from '../utils/dropDisplayName.js';
+import { viewerMaySeeSpoilLoot } from '../domain/dwarfSpoilerLootGate.js';
+import type { Prisma } from '@prisma/client';
 
 export { resolveL2dopNpcIdByMobName };
 
@@ -61,6 +63,12 @@ function serializeDrop(d: DropEntry) {
   };
 }
 
+export interface SpawnCatalogViewerContext {
+  race: string;
+  l2Profession: string;
+  skillsLearnedJson?: Prisma.JsonValue | null;
+}
+
 export interface SpawnCatalogInfo {
   spawnId: string;
   name: string;
@@ -79,6 +87,8 @@ export interface SpawnCatalogInfo {
   };
   drops: ReturnType<typeof serializeDrop>[];
   spoil: ReturnType<typeof serializeDrop>[];
+  /** Чи показувати блок «Спойл» цьому персонажу (гном-Spoiler). */
+  viewerMaySeeSpoil: boolean;
   /** EXP/SP для картки моба (завжди заповнено: дамп або формула рівня). */
   rewardExp: number;
   rewardSp: number;
@@ -88,7 +98,10 @@ export interface SpawnCatalogInfo {
   dropsSynthetic: boolean;
 }
 
-export function getSpawnCatalogInfo(spawnId: string): SpawnCatalogInfo | null {
+export function getSpawnCatalogInfo(
+  spawnId: string,
+  viewer?: SpawnCatalogViewerContext | null
+): SpawnCatalogInfo | null {
   const spawn = getWorldSpawnById(spawnId);
   if (!spawn) return null;
   const npcId =
@@ -99,8 +112,13 @@ export function getSpawnCatalogInfo(spawnId: string): SpawnCatalogInfo | null {
   const c = mobCombatFromSpawn(spawn);
   const bag = ensureMobDropBag(npcId, spawn.level);
   const resPreview = resourceDropsForSpawnCatalog(spawn.level, spawn.id);
+  const showSpoil =
+    viewer != null &&
+    viewerMaySeeSpoilLoot(viewer.race, viewer.l2Profession, viewer.skillsLearnedJson ?? null);
   const drops = [...bag.drops, ...resPreview.drops].map(serializeDrop);
-  const spoil = [...bag.spoil, ...resPreview.spoil].map(serializeDrop);
+  const spoil = showSpoil
+    ? [...bag.spoil, ...resPreview.spoil].map(serializeDrop)
+    : [];
   const rw = rewardExpSpForSpawn(npcId, spawn.level);
   const rewardExp = rw.exp;
   const rewardSp = rw.sp;
@@ -123,6 +141,7 @@ export function getSpawnCatalogInfo(spawnId: string): SpawnCatalogInfo | null {
     },
     drops,
     spoil,
+    viewerMaySeeSpoil: showSpoil,
     rewardExp,
     rewardSp,
     rewardExpSynthetic,

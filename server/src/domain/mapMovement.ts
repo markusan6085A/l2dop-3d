@@ -2,7 +2,6 @@
  * Рух по карті як у l2dop/map.php: швидкість min(Speed2*2, 2000), лінійна інтерполяція за часом.
  */
 import { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma.js';
 import { parseInventory } from '../data/inventory.js';
 import {
   computeCombatStats,
@@ -42,18 +41,37 @@ export interface MapMovementFields {
   worldCombatStateJson?: Prisma.JsonValue | null;
 }
 
-/**
- * Оновлює worldX/worldY у БД за часом руху; при прибутті обнуляє target.
- * Не змінює revision (пасивний ефект часу).
- */
-export async function resolveMapMovement<T extends MapMovementFields>(
-  row: T
-): Promise<T> {
+export interface ResolvedMapMovementPatch {
+  changed: boolean;
+  data: {
+    worldX: number;
+    worldY: number;
+    targetX: number;
+    targetY: number;
+    moveStartAt: Date | null;
+    moveFromX: number;
+    moveFromY: number;
+  };
+}
+
+export function resolveMapMovementPatch<T extends MapMovementFields>(
+  row: T,
+  nowMs: number = Date.now()
+): ResolvedMapMovementPatch {
+  const same = {
+    worldX: row.worldX,
+    worldY: row.worldY,
+    targetX: row.targetX,
+    targetY: row.targetY,
+    moveStartAt: row.moveStartAt,
+    moveFromX: row.moveFromX,
+    moveFromY: row.moveFromY,
+  };
   if (row.targetX === 0 && row.targetY === 0) {
-    return row;
+    return { changed: false, data: same };
   }
   if (!row.moveStartAt) {
-    return row;
+    return { changed: false, data: same };
   }
 
   const inv = parseInventory(row.inventoryJson);
@@ -75,15 +93,14 @@ export async function resolveMapMovement<T extends MapMovementFields>(
     })
   );
   const speed = mapMoveSpeedFromRunSpeed(combat.runSpeed);
-  const now = Date.now();
   const startMs = row.moveStartAt.getTime();
   const dx = row.targetX - row.moveFromX;
   const dy = row.targetY - row.moveFromY;
   const dist = Math.hypot(dx, dy);
 
   if (dist <= 0) {
-    const updated = await prisma.character.update({
-      where: { id: row.id },
+    return {
+      changed: true,
       data: {
         worldX: row.targetX,
         worldY: row.targetY,
@@ -93,16 +110,14 @@ export async function resolveMapMovement<T extends MapMovementFields>(
         moveFromX: row.targetX,
         moveFromY: row.targetY,
       },
-    });
-    return updated as unknown as T;
+    };
   }
 
-  const elapsedSec = (now - startMs) / 1000;
+  const elapsedSec = (nowMs - startMs) / 1000;
   const travelled = elapsedSec * speed;
-
   if (travelled >= dist) {
-    const updated = await prisma.character.update({
-      where: { id: row.id },
+    return {
+      changed: true,
       data: {
         worldX: row.targetX,
         worldY: row.targetY,
@@ -112,21 +127,34 @@ export async function resolveMapMovement<T extends MapMovementFields>(
         moveFromX: row.targetX,
         moveFromY: row.targetY,
       },
-    });
-    return updated as unknown as T;
+    };
   }
 
   const t = travelled / dist;
   const worldX = Math.floor(row.moveFromX + dx * t);
   const worldY = Math.floor(row.moveFromY + dy * t);
-
   if (worldX === row.worldX && worldY === row.worldY) {
-    return row;
+    return { changed: false, data: same };
   }
+  return {
+    changed: true,
+    data: {
+      worldX,
+      worldY,
+      targetX: row.targetX,
+      targetY: row.targetY,
+      moveStartAt: row.moveStartAt,
+      moveFromX: row.moveFromX,
+      moveFromY: row.moveFromY,
+    },
+  };
+}
 
-  const updated = await prisma.character.update({
-    where: { id: row.id },
-    data: { worldX, worldY },
-  });
-  return updated as unknown as T;
+export function resolveMapMovement<T extends MapMovementFields>(row: T): T {
+  const patch = resolveMapMovementPatch(row, Date.now());
+  if (!patch.changed) return row;
+  return {
+    ...row,
+    ...patch.data,
+  };
 }

@@ -6,6 +6,6 @@ alwaysApply: false
 
 # Скіли: l2db Interlude + формули l2dop
 
-- **Рівні скіла, SP за ранг, мін. рівень персонажа** — базово з **text-rpg** `HumanFighter` (у т.ч. підкаталоги **Warrior**, **Warlord**, **Gladiator**, **Dreadnought**, **Duelist** — див. `text-rpg/src/data/skills/classes/HumanFighter/`); генерує `l2dbInterludeHumanFighterSkillLevels.generated.ts`, команда `npm run gen:hf-skills`. Окремі SP з **l2db** (напр. `l2_312`) — override у `gen-interlude-hf-skill-tables.mjs`.
+- **Рівні скіла, SP за ранг, мін. рівень персонажа** — беремо з Interlude/l2db даних, що вже заведені в `l2dop-3d` (генератори, скрипти, `*.generated.ts`). Генерація таблиць: `npm run gen:hf-skills`. Окремі SP з **l2db** (напр. `l2_312`) — override у `gen-interlude-hf-skill-tables.mjs`.
 - **Як застосовується ефект у бою та в calc-логіці** лишається на **l2dop**: таблиці `L2DOP_*` у `l2dopRawdataBuffTables.ts`, `computeCombatStats`, `rollPlayerPhysicalDmg`, тощо. Ранг скіла з БД підставляється як індекс у відповідну таблицю l2dop, без підміни формул числами з l2db.
 - Якщо для скіла ще немає рядка в l2dop — не вигадувати множники з l2db; або не відкривати ранг у каталозі, або явний TODO.

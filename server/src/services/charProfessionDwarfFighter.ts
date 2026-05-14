@@ -19,6 +19,7 @@ import {
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function assertDwarfFighter(row: CharacterRow): void {
   if (!isL2DwarfRace(row.race) || !isFighterClassBranch(row.classBranch)) {
@@ -44,13 +45,18 @@ async function commitProf(
   expectedRevision: number,
   next: string
 ): Promise<CharacterSnapshot> {
-  const updated = await tx.character.updateMany({
-    where: { id: charId, userId, revision: expectedRevision },
-    data: { l2Profession: next, revision: { increment: 1 } },
-  });
-  if (updated.count === 0) throw new GameConflictError();
-  const n = await tx.character.findUniqueOrThrow({ where: { id: charId } });
-  return toSnapshot(n as CharacterRow);
+  void userId;
+  const result = await mutateCharacterWithRevision(
+    tx,
+    charId,
+    expectedRevision,
+    () => ({
+      changed: true,
+      data: { l2Profession: next },
+    })
+  );
+  if (!result.ok) throw new GameConflictError();
+  return toSnapshot(result.character as CharacterRow);
 }
 
 export async function performFirstProfessionDwarfScavenger(

@@ -1,0 +1,1181 @@
+.l2-auth-pass-toggle {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 36px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #5c421c;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.l2-auth-pass-toggle:hover,
+.l2-auth-pass-toggle:focus-visible {
+  color: #3d2e14;
+  outline: none;
+}
+
+.l2-auth-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin: 14px 0 16px;
+  font-size: 12px;
+}
+
+.l2-auth-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #c4b8a4;
+  cursor: pointer;
+  user-select: none;
+}
+
+.l2-auth-remember input {
+  width: 15px;
+  height: 15px;
+  accent-color: #c9a050;
+  cursor: pointer;
+}
+
+.l2-auth-forgot {
+  color: #e8c878 !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  text-shadow: 0 0 8px rgba(180, 140, 60, 0.22);
+}
+
+.l2-auth-forgot:hover,
+.l2-auth-forgot:focus-visible {
+  color: #fff1cc !important;
+  outline: none;
+}
+
+/* «Увійти»: компактний розмір + ref/4187.png переважає в l2-app-l2-chrome (l2-app-chrome-skin.css). */
+.l2-auth-submit.btn-l2 {
+  margin-top: 6px;
+}
+
+.l2-page-auth .l2-auth-back {
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.l2-dock.l2-dock--auth {
+  max-width: 460px;
+  width: calc(100% - 20px);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 7px 6px 9px;
+  gap: 5px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-radius: 0 0 10px 10px;
+  border: 1px solid rgba(100, 80, 48, 0.45);
+  border-top: 1px solid var(--line);
+  background: linear-gradient(to top, rgba(14, 11, 8, 0.98), rgba(20, 16, 12, 0.94));
+  box-shadow:
+    0 -4px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 200, 120, 0.05);
+}
+
+/* Три кнопки дока авторизації — компактно, лише текст у 9-slice ref/541.png (як WAP / таби магазину) */
+.l2-dock.l2-dock--auth a.l2-dock-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 5px 6px;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-align: center;
+  color: #f0e8d8 !important;
+  text-decoration: none !important;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 8px rgba(180, 140, 80, 0.12);
+  border-radius: 0 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  --l2s-auth-dock541-slice-y: 30;
+  --l2s-auth-dock541-slice-x: 40;
+  --l2s-auth-dock541-bd-y: 5;
+  --l2s-auth-dock541-bd-x: 10;
+  border-width: calc(1px * var(--l2s-auth-dock541-bd-y)) calc(1px * var(--l2s-auth-dock541-bd-x)) !important;
+  border-image-source: url('/ref/541.png');
+  border-image-slice: var(--l2s-auth-dock541-slice-y) var(--l2s-auth-dock541-slice-x) var(--l2s-auth-dock541-slice-y)
+    var(--l2s-auth-dock541-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-auth-dock541-bd-y)) calc(1px * var(--l2s-auth-dock541-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.l2-dock.l2-dock--auth a.l2-dock-tile:hover,
+.l2-dock.l2-dock--auth a.l2-dock-tile:focus-visible {
+  background: transparent !important;
+  filter: brightness(1.1);
+  color: #fff8ec !important;
+  outline: none;
+}
+
+.l2-dock.l2-dock--auth a.l2-dock-tile span {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.l2-page-auth .footer-links {
+  margin-top: 12px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Перс (верхнє меню) — екіп / сумка, як l2dop index.php */
+.l2-page-city.l2-page-char .l2-shell {
+  background: transparent;
+  padding: 8px 0 24px;
+}
+
+.l2-page-city.l2-page-char .l2-screen {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100vh;
+}
+
+.l2-char-root {
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.l2-page-char #char-content {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.l2-char-mobi {
+  position: relative;
+  margin: 10px 0 0;
+  padding: 12px 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(200, 160, 70, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  background: rgba(22, 14, 8, 0.55);
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.l2-char-mobi::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  pointer-events: none;
+  background-image: radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.45) 50%, transparent 52%),
+    radial-gradient(1px 1px at 70% 70%, rgba(255, 255, 255, 0.25) 50%, transparent 52%);
+  background-size: 90px 90px;
+}
+
+.l2-char-mobi > * {
+  position: relative;
+  z-index: 1;
+}
+
+.l2-char-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+
+.l2-char-title-empty {
+  color: #9a9080;
+}
+
+.l2-char-name-bracket {
+  color: #e8c56e;
+  font-weight: 600;
+}
+
+/* Портрет + слоти (як text-rpg CharacterEquipmentFrame, gold L2) */
+.l2-char-photo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0;
+  box-sizing: border-box;
+}
+
+.l2-char-adena-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8a9688;
+}
+
+.l2-char-equip-frame {
+  position: relative;
+  width: 300px;
+  min-height: 220px;
+  margin: 0 auto 10px;
+  padding: 8px 8px 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgba(200, 160, 70, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  background: rgba(4, 12, 24, 0.55);
+}
+
+.l2-char-equip-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.4) 50%, transparent 52%),
+    radial-gradient(1px 1px at 70% 70%, rgba(255, 255, 255, 0.22) 50%, transparent 52%);
+  background-size: 90px 90px;
+}
+
+.l2-char-equip-bg {
+  position: absolute;
+  inset: 2px;
+  border-radius: 6px;
+  overflow: hidden;
+  min-height: 194px;
+  background: rgba(16, 12, 10, 0.5);
+  z-index: 1;
+}
+
+.l2-char-equip-hero {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.l2-char-equip-slots {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.l2-char-equip-frame .l2-char-equip-slots {
+  z-index: 2;
+}
+
+.l2-char-equip-slots--left {
+  left: 8px;
+  top: 8px;
+}
+
+.l2-char-equip-slots--right {
+  right: 8px;
+  top: 8px;
+  align-items: flex-end;
+}
+
+.l2-char-slot-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 2px;
+  border: 1px solid rgba(100, 80, 50, 0.5);
+  background: rgba(12, 10, 8, 0.65);
+  box-shadow: inset 0 1px 0 rgba(200, 170, 120, 0.08);
+}
+
+.l2-char-slot-icon--filled {
+  cursor: pointer;
+  border-color: rgba(200, 160, 90, 0.55);
+}
+
+.l2-char-slot-icon--filled:hover,
+.l2-char-slot-icon--filled:focus {
+  border-color: rgba(232, 197, 110, 0.75);
+  box-shadow: 0 0 0 1px rgba(200, 160, 70, 0.25);
+  outline: none;
+}
+
+.l2-char-equip-weapons-row {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  margin-top: 4px;
+  align-items: center;
+}
+
+/* Адена / EXP / SP / вага — рамка /ref/8888888.png (9-slice); --l2s-char-curr888-* під PNG */
+.l2-char-currency {
+  --l2s-char-curr888-slice-y: 24;
+  --l2s-char-curr888-slice-x: 32;
+  --l2s-char-curr888-bd-y: 8;
+  --l2s-char-curr888-bd-x: 12;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: #c8c4b8;
+  border-radius: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(1px * var(--l2s-char-curr888-bd-y)) calc(1px * var(--l2s-char-curr888-bd-x));
+  border-image-source: url('/ref/8888888.png');
+  border-image-slice: var(--l2s-char-curr888-slice-y) var(--l2s-char-curr888-slice-x) var(--l2s-char-curr888-slice-y)
+    var(--l2s-char-curr888-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-char-curr888-bd-y)) calc(1px * var(--l2s-char-curr888-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent;
+  box-shadow: none;
+}
+
+.l2-char-currency-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.l2-char-currency-ico {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.l2-char-weight {
+  color: #8a9688;
+}
+
+.l2-char-bag-block {
+  margin-bottom: 10px;
+  padding: 8px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(100, 80, 52, 0.35);
+  background: rgba(16, 12, 10, 0.4);
+}
+
+.l2-char-bag-title {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #c8b8a0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Категорії сумки — рамка /ref/8888888.png (як блок Адена/EXP); --l2s-char-inv888-* під PNG */
+.l2-char-inv-filters {
+  --l2s-char-inv888-slice-y: 24;
+  --l2s-char-inv888-slice-x: 32;
+  --l2s-char-inv888-bd-y: 8;
+  --l2s-char-inv888-bd-x: 12;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 7px 8px;
+  font-size: 10px;
+  color: #c8c0b0;
+  border-radius: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x));
+  border-image-source: url('/ref/8888888.png');
+  border-image-slice: var(--l2s-char-inv888-slice-y) var(--l2s-char-inv888-slice-x) var(--l2s-char-inv888-slice-y)
+    var(--l2s-char-inv888-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent;
+  box-shadow: none;
+}
+
+.l2-char-inv-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+}
+
+.l2-char-inv-row--grades {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(100, 80, 52, 0.28);
+}
+
+.l2-char-inv-link,
+.l2-char-inv-grade {
+  margin: 0;
+  padding: 2px 6px;
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  color: #9a9080;
+  transition: color 0.15s ease;
+}
+
+.l2-char-inv-link:hover,
+.l2-char-inv-grade:hover {
+  color: #f2ead8;
+}
+
+.l2-char-inv-link--active,
+.l2-char-inv-grade--active {
+  color: #e8c56e;
+  font-weight: 600;
+}
+
+.l2-char-inv-sep {
+  margin: 0 1px;
+  color: rgba(100, 80, 52, 0.5);
+  user-select: none;
+}
+
+.l2-char-bag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.l2-char-bag-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: #e8c56e;
+}
+
+.l2-char-bag-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 2px;
+  border: 1px solid rgba(100, 80, 52, 0.4);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.l2-char-bag-icon--stats {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.l2-char-bag-icon--stats:hover,
+.l2-char-bag-icon--stats:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.85);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35);
+}
+
+.l2-char-bag-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.l2-char-bag-name {
+  font-weight: 600;
+  color: #e6e2d8;
+}
+
+.l2-char-bag-stats {
+  font-size: 10px;
+  line-height: 1.25;
+  color: #9a9080;
+}
+
+.l2-char-bag-equip {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #e0d4c0;
+  border-radius: 4px;
+  border: 1px solid rgba(120, 100, 60, 0.55);
+  background: linear-gradient(180deg, rgba(35, 40, 55, 0.95), rgba(12, 16, 24, 0.98));
+}
+
+.l2-char-bag-equip:hover,
+.l2-char-bag-equip:focus {
+  border-color: #d4af37;
+  color: #fff4d6;
+  outline: none;
+}
+
+.l2-char-bag-hint {
+  margin: 6px 0 0;
+  font-size: 10px;
+  color: #7a8a9a;
+  text-align: center;
+}
+
+/* Магазин + категорії сумки — той самий стиль, що l2-foot-linkbar, ~50% розміру */
+.l2-char-shop-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 6px;
+  min-height: 24px;
+  padding: 5px 9px;
+  cursor: pointer;
+  font-family: var(--l2-font-display);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #e0d4c0;
+  text-align: center;
+  line-height: 1.2;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.85);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #2a2218, #0f0c08);
+  border: 1px solid #6b543f;
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(212, 175, 55, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.l2-char-shop-btn::before,
+.l2-char-shop-btn::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border: 1px solid #c9a961;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.l2-char-shop-btn::before {
+  top: 2px;
+  left: 2px;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 1px 0 0 0;
+}
+
+.l2-char-shop-btn::after {
+  bottom: 2px;
+  right: 2px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 1px 0;
+}
+
+.l2-char-shop-btn:hover,
+.l2-char-shop-btn:focus {
+  border-color: #d4af37;
+  transform: translateY(-1px);
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.35),
+    0 0 10px rgba(212, 175, 55, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  outline: none;
+  color: #fff4d6;
+}
+
+.l2-char-shop-btn:active {
+  transform: translateY(0);
+}
+
+.l2-char-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.l2-char-cat-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  min-height: 20px;
+  padding: 3px 4px;
+  cursor: pointer;
+  font-family: var(--l2-font-display);
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: #e0d4c0;
+  text-align: center;
+  line-height: 1.15;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.85);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #2a2218, #0f0c08);
+  border: 1px solid #6b543f;
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(212, 175, 55, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.l2-char-cat-btn::before,
+.l2-char-cat-btn::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border: 1px solid #c9a961;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.l2-char-cat-btn::before {
+  top: 2px;
+  left: 2px;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 1px 0 0 0;
+}
+
+.l2-char-cat-btn::after {
+  bottom: 2px;
+  right: 2px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 1px 0;
+}
+
+.l2-char-cat-btn:hover,
+.l2-char-cat-btn:focus {
+  border-color: #d4af37;
+  transform: translateY(-1px);
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.35),
+    0 0 10px rgba(212, 175, 55, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  outline: none;
+  color: #fff4d6;
+}
+
+.l2-char-cat-btn:active {
+  transform: translateY(0);
+}
+
+.l2-char-cat-btn--wide {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.l2-page-char .l2-pers-newbie {
+  margin-top: 10px;
+}
+
+/* Нижня сітка (Профіль … Опції) — fixed у низу в’юпорту; контент скролиться вище */
+body.l2-page-has-fixed-nav .l2-screen-inner {
+  padding-bottom: var(--l2-dock-bottom-pad);
+}
+
+.l2-page-has-fixed-nav #l2-nav-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 460px;
+  z-index: 50;
+  padding: 5px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, rgba(14, 11, 8, 0.98), rgba(20, 16, 12, 0.94));
+  border-top: 1px solid rgba(100, 80, 48, 0.55);
+  box-shadow:
+    0 -6px 28px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 200, 120, 0.05);
+  border-radius: 14px 14px 0 0;
+  box-sizing: border-box;
+}
+
+.l2-page-has-fixed-nav #l2-nav-bottom .l2-wap-grid.l2-wap-grid--bottom {
+  margin-top: 0;
+  margin-bottom: 0;
+  border-top: none;
+  padding-top: 2px;
+}
+
+/* Нижній fixed-док: теплі тони (222/townlive), не синій l2mobi. City chrome — свій скіон (#l2-nav-bottom). */
+body.l2-city-ui-l2.l2-page-has-fixed-nav:not(.l2-app-l2-chrome) #l2-nav-bottom {
+  background: linear-gradient(to top, rgba(14, 11, 8, 0.98), rgba(20, 16, 12, 0.94));
+  border-top: 1px solid rgba(100, 80, 48, 0.55);
+  box-shadow:
+    0 -8px 32px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 200, 120, 0.05);
+}
+
+.l2-page-city.l2-page-townlive .l2-screen {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100vh;
+}
+
+.l2-townlive-column {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 0 12px;
+}
+
+.l2-page-townlive .l2-city-head {
+  border-bottom-color: rgba(140, 120, 60, 0.35);
+}
+
+.l2-page-townlive .l2-city-head-tagline {
+  color: #d4c8a8;
+}
+
+.l2-page-townlive .l2-city-hero-line {
+  color: #d4bc7a;
+  font-size: 12px;
+}
+
+/* Карта: рядок підказки координат; верхній ряд — лише іконки (Lv/нік/HUD у повній панелі .l2-hud-panel). */
+body.l2-page-map #map-hint-line {
+  display: none !important;
+}
+
+/* Верхня смуга Lv/HP/MP у .l2-nav-top-frame2121 не показуємо — той самий блок є в повному HUD (нік + бари). */
+body .l2-nav-top-frame2121 {
+  display: none !important;
+}
+
+body:not(.l2-page-map) .l2-nav-top-wrap {
+  gap: 0;
+}
+
+body.l2-page-battle .l2-city-head,
+body.l2-page-battle #l2-nav-top {
+  display: none !important;
+}
+
+/**
+ * Нижня панель fixed z-index:50 — кліки йшли в док, а не в хотбар. Контейнер не ловить події;
+ * клікабельні лише клітинки сітки (pointer-events: auto).
+ */
+body.l2-page-battle #l2-nav-bottom {
+  pointer-events: none;
+}
+
+body.l2-page-battle #l2-nav-bottom .l2-wap-grid,
+body.l2-page-battle #l2-nav-bottom .l2-wap-grid a {
+  pointer-events: auto;
+}
+
+/** Хотбар над іншим контентом панелі бою (на випадок накладань). */
+#battle-skills {
+  position: relative;
+  z-index: 2;
+}
+
+/* Карта світу (l2dop map.php / mapcreate.php) */
+body.l2-page-map .l2-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 48px);
+}
+
+.l2-page-map .l2-map-root {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.l2-page-map .l2-screen-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: calc(100vh - 120px);
+}
+
+#map-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#map-stack {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.l2-map-hint {
+  margin: 0 0 8px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #b0a090;
+  text-align: center;
+}
+
+/* Два квадратики масштабу — без рамки на всю ширину (як просили) */
+.l2-map-zoom-btns {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.l2-map-zoom-square {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff4d6;
+  cursor: pointer;
+  border: 1px solid #6b543f;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2a2218, #0f0c08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-map-zoom-square:active {
+  transform: scale(0.96);
+}
+
+/* Вікно перегляду — як zoom/crop у mapcreate.php; повна картинка всередині, прокрутка */
+.l2-map-mob-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 10px 0 0;
+  padding: 8px 6px 6px;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(80, 100, 90, 0.35);
+}
+
+/* Головний список на карті: сторінки під заголовком, не внизу */
+.l2-map-mob-pager--top {
+  margin: 0 0 8px;
+  padding: 6px 4px 8px;
+  border-top: none;
+  border-bottom: 1px solid rgba(80, 100, 90, 0.35);
+}
+
+.l2-map-mob-page-btn {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 12px;
+  font-family: var(--l2-font-display, Georgia, serif);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  color: #f0e4c8;
+  cursor: pointer;
+  border: 1px solid rgba(201, 168, 96, 0.55);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #3a3024 0%, #1a1410 48%, #0a0806 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.08s ease;
+}
+
+.l2-map-mob-page-btn:hover:not(:disabled) {
+  color: #fff8e8;
+  border-color: rgba(212, 175, 55, 0.85);
+  background: linear-gradient(180deg, #4a3c30 0%, #241c14 50%, #100c08 100%);
+}
+
+.l2-map-mob-page-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.l2-map-mob-page-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+  box-shadow: none;
+}
+
+.l2-map-mob-page-ind {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #b0a090;
+  min-width: 88px;
+  text-align: center;
+}
+
+.l2-map-viewport {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: min(200px, 34vh);
+  min-height: 160px;
+  margin: 0 auto 8px;
+  overflow: auto;
+  border: 1px solid rgba(90, 120, 90, 0.45);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #1a2820 0%, #0d1210 100%);
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+
+.l2-map-inner {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  vertical-align: top;
+}
+
+/* Точки мобів на карті (як ..O,tx,ty у mapcreate.php) */
+.l2-map-mob-markers {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Точка руху (куди клікнув) — мала, фуксія, не перетинається з кольорами мобів */
+.l2-map-move-target {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  pointer-events: none;
+  z-index: 5;
+  box-sizing: border-box;
+  border: 2px solid #ff3eb5;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 80, 200, 0.35) 0%,
+    rgba(40, 0, 30, 0.2) 70%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 200, 255, 0.45),
+    0 0 10px rgba(255, 60, 180, 0.95),
+    inset 0 0 3px rgba(255, 220, 255, 0.5);
+}
+
+.l2-map-move-target[hidden] {
+  display: none !important;
+}
+
+.l2-map-mob-pin {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.85);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-map-mob-pin--passive {
+  background: #e8e8e8;
+  border: 1px solid #555;
+}
+
+.l2-map-mob-pin--neutral {
+  background: #7fd67f;
+  border: 1px solid #2a6a2a;
+}
+
+.l2-map-mob-pin--aggressive {
+  background: #ffd633;
+  border: 1px solid #886600;
+}
+
+.l2-map-mob-pin--champion {
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4px;
+  background: #d4a64b;
+  border: 1px solid #5c4010;
+  box-shadow: 0 0 5px rgba(212, 166, 75, 0.9);
+}
+
+.l2-map-mob-pin--raid {
+  width: 11px;
+  height: 11px;
+  margin: -5px 0 0 -5px;
+  background: #b366ff;
+  border: 1px solid #4a0d73;
+}
+
+.l2-map-mob-pin--epic {
+  width: 13px;
+  height: 13px;
+  margin: -6px 0 0 -6px;
+  background: #ff3333;
+  border: 1px solid #660000;
+  box-shadow: 0 0 8px rgba(255, 80, 80, 0.9);
+}
+
+.l2-map-mob-pin--epic_guard {
+  width: 11px;
+  height: 11px;
+  margin: -5px 0 0 -5px;
+  background: #ff8833;
+  border: 1px solid #663010;
+  box-shadow: 0 0 6px rgba(255, 120, 50, 0.85);
+}
+
+.l2-map-mob-pin--dungeon {
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4px;
+  background: #44aaff;
+  border: 1px solid #003366;
+}
+
+.l2-map-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: none;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Гравець: «курсор» / приціл — бірюза + ядро, поверх пінів мобів */
+.l2-map-dot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  pointer-events: none;
+  z-index: 8;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.l2-map-dot::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255, 200, 120, 0.92);
+  border-radius: 50%;
+  box-sizing: border-box;
+  box-shadow:
+    0 0 0 1px rgba(60, 40, 20, 0.75),
+    0 0 12px rgba(220, 160, 60, 0.65),
+    inset 0 0 8px rgba(255, 230, 180, 0.22);
+}
+
+.l2-map-dot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 4px #fff,
+    0 0 10px rgba(0, 255, 255, 0.9);
+}
+

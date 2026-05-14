@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
   </head>
   <body class="l2-body l2-page-city l2-page-options l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
@@ -69,10 +69,8 @@
           <section
             class="l2-opt-lang-section"
             id="l2-opt-lang"
-            aria-labelledby="opt-lang-heading"
+            aria-label="Вибір мови інтерфейсу"
           >
-            <h2 class="l2-pers-h2" id="opt-lang-heading"></h2>
-            <p class="l2-opt-lang-hint" id="opt-lang-hint"></p>
             <div class="l2-opt-lang-row">
               <button type="button" class="btn-l2" id="opt-lang-uk">
                 Українська
@@ -86,65 +84,53 @@
           <p class="l2-city-stub-msg" id="options-stub-msg" hidden></p>
 
           <section id="l2-opt-menu" class="l2-opt-menu" aria-label="Опції">
-            <!-- l2dop/img/icons: help=?, top/password/prof=petition, exit=стоп, char opt=options(монітор), pers=герой -->
+            <!-- Іконки рядів: /ref/*.png -->
             <ul class="l2-opt-list">
               <li>
                 <button type="button" class="l2-opt-row l2-opt-row--gold" data-stub="Таблица Эпик-Боссов">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/help.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/2204.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Таблица Эпик-Боссов <span class="l2-opt-nov">(New)</span></span>
                 </button>
               </li>
               <li>
                 <button type="button" class="l2-opt-row l2-opt-row--gold" data-stub="Таблица Боссов">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/help.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/86982.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Таблица Боссов <span class="l2-opt-nov">(New)</span></span>
                 </button>
               </li>
               <li>
                 <button type="button" class="l2-opt-row l2-opt-row--gold" data-stub="Топ игроков">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/ic_petition.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/442125.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Топ игроков</span>
                 </button>
               </li>
               <li>
                 <button type="button" class="l2-opt-row l2-opt-row--muted" data-stub="Сменить пароль">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/ic_petition.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/785.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Сменить пароль</span>
                 </button>
               </li>
               <li>
                 <button type="button" class="l2-opt-row l2-opt-row--muted" data-stub="Удалить персонажа">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/ic_exit.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/8955.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Удалить персонажа</span>
                 </button>
               </li>
               <li>
-                <button type="button" class="l2-opt-row l2-opt-row--gold" data-stub="Профессии">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/ic_petition.jpg" width="32" height="32" alt="" />
-                  <span class="l2-opt-txt">Профессии <span class="l2-opt-sub">(Узнать какой нужен предмет)</span></span>
-                </button>
-              </li>
-              <li>
                 <button type="button" class="l2-opt-row l2-opt-row--gold l2-opt-row--strong" data-stub="Новичкам">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/help.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/20204.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Новичкам <span class="l2-opt-sub">(Внимание)</span></span>
                 </button>
               </li>
               <li>
                 <button type="button" class="l2-opt-row l2-opt-row--gold" data-stub="Опции персонажа">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/ic_options_ui.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/42744.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Опции персонажа</span>
                 </button>
               </li>
               <li>
-                <button type="button" class="l2-opt-row l2-opt-row--gold" data-stub="Сменить героя">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/ic_pers.jpg" width="32" height="32" alt="" />
-                  <span class="l2-opt-txt">Сменить героя</span>
-                </button>
-              </li>
-              <li>
                 <button type="button" class="l2-opt-row l2-opt-row--exit" id="opt-logout">
-                  <img class="l2-opt-ico-img" src="/assets/l2dop/ic_exit.jpg" width="32" height="32" alt="" />
+                  <img class="l2-opt-ico-img" src="/ref/5892.png" width="32" height="32" alt="" />
                   <span class="l2-opt-txt">Выйти из игры</span>
                 </button>
               </li>
@@ -160,7 +146,7 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js"></script>
+    <script src="/l2-nav.js?v=20260509city59621"></script>
     <script src="/options.js"></script>
   </body>
 </html>

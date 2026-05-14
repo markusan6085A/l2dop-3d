@@ -2,7 +2,7 @@
  * Місто: l2-app-chrome-skin + сітка навігації; кнопки сервісів — border-image /ref/8585.png.
  * Ширина: --l2s-city-town-btn-w. Slice під реальний PNG.
  */
-@import url('l2-app-chrome-skin.css?v=29');
+@import url('l2-app-chrome-skin.css?v=20260509skinCrestR4');
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive {
   --l2s-city-town-slice-y: 30;
@@ -29,7 +29,7 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive #l2-nav-bottom .l2-wap-grid,
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive #l2-nav-bottom .l2-wap-grid.l2-wap-grid--bottom {
   border: 1px solid rgba(100, 80, 48, 0.55) !important;
   margin-top: 0 !important;
-  padding-top: 8px !important;
+  padding-top: 3px !important;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 200, 120, 0.06) !important;

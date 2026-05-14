@@ -1,0 +1,18 @@
+---
+description: Routes only HTTP layer — без бізнес-логіки і прямих Prisma write
+globs: server/src/routes/**/*.ts
+alwaysApply: true
+---
+
+# Routes: тільки HTTP-шар
+
+- `routes/` — лише HTTP-обгортка: валідація payload, виклик сервісу, `reply.code(...).send(...)`.
+- Бізнес-логіка, ігрові правила, економіка, battle-flow — тільки в `services/`.
+- `domain/` — лише pure functions/formulas без побічних ефектів і без доступу до БД.
+- Prisma write (`create/update/upsert/delete`, транзакції) — тільки в `services/`, не в `routes/`.
+- **Заборонено в route:** прямий виклик на кшталт `prisma.character.update(...)`.
+- **Дозволений патерн route:** `const result = await someService.someUseCase(...); return reply.send(result);`
+- Для мутацій використовуй єдиний формат конфлікту ревізії: HTTP `409` + стабільний код помилки (`revision_conflict`) + коротке `messageUk`.
+- Mutation logs у route мають бути уніфіковані: `action`, `characterId`, `expectedRevision`, `actualRevision`, `result`.
+- У логах заборонено: `heroJson`, повний request `body`, `token`, `cookie`, інші sensitive payloads.
+- Якщо потрібен write у новому endpoint: створи/розшир сервісний use-case, не додавай write прямо в route.

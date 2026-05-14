@@ -7,15 +7,34 @@ import {
   equipFromBag,
   unequipSlot,
 } from '../data/inventory.js';
-import { resolveMapMovement } from '../domain/mapMovement.js';
+import { resolveMapMovement, resolveMapMovementPatch } from '../domain/mapMovement.js';
 import { GameConflictError } from './charErrors.js';
-import { applyPassiveHpRegen } from './charPassiveRegen.js';
-import {
-  ensureMysticStarterSkillsRow,
-  ensureSanitizedSkillsLearnedRow,
-} from './charSkillsSanitize.js';
+import { applyPassiveHpRegen, computePassiveHpRegenPatch } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
+import { normalizeLearnedSkillsJson } from '../data/humanFighterSkillCatalog.js';
+import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
+import { resolveL2ProfessionForSkillsRow } from '../data/l2dopHumanFighterBattleSkills.js';
+import { isMysticClassBranch } from '../data/l2dopHumanMysticBattleSkills.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
+
+const MYSTIC_STARTER_BATTLE_ID = 'l2_1177';
+
+function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
+  return resolveMapMovement(applyPassiveHpRegen(row));
+}
+
+function movementFieldsChanged(a: CharacterRow, b: CharacterRow): boolean {
+  return (
+    a.worldX !== b.worldX ||
+    a.worldY !== b.worldY ||
+    a.targetX !== b.targetX ||
+    a.targetY !== b.targetY ||
+    (a.moveStartAt?.getTime() ?? 0) !== (b.moveStartAt?.getTime() ?? 0) ||
+    a.moveFromX !== b.moveFromX ||
+    a.moveFromY !== b.moveFromY
+  );
+}
 
 /**
  * Зберегти режим героя / Zealot у БД (як cs1.php $heroic / $zealot). Оновлює revision.
@@ -49,55 +68,145 @@ export async function applyPersistedCombatBuffs(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
-
-    const updated = await tx.character.updateMany({
-      where: { id: char.id, userId, revision: expectedRevision },
-      data: {
-        buffHeroicTier,
-        buffZealotStacks,
-        revision: { increment: 1 },
-      },
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const row = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(row as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        const changed =
+          base.hp !== current.hp ||
+          movementFieldsChanged(current as CharacterRow, base) ||
+          base.buffHeroicTier !== buffHeroicTier ||
+          base.buffZealotStacks !== buffZealotStacks;
+        if (!changed) {
+          return { changed: false };
+        }
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: base.worldX,
+            worldY: base.worldY,
+            targetX: base.targetX,
+            targetY: base.targetY,
+            moveStartAt: base.moveStartAt,
+            moveFromX: base.moveFromX,
+            moveFromY: base.moveFromY,
+            buffHeroicTier,
+            buffZealotStacks,
+          },
+        };
+      }
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
 export async function getSnapshotForUser(
   userId: string
 ): Promise<CharacterSnapshot | null> {
-  let row = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!row) return null;
-
-  let inv = parseInventory((row as CharacterRow).inventoryJson);
-  if (needsStarterKitMigration(inv)) {
-    inv = migrateInventoryToSk2(inv);
-    const upd = {
-      inventoryJson: inv as unknown as Prisma.InputJsonValue,
-      revision: { increment: 1 },
-    } as unknown as Prisma.CharacterUncheckedUpdateInput;
-    row = await prisma.character.update({
-      where: { id: row.id },
-      data: upd,
+  return prisma.$transaction(async (tx) => {
+    const row = await tx.character.findFirst({
+      where: { userId },
+      orderBy: { lastUpdate: 'desc' },
     });
-  }
+    if (!row) return null;
 
-  row = await ensureSanitizedSkillsLearnedRow(row as CharacterRow);
-  row = await ensureMysticStarterSkillsRow(row as CharacterRow);
+    const cr = row as CharacterRow;
+    const nowMs = Date.now();
+    const data: Prisma.CharacterUncheckedUpdateInput = {};
+    let bumpRevision = false;
 
-  row = await applyPassiveHpRegen(row as CharacterRow);
-  row = (await resolveMapMovement(
-    row as CharacterRow
-  )) as CharacterRow;
-  return toSnapshot(row as CharacterRow);
+    let invJsonForShadow = cr.inventoryJson;
+    const inv = parseInventory(cr.inventoryJson);
+    if (needsStarterKitMigration(inv)) {
+      const migrated = migrateInventoryToSk2(inv);
+      invJsonForShadow = migrated as unknown as Prisma.JsonValue;
+      data.inventoryJson = migrated as unknown as Prisma.InputJsonValue;
+      bumpRevision = true;
+    }
+
+    const prof = resolveL2ProfessionForSkillsRow(cr);
+    const currentEntries = normalizeLearnedSkillsJson(cr.skillsLearnedJson);
+    let nextEntries = filterLearnedSkillEntriesForCharacter(
+      currentEntries,
+      cr.race,
+      cr.classBranch,
+      prof
+    );
+    const sa = JSON.stringify(
+      [...currentEntries].sort((x, y) => x.battleId.localeCompare(y.battleId))
+    );
+    const sbFiltered = JSON.stringify(
+      [...nextEntries].sort((x, y) => x.battleId.localeCompare(y.battleId))
+    );
+    if (sa !== sbFiltered) {
+      bumpRevision = true;
+    }
+    if (
+      isMysticClassBranch(cr.classBranch) &&
+      !nextEntries.some((e) => e.level >= 1)
+    ) {
+      nextEntries = normalizeLearnedSkillsJson([
+        ...nextEntries,
+        { battleId: MYSTIC_STARTER_BATTLE_ID, level: 1 },
+      ]);
+      bumpRevision = true;
+    }
+    const sb = JSON.stringify(
+      [...nextEntries].sort((x, y) => x.battleId.localeCompare(y.battleId))
+    );
+    const oldSkillsSorted = JSON.stringify(
+      [...normalizeLearnedSkillsJson(cr.skillsLearnedJson)].sort((x, y) =>
+        x.battleId.localeCompare(y.battleId)
+      )
+    );
+    let skillsJsonForShadow = cr.skillsLearnedJson;
+    if (sb !== oldSkillsSorted) {
+      skillsJsonForShadow = nextEntries as unknown as Prisma.JsonValue;
+      data.skillsLearnedJson = nextEntries as unknown as Prisma.InputJsonValue;
+    }
+
+    const shadowRow = {
+      ...cr,
+      inventoryJson: invJsonForShadow,
+      skillsLearnedJson: skillsJsonForShadow,
+    } as CharacterRow;
+
+    const regenPatch = computePassiveHpRegenPatch(shadowRow, nowMs);
+    if (regenPatch.changed) {
+      data.hp = regenPatch.nextHp;
+      bumpRevision = true;
+    }
+
+    const movePatch = resolveMapMovementPatch(shadowRow, nowMs);
+    if (movePatch.changed) {
+      data.worldX = movePatch.data.worldX;
+      data.worldY = movePatch.data.worldY;
+      data.targetX = movePatch.data.targetX;
+      data.targetY = movePatch.data.targetY;
+      data.moveStartAt = movePatch.data.moveStartAt;
+      data.moveFromX = movePatch.data.moveFromX;
+      data.moveFromY = movePatch.data.moveFromY;
+      bumpRevision = true;
+    }
+
+    const hasWrite =
+      Object.keys(data).length > 0;
+    if (!hasWrite) {
+      return toSnapshot(cr);
+    }
+    if (bumpRevision) {
+      data.revision = { increment: 1 };
+    }
+    const next = await tx.character.update({
+      where: { id: cr.id },
+      data,
+    });
+    return toSnapshot(next as CharacterRow);
+  });
 }
 
 export async function applyEquipFromBag(
@@ -106,36 +215,43 @@ export async function applyEquipFromBag(
   expectedRevision: number,
   enchant: number = 0
 ): Promise<CharacterSnapshot> {
-  let pre = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!pre) throw new Error('no_character');
-  pre = await applyPassiveHpRegen(pre as CharacterRow);
-  pre = (await resolveMapMovement(pre as CharacterRow)) as CharacterRow;
-
   return prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) {
-      throw new GameConflictError();
-    }
-    const inv = parseInventory((char as CharacterRow).inventoryJson);
-    const next = equipFromBag(inv, itemId, enchant);
-    const updMany = {
-      inventoryJson: next as unknown as Prisma.InputJsonValue,
-      revision: { increment: 1 },
-    } as unknown as Prisma.CharacterUncheckedUpdateManyInput;
-    const updated = await tx.character.updateMany({
-      where: { id: char.id, userId, revision: expectedRevision },
-      data: updMany,
-    });
-    if (updated.count === 0) throw new GameConflictError();
-    const row = await tx.character.findUniqueOrThrow({ where: { id: char.id } });
-    return toSnapshot(row as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        const inv = parseInventory(base.inventoryJson);
+        const nextInv = equipFromBag(inv, itemId, enchant);
+        const changed =
+          base.hp !== current.hp ||
+          movementFieldsChanged(current as CharacterRow, base) ||
+          JSON.stringify(nextInv) !== JSON.stringify(inv);
+        if (!changed) return { changed: false };
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: base.worldX,
+            worldY: base.worldY,
+            targetX: base.targetX,
+            targetY: base.targetY,
+            moveStartAt: base.moveStartAt,
+            moveFromX: base.moveFromX,
+            moveFromY: base.moveFromY,
+            inventoryJson: nextInv as unknown as Prisma.InputJsonValue,
+          },
+        };
+      }
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 
@@ -144,36 +260,43 @@ export async function applyUnequip(
   slot: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  let pre = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!pre) throw new Error('no_character');
-  pre = await applyPassiveHpRegen(pre as CharacterRow);
-  pre = (await resolveMapMovement(pre as CharacterRow)) as CharacterRow;
-
   return prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) {
-      throw new GameConflictError();
-    }
-    const inv = parseInventory((char as CharacterRow).inventoryJson);
-    const next = unequipSlot(inv, slot);
-    const updMany = {
-      inventoryJson: next as unknown as Prisma.InputJsonValue,
-      revision: { increment: 1 },
-    } as unknown as Prisma.CharacterUncheckedUpdateManyInput;
-    const updated = await tx.character.updateMany({
-      where: { id: char.id, userId, revision: expectedRevision },
-      data: updMany,
-    });
-    if (updated.count === 0) throw new GameConflictError();
-    const row = await tx.character.findUniqueOrThrow({ where: { id: char.id } });
-    return toSnapshot(row as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        const inv = parseInventory(base.inventoryJson);
+        const nextInv = unequipSlot(inv, slot);
+        const changed =
+          base.hp !== current.hp ||
+          movementFieldsChanged(current as CharacterRow, base) ||
+          JSON.stringify(nextInv) !== JSON.stringify(inv);
+        if (!changed) return { changed: false };
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: base.worldX,
+            worldY: base.worldY,
+            targetX: base.targetX,
+            targetY: base.targetY,
+            moveStartAt: base.moveStartAt,
+            moveFromX: base.moveFromX,
+            moveFromY: base.moveFromY,
+            inventoryJson: nextInv as unknown as Prisma.InputJsonValue,
+          },
+        };
+      }
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 

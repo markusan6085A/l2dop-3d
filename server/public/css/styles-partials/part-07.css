@@ -1,0 +1,1127 @@
+@media (max-width: 380px) {
+  .l2-pers-bars-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.l2-pers-bars-col .l2-pers-bar-lbl {
+  flex: 0 0 34px;
+  font-size: 9px;
+  letter-spacing: 0.02em;
+}
+
+.l2-pers-stat-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+
+.l2-pers-stat-cols--social {
+  gap: 8px 16px;
+}
+
+.l2-pers-stat-col {
+  min-width: 0;
+}
+
+.l2-pers-kv {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+  line-height: 1.25;
+}
+
+.l2-pers-kv--full {
+  margin-bottom: 6px;
+}
+
+.l2-pers-k {
+  color: #9aa8b8;
+  flex: 1;
+  min-width: 0;
+}
+
+.l2-pers-k em {
+  display: block;
+  font-style: normal;
+  font-size: 8px;
+  color: #6a7a8a;
+  margin-top: 1px;
+}
+
+.l2-pers-v {
+  flex: 0 0 auto;
+  color: #d8d4c8;
+  text-align: right;
+  font-weight: 600;
+}
+
+.l2-pers-base-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 6px;
+  margin-bottom: 4px;
+}
+
+.l2-pers-base-cell {
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 95, 55, 0.35);
+  background: rgba(18, 12, 8, 0.45);
+}
+
+.l2-pers-base-lbl {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #9a9080;
+  margin-bottom: 4px;
+}
+
+.l2-pers-base-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e0dcc8;
+}
+
+.l2-pers-extra-list {
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+.l2-pers-newbie {
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.l2-pers-newbie-link {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e87850;
+  text-decoration: underline;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-pers-newbie-link:hover,
+.l2-pers-newbie-link:focus {
+  color: #ff9a70;
+  outline: none;
+}
+
+.l2-opt-root {
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.l2-pers-h1 {
+  margin: 0 0 12px;
+  text-align: center;
+  font-family: var(--l2-font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e8c56e;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.88);
+}
+
+.l2-pers-classline {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #97906e;
+}
+
+.l2-pers-bars {
+  margin: 0 0 8px;
+  padding: 0 4px;
+}
+
+.l2-pers-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.l2-pers-bar-lbl {
+  flex: 0 0 28px;
+  font-size: 10px;
+  color: #969593;
+}
+
+.l2-pers-bar-outer {
+  flex: 1;
+  height: 10px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(60, 90, 120, 0.5);
+  overflow: hidden;
+}
+
+.l2-pers-bar-inner {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+/* HP — червоний як у l2mobi; MP — синій; Exp — зелений; CP — жовтий; навант./вага — сірі */
+.l2-pers-bar-hp {
+  background: linear-gradient(180deg, #c84838 0%, #8a2018 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.l2-pers-bar-mp {
+  background: linear-gradient(180deg, #3a6a9a 0%, #1e3a58 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.l2-pers-bar-exp {
+  background: linear-gradient(180deg, #4a9a58 0%, #286030 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.l2-pers-bar-cp {
+  background: linear-gradient(180deg, #c9a030 0%, #886018 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.l2-pers-bar-load {
+  background: linear-gradient(180deg, #6a7078 0%, #3a3e44 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.l2-pers-bar-sp {
+  background: linear-gradient(180deg, #5a6890 0%, #303850 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.l2-pers-bar-val {
+  flex: 0 0 auto;
+  min-width: 5.5em;
+  text-align: right;
+  font-size: 11px;
+  color: #97906e;
+}
+
+.l2-pers-hr {
+  border: none;
+  border-top: 1px solid rgba(55, 85, 110, 0.45);
+  margin: 12px 0;
+}
+
+.l2-pers-section {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e8c56e;
+  text-align: center;
+}
+
+.l2-pers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.l2-pers-table td {
+  padding: 4px 6px;
+  vertical-align: top;
+}
+
+.l2-pers-td-l {
+  color: #969593;
+  width: 42%;
+}
+
+.l2-pers-td-r {
+  color: #97906e;
+  text-align: right;
+}
+
+.l2-pers-soon {
+  margin: 0 0 8px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #9a9080;
+  text-align: center;
+}
+
+/* Вибір мови (options.html) */
+.l2-opt-lang-section {
+  margin: 0 0 12px;
+  padding: 8px 6px;
+}
+.l2-opt-lang-section .l2-opt-lang-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #a09080;
+}
+.l2-opt-lang-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.l2-opt-lang--active {
+  box-shadow: 0 0 0 2px #c9a227;
+}
+
+/* Кнопки «Українська» / «Русский» (options.html) — рамка /ref/77777.png */
+.l2-page-options .l2-opt-lang-row .btn-l2 {
+  --l2s-opt-lang777-slice-y: 24;
+  --l2s-opt-lang777-slice-x: 32;
+  --l2s-opt-lang777-bd-y: 8;
+  --l2s-opt-lang777-bd-x: 12;
+  box-sizing: border-box;
+  border-radius: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(1px * var(--l2s-opt-lang777-bd-y)) calc(1px * var(--l2s-opt-lang777-bd-x));
+  border-image-source: url('/ref/77777.png');
+  border-image-slice: var(--l2s-opt-lang777-slice-y) var(--l2s-opt-lang777-slice-x) var(--l2s-opt-lang777-slice-y)
+    var(--l2s-opt-lang777-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-opt-lang777-bd-y)) calc(1px * var(--l2s-opt-lang777-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.l2-page-options .l2-opt-lang-row .btn-l2:hover,
+.l2-page-options .l2-opt-lang-row .btn-l2:focus-visible {
+  filter: brightness(1.08);
+  outline: none;
+}
+
+/* Меню опцій (l2dop other.php): рядок іконка + текст, золото / білий */
+.l2-opt-menu {
+  margin-top: 8px;
+  padding-top: 4px;
+}
+
+.l2-opt-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.l2-opt-list li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Рядки меню опцій (options.html) — та сама рамка що валюта/фільтри: /ref/8888888.png */
+.l2-opt-row {
+  --l2s-opt-row888-slice-y: 24;
+  --l2s-opt-row888-slice-x: 32;
+  --l2s-opt-row888-bd-y: 8;
+  --l2s-opt-row888-bd-x: 12;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  text-align: left;
+  font-family: var(--l2-font-body);
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: pointer;
+  border-radius: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(1px * var(--l2s-opt-row888-bd-y)) calc(1px * var(--l2s-opt-row888-bd-x));
+  border-image-source: url('/ref/8888888.png');
+  border-image-slice: var(--l2s-opt-row888-slice-y) var(--l2s-opt-row888-slice-x) var(--l2s-opt-row888-slice-y)
+    var(--l2s-opt-row888-slice-x) fill;
+  border-image-width: calc(1px * var(--l2s-opt-row888-bd-y)) calc(1px * var(--l2s-opt-row888-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent;
+  color: #e8c56e;
+  box-shadow: none;
+  transition: filter 0.12s ease, background 0.12s ease;
+}
+
+.l2-opt-row:hover,
+.l2-opt-row:focus {
+  outline: none;
+  background: rgba(90, 55, 28, 0.22);
+  filter: brightness(1.06);
+}
+
+.l2-opt-row--gold {
+  color: #e8c56e;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-opt-row--strong .l2-opt-txt {
+  font-weight: 700;
+}
+
+.l2-opt-row--muted {
+  color: #d4d0c8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-opt-row--exit {
+  color: #f0d080;
+}
+
+.l2-opt-list li:last-child {
+  margin-top: 12px;
+}
+
+.l2-opt-row--exit:hover,
+.l2-opt-row--exit:focus {
+  background: rgba(120, 40, 40, 0.18);
+}
+
+/* Іконки з server/public/assets/l2dop (копія l2dop/img/newicons + icons/exit.jpg, items/4037.jpg) */
+.l2-opt-ico-img {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.l2-opt-txt {
+  flex: 1;
+  min-width: 0;
+}
+
+.l2-opt-sub,
+.l2-opt-nov {
+  font-size: 10px;
+  font-weight: bold;
+  opacity: 0.92;
+  color: #b8a878;
+}
+
+/* Опції: менше «порожнього неба» між списком і сіткою Форум/Новини */
+.l2-page-options .l2-pers-h1 {
+  margin-bottom: 8px;
+}
+
+.l2-page-options .l2-opt-menu {
+  margin-top: 4px;
+  padding-top: 0;
+  padding-left: 10px;
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+.l2-page-options .l2-opt-list {
+  margin-bottom: 8px;
+}
+
+.l2-page-options .l2-foot-linkbar--inset {
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(95, 72, 42, 0.28);
+}
+
+.l2-page-options .l2-wap-grid--bottom {
+  margin-top: 8px;
+  padding-top: 4px;
+}
+
+/* Тимчасова сторінка тесту ЛВЛ / адени / SP */
+.l2-page-dev-boost .l2-dev-boost-root {
+  padding-left: 10px;
+  padding-right: 10px;
+  box-sizing: border-box;
+}
+
+.l2-page-dev-boost .l2-dev-boost-panel {
+  max-width: 440px;
+  margin: 0 auto;
+  padding-bottom: 16px;
+}
+
+.l2-page-dev-boost .l2-dev-boost-warn {
+  font-size: 12px;
+  color: #c8b898;
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.l2-page-dev-boost .l2-dev-boost-warn code {
+  font-size: 11px;
+  color: #e8dcc8;
+}
+
+.l2-page-dev-boost .l2-dev-boost-current {
+  font-size: 12px;
+  color: var(--gold);
+  margin: 0 0 12px;
+  word-break: break-word;
+}
+
+.l2-page-dev-boost .l2-dev-boost-field {
+  margin-bottom: 12px;
+}
+
+.l2-page-dev-boost .l2-dev-boost-form .inp-l2 {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.l2-page-dev-boost .l2-dev-boost-submit {
+  margin-top: 6px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.l2-page-dev-boost .l2-dev-boost-back {
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* Місто — магістр / скіли */
+.l2-city-magister-hint {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #b0a090;
+}
+
+.l2-city-magister-profession {
+  margin: 0 0 12px;
+  padding: 10px;
+  border: 1px solid rgba(100, 80, 52, 0.45);
+  border-radius: 6px;
+  background: rgba(28, 22, 16, 0.5);
+}
+
+.l2-city-magister-profession-msg {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e0d8c8;
+}
+
+.l2-city-magister-profession .btn-l2 {
+  font-size: 11px;
+  padding: 6px 14px;
+}
+
+.l2-city-magister-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.l2-city-magister-skill {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid rgba(201, 168, 96, 0.35);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.l2-city-magister-skill-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px 14px;
+}
+
+/* Плейсхолдер до onload; city.js задає ~32 CSS px (×1 від типового джерела). */
+.l2-city-magister-skill-icon-frame {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  line-height: 0;
+  border: 1px solid rgba(201, 168, 96, 0.55);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.l2-city-magister-skill-canvas {
+  display: block;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  /* Для canvas у Chromium інколи потрібно обидва синтаксиси + без згладжування шару */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Лише fallback, якщо canvas недоступний */
+.l2-city-magister-skill-icon {
+  display: block;
+  box-sizing: border-box;
+  max-width: 40px;
+  max-height: 40px;
+  margin: 0;
+  padding: 0;
+  object-fit: contain;
+  border: none;
+  border-radius: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.l2-city-magister-skill-body {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.l2-city-magister-skill-actions-wrap {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.l2-city-magister-skill-name {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #eecc99;
+}
+
+.l2-city-magister-skill-meta {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: #a09080;
+}
+
+.l2-city-magister-skill-hint {
+  margin: 0 0 8px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #7a8a9a;
+}
+
+.l2-city-magister-skill-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.l2-city-magister-skill-actions .btn-l2 {
+  font-size: 11px;
+  padding: 6px 12px;
+}
+
+/* =============================================================================
+   Текстовий квест / мобільний «темний фентезі» UI (story.html)
+   Палітра / рамки — під реф. (темне золото, напівпрозорі панелі)
+   ============================================================================= */
+
+body.l2-page-story {
+  /* Поза рамками: та ж гама, що пергамент, трохи темніше за #12100d — але не «відбитий» чорний */
+  --l2s-outer-void: #0f0d0a;
+  --l2s-outer-void-mid: #12100d;
+  --l2s-outer-void-top: #15130f;
+  --l2s-bg-deep: #0a0a0a;
+  --l2s-bg-panel: rgba(6, 6, 8, 0.78);
+  --l2s-gold: #c5a059;
+  --l2s-gold-dim: #7a5c28;
+  --l2s-gold-bright: #e4c87a;
+  --l2s-txt: #e0e0e0;
+  --l2s-txt-mute: #9a9a8e;
+  --l2s-hp: #c41818;
+  --l2s-mp: #7a48a8;
+  --l2s-sp: #e6b800;
+  /* Блок сюжету «пергамент/шкіра» (реф. Paint) */
+  --l2s-paper-a: #12100d;
+  --l2s-paper-b: #1a1612;
+  --l2s-paper-txt: #a89379;
+  --l2s-paper-border: #3d3428;
+  --l2s-paper-border-in: #1e1a16;
+  --l2s-paper-fil: #5c4d39;
+  --l2s-paper-radius: 3px;
+  --l2s-font-story: 'Lora', Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+  /* Головна зовнішня рамка колонки (всередині неї — рамки HUD/локації/тексту) */
+  --l2s-main-frame: rgba(160, 125, 72, 0.58);
+  --l2s-main-frame-deep: rgba(45, 38, 28, 0.95);
+  /* ref-рамка/відступи: /css/l2-outer-sframe.css або l2-game-chrome.css → .l2-outer-sframe-host */
+}
+
+/* Боки екрану (поза колонкою) — та ж гама, що пергамент, без синього l2mobi */
+body.l2-body.l2-page-story {
+  background: var(--l2s-outer-void-mid);
+}
+
+body.l2-page-story .l2-shell {
+  padding: 0;
+  max-width: none;
+  width: 100%;
+  background: transparent;
+}
+
+body.l2-page-story .l2-screen-inner.l2-story {
+  position: relative;
+  z-index: 4;
+  /* Усі внутрішні рамки — всередині ref-рамки; зверху — під кут 19; зліва — макс. до смуги 12 */
+  padding: var(--l2s-story-pad-below-cap) var(--l2s-story-pad-r) calc(20px + var(--l2s-sframe-ch) + var(--l2-dock-bottom-pad))
+    var(--l2s-story-pad-l);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Панелі story — не вилазять за колонку зовнішньої рамки */
+body.l2-page-story .l2-screen-inner.l2-story .l2-story-panel,
+body.l2-page-story .l2-screen-inner.l2-story .l2-hud-panel,
+body.l2-page-story .l2-screen-inner.l2-story .l2-story-choices {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* story.html лише: тло дає void колонки; рамка 222 — l2-story-222-skin */
+.l2-story-panel {
+  position: relative;
+  z-index: 0;
+  margin: 0 0 12px;
+  padding: 14px 12px 12px;
+  border-radius: 1px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.l2-story-orn {
+  position: absolute;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  opacity: 0.9;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85));
+  /* Легка «різьблена» вставка в кут */
+  --l2-orn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='none' stroke='%23604018' stroke-width='0.7' d='M2 2h12v1.2H3.1v25.3H2V2z'/%3E%3Cpath fill='none' stroke='%23c5a059' stroke-width='0.9' d='M3 3h9.5v1H3.7v25H3V3z'/%3E%3Cpath fill='none' stroke='%23e8c878' stroke-width='0.5' d='M4.2 4.2l5 0a2 2 0 0 1 0 0'/%3E%3Cpath fill='none' stroke='%23a07840' stroke-width='0.45' d='M5 8q3-2 4 1'/%3E%3C/svg%3E");
+  background-image: var(--l2-orn);
+}
+
+.l2-story-orn--tl {
+  top: 2px;
+  left: 2px;
+}
+.l2-story-orn--tr {
+  top: 2px;
+  right: 2px;
+  transform: scaleX(-1);
+}
+.l2-story-orn--br {
+  bottom: 2px;
+  right: 2px;
+  transform: scale(-1);
+}
+.l2-story-orn--bl {
+  bottom: 2px;
+  left: 2px;
+  transform: scaleY(-1);
+}
+
+/* Панель HP/MP/SP: /css/l2-hud-panel.css (l2-hud-panel) */
+
+.l2-story-loc.l2-story-panel {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 0 0 16px;
+  padding: 0;
+  min-height: 92px;
+  overflow: visible;
+}
+
+.l2-story-loc-art {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 112px;
+  min-height: 92px;
+  overflow: hidden;
+  background: transparent;
+  border-right: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: none;
+}
+
+.l2-story-loc-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 92px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.l2-story-loc-text {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 10px 40px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+}
+
+.l2-story-loc-title {
+  margin: 0;
+  font-family: var(--l2-font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--l2s-gold-bright);
+  text-align: center;
+  text-shadow:
+    0 0 10px rgba(200, 160, 90, 0.2),
+    0 1px 3px #000;
+}
+
+.l2-story-loc-desc {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--l2s-txt-mute);
+  text-align: center;
+}
+
+.l2-story-loc-map {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: 1px solid rgba(160, 130, 70, 0.55);
+  border-radius: 4px;
+  background: transparent;
+  color: #d4b870;
+  box-shadow: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.l2-story-map-ic {
+  display: block;
+  opacity: 0.95;
+}
+.l2-story-loc-map:hover,
+.l2-story-loc-map:focus {
+  border-color: #d4af37;
+  background: transparent;
+  outline: none;
+}
+
+/* Текст сюжету: void + рамка 222 (l2-story-222-skin), без пергаменту / зерна */
+.l2-story-article.l2-story-panel {
+  isolation: auto;
+  margin: 0 0 16px;
+  padding: 18px 14px 16px;
+  border-radius: var(--l2s-paper-radius);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.l2-story-article.l2-story-panel::before {
+  content: none;
+  display: none;
+}
+
+.l2-story-article .l2-story-orn {
+  z-index: 2;
+  opacity: 0.5;
+  filter: brightness(0.75) sepia(0.2);
+}
+
+.l2-story-article p {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 12px;
+  font-family: var(--l2s-font-story);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--l2s-paper-txt);
+  text-align: left;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-story-article p:last-child {
+  margin-bottom: 0;
+}
+
+.l2-story-filigree {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 14px;
+}
+
+.l2-story-filigree--line {
+  flex: 1 1 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--l2s-paper-fil) 22%,
+    var(--l2s-paper-fil) 78%,
+    transparent 100%
+  );
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.55);
+  opacity: 0.9;
+}
+
+.l2-story-filigree--dia {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(135deg, #6a5a45, #3a3028);
+  border: 1px solid var(--l2s-paper-fil);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+  opacity: 0.95;
+}
+
+.l2-story-article-q {
+  margin-top: 0;
+  color: #b5a080 !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-story-article strong {
+  color: #c4b090;
+  font-weight: 600;
+}
+
+.l2-story-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+a.l2-story-choice,
+button.l2-story-choice {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 10px 10px 8px;
+  cursor: pointer;
+  font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--l2s-txt);
+  text-align: left;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.l2-story-choice-num {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  font-family: var(--l2-font-body);
+  font-size: 10px;
+  font-weight: 800;
+  color: #1a0e05;
+  line-height: 22px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--l2s-gold-bright) 0%, var(--l2s-gold-dim) 100%);
+  box-shadow:
+    0 0 0 1px rgba(30, 20, 10, 0.95),
+    inset 0 1px 0 rgba(255, 255, 240, 0.45);
+}
+
+a.l2-story-choice {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.l2-story-choice:hover,
+.l2-story-choice:focus {
+  border-color: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.l2-story-choice-ic {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.98;
+}
+
+.l2-story-choice-txt {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.l2-story-choice-txt em {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-style: normal;
+  color: #7a7058;
+}
+
+.l2-story-choice-chev {
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+  color: #8a7848;
+  opacity: 0.85;
+}
+
+.l2-story-footnote {
+  margin: 8px 0 0;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #5a5a4a;
+  text-align: center;
+}
+
+/* Нижня панель: товстіша «лита» золота рамка, як на реф. */
+body.l2-page-story .l2-story-dock {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+  margin: 0;
+  list-style: none;
+  background: linear-gradient(180deg, #1c1814 0%, #0a0806 50%, #030202 100%);
+  border: none;
+  border-top: 3px solid var(--l2s-gold-dim);
+  box-shadow:
+    0 -1px 0 var(--l2s-gold-bright),
+    0 -4px 0 rgba(40, 30, 15, 0.95),
+    0 -6px 16px rgba(0, 0, 0, 0.7),
+    inset 0 2px 0 rgba(255, 210, 150, 0.12);
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+.l2-story-dock__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px 2px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #a89878 !important;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+.l2-story-dock__btn:hover,
+.l2-story-dock__btn:focus {
+  color: #d4c4a0 !important;
+  background: rgba(80, 60, 30, 0.25);
+  outline: none;
+}
+
+.l2-story-dock__ic {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 90% 90% at 40% 30%, #3a2a18, #0c0804);
+  box-shadow:
+    0 0 0 1px rgba(120, 90, 50, 0.55),
+    0 0 0 2px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 200, 120, 0.12);
+  opacity: 0.95;
+}
+
+/* story: останнє в файлі — знімає пергамент/плашки з .l2-story-article, .l2-story-loc, HUD, варіантів (інакше кеш/порядок l2-*.css не дотягує) */
+body.l2-page-story .l2-hud-panel,
+body.l2-page-story .l2-story-article.l2-story-panel,
+body.l2-page-story .l2-story-loc.l2-story-panel,
+body.l2-page-story a.l2-story-choice,
+body.l2-page-story button.l2-story-choice,
+body.l2-page-story .l2-story-loc-map {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-page-story .l2-story-article.l2-story-panel::before,
+body.l2-page-story .l2-hud-panel::before {
+  content: none !important;
+  display: none !important;
+}
+

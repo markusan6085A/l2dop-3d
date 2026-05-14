@@ -17,9 +17,37 @@ import { buffDurationSecForSkillId } from '../data/l2dopBuffDurations.js';
 import type { BattleBuffIcon } from './battleServiceTypes.js';
 
 const MYSTIC_TOGGLE_SKILL_IDS = new Set([336, 337, 338]);
+const ACTIVE_BUFF_LABEL_UK_BY_SKILL_ID: Readonly<Partial<Record<number, string>>> = {
+  78: 'Бойовий клич',
+  99: 'Швидкий постріл',
+  1036: 'Магічний барʼєр',
+  1040: 'Щит',
+  1045: 'Благословення тіла',
+  1048: 'Благословення душі',
+  1059: 'Посилення',
+  1062: 'Дух берсерка',
+  1068: 'Сила',
+  1077: 'Фокус',
+  1085: 'Кмітливість',
+  1086: 'Швидкість',
+  1204: 'Хода вітру',
+  121: 'Бойовий рик',
+  1240: 'Наведення',
+  130: 'Азарт бою',
+  336: 'Таємна мудрість',
+  337: 'Таємна сила',
+  338: 'Таємна спритність',
+};
 
 function isMysticToggleSkillId(skillId: number): boolean {
   return MYSTIC_TOGGLE_SKILL_IDS.has(Math.floor(skillId));
+}
+
+function activeBuffLabelUk(skillId: number): string {
+  return (
+    ACTIVE_BUFF_LABEL_UK_BY_SKILL_ID[Math.floor(skillId)] ??
+    'Ефект #' + String(Math.floor(skillId))
+  );
 }
 
 /**
@@ -110,7 +138,7 @@ export function battleBuffLinesUk(
   st: BattleJsonState,
   activeBuffs: readonly ActiveBuffEntry[] = []
 ): string[] {
-  const m = st.battleMods;
+  const m = (st.battleMods ?? {}) as BattleBattleMods;
   const out: string[] = [];
   const activeByIdForLines = new Map<number, ActiveBuffEntry>();
   for (const b of activeBuffs) activeByIdForLines.set(b.skillId, b);
@@ -118,7 +146,6 @@ export function battleBuffLinesUk(
   if ((wc !== undefined && wc > 1) || activeByIdForLines.has(78)) {
     out.push('Бойовий клич: +фіз. урон');
   }
-  if (!m) return out;
   const dash = jsonFiniteNum(m.dashRunSpeedFlat);
   if (dash !== undefined && dash > 0) {
     const sonicMoveExp = st.battleModsExpiresAtMsBySkillId?.['451'];
@@ -449,7 +476,7 @@ export function battleBuffIconsForUi(
   activeBuffs: readonly ActiveBuffEntry[] = []
 ): BattleBuffIcon[] {
   const out: BattleBuffIcon[] = [];
-  const m = st.battleMods;
+  const m = (st.battleMods ?? {}) as BattleBattleMods;
   const activeByIdForIcons = new Map<number, ActiveBuffEntry>();
   for (const b of activeBuffs) activeByIdForIcons.set(b.skillId, b);
   /**
@@ -485,7 +512,6 @@ export function battleBuffIconsForUi(
       ...iconDurationExtrasCombined(78, activeByIdForIcons, st),
     });
   }
-  if (!m) return out;
   const dashFlat = jsonFiniteNum(m.dashRunSpeedFlat);
   if (dashFlat !== undefined && dashFlat > 0) {
     /**
@@ -821,6 +847,30 @@ export function battleBuffIconsForUi(
       l2SkillId: 368,
       labelUk: 'Відплата',
       ...iconDurationExtrasCombined(368, activeByIdForIcons, st),
+    });
+  }
+  /**
+   * Generic-шлях для всіх активних self-бафів із `activeBuffsJson`:
+   * якщо баф ще не показаний через legacy battleMods-гілку, додаємо його в ту ж
+   * смугу іконок (поруч із toggle). Це покриває міського бафера та майбутні бафи
+   * без окремих hardcode-гілок.
+   */
+  const seenSkillIds = new Set<number>();
+  for (const x of out) {
+    const sid = Math.floor(Number(x.l2SkillId));
+    if (Number.isFinite(sid) && sid > 0) seenSkillIds.add(sid);
+  }
+  for (const e of activeBuffs) {
+    const sid = Math.floor(Number(e.skillId));
+    if (!Number.isFinite(sid) || sid <= 0) continue;
+    if (seenSkillIds.has(sid)) continue;
+    seenSkillIds.add(sid);
+    out.push({
+      key: 'active_buff_' + sid,
+      l2SkillId: sid,
+      labelUk: activeBuffLabelUk(sid),
+      ...(isMysticToggleSkillId(sid) ? { isToggle: true } : {}),
+      ...iconDurationExtras(sid, activeByIdForIcons),
     });
   }
   return out;

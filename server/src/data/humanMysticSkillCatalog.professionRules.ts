@@ -1,10 +1,12 @@
 import type { HumanMysticSkillCatalogEntry } from './humanMysticSkillCatalog.types.js';
+import { isL2dbRgSkillAllowedForProfession } from './l2dbRgProfessionSkillGate.js';
 
 export function mysticCatalogEntryVisibleForProfession(
   entry: HumanMysticSkillCatalogEntry,
   l2Profession: string
 ): boolean {
   const p = String(l2Profession || '').trim();
+  if (!isL2dbRgSkillAllowedForProfession(p, entry.l2SkillId)) return false;
   return entry.visibleForProfessions.includes(p);
 }
 

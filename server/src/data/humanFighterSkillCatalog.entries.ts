@@ -230,13 +230,13 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_1',
     l2SkillId: 1,
-    minLevel: 15,
-    spCost: 1400,
+    minLevel: 40,
+    spCost: 11000,
     nameUk: 'Потрійний удар (Triple Slash)',
     hintUk:
       'Серія з трьох ударів по цілі. Лише з дуальним мечем. Можливий надудар.',
     kind: 'battle',
-    professionReq: 'human_warrior',
+    professionReq: 'human_gladiator',
   },
   {
     battleId: 'l2_6',
@@ -247,7 +247,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     hintUk:
       'Швидкий звуковий удар. Витрачає 1 Sonic Focus. Меч, булава або дуал.',
     kind: 'battle',
-    professionReq: 'human_warrior',
+    professionReq: 'human_gladiator',
   },
   {
     battleId: 'l2_8',
@@ -259,7 +259,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
       'Додає +1 заряд Sonic Focus (максимум ' +
       '10). Заряди витрачаються sonic-скілами.',
     kind: 'battle',
-    professionReq: 'human_warrior',
+    professionReq: 'human_gladiator',
   },
   {
     battleId: 'l2_5',
@@ -377,9 +377,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 40,
     spCost: 13000,
     nameUk: 'Вихор (Whirlwind)',
-    cooldownSec: 17,
+    cooldownSec: 6,
     hintUk:
-      'Той самий фізичний урон по головній цілі та до двох мобів поруч на карті (у радіусі бою). Лише зі списом або алебардами. Блок щита ігнорується. Можливий надудар. Кулдаун 17 с.',
+      'Стабільний AoE-спам: б’є головну ціль і ще до 2 поруч. Лише зі списом/алебардою. Кулдаун 6 с.',
     kind: 'battle',
     professionReq: 'human_warlord',
   },
@@ -390,7 +390,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 13000,
     nameUk: 'Грозова буря (Thunder Storm)',
     hintUk:
-      'Потужний круговий удар списом: шкода й оглушення ворогів. Лише зі списом або алебардами. Блок щита ігнорується. Можливий надудар.',
+      'Потужний burst AoE-удар зі шансом шоку/оглушення. Лише зі списом/алебардою.',
     kind: 'battle',
     professionReq: 'human_warlord',
   },
@@ -578,7 +578,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 21000000,
     nameUk: 'Землетрус (Earthquake)',
     hintUk:
-      'Удар списом по ближніх ворогах: велика шкода по площі, знімає ціль. Лише зі списом. Можливий надудар.',
+      'Масовий удар по землі з шансом шоку/оглушення. Добрий opener проти пачки мобів. Лише зі списом/алебардою.',
     kind: 'battle',
     professionReq: 'human_dreadnought',
   },
@@ -609,9 +609,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     l2SkillId: 361,
     minLevel: 77,
     spCost: 15000000,
-    nameUk: 'Ударний імпульс (Shock Blast)',
+    nameUk: 'Ударний тупіт (Shock Stomp)',
     hintUk:
-      'Дальня хвиля: шок і зниження захисту цілей. Лише зі списом. Можливий надудар.',
+      'Control-скіл: нижча шкода, але вищий шанс шоку/оглушення + тимчасове зниження P.Def цілі. Лише зі списом/алебардою.',
     kind: 'battle',
     professionReq: 'human_dreadnought',
   },

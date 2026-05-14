@@ -4,6 +4,8 @@
  */
 (function () {
   var battleBuffStripTimer = null;
+  var battleActionInFlight = false;
+  var battleNavInFlight = false;
 
   function clearBattleBuffStripTimer() {
     if (battleBuffStripTimer != null) {
@@ -36,6 +38,25 @@
   function getL2dopBattleLogStyle(line) {
     var t = String(line || '').trim();
     var lower = t.toLowerCase();
+    if (/^крит!\s*ти\s*завдав\s+\d+\s*(?:шкоди|урона)/i.test(t)) {
+      return { className: 'log-crit' };
+    }
+    if (/^ти\s*завдав\s+\d+\s*(?:шкоди|урона)/i.test(t)) {
+      return { className: 'log-player-damage' };
+    }
+    if (/^крит!\s*.+\s+завдав\s+\d+\s*урона\.?$/i.test(t)) {
+      return { className: 'log-crit' };
+    }
+    if (/^[^:]+?\s+завдав\s+\d+\s*урона\.?$/i.test(t)) {
+      return { className: 'log-enemy-damage' };
+    }
+    if (/^додаткова ціль повалена:/i.test(t)) return { className: 'log-system' };
+    if (/^здобуто:\s*\+\d+\s*аден/i.test(t)) return { className: 'log-adena' };
+    if (/^здобуто:.*\bexp\b/i.test(lower)) return { className: 'log-exp' };
+    if (/^здобуто:.*\bsp\b/i.test(lower)) return { className: 'log-sp' };
+    if (/^здобуто:/i.test(t)) return { className: 'log-loot' };
+    if (/^отримано:/i.test(t)) return { className: 'log-item-loot' };
+    if (/втратив\s+\d+\s*cp/i.test(lower)) return { className: 'log-cp-damage' };
 
     if (lower.indexOf('ти знепритомнів') !== -1) return { className: 'log-system' };
     if (lower === 'бій завершено.') return { className: 'log-system' };
@@ -53,15 +74,15 @@
     if (/^рівень\s+\d+!$/.test(lower)) return { className: 'log-loot' };
 
     if (/^\(спойл\)\s*\+\d+\s*аден/i.test(t)) return { className: 'log-loot' };
-    if (/^\+\d+\s*аден\.?$/i.test(t)) return { className: 'log-loot' };
-    if (/^\+\d+\s*EXP$/i.test(t)) return { className: 'log-loot' };
-    if (/^\+\d+\s*SP$/i.test(t)) return { className: 'log-loot' };
+    if (/^\+\d+\s*аден\.?$/i.test(t)) return { className: 'log-adena' };
+    if (/^\+\d+\s*EXP$/i.test(t)) return { className: 'log-exp' };
+    if (/^\+\d+\s*SP$/i.test(t)) return { className: 'log-sp' };
 
     if (/^\(спойл\)\s*\+\d+/i.test(t) && lower.indexOf('аден') === -1) {
       return { className: 'log-loot' };
     }
     if (/^\+\d+\s*[×x]\s*.+/i.test(t) && !/^\(спойл\)/i.test(t)) {
-      return { className: 'log-loot' };
+      return { className: 'log-item-loot' };
     }
 
     if (lower.indexOf('промахнувся') !== -1) return { className: 'log-miss' };
@@ -103,6 +124,15 @@
     if (lower.indexOf('азарт бою') !== -1) return { className: 'log-skill' };
 
     if (lower.indexOf('провокація масова') !== -1) return { className: 'log-skill' };
+    if (lower.indexOf('вихор розсік ворогів поруч') !== -1) return { className: 'log-system' };
+    if (lower.indexOf('древко розсікло ворогів поруч') !== -1) return { className: 'log-system' };
+    if (lower.indexOf('у бій втягнуто:') !== -1) return { className: 'log-system' };
+    if (
+      lower.indexOf('увімкнено') !== -1 ||
+      lower.indexOf('вимкнено') !== -1
+    ) {
+      return { className: 'log-toggle' };
+    }
     if (lower.indexOf('звіриний рев') !== -1) return { className: 'log-skill' };
     if (lower.indexOf('сон знято') !== -1) return { className: 'log-debuff' };
     if (lower.indexOf('поруч зачеплено') !== -1) return { className: 'log-skill' };
@@ -285,7 +315,7 @@
   function parseComboLogLine(line) {
     var s = String(line || '').trim();
     var m = s.match(
-      /^Комбо:\s*(\d+)\/(\d+)\s*(?:шк\.|урона)\s*\|\s*(\d+)\/(\d+)\s*ударів\s*\((\d+)\s*крит,\s*(\d+)\s*промах(?:и|ів)\)\.?$/i
+      /^Комбо:\s*(\d+)\/(\d+)\s*\|\s*удари\s*(\d+)\/(\d+)\s*\|\s*крит\s*(\d+)\s*\|\s*промахи\s*(\d+)\.?$/i
     );
     if (!m) return null;
     return {
@@ -311,13 +341,44 @@
     seg(String(parsed.normalDamage), 'log-damage-dealt');
     seg('/', 'log-combo');
     seg(String(parsed.critDamage), 'log-crit');
-    seg(' урона | ', 'log-combo');
+    seg(' | удари ', 'log-combo');
     seg(String(parsed.landedHits) + '/' + String(parsed.maxHits), 'log-normal');
-    seg(' ударів (', 'log-combo');
+    seg(' | крит ', 'log-combo');
     seg(String(parsed.critHits), 'log-crit');
-    seg(' крит, ', 'log-combo');
+    seg(' | промахи ', 'log-combo');
     seg(String(parsed.missHits), 'log-miss');
-    seg(' промахи)', 'log-miss');
+    container.appendChild(row);
+  }
+
+  function parseRewardSummaryLine(line) {
+    var s = String(line || '').trim();
+    var m = s.match(
+      /^Здобуто:\s*\+(\d+)\s*адени,\s*\+(\d+)\s*SP,\s*\+(\d+)\s*EXP\.?$/i
+    );
+    if (!m) return null;
+    return {
+      adena: Number(m[1]),
+      sp: Number(m[2]),
+      exp: Number(m[3]),
+    };
+  }
+
+  function appendRewardSummaryRow(container, parsed) {
+    var row = document.createElement('div');
+    row.className = 'l2-battle-log-line';
+    function seg(text, cls) {
+      var sp = document.createElement('span');
+      sp.textContent = text;
+      if (cls) sp.className = cls;
+      row.appendChild(sp);
+    }
+    seg('Здобуто: ', 'log-loot');
+    seg('+' + String(parsed.adena) + ' адени', 'log-adena');
+    seg(', ', 'log-loot');
+    seg('+' + String(parsed.sp) + ' SP', 'log-sp');
+    seg(', ', 'log-loot');
+    seg('+' + String(parsed.exp) + ' EXP', 'log-exp');
+    seg('.', 'log-loot');
     container.appendChild(row);
   }
 
@@ -347,10 +408,14 @@
         if (pd) {
           var found = findVictoryItemForParsedDrop(pd, dropItems);
           if (found && found.l2ItemId) {
+            var dropIconSrc =
+              window.L2 && typeof L2.resolveItemIconUrl === 'function'
+                ? L2.resolveItemIconUrl(found.l2ItemId, '/icons/drops/other.svg')
+                : '/game/item-icon/' + found.l2ItemId;
             appendLogRowWithIcon(
               container,
               lineStr,
-              '/game/item-icon/' + found.l2ItemId,
+              dropIconSrc,
               '/icons/drops/other.svg'
             );
             done = true;
@@ -390,6 +455,13 @@
         skRow.textContent = lineStr.slice(1);
         container.appendChild(skRow);
         done = true;
+      }
+      if (!done) {
+        var reward = parseRewardSummaryLine(lineStr);
+        if (reward) {
+          appendRewardSummaryRow(container, reward);
+          done = true;
+        }
       }
       if (!done && appendPlayerDealtDamageRow(container, lineStr)) {
         done = true;
@@ -435,6 +507,29 @@
     battleToastTimer = setTimeout(function () {
       el.hidden = true;
     }, 3200);
+  }
+
+  async function runWithBattleActionLock(fn) {
+    if (battleActionInFlight) {
+      showBattleToast(tr('battle_toast_action_wait', 'Зачекай завершення поточної дії.'));
+      return;
+    }
+    battleActionInFlight = true;
+    try {
+      await fn();
+    } finally {
+      battleActionInFlight = false;
+    }
+  }
+
+  async function runWithBattleNavLock(fn) {
+    if (battleNavInFlight) return;
+    battleNavInFlight = true;
+    try {
+      await fn();
+    } finally {
+      battleNavInFlight = false;
+    }
   }
 
   function renderBuffStrip(battle) {
@@ -501,7 +596,10 @@
         var img = document.createElement('img');
         img.className = 'l2-battle-buff-icon__img';
         img.alt = b.labelUk || '';
-        img.src = '/game/skill-icon/' + b.l2SkillId;
+        img.src =
+          window.L2 && typeof L2.resolveSkillIconUrl === 'function'
+            ? L2.resolveSkillIconUrl(b.l2SkillId, null)
+            : '/game/skill-icon/' + b.l2SkillId;
         img.addEventListener('error', function () {
           img.src = '/icons/drops/other.svg';
         });
@@ -593,12 +691,19 @@
     var title = $('battle-mob-title');
     var hpInner = $('battle-mob-hp-inner');
     var hpVal = $('battle-mob-hp-val');
+    var mainMobLbl = document.querySelector(
+      '.l2-battle-mob-hp-wrap .l2-battle-bar-lbl'
+    );
     var debuffStripEl = $('battle-mob-debuff-strip');
     var logEl = $('battle-log');
     if (!battle) {
       if (title) title.textContent = '—';
       if (hpInner) hpInner.style.width = '0%';
       if (hpVal) hpVal.textContent = '';
+      if (mainMobLbl) {
+        mainMobLbl.textContent = 'HP';
+        mainMobLbl.title = '';
+      }
       if (debuffStripEl) {
         debuffStripEl.hidden = true;
         debuffStripEl.innerHTML = '';
@@ -621,6 +726,14 @@
         ' · ур. ' +
         battle.mobLevel +
         (battle.aggressive ? ' · ' + aggL : '');
+    }
+    if (mainMobLbl) {
+      mainMobLbl.className = 'l2-battle-bar-lbl l2-battle-mob-hp-name';
+      mainMobLbl.textContent =
+        battle.mobName && String(battle.mobName).length > 14
+          ? String(battle.mobName).slice(0, 12) + '…'
+          : battle.mobName || '—';
+      mainMobLbl.title = battle.mobName || '';
     }
     renderBuffStrip(battle);
     renderSonicCharges(battle);
@@ -646,7 +759,10 @@
           img.className = 'l2-battle-mob-debuff-icon';
           img.alt = d.labelUk || '';
           img.title = d.labelUk || '';
-          img.src = '/game/skill-icon/' + d.l2SkillId;
+          img.src =
+            window.L2 && typeof L2.resolveSkillIconUrl === 'function'
+              ? L2.resolveSkillIconUrl(d.l2SkillId, null)
+              : '/game/skill-icon/' + d.l2SkillId;
           img.addEventListener('error', function () {
             this.src = '/icons/drops/other.svg';
           });
@@ -665,9 +781,9 @@
         for (var wi = 0; wi < wx.length; wi++) {
           var ex = wx[wi];
           var wrap = document.createElement('div');
-          wrap.className = 'l2-battle-mob-hp-wrap l2-battle-whirlwind-extra';
+          wrap.className = 'l2-battle-whirlwind-extra';
           var lbl = document.createElement('span');
-          lbl.className = 'l2-battle-bar-lbl';
+          lbl.className = 'l2-battle-whirlwind-extra__name';
           lbl.textContent =
             (ex.name && String(ex.name).length > 14
               ? String(ex.name).slice(0, 12) + '…'
@@ -675,11 +791,10 @@
           lbl.title = ex.name || '';
           var outer = document.createElement('div');
           outer.className =
-            'l2-pers-bar-outer l2-battle-bar-outer l2-battle-mob-hp-outer';
+            'l2-pers-bar-outer l2-battle-bar-outer l2-battle-mob-hp-outer l2-battle-whirlwind-extra__bar';
           outer.setAttribute('aria-hidden', 'true');
           var inner = document.createElement('div');
-          inner.className =
-            'l2-pers-bar-inner l2-battle-mob-hp-inner l2-battle-mob-hp-inner--aoe';
+          inner.className = 'l2-pers-bar-inner l2-battle-mob-hp-inner';
           var pct = document.createElement('span');
           pct.className = 'l2-battle-bar-innertext';
           setBar(inner, ex.mobHp, ex.mobMaxHp);
@@ -744,14 +859,21 @@
     });
   }
 
-  async function battleAction(action, expectedRevision) {
+  async function battleAction(action, expectedRevision, extraBody) {
+    var body = { action: action, expectedRevision: expectedRevision };
+    if (extraBody && typeof extraBody === 'object') {
+      for (var kb in extraBody) {
+        if (!Object.prototype.hasOwnProperty.call(extraBody, kb)) continue;
+        body[kb] = extraBody[kb];
+      }
+    }
     return fetchJson('/game/battle/action', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + localStorage.getItem('token'),
       },
-      body: JSON.stringify({ action: action, expectedRevision: expectedRevision }),
+      body: JSON.stringify(body),
     });
   }
 
@@ -883,29 +1005,148 @@
     if (errEl) errEl.hidden = true;
 
     async function runSkill(action) {
-      if (!action || !battle) return;
-      var act = action;
-      if (
-        window.L2BattleHotbar &&
-        typeof L2BattleHotbar.canonicalBattleActionId === 'function'
-      ) {
-        act = L2BattleHotbar.canonicalBattleActionId(action);
-      }
+      await runWithBattleActionLock(async function () {
+        if (!action || !battle) return;
+        var act = action;
+        if (
+          window.L2BattleHotbar &&
+          typeof L2BattleHotbar.canonicalBattleActionId === 'function'
+        ) {
+          act = L2BattleHotbar.canonicalBattleActionId(action);
+        }
+        var res;
+        try {
+          res = await battleAction(act, character.revision);
+        } catch (e) {
+          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+          return;
+        }
+        if (res && res._err === 409) {
+          var ag = await loadCharacter();
+          if (ag && ag.character) {
+            character = ag.character;
+            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+            try {
+              res = await battleAction(act, character.revision);
+            } catch (e2) {
+              showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+              return;
+            }
+          }
+        }
+        if (!res || res._err) {
+          async function parseErrorBodySafe(resp) {
+            if (!resp || !resp.raw) return null;
+            try {
+              return await resp.raw.json();
+            } catch (eBody) {
+              return null;
+            }
+          }
+          var parsedErrBody = await parseErrorBodySafe(res);
+          var canAutoRetryCd =
+            typeof act === 'string' &&
+            /^l2_\d+$/.test(act) &&
+            res &&
+            res._err === 400 &&
+            parsedErrBody &&
+            parsedErrBody.code === 'battle_skill_not_allowed' &&
+            parsedErrBody.reason === 'cooldown' &&
+            typeof parsedErrBody.remainingCooldownMs === 'number' &&
+            Number.isFinite(parsedErrBody.remainingCooldownMs) &&
+            parsedErrBody.remainingCooldownMs >= 0;
+          if (canAutoRetryCd) {
+            var waitMs = Math.min(
+              2200,
+              Math.max(0, Math.floor(parsedErrBody.remainingCooldownMs)) + 30
+            );
+            if (waitMs > 0) {
+              await new Promise(function (resolve) {
+                setTimeout(resolve, waitMs);
+              });
+            }
+            try {
+              res = await battleAction(act, character.revision);
+            } catch (eRetry) {
+              showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+              return;
+            }
+            if (res && res._err === 409) {
+              var agRetry = await loadCharacter();
+              if (agRetry && agRetry.character) {
+                character = agRetry.character;
+                if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+                try {
+                  res = await battleAction(act, character.revision);
+                } catch (eRetry2) {
+                  showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+                  return;
+                }
+              }
+            }
+            parsedErrBody = await parseErrorBodySafe(res);
+          }
+          if (!res) {
+            showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
+            return;
+          }
+          if (res._err) {
+            if (parsedErrBody && parsedErrBody.messageUk) {
+              showBattleToast(parsedErrBody.messageUk);
+            } else if (parsedErrBody && parsedErrBody.error) {
+              showBattleToast(String(parsedErrBody.error));
+            } else {
+              showBattleToast(
+                tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
+                  res._err +
+                  ').'
+              );
+            }
+            return;
+          }
+        }
+        character = res.character;
+        battle = res.battle;
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        if (res.victory) {
+          renderPlayerBars(character);
+          showVictoryScreen(res.victory);
+          return;
+        }
+        if (res.defeat) {
+          renderPlayerBars(character);
+          showDefeatScreen(res.defeat);
+          return;
+        }
+        refreshUI();
+        if (!battle) {
+          var logElDone = $('battle-log');
+          if (logElDone) renderColoredLog(logElDone, [tr('battle_log_done', 'Бій завершено.')]);
+          showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
+        }
+      });
+    }
+
+    async function runFighterSoulshotToggle(itemId) {
+      await runWithBattleActionLock(async function () {
+      if (!battle || typeof itemId !== 'number' || itemId <= 0) return;
+      var act = 'fighter_soulshot_toggle';
+      var extra = { itemId: Math.floor(itemId) };
       var res;
       try {
-        res = await battleAction(act, character.revision);
+        res = await battleAction(act, character.revision, extra);
       } catch (e) {
         showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
         return;
       }
       if (res && res._err === 409) {
-        var ag = await loadCharacter();
-        if (ag && ag.character) {
-          character = ag.character;
+        var ag2 = await loadCharacter();
+        if (ag2 && ag2.character) {
+          character = ag2.character;
           if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
           try {
-            res = await battleAction(act, character.revision);
-          } catch (e2) {
+            res = await battleAction(act, character.revision, extra);
+          } catch (e3) {
             showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
             return;
           }
@@ -914,11 +1155,11 @@
       if (!res || res._err) {
         if (res && res.raw) {
           try {
-            var ej = await res.raw.json();
-            if (ej && ej.messageUk) {
-              showBattleToast(ej.messageUk);
-            } else if (ej && ej.error) {
-              showBattleToast(String(ej.error));
+            var ej2 = await res.raw.json();
+            if (ej2 && ej2.messageUk) {
+              showBattleToast(ej2.messageUk);
+            } else if (ej2 && ej2.error) {
+              showBattleToast(String(ej2.error));
             } else {
               showBattleToast(
                 tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
@@ -926,7 +1167,7 @@
                   ').'
               );
             }
-          } catch (parseErr) {
+          } catch (parseErr2) {
             showBattleToast(
               tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
                 res._err +
@@ -953,10 +1194,159 @@
       }
       refreshUI();
       if (!battle) {
-        var logElDone = $('battle-log');
-        if (logElDone) renderColoredLog(logElDone, [tr('battle_log_done', 'Бій завершено.')]);
+        var logElSs = $('battle-log');
+        if (logElSs) renderColoredLog(logElSs, [tr('battle_log_done', 'Бій завершено.')]);
         showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
       }
+      });
+    }
+
+    async function runMysticSpiritshotToggle(itemId) {
+      await runWithBattleActionLock(async function () {
+      if (!battle || typeof itemId !== 'number' || itemId <= 0) return;
+      var act = 'mystic_spiritshot_toggle';
+      var extra = { itemId: Math.floor(itemId) };
+      var res;
+      try {
+        res = await battleAction(act, character.revision, extra);
+      } catch (e) {
+        showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+        return;
+      }
+      if (res && res._err === 409) {
+        var ag2m = await loadCharacter();
+        if (ag2m && ag2m.character) {
+          character = ag2m.character;
+          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          try {
+            res = await battleAction(act, character.revision, extra);
+          } catch (e3) {
+            showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+            return;
+          }
+        }
+      }
+      if (!res || res._err) {
+        if (res && res.raw) {
+          try {
+            var ej2m = await res.raw.json();
+            if (ej2m && ej2m.messageUk) {
+              showBattleToast(ej2m.messageUk);
+            } else if (ej2m && ej2m.error) {
+              showBattleToast(String(ej2m.error));
+            } else {
+              showBattleToast(
+                tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
+                  res._err +
+                  ').'
+              );
+            }
+          } catch (parseErr2) {
+            showBattleToast(
+              tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
+                res._err +
+                ').'
+            );
+          }
+        } else {
+          showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
+        }
+        return;
+      }
+      character = res.character;
+      battle = res.battle;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (res.victory) {
+        renderPlayerBars(character);
+        showVictoryScreen(res.victory);
+        return;
+      }
+      if (res.defeat) {
+        renderPlayerBars(character);
+        showDefeatScreen(res.defeat);
+        return;
+      }
+      refreshUI();
+      if (!battle) {
+        var logElMs = $('battle-log');
+        if (logElMs) renderColoredLog(logElMs, [tr('battle_log_done', 'Бій завершено.')]);
+        showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
+      }
+      });
+    }
+
+    async function runBattlePotionUse(itemId) {
+      await runWithBattleActionLock(async function () {
+      if (!battle || typeof itemId !== 'number' || itemId <= 0) return;
+      var act = 'battle_potion_use';
+      var extra = { itemId: Math.floor(itemId) };
+      var res;
+      try {
+        res = await battleAction(act, character.revision, extra);
+      } catch (e) {
+        showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+        return;
+      }
+      if (res && res._err === 409) {
+        var agP = await loadCharacter();
+        if (agP && agP.character) {
+          character = agP.character;
+          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          try {
+            res = await battleAction(act, character.revision, extra);
+          } catch (e4) {
+            showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+            return;
+          }
+        }
+      }
+      if (!res || res._err) {
+        if (res && res.raw) {
+          try {
+            var ejP = await res.raw.json();
+            if (ejP && ejP.messageUk) {
+              showBattleToast(ejP.messageUk);
+            } else if (ejP && ejP.error) {
+              showBattleToast(String(ejP.error));
+            } else {
+              showBattleToast(
+                tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
+                  res._err +
+                  ').'
+              );
+            }
+          } catch (parseErrP) {
+            showBattleToast(
+              tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
+                res._err +
+                ').'
+            );
+          }
+        } else {
+          showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
+        }
+        return;
+      }
+      character = res.character;
+      battle = res.battle;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (res.victory) {
+        renderPlayerBars(character);
+        showVictoryScreen(res.victory);
+        return;
+      }
+      if (res.defeat) {
+        renderPlayerBars(character);
+        showDefeatScreen(res.defeat);
+        return;
+      }
+      refreshUI();
+      if (!battle) {
+        var logElPot = $('battle-log');
+        if (logElPot) renderColoredLog(logElPot, [tr('battle_log_done', 'Бій завершено.')]);
+        showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
+      }
+      });
     }
 
     var DEFEAT_LOG_MAX = 12;
@@ -1091,6 +1481,15 @@
             onBattleAction: function (action) {
               runSkill(action);
             },
+            onFighterSoulshotToggle: function (itemId) {
+              runFighterSoulshotToggle(itemId);
+            },
+            onMysticSpiritshotToggle: function (itemId) {
+              runMysticSpiritshotToggle(itemId);
+            },
+            onBattlePotionUse: function (itemId) {
+              runBattlePotionUse(itemId);
+            },
             getToken: function () {
               return localStorage.getItem('token');
             },
@@ -1106,18 +1505,20 @@
     refreshUI();
 
     async function leaveToMap() {
-      var resLm = await leaveBattle(character.revision);
-      if (resLm && resLm._err === 409) {
-        var agLm = await loadCharacter();
-        if (agLm && agLm.character) {
-          character = agLm.character;
-          resLm = await leaveBattle(character.revision);
+      await runWithBattleNavLock(async function () {
+        var resLm = await leaveBattle(character.revision);
+        if (resLm && resLm._err === 409) {
+          var agLm = await loadCharacter();
+          if (agLm && agLm.character) {
+            character = agLm.character;
+            resLm = await leaveBattle(character.revision);
+          }
         }
-      }
-      if (resLm && resLm.character && L2.setLastSnapshot) {
-        L2.setLastSnapshot(resLm.character);
-      }
-      window.location.href = '/map.html';
+        if (resLm && resLm.character && L2.setLastSnapshot) {
+          L2.setLastSnapshot(resLm.character);
+        }
+        window.location.href = '/map.html';
+      });
     }
 
     var back = $('battle-back-map');
@@ -1144,35 +1545,37 @@
     var defTown = $('battle-defeat-tocity');
     if (defTown) {
       defTown.addEventListener('click', async function () {
-        var resT = await returnToNearestTown(character.revision);
-        if (resT && resT._err === 409) {
-          var agT = await loadCharacter();
-          if (agT && agT.character) {
-            character = agT.character;
-            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-            resT = await returnToNearestTown(character.revision);
+        await runWithBattleNavLock(async function () {
+          var resT = await returnToNearestTown(character.revision);
+          if (resT && resT._err === 409) {
+            var agT = await loadCharacter();
+            if (agT && agT.character) {
+              character = agT.character;
+              if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+              resT = await returnToNearestTown(character.revision);
+            }
           }
-        }
-        if (!resT || resT._err) {
-          if (resT && resT.raw) {
-            try {
-              var ejT = await resT.raw.json();
-              if (ejT && ejT.messageUk) {
-                showBattleToast(ejT.messageUk);
-              } else {
+          if (!resT || resT._err) {
+            if (resT && resT.raw) {
+              try {
+                var ejT = await resT.raw.json();
+                if (ejT && ejT.messageUk) {
+                  showBattleToast(ejT.messageUk);
+                } else {
+                  showBattleToast('Не вдалося перенести в місто.');
+                }
+              } catch (eT) {
                 showBattleToast('Не вдалося перенести в місто.');
               }
-            } catch (eT) {
+            } else {
               showBattleToast('Не вдалося перенести в місто.');
             }
-          } else {
-            showBattleToast('Не вдалося перенести в місто.');
+            return;
           }
-          return;
-        }
-        character = resT.character;
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-        window.location.href = '/city.html';
+          character = resT.character;
+          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          window.location.href = '/city.html';
+        });
       });
     }
   }

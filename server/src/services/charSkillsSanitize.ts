@@ -8,6 +8,7 @@ import { isMysticClassBranch } from '../data/l2dopHumanMysticBattleSkills.js';
 import { normalizeLearnedSkillsJson } from '../data/humanFighterSkillCatalog.js';
 import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
 import type { CharacterRow } from './charTypes.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 const MYSTIC_STARTER_BATTLE_ID = 'l2_1177';
 
@@ -31,14 +32,23 @@ export async function ensureMysticStarterSkillsRow(
     ...normalizeLearnedSkillsJson(row.skillsLearnedJson),
     { battleId: MYSTIC_STARTER_BATTLE_ID, level: 1 },
   ]);
-  const updated = await prisma.character.update({
-    where: { id: row.id },
-    data: {
-      skillsLearnedJson: merged as unknown as Prisma.InputJsonValue,
-      revision: { increment: 1 },
-    },
+  return prisma.$transaction(async (tx) => {
+    const result = await mutateCharacterWithRevision(
+      tx,
+      row.id,
+      row.revision,
+      () => ({
+        changed: true,
+        data: {
+          skillsLearnedJson: merged as unknown as Prisma.InputJsonValue,
+        },
+      })
+    );
+    if (!result.ok) {
+      return (result.character as CharacterRow | null) ?? row;
+    }
+    return result.character as CharacterRow;
   });
-  return updated as CharacterRow;
 }
 
 /**
@@ -66,12 +76,21 @@ export async function ensureSanitizedSkillsLearnedRow(
     [...filtered].sort((x, y) => x.battleId.localeCompare(y.battleId))
   );
   if (sa === sb) return row;
-  const updated = await prisma.character.update({
-    where: { id: row.id },
-    data: {
-      skillsLearnedJson: filtered as unknown as Prisma.InputJsonValue,
-      revision: { increment: 1 },
-    },
+  return prisma.$transaction(async (tx) => {
+    const result = await mutateCharacterWithRevision(
+      tx,
+      row.id,
+      row.revision,
+      () => ({
+        changed: true,
+        data: {
+          skillsLearnedJson: filtered as unknown as Prisma.InputJsonValue,
+        },
+      })
+    );
+    if (!result.ok) {
+      return (result.character as CharacterRow | null) ?? row;
+    }
+    return result.character as CharacterRow;
   });
-  return updated as CharacterRow;
 }

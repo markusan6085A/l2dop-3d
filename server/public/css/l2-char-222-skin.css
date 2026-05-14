@@ -5,7 +5,7 @@
  */
 body.l2-app-l2-chrome.l2-page-char .l2-char-mobi {
   margin: 10px 0 0;
-  padding: 14px 10px 16px;
+  padding: 14px 4px 16px;
   border-radius: 0 !important;
   border: none !important;
   border-image: none !important;
@@ -62,11 +62,19 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-slot-icon {
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-currency {
   margin-top: 12px;
-  padding: 9px 10px;
-  border-radius: var(--l2s-paper-radius, 3px);
-  border: 1px solid rgba(160, 120, 60, 0.3);
-  background: rgba(8, 6, 5, 0.22);
-  box-shadow: none;
+  padding: 8px 10px;
+  border-radius: 0 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: calc(1px * var(--l2s-char-curr888-bd-y)) calc(1px * var(--l2s-char-curr888-bd-x)) !important;
+  border-image-source: url('/ref/8888888.png') !important;
+  border-image-slice: var(--l2s-char-curr888-slice-y) var(--l2s-char-curr888-slice-x) var(--l2s-char-curr888-slice-y)
+    var(--l2s-char-curr888-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-char-curr888-bd-y)) calc(1px * var(--l2s-char-curr888-bd-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  box-shadow: none !important;
   color: #e4dcc8;
 }
 
@@ -77,7 +85,7 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-adena-label {
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-block {
   margin-top: 12px;
   margin-bottom: 12px;
-  padding: 12px 8px 10px;
+  padding: 12px 0 10px;
   border-radius: 0 !important;
   border: none !important;
   border-image: none !important;
@@ -92,9 +100,138 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-title {
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-filters {
-  border: 1px solid rgba(130, 100, 55, 0.32);
-  background: rgba(6, 5, 4, 0.24);
-  box-shadow: none;
+  /* Рамка 8888888: відступ (~0,35 мм + 4 px) від боків контейнера — не упирається у головну рамку сумки. */
+  box-sizing: border-box !important;
+  gap: 2px !important;
+  margin-left: calc(4px + 0.35mm) !important;
+  margin-right: calc(4px + 0.35mm) !important;
+  width: calc(100% - 8px - 0.7mm) !important;
+  max-width: none !important;
+  margin-bottom: 1px !important;
+  padding: 3px 3px 2px !important;
+  border-radius: 0 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x)) !important;
+  border-image-source: url('/ref/8888888.png') !important;
+  border-image-slice: var(--l2s-char-inv888-slice-y) var(--l2s-char-inv888-slice-x) var(--l2s-char-inv888-slice-y)
+    var(--l2s-char-inv888-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop {
+  padding-top: 0;
+}
+
+/* Таби всередині суцільнішої рамки: категорії та грейди — сітка, без горизонтального скролу */
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist {
+  margin: 0 0 2px !important;
+  padding-bottom: 2px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist:last-of-type {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades {
+  display: grid !important;
+  justify-content: stretch !important;
+  justify-items: stretch !important;
+  align-items: start !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: auto !important;
+  gap: 2px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades {
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats .l2-drops-shop-tab,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab {
+  flex: unset !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  padding: 1px 2px !important;
+  font-size: 8px !important;
+  font-weight: 600 !important;
+  line-height: 1.08 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Зброя: обидва ряди табів одна висота (компактно, без «роздутого» першого ряду) */
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--weapon-kind {
+  align-items: start !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
+  min-height: 0 !important;
+  padding: 1px 2px !important;
+  font-size: 8px !important;
+  font-weight: 600 !important;
+  line-height: 1.08 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--consumable-sub {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 2px !important;
+}
+
+/* Розхідники — ті самі пропорції висоти */
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab {
+  padding: 1px 2px !important;
+  font-size: 8px !important;
+  line-height: 1.08 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Armour / аксесуари — узгоджено з висотою weapon-kind на персі */
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab {
+  min-height: 0 !important;
+  padding: 1px 2px !important;
+  font-size: 8px !important;
+  line-height: 1.08 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Обраний грейд помітніший */
+body.l2-app-l2-chrome.l2-page-char #char-bag-tab-grades .l2-drops-shop-tab--active {
+  filter: brightness(1.28) saturate(1.2) drop-shadow(0 0 5px rgba(255, 210, 120, 0.55));
+  text-shadow:
+    0 0 6px rgba(255, 236, 180, 0.65),
+    0 1px 2px rgba(0, 0, 0, 0.9);
+  z-index: 1;
+  position: relative;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-list {
+  margin-top: 2px !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-row--grades {
@@ -106,7 +243,53 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--click:focus {
   background: rgba(40, 28, 12, 0.42);
 }
 
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-equip,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-equip {
+  --l2s-char-equip541-slice-y: 30;
+  --l2s-char-equip541-slice-x: 40;
+  --l2s-char-equip541-bd-y: 5;
+  --l2s-char-equip541-bd-x: 9;
+  box-sizing: border-box;
+  border-radius: 0 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: calc(1px * var(--l2s-char-equip541-bd-y)) calc(1px * var(--l2s-char-equip541-bd-x)) !important;
+  border-image-source: url('/ref/541.png') !important;
+  border-image-slice: var(--l2s-char-equip541-slice-y) var(--l2s-char-equip541-slice-x) var(--l2s-char-equip541-slice-y)
+    var(--l2s-char-equip541-slice-x) fill !important;
+  border-image-width: calc(1px * var(--l2s-char-equip541-bd-y)) calc(1px * var(--l2s-char-equip541-bd-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  color: #f0e6b8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+}
+
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-equip {
-  border: 1px solid rgba(180, 145, 70, 0.55);
-  background: linear-gradient(180deg, rgba(48, 38, 22, 0.95), rgba(12, 10, 8, 0.98));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 4px 10px !important;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-equip {
+  padding: 6px 14px !important;
+  margin-top: 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-equip:hover,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-equip:focus,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-equip:hover,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-equip:focus {
+  outline: none;
+  filter: brightness(1.07);
+  border-image-source: url('/ref/541.png') !important;
+  color: #fff4d6;
 }

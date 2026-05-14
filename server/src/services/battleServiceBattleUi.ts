@@ -32,6 +32,7 @@ import {
 } from './battleServiceBattleBuffs.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { cooldownSecForSkillId, type SkillCooldownEntry } from '../data/skillCooldowns.js';
+import { L2DB_INTERLUDE_SKILL_COOLDOWN_SEC } from '../data/l2dbSkillCooldowns.generated.js';
 
 /** Та сама нормалізація профи, що й у `parseSkillsLearnedJson` — інакше зникають бафи/гілкові скіли з `battle.skills`. */
 function effectiveBattleProfession(
@@ -61,6 +62,12 @@ function mysticCooldownSecForBattleAction(
   if (e?.kind === 'toggle') return 1;
   const c = e?.cooldownSec;
   if (typeof c === 'number' && c > 0) return c;
+  const m = /^l2_(\d+)$/.exec(s);
+  if (m) {
+    const sid = parseInt(m[1]!, 10);
+    const l2dbCd = L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[sid];
+    if (typeof l2dbCd === 'number' && l2dbCd > 0) return l2dbCd;
+  }
   if (e && e.kind !== 'passive') {
     return mysticGlobalSkillCooldownSec(500);
   }
@@ -332,6 +339,15 @@ export function battleActionAllowed(
   _inv?: InventoryState | null
 ): boolean {
   const prof = effectiveBattleProfession(l2Profession, classBranch, _race);
+  if (action === 'fighter_soulshot_toggle') {
+    return true;
+  }
+  if (action === 'mystic_spiritshot_toggle') {
+    return true;
+  }
+  if (action === 'battle_potion_use') {
+    return true;
+  }
   if (isMysticClassBranch(classBranch)) {
     return mysticBattleActionAllowed(action, level, learnedBattle, prof, _race);
   }

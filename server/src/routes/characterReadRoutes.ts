@@ -10,6 +10,7 @@ import {
   itemStatsHintsForClient,
   listGearCatalogForClient,
 } from '../data/itemsCatalog.js';
+import { craftResourceIconHintsForClient } from '../data/resourceCraftIconHints.js';
 import { itemBlocksShieldHintsForClient } from '../data/l2dopTwoHandedWeapon.js';
 import { getSnapshotForUser } from '../services/charService.js';
 import { getMagisterDialogForUser } from '../services/skillLearnService.js';
@@ -41,6 +42,8 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
           itemStatsHints: itemStatsHintsForClient(),
           /** Дворучна зброя (l1 займає «другу руку») — для UI слота щита. */
           itemBlocksShieldById: itemBlocksShieldHintsForClient(),
+          /** itemId → URL іконки як у крафті (`l2dop-by-itemid`), для сумки/ГМ. */
+          craftResourceIconByItemId: craftResourceIconHintsForClient(),
         });
       } catch (err) {
         request.log.error({ err }, 'GET /character');
@@ -84,7 +87,7 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
     }
   );
 
-  /** Діалог магістра в місті (скіли на вивчення за SP). */
+  /** Діалог магістра в місті (скіли на вивчення за SP). Дані не кешувати — список залежить від рівня/профи. */
   app.get(
     '/magister',
     { preHandler: requireAuth },
@@ -99,6 +102,10 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         if (!dialog) {
           return reply.code(404).send({ error: 'forbidden' });
         }
+        void reply.header(
+          'Cache-Control',
+          'private, no-store, no-cache, must-revalidate, max-age=0'
+        );
         return reply.send(dialog);
       } catch (err) {
         request.log.error({ err }, 'GET /character/magister');

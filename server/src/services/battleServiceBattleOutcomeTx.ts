@@ -32,6 +32,7 @@ import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { battleViewFromState } from './battleServiceBattleUi.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -74,7 +75,11 @@ export async function persistBattleVictoryInTx(
   } = args;
 
   const npcId = resolveL2dopNpcIdByMobName(spawn.name) ?? null;
-  const loot = rollKillLoot(npcId, spawn.level, inv);
+  const loot = rollKillLoot(npcId, spawn.level, inv, {
+    race: char.race,
+    l2Profession: char.l2Profession,
+    skillsLearnedJson: char.skillsLearnedJson,
+  });
   log.push('Перемога!');
   for (const line of loot.logLines) {
     log.push(line);
@@ -125,34 +130,33 @@ export async function persistBattleVictoryInTx(
     Date.now()
   );
 
-  const updated = await tx.character.updateMany({
-    where: {
-      id: char.id,
-      userId,
-      revision: expectedRevision,
-    },
-    data: {
-      hp: nextHp,
-      maxHp: maxHpAfter,
-      level: newLevel,
-      adena: { increment: loot.adena },
-      exp: newExp,
-      sp: { increment: loot.spGain },
-      inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
-      battleJson: Prisma.JsonNull,
-      worldCombatStateJson:
-        worldVictory != null
-          ? (JSON.parse(JSON.stringify(worldVictory)) as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-      ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
-      ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
-      revision: { increment: 1 },
-    },
-  });
-  if (updated.count === 0) throw new GameConflictError();
-  const row = await tx.character.findUniqueOrThrow({
-    where: { id: char.id },
-  });
+  void userId;
+  const result = await mutateCharacterWithRevision(
+    tx,
+    char.id,
+    expectedRevision,
+    () => ({
+      changed: true,
+      data: {
+        hp: nextHp,
+        maxHp: maxHpAfter,
+        level: newLevel,
+        adena: { increment: loot.adena },
+        exp: newExp,
+        sp: { increment: loot.spGain },
+        inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
+        battleJson: Prisma.JsonNull,
+        worldCombatStateJson:
+          worldVictory != null
+            ? (JSON.parse(JSON.stringify(worldVictory)) as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+        ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
+        ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
+      },
+    })
+  );
+  if (!result.ok) throw new GameConflictError();
+  const row = result.character as CharacterRow;
   const victory: BattleVictorySummary = {
     spawnId: bj.spawnId,
     mobName: spawn.name,
@@ -209,28 +213,26 @@ export async function persistBattleDefeatInTx(
     { stripBattleMods: true }
   );
 
-  const lost = await tx.character.updateMany({
-    where: {
-      id: char.id,
-      userId,
-      revision: expectedRevision,
-    },
-    data: {
-      hp: recoverHp,
-      battleJson: Prisma.JsonNull,
-      worldCombatStateJson:
-        worldDefeat != null
-          ? (JSON.parse(JSON.stringify(worldDefeat)) as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-      activeBuffsJson: Prisma.JsonNull,
-      revision: { increment: 1 },
-    },
-  });
-  if (lost.count === 0) throw new GameConflictError();
-  const rowLost = await tx.character.findUniqueOrThrow({
-    where: { id: char.id },
-  });
-  const crLost = rowLost as CharacterRow;
+  void userId;
+  const lost = await mutateCharacterWithRevision(
+    tx,
+    char.id,
+    expectedRevision,
+    () => ({
+      changed: true,
+      data: {
+        hp: recoverHp,
+        battleJson: Prisma.JsonNull,
+        worldCombatStateJson:
+          worldDefeat != null
+            ? (JSON.parse(JSON.stringify(worldDefeat)) as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+        activeBuffsJson: Prisma.JsonNull,
+      },
+    })
+  );
+  if (!lost.ok) throw new GameConflictError();
+  const crLost = lost.character as CharacterRow;
   const near = nearestMapTown(crLost.worldX, crLost.worldY);
   const defeat: BattleDefeatSummary = {
     spawnId: bj.spawnId,
@@ -269,6 +271,8 @@ export async function persistBattleContinueTurnInTx(
     activeBuffsJson?: Prisma.InputJsonValue;
     /** Якщо ход поклав скіл на КД — оновлений `skillCooldownsJson`. */
     skillCooldownsJson?: Prisma.InputJsonValue;
+    /** Якщо ход списав предмети з сумки (заряд душі тощо). */
+    inventoryJson?: Prisma.InputJsonValue;
   }
 ): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
   const {
@@ -288,6 +292,7 @@ export async function persistBattleContinueTurnInTx(
     maxMpEff,
     activeBuffsJson,
     skillCooldownsJson,
+    inventoryJson,
   } = args;
 
   st.mobHp = mobHp;
@@ -300,30 +305,29 @@ export async function persistBattleContinueTurnInTx(
     Date.now()
   );
 
-  const updated = await tx.character.updateMany({
-    where: {
-      id: char.id,
-      userId,
-      revision: expectedRevision,
-    },
-    data: {
-      hp: playerHp,
-      battleJson: serializeBattleJsonForDb(st),
-      worldCombatStateJson:
-        worldMirrorMid != null
-          ? (JSON.parse(JSON.stringify(worldMirrorMid)) as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-      ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
-      ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
-      revision: { increment: 1 },
-    },
-  });
-  if (updated.count === 0) throw new GameConflictError();
-
-  const row = await tx.character.findUniqueOrThrow({
-    where: { id: char.id },
-  });
-  const snap = toSnapshot(row as CharacterRow);
+  void userId;
+  const updated = await mutateCharacterWithRevision(
+    tx,
+    char.id,
+    expectedRevision,
+    () => ({
+      changed: true,
+      data: {
+        hp: playerHp,
+        battleJson: serializeBattleJsonForDb(st),
+        worldCombatStateJson:
+          worldMirrorMid != null
+            ? (JSON.parse(JSON.stringify(worldMirrorMid)) as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+        ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
+        ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
+        ...(inventoryJson !== undefined ? { inventoryJson } : {}),
+      },
+    })
+  );
+  if (!updated.ok) throw new GameConflictError();
+  const row = updated.character as CharacterRow;
+  const snap = toSnapshot(row);
   const nowForView = Date.now();
   const view = battleViewFromState(
     bj.spawnId,
@@ -341,10 +345,10 @@ export async function persistBattleContinueTurnInTx(
     profAct,
     inv,
     persistableActiveBuffsFromJson(
-      (row as CharacterRow).activeBuffsJson,
+      row.activeBuffsJson,
       nowForView
     ),
-    parseSkillCooldowns((row as CharacterRow).skillCooldownsJson, nowForView)
+    parseSkillCooldowns(row.skillCooldownsJson, nowForView)
   );
   return { character: snap, battle: view };
 }

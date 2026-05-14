@@ -126,6 +126,9 @@ export function spCostForSkillRankUpgrade(
   return undefined;
 }
 
+/** Видалені з гри скіли — прибираємо з JSON навіть якщо запис лишився в БД. */
+const REMOVED_LEARNED_SKILL_BATTLE_IDS = new Set<string>(['l2_1320']);
+
 /**
  * Нормалізує skillsLearnedJson: legacy `["l2_3"]` → рівень 1; новий формат `{ battleId, level }`.
  */
@@ -166,6 +169,7 @@ export function normalizeLearnedSkillsJson(raw: unknown): LearnedSkillEntry[] {
   for (const x of raw) {
     if (typeof x === 'string' && x.trim()) {
       const c = canonicalBattleSkillId(x.trim());
+      if (REMOVED_LEARNED_SKILL_BATTLE_IDS.has(c)) continue;
       if (!catalogHasLearnableBattleId(c)) continue;
       byId.set(c, Math.max(byId.get(c) ?? 0, 1));
     } else if (x && typeof x === 'object' && !Array.isArray(x)) {
@@ -178,6 +182,7 @@ export function normalizeLearnedSkillsJson(raw: unknown): LearnedSkillEntry[] {
             : '';
       if (!String(bid).trim()) continue;
       const c = canonicalBattleSkillId(String(bid).trim());
+      if (REMOVED_LEARNED_SKILL_BATTLE_IDS.has(c)) continue;
       if (!catalogHasLearnableBattleId(c)) continue;
       let lv =
         typeof o.level === 'number' && Number.isFinite(o.level)

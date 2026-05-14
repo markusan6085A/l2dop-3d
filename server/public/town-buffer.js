@@ -1,0 +1,176 @@
+(function () {
+  var FREE_MAX_LEVEL = 40;
+  var FEE_ADENA = 140000;
+  var inFlight = false;
+  var SKILLS = [
+    1036, 1040, 1045, 1048, 1059, 1062, 1068, 1077, 1085, 1086, 1240,
+  ];
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function setMsg(text) {
+    var el = $('town-buffer-msg');
+    if (!el) return;
+    el.textContent = text || '';
+  }
+
+  async function loadCharacter() {
+    var t = localStorage.getItem('token');
+    if (!t) return null;
+    var r = await fetch('/character', {
+      headers: { Authorization: 'Bearer ' + t },
+    });
+    if (r.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+      return null;
+    }
+    if (!r.ok) return { _err: true, raw: r };
+    return await r.json();
+  }
+
+  function renderBuffRow() {
+    var row = $('town-buffer-row');
+    if (!row) return;
+    row.innerHTML = '';
+    for (var i = 0; i < SKILLS.length; i++) {
+      var skillId = SKILLS[i];
+      var cell = document.createElement('div');
+      cell.className = 'l2-town-buffer-skill';
+
+      var img = document.createElement('img');
+      img.alt = 'Buff ' + skillId;
+      img.src =
+        window.L2 && typeof L2.resolveSkillIconUrl === 'function'
+          ? L2.resolveSkillIconUrl(skillId, null)
+          : '/game/skill-icon/' + skillId;
+      img.addEventListener('error', function () {
+        this.src = '/icons/drops/other.svg';
+      });
+      cell.appendChild(img);
+      row.appendChild(cell);
+    }
+  }
+
+  function renderFee(level) {
+    var feeEl = $('town-buffer-fee');
+    if (!feeEl) return;
+    var fee = level <= FREE_MAX_LEVEL ? 0 : FEE_ADENA;
+    if (fee === 0) {
+      feeEl.textContent = 'Ціна: безкоштовно (до 40 рівня).';
+    } else {
+      feeEl.textContent = 'Ціна: ' + String(fee) + ' адени';
+    }
+  }
+
+  async function applyTownBuffer() {
+    if (inFlight) return;
+    var t = localStorage.getItem('token');
+    if (!t || !window.L2 || typeof L2.lastSnapshot !== 'function') return;
+    var snap = L2.lastSnapshot();
+    if (!snap || !snap.revision) return;
+    inFlight = true;
+    try {
+      setMsg('Застосування бафів...');
+      var r = await fetch('/character/town/buffer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + t,
+        },
+        body: JSON.stringify({ expectedRevision: snap.revision }),
+      });
+      if (r.status === 409) {
+        var fresh = await loadCharacter();
+        if (fresh && fresh.character && window.L2) {
+          L2.setLastSnapshot(fresh.character);
+          if (typeof L2.applyHudFromSnapshot === 'function') {
+            L2.applyHudFromSnapshot(fresh.character);
+          }
+          renderFee(Number(fresh.character.level || 1));
+        }
+        setMsg('Конфлікт ревізії: синхронізовано, натисни ще раз.');
+        return;
+      }
+      var j = {};
+      try {
+        j = await r.json();
+      } catch (eJson) {
+        j = {};
+      }
+      if (!r.ok) {
+        setMsg(
+          j && j.messageUk
+            ? j.messageUk
+            : 'Не вдалося застосувати бафи.'
+        );
+        return;
+      }
+      if (j.character && window.L2) {
+        L2.setLastSnapshot(j.character);
+        if (typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(j.character);
+        }
+        renderFee(Number(j.character.level || 1));
+      }
+      var fee = j && j.feeAdena != null ? String(j.feeAdena) : '0';
+      if (fee === '0') {
+        setMsg('Бафи накладено безкоштовно.');
+      } else {
+        setMsg('Бафи накладено. Списано ' + fee + ' адени.');
+      }
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  async function init() {
+    if (window.L2 && typeof L2.mountL2Nav === 'function') {
+      L2.mountL2Nav({
+        onStub: function () {},
+      });
+    }
+    renderBuffRow();
+    var errEl = $('town-buffer-load-err');
+    var card = $('town-buffer-card');
+
+    var t = localStorage.getItem('token');
+    if (!t) {
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent = 'Потрібен вхід. Перейди на головну.';
+      }
+      return;
+    }
+
+    var j = await loadCharacter();
+    if (!j || j._err || !j.character) {
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent = 'Не вдалося завантажити персонажа.';
+      }
+      return;
+    }
+    var c = j.character;
+    if (window.L2) {
+      L2.setLastSnapshot(c);
+      if (typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(c);
+      }
+    }
+    renderFee(Number(c.level || 1));
+    if (card) card.hidden = false;
+    if (errEl) errEl.hidden = true;
+
+    var btn = $('town-buffer-apply-btn');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        void applyTownBuffer();
+      });
+    }
+  }
+
+  init();
+})();

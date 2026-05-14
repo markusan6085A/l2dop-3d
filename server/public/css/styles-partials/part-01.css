@@ -1,0 +1,1144 @@
+/* Friz — local-first; 404 більше не сипле (woff2: поклади в /public/assets/fonts/) */
+@font-face {
+  font-family: 'Friz Quadrata';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Friz Quadrata');
+  /* url('/assets/fonts/FrizQuadrata.woff2') format('woff2'); */
+}
+
+/* Темна колонка, золото, теплий «void» без синьої l2mobi-гами */
+:root {
+  /* Нижня сітка іконок (fixed): запас під контент (компактніший док). */
+  --l2-dock-bottom-pad: calc(74px + env(safe-area-inset-bottom, 0px));
+  --bg-void: #12100d;
+  --bg-page-gradient: linear-gradient(180deg, #181410 0%, #100e0a 48%, #0c0a08 100%);
+  /**
+   * Фон центральної колонки («як у місті»): .l2-page-city .l2-screen та
+   * body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host (l2-app-chrome-skin.css).
+   */
+  --l2-city-column-bg:
+    radial-gradient(ellipse 100% 50% at 50% 0%, rgba(110, 75, 38, 0.18) 0%, transparent 52%),
+    radial-gradient(ellipse 70% 45% at 100% 30%, rgba(80, 55, 35, 0.12) 0%, transparent 48%),
+    var(--bg-page-gradient);
+  --bg-deep: #0a0806;
+  --bg-panel: rgba(18, 14, 10, 0.92);
+  --gold: #e8c038;
+  --gold-bright: #fff0a0;
+  --gold-dim: #8a7020;
+  --line: rgba(200, 170, 80, 0.45);
+  --frame-outer: rgba(28, 22, 16, 0.95);
+  /* Кнопки — бронза/коричневий градієнт (старі імена змінних лишаємо для сумісності) */
+  --btn-blue-top: #8a6230;
+  --btn-blue-mid: #6b4818;
+  --btn-blue-bot: #4a3010;
+  --btn-blue-border: #2a1c0c;
+  --btn-blue-glow: rgba(200, 140, 60, 0.28);
+  --btn-blue-secondary-top: #3a3024;
+  --btn-blue-secondary-bot: #1c1812;
+  --text: #e8e4dc;
+  --muted: #9a9688;
+  --accent-pink: #ff66cc;
+  --err: #ff6b6b;
+  /* Як у l2mobi css.css: золота рамка + «металеві» лінії */
+  --l2-gold-frame: rgba(255, 215, 0, 0.32);
+  --l2-ornament-grad: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 200, 80, 0.2) 8%,
+    #8a7030 22%,
+    #ffd700 42%,
+    #fff8c8 50%,
+    #5a4a28 51%,
+    #ffd700 58%,
+    #8a7030 78%,
+    rgba(255, 200, 80, 0.2) 92%,
+    transparent 100%
+  );
+  --l2-font-body: Tahoma, Verdana, Geneva, sans-serif;
+  --l2-font-display: 'Friz Quadrata', Georgia, 'Times New Roman', Times, serif;
+  /* Класичний L2 «панельний» вигляд (старий css) */
+  --l2-classic-text: #d4c9a6;
+  --l2-classic-border: #7a6a4a;
+  --l2-classic-panel: #1a1610;
+  --l2-classic-input-bg: #221c14;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-void);
+}
+
+body.l2-body {
+  margin: 0;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: rgba(201, 164, 58, 0.22);
+  font-family: var(--l2-font-body);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  /* Боки екрана = той самий колір/градієнт, що й «рамка» міста / персонажа (.l2-page-city .l2-screen) */
+  background:
+    radial-gradient(ellipse 100% 45% at 50% 0%, rgba(120, 80, 40, 0.12) 0%, transparent 54%),
+    radial-gradient(ellipse 90% 55% at 15% 22%, rgba(90, 60, 30, 0.14) 0%, transparent 54%),
+    radial-gradient(ellipse 72% 48% at 88% 78%, rgba(60, 45, 25, 0.1) 0%, transparent 50%),
+    var(--bg-page-gradient);
+}
+
+/* Боки — чорний вуаль, колонка по центру */
+.l2-shell {
+  min-height: 100vh;
+  padding: 12px 10px 24px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Тонка темна рамка колонки (без товстого «золотого» контуру) */
+.l2-screen {
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  border: 1px solid var(--frame-outer);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(100, 70, 35, 0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 80% 100%, rgba(70, 45, 28, 0.14) 0%, transparent 45%),
+    linear-gradient(180deg, #141210 0%, #0a0806 55%, #050403 100%);
+  overflow: hidden;
+}
+
+.l2-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  background-image: radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.7) 50%, transparent 52%),
+    radial-gradient(1px 1px at 30% 80%, rgba(255, 255, 255, 0.35) 50%, transparent 52%),
+    radial-gradient(1px 1px at 70% 30%, rgba(255, 255, 255, 0.5) 50%, transparent 52%),
+    radial-gradient(1px 1px at 90% 60%, rgba(255, 255, 255, 0.25) 50%, transparent 52%),
+    radial-gradient(1px 1px at 50% 50%, rgba(255, 255, 255, 0.2) 50%, transparent 52%);
+  background-size: 120px 120px, 180px 180px, 140px 140px, 200px 200px, 100% 100%;
+  pointer-events: none;
+  animation: twinkle 8s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.32;
+  }
+  to {
+    opacity: 0.48;
+  }
+}
+
+.l2-screen-inner {
+  position: relative;
+  z-index: 1;
+  padding: 14px 14px 18px;
+}
+
+/* Банер-заголовок */
+.l2-banner {
+  text-align: center;
+  padding: 10px 8px 12px;
+  margin: -6px -6px 12px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(30, 24, 14, 0.6) 0%, transparent 100%);
+}
+
+.l2-logo {
+  margin: 0;
+  font-family: var(--l2-font-display);
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  background: linear-gradient(180deg, #fff8c8 0%, var(--gold) 45%, #a07010 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 16px rgba(200, 160, 40, 0.35);
+  filter: drop-shadow(0 0 8px rgba(255, 200, 80, 0.2));
+}
+
+.l2-sub {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.95;
+}
+
+.l2-server-tag {
+  margin: 10px 0 0;
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow:
+    0 0 8px var(--accent-pink),
+    0 0 16px rgba(255, 80, 180, 0.45);
+}
+
+/* CTA — тепла акцентна плитка */
+.btn-cta {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  margin: 14px 0 10px;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: Tahoma, Verdana, sans-serif;
+  color: #fff8ec !important;
+  text-decoration: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--btn-blue-border);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--btn-blue-top) 0%, var(--btn-blue-mid) 45%, var(--btn-blue-bot) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 12px var(--btn-blue-glow);
+  transition:
+    filter 0.15s ease,
+    transform 0.12s ease;
+}
+
+.btn-cta:hover,
+.btn-cta:focus {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.l2-statline {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gold);
+  margin: 0 0 4px;
+  text-shadow: 0 0 6px rgba(200, 160, 40, 0.25);
+}
+
+.l2-statline--muted {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/*
+ * Панель форми — як у класичному L2 web: золоті кутики, inner-frame, орнаменти.
+ * Розмітка: усередині div.main — декор (перші діти) + .main-l2-stack з контентом.
+ */
+div.main {
+  position: relative;
+  overflow: visible;
+  background-color: var(--l2-classic-panel);
+  background-image: url('https://www.transparenttextures.com/patterns/old-wall.png');
+  background-repeat: repeat;
+  border: 2px solid var(--l2-classic-border);
+  border-radius: 6px;
+  padding: 0;
+  margin: 0;
+  color: var(--l2-classic-text);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 0 15px rgba(210, 180, 140, 0.28);
+}
+
+div.main::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 24px;
+  height: 24px;
+  border-top: 4px solid #ffd700;
+  border-left: 4px solid #ffd700;
+  border-radius: 10px 0 0 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+div.main::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  border-top: 4px solid #ffd700;
+  border-right: 4px solid #ffd700;
+  border-radius: 0 10px 0 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+div.main .main-inner-frame {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+div.main .main-ornament-top {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 12px;
+  background: linear-gradient(90deg, transparent, #ffd700, #7a6a4a, #ffd700, transparent);
+  border-radius: 4px 4px 0 0;
+  opacity: 0.65;
+  z-index: 3;
+  pointer-events: none;
+}
+
+div.main .main-ornament-bottom {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 12px;
+  background: linear-gradient(90deg, transparent, #ffd700, #7a6a4a, #ffd700, transparent);
+  border-radius: 0 0 4px 4px;
+  opacity: 0.65;
+  z-index: 3;
+  pointer-events: none;
+}
+
+div.main .main-corner-bl {
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  width: 24px;
+  height: 24px;
+  border-bottom: 4px solid #ffd700;
+  border-left: 4px solid #ffd700;
+  border-radius: 0 0 0 10px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+div.main .main-corner-br {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  border-bottom: 4px solid #ffd700;
+  border-right: 4px solid #ffd700;
+  border-radius: 0 0 10px 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+div.main .main-l2-stack {
+  position: relative;
+  z-index: 2;
+  padding: 14px 12px 16px;
+  font-family: var(--l2-font-display);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+div.main hr {
+  border: none;
+  height: 1px;
+  margin: 10px 0;
+  background-color: var(--l2-classic-border);
+  border-bottom: 1px solid #2a2a2a;
+  box-shadow: 0 1px 3px #000;
+  opacity: 1;
+}
+
+div.main .logo {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(184, 134, 11, 0.35);
+}
+
+div.main .desc {
+  color: #a8a090;
+}
+
+div.main label.lbl-l2 {
+  color: #d8c898;
+}
+
+div.main input.inp-l2,
+div.main select.sel-l2 {
+  background-color: var(--l2-classic-input-bg);
+  border-color: var(--l2-classic-border);
+  color: var(--l2-classic-text);
+}
+
+div.main input.inp-l2:focus,
+div.main select.sel-l2:focus {
+  border-color: #ffd700;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    0 0 16px rgba(255, 215, 0, 0.28);
+}
+
+div.main a {
+  color: #ffd700;
+  text-shadow: 0 0 8px #b8860b;
+  border-bottom: 1px dotted var(--l2-classic-border);
+}
+
+div.main a:hover {
+  color: #fff0c0;
+  border-bottom-color: #ffd700;
+}
+
+div.main a.btn-l2,
+div.main a.btn-l2:hover {
+  text-decoration: none !important;
+  border-bottom: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+  color: #fff4e6 !important;
+}
+
+div.main .class-opt {
+  color: var(--l2-classic-text);
+}
+
+div.main button.btn-l2,
+div.main .btn-cta {
+  font-family: var(--l2-font-display);
+}
+
+.logo {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--gold);
+  margin: 0 0 8px;
+}
+
+.desc {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.center {
+  text-align: center;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 14px 0;
+  opacity: 0.7;
+}
+
+a {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--gold-bright);
+}
+
+/* Плитки / другорядні кнопки */
+.btn-l2 {
+  display: block;
+  text-align: center;
+  padding: 10px 12px;
+  margin: 8px 0;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--btn-blue-top) 0%, var(--btn-blue-mid) 50%, var(--btn-blue-bot) 100%);
+  border: 1px solid var(--btn-blue-border);
+  color: #fff4e6 !important;
+  text-decoration: none !important;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 4px rgba(0, 0, 0, 0.3),
+    0 0 8px var(--btn-blue-glow);
+  transition: filter 0.12s ease;
+}
+
+.btn-l2:hover,
+.btn-l2:focus {
+  filter: brightness(1.1);
+  border-color: rgba(212, 175, 90, 0.55);
+}
+
+.btn-l2-secondary {
+  background: linear-gradient(180deg, var(--btn-blue-secondary-top) 0%, var(--btn-blue-secondary-bot) 100%);
+  border-color: rgba(50, 40, 28, 0.95);
+  color: #e8dcc8 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-l2-secondary:hover,
+.btn-l2-secondary:focus {
+  border-color: rgba(180, 140, 80, 0.5);
+}
+
+input.inp-l2 {
+  width: 100%;
+  padding: 10px 10px;
+  margin: 4px 0 0;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  border: 1px solid rgba(120, 100, 60, 0.45);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 14px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+input.inp-l2:focus {
+  outline: none;
+  border-color: rgba(232, 192, 56, 0.45);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(232, 192, 56, 0.15);
+}
+
+label.lbl-l2 {
+  display: block;
+  font-size: 12px;
+  color: var(--gold);
+  margin-top: 12px;
+}
+
+select.sel-l2 {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  border: 1px solid rgba(120, 100, 60, 0.45);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.class-row {
+  margin-top: 10px;
+}
+
+.class-opt {
+  display: block;
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.class-opt input {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.err {
+  color: var(--err);
+  font-size: 12px;
+  margin: 10px 0 0;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(255, 80, 80, 0.35);
+}
+
+.footer-links {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+.footer-links a {
+  color: #b8b0a0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Нижня смуга навігації (як у скріні) */
+.l2-dock {
+  max-width: 400px;
+  margin: 14px auto 0;
+  padding: 10px 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(18, 14, 10, 0.96) 0%, #060504 100%);
+}
+
+.l2-dock a {
+  display: block;
+  text-align: center;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #f0e8d8 !important;
+  text-decoration: none !important;
+  border: 1px solid rgba(80, 60, 35, 0.85);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #3a3020 0%, #221c14 100%);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.l2-dock a:hover {
+  background: linear-gradient(180deg, #4a3c28 0%, #2a2218 100%);
+  border-color: rgba(200, 160, 90, 0.45);
+  color: #fff8ec !important;
+}
+
+/*
+ * Місто — l2mobi townlive-подібно: вузька колона, золоті кнопки, сітки іконок (l2-nav.js).
+ */
+.l2-page-city .l2-shell {
+  position: relative;
+  z-index: 0;
+  padding: 0;
+  max-width: none;
+  width: 100%;
+}
+
+.l2-page-city .l2-screen {
+  align-self: stretch;
+  flex: 1 1 auto;
+  max-width: none;
+  width: 100%;
+  min-height: 100vh;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  position: relative;
+  background: var(--l2-city-column-bg);
+}
+
+/* inner-frame (як у css.css): тонка золота рамка всередині колонки */
+.l2-page-city .l2-screen::before {
+  z-index: 0;
+}
+
+.l2-page-city .l2-screen::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--l2-gold-frame);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow:
+    inset 0 0 32px rgba(255, 200, 100, 0.09),
+    0 0 20px rgba(255, 190, 60, 0.06);
+}
+
+.l2-city-ui-l2test.l2-page-city .l2-screen {
+  box-shadow: none;
+}
+
+.l2-page-city .l2-screen-inner {
+  padding: 10px 12px 18px;
+  max-width: none;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Той самий вузол часто має клас *-root (char, battle, city…) — не розтягувати за зовнішню рамку */
+.l2-page-city .l2-screen-inner[class*='-root'] {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ornament-top / низ: збіг з контентом (padding колонки ~10px), інакше «криво» до блоків */
+.l2-page-city .l2-screen-inner::before {
+  content: '';
+  display: block;
+  width: calc(100% - 20px);
+  max-width: 440px;
+  height: 3px;
+  margin: 0 auto 8px;
+  background: var(--l2-ornament-grad);
+  pointer-events: none;
+  border-radius: 2px;
+  box-shadow:
+    0 0 10px rgba(255, 200, 90, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.15) inset;
+}
+
+.l2-page-city .l2-screen-inner::after {
+  content: '';
+  display: block;
+  width: calc(100% - 20px);
+  max-width: 440px;
+  height: 3px;
+  margin: 12px auto 0;
+  background: var(--l2-ornament-grad);
+  opacity: 0.88;
+  pointer-events: none;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255, 190, 80, 0.22);
+}
+
+/*
+ * Довільний блок: ті самі прийоми, що .l2-screen::after / ::before у колонці.
+ * position: absolute; inset + border — золота рамка; .ornament-top — лінія зверху секції.
+ */
+.inner-frame {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--l2-gold-frame);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow:
+    inset 0 0 28px rgba(255, 200, 100, 0.08),
+    0 0 16px rgba(255, 190, 60, 0.05);
+}
+
+.ornament-top {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: var(--l2-ornament-grad);
+  border-radius: 2px;
+  box-shadow:
+    0 0 10px rgba(255, 200, 90, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.ornament-bottom {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: var(--l2-ornament-grad);
+  opacity: 0.88;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255, 190, 80, 0.22);
+}
+
+/* l2mobi townlive: вузька колона на чорному тлі */
+.l2-page-city.l2-page-townlive .l2-shell {
+  background: transparent;
+  padding: 8px 0 24px;
+}
+
+/* Персонаж — та сама ширина колонки (~460px), що й у місті */
+.l2-page-city.l2-page-pers .l2-shell {
+  background: transparent;
+  padding: 8px 0 24px;
+}
+
+.l2-page-city.l2-page-pers .l2-screen {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100vh;
+}
+
+/* Сторінка опцій — та сама колонка, що місто / персонаж */
+.l2-page-city.l2-page-options .l2-shell {
+  background: transparent;
+  padding: 8px 0 24px;
+}
+
+.l2-page-city.l2-page-options .l2-screen {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100vh;
+}
+
+/* Головна / реєстрація — та сама колонка ~460px і шапка, що місто */
+body.l2-app-l2-chrome.l2-page-auth {
+  /* Трохи підняти зовнішню рамку l2-outer-sframe (margin-top у l2-app-chrome-skin) */
+  --l2s-chrome-column-lift: 24px;
+}
+
+.l2-page-city.l2-page-auth .l2-shell {
+  background: transparent;
+  padding: 4px 0 calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.l2-page-city.l2-page-auth .l2-screen {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100vh;
+  /* Фон і «внутрішня рамка» — як у .l2-page-city .l2-screen + l2-app-chrome-skin (місто), без окремого шару для auth */
+}
+
+.l2-page-auth .l2-city-head-tagline {
+  display: none;
+}
+
+.l2-page-auth .l2-city-head .l2-logo {
+  margin: 6px 0 4px;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-size: 26px;
+  letter-spacing: 0.14em;
+}
+
+.l2-page-auth .l2-auth-sub {
+  margin: 0;
+  font-size: 11px;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.95;
+}
+
+.l2-page-auth .l2-auth-badge {
+  margin: 10px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c8b8a0;
+  text-shadow: 0 0 10px rgba(200, 160, 80, 0.22);
+}
+
+.l2-page-auth .l2-auth-meta {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gold);
+  margin: 0 0 4px;
+  text-shadow: 0 0 6px rgba(200, 160, 40, 0.2);
+}
+
+.l2-page-auth .l2-auth-meta--muted {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
+.l2-auth-meta--online {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.l2-auth-online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.65);
+  flex-shrink: 0;
+}
+
+.l2-auth-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+/* Банер входу: підкладка як у колонки; краї фото зникають у той самий фон (маска, без «бруду» в центрі) */
+.l2-auth-hero-fon-wrap {
+  position: relative;
+  width: 100%;
+  max-width: min(100%, 360px);
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 0;
+  background-color: var(--bg-deep);
+  background-image: var(--l2-city-column-bg);
+  background-repeat: no-repeat;
+}
+
+/* Шум / grain поверх арту (SVG feTurbulence, тайлиться) */
+.l2-auth-hero-fon-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.11;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 100px 100px;
+}
+
+/* Легка віньєтка + «дим» / fade по краях поверх банера */
+.l2-auth-hero-fon-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 58% 42% at 76% 18%, rgba(255, 245, 228, 0.06) 0%, transparent 58%),
+    radial-gradient(ellipse 52% 40% at 14% 72%, rgba(42, 34, 26, 0.14) 0%, transparent 56%),
+    radial-gradient(ellipse 68% 48% at 52% 92%, rgba(18, 14, 11, 0.16) 0%, transparent 52%),
+    radial-gradient(ellipse 96% 92% at 50% 48%, transparent 48%, rgba(14, 11, 8, 0.22) 82%, rgba(7, 6, 5, 0.42) 100%);
+  box-shadow:
+    inset 0 0 36px 16px rgba(6, 5, 4, 0.28),
+    inset 0 0 72px 36px rgba(10, 8, 6, 0.12);
+}
+
+.l2-auth-hero-fon {
+  display: block;
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  /* М’який перехід по краю: центр opaque, до периметра alpha падає → видно шари фону колонки під фото */
+  -webkit-mask-image: radial-gradient(
+    ellipse 98% 94% at 50% 46%,
+    #000 0%,
+    #000 56%,
+    rgba(0, 0, 0, 0.88) 72%,
+    rgba(0, 0, 0, 0.42) 86%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 98% 94% at 50% 46%,
+    #000 0%,
+    #000 56%,
+    rgba(0, 0, 0, 0.88) 72%,
+    rgba(0, 0, 0, 0.42) 86%,
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* «Почати гру»: рамка ref/8585 у l2-app-chrome-skin (.l2-page-auth a.btn-cta.l2-auth-cta) */
+
+/* Форма входу/реєстрації — фон і рамка як у блоків міста (.l2-page-city.l2-page-townlive .l2-wap-grid) */
+.l2-page-auth div.main {
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(165deg, rgba(28, 22, 14, 0.94) 0%, rgba(10, 8, 6, 0.97) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(100, 80, 48, 0.4),
+    0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+.l2-page-auth div.main::before,
+.l2-page-auth div.main::after {
+  display: none;
+}
+
+.l2-page-auth div.main .main-inner-frame,
+.l2-page-auth div.main .main-ornament-top,
+.l2-page-auth div.main .main-ornament-bottom,
+.l2-page-auth div.main .main-corner-bl,
+.l2-page-auth div.main .main-corner-br {
+  display: none;
+}
+
+/* Поля вводу (головна + реєстрація): білий фон, заокруглені кути */
+.l2-page-auth div.main input.inp-l2,
+.l2-page-auth div.main select.inp-l2 {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #121110 !important;
+  border: 1px solid rgba(110, 100, 88, 0.42) !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  font-size: 13px !important;
+  text-align: center !important;
+}
+
+/* Реєстрація: поля без іконок — свої горизонтальні відступи */
+.l2-page-auth div.main #form-reg input.inp-l2,
+.l2-page-auth div.main #form-reg select.inp-l2 {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+/* Вхід з іконками: вища специфічність за загальне input.inp-l2 (інакче плейсхолдер лишається біля іконки) */
+.l2-page-auth div.main .l2-auth-field input.inp-l2 {
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+  text-align: center !important;
+}
+
+.l2-page-auth div.main .l2-auth-field--pass input.inp-l2 {
+  padding-right: 44px !important;
+}
+
+.l2-page-auth div.main input.inp-l2::placeholder {
+  color: #4f4a43;
+  opacity: 1;
+}
+
+.l2-page-auth div.main select.inp-l2 {
+  text-align-last: center !important;
+}
+
+.l2-page-auth div.main input.inp-l2:focus,
+.l2-page-auth div.main select.inp-l2:focus {
+  border-color: rgba(190, 155, 75, 0.72) !important;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.05),
+    0 0 0 2px rgba(230, 195, 110, 0.22) !important;
+  outline: none !important;
+}
+
+.l2-page-auth div.main input.inp-l2:-webkit-autofill,
+.l2-page-auth div.main input.inp-l2:-webkit-autofill:hover,
+.l2-page-auth div.main input.inp-l2:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #121110 !important;
+}
+
+/* Панель входу — таби, поля з іконками */
+.l2-auth-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  background: transparent;
+}
+
+.l2-auth-tabs .l2-auth-tab {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 9px 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  --l2-auth-tab541-slice-y: 30;
+  --l2-auth-tab541-slice-x: 40;
+  --l2-auth-tab541-bd-y: 5;
+  --l2-auth-tab541-bd-x: 9;
+  border-width: calc(1px * var(--l2-auth-tab541-bd-y)) calc(1px * var(--l2-auth-tab541-bd-x)) !important;
+  border-image-source: url('/ref/541.png');
+  border-image-slice: var(--l2-auth-tab541-slice-y) var(--l2-auth-tab541-slice-x) var(--l2-auth-tab541-slice-y)
+    var(--l2-auth-tab541-slice-x) fill;
+  border-image-width: calc(1px * var(--l2-auth-tab541-bd-y)) calc(1px * var(--l2-auth-tab541-bd-x));
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #c4b89a !important;
+  cursor: default;
+}
+
+a.l2-auth-tab {
+  cursor: pointer;
+  color: #b8a890 !important;
+}
+
+.l2-auth-tab--active {
+  color: #fff1dc !important;
+  filter: brightness(1.14);
+}
+
+div.main .l2-auth-tabs a.l2-auth-tab {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  text-shadow: none;
+}
+
+div.main .l2-auth-tabs a.l2-auth-tab:hover,
+div.main .l2-auth-tabs a.l2-auth-tab:focus-visible {
+  filter: brightness(1.1);
+  outline: none;
+}
+
+.l2-auth-field {
+  margin-bottom: 12px;
+}
+
+.l2-auth-field label.lbl-l2 {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.l2-auth-input-wrap {
+  position: relative;
+}
+
+.l2-auth-field__ico {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: #5c421c;
+  opacity: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.75));
+}
+
+.l2-auth-field__ico svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+

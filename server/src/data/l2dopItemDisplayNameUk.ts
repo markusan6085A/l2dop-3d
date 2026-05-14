@@ -27,6 +27,13 @@ export const L2DOP_ITEM_SLOT_HINT: Record<number, string> = {
 export const L2DOP_ITEM_GRADE_UK: Record<number, string> = {
   18: 'NG',
   116: 'NG',
+  /** Зброя з ручних рядків у `itemsCatalog.ts` (немає в GM weapons CSV). */
+  317: 'D',
+  79: 'B',
+  7575: 'A',
+  8336: 'B',
+  8340: 'B',
+  900224: 'C',
 };
 
 /**

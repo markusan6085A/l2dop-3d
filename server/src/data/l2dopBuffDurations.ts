@@ -88,6 +88,14 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   1068: 1200,
   /** Shield */
   1040: 1200,
+  /** Bless the Body */
+  1045: 1200,
+  /** Bless the Soul */
+  1048: 1200,
+  /** Empower */
+  1059: 1200,
+  /** Berserker Spirit */
+  1062: 1200,
   /** Magic Barrier */
   1036: 1200,
   /** Focus */

@@ -19,7 +19,7 @@ import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js'
 import { humanFighterCatalogEntry } from './humanFighterSkillCatalog.lookup.js';
 import { catalogEntryVisibleForProfession } from './humanFighterSkillCatalog.professionRules.js';
 import { fighterCatalogEntryForRace } from './fighterSkillCatalog.byRace.js';
-import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
+import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 
 /**
  * Видалені з гри скіли (l2 id) — не показувати в бою, навіть якщо залишок у кеші/JSON.
@@ -126,7 +126,9 @@ export function learnedHumanFighterHotbarPickSkills(
     const canon = canonicalBattleSkillId(raw);
     const rf = fighterCatalogEntryForRace(race, classBranch, canon);
     if (rf) {
-      if (!mysticCatalogEntryVisibleForProfession(rf, l2Profession)) continue;
+      if (!raceFighterCatalogEntryVisibleForProfession(rf, l2Profession)) {
+        continue;
+      }
       if (rf.kind !== 'battle' && rf.kind !== 'toggle') continue;
       const mapped = CANONICAL_L2_SKILL_TO_BATTLE_ACTION[canon];
       const action: BattleActionId | undefined =

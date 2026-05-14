@@ -34,6 +34,7 @@ import {
   type L2ItemInventoryTabHint,
 } from './l2dopItemInventoryTab.generated.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
+import { dropsShopConsumableGearCatalogExtras } from './dropsShopConsumableGearExtras.js';
 
 export type ItemSlotKind =
   | 'rhand'
@@ -114,6 +115,13 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
       pDef: row.pDef,
       ...(at ? { armorType: at } : {}),
     };
+  }
+  /**
+   * Major Arcana robe у GM-джерелі приходить як `chest`, але по L2 це full robe
+   * (один предмет займає верх + низ).
+   */
+  if (o[6383]) {
+    o[6383] = { ...o[6383], slot: 'fullarmor' };
   }
   for (const row of L2DOP_GM_SHOP_JEWELRY) {
     o[row.itemId] = {
@@ -296,10 +304,30 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
     m.wpnCrit = wpnCritForWeaponKind(wt);
   }
 
-  /** Розхідники для крамниці (id з Interlude items3); не перезаписує наявний рядок. */
+  /** Розхідники для крамниці (id з Interlude); не перезаписує наявний рядок. Зілля великого зцілення (1539) навмисно виключено. */
   const CONSUMABLE_CATALOG_STUBS: Record<number, { nameUk: string }> = {
-    1539: { nameUk: 'Зілля великого зцілення' },
-    1835: { nameUk: 'Заряд душі (без грейду)' },
+    1060: { nameUk: 'Зілля слабкого зцілення' },
+    1061: { nameUk: 'Зілля зцілення' },
+    726: { nameUk: 'Зілля мани (мала банка)' },
+    728: { nameUk: 'Зілля мани (велика банка)' },
+    17: { nameUk: 'Дерев’яна стріла' },
+    1341: { nameUk: 'Кістяна стріла' },
+    1342: { nameUk: 'Стріла з якісної сталі' },
+    1343: { nameUk: 'Срібна стріла' },
+    1344: { nameUk: 'Мітрилова стріла' },
+    1345: { nameUk: 'Сяюча стріла' },
+    1835: { nameUk: 'Заряд душі воїна' },
+    1463: { nameUk: 'Заряд душі воїна' },
+    1464: { nameUk: 'Заряд душі воїна' },
+    1465: { nameUk: 'Заряд душі воїна' },
+    1466: { nameUk: 'Заряд душі воїна' },
+    1467: { nameUk: 'Заряд душі воїна' },
+    3947: { nameUk: 'Благословенний заряд духу' },
+    3948: { nameUk: 'Благословенний заряд духу' },
+    3949: { nameUk: 'Благословенний заряд духу' },
+    3950: { nameUk: 'Благословенний заряд духу' },
+    3951: { nameUk: 'Благословенний заряд духу' },
+    3952: { nameUk: 'Благословенний заряд духу' },
   };
   for (const [idStr, row] of Object.entries(CONSUMABLE_CATALOG_STUBS)) {
     const id = Number(idStr);
@@ -499,6 +527,7 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
       },
     });
   }
+  rows.push(...dropsShopConsumableGearCatalogExtras());
   return rows;
 }
 
@@ -508,8 +537,28 @@ let _itemNamesUkFullCache: Record<number, string> | null = null;
 const ITEM_INVENTORY_TAB_EXTRA: Partial<
   Record<number, L2ItemInventoryTabHint>
 > = {
-  1539: 'consumable',
+  1060: 'consumable',
+  1061: 'consumable',
+  726: 'consumable',
+  728: 'consumable',
+  17: 'consumable',
+  1341: 'consumable',
+  1342: 'consumable',
+  1343: 'consumable',
+  1344: 'consumable',
+  1345: 'consumable',
   1835: 'consumable',
+  1463: 'consumable',
+  1464: 'consumable',
+  1465: 'consumable',
+  1466: 'consumable',
+  1467: 'consumable',
+  3947: 'consumable',
+  3948: 'consumable',
+  3949: 'consumable',
+  3950: 'consumable',
+  3951: 'consumable',
+  3952: 'consumable',
 };
 
 export function itemInventoryTabHintsForClient(): Record<

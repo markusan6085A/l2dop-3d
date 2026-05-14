@@ -38,7 +38,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 30
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 80,
     skipMobHp: true
   },
   {
@@ -145,7 +145,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false
   },
   {
@@ -418,7 +418,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 17
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -677,7 +677,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -714,7 +714,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -773,7 +773,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -803,7 +803,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -840,7 +840,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -871,7 +871,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 5
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -908,7 +908,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1002,7 +1002,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 25
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1086,7 +1086,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1185,7 +1185,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1456,7 +1456,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false
   },
   {
@@ -1495,7 +1495,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1530,7 +1530,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1562,7 +1562,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1592,7 +1592,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1622,7 +1622,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1665,7 +1665,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 4
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: 40,
     skipMobHp: true
   },
   {
@@ -1705,7 +1705,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 15
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -1736,7 +1736,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 8
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -1775,7 +1775,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 15
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -1806,7 +1806,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 8
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -1846,7 +1846,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 15
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -1887,7 +1887,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 10
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -1926,7 +1926,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 15
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -1971,7 +1971,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 15
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -2014,7 +2014,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 8
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 5,
     skipMobHp: true
   },
   {
@@ -2071,7 +2071,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 80
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: false
   },
   {
@@ -2127,7 +2127,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -2169,7 +2169,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 12,
     skipMobHp: true
   },
   {
@@ -2206,7 +2206,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 8,
     skipMobHp: true
   },
   {
@@ -2262,7 +2262,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -2292,7 +2292,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -2329,7 +2329,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: false
   },
   {
@@ -2361,7 +2361,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 15,
     skipMobHp: false
   },
   {
@@ -2398,7 +2398,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 12,
     skipMobHp: true
   },
   {
@@ -2421,7 +2421,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 8,
     skipMobHp: true
   },
   {
@@ -2472,7 +2472,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 40,
     skipMobHp: true
   },
   {
@@ -2504,7 +2504,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: false
   },
   {
@@ -2530,7 +2530,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: false
   },
   {
@@ -2574,7 +2574,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -2611,7 +2611,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 15,
     skipMobHp: true
   },
   {
@@ -2644,7 +2644,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -2689,7 +2689,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -2812,7 +2812,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 20
       }
     ],
-    cooldownSec: 7,
+    cooldownSec: 50,
     skipMobHp: true
   },
   {
@@ -2859,7 +2859,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -2984,7 +2984,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 80
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: false
   },
   {
@@ -3022,7 +3022,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3074,7 +3074,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3112,7 +3112,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3151,7 +3151,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 2
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3190,7 +3190,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 30
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3228,7 +3228,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 45,
     skipMobHp: true
   },
   {
@@ -3273,7 +3273,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3305,7 +3305,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 15
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 55,
     skipMobHp: true
   },
   {
@@ -3351,7 +3351,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 31
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3390,7 +3390,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 2
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3457,7 +3457,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3489,7 +3489,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 20
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 70,
     skipMobHp: true
   },
   {
@@ -3535,7 +3535,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 293
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -3580,7 +3580,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3612,7 +3612,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 20
       }
     ],
-    cooldownSec: 5,
+    cooldownSec: 60,
     skipMobHp: true
   },
   {
@@ -3644,7 +3644,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 20
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 70,
     skipMobHp: true
   },
   {
@@ -3689,7 +3689,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3734,7 +3734,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "flat"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3786,7 +3786,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "percent"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3818,7 +3818,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 3
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 70,
     skipMobHp: true
   },
   {
@@ -3855,7 +3855,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 25
       }
     ],
-    cooldownSec: 5,
+    cooldownSec: 70,
     skipMobHp: true
   },
   {
@@ -3891,7 +3891,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 20
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3973,7 +3973,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         value: 20
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 1200,
     skipMobHp: true
   },
   {
@@ -4003,7 +4003,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -4033,7 +4033,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -4087,7 +4087,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 300,
     skipMobHp: true
   },
   {
@@ -4117,7 +4117,7 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 60,
     skipMobHp: true
   }
 ];

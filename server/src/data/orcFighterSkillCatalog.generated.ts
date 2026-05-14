@@ -88,7 +88,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -346,7 +346,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 0.78,
+    cooldownSec: 10,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -476,7 +476,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.6,
+    cooldownSec: 15,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -511,7 +511,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.5,
+    cooldownSec: 3,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -727,7 +727,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 2,
+    cooldownSec: 20,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -737,7 +737,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 11000,
     nameUk: "Вихор (Whirlwind)",
-    hintUk: "Широкий удар по кількох ворогах навколо. Лише зі списом або алебардами. Блок щита ігнорується. Можливий надудар.",
+    hintUk: "Той самий фізичний урон по головній цілі та до двох мобів поруч на карті (у радіусі бою). Лише зі списом або алебардами. Блок щита ігнорується. Можливий надудар. Кулдаун 17 с.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -1006,7 +1006,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.07,
+    cooldownSec: 17,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1062,7 +1062,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 0.9,
+    cooldownSec: 1,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1342,7 +1342,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.9,
+    cooldownSec: 4,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1383,7 +1383,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1429,7 +1429,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 1.36,
+    cooldownSec: 120,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1467,7 +1467,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 3
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1509,7 +1509,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 55
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 300,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1640,7 +1640,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.6,
+    cooldownSec: 7,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1771,7 +1771,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1815,7 +1815,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -1946,7 +1946,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 1.6,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2007,7 +2007,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 600,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2052,7 +2052,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2092,7 +2092,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 600,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2147,7 +2147,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2217,7 +2217,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 0
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2289,7 +2289,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2329,7 +2329,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2369,7 +2369,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 600,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2378,8 +2378,8 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     l2SkillId: 190,
     minLevel: 40,
     spCost: 11000,
-    nameUk: "Fatal Strike",
-    hintUk: "Fatal Strike",
+    nameUk: "Фатальний удар (Fatal Strike)",
+    hintUk: "Швидкий нищівний удар. Меч або булава. Можливий надудар.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -2648,7 +2648,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2680,7 +2680,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -2965,7 +2965,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3040,7 +3040,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3108,7 +3108,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3398,7 +3398,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 10
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3683,7 +3683,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3715,7 +3715,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -3753,7 +3753,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 5
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4046,7 +4046,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 6
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4331,7 +4331,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4457,7 +4457,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 17,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4583,7 +4583,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4616,7 +4616,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -4625,8 +4625,8 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     l2SkillId: 260,
     minLevel: 40,
     spCost: 11000,
-    nameUk: "Hammer Crush",
-    hintUk: "Hammer Crush",
+    nameUk: "Скрушний молот (Hammer Crush)",
+    hintUk: "Важкий удар булавою з високою шкодою. Лише з булавою.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -4900,7 +4900,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.08,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5179,7 +5179,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.9,
+    cooldownSec: 15,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5463,7 +5463,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 1.36,
+    cooldownSec: 13,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5500,7 +5500,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 6
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5780,7 +5780,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.36,
+    cooldownSec: 17,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5832,7 +5832,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 900,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -5868,7 +5868,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 120,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6004,7 +6004,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 3
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6041,7 +6041,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6172,7 +6172,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6304,7 +6304,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.62,
+    cooldownSec: 26,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6343,7 +6343,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6438,7 +6438,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 1.08,
+    cooldownSec: 120,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6478,7 +6478,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6514,7 +6514,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6547,7 +6547,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6583,7 +6583,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6630,7 +6630,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6684,7 +6684,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6736,7 +6736,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       }
     ],
     effects: [],
-    cooldownSec: 1.8,
+    cooldownSec: 30,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6775,7 +6775,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2,
+    cooldownSec: 15,
     skipMobHp: false,
     hideAtBaseFighterUntilFirstProf: false
   },
@@ -6854,7 +6854,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         value: 66
       }
     ],
-    cooldownSec: 300,
+    cooldownSec: 900,
     skipMobHp: true,
     hideAtBaseFighterUntilFirstProf: false
   },

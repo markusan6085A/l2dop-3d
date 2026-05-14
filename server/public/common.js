@@ -92,6 +92,12 @@
     return m[code] != null ? m[code] : String(code);
   }
 
+  function normalizePositiveInt(val) {
+    var n = Number(val);
+    if (!Number.isFinite(n) || n <= 0) return 0;
+    return Math.floor(n);
+  }
+
   global.L2 = {
     lastSnapshot: function () {
       return lastSnapshot;
@@ -154,6 +160,40 @@
     },
     mergeGearCatalog: function (items) {
       global.L2.mergeShopCatalog(items);
+    },
+    mergeCraftResourceIconHints: function (payload) {
+      var h = payload && payload.craftResourceIconByItemId;
+      if (!h || typeof h !== 'object') return;
+      var icons = global.L2.itemIconById;
+      Object.keys(h).forEach(function (k) {
+        var url = h[k];
+        if (url != null && String(url).trim() !== '') icons[k] = String(url);
+      });
+    },
+    rememberItemIconHint: function (itemId, iconUrl) {
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return;
+      if (iconUrl == null || String(iconUrl).trim() === '') return;
+      global.L2.itemIconById[id] = String(iconUrl);
+    },
+    resolveItemIconUrl: function (itemId, fallbackUrl) {
+      var id = normalizePositiveInt(itemId);
+      var fb =
+        fallbackUrl != null && String(fallbackUrl).trim() !== ''
+          ? String(fallbackUrl)
+          : '/icons/drops/other.svg';
+      if (id <= 0) return fb;
+      var u = global.L2.itemIconById && global.L2.itemIconById[id];
+      if (u != null && String(u).trim() !== '') return String(u);
+      return '/game/item-icon/' + id;
+    },
+    resolveSkillIconUrl: function (skillId, iconUrl) {
+      if (iconUrl != null && String(iconUrl).charAt(0) === '/') {
+        return String(iconUrl);
+      }
+      var id = normalizePositiveInt(skillId);
+      if (id > 0) return '/game/skill-icon/' + id;
+      return '/icons/drops/other.svg';
     },
     cityDisplayName: cityDisplayName,
     apiErrorUk: apiErrorUk,
@@ -251,6 +291,9 @@
       if (j.gearCatalog && global.L2.mergeGearCatalog) {
         global.L2.mergeGearCatalog(j.gearCatalog);
       }
+      if (global.L2.mergeCraftResourceIconHints) {
+        global.L2.mergeCraftResourceIconHints(j);
+      }
       if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && global.L2.itemNameById) {
         Object.keys(j.itemNamesUk).forEach(function (k) {
           global.L2.itemNameById[k] = j.itemNamesUk[k];
@@ -295,6 +338,22 @@
         });
       }
       return lastSnapshot;
+    },
+    applyCharacterSnapshot: function (snapshot, applyScreenSpecific) {
+      if (!snapshot) return null;
+      lastSnapshot = snapshot;
+      if (typeof global.L2.applyHudFromSnapshot === 'function') {
+        global.L2.applyHudFromSnapshot(snapshot);
+      }
+      if (typeof applyScreenSpecific === 'function') {
+        applyScreenSpecific(snapshot);
+      }
+      return snapshot;
+    },
+    resyncCharacterAfterConflict: async function (applyScreenSpecific) {
+      var snap = await global.L2.fetchSnapshot();
+      if (!snap) throw new Error('failed_to_refetch_character');
+      return global.L2.applyCharacterSnapshot(snap, applyScreenSpecific);
     },
 
     renderStats: function (ids, c) {
@@ -437,55 +496,25 @@
       return '—';
     },
 
-    /**
-     * l2Profession з БД — людочитана підпис українською; невідомі ключі показуємо як є (щоб бачити truth).
-     */
+    /** l2Profession з БД -> коротка назва професії (без race-префіксів і `_`). */
     hudL2ProfessionUkFromSnapshot: function (c) {
       if (!c || c.l2Profession == null) return '—';
       var p = String(c.l2Profession).trim().toLowerCase();
       if (!p) return '—';
-      var map = {
-        dwarf_fighter: 'Гном-воїн',
-        dwarf_scavenger: 'Збирач (Scavenger)',
-        dwarf_bounty_hunter: 'Мисливець за головами (Bounty Hunter)',
-        dwarf_fortune_seeker: 'Шукач скарбів (Fortune Seeker)',
-        dwarf_artisan: 'Ремісник (Artisan)',
-        dwarf_warsmith: 'Коваль війни (Warsmith)',
-        dwarf_maestro: 'Маестро (Maestro)',
-        human_fighter: 'Людина-воїн',
-        human_warrior: 'Воїн (Warrior)',
-        human_knight: 'Лицар (Knight)',
-        human_rogue: 'Шукач пригод (Rogue)',
-        human_gladiator: 'Гладіатор (Gladiator)',
-        human_warlord: 'Володар війни (Warlord)',
-        human_dreadnought: 'Жахливий (Dreadnought)',
-        human_duelist: 'Дуелант (Duelist)',
-        human_paladin: 'Паладин (Paladin)',
-        human_dark_avenger: 'Темний месник (Dark Avenger)',
-        human_temple_knight: 'Храмовий лицар (Temple Knight)',
-        human_shillien_knight: 'Лицар Шиллен (Shillien Knight)',
-        human_plains_walker: 'Мандрівник рівнин (Plainswalker)',
-        human_treasure_hunter: 'Мисливець за скарбами (Treasure Hunter)',
-        human_hawkeye: 'Гострозір (Hawkeye)',
-        human_sagittarius: 'Стрілець (Sagittarius)',
-        human_adventurer: 'Дослідник (Adventurer)',
-        elf_fighter: 'Ельф-воїн',
-        elf_knight: 'Лицар ельфів (Elven Knight)',
-        elf_scout: 'Слідопит (Scout)',
-        elf_assassin: 'Асасин (Assassin)',
-        dark_elf_fighter: 'Темний ельф-воїн',
-        dark_elf_palus_knight: 'Лицар Палуса (Palus Knight)',
-        dark_elf_assassin: 'Асасин (Assassin)',
-        orc_fighter: 'Орк-воїн',
-        orc_raider: 'Рейдер (Raider)',
-        orc_monk: 'Монах (Monk)',
-        orc_destroyer: 'Руйнівник (Destroyer)',
-        orc_tyrant: 'Тиран (Tyrant)',
-        human_mage: 'Людина-маг',
-        human_wizard: 'Чаклун (Wizard)',
-        human_cleric: 'Жрець (Cleric)',
-      };
-      return map[p] || p;
+      var core = p;
+      var prefixes = ['dark_elf_', 'human_', 'elf_', 'orc_', 'dwarf_'];
+      for (var i = 0; i < prefixes.length; i++) {
+        var pref = prefixes[i];
+        if (core.indexOf(pref) === 0) {
+          core = core.slice(pref.length);
+          break;
+        }
+      }
+      if (!core) return '—';
+      var words = core.split('_').filter(Boolean);
+      if (!words.length) return core;
+      var text = words.join(' ').toLowerCase();
+      return text.charAt(0).toUpperCase() + text.slice(1);
     },
 
     hudL2ProfessionSlugFromSnapshot: function (c) {
@@ -502,6 +531,7 @@
         'l2-hud-class-val',
         'l2-hud-exp-cur',
         'l2-hud-exp-max',
+        'l2-hud-exp-pct',
         'l2-hud-hp-cur',
         'l2-hud-hp-max',
         'l2-hud-mp-cur',
@@ -559,6 +589,7 @@
       set('l2-hud-exp-max', c.expBarMax != null ? c.expBarMax : '—');
       var expPct = c.expBarPct != null ? Number(c.expBarPct) : 0;
       setWidthPct('l2-hud-exp-fill', expPct);
+      set('l2-hud-exp-pct', Math.max(0, Math.min(100, expPct)).toFixed(1) + '%');
       var expBar = document.getElementById('l2-hud-exp-bar');
       if (expBar) {
         expBar.setAttribute('aria-valuenow', String(Math.round(expPct)));
@@ -615,6 +646,12 @@
         '<span class="l2-hud-class">Клас: <span id="l2-hud-class-val">—</span></span></span>' +
         '</p>' +
         '<p class="l2-hud-prof-line"><span class="l2-hud-prof-label">Професія:</span> <span id="l2-hud-prof-val">—</span></p>' +
+        '<div class="l2-hud-exp-inline">' +
+        '<div class="l2-hud-exp-bar l2-hud-exp-bar--inline" id="l2-hud-exp-bar" role="progressbar" aria-label="Досвід" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+        '<span class="l2-hud-exp-fill" id="l2-hud-exp-fill" style="width:0%"></span>' +
+        '</div>' +
+        '<span class="l2-hud-exp-inline-pct" id="l2-hud-exp-pct">0.0%</span>' +
+        '</div>' +
         '</div></div>' +
         '<div class="l2-hud-city-bars" role="group" aria-label="Життя, мана, CP">' +
         '<div class="l2-hud-stat l2-hud-stat--hp l2-hud-city-bar"><div class="l2-hud-stat-bar">' +

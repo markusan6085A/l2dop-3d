@@ -1,0 +1,15 @@
+---
+description: UI-консистентність server/public — іконки, resync, inFlight
+globs: server/public/**/*.js
+alwaysApply: true
+---
+
+# Public UI: консистентність і anti-desync
+
+- Для динамічних іконок предметів використовуй `L2.resolveItemIconUrl(itemId, fallback)`; не дублюй локальні резолвери по сторінках.
+- Для динамічних іконок скілів використовуй `L2.resolveSkillIconUrl(skillId, iconUrl)`; не хардкодь різні правила в кожному екрані.
+- Якщо API дає `iconUrl`, кешуй підказку через `L2.rememberItemIconHint(itemId, iconUrl)` для подальших екранів.
+- На `409 revision_conflict` обов'язково роби resync: `GET /character` -> `L2.setLastSnapshot(...)` -> `L2.applyHudFromSnapshot(...)`.
+- `inFlight` lock для мутацій UI завжди через `try/finally`; заборонено залишати кнопку/дію заблокованою після exception.
+- Для всіх fallback-помилок завантаження іконок використовуй безпечний дефолт (`/icons/drops/other.svg`), без падіння рендера.
+- Не змінюй серверні правила з клієнта: клієнт надсилає намір (`action`, `itemId`, `expectedRevision`), а не "готовий" результат.

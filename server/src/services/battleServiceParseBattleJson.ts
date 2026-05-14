@@ -7,12 +7,39 @@ import {
   stripExpiredZealotFromBattleMods,
   type BattleBattleMods,
   type BattleJsonState,
+  type BattlePotionHoTEntry,
   type WhirlwindExtraMobJson,
 } from '../domain/battle.js';
 import type { WeaknessKind } from '../domain/mobWeaknessFamily.js';
 import {
   mobMaxCpFromMobMaxHp,
 } from '../data/wrathSkillConstants.js';
+
+function parseBattlePotionHoTField(
+  raw: unknown
+): BattlePotionHoTEntry | undefined {
+  if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) {
+    return undefined;
+  }
+  const r = raw as Record<string, unknown>;
+  const remaining = jsonFiniteNum(r.remaining);
+  const perTick = jsonFiniteNum(r.perTick);
+  const nextTickAtMs = jsonFiniteNum(r.nextTickAtMs);
+  if (
+    remaining === undefined ||
+    remaining <= 0 ||
+    perTick === undefined ||
+    perTick <= 0 ||
+    nextTickAtMs === undefined
+  ) {
+    return undefined;
+  }
+  return {
+    remaining: Math.floor(remaining),
+    perTick: Math.floor(perTick),
+    nextTickAtMs: Math.floor(nextTickAtMs),
+  };
+}
 
 export function parseBattleJson(
   raw: Prisma.JsonValue | null | undefined
@@ -127,6 +154,26 @@ export function parseBattleJson(
     const tfm = jsonFiniteNum(bm.thrillFightPatkMul);
     if (tfm !== undefined) {
       next.thrillFightPatkMul = tfm;
+    }
+    const rgPatk = jsonFiniteNum(bm.rageBattlePatkMul);
+    if (rgPatk !== undefined && rgPatk > 1) {
+      next.rageBattlePatkMul = rgPatk;
+    }
+    const rgPdef = jsonFiniteNum(bm.rageBattlePdefMul);
+    if (rgPdef !== undefined && rgPdef > 0 && rgPdef < 1) {
+      next.rageBattlePdefMul = rgPdef;
+    }
+    const fzPatk = jsonFiniteNum(bm.frenzyBattlePatkMul);
+    if (fzPatk !== undefined && fzPatk > 1) {
+      next.frenzyBattlePatkMul = fzPatk;
+      const fzAcc = jsonFiniteNum(bm.frenzyBattleAccFlat);
+      if (fzAcc !== undefined && fzAcc > 0) {
+        next.frenzyBattleAccFlat = Math.floor(fzAcc);
+      }
+    }
+    const gutsPdef = jsonFiniteNum(bm.gutsBattlePdefMul);
+    if (gutsPdef !== undefined && gutsPdef > 1) {
+      next.gutsBattlePdefMul = gutsPdef;
     }
     const zAspd = jsonFiniteNum(bm.zealotAspdMul);
     if (zAspd !== undefined && zAspd > 1) {
@@ -292,6 +339,28 @@ export function parseBattleJson(
         next.mysticMdefBuffIconSkillId = Math.floor(sid);
       }
     }
+    const gapSsMul = jsonFiniteNum(bm.fighterSoulshotPatkMul);
+    const gapSsId = jsonFiniteNum(bm.fighterSoulshotItemId);
+    if (
+      gapSsMul !== undefined &&
+      gapSsMul > 1 &&
+      gapSsId !== undefined &&
+      gapSsId > 0
+    ) {
+      next.fighterSoulshotPatkMul = gapSsMul;
+      next.fighterSoulshotItemId = Math.floor(gapSsId);
+    }
+    const gapMbsMul = jsonFiniteNum(bm.mysticBlessedSpiritshotMatkMul);
+    const gapMbsId = jsonFiniteNum(bm.mysticBlessedSpiritshotItemId);
+    if (
+      gapMbsMul !== undefined &&
+      gapMbsMul > 1 &&
+      gapMbsId !== undefined &&
+      gapMbsId > 0
+    ) {
+      next.mysticBlessedSpiritshotMatkMul = gapMbsMul;
+      next.mysticBlessedSpiritshotItemId = Math.floor(gapMbsId);
+    }
     if (
       next.warCryPatkMul != null ||
       next.battleRoarMaxHpMul != null ||
@@ -304,6 +373,10 @@ export function parseBattleJson(
         Object.keys(next.weaknessDetects).length > 0) ||
       next.mobPatkDebuffMul != null ||
       next.thrillFightPatkMul != null ||
+      next.rageBattlePatkMul != null ||
+      next.rageBattlePdefMul != null ||
+      next.frenzyBattlePatkMul != null ||
+      next.gutsBattlePdefMul != null ||
       (zAspd !== undefined && zAspd > 1) ||
       next.lionheartIncomingPhysMul != null ||
       isFocusAttackActive(next) ||
@@ -330,7 +403,15 @@ export function parseBattleJson(
       (gapMysMatk !== undefined && gapMysMatk > 1) ||
       (gapMysCast !== undefined && gapMysCast > 1) ||
       (gapMysPdef !== undefined && gapMysPdef > 1) ||
-      (gapMysMdef !== undefined && gapMysMdef > 1)
+      (gapMysMdef !== undefined && gapMysMdef > 1) ||
+      (gapSsMul !== undefined &&
+        gapSsMul > 1 &&
+        gapSsId !== undefined &&
+        gapSsId > 0) ||
+      (gapMbsMul !== undefined &&
+        gapMbsMul > 1 &&
+        gapMbsId !== undefined &&
+        gapMbsId > 0)
     ) {
       battleMods = next;
     }
@@ -390,6 +471,13 @@ export function parseBattleJson(
   );
   const maxSonicChargesRaw = jsonFiniteNum(
     (o as Record<string, unknown>).maxSonicCharges
+  );
+
+  const battlePotionHpHoT = parseBattlePotionHoTField(
+    (o as Record<string, unknown>).battlePotionHpHoT
+  );
+  const battlePotionMpHoT = parseBattlePotionHoTField(
+    (o as Record<string, unknown>).battlePotionMpHoT
   );
 
   const wcRoot = jsonFiniteNum(o.warCryPatkMul ?? o.war_cry_patk_mul);
@@ -473,6 +561,14 @@ export function parseBattleJson(
     }
     if (next.length > 0) whirlwindExtras = next;
   }
+  const whirlwindNextAutoCleaveHitsRaw = jsonFiniteNum(
+    o.whirlwindNextAutoCleaveHits
+  );
+  const whirlwindNextAutoCleaveHits =
+    whirlwindNextAutoCleaveHitsRaw !== undefined &&
+    whirlwindNextAutoCleaveHitsRaw > 0
+      ? Math.max(1, Math.floor(whirlwindNextAutoCleaveHitsRaw))
+      : undefined;
 
   return {
     spawnId: o.spawnId,
@@ -508,11 +604,16 @@ export function parseBattleJson(
       ? { mobHitsUntilRetaliation: Math.floor(mobHitsUntilRetaliation) }
       : {}),
     ...(whirlwindExtras !== undefined ? { whirlwindExtras } : {}),
+    ...(whirlwindNextAutoCleaveHits !== undefined
+      ? { whirlwindNextAutoCleaveHits }
+      : {}),
     ...(sonicChargesRaw !== undefined && sonicChargesRaw > 0
       ? { sonicCharges: Math.max(0, Math.floor(sonicChargesRaw)) }
       : {}),
     ...(maxSonicChargesRaw !== undefined && maxSonicChargesRaw > 0
       ? { maxSonicCharges: Math.max(1, Math.floor(maxSonicChargesRaw)) }
       : {}),
+    ...(battlePotionHpHoT !== undefined ? { battlePotionHpHoT } : {}),
+    ...(battlePotionMpHoT !== undefined ? { battlePotionMpHoT } : {}),
   };
 }

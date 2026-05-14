@@ -44,6 +44,7 @@ import type { BattleBattleMods } from '../domain/battle.js';
 import { GameConflictError } from './charErrors.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 
 /**
  * Legacy-поля `battleMods`, які встановлювалися старими in-battle-діями для тих же
@@ -251,22 +252,21 @@ export async function castActiveSelfBuff(
     const mpAfter = preSnap.mp - mpCost;
     const nextWorld = buildWorldStateWithMp(worldStripped, mpAfter, nowMs);
 
-    const upd: Prisma.CharacterUncheckedUpdateManyInput = {
-      activeBuffsJson: nextActiveBuffs as unknown as Prisma.InputJsonValue,
-      skillCooldownsJson: nextCooldowns as unknown as Prisma.InputJsonValue,
-      worldCombatStateJson: nextWorld as unknown as Prisma.InputJsonValue,
-      revision: { increment: 1 },
-    };
-    const updated = await tx.character.updateMany({
-      where: { id: char.id, userId, revision: expectedRevision },
-      data: upd,
-    });
-    if (updated.count === 0) throw new GameConflictError();
-
-    const nextRow = await tx.character.findUniqueOrThrow({
-      where: { id: char.id },
-    });
-    return toSnapshot(nextRow as CharacterRow);
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      () => ({
+        changed: true,
+        data: {
+          activeBuffsJson: nextActiveBuffs as unknown as Prisma.InputJsonValue,
+          skillCooldownsJson: nextCooldowns as unknown as Prisma.InputJsonValue,
+          worldCombatStateJson: nextWorld as unknown as Prisma.InputJsonValue,
+        } as Prisma.CharacterUpdateManyMutationInput,
+      })
+    );
+    if (!result.ok) throw new GameConflictError();
+    return toSnapshot(result.character as CharacterRow);
   });
 }
 

@@ -15,6 +15,15 @@ import {
 } from './battle.js';
 import { battleModsHasPersistableBuffs } from './battleModsPatch.js';
 import { LEGACY_BUFF_STRIP_BY_SKILL_ID } from './legacyBuffStrip.js';
+import { HUMAN_FIGHTER_SKILL_CATALOG } from '../data/humanFighterSkillCatalog.js';
+import { ELVEN_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/elvenFighterSkillCatalog.generated.js';
+import { DARK_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/darkFighterSkillCatalog.generated.js';
+import { ORC_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/orcFighterSkillCatalog.generated.js';
+import { DWARF_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/dwarfFighterSkillCatalog.generated.js';
+import { HUMAN_MYSTIC_SKILL_CATALOG_GENERATED } from '../data/humanMysticSkillCatalog.generated.js';
+import { ELVEN_MYSTIC_SKILL_CATALOG_GENERATED } from '../data/elvenMysticSkillCatalog.generated.js';
+import { DARK_MYSTIC_SKILL_CATALOG_GENERATED } from '../data/darkMysticSkillCatalog.generated.js';
+import { ORC_MYSTIC_SKILL_CATALOG_GENERATED } from '../data/orcMysticSkillCatalog.generated.js';
 
 export interface WorldCombatState {
   battleMods: BattleBattleMods;
@@ -47,6 +56,43 @@ const WORLD_MP_REGEN_TICK_SEC = 2;
  */
 export const STANCE_MP_PER_SEC = 0.4;
 
+const TOGGLE_SKILL_ID_SET: ReadonlySet<number> = new Set(
+  [
+    ...HUMAN_FIGHTER_SKILL_CATALOG,
+    ...ELVEN_FIGHTER_SKILL_CATALOG_GENERATED,
+    ...DARK_FIGHTER_SKILL_CATALOG_GENERATED,
+    ...ORC_FIGHTER_SKILL_CATALOG_GENERATED,
+    ...DWARF_FIGHTER_SKILL_CATALOG_GENERATED,
+    ...HUMAN_MYSTIC_SKILL_CATALOG_GENERATED,
+    ...ELVEN_MYSTIC_SKILL_CATALOG_GENERATED,
+    ...DARK_MYSTIC_SKILL_CATALOG_GENERATED,
+    ...ORC_MYSTIC_SKILL_CATALOG_GENERATED,
+  ]
+    .filter((e) => e.kind === 'toggle')
+    .map((e) => e.l2SkillId)
+);
+
+function activeIconToggleSkillIds(mods: BattleBattleMods): number[] {
+  const ids = new Set<number>();
+  const pushIcon = (iconRaw: unknown, mulRaw: unknown): void => {
+    const icon =
+      typeof iconRaw === 'number' && Number.isFinite(iconRaw)
+        ? Math.floor(iconRaw)
+        : NaN;
+    const mul =
+      typeof mulRaw === 'number' && Number.isFinite(mulRaw) ? mulRaw : 1;
+    if (icon > 0 && mul > 1 && TOGGLE_SKILL_ID_SET.has(icon)) {
+      ids.add(icon);
+    }
+  };
+  pushIcon(mods.mysticPatkBuffIconSkillId, mods.mysticPatkBuffMul);
+  pushIcon(mods.mysticMatkBuffIconSkillId, mods.mysticMatkBuffMul);
+  pushIcon(mods.mysticCastSpdBuffIconSkillId, mods.mysticCastSpdBuffMul);
+  pushIcon(mods.mysticPdefBuffIconSkillId, mods.mysticPdefBuffMul);
+  pushIcon(mods.mysticMdefBuffIconSkillId, mods.mysticMdefBuffMul);
+  return [...ids];
+}
+
 export function stanceCount(mods: BattleBattleMods | undefined): number {
   if (!mods) return 0;
   let n = 0;
@@ -57,6 +103,7 @@ export function stanceCount(mods: BattleBattleMods | undefined): number {
   if (mods.raceToggleRanks && typeof mods.raceToggleRanks === 'object') {
     n += Object.keys(mods.raceToggleRanks).length;
   }
+  n += activeIconToggleSkillIds(mods).length;
   return n;
 }
 
@@ -70,6 +117,39 @@ export function stripStances(mods: BattleBattleMods): BattleBattleMods {
   delete o.aegisPDefMul;
   delete o.aegisMDefMul;
   delete o.raceToggleRanks;
+  const iconToggleIds = activeIconToggleSkillIds(o);
+  const clearIconChannelIfToggle = (
+    iconKey:
+      | 'mysticPatkBuffIconSkillId'
+      | 'mysticMatkBuffIconSkillId'
+      | 'mysticCastSpdBuffIconSkillId'
+      | 'mysticPdefBuffIconSkillId'
+      | 'mysticMdefBuffIconSkillId',
+    mulKey:
+      | 'mysticPatkBuffMul'
+      | 'mysticMatkBuffMul'
+      | 'mysticCastSpdBuffMul'
+      | 'mysticPdefBuffMul'
+      | 'mysticMdefBuffMul'
+  ): void => {
+    const iconRaw = o[iconKey];
+    const icon =
+      typeof iconRaw === 'number' && Number.isFinite(iconRaw)
+        ? Math.floor(iconRaw)
+        : NaN;
+    if (icon > 0 && iconToggleIds.includes(icon)) {
+      delete o[iconKey];
+      o[mulKey] = 1;
+    }
+  };
+  clearIconChannelIfToggle('mysticPatkBuffIconSkillId', 'mysticPatkBuffMul');
+  clearIconChannelIfToggle('mysticMatkBuffIconSkillId', 'mysticMatkBuffMul');
+  clearIconChannelIfToggle(
+    'mysticCastSpdBuffIconSkillId',
+    'mysticCastSpdBuffMul'
+  );
+  clearIconChannelIfToggle('mysticPdefBuffIconSkillId', 'mysticPdefBuffMul');
+  clearIconChannelIfToggle('mysticMdefBuffIconSkillId', 'mysticMdefBuffMul');
   migrateBattleModsStancesFromLegacy(o);
   delete o.stance;
   return o;

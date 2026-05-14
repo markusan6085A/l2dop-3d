@@ -387,6 +387,25 @@ export function equipFromBag(
       }
     }
   }
+  /** Full armor (мантія) займає і верх, і низ. */
+  if (slot === 'l3' && meta?.slot === 'fullarmor') {
+    const legs = normalizeEqSlot(next.eq.l4);
+    if (legs) {
+      addStack(next.stacks, legs.itemId, 1, legs.enchant);
+      delete next.eq.l4;
+    }
+  }
+  /** Якщо одягаємо штани — знімаємо full armor з l3. */
+  if (slot === 'l4') {
+    const top = normalizeEqSlot(next.eq.l3);
+    if (top) {
+      const topMeta = ITEM_CATALOG[top.itemId];
+      if (topMeta?.slot === 'fullarmor') {
+        addStack(next.stacks, top.itemId, 1, top.enchant);
+        delete next.eq.l3;
+      }
+    }
+  }
 
   removeStack(next.stacks, itemId, 1, en);
   const prev = normalizeEqSlot(next.eq[slot]);

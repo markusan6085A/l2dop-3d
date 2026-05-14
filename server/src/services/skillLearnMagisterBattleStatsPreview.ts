@@ -169,7 +169,7 @@ function magisterBattleStatsPreviewCore(
           mp: null,
           power: null,
           statsNoteUk:
-            'Warlord; з ' +
+            'Whirlwind: стабільний AoE-спам. Warlord; з ' +
             HUMAN_FIGHTER_WHIRLWIND_MIN_LEVEL +
             ' р.; алебарда/спис у бою.',
         };
@@ -185,7 +185,7 @@ function magisterBattleStatsPreviewCore(
         return {
           mp: null,
           power: null,
-          statsNoteUk: 'Warlord; алебарда/спис у бою.',
+          statsNoteUk: 'Thunder Storm: burst AoE + шанс шоку. Warlord; алебарда/спис у бою.',
         };
       }
       break;
@@ -360,14 +360,14 @@ function magisterBattleStatsPreviewCore(
         mp: 25,
         power: 1685,
         statsNoteUk:
-          'Лікування HP на собі; сила 1685 — лише якщо HP ~10% або нижче. Кулдаун 3 год.',
+          'Лікування HP на собі; сила 1685 — лише якщо HP ~10% або нижче. Кулдаун 2 хв.',
       };
     case 'l2_347':
       return {
         mp: 87,
         power: 4040,
         statsNoteUk:
-          'Удар списом по площі; знімає таргет, оверхіт. Каст 1.8 с, кулдаун 30 с. Потрібен спис.',
+          'Earthquake: AoE-удар по площі + шанс шоку (~24-32% залежно від рангу). Лише спис/алебарда.',
       };
     case 'l2_359':
       return {
@@ -387,7 +387,7 @@ function magisterBattleStatsPreviewCore(
         mp: 65,
         power: 1973,
         statsNoteUk:
-          'Хвиля на відстані: шок і дебаф захисту; оверхіт. Каст 4 с, кулдаун 30 с. Потрібен спис.',
+          'Shock Stomp: контрольний AoE-скіл (нижчий урон, вищий шанс шоку ~55-70%) + дебаф P.Def. Лише спис/алебарда.',
       };
     case 'l2_18':
       return {

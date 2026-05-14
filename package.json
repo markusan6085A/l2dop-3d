@@ -38,6 +38,8 @@
     "rename:icons-drops-lowercase": "node server/scripts/rename-icons-drops-lowercase.mjs",
     "gen:drops-shop-catalog": "node server/scripts/gen-drops-shop-catalog.mjs",
     "gen:gm-shop-from-text-rpg": "tsx server/scripts/gen-l2dop-gm-shop-from-text-rpg.ts",
+    "test:integration:stability": "tsx server/scripts/integration-stability-smoke.ts",
+    "test:stress:rapid": "tsx server/scripts/stress-rapid-actions.ts",
     "sim:adena-farm": "tsx server/scripts/simulate-adena-farm.ts",
     "sim:balance": "tsx server/scripts/sim-balance-report.ts"
   },

@@ -1,4 +1,3 @@
-import { prisma } from '../lib/prisma.js';
 import { parseInventory } from '../data/inventory.js';
 import {
   computeCombatStats,
@@ -17,13 +16,19 @@ export const PASSIVE_REGEN_MAX_SECONDS = 86_400;
 /** Пасивний реген застосовується пакетами раз на 2 секунди. */
 export const PASSIVE_REGEN_TICK_SECONDS = 2;
 
-/**
- * Відновлює HP у БД за час простою (regenHp за секунду з calc_stats).
- * Не змінює revision (лише hp + lastUpdate).
- */
-export async function applyPassiveHpRegen(row: CharacterRow): Promise<CharacterRow> {
-  const elapsedMs = Date.now() - row.lastUpdate.getTime();
-  if (elapsedMs < PASSIVE_REGEN_TICK_SECONDS * 1000) return row;
+export interface PassiveHpRegenPatch {
+  changed: boolean;
+  nextHp: number;
+}
+
+export function computePassiveHpRegenPatch(
+  row: CharacterRow,
+  nowMs: number = Date.now()
+): PassiveHpRegenPatch {
+  const elapsedMs = nowMs - row.lastUpdate.getTime();
+  if (elapsedMs < PASSIVE_REGEN_TICK_SECONDS * 1000) {
+    return { changed: false, nextHp: row.hp };
+  }
 
   const inv = parseInventory(row.inventoryJson);
   const effLv = levelFromTotalExp(row.exp);
@@ -51,16 +56,23 @@ export async function applyPassiveHpRegen(row: CharacterRow): Promise<CharacterR
     PASSIVE_REGEN_MAX_SECONDS,
     Math.max(0, secRaw)
   );
-  if (sec <= 0) return row;
+  if (sec <= 0) return { changed: false, nextHp: row.hp };
 
   const curHp = Math.max(0, Math.min(maxHp, Math.floor(row.hp)));
   const nextHp =
     combat.regenHp > 0 ? Math.min(maxHp, curHp + combat.regenHp * sec) : curHp;
-  if (nextHp === row.hp) return row;
+  return { changed: nextHp !== row.hp, nextHp };
+}
 
-  const updated = await prisma.character.update({
-    where: { id: row.id },
-    data: { hp: nextHp },
-  });
-  return updated as CharacterRow;
+export function applyPassiveHpRegenPure(row: CharacterRow): PassiveHpRegenPatch {
+  return computePassiveHpRegenPatch(row, Date.now());
+}
+
+export function applyPassiveHpRegen(row: CharacterRow): CharacterRow {
+  const patch = applyPassiveHpRegenPure(row);
+  if (!patch.changed) return row;
+  return {
+    ...row,
+    hp: patch.nextHp,
+  };
 }

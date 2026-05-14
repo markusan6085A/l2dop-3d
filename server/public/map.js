@@ -698,7 +698,19 @@
           addStat('SP (за кілл)', j.rewardSp);
       }
       renderDropList(mobModalDrops, j.drops);
-      renderDropList(mobModalSpoil, j.spoil);
+      var spoilSecWrap =
+        mobModalSpoil && mobModalSpoil.closest
+          ? mobModalSpoil.closest('.l2-map-mob-modal__section')
+          : null;
+      var spoilOk = j.viewerMaySeeSpoil === true;
+      if (spoilSecWrap) spoilSecWrap.hidden = !spoilOk;
+      if (mobModalSpoil) {
+        if (spoilOk) {
+          renderDropList(mobModalSpoil, j.spoil || []);
+        } else {
+          mobModalSpoil.innerHTML = '';
+        }
+      }
       if (mobModalNote) {
         var noteParts = [];
         if (j.npcId == null) {

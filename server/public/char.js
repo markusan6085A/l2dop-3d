@@ -32,8 +32,9 @@
 
   /** Іконка: спочатку з каталогу GM, інакше `/game/item-icon` (jpg з l2dop або SVG-заглушка). */
   function itemIconUrlForId(id) {
-    var u = window.L2 && L2.itemIconById && L2.itemIconById[id];
-    if (u != null && u !== '') return u;
+    if (window.L2 && typeof L2.resolveItemIconUrl === 'function') {
+      return L2.resolveItemIconUrl(id, '/icons/drops/other.svg');
+    }
     if (id > 0) return '/game/item-icon/' + id;
     return '/icons/drops/other.svg';
   }
@@ -136,11 +137,67 @@
   }
 
   var revision = 0;
+  var equipRequestInFlight = false;
 
-  /** Як у GM-шопі: верхній ряд категорій + грейди D–S (Усі = без фільтра за грейдом). */
-  var bagInvCat = 'all';
-  /** '' = усі грейди; d|c|b|a|s — для зброї/броні/окремої біжутерії/покращень */
+  /** Як у GM-шопу: категорія + грейд + підтип */
+  var bagInvCat = 'weapon';
+  /** '' — усі грейди (кнопка «Усі»); ng|d|c|b|a|s */
   var bagInvGradeSub = '';
+  var bagInvWeaponSub = 'all';
+  var bagInvArmorSub = 'all';
+  var bagInvJewelrySub = 'all';
+  var bagInvConsumableSub = 'all';
+
+  var BAG_CAT_ORDER = ['weapon', 'shield', 'armor', 'accessor', 'consumable'];
+  var BAG_CAT_LABEL_UK = {
+    weapon: 'Зброя',
+    shield: 'Щити',
+    armor: 'Броня',
+    accessor: 'Аксесуари',
+    consumable: 'Розхідники',
+  };
+  /** Порядок грейду: NG…S та «Усі» в кінці (зліва направо як у магазині). */
+  var BAG_GRADE_UI = [
+    ['ng', 'NG'],
+    ['d', 'D'],
+    ['c', 'C'],
+    ['b', 'B'],
+    ['a', 'A'],
+    ['s', 'S'],
+    ['all', 'Усі'],
+  ];
+  var BAG_WEAPON_SUB_ROWS = [
+    ['all', 'Усі'],
+    ['sword', 'Мечі'],
+    ['dagger', 'Кинжали'],
+    ['bow', 'Луки'],
+    ['blunt', 'Булави'],
+    ['pole', 'Списи'],
+    ['fist', 'Кастети'],
+    ['dual', 'Дуалі'],
+    ['magic', 'Магія'],
+  ];
+  var BAG_ARMOR_SUB_ROWS = [
+    ['all', 'Усі'],
+    ['head', 'Шолом'],
+    ['torso', 'Торс'],
+    ['legs', 'Штани'],
+    ['gloves', 'Перчатки'],
+    ['feet', 'Чоботи'],
+  ];
+  var BAG_JEWEL_SUB_ROWS = [
+    ['all', 'Усі'],
+    ['neck', 'Амулет'],
+    ['earring', 'Сережки'],
+    ['ring', 'Кільця'],
+  ];
+  var BAG_CONS_SUB_ROWS = [
+    ['all', 'Усі'],
+    ['vials', 'Банки'],
+    ['arrows', 'Стріли'],
+    ['charges', 'Заряди'],
+    ['resources', 'Ресурси'],
+  ];
 
   function $(id) {
     return document.getElementById(id);
@@ -249,12 +306,11 @@
     return { v: 1, stacks: [], eq: {} };
   }
 
-  /** Екіп у сумці: зброя / броня / біж (як «Биж» у text-rpg). */
-  function bagGearKind(itemId) {
+  /** Сегмент екіпу в сумці (вкладки як у GM-шопу). */
+  function bagEquipSegment(itemId) {
     var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
     if (sl === 'rhand') return 'weapon';
-    /** Щит — у вкладці «Броня» разом із доспехом (`shield` — те саме, що lhand у підказках). */
-    if (sl === 'lhand' || sl === 'shield') return 'armor';
+    if (sl === 'lhand' || sl === 'shield') return 'shield';
     if (
       sl === 'chest' ||
       sl === 'legs' ||
@@ -265,8 +321,100 @@
     ) {
       return 'armor';
     }
-    if (sl === 'ring' || sl === 'neck' || sl === 'earring') return 'bijou';
+    if (sl === 'ring' || sl === 'neck' || sl === 'earring') return 'accessor';
     return null;
+  }
+
+  function catalogLooksMagicWeapon(st, wt) {
+    if (!st || typeof st !== 'object') return false;
+    var ma = st.mAtk != null ? Number(st.mAtk) : NaN;
+    var pa = st.pAtk != null ? Number(st.pAtk) : NaN;
+    if (!Number.isFinite(ma)) return false;
+    if (!Number.isFinite(pa) || pa === 0) return true;
+    if (wt === 'bigblunt' && ma >= pa) return true;
+    return ma >= pa + 10;
+  }
+
+  function nameLooksLikeMagicWeaponUk(nameRaw) {
+    var s = String(nameRaw || '');
+    var low = s.toLowerCase();
+    return (
+      /магічн[а-яії]*\s+зброя/i.test(s) ||
+      /\bmagic\w*\s+weapon\b/i.test(low)
+    );
+  }
+
+  function weaponSubtypeForBag(itemId) {
+    var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (sl !== 'rhand') return 'sword';
+    var name = String(itemDisplayName(itemId) || '');
+    if (/dualsword/i.test(name)) return 'dual';
+    if (nameLooksLikeMagicWeaponUk(name)) return 'magic';
+    var wt = window.L2 && L2.itemWeaponTypeById && L2.itemWeaponTypeById[itemId];
+    var st = window.L2 && L2.itemStatsById && L2.itemStatsById[itemId];
+    if (st && catalogLooksMagicWeapon(st, wt)) return 'magic';
+    if (wt === 'dual') return 'dual';
+    if (wt === 'bow') return 'bow';
+    if (wt === 'dagger') return 'dagger';
+    if (wt === 'pole') return 'pole';
+    if (wt === 'fist') return 'fist';
+    if (wt === 'blunt' || wt === 'bigblunt') return 'blunt';
+    if (wt === 'sword' || wt === 'bigsword') return 'sword';
+    return 'sword';
+  }
+
+  function armorPieceForBag(itemId) {
+    var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (sl === 'head') return 'head';
+    if (sl === 'chest') return 'torso';
+    if (sl === 'legs') return 'legs';
+    if (sl === 'gloves') return 'gloves';
+    if (sl === 'feet') return 'feet';
+    if (sl === 'fullarmor') return 'torso';
+    return '';
+  }
+
+  function jewelryKindForBag(itemId) {
+    var jk =
+      window.L2 && L2.itemJewelryKindById && L2.itemJewelryKindById[itemId];
+    if (jk != null && String(jk).trim() !== '') {
+      return String(jk).trim().toLowerCase();
+    }
+    var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (sl === 'neck') return 'neck';
+    if (sl === 'earring') return 'earring';
+    if (sl === 'ring') return 'ring';
+    return '';
+  }
+
+  function consumableSubtypeForBag(itemId) {
+    var tab = bagInvTabHint(itemId);
+    if (tab === 'resource') return 'resources';
+    if (bagInvTabHintFromName(itemId) === 'resource') return 'resources';
+    if (tab === 'recipe' || tab === 'book') return 'vials';
+    var name = String(itemDisplayName(itemId) || '').toLowerCase();
+    if (/soulshot|spiritshot|blessed\s+spiritshot|заряд|заряди/i.test(name)) {
+      return 'charges';
+    }
+    if (/arrow|стріл|bolt|болт/i.test(name)) return 'arrows';
+    return 'vials';
+  }
+
+  /** Усе, що не екіп: розхід, рецепти, ресурси, свитки, стихії тощо — під «Розхідники». */
+  function itemInConsumableBagBucket(itemId) {
+    if (bagEquipSegment(itemId) != null) return false;
+    var tab = bagInvTabHint(itemId);
+    var tabs = [
+      'consumable',
+      'recipe',
+      'resource',
+      'quest',
+      'book',
+      'enchantment',
+    ];
+    if (tab != null && tabs.indexOf(tab) >= 0) return true;
+    if (bagElementItemGuess(itemId)) return true;
+    return true;
   }
 
   /** Не плутати з ремісничим «leather» / матеріалами — щити й дріп екіпу в назві. */
@@ -327,29 +475,41 @@
   }
 
   function itemMatchesInvCat(itemId, cat) {
-    if (cat === 'all') return true;
-    var gk = bagGearKind(itemId);
-    var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
-    var tab = bagInvTabHint(itemId);
-    if (cat === 'weapon') return gk === 'weapon';
-    if (cat === 'armor') return gk === 'armor';
-    if (cat === 'neck') return gk === 'bijou' && sl === 'neck';
-    if (cat === 'earring') return gk === 'bijou' && sl === 'earring';
-    if (cat === 'ring') return gk === 'bijou' && sl === 'ring';
-    if (cat === 'bijou') return gk === 'bijou';
-    if (cat === 'elements') return bagElementItemGuess(itemId);
-    if (cat === 'upgrades' || cat === 'enchantment') return tab === 'enchantment';
-    if (cat === 'consumable') return tab === 'consumable';
-    if (cat === 'resource') return tab === 'resource';
-    if (cat === 'recipe') return tab === 'recipe';
-    if (cat === 'quest') return tab === 'quest';
-    if (cat === 'book') return tab === 'book';
+    var seg = bagEquipSegment(itemId);
+    if (cat === 'weapon') return seg === 'weapon';
+    if (cat === 'shield') return seg === 'shield';
+    if (cat === 'armor') return seg === 'armor';
+    if (cat === 'accessor') return seg === 'accessor';
+    if (cat === 'consumable') return itemInConsumableBagBucket(itemId);
     return false;
   }
 
-  /** Є слот екіпу (зброя/броня/біж) і не рецепт/свиток/квест/руна тощо. «Ресурс» лише по назві не блокує — см. nameLooksLikeEquippableGearName. */
+  function itemPassesBagSubFilters(itemId) {
+    if (bagInvCat === 'shield') return true;
+    if (bagInvCat === 'weapon') {
+      if (bagInvWeaponSub === 'all') return true;
+      return weaponSubtypeForBag(itemId) === bagInvWeaponSub;
+    }
+    if (bagInvCat === 'armor') {
+      if (bagInvArmorSub === 'all') return true;
+      var ap = armorPieceForBag(itemId);
+      return ap !== '' && ap === bagInvArmorSub;
+    }
+    if (bagInvCat === 'accessor') {
+      if (bagInvJewelrySub === 'all') return true;
+      var j = jewelryKindForBag(itemId);
+      return j !== '' && j === bagInvJewelrySub;
+    }
+    if (bagInvCat === 'consumable') {
+      if (bagInvConsumableSub === 'all') return true;
+      return consumableSubtypeForBag(itemId) === bagInvConsumableSub;
+    }
+    return true;
+  }
+
+  /** Є слот екіпу (зброя/щит/броня/аксесуари) і не свиток/рецепт тощо. */
   function canEquipFromBag(itemId) {
-    if (!bagGearKind(itemId)) return false;
+    if (!bagEquipSegment(itemId)) return false;
     var tab = bagInvTabHint(itemId);
     if (
       tab === 'recipe' ||
@@ -372,28 +532,195 @@
   function stackPassesBagFilters(st) {
     var id = st.itemId;
     if (!itemMatchesInvCat(id, bagInvCat)) return false;
-    var gradeCats = ['weapon', 'armor', 'neck', 'earring', 'ring', 'upgrades'];
-    if (gradeCats.indexOf(bagInvCat) >= 0 && bagInvGradeSub !== '') {
+    if (!itemPassesBagSubFilters(id)) return false;
+    if (bagInvGradeSub !== '') {
       var ig = normalizedItemGradeKey(id);
-      if (bagInvCat === 'upgrades' && ig === '') return true;
       if (ig !== bagInvGradeSub) return false;
     }
     return true;
   }
 
-  function syncBagInvGradeRow() {
-    var row = $('char-bag-inv-grades');
-    if (!row) return;
-    var show =
-      bagInvCat === 'weapon' ||
-      bagInvCat === 'armor' ||
-      bagInvCat === 'neck' ||
-      bagInvCat === 'earring' ||
-      bagInvCat === 'ring' ||
-      bagInvCat === 'upgrades';
-    row.hidden = !show;
+  function charBagSubsRowsForCat() {
+    if (bagInvCat === 'weapon') return BAG_WEAPON_SUB_ROWS;
+    if (bagInvCat === 'armor') return BAG_ARMOR_SUB_ROWS;
+    if (bagInvCat === 'accessor') return BAG_JEWEL_SUB_ROWS;
+    if (bagInvCat === 'consumable') return BAG_CONS_SUB_ROWS;
+    return [];
   }
 
+  function charBagSubModClass() {
+    if (bagInvCat === 'weapon') return 'l2-drops-shop-tablist--weapon-kind';
+    if (bagInvCat === 'armor') return 'l2-drops-shop-tablist--armor-piece';
+    if (bagInvCat === 'accessor') return 'l2-drops-shop-tablist--jewelry-sub';
+    if (bagInvCat === 'consumable') return 'l2-drops-shop-tablist--consumable-sub';
+    return '';
+  }
+
+  function charBagCurrentSubKey() {
+    if (bagInvCat === 'weapon') return bagInvWeaponSub;
+    if (bagInvCat === 'armor') return bagInvArmorSub;
+    if (bagInvCat === 'accessor') return bagInvJewelrySub;
+    if (bagInvCat === 'consumable') return bagInvConsumableSub;
+    return 'all';
+  }
+
+  function setCharBagSubKey(k) {
+    if (bagInvCat === 'weapon') bagInvWeaponSub = k;
+    else if (bagInvCat === 'armor') bagInvArmorSub = k;
+    else if (bagInvCat === 'accessor') bagInvJewelrySub = k;
+    else if (bagInvCat === 'consumable') bagInvConsumableSub = k;
+  }
+
+  function resetCharBagSubsToAll() {
+    bagInvWeaponSub = 'all';
+    bagInvArmorSub = 'all';
+    bagInvJewelrySub = 'all';
+    bagInvConsumableSub = 'all';
+  }
+
+  function normalizeCharBagSubForCat() {
+    var rows = charBagSubsRowsForCat();
+    var keys = rows.map(function (r) {
+      return r[0];
+    });
+    function pick(cur) {
+      return keys.indexOf(cur) !== -1 ? cur : 'all';
+    }
+    if (bagInvCat === 'weapon') bagInvWeaponSub = pick(bagInvWeaponSub);
+    else if (bagInvCat === 'armor') bagInvArmorSub = pick(bagInvArmorSub);
+    else if (bagInvCat === 'accessor')
+      bagInvJewelrySub = pick(bagInvJewelrySub);
+    else if (bagInvCat === 'consumable')
+      bagInvConsumableSub = pick(bagInvConsumableSub);
+  }
+
+  function buildCharBagFilterTabsOnce() {
+    var catsEl = $('char-bag-tab-cats');
+    var gradesEl = $('char-bag-tab-grades');
+    if (!catsEl || !gradesEl || catsEl.getAttribute('data-char-bag-built')) {
+      return;
+    }
+    catsEl.setAttribute('data-char-bag-built', '1');
+    for (var ci = 0; ci < BAG_CAT_ORDER.length; ci++) {
+      var ck = BAG_CAT_ORDER[ci];
+      var cb = document.createElement('button');
+      cb.type = 'button';
+      cb.className = 'l2-drops-shop-tab';
+      cb.setAttribute('role', 'tab');
+      cb.setAttribute('data-inv-cat', ck);
+      cb.textContent = BAG_CAT_LABEL_UK[ck] || ck;
+      catsEl.appendChild(cb);
+    }
+    for (var gi = 0; gi < BAG_GRADE_UI.length; gi++) {
+      var gv = BAG_GRADE_UI[gi];
+      var gb = document.createElement('button');
+      gb.type = 'button';
+      gb.className = 'l2-drops-shop-tab';
+      gb.setAttribute('role', 'tab');
+      gb.setAttribute('data-inv-grade', gv[0]);
+      if (gv[0] !== 'all') gb.setAttribute('data-grade', String(gv[1]));
+      gb.textContent = gv[1];
+      gradesEl.appendChild(gb);
+    }
+  }
+
+  function rebuildCharBagSubTabs() {
+    var subMount = $('char-bag-tab-subs');
+    if (!subMount) return;
+    if (bagInvCat === 'shield') {
+      subMount.hidden = true;
+      subMount.innerHTML = '';
+      subMount.removeAttribute('aria-hidden');
+      return;
+    }
+    var rows = charBagSubsRowsForCat();
+    var mod = charBagSubModClass();
+    subMount.hidden = rows.length === 0;
+    subMount.className =
+      'l2-drops-shop-tablist ' + (mod ? mod + ' ' : '').trim();
+    subMount.innerHTML = '';
+    var cur = charBagCurrentSubKey();
+    for (var ri = 0; ri < rows.length; ri++) {
+      var row = rows[ri];
+      var sk = row[0];
+      var sb = document.createElement('button');
+      sb.type = 'button';
+      sb.className = 'l2-drops-shop-tab';
+      if (sk === cur) sb.classList.add('l2-drops-shop-tab--active');
+      sb.setAttribute('role', 'tab');
+      sb.setAttribute('data-inv-sub', sk);
+      sb.setAttribute('aria-selected', sk === cur ? 'true' : 'false');
+      sb.textContent = row[1];
+      subMount.appendChild(sb);
+    }
+    subMount.setAttribute('aria-hidden', subMount.hidden ? 'true' : 'false');
+  }
+
+  function syncBagFilterTabsUi() {
+    normalizeCharBagSubForCat();
+    var catsEl = $('char-bag-tab-cats');
+    if (catsEl) {
+      var cats = catsEl.querySelectorAll('[data-inv-cat]');
+      for (var i = 0; i < cats.length; i++) {
+        var cEl = cats[i];
+        var on = cEl.getAttribute('data-inv-cat') === bagInvCat;
+        cEl.classList.toggle('l2-drops-shop-tab--active', on);
+        cEl.setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+    }
+    var gradesEl = $('char-bag-tab-grades');
+    if (gradesEl) {
+      var grades = gradesEl.querySelectorAll('[data-inv-grade]');
+      for (var g = 0; g < grades.length; g++) {
+        var gEl = grades[g];
+        var gv = String(gEl.getAttribute('data-inv-grade') || '').toLowerCase();
+        var gOn =
+          gv === 'all'
+            ? bagInvGradeSub === ''
+            : gv !== '' && gv === bagInvGradeSub;
+        gEl.classList.toggle('l2-drops-shop-tab--active', gOn);
+        gEl.setAttribute('aria-selected', gOn ? 'true' : 'false');
+      }
+    }
+    rebuildCharBagSubTabs();
+  }
+
+  function wireBagInvFilters() {
+    buildCharBagFilterTabsOnce();
+    syncBagFilterTabsUi();
+    var host = document.querySelector('.l2-char-inv-shop-tabs-host');
+    if (!host || host.getAttribute('data-bag-filter-wire')) return;
+    host.setAttribute('data-bag-filter-wire', '1');
+    host.addEventListener('click', function (e) {
+      var cBtn = e.target.closest('[data-inv-cat]');
+      if (cBtn) {
+        var cx = cBtn.getAttribute('data-inv-cat');
+        if (!cx || BAG_CAT_ORDER.indexOf(cx) === -1) return;
+        bagInvCat = cx;
+        bagInvGradeSub = '';
+        resetCharBagSubsToAll();
+        syncBagFilterTabsUi();
+        renderBagFromSnapshot();
+        return;
+      }
+      var grBtn = e.target.closest('[data-inv-grade]');
+      if (grBtn) {
+        var gx = String(grBtn.getAttribute('data-inv-grade') || '').toLowerCase();
+        bagInvGradeSub = gx === 'all' ? '' : gx;
+        syncBagFilterTabsUi();
+        renderBagFromSnapshot();
+        return;
+      }
+      var sBtn = e.target.closest('[data-inv-sub]');
+      if (sBtn) {
+        var sx = sBtn.getAttribute('data-inv-sub');
+        if (!sx) return;
+        setCharBagSubKey(sx);
+        syncBagFilterTabsUi();
+        renderBagFromSnapshot();
+      }
+    });
+  }
   function renderBagFromSnapshot() {
     var snap =
       window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
@@ -501,96 +828,156 @@
   }
 
   async function apiEquip(itemId, enchant) {
-    var t = localStorage.getItem('token');
-    var en =
-      enchant != null && Number.isFinite(Number(enchant))
-        ? Math.max(0, Math.min(20, Math.floor(Number(enchant))))
-        : 0;
-    var r = await fetch('/character/equip', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + t,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'equip',
-        itemId: itemId,
-        enchant: en,
-        expectedRevision: revision,
-      }),
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
-    }
-    if (r.status === 409) {
-      window.location.reload();
-      return;
-    }
-    if (!r.ok) {
-      var msg = 'Не вдалося одягнути.';
-      try {
-        var j = await r.json();
-        if (j && j.messageUk) msg = j.messageUk;
-      } catch (e) {
-        /* ignore */
+    if (equipRequestInFlight) return;
+    equipRequestInFlight = true;
+    try {
+      var t = localStorage.getItem('token');
+      var en =
+        enchant != null && Number.isFinite(Number(enchant))
+          ? Math.max(0, Math.min(20, Math.floor(Number(enchant))))
+          : 0;
+      var r = await fetch('/character/equip', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + t,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'equip',
+          itemId: itemId,
+          enchant: en,
+          expectedRevision: revision,
+        }),
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
       }
-      var stub = $('char-stub-msg');
-      if (stub) {
-        stub.hidden = false;
-        stub.textContent = msg;
+      if (r.status === 409) {
+        await resyncCharacterFromServer();
+        return;
       }
-      return;
+      if (!r.ok) {
+        var msg = 'Не вдалося одягнути.';
+        try {
+          var j = await r.json();
+          if (j && j.messageUk) msg = j.messageUk;
+        } catch (e) {
+          /* ignore */
+        }
+        var stub = $('char-stub-msg');
+        if (stub) {
+          stub.hidden = false;
+          stub.textContent = msg;
+        }
+        return;
+      }
+      var out = await r.json();
+      var c = out.character;
+      window.L2.setLastSnapshot(c);
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(c);
+      }
+      renderAll(c);
+    } catch (_e) {
+      var stubNet = $('char-stub-msg');
+      if (stubNet) {
+        stubNet.hidden = false;
+        stubNet.textContent = 'Збій мережі — спробуй ще раз.';
+      }
+    } finally {
+      equipRequestInFlight = false;
     }
-    var out = await r.json();
-    var c = out.character;
-    window.L2.setLastSnapshot(c);
-    renderAll(c);
   }
 
   async function apiUnequip(slotKey) {
-    var t = localStorage.getItem('token');
-    var r = await fetch('/character/equip', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + t,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'unequip',
-        slot: slotKey,
-        expectedRevision: revision,
-      }),
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
-    }
-    if (r.status === 409) {
-      window.location.reload();
-      return;
-    }
-    if (!r.ok) {
-      var msg = 'Не вдалося зняти предмет.';
-      try {
-        var j = await r.json();
-        if (j && j.messageUk) msg = j.messageUk;
-      } catch (e) {
-        /* ignore */
+    if (equipRequestInFlight) return;
+    equipRequestInFlight = true;
+    try {
+      var t = localStorage.getItem('token');
+      var r = await fetch('/character/equip', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + t,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'unequip',
+          slot: slotKey,
+          expectedRevision: revision,
+        }),
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
       }
+      if (r.status === 409) {
+        await resyncCharacterFromServer();
+        return;
+      }
+      if (!r.ok) {
+        var msg = 'Не вдалося зняти предмет.';
+        try {
+          var j = await r.json();
+          if (j && j.messageUk) msg = j.messageUk;
+        } catch (e) {
+          /* ignore */
+        }
+        var stub = $('char-stub-msg');
+        if (stub) {
+          stub.hidden = false;
+          stub.textContent = msg;
+        }
+        return;
+      }
+      var out = await r.json();
+      var c = out.character;
+      window.L2.setLastSnapshot(c);
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(c);
+      }
+      renderAll(c);
+    } catch (_e) {
+      var stubNet = $('char-stub-msg');
+      if (stubNet) {
+        stubNet.hidden = false;
+        stubNet.textContent = 'Збій мережі — спробуй ще раз.';
+      }
+    } finally {
+      equipRequestInFlight = false;
+    }
+  }
+
+  async function resyncCharacterFromServer() {
+    var t = localStorage.getItem('token');
+    if (!t) return;
+    try {
+      var rr = await fetch('/character', {
+        headers: { Authorization: 'Bearer ' + t },
+      });
+      if (rr.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      if (!rr.ok) return;
+      var j = await rr.json();
+      if (!j || !j.character) return;
+      window.L2.setLastSnapshot(j.character);
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(j.character);
+      }
+      renderAll(j.character);
       var stub = $('char-stub-msg');
       if (stub) {
         stub.hidden = false;
-        stub.textContent = msg;
+        stub.textContent = 'Дані оновлено. Повтори дію.';
       }
-      return;
+    } catch (_e) {
+      /* ignore */
     }
-    var out = await r.json();
-    var c = out.character;
-    window.L2.setLastSnapshot(c);
-    renderAll(c);
   }
 
   function wireEquipSlotClicks() {
@@ -632,47 +1019,6 @@
       if (!eqItemId(eq[key])) return;
       apiUnequip(key);
     });
-  }
-
-  function wireBagInvFilters() {
-    var root = document.querySelector('.l2-char-inv-filters');
-    if (!root) return;
-    root.addEventListener('click', function (e) {
-      var catBtn = e.target.closest('[data-inv-cat]');
-      if (catBtn) {
-        var c = catBtn.getAttribute('data-inv-cat') || 'all';
-        bagInvCat = c;
-        bagInvGradeSub = '';
-        document.querySelectorAll('.l2-char-inv-filters [data-inv-cat]').forEach(function (x) {
-          var on = x.getAttribute('data-inv-cat') === c;
-          x.classList.toggle('l2-char-inv-link--active', on);
-          x.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
-        document.querySelectorAll('.l2-char-inv-grade').forEach(function (x) {
-          var gv = String(x.getAttribute('data-inv-grade') || '').toLowerCase();
-          x.classList.toggle('l2-char-inv-grade--active', gv === 'all');
-        });
-        syncBagInvGradeRow();
-        renderBagFromSnapshot();
-        return;
-      }
-      var gBtn = e.target.closest('[data-inv-grade]');
-      if (gBtn) {
-        var g = String(gBtn.getAttribute('data-inv-grade') || '').toLowerCase();
-        if (g === 'all') {
-          bagInvGradeSub = '';
-        } else {
-          bagInvGradeSub = bagInvGradeSub === g ? '' : g;
-        }
-        document.querySelectorAll('.l2-char-inv-grade').forEach(function (x) {
-          var gv = String(x.getAttribute('data-inv-grade') || '').toLowerCase();
-          var on = gv === 'all' ? bagInvGradeSub === '' : gv !== '' && gv === bagInvGradeSub;
-          x.classList.toggle('l2-char-inv-grade--active', on);
-        });
-        renderBagFromSnapshot();
-      }
-    });
-    syncBagInvGradeRow();
   }
 
   function wireBagClicks() {
@@ -979,6 +1325,9 @@
 
     if (j.gearCatalog && window.L2 && typeof L2.mergeGearCatalog === 'function') {
       L2.mergeGearCatalog(j.gearCatalog);
+    }
+    if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
+      L2.mergeCraftResourceIconHints(j);
     }
     if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && window.L2 && L2.itemNameById) {
       Object.keys(j.itemNamesUk).forEach(function (k) {

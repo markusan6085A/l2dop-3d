@@ -6,12 +6,103 @@ import {
   applyUnequip,
   castActiveSelfBuff,
   toggleSelfStance,
+  applyTownBuffer,
   GameConflictError,
 } from '../services/charService.js';
 import { learnSkillForUser } from '../services/skillLearnService.js';
+import { prisma } from '../lib/prisma.js';
+
+async function logCharacterMutation(
+  request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
+  action: string,
+  expectedRevision: number,
+  result: 'ok' | 'conflict' | 'error',
+  actualRevision?: number
+): Promise<void> {
+  if (!request.userId) return;
+  const row = await prisma.character.findFirst({
+    where: { userId: request.userId },
+    orderBy: { lastUpdate: 'desc' },
+    select: { id: true, revision: true },
+  });
+  request.log.info(
+    {
+      action,
+      characterId: row?.id ?? null,
+      expectedRevision,
+      actualRevision: actualRevision ?? row?.revision ?? null,
+      result,
+    },
+    'character-mutation'
+  );
+}
 
 /** POST skills/learn, persisted-combat-buffs, equip. */
 export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): void {
+  app.post(
+    '/town/buffer',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const raw = request.body;
+      if (!raw || typeof raw !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = raw as Record<string, unknown>;
+      const er = b.expectedRevision;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      try {
+        const res = await applyTownBuffer(userId, er);
+        await logCharacterMutation(
+          request,
+          'town_buffer',
+          er,
+          'ok',
+          res.character.revision
+        );
+        return reply.send({
+          character: res.character,
+          feeAdena: res.feeAdena,
+        });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          await logCharacterMutation(request, 'town_buffer', er, 'conflict');
+          return reply.code(409).send({
+            error: 'revision_conflict',
+            messageUk: 'Дані застаріли — виконай синхронізацію.',
+          });
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'town_buffer_not_enough_adena') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Недостатньо адени для міського бафера.',
+          });
+        }
+        if (msg === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        await logCharacterMutation(request, 'town_buffer', er, 'error');
+        request.log.error({ err }, 'POST /character/town/buffer');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося застосувати бафи міського бафера.',
+        });
+      }
+    }
+  );
+
   app.post(
     '/skills/learn',
     { preHandler: requireAuth },
@@ -48,9 +139,22 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
           battleId.trim(),
           er
         );
+        await logCharacterMutation(
+          request,
+          'skills_learn:' + battleId.trim(),
+          er,
+          'ok',
+          character.revision
+        );
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
+          await logCharacterMutation(
+            request,
+            'skills_learn:' + battleId.trim(),
+            er,
+            'conflict'
+          );
           return reply.code(409).send({
             error: 'revision_conflict',
             messageUk: 'Дані застаріли — онови сторінку.',
@@ -84,6 +188,12 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
+        await logCharacterMutation(
+          request,
+          'skills_learn:' + battleId.trim(),
+          er,
+          'error'
+        );
         request.log.error({ err }, 'POST /character/skills/learn');
         return reply.code(500).send({
           error: 'internal_error',
@@ -146,9 +256,22 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
           ht as number | null,
           zs as number | null
         );
+        await logCharacterMutation(
+          request,
+          'persisted_combat_buffs',
+          er,
+          'ok',
+          character.revision
+        );
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
+          await logCharacterMutation(
+            request,
+            'persisted_combat_buffs',
+            er,
+            'conflict'
+          );
           return reply.code(409).send({
             error: 'revision_conflict',
             messageUk: 'Дані застаріли — онови сторінку.',
@@ -170,6 +293,12 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
+        await logCharacterMutation(
+          request,
+          'persisted_combat_buffs',
+          er,
+          'error'
+        );
         request.log.error({ err }, 'POST /character/persisted-combat-buffs');
         return reply.code(500).send({
           error: 'internal_error',
@@ -215,9 +344,22 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
       }
       try {
         const character = await castActiveSelfBuff(userId, battleId.trim(), er);
+        await logCharacterMutation(
+          request,
+          'skills_cast:' + battleId.trim(),
+          er,
+          'ok',
+          character.revision
+        );
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
+          await logCharacterMutation(
+            request,
+            'skills_cast:' + battleId.trim(),
+            er,
+            'conflict'
+          );
           return reply.code(409).send({
             error: 'revision_conflict',
             messageUk: 'Дані застаріли — онови сторінку.',
@@ -263,6 +405,12 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
+        await logCharacterMutation(
+          request,
+          'skills_cast:' + battleId.trim(),
+          er,
+          'error'
+        );
         request.log.error({ err }, 'POST /character/skills/cast');
         return reply.code(500).send({
           error: 'internal_error',
@@ -308,9 +456,22 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
       }
       try {
         const character = await toggleSelfStance(userId, battleId.trim(), er);
+        await logCharacterMutation(
+          request,
+          'skills_toggle:' + battleId.trim(),
+          er,
+          'ok',
+          character.revision
+        );
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
+          await logCharacterMutation(
+            request,
+            'skills_toggle:' + battleId.trim(),
+            er,
+            'conflict'
+          );
           return reply.code(409).send({
             error: 'revision_conflict',
             messageUk: 'Дані застаріли — онови сторінку.',
@@ -350,6 +511,12 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
+        await logCharacterMutation(
+          request,
+          'skills_toggle:' + battleId.trim(),
+          er,
+          'error'
+        );
         request.log.error({ err }, 'POST /character/skills/toggle');
         return reply.code(500).send({
           error: 'internal_error',
@@ -398,10 +565,24 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
               ? Math.max(0, Math.min(20, Math.floor(enRaw)))
               : 0;
           const character = await applyEquipFromBag(userId, itemId, rev, enchant);
+          await logCharacterMutation(
+            request,
+            'equip:' + String(itemId),
+            rev,
+            'ok',
+            character.revision
+          );
           return reply.send({ character });
         }
         if (body.action === 'unequip' && typeof body.slot === 'string') {
           const character = await applyUnequip(userId, body.slot, rev);
+          await logCharacterMutation(
+            request,
+            'unequip:' + body.slot,
+            rev,
+            'ok',
+            character.revision
+          );
           return reply.send({ character });
         }
         return reply.code(400).send({
@@ -410,6 +591,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         });
       } catch (err) {
         if (err instanceof GameConflictError) {
+          await logCharacterMutation(request, 'equip_mutation', rev, 'conflict');
           return reply.code(409).send({
             error: 'revision_conflict',
             messageUk: 'Дані застаріли — онови сторінку.',
@@ -426,11 +608,13 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
           });
         }
         if (msg === 'slot_empty') {
+          await logCharacterMutation(request, 'equip_mutation', rev, 'error');
           return reply.code(400).send({
             error: 'invalid_input',
             messageUk: 'Слот порожній.',
           });
         }
+        await logCharacterMutation(request, 'equip_mutation', rev, 'error');
         request.log.error({ err }, 'POST /character/equip');
         return reply.code(500).send({
           error: 'internal_error',

@@ -69,7 +69,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -113,7 +113,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 5
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -165,7 +165,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -441,7 +441,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 17
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -474,7 +474,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -736,7 +736,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -775,7 +775,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 50
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -820,40 +820,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 30
       }
     ],
-    cooldownSec: 0,
-    skipMobHp: true
-  },
-  {
-    battleId: "l2_172",
-    l2SkillId: 172,
-    minLevel: 1,
-    spCost: 0,
-    nameUk: "Ремесло",
-    hintUk: "Пасив: знижує ризик зламати предмет при покращенні.",
-    kind: "passive",
-    category: "passive",
-    visibleForProfessions: [
-      "elf_elemental_master",
-      "elf_elemental_summoner",
-      "elf_elven_elder",
-      "elf_elven_oracle",
-      "elf_elven_wizard",
-      "elf_evas_saint",
-      "elf_mage",
-      "elf_mystic_muse",
-      "elf_spellsinger"
-    ],
-    levels: [
-      {
-        level: 1,
-        requiredLevel: 1,
-        spCost: 0,
-        mpCost: 0,
-        power: 0
-      }
-    ],
-    effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -886,7 +853,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -958,7 +925,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1121,7 +1088,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1160,7 +1127,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1226,7 +1193,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1322,7 +1289,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1366,7 +1333,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1431,7 +1398,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1692,7 +1659,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1755,7 +1722,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 1
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1798,7 +1765,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1834,7 +1801,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 20
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1865,7 +1832,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1897,7 +1864,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 2
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: null,
     skipMobHp: true
   },
   {
@@ -1968,7 +1935,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 0,
+    cooldownSec: 1,
     skipMobHp: true
   },
   {
@@ -2078,7 +2045,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 5,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -2111,7 +2078,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 15,
     skipMobHp: true
   },
   {
@@ -2327,7 +2294,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 12,
     skipMobHp: true
   },
   {
@@ -2437,7 +2404,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 2,
+    cooldownSec: 3,
     skipMobHp: true
   },
   {
@@ -2492,7 +2459,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 120,
     skipMobHp: true
   },
   {
@@ -2700,7 +2667,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 5,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -2810,7 +2777,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 7,
+    cooldownSec: 25,
     skipMobHp: true
   },
   {
@@ -2962,7 +2929,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 2.5,
+    cooldownSec: 4,
     skipMobHp: false
   },
   {
@@ -3038,7 +3005,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 2.5,
+    cooldownSec: 4,
     skipMobHp: false
   },
   {
@@ -3077,7 +3044,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3135,7 +3102,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3174,7 +3141,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 8
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3207,7 +3174,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 10
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3246,7 +3213,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3298,7 +3265,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3331,7 +3298,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 10,
+    cooldownSec: 300,
     skipMobHp: true
   },
   {
@@ -3406,7 +3373,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 120,
     skipMobHp: true
   },
   {
@@ -3445,7 +3412,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 8
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3706,7 +3673,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3758,7 +3725,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -3791,7 +3758,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 600
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3849,7 +3816,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -3888,7 +3855,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -4106,7 +4073,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 12,
     skipMobHp: true
   },
   {
@@ -4359,7 +4326,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -4398,7 +4365,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 23
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -4444,7 +4411,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 8
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -4483,7 +4450,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 15
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -4506,7 +4473,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -4635,7 +4602,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 8,
     skipMobHp: true
   },
   {
@@ -4713,7 +4680,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 1.5,
+    cooldownSec: 2,
     skipMobHp: false
   },
   {
@@ -4774,7 +4741,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: false
   },
   {
@@ -4943,7 +4910,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: false
   },
   {
@@ -5122,7 +5089,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 15,
     skipMobHp: false
   },
   {
@@ -5238,7 +5205,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 110
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 8,
     skipMobHp: false
   },
   {
@@ -5297,7 +5264,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 3.1,
+    cooldownSec: 8,
     skipMobHp: false
   },
   {
@@ -5339,7 +5306,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 15
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -5427,7 +5394,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "multiplier"
       }
     ],
-    cooldownSec: 2.5,
+    cooldownSec: 8,
     skipMobHp: true
   },
   {
@@ -5466,7 +5433,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -5595,7 +5562,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 8,
     skipMobHp: true
   },
   {
@@ -5628,7 +5595,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 5,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -5850,7 +5817,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 5,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -5939,7 +5906,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 30,
     skipMobHp: false
   },
   {
@@ -5989,7 +5956,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 10,
+    cooldownSec: 21600,
     skipMobHp: true
   },
   {
@@ -6039,7 +6006,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 10,
+    cooldownSec: 21600,
     skipMobHp: true
   },
   {
@@ -6074,7 +6041,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 55
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -6248,7 +6215,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 1.5,
+    cooldownSec: 2,
     skipMobHp: true
   },
   {
@@ -6293,7 +6260,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -6415,7 +6382,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 8,
     skipMobHp: true
   },
   {
@@ -6481,7 +6448,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -6514,7 +6481,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 10,
+    cooldownSec: 600,
     skipMobHp: true
   },
   {
@@ -6553,7 +6520,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "flat"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -6605,7 +6572,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -6769,7 +6736,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 900,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -6819,7 +6786,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 2,
+    cooldownSec: 3,
     skipMobHp: false
   },
   {
@@ -6908,7 +6875,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 2,
+    cooldownSec: 3,
     skipMobHp: false
   },
   {
@@ -7025,7 +6992,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 10,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -7107,7 +7074,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -7280,7 +7247,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 15,
     skipMobHp: false
   },
   {
@@ -7362,7 +7329,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 20,
     skipMobHp: false
   },
   {
@@ -7388,7 +7355,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 0,
+    cooldownSec: 3600,
     skipMobHp: true
   },
   {
@@ -7437,7 +7404,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 1
       }
     ],
-    cooldownSec: 1,
+    cooldownSec: 1800,
     skipMobHp: true
   },
   {
@@ -7477,7 +7444,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 15,
     skipMobHp: true
   },
   {
@@ -7503,7 +7470,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 15,
     skipMobHp: true
   },
   {
@@ -7548,7 +7515,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 6,
     skipMobHp: true
   },
   {
@@ -7630,7 +7597,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 6,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -7736,7 +7703,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 10,
+    cooldownSec: 20,
     skipMobHp: true
   },
   {
@@ -7770,7 +7737,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 60,
     skipMobHp: true
   },
   {
@@ -7812,7 +7779,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 6,
+    cooldownSec: 60,
     skipMobHp: false
   },
   {
@@ -7846,7 +7813,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 6,
+    cooldownSec: 60,
     skipMobHp: false
   },
   {
@@ -7906,7 +7873,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 10
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 300,
     skipMobHp: true
   },
   {
@@ -7995,7 +7962,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 600,
     skipMobHp: true
   },
   {
@@ -8020,7 +7987,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       }
     ],
     effects: [],
-    cooldownSec: 4,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -8051,7 +8018,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 30
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -8087,7 +8054,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 20
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 10,
     skipMobHp: true
   },
   {
@@ -8143,7 +8110,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         value: 10
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 120,
     skipMobHp: true
   },
   {
@@ -8173,7 +8140,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         mode: "percent"
       }
     ],
-    cooldownSec: 4,
+    cooldownSec: 30,
     skipMobHp: true
   },
   {
@@ -8193,7 +8160,7 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     ],
     levels: [],
     effects: [],
-    cooldownSec: 2,
+    cooldownSec: 4,
     skipMobHp: false
   },
   {

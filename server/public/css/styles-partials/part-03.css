@@ -1,0 +1,1204 @@
+.l2-map-foot {
+  font-size: 10px;
+  color: #7a8a9a;
+  text-align: center;
+  margin: 8px 0 0;
+}
+
+.l2-map-mob-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 0 10px;
+  padding: 8px 6px 6px;
+  border: 1px solid rgba(90, 120, 90, 0.35);
+  border-radius: 4px;
+  background: rgba(10, 16, 14, 0.65);
+}
+
+/* display:flex вище перебиває UA для [hidden] — без цього JS не ховає «Моби в околицях». */
+.l2-map-mob-section[hidden] {
+  display: none;
+}
+
+.l2-map-mob-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e0c878;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+button.l2-map-mob-title {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.l2-map-mob-title--tap-full:hover,
+button.l2-map-mob-title--tap-full:focus {
+  outline: none;
+  color: #f5e8a8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.l2-map-mob-sub {
+  margin: 0 0 8px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #8a9aaa;
+  text-align: center;
+}
+
+.l2-map-mob-list {
+  --l2-map-mob-row: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+}
+
+/* Список «околиці»: реальні рядки з іконкою вищі за --l2-map-mob-row — без max-height, щоб 15-й моб не обрізався. */
+#map-mob-list {
+  overflow-y: visible;
+  max-height: none;
+}
+
+.l2-map-mob-item {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #d8dcc8;
+  border-bottom: 1px solid rgba(80, 100, 90, 0.35);
+  cursor: pointer;
+}
+
+.l2-map-mob-item:last-child {
+  border-bottom: none;
+}
+
+.l2-map-mob-item:hover,
+.l2-map-mob-item:focus {
+  outline: none;
+  background: rgba(201, 168, 96, 0.12);
+}
+
+.l2-map-mob-item:hover .l2-map-mob-link,
+.l2-map-mob-item:focus .l2-map-mob-link {
+  filter: brightness(1.08);
+}
+
+.l2-map-mob-item-static {
+  cursor: default;
+}
+
+.l2-map-mob-item-static:hover,
+.l2-map-mob-item-static:focus {
+  background: transparent;
+  color: #d8dcc8;
+}
+
+.l2-map-mob-item--battle {
+  padding: 0;
+}
+
+.l2-map-mob-item--with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  min-height: var(--l2-map-mob-row, 30px);
+  box-sizing: border-box;
+}
+
+.l2-map-mob-icon-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(107, 84, 63, 0.85);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2a2218, #0f0c08);
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.l2-map-mob-icon-btn:hover,
+.l2-map-mob-icon-btn:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+.l2-map-mob-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.l2-map-mob-item--with-icon .l2-map-mob-link {
+  flex: 1;
+  min-width: 0;
+}
+
+.l2-map-mob-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.l2-map-mob-modal[hidden] {
+  display: none !important;
+}
+
+.l2-map-mob-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+}
+
+.l2-map-mob-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  max-height: min(85vh, 560px);
+  overflow-y: auto;
+  padding: 14px 14px 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--l2-gold-frame, #c9a860);
+  border-radius: 8px;
+  background: rgba(8, 14, 20, 0.96);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75);
+}
+
+.l2-map-mob-modal__close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: #c9a860;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.l2-map-mob-modal__close:hover,
+.l2-map-mob-modal__close:focus {
+  outline: none;
+  color: #fff4d6;
+}
+
+.l2-map-mob-modal__head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding-right: 28px;
+}
+
+.l2-map-mob-modal__icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  object-position: center;
+  border: 1px solid #6b543f;
+  border-radius: 4px;
+  background: #0a1018;
+}
+
+.l2-map-mob-modal__title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffcc88;
+}
+
+.l2-map-mob-modal__sub {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #b0a090;
+}
+
+.l2-map-mob-modal__section {
+  margin-bottom: 10px;
+}
+
+.l2-map-mob-modal__sec-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c9a860;
+  margin-bottom: 6px;
+}
+
+.l2-map-mob-modal__stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 11px;
+}
+
+.l2-map-mob-modal__stats dt {
+  margin: 0;
+  color: #8a9aaa;
+}
+
+.l2-map-mob-modal__stats dd {
+  margin: 0;
+  color: #e8dcc8;
+}
+
+.l2-map-mob-modal__drop-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 10px;
+  line-height: 1.45;
+  color: #c8d0c8;
+}
+
+.l2-map-mob-modal__drop-li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.l2-map-mob-modal__drop-ico {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.l2-map-mob-modal__drop-txt {
+  flex: 1;
+  min-width: 0;
+}
+
+.l2-map-mob-modal__note {
+  margin: 8px 0 0;
+  font-size: 10px;
+  color: #a09080;
+  font-style: italic;
+}
+
+.l2-map-mob-modal__battle {
+  display: block;
+  margin-top: 12px;
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff4d6;
+  text-decoration: none;
+  border: 1px solid #6b543f;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2a3820, #141a12);
+}
+
+.l2-map-mob-modal__battle:hover,
+.l2-map-mob-modal__battle:focus {
+  outline: none;
+  border-color: #d4af37;
+  color: #fff;
+}
+
+.l2-map-mob-link {
+  display: block;
+  padding: 4px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: #e8ead8;
+  text-decoration: none;
+  border-radius: 3px;
+}
+
+/* L2-подібні кольори: різниця рівня моба до персонажа; РБ/епік/чемпіон — окремо */
+.l2-map-mob-link--lvl-trivial {
+  color: #8899aa;
+  font-weight: 500;
+}
+
+.l2-map-mob-link--lvl-easy {
+  color: #6dcc6d;
+}
+
+.l2-map-mob-link--lvl-same {
+  color: #e8e8e8;
+}
+
+.l2-map-mob-link--lvl-warn {
+  color: #e8d060;
+}
+
+.l2-map-mob-link--lvl-hard {
+  color: #e89840;
+}
+
+.l2-map-mob-link--lvl-deadly {
+  color: #e04040;
+  font-weight: 700;
+}
+
+.l2-map-mob-link--champion {
+  color: #d4a64b;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(212, 166, 75, 0.35);
+}
+
+.l2-map-mob-link--raid {
+  color: #c88cff;
+  font-weight: 700;
+}
+
+.l2-map-mob-link--epic {
+  color: #ff6b6b;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 80, 80, 0.45);
+}
+
+.l2-map-mob-link--epic_guard {
+  color: #ff9944;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 140, 60, 0.4);
+}
+
+.l2-map-mob-link--dungeon {
+  color: #6ec8ff;
+  font-weight: 600;
+}
+
+.l2-map-mob-link:hover,
+.l2-map-mob-link:focus {
+  outline: none;
+  background: rgba(201, 168, 96, 0.12);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.l2-map-mob-item--hint {
+  cursor: default;
+}
+
+.l2-map-mob-item--hint:hover,
+.l2-map-mob-item--hint:focus {
+  background: transparent;
+  color: #d8dcc8;
+}
+
+.l2-map-mob-detail {
+  margin: 0 0 10px;
+  padding: 10px 8px 12px;
+  border: 1px solid rgba(90, 120, 90, 0.45);
+  border-radius: 4px;
+  background: rgba(12, 18, 16, 0.92);
+}
+
+.l2-map-detail-head {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #b0a090;
+  text-align: center;
+}
+
+.l2-map-mob-list-detail {
+  max-height: calc(var(--l2-map-mob-row, 30px) * 15);
+  overflow-y: hidden;
+}
+
+.l2-map-back-btn {
+  display: block;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #fff4d6;
+  cursor: pointer;
+  border: 1px solid #6b543f;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #2a2218, #0f0c08);
+}
+
+.l2-map-back-btn:hover,
+.l2-map-back-btn:focus {
+  border-color: #d4af37;
+  outline: none;
+}
+
+/* Сторінка бою (l2mobi / скрін 2) — золота рамка, смуги, квадрати скілів */
+.l2-page-battle .l2-battle-root {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.l2-battle-headline {
+  margin: 0 0 10px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-bright);
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.l2-battle-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+/* Ряд лише з бафами / Sonic (без окремої рамки CP+Exp). */
+.l2-battle-top--aux {
+  justify-content: flex-end;
+}
+
+/* До 20 іконок, 12 у рядку; далі автоматично на другий ряд. */
+.l2-battle-buff-strip {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(12, 18px);
+  gap: 3px;
+  justify-content: end;
+  align-content: start;
+  max-width: min(calc(12 * 18px + 11 * 3px), 100%);
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+/**
+ * Sonic Focus заряди (Gladiator/Duelist): компактний рядок з точками-зарядами
+ * та підписом. Розташовується під стрічкою бафів у правому верхньому кутку
+ * блоку статусу гравця, щоб було видно під час бою.
+ */
+.l2-battle-sonic-charges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background: rgba(12, 8, 5, 0.55);
+  border: 1px solid rgba(214, 170, 86, 0.35);
+  border-radius: 10px;
+  font-size: 11px;
+  color: #e8d8a6;
+  line-height: 1;
+  max-width: fit-content;
+  margin-left: auto;
+}
+.l2-battle-sonic-charges[hidden] {
+  display: none;
+}
+.l2-battle-sonic-charges__label {
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.l2-battle-sonic-charges__dots {
+  display: inline-flex;
+  gap: 2px;
+}
+.l2-battle-sonic-charges__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(60, 40, 20, 0.8);
+  border: 1px solid rgba(214, 170, 86, 0.45);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.l2-battle-sonic-charges__dot--on {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #ffe79a 0%,
+    #f0a93a 55%,
+    #7a3d0f 100%
+  );
+  border-color: #ffcf6e;
+  box-shadow:
+    0 0 4px rgba(255, 180, 80, 0.85),
+    inset 0 0 2px rgba(255, 220, 140, 0.9);
+}
+
+/* Як text-rpg BuffBar: зовнішнє червоне conic-кільце, внутрішня рамка + іконка. */
+.l2-battle-buff-icon {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.l2-battle-buff-icon__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  pointer-events: none;
+  box-shadow:
+    0 0 3px rgba(217, 79, 79, 0.45),
+    inset 0 0 1px rgba(255, 178, 158, 0.35);
+}
+
+/**
+ * Тогл-бафи (стійки, Aegis): золотиста пульсуюча рамка замість conic-таймера.
+ * Малюється тим самим `__ring`-елементом, але без conic-gradient інлайном.
+ */
+.l2-battle-buff-icon__ring--toggle {
+  background: transparent !important;
+  border: 1px solid #d4a84a;
+  box-shadow:
+    0 0 4px rgba(212, 168, 74, 0.85),
+    inset 0 0 3px rgba(255, 220, 140, 0.45);
+  animation: l2-battle-buff-toggle-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes l2-battle-buff-toggle-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 2px rgba(200, 150, 60, 0.55),
+      inset 0 0 2px rgba(255, 210, 120, 0.35);
+    border-color: rgba(212, 175, 90, 0.85);
+  }
+  50% {
+    box-shadow:
+      0 0 7px rgba(255, 200, 100, 0.95),
+      inset 0 0 4px rgba(255, 230, 160, 0.55);
+    border-color: rgba(255, 215, 120, 0.95);
+  }
+}
+
+.l2-battle-buff-icon__inner {
+  position: absolute;
+  inset: 1px;
+  border-radius: 2px;
+  border: 1px solid rgba(92, 74, 50, 0.6);
+  background: #14110c;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(199, 173, 128, 0.08);
+}
+
+.l2-battle-buff-icon__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 1px;
+}
+
+/**
+ * Скіл-заряди (Sonic Focus у Gladiator/Duelist, і в майбутньому Momentum/Focus
+ * Chain): маленька цифра в правому нижньому куті іконки бафа. Без фону, з
+ * чорною обводкою через `text-shadow`, щоб не перекривала зображення скіла
+ * і при цьому чітко читалась.
+ */
+.l2-battle-buff-icon__charge {
+  position: absolute;
+  right: 1px;
+  bottom: 0;
+  color: #fff1c4;
+  font-weight: 800;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    1px 1px 0 #000,
+    -1px 0 0 #000,
+    0 -1px 0 #000;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.l2-battle-buffs--sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.l2-battle-player-bars {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 10px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.l2-battle-player-exp {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.l2-battle-player-exp .l2-hud-exp-bar {
+  width: 100%;
+  max-width: 100%;
+}
+
+.l2-battle-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.l2-battle-bar-row:last-child {
+  margin-bottom: 0;
+}
+
+.l2-battle-bar-lbl {
+  flex: 0 0 28px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.l2-battle-bar-outer {
+  position: relative;
+  flex: 0 0 50%;
+  max-width: 50%;
+  min-width: 0;
+  height: 16px;
+  overflow: hidden;
+}
+
+.l2-battle-bar-outer .l2-pers-bar-inner {
+  position: relative;
+  z-index: 0;
+}
+
+.l2-battle-bar-innertext {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #f4f0e8;
+  text-shadow:
+    0 0 2px #000,
+    0 1px 2px #000;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.l2-battle-mob-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  margin: 0 0 12px;
+  padding: 12px 12px 14px;
+  border: 1px solid var(--l2-gold-frame);
+  border-radius: 8px;
+  background: rgba(22, 16, 12, 0.92);
+}
+
+.l2-battle-mob-title {
+  margin: 0 0 10px;
+  font-family: var(--l2-font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffcc88;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+.l2-battle-buffs {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #a8e6a8;
+  text-align: center;
+}
+
+.l2-battle-mob-debuff-strip {
+  margin: 6px auto 8px;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.l2-battle-mob-debuff-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 152, 94, 0.8);
+  box-shadow:
+    0 0 4px rgba(255, 128, 72, 0.55),
+    inset 0 0 2px rgba(0, 0, 0, 0.45);
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+
+.l2-battle-mob-hp-outer .l2-battle-mob-hp-inner {
+  background: linear-gradient(180deg, #e04040, #901818);
+}
+
+.l2-battle-mob-hp-outer .l2-battle-mob-hp-inner.l2-battle-mob-hp-inner--aoe {
+  background: linear-gradient(180deg, #c86830, #7a3010);
+}
+
+.l2-battle-whirlwind-extras {
+  width: 100%;
+  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.l2-battle-whirlwind-extra {
+  width: min(220px, 72%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.l2-battle-whirlwind-extra__name {
+  display: block;
+  width: 72px;
+  min-width: 72px;
+  max-width: 72px;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #c9b9a7;
+  line-height: 1.05;
+  margin: 0;
+  padding: 0 1px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.l2-battle-whirlwind-extra__bar {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  min-width: 88px;
+  height: 14px;
+}
+
+/* HP моба: підпис + смуга по центру панелі */
+.l2-battle-bar-row--mob.l2-battle-mob-bars {
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.l2-battle-bar-row--mob.l2-battle-mob-bars .l2-battle-whirlwind-extras {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+  order: 2;
+}
+
+.l2-battle-bar-row--mob.l2-battle-mob-bars .l2-battle-mob-hp-wrap {
+  order: 1;
+}
+
+/* Явна ширина блоку HP — інакше flex з basis auto стискає .l2-battle-bar-outer до 0 */
+.l2-battle-mob-hp-wrap {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 4px;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: min(220px, 72%);
+  max-width: 72%;
+}
+
+.l2-battle-mob-hp-wrap .l2-battle-bar-outer {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 88px;
+  max-width: none;
+  height: 14px;
+}
+
+.l2-battle-mob-hp-name {
+  display: block;
+  width: 72px;
+  min-width: 72px;
+  max-width: 72px;
+  flex: 0 0 auto;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #c9b9a7;
+  line-height: 1.05;
+  margin: 0;
+  padding: 0 1px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Хотбар: до 40 слотів, сітка 7×… всередині .l2-battle-hotbar__grid */
+.l2-battle-skills {
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0 10px;
+}
+
+.l2-battle-skill-slot {
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 2px;
+  font-weight: 700;
+  font-size: 8px;
+  line-height: 1.1;
+  color: #fff4d6;
+  cursor: pointer;
+  border: 1px solid #6b543f;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2a2218, #0f0c08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-battle-skill-slot:active {
+  transform: scale(0.97);
+}
+
+/* Панель швидкого доступу в бою — та сама рамка/фон, що у панелі моба */
+.l2-battle-hotbar {
+  box-sizing: border-box;
+  margin: 8px 0 10px;
+  width: 100%;
+  padding: 10px 10px 12px;
+  border: 1px solid var(--l2-gold-frame);
+  border-radius: 8px;
+  background: rgba(22, 16, 12, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 215, 0, 0.06);
+}
+
+.l2-battle-hotbar__rule {
+  height: 1px;
+  margin: 0 auto 10px;
+  max-width: 320px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(199, 173, 128, 0.35) 20%,
+    rgba(199, 173, 128, 0.35) 80%,
+    transparent
+  );
+}
+
+.l2-battle-hotbar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 36px);
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  max-width: calc(7 * 36px + 6 * 8px);
+  margin: 0 auto 6px;
+}
+
+.l2-battle-hotbar__foot {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 2px 0 4px;
+}
+
+.l2-battle-hotbar-slot {
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  cursor: pointer;
+  border: 2px solid rgba(60, 45, 25, 0.9);
+  border-radius: 6px;
+  background: linear-gradient(165deg, #2a2318 0%, #100d09 55%, #080705 100%);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 0 rgba(0, 0, 0, 0.5);
+  -webkit-tap-highlight-color: rgba(201, 164, 58, 0.15);
+}
+
+.l2-battle-hotbar-slot:focus {
+  outline: none;
+}
+
+.l2-battle-hotbar-slot:focus-visible {
+  outline: 2px solid rgba(201, 164, 58, 0.75);
+  outline-offset: 2px;
+}
+
+.l2-battle-hotbar-slot--empty {
+  border-style: dashed;
+  border-color: rgba(122, 99, 68, 0.75);
+  background: radial-gradient(
+      ellipse 90% 70% at 50% 20%,
+      rgba(199, 173, 128, 0.12) 0%,
+      transparent 65%
+    ),
+    linear-gradient(165deg, #1a1510 0%, #0a0806 100%);
+}
+
+.l2-battle-hotbar-slot--empty:hover {
+  border-color: rgba(199, 173, 128, 0.55);
+}
+
+.l2-battle-hotbar-slot-plus {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  color: #e8d4b0;
+  opacity: 0.95;
+}
+
+.l2-battle-hotbar-slot-iconwrap {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 26px;
+  margin: 4px auto;
+}
+
+/*
+ * Як text-rpg SkillCooldownLayer: єдиний conic sweep на всю тривалість КД —
+ * темний сектор показує «ще не готово», решта іконки лишається видимою.
+ * У центрі — число секунд для довгого КД (>=1s). На фініші (<1s) — лише звужуваний сектор.
+ */
+.l2-battle-hotbar-slot-cd {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.l2-battle-hotbar-slot-cd__short {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+}
+
+.l2-battle-hotbar-slot-cd__long {
+  position: relative;
+  z-index: 1;
+}
+
+.l2-battle-hotbar-slot-img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.l2-battle-hotbar-slot--warn {
+  opacity: 0.55;
+  filter: grayscale(0.35);
+}
+
+.l2-battle-hotbar-slot--toggle-on {
+  border-color: rgba(212, 175, 90, 0.95);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.65),
+    inset 0 -1px 0 rgba(255, 220, 160, 0.12),
+    0 0 7px rgba(200, 150, 70, 0.75);
+}
+
+/** Активний заряд / лічильник у слоті «u» (заряди). */
+.l2-battle-hotbar-slot-uqty {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  z-index: 3;
+  min-width: 12px;
+  padding: 0 2px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff8e8;
+  text-align: center;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.72);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+/** Активний заряд душі / благословений заряд духу на хотбарі (слот «u»). */
+.l2-battle-hotbar-slot--soulshot-on {
+  border-color: rgba(255, 248, 220, 0.95);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.55),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    0 0 10px rgba(255, 235, 160, 0.95),
+    0 0 4px rgba(180, 220, 255, 0.55);
+}
+
+.l2-battle-hotbar-remove {
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  padding: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  color: #e8d4b0;
+  cursor: pointer;
+  border: 1px solid var(--l2-gold-frame);
+  border-radius: 6px;
+  background: rgba(20, 16, 12, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 215, 0, 0.06),
+    0 2px 5px rgba(0, 0, 0, 0.45);
+  -webkit-tap-highlight-color: rgba(201, 164, 58, 0.15);
+}
+
+.l2-battle-hotbar-remove:focus {
+  outline: none;
+}
+
+.l2-battle-hotbar-remove:focus-visible {
+  outline: 2px solid rgba(201, 164, 58, 0.75);
+  outline-offset: 2px;
+}
+
+.l2-battle-hotbar-remove:hover {
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #fff4e0;
+}
+
+.l2-battle-hotbar-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.l2-battle-hotbar-modal[hidden] {
+  display: none !important;
+}
+
+.l2-battle-hotbar-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.l2-battle-hotbar-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 360px;
+  max-height: min(80vh, 420px);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 12px;
+  border: 1px solid rgba(199, 173, 128, 0.35);
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 0%, rgba(120, 90, 45, 0.2) 0%, transparent 55%),
+    linear-gradient(180deg, #1c1812 0%, #0c0a08 100%);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65);
+}
+

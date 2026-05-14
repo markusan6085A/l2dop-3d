@@ -1,6 +1,10 @@
 /**
  * Процедурний дроп крафт-ресурсів з мобів: тір за рівнем моба, 70/20/10 зсув тіра,
  * таблиця шансів/діапазонів рівня з ТЗ автора.
+ *
+ * На кожну спробу: спочатку зважений вибір рядка (`dropPct` / `spoilPct` як ваги в пулі),
+ * потім окремий кидок успіху — той самий відсоток трактуємо як шанс отримати предмет
+ * з цієї спроби (cap 100%). Без другого кидка випадало «все підряд».
  */
 import type { DropEntry } from '../types/combatDrop.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from '../data/resourceCraftItemNamesUk.js';
@@ -29,6 +33,18 @@ export interface MobResourceRow {
 
 /** Узгоджено з resourceCraftItemNamesUk / droplist L2. */
 export const MOB_RESOURCE_DROP_TABLE: readonly MobResourceRow[] = [
+  {
+    l2ItemId: 1866,
+    tier: 1,
+    minMobLvl: 1,
+    maxMobLvl: 40,
+    dropPct: 11,
+    spoilPct: 22,
+    dropQtyMin: 1,
+    dropQtyMax: 3,
+    spoilQtyMin: 1,
+    spoilQtyMax: 3,
+  },
   {
     l2ItemId: 1867,
     tier: 1,
@@ -360,6 +376,14 @@ function pickWeightedResource(rows: MobResourceRow[], spoil: boolean): MobResour
   return rows[rows.length - 1]!;
 }
 
+/** Після зваженого вибору рядка — чи «зійшовся» відсоток успіху для цієї спроби. */
+function rollResourceAttemptHits(row: MobResourceRow, spoil: boolean): boolean {
+  const raw = spoil ? row.spoilPct : row.dropPct;
+  if (!Number.isFinite(raw) || raw <= 0) return false;
+  const pct = Math.min(100, raw);
+  return Math.random() * 100 < pct;
+}
+
 function rollInt(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1));
 }
@@ -378,14 +402,23 @@ function spoilAttemptCount(mobLevel: number): number {
   return rollInt(2, 4);
 }
 
+export type ProceduralResourceLootOpts = {
+  /** Якщо false — цикл процедурного спойлу не виконується (немає скіла Spoil). */
+  allowSpoil?: boolean;
+};
+
 /**
  * Спроби дропу/спойлу за кілл (окремо від рядка адени в сумці).
  */
-export function rollProceduralResourceLoot(mobLevel: number): ResourceLootLine[] {
+export function rollProceduralResourceLoot(
+  mobLevel: number,
+  opts?: ProceduralResourceLootOpts
+): ResourceLootLine[] {
   const L = Math.max(1, Math.floor(mobLevel));
   const out: ResourceLootLine[] = [];
   const nDrop = dropAttemptCount(L);
-  const nSpoil = spoilAttemptCount(L);
+  const allowSpoil = opts?.allowSpoil === true;
+  const nSpoil = allowSpoil ? spoilAttemptCount(L) : 0;
 
   for (let i = 0; i < nDrop; i++) {
     let tier = rollResourceTierVariant(L);
@@ -400,7 +433,7 @@ export function rollProceduralResourceLoot(mobLevel: number): ResourceLootLine[]
     }
     if (pool.length === 0) continue;
     const row = pickWeightedResource(pool, false);
-    if (!row) continue;
+    if (!row || !rollResourceAttemptHits(row, false)) continue;
     const qty = rollInt(row.dropQtyMin, row.dropQtyMax);
     if (qty <= 0) continue;
     out.push({
@@ -424,7 +457,7 @@ export function rollProceduralResourceLoot(mobLevel: number): ResourceLootLine[]
     }
     if (pool.length === 0) continue;
     const row = pickWeightedResource(pool, true);
-    if (!row) continue;
+    if (!row || !rollResourceAttemptHits(row, true)) continue;
     const qty = rollInt(row.spoilQtyMin, row.spoilQtyMax);
     if (qty <= 0) continue;
     out.push({

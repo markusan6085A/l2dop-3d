@@ -414,6 +414,36 @@ body.l2-page-story .l2-screen-inner.l2-story .l2-hud-panel.l2-hud-panel--city-st
   font-size: 10px;
 }
 
+.l2-hud-panel--city-strip .l2-hud-exp-inline {
+  margin: 3px 0 0;
+  padding-left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.l2-hud-panel--city-strip .l2-hud-exp-bar.l2-hud-exp-bar--inline {
+  display: block !important;
+  width: 132px;
+  max-width: 132px;
+  height: 4px;
+  min-height: 4px;
+  margin: 0;
+  border-radius: 1px;
+  background: #121417;
+  box-shadow: inset 0 0 0 1px rgba(52, 45, 32, 0.85);
+}
+
+.l2-hud-panel--city-strip .l2-hud-exp-inline-pct {
+  font-size: 9px;
+  font-weight: 700;
+  color: #c7b48a;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+}
+
 .l2-hud-city-bars {
   flex: 0 0 auto;
   width: 4cm;

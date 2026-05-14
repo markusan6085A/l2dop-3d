@@ -32,14 +32,6 @@
   var LAST_SNAPSHOT = null;
   var BUFFS_TICK_TIMER = null;
 
-  function fmtSec(sec) {
-    var s = Math.max(0, Math.floor(Number(sec) || 0));
-    if (s < 60) return s + 'с';
-    var m = Math.floor(s / 60);
-    var rs = s % 60;
-    return rs === 0 ? m + 'хв' : m + 'хв ' + rs + 'с';
-  }
-
   function activeRemainingSecNow(entry, nowMs) {
     if (!entry || entry.expiresAt == null) return null;
     return Math.max(0, Math.ceil((Number(entry.expiresAt) - nowMs) / 1000));
@@ -84,41 +76,41 @@
         var li = document.createElement('li');
         li.className = 'l2-pers-buff-row l2-pers-buff-row--active';
         li.setAttribute('data-l2-skill-id', String(b.skillId));
+        var label = nameByL2[b.skillId] || 'skillId ' + b.skillId;
+        li.title = label + ' · lvl ' + (b.level || 1);
+
+        var ring = document.createElement('span');
+        ring.className = 'l2-pers-buff-ring';
+        ring.setAttribute('aria-hidden', 'true');
+        li.appendChild(ring);
+
+        var inner = document.createElement('span');
+        inner.className = 'l2-pers-buff-inner';
 
         var ico = document.createElement('img');
         ico.className = 'l2-pers-buff-ico';
         ico.alt = '';
-        ico.src = iconByL2[b.skillId] || '/game/skill-icon/' + b.skillId;
-        li.appendChild(ico);
-
-        var nm = document.createElement('span');
-        nm.className = 'l2-pers-buff-name';
-        var label = nameByL2[b.skillId] || 'skillId ' + b.skillId;
-        nm.textContent = label + ' · lvl ' + (b.level || 1);
-        li.appendChild(nm);
-
-        var meta = document.createElement('span');
-        meta.className = 'l2-pers-buff-meta';
-        meta.setAttribute('data-role', 'active-timer');
-        var remA = activeRemainingSecNow(b, nowMs);
-        meta.textContent = remA == null ? 'постійний' : fmtSec(remA);
-        li.appendChild(meta);
+        ico.src =
+          window.L2 && typeof L2.resolveSkillIconUrl === 'function'
+            ? L2.resolveSkillIconUrl(b.skillId, iconByL2[b.skillId] || null)
+            : iconByL2[b.skillId] || '/game/skill-icon/' + b.skillId;
+        inner.appendChild(ico);
+        li.appendChild(inner);
 
         var durSec = Number(durationSecByL2[b.skillId] || 0);
         if (b.expiresAt != null && Number.isFinite(durSec) && durSec > 0) {
           var durMs = Math.max(1000, Math.floor(durSec * 1000));
           li.setAttribute('data-active-expires', String(Number(b.expiresAt)));
           li.setAttribute('data-active-dur', String(durMs));
-          var bar = document.createElement('span');
-          bar.className = 'l2-pers-buff-timebar';
-          bar.setAttribute('aria-hidden', 'true');
-          var fill = document.createElement('span');
-          fill.className = 'l2-pers-buff-timebar-fill';
           var remMsInit = Math.max(0, Number(b.expiresAt) - nowMs);
           var ratioInit = Math.min(1, Math.max(0, remMsInit / durMs));
-          fill.style.transform = 'scaleX(' + ratioInit.toFixed(4) + ')';
-          bar.appendChild(fill);
-          li.appendChild(bar);
+          var degInit = Math.round(360 * ratioInit);
+          ring.style.background =
+            'conic-gradient(rgba(214, 88, 78, 0.95) ' +
+            String(degInit) +
+            'deg, rgba(60, 46, 36, 0.8) 0)';
+        } else {
+          ring.style.background = 'linear-gradient(180deg, rgba(212,168,74,0.92), rgba(120,86,40,0.9))';
         }
 
         activeEl.appendChild(li);
@@ -142,22 +134,24 @@
         var row = rows[i];
         var sid = Number(row.getAttribute('data-l2-skill-id'));
         var entry = active.find(function (b) { return b && b.skillId === sid; });
-        var m = row.querySelector('[data-role="active-timer"]');
         if (!entry) { needReRender = true; continue; }
         var rem = activeRemainingSecNow(entry, nowMs);
-        if (m) m.textContent = rem == null ? 'постійний' : fmtSec(rem);
         var expMs = Number(row.getAttribute('data-active-expires'));
         var durMs = Number(row.getAttribute('data-active-dur'));
-        var fill = row.querySelector('.l2-pers-buff-timebar-fill');
+        var ring = row.querySelector('.l2-pers-buff-ring');
         if (
-          fill &&
+          ring &&
           Number.isFinite(expMs) &&
           Number.isFinite(durMs) &&
           durMs > 0
         ) {
           var remMs = Math.max(0, expMs - nowMs);
           var ratio = Math.min(1, Math.max(0, remMs / durMs));
-          fill.style.transform = 'scaleX(' + ratio.toFixed(4) + ')';
+          var deg = Math.round(360 * ratio);
+          ring.style.background =
+            'conic-gradient(rgba(214, 88, 78, 0.95) ' +
+            String(deg) +
+            'deg, rgba(60, 46, 36, 0.8) 0)';
         }
         if (rem === 0) needReRender = true;
       }
@@ -170,7 +164,7 @@
 
   function startBuffsTick() {
     if (BUFFS_TICK_TIMER) clearInterval(BUFFS_TICK_TIMER);
-    BUFFS_TICK_TIMER = setInterval(tickBuffs, 1000);
+    BUFFS_TICK_TIMER = setInterval(tickBuffs, 250);
   }
 
   async function refetchCharacter() {
@@ -182,13 +176,23 @@
     if (!r.ok) return null;
     var j = await r.json();
     if (!j || !j.character) return null;
-    renderBuffs(j.character);
-    applyBarsFromSnapshot(j.character);
-    return j.character;
+    var snapshot = j.character;
+    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+      L2.applyCharacterSnapshot(snapshot);
+    } else {
+      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(snapshot);
+      }
+      applyBarsFromSnapshot(snapshot);
+    }
+    renderBuffs(snapshot);
+    return snapshot;
   }
 
   function applyBarsFromSnapshot(c) {
-    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+      L2.applyCharacterSnapshot(c);
+    } else if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(c);
     }
   }
@@ -387,6 +391,9 @@
       typeof window.L2.mergeGearCatalog === 'function'
     ) {
       window.L2.mergeGearCatalog(j.gearCatalog);
+    }
+    if (window.L2 && typeof window.L2.mergeCraftResourceIconHints === 'function') {
+      window.L2.mergeCraftResourceIconHints(j);
     }
 
     var cityEl = $('pers-city');

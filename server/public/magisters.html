@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
   </head>
   <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-magisters l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
@@ -80,8 +80,15 @@
                   >Назад до міста</a
                 >
               </p>
-              <h1 class="l2-magisters-title" data-i18n="magisters_h1">Магістри та наставники</h1>
-              <p class="l2-magisters-hint" data-i18n="magisters_hint"></p>
+              <div class="l2-magisters-intro">
+                <p data-i18n="magisters_intro_p1">
+                  Досвідчені майстри готові передати тобі знання про бойові техніки, магічні закляття та особливі
+                  навички класу.
+                </p>
+                <p data-i18n="magisters_intro_p2">
+                  Вивчай нові уміння, посилюй свого героя та готуйся до небезпечних пригод і битв.
+                </p>
+              </div>
               <ul class="l2-city-npc-list" id="magisters-npc-list"></ul>
             </section>
 
@@ -94,7 +101,7 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js"></script>
-    <script src="/magisters.js"></script>
+    <script src="/l2-nav.js?v=20260509city59621"></script>
+    <script src="/magisters.js?v=magisterHubPcLike"></script>
   </body>
 </html>

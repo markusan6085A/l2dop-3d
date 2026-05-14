@@ -10,11 +10,11 @@
       href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/styles.css?v=20260503equipBtnHalf" />
+    <link rel="stylesheet" href="/styles.css?v=20260509charBagTabs" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=29" />
-    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=6" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=12bagfiltersInset35mm" />
   </head>
   <body
     class="l2-body l2-page-city l2-page-char l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -157,14 +157,26 @@
               <div class="l2-char-bag-block" aria-label="Сумка">
                 <p class="l2-char-bag-title">У сумці</p>
                 <div class="l2-char-inv-filters" aria-label="Категорії сумки">
-                  <div class="l2-char-inv-row" role="tablist" aria-label="Категорія">
-                    <button type="button" class="l2-char-inv-link l2-char-inv-link--active" data-inv-cat="all" role="tab" aria-selected="true">Усі</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="weapon" role="tab" aria-selected="false">Зброя</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="armor" role="tab" aria-selected="false">Броня</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="neck" role="tab" aria-selected="false">Намисто</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="earring" role="tab" aria-selected="false">Сережки</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="ring" role="tab" aria-selected="false">Обручки</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="elements" role="tab" aria-selected="false">Стихії</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="upgrades" role="tab" aria-selected="false">Покращ. речей</button>
-                  </div>
-                  <div class="l2-char-inv-row" role="tablist" aria-label="Інше">
-                    <button type="button" class="l2-char-inv-link" data-inv-cat="consumable" role="tab" aria-selected="false">Розхід</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="resource" role="tab" aria-selected="false">Рес</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="recipe" role="tab" aria-selected="false">Рецепти</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="quest" role="tab" aria-selected="false">Сюжетне</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-link" data-inv-cat="book" role="tab" aria-selected="false">Книги</button>
-                  </div>
-                  <div class="l2-char-inv-row l2-char-inv-row--grades" id="char-bag-inv-grades" role="group" aria-label="Грейд" hidden>
-                    <button type="button" class="l2-char-inv-grade l2-char-inv-grade--active" data-inv-grade="all">Усі</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="d">D</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="c">C</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="b">B</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="a">A</button><span class="l2-char-inv-sep" aria-hidden="true">|</span><button type="button" class="l2-char-inv-grade" data-inv-grade="s">S</button>
+                  <div class="l2-char-inv-shop-tabs-host l2-gm-shop">
+                    <div
+                      id="char-bag-tab-cats"
+                      class="l2-drops-shop-tablist l2-drops-shop-tablist--cats"
+                      role="tablist"
+                      aria-label="Тип предмета"
+                    ></div>
+                    <div
+                      id="char-bag-tab-grades"
+                      class="l2-drops-shop-tablist l2-drops-shop-tablist--grades"
+                      role="tablist"
+                      aria-label="Грейд"
+                    ></div>
+                    <div
+                      id="char-bag-tab-subs"
+                      class="l2-drops-shop-tablist l2-drops-shop-tablist--weapon-kind"
+                      role="tablist"
+                      aria-label="Підкатегорія"
+                      hidden
+                    ></div>
                   </div>
                 </div>
                 <div id="char-bag-list" class="l2-char-bag-list"></div>
@@ -210,8 +222,8 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js"></script>
+    <script src="/l2-nav.js?v=20260509city59621"></script>
     <script src="/armor-set-bonuses-ui.js?v=5"></script>
-    <script src="/char.js?v=20260503shieldSlot"></script>
+    <script src="/char.js?v=20260509bagWideMagicRes"></script>
   </body>
 </html>

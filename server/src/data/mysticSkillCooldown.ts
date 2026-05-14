@@ -25,6 +25,29 @@ export function mysticGlobalSkillCooldownSec(castSpd: number): number {
 }
 
 /**
+ * Масштабує базовий CD конкретного скіла від cast speed:
+ * - при 500 castSpd CD лишається базовим
+ * - при більшому castSpd CD стискається пропорційно
+ * - нижня межа 0.4с (анти-спам кап рушія)
+ */
+export function scaleSkillCooldownByCastSpeed(
+  baseCdSec: number,
+  castSpd: number
+): number {
+  const base =
+    typeof baseCdSec === 'number' && Number.isFinite(baseCdSec) && baseCdSec > 0
+      ? baseCdSec
+      : MYSTIC_CD_AT_BASELINE_SEC;
+  const cspd = clamp(
+    Number.isFinite(castSpd) ? Math.floor(castSpd) : CAST_SPD_BASELINE,
+    CAST_SPD_BASELINE,
+    CAST_SPD_CAP
+  );
+  const scaled = base * (CAST_SPD_BASELINE / cspd);
+  return Math.max(MYSTIC_CD_AT_CAP_SEC, Math.round(scaled * 100) / 100);
+}
+
+/**
  * Множник з пасивок cooldown reduction: 1.10 = 10% швидше (CD ділиться на 1.10).
  */
 export function applyCooldownReductionMul(
