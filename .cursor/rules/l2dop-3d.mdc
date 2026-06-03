@@ -40,6 +40,10 @@ alwaysApply: true
 - **Розмір модулів:** тримайся ліміту ~300–400 рядків на файл і barrel-експортів для підсистем (див. `greenfield-game.mdc` §3); не додавай сотні рядків у вже «стелю вдарив» файл без розбиття.
 - Для ігрової логіки зберігай знайомі імена з L2 (`pAtk`, `classid`, тощо), якщо вже так у проєкті.
 - Великі блоки позначай секційними коментарями (як `//====...====` у `function.php`), якщо файл уже в такому стилі.
+- Для мутацій персонажа не роби прямі `tx.character.update(...)` у новому коді, якщо це видима дія гравця; використовуй `mutateCharacterWithRevision(...)`.
+- Якщо додаєш новий мутаційний endpoint, одразу закладай: `expectedRevision` з клієнта, `409 revision_conflict` через helper, auto-resync на UI.
+- Для `routes/` не дублюй локальні helper-и валідації (`ensureUserId`, `parseExpectedRevision`, `ensureBodyRecord`) у кожному файлі: використовуй спільний `server/src/routes/routeHttpHelpers.ts`.
+- Довгі блоки мапінгу route-помилок винось у `server/src/routes/*ErrorHandlers.ts` (або `*RouteErrors.ts`), щоб route-файл залишався коротким orchestration-шаром.
 
 ## Коміти та PR / опис змін
 

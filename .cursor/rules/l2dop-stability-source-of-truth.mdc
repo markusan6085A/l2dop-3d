@@ -8,10 +8,16 @@ alwaysApply: true
 - **Сервер — єдине джерело правди.** Після кожної мутації повертай повний `character` snapshot; клієнт оновлює стан тільки з відповіді сервера.
 - **Клієнт не рахує економіку/інвентар як істину.** Локально дозволено лише оптимістичний UI (кд, анімація, блок кнопки), який завжди перезаписується snapshot.
 - **`expectedRevision` обов'язковий** для всіх `POST/PATCH` мутацій; при `409` — роби `GET /character`, оновлюй глобальний snapshot/revision і тільки потім повторюй дію.
+- **Hard mutation-патерн обов'язковий.** Будь-яка видима зміна `Character` (колонки або `heroJson`) проходить через `mutateCharacterWithRevision(...)` у `services/`.
+- **One action = one commit.** Одна дія гравця (`craft`, `learn`, `move`, `battle outcome`, `equip/unequip`, `buy/sell`, `use item`) має робити один фінальний write, один `revision++`, один snapshot.
+- **Pure-first логіка.** Обчислення (`regen`, `move`, формули/патчі) роби pure-функціями без write; write лише після обчислення фінального патча стану.
 - **Read-path дисципліна.** `GET /character` має бути read-only або максимум один контрольований sanitize/update блок у одній транзакції; без каскадних write-chain.
 - **Транзакційність.** Одна ігрова подія = одна атомарна транзакція. Перевірки, критичні для мутації (distance, battle active, доступність дії), виконувати всередині transaction (anti-TOCTOU).
 - **Revision policy.** `revision++` лише коли реально змінено видимий стан персонажа/бою. Не піднімати revision фоновим шумом без потреби.
+- **Конфлікти ревізії завжди однакові.** Для HTTP-конфліктів використовуй єдиний helper `sendRevisionConflict(...)`; не повертай кастомні формати `409`.
+- **Виняток для `expectedRevision = null`** лише для внутрішніх серверних дій (admin/maintenance/migration), не для звичайної дії гравця з UI.
 - **Безпека логів.** Логуй тільки технічні поля: `action`, `characterId`, `expectedRevision`, `actualRevision`, `result`. Не логуй `heroJson`, інвентар повністю, токени, cookie, request body цілком.
 - **Тонкі routes.** Бойова/економічна логіка не в `routes/`; виносити у `services/` або `domain/`.
 - **Контроль конкурентності в UI.** Для дубль-кліків використовуй `inFlight` lock + гарантований `finally` (щоб кнопка не зависала після fetch error).
 - **Перед merge обов'язково:** мінімум smoke (battle spam, equip spam, teleport + 409 resync, refresh після 409) і перевірка, що HUD/revision синхронні.
+- **Єдиний HTTP-шар для ревізій.** Парсинг `expectedRevision`, валідація body та `401` перевірки мають іти через shared route helper-и; не плодити копії валідації у кожному endpoint.

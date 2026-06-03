@@ -10,6 +10,9 @@ alwaysApply: true
 - Для динамічних іконок скілів використовуй `L2.resolveSkillIconUrl(skillId, iconUrl)`; не хардкодь різні правила в кожному екрані.
 - Якщо API дає `iconUrl`, кешуй підказку через `L2.rememberItemIconHint(itemId, iconUrl)` для подальших екранів.
 - На `409 revision_conflict` обов'язково роби resync: `GET /character` -> `L2.setLastSnapshot(...)` -> `L2.applyHudFromSnapshot(...)`.
+- Використовуй спільний helper `L2.resyncCharacterAfterConflict(...)`; не роби локальні копії логіки resync у кожному екрані.
+- Після успішної мутації використовуй єдиний порядок: `L2.applyCharacterSnapshot(snapshot)` -> `applyScreenSpecificFromSnapshot(snapshot)`.
 - `inFlight` lock для мутацій UI завжди через `try/finally`; заборонено залишати кнопку/дію заблокованою після exception.
 - Для всіх fallback-помилок завантаження іконок використовуй безпечний дефолт (`/icons/drops/other.svg`), без падіння рендера.
 - Не змінюй серверні правила з клієнта: клієнт надсилає намір (`action`, `itemId`, `expectedRevision`), а не "готовий" результат.
+- Для всіх write-запитів із UI відправляй `expectedRevision` з `L2.lastSnapshot()?.revision`; не роби write без ревізії.

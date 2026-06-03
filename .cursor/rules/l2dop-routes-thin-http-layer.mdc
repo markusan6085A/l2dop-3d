@@ -13,6 +13,10 @@ alwaysApply: true
 - **Заборонено в route:** прямий виклик на кшталт `prisma.character.update(...)`.
 - **Дозволений патерн route:** `const result = await someService.someUseCase(...); return reply.send(result);`
 - Для мутацій використовуй єдиний формат конфлікту ревізії: HTTP `409` + стабільний код помилки (`revision_conflict`) + коротке `messageUk`.
+- Для `409` у route викликай тільки `sendRevisionConflict(reply, ...)`; не дублюй тіло відповіді локально.
+- У мутаційних route обов'язково передавай `expectedRevision` у сервіс; не роби write-flow без ревізійного контракту.
 - Mutation logs у route мають бути уніфіковані: `action`, `characterId`, `expectedRevision`, `actualRevision`, `result`.
 - У логах заборонено: `heroJson`, повний request `body`, `token`, `cookie`, інші sensitive payloads.
 - Якщо потрібен write у новому endpoint: створи/розшир сервісний use-case, не додавай write прямо в route.
+- Для типових HTTP-перевірок (`userId`, `request.body`, `expectedRevision`) використовуй shared helper-и з `routes/routeHttpHelpers.ts`; не копіюй локальні версії в кожному route-файлі.
+- Довгі мапінги помилок (`if (err.message === ...)`) винось у окремі route-модулі `*ErrorHandlers.ts`/`*RouteErrors.ts`; route лишається orchestration-рівнем.
