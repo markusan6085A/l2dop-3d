@@ -1,28 +1,35 @@
 /**
- * Global L2DOP outer frame.
- * Uses the Miru frame artwork from /assets/frame-full.png for every page that has
- * .l2-screen.l2-outer-sframe-host. The old ref-piece frame is kept in HTML but hidden here.
+ * Global L2DOP outer frame assembled from sliced assets.
+ * Applies to game pages that use .l2-app-l2-chrome + .l2-outer-sframe-host.
+ * The standalone home page is not affected because it does not use this chrome.
  */
 
 .l2-outer-sframe-host {
-  --l2s-outer-void: #050403;
-  --l2s-outer-void-mid: #050403;
-  --l2s-outer-void-top: #070604;
-  --l2s-story-pad-l: clamp(28px, 10vw, 86px);
-  --l2s-story-pad-r: clamp(28px, 10vw, 86px);
-  --l2s-story-pad-below-cap: clamp(70px, 15vw, 112px);
+  --l2-frame-corner: clamp(34px, 8.5vw, 64px);
+  --l2-frame-side: clamp(16px, 4.2vw, 32px);
+  --l2-frame-top-h: clamp(34px, 8vw, 64px);
+  --l2-frame-bottom-h: clamp(30px, 7vw, 64px);
+  --l2-frame-pad-top: clamp(92px, 16vw, 128px);
+  --l2-frame-pad-x: clamp(34px, 9vw, 78px);
+  --l2-frame-pad-bottom: clamp(42px, 8vw, 76px);
+  --l2-frame-path: /assets/assets;
+  --l2s-story-pad-l: var(--l2-frame-pad-x);
+  --l2s-story-pad-r: var(--l2-frame-pad-x);
+  --l2s-story-pad-below-cap: var(--l2-frame-pad-top);
   max-width: 684px;
   margin: 0 auto;
   min-height: 100vh;
-  border-radius: 0;
   position: relative;
   overflow: visible !important;
   border: none;
   box-shadow: none;
-  background: #1c1a16;
+  background: #1f1d18;
 }
 
-/* Stronger than later l2-app-chrome-skin.css rules. */
+html body.l2-body.l2-app-l2-chrome {
+  background: #000 !important;
+}
+
 html body.l2-app-l2-chrome .l2-shell {
   max-width: none !important;
   width: 100% !important;
@@ -30,49 +37,19 @@ html body.l2-app-l2-chrome .l2-shell {
   background: transparent !important;
 }
 
-html body.l2-body.l2-app-l2-chrome {
-  background: #000 !important;
-}
-
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   width: min(100%, 684px) !important;
   max-width: 684px !important;
   margin: 0 auto !important;
   min-height: 100vh !important;
-  background: #1c1a16 !important;
+  background: #1f1d18 !important;
   background-image: none !important;
   border: none !important;
   box-shadow: none !important;
   overflow: visible !important;
 }
 
-/* Main Miru frame artwork. */
-html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
-  content: '' !important;
-  display: block !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 5 !important;
-  pointer-events: none !important;
-  background-image: url('/assets/frame-full.png?v=20260704globalFrame') !important;
-  background-repeat: no-repeat !important;
-  background-position: top center !important;
-  background-size: 100% 100% !important;
-}
-
-html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
-  content: '' !important;
-  display: block !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 0 !important;
-  pointer-events: none !important;
-  background:
-    radial-gradient(ellipse 95% 35% at 50% 0%, rgba(96, 76, 42, 0.12), transparent 55%),
-    linear-gradient(180deg, #211f1a 0%, #191712 42%, #11100d 100%) !important;
-}
-
-/* The old pieced ref-frame is still in every HTML page; hide the visual pieces. */
+/* Disable old separate ref frame from HTML. */
 .l2-outer-sframe,
 .l2-outer-sframe__g,
 .l2-outer-sframe__n,
@@ -83,12 +60,70 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
   background: none !important;
 }
 
-/* Old top crest does not belong to the Miru frame. */
 html body.l2-app-l2-chrome .l2-outer-sframe-host > .l2-game-chrome-crest {
   display: none !important;
 }
 
-/* Content sits inside the Miru frame. */
+/* Center fill from sliced frame, behind content. */
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  inset: var(--l2-frame-top-h) var(--l2-frame-side) var(--l2-frame-bottom-h) var(--l2-frame-side) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(rgba(31, 29, 24, 0.92), rgba(31, 29, 24, 0.92)),
+    url('/assets/assets/center.png?v=20260704slicedFrame') center center / 100% 100% no-repeat !important;
+}
+
+/* Assembled frame pieces. */
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+  background-image:
+    url('/assets/assets/top-left.png?v=20260704slicedFrame'),
+    url('/assets/assets/top-right.png?v=20260704slicedFrame'),
+    url('/assets/assets/bottom-left.png?v=20260704slicedFrame'),
+    url('/assets/assets/bottom-right.png?v=20260704slicedFrame'),
+    url('/assets/assets/top.png?v=20260704slicedFrame'),
+    url('/assets/assets/bottom.png?v=20260704slicedFrame'),
+    url('/assets/assets/left.png?v=20260704slicedFrame'),
+    url('/assets/assets/right.png?v=20260704slicedFrame');
+  background-repeat:
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    repeat-x,
+    repeat-x,
+    repeat-y,
+    repeat-y;
+  background-position:
+    top left,
+    top right,
+    bottom left,
+    bottom right,
+    top center,
+    bottom center,
+    left center,
+    right center;
+  background-size:
+    var(--l2-frame-corner) var(--l2-frame-corner),
+    var(--l2-frame-corner) var(--l2-frame-corner),
+    var(--l2-frame-corner) var(--l2-frame-corner),
+    var(--l2-frame-corner) var(--l2-frame-corner),
+    auto var(--l2-frame-top-h),
+    auto var(--l2-frame-bottom-h),
+    var(--l2-frame-side) auto,
+    var(--l2-frame-side) auto;
+}
+
+/* Content inside the frame. */
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
   position: relative !important;
   z-index: 6 !important;
@@ -96,10 +131,10 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
   max-width: 100% !important;
   min-height: 100vh !important;
   padding:
-    clamp(78px, 15vw, 116px)
-    clamp(34px, 10vw, 88px)
-    calc(clamp(44px, 9vw, 78px) + env(safe-area-inset-bottom, 0px))
-    clamp(34px, 10vw, 88px) !important;
+    var(--l2-frame-pad-top)
+    var(--l2-frame-pad-x)
+    calc(var(--l2-frame-pad-bottom) + env(safe-area-inset-bottom, 0px))
+    var(--l2-frame-pad-x) !important;
   background: transparent !important;
   background-image: none !important;
 }
@@ -110,7 +145,6 @@ html body.l2-app-l2-chrome .l2-screen-inner::after {
   display: none !important;
 }
 
-/* Fixed bottom nav must stay inside the new frame column. */
 html body.l2-app-l2-chrome.l2-page-has-fixed-nav #l2-nav-bottom {
   position: relative !important;
   left: auto !important;
@@ -126,19 +160,14 @@ html body.l2-app-l2-chrome.l2-page-has-fixed-nav #l2-nav-bottom {
   box-shadow: none !important;
 }
 
-/* Keep pages usable on narrow phones. */
 @media (max-width: 430px) {
-  html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
-    padding:
-      clamp(62px, 18vw, 86px)
-      clamp(20px, 7vw, 34px)
-      calc(38px + env(safe-area-inset-bottom, 0px))
-      clamp(20px, 7vw, 34px) !important;
-  }
-}
-
-@media (min-width: 685px) {
-  html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
-    min-height: 100vh !important;
+  .l2-outer-sframe-host {
+    --l2-frame-corner: clamp(30px, 12vw, 48px);
+    --l2-frame-side: clamp(12px, 4vw, 20px);
+    --l2-frame-top-h: clamp(42px, 13vw, 58px);
+    --l2-frame-bottom-h: clamp(26px, 7vw, 44px);
+    --l2-frame-pad-top: clamp(76px, 20vw, 96px);
+    --l2-frame-pad-x: clamp(22px, 7vw, 34px);
+    --l2-frame-pad-bottom: clamp(34px, 8vw, 52px);
   }
 }
