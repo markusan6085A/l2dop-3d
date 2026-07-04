@@ -1,216 +1,166 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>L2DOP</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
-    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
-  </head>
-  <body class="l2-body l2-page-city l2-page-townlive l2-page-auth l2-app-l2-chrome">
-    <div class="l2-shell">
-      <div class="l2-screen l2-outer-sframe-host">
-        <div class="l2-outer-sframe" aria-hidden="true">
-          <div class="l2-outer-sframe__g">
-            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
-              <img
-                class="l2-outer-sframe__cap-tl-img"
-                src="/ref/19.png"
-                alt=""
-                width="28"
-                height="52"
-                decoding="async"
-              />
-            </span>
-            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
-            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
-            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
-            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
-            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
-            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
-            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
-          </div>
-          <div class="l2-outer-sframe__cap-tr" role="presentation">
-            <img
-              class="l2-outer-sframe__cap-tr-img"
-              src="/ref/18.png"
-              alt=""
-              width="28"
-              height="52"
-              decoding="async"
-            />
-          </div>
-        </div>
-        <div class="l2-game-chrome-crest" aria-hidden="true">
-          <img
-            class="l2-game-chrome-crest__img"
-            src="/ref/2.png"
-            alt=""
-            width="40"
-            height="40"
-            decoding="async"
-          />
-        </div>
-        <div class="l2-screen-inner l2-city-root">
-          <div class="l2-townlive-column">
-            <div class="l2-auth-hero">
-              <div class="l2-auth-hero-fon-wrap">
-                <img
-                  class="l2-auth-hero-fon"
-                  src="/ref/fon.jpg"
-                  alt=""
-                  decoding="async"
-                />
-              </div>
-              <a class="btn-cta l2-auth-cta" href="#login-block" data-i18n="auth_start">Почати гру</a>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>L2DOP</title>
+  <style>
+    * { box-sizing: border-box; }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background: #000;
+      overflow-x: hidden;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .miru-home {
+      position: relative;
+      width: min(100vw, 684px);
+      aspect-ratio: 684 / 1332;
+      min-height: 100vh;
+      background: #000;
+      overflow: hidden;
+    }
+    .miru-home__bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+    .miru-home__form {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 0;
+    }
+    .miru-home__field,
+    .miru-home__hit {
+      position: absolute;
+      display: block;
+      border: 0;
+      outline: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .miru-home__field {
+      background: rgba(0, 0, 0, 0.08);
+      color: #f5e8bd;
+      text-align: center;
+      font-size: clamp(10px, 2.1vw, 15px);
+      line-height: 1;
+      padding: 0 5px;
+      text-shadow: 0 1px 2px #000;
+      caret-color: #d8bd72;
+    }
+    .miru-home__field::placeholder {
+      color: rgba(245, 232, 189, 0.32);
+    }
+    .miru-home__hit {
+      cursor: pointer;
+      background: transparent;
+      color: transparent;
+      text-decoration: none;
+    }
+    .miru-home__play { left: 23.1%; top: 21.17%; width: 53.8%; height: 6.15%; }
+    .miru-home__nick { left: 29.7%; top: 31.23%; width: 41.0%; height: 2.65%; }
+    .miru-home__pass { left: 29.7%; top: 35.74%; width: 41.0%; height: 2.65%; }
+    .miru-home__login { left: 38.6%; top: 38.55%; width: 22.9%; height: 2.70%; }
+    .miru-home__reg { left: 26.5%; top: 44.90%; width: 47.0%; height: 2.85%; }
+    .miru-home__about { left: 26.5%; top: 49.32%; width: 47.0%; height: 2.85%; }
+    .miru-home__forgot { left: 26.5%; top: 53.82%; width: 47.0%; height: 2.85%; }
+    .miru-home__remember {
+      position: absolute;
+      left: 26.5%;
+      top: 41.55%;
+      width: 47%;
+      height: 2.2%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      color: rgba(236, 215, 151, 0.72);
+      font-size: clamp(9px, 1.9vw, 13px);
+      text-shadow: 0 1px 2px #000;
+      user-select: none;
+    }
+    .miru-home__remember input {
+      width: 12px;
+      height: 12px;
+      margin: 0;
+      accent-color: #9b7a32;
+    }
+    .miru-home__msg {
+      position: absolute;
+      left: 18%;
+      top: 57.3%;
+      width: 64%;
+      margin: 0;
+      color: #ffb1a8;
+      text-align: center;
+      font-size: clamp(10px, 2.1vw, 14px);
+      line-height: 1.25;
+      text-shadow: 0 1px 3px #000;
+      pointer-events: none;
+    }
+    .miru-home__msg[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main class="miru-home" aria-label="L2DOP home page">
+    <img class="miru-home__bg" src="/assets/miru-page-perfect.png?v=20260704miru" alt="" decoding="async" />
 
-              <p class="l2-auth-meta l2-auth-meta--online">
-                <span class="l2-auth-online-dot" aria-hidden="true"></span>
-                <span data-i18n="auth_online">Онлайн: залежить від сервера</span>
-              </p>
-            </div>
+    <form id="form-login" class="miru-home__form" action="#" method="post" onsubmit="return false;">
+      <a class="miru-home__hit miru-home__play" href="#form-login" aria-label="Почати гру">Почати гру</a>
 
-            <div class="main l2-auth-panel" id="login-block">
-              <span class="main-inner-frame" aria-hidden="true"></span>
-              <div class="main-ornament-top" aria-hidden="true"></div>
-              <div class="main-ornament-bottom" aria-hidden="true"></div>
-              <div class="main-corner-bl" aria-hidden="true"></div>
-              <div class="main-corner-br" aria-hidden="true"></div>
-              <div class="main-l2-stack">
-                <div
-                  class="l2-auth-tabs"
-                  role="tablist"
-                  data-i18n-attr="aria-label:auth_tabs_aria"
-                  aria-label="Вхід або реєстрація"
-                >
-                  <span
-                    class="l2-auth-tab l2-auth-tab--active"
-                    role="tab"
-                    aria-selected="true"
-                    data-i18n="auth_tab_login"
-                    >Вхід</span
-                  >
-                  <a
-                    class="l2-auth-tab"
-                    role="tab"
-                    aria-selected="false"
-                    href="/register.html"
-                    data-i18n="auth_tab_register"
-                    >Реєстрація</a
-                  >
-                </div>
+      <input
+        id="in-login"
+        class="miru-home__field miru-home__nick"
+        type="text"
+        name="login"
+        autocomplete="username"
+        placeholder="Логін"
+        aria-label="Логін"
+      />
 
-                <form id="form-login" action="#" method="post" onsubmit="return false;">
-                  <div class="l2-auth-field">
-                    <label class="lbl-l2" for="in-login" data-i18n="auth_label_login">Логін</label>
-                    <div class="l2-auth-input-wrap">
-                      <span class="l2-auth-field__ico" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                          <path
-                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                          />
-                        </svg>
-                      </span>
-                      <input
-                        id="in-login"
-                        class="inp-l2"
-                        type="text"
-                        name="login"
-                        autocomplete="username"
-                        data-i18n-attr="placeholder:auth_placeholder_login"
-                        placeholder="Введіть логін"
-                      />
-                    </div>
-                  </div>
+      <input
+        id="in-pass"
+        class="miru-home__field miru-home__pass"
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        placeholder="Пароль"
+        aria-label="Пароль"
+      />
 
-                  <div class="l2-auth-field l2-auth-field--pass">
-                    <label class="lbl-l2" for="in-pass" data-i18n="auth_label_pass">Пароль</label>
-                    <div class="l2-auth-input-wrap">
-                      <span class="l2-auth-field__ico" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                          <path
-                            d="M17 8h-1V6c0-2.76-2.24-5-5-5S6 3.24 6 6v2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H8V6z"
-                          />
-                        </svg>
-                      </span>
-                      <input
-                        id="in-pass"
-                        class="inp-l2"
-                        type="password"
-                        name="password"
-                        autocomplete="current-password"
-                        data-i18n-attr="placeholder:auth_placeholder_pass"
-                        placeholder="Введіть пароль"
-                      />
-                      <button
-                        type="button"
-                        id="btn-pass-toggle"
-                        class="l2-auth-pass-toggle"
-                        data-i18n-attr="aria-label:auth_toggle_pass_aria"
-                        aria-label="Показати або приховати пароль"
-                      >
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
-                          <path
-                            d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"
-                            stroke="currentColor"
-                            stroke-width="1.25"
-                            stroke-linejoin="round"
-                          />
-                          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.25" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+      <button id="btn-login" class="miru-home__hit miru-home__login" type="button" aria-label="Увійти">
+        Увійти
+      </button>
 
-                  <div class="l2-auth-options">
-                    <label class="l2-auth-remember">
-                      <input type="checkbox" id="auth-remember" name="remember" />
-                      <span data-i18n="auth_remember">Запам’ятати мене</span>
-                    </label>
-                    <a href="#" id="auth-forgot-pass" class="l2-auth-forgot" data-i18n="auth_forgot_pass"
-                      >Забули пароль?</a
-                    >
-                  </div>
+      <label class="miru-home__remember">
+        <input type="checkbox" id="auth-remember" name="remember" />
+        <span>Запам’ятати мене</span>
+      </label>
 
-                  <button type="button" id="btn-login" class="btn-l2 l2-auth-submit" data-i18n="auth_submit">
-                    Увійти
-                  </button>
-                </form>
+      <a class="miru-home__hit miru-home__reg" href="/register.html" aria-label="Реєстрація">Реєстрація</a>
+      <a class="miru-home__hit miru-home__about" href="/project.html" aria-label="Про сервер">Про сервер</a>
+      <a class="miru-home__hit miru-home__forgot" id="auth-forgot-pass" href="#" aria-label="Забули пароль">Забули пароль</a>
 
-                <p class="err" id="login-msg" hidden></p>
-              </div>
-            </div>
+      <p class="miru-home__msg" id="login-msg" hidden></p>
+    </form>
+  </main>
 
-            <nav
-              class="l2-dock l2-dock--auth"
-              data-i18n-attr="aria-label:auth_dock_aria"
-              aria-label="Швидкі посилання"
-            >
-              <a href="/register.html" class="l2-dock-tile">
-                <span data-i18n="auth_register">Реєстрація</span>
-              </a>
-              <a href="#" class="l2-dock-tile">
-                <span data-i18n="auth_dock_about">Про сервер</span>
-              </a>
-            </nav>
-
-            <p class="footer-links">
-              <span>L2DOP</span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script src="/common.js"></script>
-    <script src="/ui-i18n.js"></script>
-    <script src="/main.js"></script>
-  </body>
+  <script src="/common.js"></script>
+  <script src="/ui-i18n.js"></script>
+  <script src="/main.js?v=20260704miruHome"></script>
+</body>
 </html>
