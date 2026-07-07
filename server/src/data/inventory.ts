@@ -145,8 +145,14 @@ export function needsStarterKitMigration(inv: InventoryState): boolean {
   return inv._sk !== STARTER_KIT_VERSION;
 }
 
-/** Міграція `_sk` для старих персонажів; склад сумки не змінюємо (стартер лише при register). */
-export function migrateInventoryToSk2(inv: InventoryState): InventoryState {
+/**
+ * Міграція `_sk` для старих персонажів.
+ * Якщо сумка й екіп порожні — видаємо стартовий набір (клас із реєстрації).
+ */
+export function migrateInventoryToSk2(
+  inv: InventoryState,
+  classBranch: StarterClassBranch = 'fighter',
+): InventoryState {
   const known = (id: number) => !!ITEM_CATALOG[id];
   const stacks: BagStack[] = [];
   for (const s of inv.stacks) {
@@ -165,6 +171,9 @@ export function migrateInventoryToSk2(inv: InventoryState): InventoryState {
         eq[k] = slot.itemId;
       }
     }
+  }
+  if (stacks.length === 0 && Object.keys(eq).length === 0) {
+    return starterInventory(classBranch);
   }
   return {
     v: 1,

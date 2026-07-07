@@ -531,7 +531,7 @@
 
     var armorHost = modal.querySelector('[data-modal-armor-sets]');
     if (armorHost && window.L2ArmorSetBonusesUI) {
-      if (it.category === 'armor') {
+      if (it.category === 'armor' && it.grade !== 'NG') {
         var armorPid =
           it.previewItemId != null ? it.previewItemId : it.itemId;
         window.L2ArmorSetBonusesUI.showIn(armorHost, it.grade, armorPid);

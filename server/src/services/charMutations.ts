@@ -122,7 +122,9 @@ export async function getSnapshotForUser(
     let invJsonForShadow = cr.inventoryJson;
     const inv = parseInventory(cr.inventoryJson);
     if (needsStarterKitMigration(inv)) {
-      const migrated = migrateInventoryToSk2(inv);
+      const branch =
+        cr.classBranch === 'mystic' ? ('mystic' as const) : ('fighter' as const);
+      const migrated = migrateInventoryToSk2(inv, branch);
       invJsonForShadow = migrated as unknown as Prisma.JsonValue;
       data.inventoryJson = migrated as unknown as Prisma.InputJsonValue;
       bumpRevision = true;
