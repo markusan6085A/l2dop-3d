@@ -5,11 +5,20 @@ import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
 /**
  * Версія стартового набору в сумці; піднімаємо при зміні складу старту.
- * v3 — вимкнено увесь екіп у грі: стартер порожній, GM-шоп без речей,
- * дроп `kind: "equipment"` фільтрується. Існуючі сумки чистяться при першому
- * вході через `migrateInventoryToSk2`.
+ * v4 — Club / Apprentice's Rod у l1, зілля ×50, соул/спіріт ×1000 (новий герой).
  */
-export const STARTER_KIT_VERSION = 3;
+export const STARTER_KIT_VERSION = 4;
+
+/** NG Club — усі раси-воїни. */
+const STARTER_WEAPON_FIGHTER_ID = 4;
+/** Apprentice's Rod — усі маги. */
+const STARTER_WEAPON_MYSTIC_ID = 7;
+const STARTER_LESSER_HEALING_ID = 1060;
+const STARTER_MANA_SMALL_ID = 726;
+const STARTER_FIGHTER_SOULSHOT_ID = 1835;
+const STARTER_MYSTIC_SPIRITSHOT_ID = 3947;
+const STARTER_POTION_QTY = 50;
+const STARTER_SHOT_QTY = 1000;
 
 const MAX_ENCHANT = 20;
 
@@ -105,13 +114,30 @@ export function emptyInventory(): InventoryState {
   return { v: 1, stacks: [], eq: {} };
 }
 
-/** Стартова сумка — порожня: у грі немає екіпу/зброї/біжутерії. */
-export function starterInventory(): InventoryState {
+export type StarterClassBranch = 'fighter' | 'mystic';
+
+/** Стартова сумка нового героя: зброя в l1, зілля й заряди в сумці. */
+export function starterInventory(classBranch: StarterClassBranch): InventoryState {
+  const weaponId =
+    classBranch === 'mystic'
+      ? STARTER_WEAPON_MYSTIC_ID
+      : STARTER_WEAPON_FIGHTER_ID;
+  const stacks: BagStack[] = [
+    { itemId: STARTER_LESSER_HEALING_ID, qty: STARTER_POTION_QTY },
+    { itemId: STARTER_MANA_SMALL_ID, qty: STARTER_POTION_QTY },
+    {
+      itemId:
+        classBranch === 'mystic'
+          ? STARTER_MYSTIC_SPIRITSHOT_ID
+          : STARTER_FIGHTER_SOULSHOT_ID,
+      qty: STARTER_SHOT_QTY,
+    },
+  ];
   return {
     v: 1,
     _sk: STARTER_KIT_VERSION,
-    stacks: [],
-    eq: {},
+    stacks,
+    eq: { l1: weaponId },
   };
 }
 
@@ -119,11 +145,7 @@ export function needsStarterKitMigration(inv: InventoryState): boolean {
   return inv._sk !== STARTER_KIT_VERSION;
 }
 
-/**
- * Очищає сумку від речей, яких немає в каталозі (а каталог зараз порожній з
- * боку екіпу — лишилися лише жменя слот-хінтів). Все, що було вдягнено, теж
- * відмонтовуємо. Стартер-кіт прибрано.
- */
+/** Міграція `_sk` для старих персонажів; склад сумки не змінюємо (стартер лише при register). */
 export function migrateInventoryToSk2(inv: InventoryState): InventoryState {
   const known = (id: number) => !!ITEM_CATALOG[id];
   const stacks: BagStack[] = [];

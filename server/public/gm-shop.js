@@ -742,6 +742,21 @@
         nameEl.className = 'l2-gm-shop-name';
         nameEl.textContent = it.nameUk || it.shopKey;
         main.appendChild(nameEl);
+        if (it.statsPreview && it.statsPreview.lines && it.statsPreview.lines.length) {
+          var statEl = document.createElement('div');
+          statEl.className = 'l2-gm-shop-row-stat';
+          var statParts = [];
+          for (var si = 0; si < it.statsPreview.lines.length; si++) {
+            var ln = it.statsPreview.lines[si];
+            if (ln.labelUk) {
+              statParts.push(ln.labelUk + ': ' + ln.valueUk);
+            } else {
+              statParts.push(ln.valueUk);
+            }
+          }
+          statEl.textContent = statParts.join(' · ');
+          main.appendChild(statEl);
+        }
         if (it.purchasable && it.priceAdena != null) {
           var priceEl = document.createElement('div');
           priceEl.className = 'l2-gm-shop-price';

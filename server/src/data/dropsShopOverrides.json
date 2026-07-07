@@ -576,6 +576,46 @@
     "itemId": 18,
     "priceAdena": 50000
   },
+  "arrom_ng/devotion_halmet.jpg": {
+    "itemId": 44,
+    "priceAdena": 40000
+  },
+  "arrom_ng/native helmet.jpg": {
+    "itemId": 439,
+    "priceAdena": 40000
+  },
+  "arrom_ng/tunic of devotion.jpg": {
+    "itemId": 425,
+    "priceAdena": 90000
+  },
+  "arrom_ng/native tunic.jpg": {
+    "itemId": 436,
+    "priceAdena": 90000
+  },
+  "arrom_ng/stockings of devotion.jpg": {
+    "itemId": 461,
+    "priceAdena": 60000
+  },
+  "arrom_ng/native pants.jpg": {
+    "itemId": 437,
+    "priceAdena": 60000
+  },
+  "arrom_ng/devotion gloves.jpg": {
+    "itemId": 992,
+    "priceAdena": 35000
+  },
+  "arrom_ng/native gloves.jpg": {
+    "itemId": 440,
+    "priceAdena": 35000
+  },
+  "arrom_ng/devotion_bots.jpg": {
+    "itemId": 35,
+    "priceAdena": 35000
+  },
+  "arrom_ng/native_bots.jpg": {
+    "itemId": 441,
+    "priceAdena": 35000
+  },
   "arrom_d/shield_bronze_shield_i00_0.jpg": {
     "itemId": 626,
     "priceAdena": 250000

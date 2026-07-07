@@ -126,7 +126,9 @@ export async function register(input: {
         worldY: start.worldY,
         moveFromX: start.worldX,
         moveFromY: start.worldY,
-        inventoryJson: starterInventory() as unknown as Prisma.InputJsonValue,
+        inventoryJson: starterInventory(
+          classBranch as 'fighter' | 'mystic'
+        ) as unknown as Prisma.InputJsonValue,
         ...(mysticStarterSkills != null
           ? { skillsLearnedJson: mysticStarterSkills }
           : {}),

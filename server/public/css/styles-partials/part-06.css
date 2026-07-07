@@ -232,6 +232,13 @@
   word-break: break-word;
 }
 
+.l2-gm-shop-row-stat {
+  font-size: 11px;
+  line-height: 1.2;
+  color: #c4b896;
+  margin-top: 1px;
+}
+
 .l2-gm-shop-price {
   font-size: 11px;
   color: #9eb8a8;

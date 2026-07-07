@@ -47,6 +47,10 @@ import {
   ngWeaponDropsPreviewLines,
 } from '../data/l2dopNgWeaponDropsPatches.js';
 import {
+  L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER,
+  ngArmorDropsPreviewLines,
+} from '../data/l2dopNgArmorDropsPatches.js';
+import {
   L2DOP_S_DROPS_WEAPON_BY_SHOP_KEY_LOWER,
   sGradeWeaponDropsPreviewLines,
 } from '../data/l2dopSWeaponDropsPatches.js';
@@ -250,6 +254,10 @@ function rowToClient(
     row.category === 'shield'
       ? L2DOP_DROPS_SHIELD_BY_SHOP_KEY_LOWER[keyNorm]
       : undefined;
+  const ngArmorPatch =
+    row.category === 'armor' && row.grade === 'NG'
+      ? L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER[keyNorm]
+      : undefined;
 
   let purchasable = false;
   if (
@@ -263,6 +271,8 @@ function rowToClient(
 
   const statsPreviewChosen = shieldPatch
     ? { lines: dropsShieldShopPreviewLines(shieldPatch) }
+    : ngArmorPatch
+      ? { lines: ngArmorDropsPreviewLines(ngArmorPatch.pDef) }
     : sWeaponPatch
     ? { lines: sGradeWeaponDropsPreviewLines(sWeaponPatch) }
     : ngWeaponPatch
@@ -279,6 +289,8 @@ function rowToClient(
 
   const listNameUkOverride = shieldPatch
     ? shieldPatch.nameUk
+    : ngArmorPatch
+      ? ngArmorPatch.nameUk
     : sWeaponPatch
     ? sWeaponPatch.nameUk
     : ngWeaponPatch
@@ -319,7 +331,9 @@ function rowToClient(
   }
 
   if (row.category === 'armor') {
-    const ap = resolveDropsShopArmorPiece(previewMeta?.slot);
+    const ap =
+      ngArmorPatch?.armorPiece ??
+      resolveDropsShopArmorPiece(previewMeta?.slot);
     if (ap) out.armorPiece = ap;
   }
   if (row.category === 'earring') {

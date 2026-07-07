@@ -11,6 +11,7 @@ import {
 } from './l2dopGmShopCatalog.generated.js';
 import type { WeaponKindForEnchant } from './l2dopEnchant.js';
 import { mergeNgDropsWeapons } from './itemsCatalogNgWeapons.js';
+import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
 import { JEWELRY_AUTHOR_ITEM_PATCH } from './l2dopJewelryAuthorStats.js';
 
 /** Базовий крит типу зброї ($WpnCrt) — як у calc_stats для відображення в GM-шопі та каталозі. */
@@ -198,6 +199,14 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   };
 
   mergeNgDropsWeapons(o);
+  for (const patch of Object.values(L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER)) {
+    o[patch.itemId] = {
+      nameUk: patch.nameUk,
+      slot: patch.slot,
+      pDef: patch.pDef,
+      armorType: patch.armorType,
+    };
+  }
 
   /**
    * Біжутерія для дроп-магазину без рядка в GM-CSV: NG з l2dop items, запечатана A (іконки i02).
