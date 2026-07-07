@@ -16,7 +16,7 @@ body.l2-app-l2-chrome {
   /* HUD city-strip: висота + відступ зверху; без bleed — вміст у межах PNG-рамки. */
   --l2s-hud-citystrip-w-bleed: 0px;
   --l2s-hud-citystrip-top-gap: calc(1cm + 3mm);
-  --l2s-hud-citystrip-min-h: 112px;
+  --l2s-hud-citystrip-min-h: 124px;
   --l2s-hud-citystrip-pad-top: 30px;
   --l2s-hud-citystrip-pad-x: 22px;
   --l2s-hud-citystrip-pad-bottom: 14px;
@@ -43,9 +43,9 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   max-width: var(--l2s-chrome-column-w) !important;
   margin-left: auto;
   margin-right: auto;
-  /* Закрити смугу «void» тла над верхом рамки: підняти колонку (підганяй --l2s-chrome-column-lift на body). */
-  margin-top: calc(-1 * var(--l2s-chrome-column-lift, 14px));
-  min-height: calc(100vh + var(--l2s-chrome-column-lift, 14px)) !important;
+  /* CLS-safe дефолт: без вертикального підскоку колонки при пізньому CSS. */
+  margin-top: calc(-1 * var(--l2s-chrome-column-lift, 0px));
+  min-height: calc(100vh + var(--l2s-chrome-column-lift, 0px)) !important;
   /* Суцільний фон колонки без текстури. */
   background-color: var(--l2-flat-bg) !important;
   background-image: none !important;
@@ -383,7 +383,10 @@ body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-exp-fill {
 }
 
 body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-exp-inline-pct {
-  flex: 0 0 auto;
+  flex: 0 0 40px;
+  width: 40px;
+  min-width: 40px;
+  text-align: right;
   font-size: 9px;
   color: #a8a8a8;
   line-height: 1;

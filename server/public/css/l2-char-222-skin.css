@@ -21,6 +21,7 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-mobi::before {
 body.l2-app-l2-chrome.l2-page-char .l2-char-title-row {
   margin-bottom: 12px;
   padding-bottom: 8px;
+  min-height: 22px;
   border-bottom: 1px solid rgba(180, 140, 80, 0.4);
 }
 
@@ -50,6 +51,7 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-equip-frame::before {
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg {
   background: transparent;
+  min-height: 194px;
 }
 
 /* Герой поверх сцени: на сходах, з тінню під ногами */
