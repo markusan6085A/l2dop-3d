@@ -21,6 +21,7 @@ body.l2-app-l2-chrome {
   --l2s-hud-citystrip-pad-x: 22px;
   --l2s-hud-citystrip-pad-bottom: 14px;
   --l2s-hud-citystrip-bars-w: 2.75cm;
+  --l2s-bottom-dock-h: 96px;
   /* Тримає місце під скролбар і прибирає горизонтальний "поштовх" колонки. */
   scrollbar-gutter: stable both-edges;
 }
@@ -74,8 +75,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   --l2f-side-line-inset: 3px;
   --l2f-top-corner-x-nudge: 3px;
   --l2f-side-line-width: 24px;
-  content: "" !important;
-  display: block !important;
+  content: none !important;
+  display: none !important;
   position: absolute !important;
   inset: 0 !important;
   z-index: 5 !important;
@@ -83,8 +84,7 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background-color: #1d1c1a !important;
-  background-image: none !important;
+  background: none !important;
 }
 
 /* Вирівнювання герба з центром верхнього орнаменту на HUD-рамці 14f47b34 */
@@ -117,7 +117,7 @@ body.l2-app-l2-chrome #l2-nav-top {
 
 body.l2-app-l2-chrome #l2-nav-bottom {
   display: block;
-  min-height: 74px;
+  min-height: 92px;
 }
 
 body.l2-app-l2-chrome .l2-outer-sframe__g {
@@ -141,6 +141,10 @@ body.l2-app-l2-chrome .l2-screen-inner {
   background-image: none !important;
 }
 
+body.l2-app-l2-chrome.l2-page-has-fixed-nav .l2-screen-inner {
+  padding-bottom: calc(var(--l2s-bottom-dock-h) + env(safe-area-inset-bottom, 0px)) !important;
+}
+
 body.l2-app-l2-chrome .l2-screen-inner::before,
 body.l2-app-l2-chrome .l2-screen-inner::after {
   content: none !important;
@@ -149,15 +153,15 @@ body.l2-app-l2-chrome .l2-screen-inner::after {
 
 
 body.l2-app-l2-chrome.l2-page-has-fixed-nav #l2-nav-bottom {
-  position: relative;
-  left: auto;
-  right: auto;
-  transform: none;
-  width: 100%;
-  max-width: 100%;
-  z-index: 4;
-  margin-top: 6px;
-  padding: 3px 0 calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: min(100vw - 8px, var(--l2s-chrome-column-base, 420px));
+  max-width: min(100vw - 8px, var(--l2s-chrome-column-base, 420px));
+  z-index: 50;
+  margin-top: 0;
+  padding: 3px 0 calc(8px + env(safe-area-inset-bottom, 0px)) !important;
   background: transparent !important;
   border: none !important;
   border-top: none !important;

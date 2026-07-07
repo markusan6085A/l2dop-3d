@@ -78,8 +78,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
 
 /* Суцільний фон без PNG-рамок. */
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
-  content: "" !important;
-  display: block !important;
+  content: none !important;
+  display: none !important;
   position: absolute !important;
   inset: 0 !important;
   z-index: 5 !important;
@@ -88,8 +88,7 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   border-radius: 0 !important;
   box-shadow: none !important;
 
-  background-color: #1d1c1a !important;
-  background-image: none !important;
+  background: none !important;
 }
 
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
