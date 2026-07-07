@@ -39,16 +39,9 @@
     return '/icons/drops/other.svg';
   }
 
-  function bindItemIcon(img, itemId, immediate) {
-    if (window.L2 && typeof L2.assignItemIcon === 'function') {
-      L2.assignItemIcon(img, itemId, {
-        immediate: !!immediate,
-        whenVisible: !immediate,
-        onFallback: fallbackIconForId,
-        fallback: '/icons/drops/other.svg',
-      });
-      return;
-    }
+  function setItemIconSrc(img, itemId) {
+    if (!img) return;
+    img.decoding = 'async';
     img.src = itemIconUrlForId(itemId);
     img.onerror = function () {
       img.onerror = null;
@@ -631,7 +624,11 @@
         }
         el.setAttribute('tabindex', '0');
         el.setAttribute('role', 'button');
-        bindItemIcon(el, id, true);
+        el.onerror = function () {
+          el.onerror = null;
+          el.src = def;
+        };
+        setItemIconSrc(el, id);
       } else {
         el.classList.remove('l2-char-slot-icon--filled');
         el.removeAttribute('title');
@@ -1261,7 +1258,7 @@
       ic.setAttribute('role', 'button');
       ic.setAttribute('tabindex', '0');
       ic.setAttribute('aria-label', 'Характеристики предмета');
-      bindItemIcon(ic, st.itemId, false);
+      setItemIconSrc(ic, st.itemId);
       var mid = document.createElement('div');
       mid.className = 'l2-char-bag-row-text';
       var label = document.createElement('span');
@@ -1304,6 +1301,7 @@
   function renderAll(c) {
     var inv = c.inventory || defaultInventory();
     renderBag(inv);
+    renderHeroPortrait(c);
     renderEquipSlots(inv);
     var wcur = $('char-w-cur');
     var wmax = $('char-w-max');
@@ -1315,10 +1313,6 @@
     if ($('char-sp')) $('char-sp').textContent = c.sp != null ? String(c.sp) : '0';
 
     revision = c.revision != null ? Number(c.revision) : 0;
-
-    requestAnimationFrame(function () {
-      renderHeroPortrait(c);
-    });
   }
 
   async function apiEquip(itemId, enchant) {
@@ -1665,7 +1659,7 @@
     title.textContent = itemDisplayName(itemId);
     if (gradeEl) gradeEl.textContent = gradeLabelForItem(itemId);
     if (kind) kind.textContent = slotKindUk(itemId);
-    if (icon) bindItemIcon(icon, itemId, true);
+    if (icon) setItemIconSrc(icon, itemId);
     statsEl.innerHTML = '';
     function addRow(k, v) {
       var dt = document.createElement('dt');
@@ -1926,11 +1920,18 @@
       return;
     }
 
+    if (content) content.hidden = false;
+    var nbEarly = $('char-name-bracket');
+    if (nbEarly) nbEarly.textContent = '…';
+
+    loadCraftBookForChar(t);
+
     var snap =
       window.L2 && typeof L2.fetchSnapshot === 'function'
         ? await L2.fetchSnapshot()
         : null;
     if (!snap) {
+      if (content) content.hidden = true;
       if (!localStorage.getItem('token')) {
         window.location.href = '/';
         return;
@@ -1951,16 +1952,6 @@
     if (content) content.hidden = false;
 
     renderAll(snap);
-
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(function () {
-        loadCraftBookForChar(t);
-      });
-    } else {
-      setTimeout(function () {
-        loadCraftBookForChar(t);
-      }, 300);
-    }
   }
 
   init();
