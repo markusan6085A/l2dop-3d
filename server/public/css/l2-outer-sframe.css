@@ -25,7 +25,7 @@
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
-  background: #0f0d0b !important;
+  background: #1d1c1a !important;
 }
 
 html body.l2-body.l2-app-l2-chrome {
@@ -44,7 +44,7 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   max-width: 684px !important;
   margin: 0 auto !important;
   min-height: 100vh !important;
-  background: #0f0d0b !important;
+  background: #1d1c1a !important;
   background-image: none !important;
   border: none !important;
   outline: none !important;
@@ -71,11 +71,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
   inset: 0 !important;
   z-index: 0 !important;
   pointer-events: none !important;
-  background-color: #0f0d0b !important;
-  background-image: url("/assets/assets/center.png?v=20260705center2") !important;
-  background-repeat: no-repeat !important;
-  background-position: center top !important;
-  background-size: 100% 100% !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
 }
 
 /* Тільки кути + верх/низ. */

@@ -1157,7 +1157,7 @@ a.l2-foot-linkbar__btn--link {
   padding: 18px 16px 20px;
   border-radius: 14px;
   border: 1px solid rgba(199, 173, 128, 0.42);
-  background: url('/assets/assets/center.png?v=20260707gmShopCenter') center / 100% 100% no-repeat;
+  background: #1d1c1a;
   box-shadow: 0 2px 18px rgba(0, 0, 0, 0.32);
   overflow: hidden;
 }

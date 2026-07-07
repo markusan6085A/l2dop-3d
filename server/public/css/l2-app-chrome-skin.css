@@ -34,7 +34,7 @@ body.l2-app-l2-chrome .l2-shell {
 }
 
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
-  --l2-flat-bg: #0f0d0b;
+  --l2-flat-bg: #1d1c1a;
   /* Телефон: як було (~420px). ПК: +30% (546px), по центру — див. media в кінці файлу. */
   --l2s-chrome-column-base: 420px;
   --l2s-chrome-column-w: min(100vw - 8px, var(--l2s-chrome-column-base));
@@ -45,12 +45,9 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   /* Закрити смугу «void» тла над верхом рамки: підняти колонку (підганяй --l2s-chrome-column-lift на body). */
   margin-top: calc(-1 * var(--l2s-chrome-column-lift, 14px));
   min-height: calc(100vh + var(--l2s-chrome-column-lift, 14px)) !important;
-  /* Єдиний нейтральний тон без коричневого градієнта. */
+  /* Єдиний нейтральний тон без текстури center.png. */
   background-color: var(--l2-flat-bg) !important;
-  background-image: url('/assets/assets/center.png?v=20260705center1') !important;
-  background-repeat: no-repeat !important;
-  background-position: center top !important;
-  background-size: 100% 100% !important;
+  background-image: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
   border: none !important;
@@ -63,11 +60,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
   inset: 0 !important;
   z-index: 0 !important;
   pointer-events: none !important;
-  background-color: var(--l2-flat-bg, #0f0d0b) !important;
-  background-image: url('/assets/assets/center.png?v=20260705center2') !important;
-  background-repeat: no-repeat !important;
-  background-position: center top !important;
-  background-size: 100% 100% !important;
+  background-color: var(--l2-flat-bg, #1d1c1a) !important;
+  background-image: none !important;
   animation: none !important;
 }
 
@@ -1247,15 +1241,12 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:active {
   transform: none !important;
 }
 
-/* battle: модалка панелі швидкого доступу — center.png + кнопки 1512125 */
+/* battle: модалка панелі швидкого доступу — суцільний фон #1d1c1a */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__panel {
   border: 0 !important;
   border-radius: 0 !important;
-  background-color: rgba(8, 14, 20, 0.94) !important;
-  background-image: url('/assets/assets/center.png?v=20260707battleHotbarModal') !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 100% 100% !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   -webkit-box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
 }
@@ -1669,16 +1660,13 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-mob-modal__panel {
     calc(14px + 1px * var(--l2s-in222-w-y)) !important;
 }
 
-/* map.html: список мобів — фон center.png замість синього/темного */
+/* map.html: список мобів — суцільний фон #1d1c1a */
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-section,
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-detail {
   border: 0 !important;
   border-radius: 0 !important;
-  background-color: transparent !important;
-  background-image: url('/assets/assets/center.png?v=20260705mapMobCenter') !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 100% 100% !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
 }
@@ -1691,15 +1679,12 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-mob-detail {
   padding: 10px 10px 12px !important;
 }
 
-/* pers.html: блок статів — фон center.png замість синього rgba(4,10,22) */
+/* pers.html: блок статів — суцільний фон #1d1c1a */
 body.l2-app-l2-chrome.l2-page-pers .l2-pers-mobi {
   border: 0 !important;
   border-radius: 0 !important;
-  background-color: transparent !important;
-  background-image: url('/assets/assets/center.png?v=20260705persCenter') !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 100% 100% !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
 }
@@ -1709,13 +1694,10 @@ body.l2-app-l2-chrome.l2-page-pers .l2-pers-mobi::before {
   display: none !important;
 }
 
-/* Нижній док (Профіль…Опції) — фон center.png замість синього/градієнта */
+/* Нижній док (Профіль…Опції) — суцільний фон #1d1c1a */
 body.l2-app-l2-chrome.l2-page-has-fixed-nav #l2-nav-bottom {
-  background-color: transparent !important;
-  background-image: url('/assets/assets/center.png?v=20260705navCenter') !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 100% 100% !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   border: none !important;
   border-top: none !important;
   -webkit-box-shadow: none !important;
@@ -2205,30 +2187,24 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
   }
 }
 
-/* Авторизація: форма реєстрації — фон center.png замість коричневого градієнта */
+/* Авторизація: форма реєстрації — суцільний фон #1d1c1a */
 body.l2-app-l2-chrome.l2-page-auth div.main {
   border: 0 !important;
   border-radius: 0 !important;
-  background-color: transparent !important;
-  background-image: url('/assets/assets/center.png?v=20260705authCenter') !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 100% 100% !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
 }
 
-/* Авторизація: головна — панель входу з center.png */
+/* Авторизація: головна — панель входу #1d1c1a */
 body.l2-app-l2-chrome.l2-page-auth main.l2-auth-home {
   box-sizing: border-box;
   padding: 14px 12px 16px;
   border: 0 !important;
   border-radius: 0 !important;
-  background-color: transparent !important;
-  background-image: url('/assets/assets/center.png?v=20260705authCenter') !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 100% 100% !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
 }

@@ -50,11 +50,8 @@ body.l2-page-craft .l2-craft-tier > .l2-pers-h2 {
   border: none;
   border-radius: 0;
   padding: 0.65rem 0.75rem;
-  background-color: transparent;
-  background-image: url('/assets/assets/center.png?v=20260705craftCenter');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
+  background-color: #1d1c1a;
+  background-image: none;
   box-shadow: none;
 }
 .l2-craft-card__title,
@@ -199,11 +196,8 @@ body.l2-page-craft button.l2-craft-btn.btn-l2:disabled {
   box-sizing: border-box;
   border: none;
   border-radius: 0;
-  background-color: transparent;
-  background-image: url('/assets/assets/center.png?v=20260705craftCenter');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
+  background-color: #1d1c1a;
+  background-image: none;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.72);
 }
 
@@ -283,11 +277,8 @@ body.l2-page-craft button.l2-craft-btn.btn-l2:disabled {
   padding: 10px 12px;
   border-radius: 0;
   border: none;
-  background-color: transparent;
-  background-image: url('/assets/assets/center.png?v=20260705craftCenter');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
+  background-color: #1d1c1a;
+  background-image: none;
   box-shadow: none;
 }
 
