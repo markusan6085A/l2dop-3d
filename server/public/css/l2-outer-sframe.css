@@ -76,7 +76,7 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
   background-image: none !important;
 }
 
-/* Тільки кути + верх/низ. */
+/* Суцільний фон без PNG-рамок. */
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   content: "" !important;
   display: block !important;
@@ -88,37 +88,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   border-radius: 0 !important;
   box-shadow: none !important;
 
-  background-image:
-    url("/assets/assets/top-left.png?v=20260705cleanSides"),
-    url("/assets/assets/top-right.png?v=20260705cleanSides"),
-    url("/assets/assets/bottom-left.png?v=20260705cleanSides"),
-    url("/assets/assets/bottom-right.png?v=20260705cleanSides"),
-    url("/assets/assets/top.png?v=20260705cleanSides"),
-    url("/assets/assets/bottom.png?v=20260705cleanSides");
-
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    repeat-x,
-    repeat-x;
-
-  background-position:
-    top left,
-    top right,
-    bottom left,
-    bottom right,
-    top center,
-    bottom center;
-
-  background-size:
-    var(--l2-frame-corner-w) var(--l2-frame-corner-top-h),
-    var(--l2-frame-corner-w) var(--l2-frame-corner-top-h),
-    var(--l2-frame-corner-w) var(--l2-frame-bottom-h),
-    var(--l2-frame-corner-w) var(--l2-frame-bottom-h),
-    calc(100% - (var(--l2-frame-corner-w) * 2)) var(--l2-frame-top-h),
-    calc(100% - (var(--l2-frame-corner-w) * 2)) var(--l2-frame-bottom-h);
+  background-color: #1d1c1a !important;
+  background-image: none !important;
 }
 
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner {

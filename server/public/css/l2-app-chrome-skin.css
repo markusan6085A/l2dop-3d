@@ -83,42 +83,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background-image:
-    url('/assets/assets/top-left.png?v=20260705globalFrame1'),
-    url('/assets/assets/top-right.png?v=20260705globalFrame1'),
-    url('/assets/assets/bottom-left.png?v=20260705globalFrame1'),
-    url('/assets/assets/bottom-right.png?v=20260705globalFrame1'),
-    url('/assets/assets/top.png?v=20260705globalFrame1'),
-    url('/assets/assets/bottom.png?v=20260705globalFrame1'),
-    url('/assets/assets/left.png?v=20260705globalFrame1'),
-    url('/assets/assets/right.png?v=20260705globalFrame1');
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    repeat-x,
-    repeat-x,
-    repeat-y,
-    repeat-y;
-  background-position:
-    left calc(0px - var(--l2f-top-corner-x-nudge)) top,
-    right calc(0px - var(--l2f-top-corner-x-nudge)) top,
-    left calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
-    right calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
-    top center,
-    center bottom var(--l2f-bottom-nudge),
-    left calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center,
-    right calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center;
-  background-size:
-    78px 78px,
-    78px 78px,
-    78px 54px,
-    78px 54px,
-    calc(100% - 156px) 78px,
-    calc(100% - 156px + (var(--l2f-side-x-nudge) * 2)) 54px,
-    var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge)),
-    var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge));
+  background-color: #1d1c1a !important;
+  background-image: none !important;
 }
 
 /* Вирівнювання герба з центром верхнього орнаменту на HUD-рамці 14f47b34 */
