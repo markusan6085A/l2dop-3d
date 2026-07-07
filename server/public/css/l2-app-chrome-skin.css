@@ -3,6 +3,7 @@
  * Підключати після l2-game-chrome.css та l2-hud-panel.css; body: l2-app-l2-chrome.
  */
 body.l2-app-l2-chrome {
+  --l2-solid-panel-bg: #1d1c1a;
   --l2s-in222-slice-y: 52;
   --l2s-in222-slice-x: 104;
   --l2s-in222-w-y: 9;
@@ -45,7 +46,7 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   /* Закрити смугу «void» тла над верхом рамки: підняти колонку (підганяй --l2s-chrome-column-lift на body). */
   margin-top: calc(-1 * var(--l2s-chrome-column-lift, 14px));
   min-height: calc(100vh + var(--l2s-chrome-column-lift, 14px)) !important;
-  /* Єдиний нейтральний тон без текстури center.png. */
+  /* Суцільний фон колонки без текстури. */
   background-color: var(--l2-flat-bg) !important;
   background-image: none !important;
   -webkit-box-shadow: none !important;
