@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260707navChatIconSize1" />
-    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260707charBagUseFix2" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260707charAllItemsBtn1" />
   </head>
   <body
     class="l2-body l2-page-city l2-page-char l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -166,12 +166,19 @@
                 <p class="l2-char-bag-title">У сумці</p>
                 <div class="l2-char-inv-filters" aria-label="Категорії сумки">
                   <div class="l2-char-inv-shop-tabs-host l2-gm-shop">
-                    <div
-                      id="char-bag-tab-cats"
-                      class="l2-drops-shop-tablist l2-drops-shop-tablist--cats"
-                      role="tablist"
-                      aria-label="Тип предмета"
-                    ></div>
+                    <div class="l2-char-inv-cats-wrap">
+                      <div
+                        id="char-bag-tab-all-host"
+                        class="l2-char-inv-all-host"
+                        aria-label="Усі предмети"
+                      ></div>
+                      <div
+                        id="char-bag-tab-cats"
+                        class="l2-drops-shop-tablist l2-drops-shop-tablist--cats"
+                        role="tablist"
+                        aria-label="Тип предмета"
+                      ></div>
+                    </div>
                     <div
                       id="char-bag-tab-grades"
                       class="l2-drops-shop-tablist l2-drops-shop-tablist--grades"
@@ -250,6 +257,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/armor-set-bonuses-ui.js?v=5"></script>
-    <script src="/char.js?v=20260707charBagUseFix3"></script>
+    <script src="/char.js?v=20260707charAllItemsBtn1"></script>
   </body>
 </html>

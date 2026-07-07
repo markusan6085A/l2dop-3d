@@ -402,6 +402,69 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-dr
   grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
 }
 
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-cats-wrap {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 2px !important;
+  width: 100% !important;
+  margin: 0 0 2px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-host {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  min-width: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-cats-wrap #char-bag-tab-cats {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+  margin-bottom: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 2px 4px !important;
+  border: solid transparent !important;
+  border-width: 6px 8px !important;
+  border-image-source: url('/assets/1512125-removebg-preview-removebg-preview.png') !important;
+  border-image-slice: 24 fill !important;
+  border-image-width: 6px 8px !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  color: #f0e6c8 !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0 !important;
+  text-transform: lowercase !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn:hover,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn:focus {
+  filter: brightness(1.12) !important;
+  outline: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn--active {
+  filter: brightness(1.2) saturate(1.15) !important;
+  color: #fff6d8 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--equipped {
+  opacity: 0.92;
+}
+
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades {
   grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
 }

@@ -151,8 +151,9 @@
   var craftBookIndex = null;
   var bagModalCtx = null;
 
-  /** Як у GM-шопу: категорія + грейд + підтип */
+  /** Як у GM-шопу: категорія + грейд + підтип; '' — усі предмети (кнопка «все предмети»). */
   var bagInvCat = 'weapon';
+  var bagInvShowAll = false;
   /** '' — усі грейди (кнопка «Усі»); ng|d|c|b|a|s */
   var bagInvGradeSub = '';
   var bagInvWeaponSub = 'all';
@@ -803,6 +804,7 @@
   }
 
   function itemMatchesInvCat(itemId, cat) {
+    if (bagInvShowAll) return true;
     var seg = bagEquipSegment(itemId);
     if (cat === 'weapon') return seg === 'weapon';
     if (cat === 'shield') return seg === 'shield';
@@ -946,6 +948,7 @@
   }
 
   function stackPassesBagFilters(st) {
+    if (bagInvShowAll) return true;
     var id = st.itemId;
     if (!itemMatchesInvCat(id, bagInvCat)) return false;
     if (!itemPassesBagSubFilters(id)) return false;
@@ -1010,7 +1013,22 @@
       bagInvConsumableSub = pick(bagInvConsumableSub);
   }
 
+  function buildCharBagAllItemsBtnOnce() {
+    var host = $('char-bag-tab-all-host');
+    if (!host || host.getAttribute('data-char-bag-all-built')) return;
+    host.setAttribute('data-char-bag-all-built', '1');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'l2-char-inv-all-items-btn';
+    btn.setAttribute('data-inv-all-items', '1');
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', 'false');
+    btn.textContent = 'все предмети';
+    host.appendChild(btn);
+  }
+
   function buildCharBagFilterTabsOnce() {
+    buildCharBagAllItemsBtnOnce();
     var catsEl = $('char-bag-tab-cats');
     var gradesEl = $('char-bag-tab-grades');
     if (!catsEl || !gradesEl || catsEl.getAttribute('data-char-bag-built')) {
@@ -1043,6 +1061,12 @@
   function rebuildCharBagSubTabs() {
     var subMount = $('char-bag-tab-subs');
     if (!subMount) return;
+    if (bagInvShowAll) {
+      subMount.hidden = true;
+      subMount.innerHTML = '';
+      subMount.setAttribute('aria-hidden', 'true');
+      return;
+    }
     if (bagInvCat === 'shield') {
       subMount.hidden = true;
       subMount.innerHTML = '';
@@ -1074,12 +1098,17 @@
 
   function syncBagFilterTabsUi() {
     normalizeCharBagSubForCat();
+    var allBtn = document.querySelector('[data-inv-all-items]');
+    if (allBtn) {
+      allBtn.classList.toggle('l2-char-inv-all-items-btn--active', bagInvShowAll);
+      allBtn.setAttribute('aria-selected', bagInvShowAll ? 'true' : 'false');
+    }
     var catsEl = $('char-bag-tab-cats');
     if (catsEl) {
       var cats = catsEl.querySelectorAll('[data-inv-cat]');
       for (var i = 0; i < cats.length; i++) {
         var cEl = cats[i];
-        var on = cEl.getAttribute('data-inv-cat') === bagInvCat;
+        var on = !bagInvShowAll && cEl.getAttribute('data-inv-cat') === bagInvCat;
         cEl.classList.toggle('l2-drops-shop-tab--active', on);
         cEl.setAttribute('aria-selected', on ? 'true' : 'false');
       }
@@ -1091,9 +1120,10 @@
         var gEl = grades[g];
         var gv = String(gEl.getAttribute('data-inv-grade') || '').toLowerCase();
         var gOn =
-          gv === 'all'
+          !bagInvShowAll &&
+          (gv === 'all'
             ? bagInvGradeSub === ''
-            : gv !== '' && gv === bagInvGradeSub;
+            : gv !== '' && gv === bagInvGradeSub);
         gEl.classList.toggle('l2-drops-shop-tab--active', gOn);
         gEl.setAttribute('aria-selected', gOn ? 'true' : 'false');
       }
@@ -1108,10 +1138,22 @@
     if (!host || host.getAttribute('data-bag-filter-wire')) return;
     host.setAttribute('data-bag-filter-wire', '1');
     host.addEventListener('click', function (e) {
+      var allBtn = e.target.closest('[data-inv-all-items]');
+      if (allBtn) {
+        bagInvShowAll = !bagInvShowAll;
+        if (bagInvShowAll) {
+          bagInvGradeSub = '';
+          resetCharBagSubsToAll();
+        }
+        syncBagFilterTabsUi();
+        renderBagFromSnapshot();
+        return;
+      }
       var cBtn = e.target.closest('[data-inv-cat]');
       if (cBtn) {
         var cx = cBtn.getAttribute('data-inv-cat');
         if (!cx || BAG_CAT_ORDER.indexOf(cx) === -1) return;
+        bagInvShowAll = false;
         bagInvCat = cx;
         bagInvGradeSub = '';
         resetCharBagSubsToAll();
@@ -1121,6 +1163,7 @@
       }
       var grBtn = e.target.closest('[data-inv-grade]');
       if (grBtn) {
+        bagInvShowAll = false;
         var gx = String(grBtn.getAttribute('data-inv-grade') || '').toLowerCase();
         bagInvGradeSub = gx === 'all' ? '' : gx;
         syncBagFilterTabsUi();
@@ -1129,6 +1172,7 @@
       }
       var sBtn = e.target.closest('[data-inv-sub]');
       if (sBtn) {
+        bagInvShowAll = false;
         var sx = sBtn.getAttribute('data-inv-sub');
         if (!sx) return;
         setCharBagSubKey(sx);
@@ -1144,6 +1188,44 @@
     renderBag(inv);
   }
 
+  function eqEnchant(slotVal) {
+    if (slotVal == null) return 0;
+    if (typeof slotVal === 'object' && slotVal.enchant != null) {
+      var n = Number(slotVal.enchant);
+      return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+    }
+    return 0;
+  }
+
+  function bagRenderEntries(inv) {
+    inv = inv || defaultInventory();
+    var entries = [];
+    (inv.stacks || []).forEach(function (st) {
+      entries.push({
+        itemId: st.itemId,
+        qty: st.qty,
+        enchant: st.enchant != null ? Number(st.enchant) : 0,
+        equipped: false,
+      });
+    });
+    if (bagInvShowAll) {
+      for (var ei = 0; ei < EQ_SLOT_TO_UI.length; ei++) {
+        var map = EQ_SLOT_TO_UI[ei];
+        var slotVal = inv.eq && inv.eq[map.key];
+        var eid = eqItemId(slotVal);
+        if (!eid) continue;
+        entries.push({
+          itemId: eid,
+          qty: 1,
+          enchant: eqEnchant(slotVal),
+          equipped: true,
+          eqKey: map.key,
+        });
+      }
+    }
+    return entries;
+  }
+
   function renderBag(inv) {
     inv = inv || defaultInventory();
     var root = $('char-bag-list');
@@ -1151,14 +1233,17 @@
     var filtEmpty = $('char-bag-filter-empty');
     if (!root) return;
     root.innerHTML = '';
-    var stacks = inv.stacks || [];
-    if (stacks.length === 0) {
+    var entries = bagRenderEntries(inv);
+    if (entries.length === 0) {
       if (empty) empty.hidden = false;
       if (filtEmpty) filtEmpty.hidden = true;
       return;
     }
     if (empty) empty.hidden = true;
-    var filtered = stacks.filter(stackPassesBagFilters);
+    var filtered = entries.filter(function (st) {
+      if (st.equipped) return bagInvShowAll;
+      return stackPassesBagFilters(st);
+    });
     if (filtered.length === 0) {
       if (filtEmpty) filtEmpty.hidden = false;
       return;
@@ -1169,6 +1254,7 @@
       if (!Number.isFinite(en) || en < 0) en = 0;
       var row = document.createElement('div');
       row.className = 'l2-char-bag-row';
+      if (st.equipped) row.classList.add('l2-char-bag-row--equipped');
       row.setAttribute(
         'data-item-json',
         JSON.stringify({ itemId: st.itemId, qty: st.qty, enchant: en })
@@ -1193,6 +1279,7 @@
       label.className = 'l2-char-bag-name';
       var nameLine = itemDisplayName(st.itemId) + ' ×' + st.qty;
       if (en > 0) nameLine += ' +' + en;
+      if (st.equipped) nameLine += ' · одягнено';
       label.textContent = nameLine;
       mid.appendChild(label);
       var statLine = itemStatsLine(st.itemId);
@@ -1204,7 +1291,7 @@
       }
       row.appendChild(ic);
       row.appendChild(mid);
-      if (canEquipFromBag(st.itemId)) {
+      if (!st.equipped && canEquipFromBag(st.itemId)) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'l2-char-bag-equip l2-char-bag-modal-action';
