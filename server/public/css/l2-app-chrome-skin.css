@@ -135,6 +135,23 @@ body.l2-app-l2-chrome .l2-screen-inner > .l2-hud-panel--city-strip:first-child {
   margin-top: 0;
 }
 
+/* CLS guard: резервуємо місце до mount HUD/Nav (DOMContentLoaded). */
+body.l2-app-l2-chrome #l2-hud-panel-mount {
+  display: block;
+  min-height: var(--l2s-hud-citystrip-min-h, 112px);
+  margin: 0 0 6px;
+}
+
+body.l2-app-l2-chrome #l2-nav-top {
+  display: block;
+  min-height: 74px;
+}
+
+body.l2-app-l2-chrome #l2-nav-bottom {
+  display: block;
+  min-height: 74px;
+}
+
 body.l2-app-l2-chrome .l2-outer-sframe__g {
   grid-template-rows: var(--l2s-sframe-ch) 1fr 0px;
 }
