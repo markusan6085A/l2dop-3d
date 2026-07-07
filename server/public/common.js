@@ -253,6 +253,86 @@
       if (u != null && String(u).trim() !== '') return String(u);
       return '/game/item-icon/' + id;
     },
+    /**
+     * Підвантаження іконки без блокування тексту: спочатку DOM/підписи, потім src.
+     * immediate — екіп/модалка; інакше — видимість (IntersectionObserver) + черга (max 6).
+     */
+    assignItemIcon: function (img, itemId, options) {
+      options = options || {};
+      if (!img) return;
+      var fb =
+        options.fallback != null && String(options.fallback).trim() !== ''
+          ? String(options.fallback)
+          : '/icons/drops/other.svg';
+      img.decoding = 'async';
+      var onFallback = options.onFallback;
+      function loadInto(done) {
+        var url = global.L2.resolveItemIconUrl(itemId, fb);
+        var finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          img.classList.remove('l2-icon-pending');
+          if (typeof done === 'function') done();
+        }
+        img.onload = finish;
+        img.onerror = function () {
+          img.onerror = null;
+          img.src =
+            typeof onFallback === 'function' ? onFallback(itemId) : fb;
+          finish();
+        };
+        img.src = url;
+      }
+      if (options.immediate) {
+        img.classList.remove('l2-icon-pending');
+        loadInto();
+        return;
+      }
+      img.classList.add('l2-icon-pending');
+      var run = function () {
+        global.L2._enqueueItemIconLoad(loadInto);
+      };
+      if (options.whenVisible !== false && typeof IntersectionObserver !== 'undefined') {
+        if (!global.L2._itemIconLazyObs) {
+          global.L2._itemIconLazyObs = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (en) {
+                if (!en.isIntersecting) return;
+                global.L2._itemIconLazyObs.unobserve(en.target);
+                var fn = en.target._l2AssignIcon;
+                if (typeof fn === 'function') fn();
+              });
+            },
+            { rootMargin: '96px' }
+          );
+        }
+        img._l2AssignIcon = run;
+        global.L2._itemIconLazyObs.observe(img);
+        return;
+      }
+      if (typeof global.requestIdleCallback === 'function') {
+        global.requestIdleCallback(run, { timeout: options.timeout || 800 });
+      } else {
+        setTimeout(run, 16);
+      }
+    },
+    _itemIconLoadQueue: [],
+    _itemIconLoadActive: 0,
+    _enqueueItemIconLoad: function (job) {
+      global.L2._itemIconLoadQueue.push(job);
+      global.L2._drainItemIconLoadQueue();
+    },
+    _drainItemIconLoadQueue: function () {
+      while (global.L2._itemIconLoadActive < 6 && global.L2._itemIconLoadQueue.length) {
+        var job = global.L2._itemIconLoadQueue.shift();
+        global.L2._itemIconLoadActive++;
+        job(function () {
+          global.L2._itemIconLoadActive--;
+          global.L2._drainItemIconLoadQueue();
+        });
+      }
+    },
     resolveSkillIconUrl: function (skillId, iconUrl) {
       if (iconUrl != null && String(iconUrl).charAt(0) === '/') {
         return String(iconUrl);

@@ -39,6 +39,23 @@
     return '/icons/drops/other.svg';
   }
 
+  function bindItemIcon(img, itemId, immediate) {
+    if (window.L2 && typeof L2.assignItemIcon === 'function') {
+      L2.assignItemIcon(img, itemId, {
+        immediate: !!immediate,
+        whenVisible: !immediate,
+        onFallback: fallbackIconForId,
+        fallback: '/icons/drops/other.svg',
+      });
+      return;
+    }
+    img.src = itemIconUrlForId(itemId);
+    img.onerror = function () {
+      img.onerror = null;
+      img.src = fallbackIconForId(itemId);
+    };
+  }
+
   function itemStatsLine(id) {
     var st = window.L2 && L2.itemStatsById && L2.itemStatsById[id];
     if (!st || typeof st !== 'object') return '';
@@ -614,11 +631,7 @@
         }
         el.setAttribute('tabindex', '0');
         el.setAttribute('role', 'button');
-        el.onerror = function () {
-          el.onerror = null;
-          el.src = def;
-        };
-        el.src = itemIconUrlForId(id);
+        bindItemIcon(el, id, true);
       } else {
         el.classList.remove('l2-char-slot-icon--filled');
         el.removeAttribute('title');
@@ -1248,11 +1261,7 @@
       ic.setAttribute('role', 'button');
       ic.setAttribute('tabindex', '0');
       ic.setAttribute('aria-label', 'Характеристики предмета');
-      ic.src = itemIconUrlForId(st.itemId);
-      ic.onerror = function () {
-        ic.onerror = null;
-        ic.src = fallbackIconForId(st.itemId);
-      };
+      bindItemIcon(ic, st.itemId, false);
       var mid = document.createElement('div');
       mid.className = 'l2-char-bag-row-text';
       var label = document.createElement('span');
@@ -1295,7 +1304,6 @@
   function renderAll(c) {
     var inv = c.inventory || defaultInventory();
     renderBag(inv);
-    renderHeroPortrait(c);
     renderEquipSlots(inv);
     var wcur = $('char-w-cur');
     var wmax = $('char-w-max');
@@ -1307,6 +1315,10 @@
     if ($('char-sp')) $('char-sp').textContent = c.sp != null ? String(c.sp) : '0';
 
     revision = c.revision != null ? Number(c.revision) : 0;
+
+    requestAnimationFrame(function () {
+      renderHeroPortrait(c);
+    });
   }
 
   async function apiEquip(itemId, enchant) {
@@ -1507,25 +1519,19 @@
   }
 
   async function resyncCharacterFromServer() {
-    var t = localStorage.getItem('token');
-    if (!t) return;
+    if (!localStorage.getItem('token')) return;
     try {
-      var rr = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + t },
-      });
-      if (rr.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
+      var snap =
+        window.L2 && typeof L2.fetchSnapshot === 'function'
+          ? await L2.fetchSnapshot()
+          : null;
+      if (!snap) {
+        if (!localStorage.getItem('token')) {
+          window.location.href = '/';
+        }
         return;
       }
-      if (!rr.ok) return;
-      var j = await rr.json();
-      if (!j || !j.character) return;
-      window.L2.setLastSnapshot(j.character);
-      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(j.character);
-      }
-      renderAll(j.character);
+      renderAll(snap);
       var stub = $('char-stub-msg');
       if (stub) {
         stub.hidden = false;
@@ -1659,13 +1665,7 @@
     title.textContent = itemDisplayName(itemId);
     if (gradeEl) gradeEl.textContent = gradeLabelForItem(itemId);
     if (kind) kind.textContent = slotKindUk(itemId);
-    if (icon) {
-      icon.src = itemIconUrlForId(itemId);
-      icon.onerror = function () {
-        icon.onerror = null;
-        icon.src = fallbackIconForId(itemId);
-      };
-    }
+    if (icon) bindItemIcon(icon, itemId, true);
     statsEl.innerHTML = '';
     function addRow(k, v) {
       var dt = document.createElement('dt');
@@ -1926,97 +1926,41 @@
       return;
     }
 
-    loadCraftBookForChar(t);
-
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
-    }
-    if (!r.ok) {
-      var perr = 'Не вдалося завантажити персонажа.';
-      try {
-        var pej = await r.json();
-        if (pej && pej.messageUk) perr = pej.messageUk;
-      } catch (ePe) {
-        /* ignore */
+    var snap =
+      window.L2 && typeof L2.fetchSnapshot === 'function'
+        ? await L2.fetchSnapshot()
+        : null;
+    if (!snap) {
+      if (!localStorage.getItem('token')) {
+        window.location.href = '/';
+        return;
       }
       if (errEl) {
         errEl.hidden = false;
-        errEl.textContent = perr;
+        errEl.textContent = 'Не вдалося завантажити персонажа.';
       }
       return;
     }
 
-    var j = await r.json();
-    var c = j.character;
-    window.L2.setLastSnapshot(c);
-    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-      L2.applyHudFromSnapshot(c);
-    }
-
-    if (j.gearCatalog && window.L2 && typeof L2.mergeGearCatalog === 'function') {
-      L2.mergeGearCatalog(j.gearCatalog);
-    }
-    if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
-      L2.mergeCraftResourceIconHints(j);
-    }
-    if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && window.L2 && L2.itemNameById) {
-      Object.keys(j.itemNamesUk).forEach(function (k) {
-        L2.itemNameById[k] = j.itemNamesUk[k];
-      });
-    }
-    if (j.itemSlotHints && typeof j.itemSlotHints === 'object' && window.L2 && L2.itemSlotById) {
-      Object.keys(j.itemSlotHints).forEach(function (k) {
-        if (L2.itemSlotById[k] == null) L2.itemSlotById[k] = j.itemSlotHints[k];
-      });
-    }
-    if (
-      j.itemInventoryTabHints &&
-      typeof j.itemInventoryTabHints === 'object' &&
-      window.L2 &&
-      L2.itemInventoryTabById
-    ) {
-      Object.keys(j.itemInventoryTabHints).forEach(function (k) {
-        L2.itemInventoryTabById[k] = j.itemInventoryTabHints[k];
-      });
-    }
-    if (j.itemGradeHints && typeof j.itemGradeHints === 'object' && window.L2 && L2.itemGradeById) {
-      Object.keys(j.itemGradeHints).forEach(function (k) {
-        L2.itemGradeById[k] = j.itemGradeHints[k];
-      });
-    }
-    if (j.itemStatsHints && typeof j.itemStatsHints === 'object' && window.L2 && L2.itemStatsById) {
-      Object.keys(j.itemStatsHints).forEach(function (k) {
-        var st = j.itemStatsHints[k];
-        if (!st || typeof st !== 'object') return;
-        var prev = L2.itemStatsById[k] || {};
-        L2.itemStatsById[k] = Object.assign({}, prev, st);
-      });
-    }
-    if (
-      j.itemBlocksShieldById &&
-      typeof j.itemBlocksShieldById === 'object' &&
-      window.L2 &&
-      L2.itemBlocksShieldById
-    ) {
-      Object.keys(j.itemBlocksShieldById).forEach(function (k) {
-        L2.itemBlocksShieldById[k] = j.itemBlocksShieldById[k];
-      });
-    }
-
     var nb = $('char-name-bracket');
-    if (nb && c.name != null && c.level != null) {
-      nb.textContent = String(c.name) + '[' + String(c.level) + ']';
+    if (nb && snap.name != null && snap.level != null) {
+      nb.textContent = String(snap.name) + '[' + String(snap.level) + ']';
     }
-
-    renderAll(c);
 
     if (errEl) errEl.hidden = true;
     if (content) content.hidden = false;
+
+    renderAll(snap);
+
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(function () {
+        loadCraftBookForChar(t);
+      });
+    } else {
+      setTimeout(function () {
+        loadCraftBookForChar(t);
+      }, 300);
+    }
   }
 
   init();
