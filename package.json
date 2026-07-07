@@ -47,6 +47,7 @@
     "sim:balance": "tsx server/scripts/sim-balance-report.ts"
   },
   "dependencies": {
+    "@fastify/compress": "^9.0.0",
     "@fastify/static": "^8.2.0",
     "@prisma/client": "^6.19.0",
     "bcryptjs": "^3.0.2",

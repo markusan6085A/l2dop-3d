@@ -448,30 +448,41 @@
     var charJson = null;
     var namesUk = {};
 
-    fetch('/character', { headers: { Authorization: 'Bearer ' + t } })
-      .then(function (r) {
-        if (r.status === 401) {
-          localStorage.removeItem('token');
-          window.location.href = '/';
-          return null;
-        }
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j || !j.character) {
+    Promise.all([
+      window.L2 && typeof L2.fetchSnapshot === 'function'
+        ? L2.fetchSnapshot()
+        : fetch('/character', { headers: { Authorization: 'Bearer ' + t } })
+            .then(function (r) {
+              if (r.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = '/';
+                return null;
+              }
+              return r.ok ? r.json() : null;
+            })
+            .then(function (j) {
+              return j && j.character ? j.character : null;
+            }),
+      window.L2 && typeof L2.fetchCatalogHints === 'function'
+        ? L2.fetchCatalogHints()
+        : Promise.resolve(false),
+    ])
+      .then(function (pair) {
+        var snap = pair[0];
+        if (!snap) {
           showGate(false);
           return null;
         }
-        charJson = j.character;
-        namesUk = j.itemNamesUk || {};
-        if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
-          L2.mergeCraftResourceIconHints(j);
-        }
-        if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
+        charJson = snap;
+        namesUk =
+          window.L2 && L2.itemNameById && typeof L2.itemNameById === 'object'
+            ? L2.itemNameById
+            : {};
+        if (L2.setLastSnapshot) L2.setLastSnapshot(snap);
         if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(j.character);
+          L2.applyHudFromSnapshot(snap);
         }
-        var ok = typeof L2.canOpenCraft === 'function' && L2.canOpenCraft(j.character);
+        var ok = typeof L2.canOpenCraft === 'function' && L2.canOpenCraft(snap);
         showGate(!!ok);
         if (!ok) return null;
         return fetch('/game/resource-craft/book', {

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import fastifyCompress from '@fastify/compress';
 import fastifyStatic from '@fastify/static';
 import Fastify from 'fastify';
 import { authRoutes } from './routes/auth.js';
@@ -21,16 +22,25 @@ function resolvePublicDir(): string {
 
 const publicDir = resolvePublicDir();
 
+function isNoStoreApiPath(pathname: string): boolean {
+  if (pathname.startsWith('/character')) return true;
+  if (pathname.startsWith('/auth/')) return true;
+  if (pathname.startsWith('/game/item-icon/')) return false;
+  if (pathname.startsWith('/game/skill-icon/')) return false;
+  return pathname.startsWith('/game/');
+}
+
 export async function buildApp() {
   const app = Fastify({ logger: true, trustProxy: true });
 
+  await app.register(fastifyCompress, {
+    global: true,
+    encodings: ['br', 'gzip', 'deflate'],
+  });
+
   app.addHook('onSend', async (request, reply, payload) => {
     const path = request.url.split('?')[0] || '';
-    if (
-      path.startsWith('/character') ||
-      path.startsWith('/game/') ||
-      path.startsWith('/auth/')
-    ) {
+    if (isNoStoreApiPath(path)) {
       reply.header('Cache-Control', 'no-store');
     }
     return payload;

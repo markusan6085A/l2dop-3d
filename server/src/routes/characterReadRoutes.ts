@@ -17,6 +17,22 @@ import { getCharacterMapStateForUser } from '../services/charMapStateService.js'
 import { getMagisterDialogForUser } from '../services/skillLearnService.js';
 import { characterDbErrorPayload } from './characterRouteErrors.js';
 
+function buildCharacterCatalogHints() {
+  return {
+    gearCatalog: listGearCatalogForClient(),
+    /** Підписи для дропу / сумки / ресурсів: lineage + каталог + ручні UA. */
+    itemNamesUk: itemNamesUkForClient(),
+    itemSlotHints: itemSlotHintsForClient(),
+    itemInventoryTabHints: itemInventoryTabHintsForClient(),
+    itemGradeHints: itemGradeHintsForClient(),
+    itemStatsHints: itemStatsHintsForClient(),
+    /** Дворучна зброя (l1 займає «другу руку») — для UI слота щита. */
+    itemBlocksShieldById: itemBlocksShieldHintsForClient(),
+    /** itemId → URL іконки як у крафті (`l2dop-by-itemid`), для сумки/ГМ. */
+    craftResourceIconByItemId: craftResourceIconHintsForClient(),
+  };
+}
+
 /** GET /character, /town, /magister */
 export function registerCharacterReadRoutes(app: FastifyInstance): void {
   app.get(
@@ -34,23 +50,25 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         }
         return reply.send({
           character,
-          gearCatalog: listGearCatalogForClient(),
-          /** Підписи для дропу / сумки / ресурсів: lineage + каталог + ручні UA. */
-          itemNamesUk: itemNamesUkForClient(),
-          itemSlotHints: itemSlotHintsForClient(),
-          itemInventoryTabHints: itemInventoryTabHintsForClient(),
-          itemGradeHints: itemGradeHintsForClient(),
-          itemStatsHints: itemStatsHintsForClient(),
-          /** Дворучна зброя (l1 займає «другу руку») — для UI слота щита. */
-          itemBlocksShieldById: itemBlocksShieldHintsForClient(),
-          /** itemId → URL іконки як у крафті (`l2dop-by-itemid`), для сумки/ГМ. */
-          craftResourceIconByItemId: craftResourceIconHintsForClient(),
         });
       } catch (err) {
         request.log.error({ err }, 'GET /character');
         const { code, body } = characterDbErrorPayload(err);
         return reply.code(code).send(body);
       }
+    }
+  );
+
+  /** Важкі довідники предметів для UI (окремо від легкого /character). */
+  app.get(
+    '/catalog-hints',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      return reply.send(buildCharacterCatalogHints());
     }
   );
 

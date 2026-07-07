@@ -67,9 +67,24 @@
 
   var lastSnapshot = null;
   var sessionCatalogMerged = false;
+  var sessionCatalogFetchPromise = null;
+
+  function hasCatalogHintsPayload(j) {
+    if (!j || typeof j !== 'object') return false;
+    return !!(
+      j.gearCatalog ||
+      j.itemNamesUk ||
+      j.itemSlotHints ||
+      j.itemInventoryTabHints ||
+      j.itemGradeHints ||
+      j.itemStatsHints ||
+      j.itemBlocksShieldById ||
+      j.craftResourceIconByItemId
+    );
+  }
 
   function mergeCharacterCatalogHints(j) {
-    if (!j || sessionCatalogMerged) return;
+    if (!hasCatalogHintsPayload(j) || sessionCatalogMerged) return;
     sessionCatalogMerged = true;
     if (j.gearCatalog && global.L2.mergeGearCatalog) {
       global.L2.mergeGearCatalog(j.gearCatalog);
@@ -120,6 +135,34 @@
         global.L2.itemBlocksShieldById[k] = j.itemBlocksShieldById[k];
       });
     }
+  }
+
+  async function ensureCatalogHintsLoaded(token) {
+    if (!token) return false;
+    if (sessionCatalogMerged) return true;
+    if (sessionCatalogFetchPromise) return sessionCatalogFetchPromise;
+    sessionCatalogFetchPromise = fetch('/character/catalog-hints', {
+      headers: { Authorization: 'Bearer ' + token },
+    })
+      .then(function (r) {
+        if (r.status === 401) {
+          global.L2.setToken(null);
+          return null;
+        }
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then(function (j) {
+        if (j) mergeCharacterCatalogHints(j);
+        return sessionCatalogMerged;
+      })
+      .catch(function () {
+        return false;
+      })
+      .finally(function () {
+        sessionCatalogFetchPromise = null;
+      });
+    return sessionCatalogFetchPromise;
   }
 
   /** Коди помилок API → повідомлення для гравця (uk/ru через ui-i18n.js). */
@@ -175,11 +218,11 @@
     /** Заповнюється з GET /shop/gm: itemId → iconUrl, nameUk */
     itemIconById: {},
     itemNameById: {},
-    /** GET /character gearCatalog: itemId → stats (pAtk, mAtk, pDef, atkSpd, wpnCrit …) */
+    /** GET /character/catalog-hints gearCatalog: itemId → stats (pAtk, mAtk, pDef, atkSpd, wpnCrit …) */
     itemStatsById: {},
     /** rhand | chest | legs — для fallback іконки й підпису типу */
     itemSlotById: {},
-    /** NG | D | C | B | A | S — з GET /character itemGradeHints + gearCatalog */
+    /** NG | D | C | B | A | S — з GET /character/catalog-hints itemGradeHints + gearCatalog */
     itemGradeById: {},
     /** Тип зброї (рядок каталогу) — для фільтра сумки */
     itemWeaponTypeById: {},
@@ -187,9 +230,9 @@
     itemArmorTypeById: {},
     /** Тип біжутерії — з каталогу */
     itemJewelryKindById: {},
-    /** Вкладка сумки (не екіп): enchantment, recipe… — GET /character itemInventoryTabHints */
+    /** Вкладка сумки (не екіп): enchantment, recipe… — GET /character/catalog-hints itemInventoryTabHints */
     itemInventoryTabById: {},
-    /** GET /character itemBlocksShieldById: дворуч — іконка зброї також у слоті щита */
+    /** GET /character/catalog-hints itemBlocksShieldById: дворуч — іконка зброї також у слоті щита */
     itemBlocksShieldById: {},
     mergeShopCatalog: function (items) {
       var icons = global.L2.itemIconById;
@@ -354,11 +397,18 @@
       if (!r.ok) return null;
       var j = await r.json();
       lastSnapshot = j.character;
-      mergeCharacterCatalogHints(j);
+      if (!sessionCatalogMerged) {
+        await ensureCatalogHintsLoaded(t);
+      }
       if (j.character && typeof global.L2.applyHudFromSnapshot === 'function') {
         global.L2.applyHudFromSnapshot(j.character);
       }
       return lastSnapshot;
+    },
+    fetchCatalogHints: async function () {
+      var t = global.L2.token();
+      if (!t) return false;
+      return ensureCatalogHintsLoaded(t);
     },
     applyCharacterSnapshot: function (snapshot, applyScreenSpecific) {
       if (!snapshot) return null;

@@ -946,7 +946,9 @@
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(snap);
     }
-    if (window.L2BattleHotbar && typeof L2BattleHotbar.mergeCharacterCatalog === 'function') {
+    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+      await L2.fetchCatalogHints();
+    } else if (window.L2BattleHotbar && typeof L2BattleHotbar.mergeCharacterCatalog === 'function') {
       L2BattleHotbar.mergeCharacterCatalog(jChar);
     }
 

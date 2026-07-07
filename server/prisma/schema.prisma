@@ -71,4 +71,6 @@ model Character {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastUpdate DateTime @updatedAt
+
+  @@index([userId, lastUpdate(sort: Desc)])
 }

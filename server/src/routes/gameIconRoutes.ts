@@ -24,7 +24,7 @@ export function registerGameIconRoutes(app: FastifyInstance): void {
     if (!filePath) {
       return reply.redirect('/icons/drops/other.svg', 302);
     }
-    reply.header('Cache-Control', 'public, max-age=86400');
+    reply.header('Cache-Control', 'public, max-age=31536000, immutable');
     const ext = path.extname(filePath).toLowerCase();
     const mime =
       ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
@@ -49,7 +49,7 @@ export function registerGameIconRoutes(app: FastifyInstance): void {
     const q = request.query as { dpr?: string };
     const dprParsed = Number.parseFloat(String(q?.dpr ?? ''));
     const hasDpr = Number.isFinite(dprParsed) && dprParsed > 0;
-    reply.header('Cache-Control', 'public, max-age=86400');
+    reply.header('Cache-Control', 'public, max-age=31536000, immutable');
     if (hasDpr) {
       try {
         const png = await renderL2dopSkillIconCrispPng(filePath, dprParsed);
