@@ -2,7 +2,7 @@
  * Service Worker: кеш лише статики (assets/icons/css/js).
  * API (/character, /game/, /auth/) — завжди мережа (сервер = джерело правди).
  */
-var SW_VERSION = '20260707perf5';
+var SW_VERSION = '20260707perf6';
 var CACHE_NAME = 'l2dop-static-' + SW_VERSION;
 
 var PRECACHE_URLS = [

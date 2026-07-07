@@ -30,6 +30,7 @@
 
 html body.l2-body.l2-app-l2-chrome {
   background: #000 !important;
+  scrollbar-gutter: stable both-edges;
 }
 
 html body.l2-app-l2-chrome .l2-shell {

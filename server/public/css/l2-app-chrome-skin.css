@@ -21,6 +21,8 @@ body.l2-app-l2-chrome {
   --l2s-hud-citystrip-pad-x: 22px;
   --l2s-hud-citystrip-pad-bottom: 14px;
   --l2s-hud-citystrip-bars-w: 2.75cm;
+  /* Тримає місце під скролбар і прибирає горизонтальний "поштовх" колонки. */
+  scrollbar-gutter: stable both-edges;
 }
 
 body.l2-body.l2-app-l2-chrome {
