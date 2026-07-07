@@ -5,14 +5,20 @@ import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
 /**
  * Версія стартового набору в сумці; піднімаємо при зміні складу старту.
- * v5 — Club + Apprentice's Rod у сумці, обидва заряди, зілля; однаково для всіх класів/рас.
+ * v6 — Club + Rod + Devotion helmet/gloves, зілля, обидва заряди; лише при register.
  */
-export const STARTER_KIT_VERSION = 5;
+export const STARTER_KIT_VERSION = 6;
+
+/** Стартова адена нового героя. */
+export const STARTER_ADENA = 50_000;
 
 /** NG Club — фіз. зброя для всіх. */
 const STARTER_WEAPON_PHYS_ID = 4;
 /** Apprentice's Rod — маг. зброя для всіх. */
 const STARTER_WEAPON_MAGIC_ID = 7;
+/** Devotion Helmet / gloves — NG-броня з GM-шопу (синтетичні id). */
+const STARTER_DEVOTION_HELMET_ID = 9002261;
+const STARTER_DEVOTION_GLOVES_ID = 9002267;
 const STARTER_LESSER_HEALING_ID = 1060;
 const STARTER_MANA_SMALL_ID = 726;
 const STARTER_FIGHTER_SOULSHOT_ID = 1835;
@@ -20,10 +26,12 @@ const STARTER_MYSTIC_SPIRITSHOT_ID = 3947;
 const STARTER_POTION_QTY = 50;
 const STARTER_SHOT_QTY = 1000;
 
-/** Мінімальний склад стартової сумки (qty — мінімум при міграції). */
-const STARTER_BAG_MIN: ReadonlyArray<{ itemId: number; qty: number }> = [
+/** Стартова сумка (тільки create character). */
+const STARTER_BAG_STACKS: ReadonlyArray<{ itemId: number; qty: number }> = [
   { itemId: STARTER_WEAPON_PHYS_ID, qty: 1 },
   { itemId: STARTER_WEAPON_MAGIC_ID, qty: 1 },
+  { itemId: STARTER_DEVOTION_HELMET_ID, qty: 1 },
+  { itemId: STARTER_DEVOTION_GLOVES_ID, qty: 1 },
   { itemId: STARTER_LESSER_HEALING_ID, qty: STARTER_POTION_QTY },
   { itemId: STARTER_MANA_SMALL_ID, qty: STARTER_POTION_QTY },
   { itemId: STARTER_FIGHTER_SOULSHOT_ID, qty: STARTER_SHOT_QTY },
@@ -126,56 +134,22 @@ export function emptyInventory(): InventoryState {
 
 export type StarterClassBranch = 'fighter' | 'mystic';
 
-/** Стартова сумка нового героя: обидві NG-зброї та заряди в сумці (без прив’язки до класу). */
+/** Стартова сумка нового героя (лише register). */
 export function starterInventory(_classBranch?: StarterClassBranch): InventoryState {
   return {
     v: 1,
     _sk: STARTER_KIT_VERSION,
-    stacks: STARTER_BAG_MIN.map((row) => ({ ...row })),
+    stacks: STARTER_BAG_STACKS.map((row) => ({ ...row })),
     eq: {},
   };
-}
-
-function ensureStarterBagStacks(
-  stacks: BagStack[],
-  eq: Partial<Record<string, EqSlotValue>>,
-): BagStack[] {
-  const next = stacks.map((s) => ({ ...s }));
-  const equippedIds = new Set<number>();
-  for (const v of Object.values(eq || {})) {
-    const slot = normalizeEqSlot(v as EqSlotValue);
-    if (slot) equippedIds.add(slot.itemId);
-  }
-  for (const need of STARTER_BAG_MIN) {
-    const row = next.find(
-      (s) => s.itemId === need.itemId && normEnchant(s.enchant) === 0,
-    );
-    const bagQty = row ? row.qty : 0;
-    const hasEquipped = equippedIds.has(need.itemId);
-    const total = bagQty + (hasEquipped ? 1 : 0);
-    if (total >= need.qty) {
-      if (row && row.qty < need.qty && !hasEquipped) row.qty = need.qty;
-      continue;
-    }
-    const addQty = need.qty - total;
-    if (row) row.qty += addQty;
-    else next.push({ itemId: need.itemId, qty: addQty });
-  }
-  return next;
 }
 
 export function needsStarterKitMigration(inv: InventoryState): boolean {
   return inv._sk !== STARTER_KIT_VERSION;
 }
 
-/**
- * Міграція `_sk` для старих персонажів.
- * Якщо сумка й екіп порожні — видаємо стартовий набір (клас із реєстрації).
- */
-export function migrateInventoryToSk2(
-  inv: InventoryState,
-  classBranch: StarterClassBranch = 'fighter',
-): InventoryState {
+/** Міграція `_sk` для старих персонажів: лише sanitize, без видачі стартового набору. */
+export function migrateInventoryToSk2(inv: InventoryState): InventoryState {
   const known = (id: number) => !!ITEM_CATALOG[id];
   const stacks: BagStack[] = [];
   for (const s of inv.stacks) {
@@ -195,13 +169,10 @@ export function migrateInventoryToSk2(
       }
     }
   }
-  if (stacks.length === 0 && Object.keys(eq).length === 0) {
-    return starterInventory(classBranch);
-  }
   return {
     v: 1,
     _sk: STARTER_KIT_VERSION,
-    stacks: ensureStarterBagStacks(stacks, eq),
+    stacks,
     eq,
   };
 }

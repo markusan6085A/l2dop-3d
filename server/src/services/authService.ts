@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { starterInventory } from '../data/inventory.js';
+import { starterInventory, STARTER_ADENA } from '../data/inventory.js';
 import { starterWorldForNewCharacter } from '../data/l2dopStarterWorldFromRace.js';
 import { defaultFighterBaseProfessionForRace } from '../data/l2dopHumanFighterBattleSkills.js';
 import { prisma } from '../lib/prisma.js';
@@ -121,6 +121,7 @@ export async function register(input: {
         classBranch,
         gender,
         l2Profession,
+        adena: BigInt(STARTER_ADENA),
         cityId: start.cityId,
         worldX: start.worldX,
         worldY: start.worldY,

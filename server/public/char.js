@@ -868,6 +868,15 @@
     return !!HP_MP_POTION_IDS[Number(itemId)];
   }
 
+  /** Розхідники — показуємо ×qty; зброя/броня з qty 1 — без «×1». */
+  function bagQtySuffix(itemId, qty) {
+    var q = Number(qty);
+    if (!Number.isFinite(q) || q <= 0) q = 1;
+    if (itemInConsumableBagBucket(itemId)) return ' ×' + q;
+    if (q > 1) return ' ×' + q;
+    return '';
+  }
+
   function isCraftHintItem(itemId) {
     return itemInConsumableBagBucket(itemId) && !isHpMpPotion(itemId);
   }
@@ -1277,7 +1286,7 @@
       mid.className = 'l2-char-bag-row-text';
       var label = document.createElement('span');
       label.className = 'l2-char-bag-name';
-      var nameLine = itemDisplayName(st.itemId) + ' ×' + st.qty;
+      var nameLine = itemDisplayName(st.itemId) + bagQtySuffix(st.itemId, st.qty);
       if (en > 0) nameLine += ' +' + en;
       if (st.equipped) nameLine += ' · одягнено';
       label.textContent = nameLine;
@@ -1762,7 +1771,9 @@
         addRow('Шанс крит (зброя)', '+' + String(st.rCrit));
       }
     }
-    qtyEl.textContent = 'У сумці: ×' + (Number.isFinite(qty) ? qty : 1);
+    qtyEl.textContent =
+      'У сумці' +
+      bagQtySuffix(itemId, Number.isFinite(qty) ? qty : 1);
     if (armorSetsEl && window.L2ArmorSetBonusesUI) {
       if (window.L2ArmorSetBonusesUI.isArmorSlot(slKind)) {
         window.L2ArmorSetBonusesUI.showIn(

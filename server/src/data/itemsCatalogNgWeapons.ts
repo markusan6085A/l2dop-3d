@@ -94,7 +94,7 @@ export function mergeNgDropsWeapons(
   add(153, phys('Серп NG-grade.', 'blunt', 25, 18, 379, { rCrit: 4 }));
 
   /** Булави */
-  add(4, phys('Бита NG-grade.', 'blunt', 25, 18, 379, { rCrit: 4 }));
+  add(4, phys('Club NG-grade.', 'blunt', 25, 18, 379, { rCrit: 4 }));
   add(5, phys('Булава NG-grade.', 'blunt', 33, 24, 379, { rCrit: 4 }));
   add(155, phys('Буздиган NG-grade.', 'blunt', 41, 30, 379, { rCrit: 4 }));
   add(87, phys('Залізний молот NG-grade.', 'blunt', 37, 28, 379, {
