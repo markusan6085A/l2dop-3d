@@ -40,6 +40,13 @@ function profileForItemId(id: number): PotionProfile | undefined {
   }
 }
 
+/** Профіль відновлення для одного зілля (поза боєм — миттєво на `total`). */
+export function getPotionRestoreProfile(
+  id: number
+): PotionProfile | undefined {
+  return profileForItemId(id);
+}
+
 function tickHoTLine(
   h: BattlePotionHoTEntry,
   nowMs: number

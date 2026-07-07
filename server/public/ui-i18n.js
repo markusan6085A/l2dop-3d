@@ -62,6 +62,8 @@
     },
     nav_town: { uk: 'Місто', ru: 'Город' },
     nav_town_title: { uk: 'Місто', ru: 'Город' },
+    nav_mail: { uk: 'Пошта', ru: 'Почта' },
+    nav_mail_title: { uk: 'Пошта', ru: 'Почта' },
     nav_mammon: { uk: 'Маммон', ru: 'Маммон' },
     nav_mammon_title: { uk: 'Маммон / Rift', ru: 'Маммон / Rift' },
     page_mammon_title: { uk: 'Маммон — L2DOP', ru: 'Маммон — L2DOP' },

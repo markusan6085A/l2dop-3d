@@ -197,14 +197,14 @@
   gap: 10px;
   padding: 9px 11px;
   border-radius: 8px;
-  border: 1px solid rgba(100, 80, 52, 0.38);
-  background: linear-gradient(180deg, rgba(32, 26, 18, 0.72), rgba(14, 11, 8, 0.52));
+  border: 1px solid rgba(199, 173, 128, 0.45);
+  background: transparent;
   box-sizing: border-box;
 }
 
 .l2-gm-shop-row--jewelry {
-  border-color: rgba(180, 140, 200, 0.35);
-  background: linear-gradient(180deg, rgba(28, 18, 38, 0.55), rgba(12, 8, 22, 0.42));
+  border-color: rgba(199, 173, 128, 0.45);
+  background: transparent;
 }
 
 .l2-gm-shop-icon {
@@ -212,8 +212,8 @@
   height: 32px;
   object-fit: contain;
   border-radius: 2px;
-  border: 1px solid rgba(100, 80, 52, 0.4);
-  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(199, 173, 128, 0.55);
+  background: rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
 }
 
@@ -239,20 +239,21 @@
 
 .l2-gm-shop-buy {
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 5px 10px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
-  border: 1px solid rgba(200, 160, 90, 0.45);
+  border-radius: 2px;
+  border: 0 !important;
   color: #f0e6b8;
-  background: linear-gradient(180deg, #3a3028, #181410);
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260707gmShopBuy2') center / 100% 100% no-repeat;
 }
 
 .l2-gm-shop-buy:hover,
 .l2-gm-shop-buy:focus {
-  border-color: #d4af37;
   outline: none;
+  filter: brightness(1.06);
+  -webkit-filter: brightness(1.06);
 }
 
 .l2-gm-shop-buy:disabled {
@@ -478,17 +479,17 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin: 10px 0 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(100, 80, 52, 0.28);
+  gap: 1px 3px;
+  margin: 2px 0 6px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(199, 173, 128, 0.28);
 }
 
 /* Компактний GM-шоп: менші відступи між рядками табів */
 .l2-gm-shop .l2-drops-shop-tablist {
-  gap: 2px;
-  margin: 2px 0 4px;
-  padding-bottom: 4px;
+  gap: 1px 2px;
+  margin: 0 0 2px;
+  padding-bottom: 1px;
 }
 
 .l2-gm-shop .l2-drops-shop-tablist--cats,
@@ -503,7 +504,7 @@
 
 .l2-gm-shop .l2-drops-shop-tablist--cats .l2-drops-shop-tab {
   flex: 0 0 auto;
-  padding: 1px 6px;
+  padding: 1px 4px;
   font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
@@ -520,7 +521,7 @@
 
 .l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab {
   flex: 0 0 auto;
-  padding: 1px 6px;
+  padding: 1px 4px;
   font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
@@ -530,18 +531,18 @@
 .l2-gm-shop .l2-drops-shop-tablist--weapon-kind {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 2px 3px;
+  gap: 1px 2px;
   flex-wrap: unset;
   align-items: stretch;
   justify-content: stretch;
-  margin-bottom: 4px;
-  padding-bottom: 4px;
+  margin-bottom: 2px;
+  padding-bottom: 2px;
 }
 
 .l2-gm-shop .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
   width: 100%;
   min-width: 0;
-  padding: 2px 3px;
+  padding: 1px 3px;
   font-size: 9px;
   font-weight: 600;
   line-height: 1.15;
@@ -658,14 +659,14 @@ button.l2-gm-shop-icon-btn:focus-visible {
   height: 32px;
   object-fit: contain;
   border-radius: 2px;
-  border: 1px solid rgba(100, 80, 52, 0.45);
-  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(199, 173, 128, 0.55);
+  background: rgba(0, 0, 0, 0.15);
   vertical-align: middle;
   pointer-events: none;
 }
 
 button.l2-gm-shop-icon-btn:hover .l2-gm-shop-icon-img {
-  border-color: rgba(200, 160, 90, 0.65);
+  border-color: rgba(232, 200, 120, 0.9);
 }
 
 .l2-drops-stats-modal {

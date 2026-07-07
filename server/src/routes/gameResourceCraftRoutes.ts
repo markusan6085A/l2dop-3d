@@ -72,7 +72,7 @@ export function registerGameResourceCraftRoutes(app: FastifyInstance): void {
           return reply.code(403).send({
             error: e.message,
             messageUk:
-              'Крафт лише для Збирача (Scavenger), Ремісника (Artisan) та Маестро (Maestro).',
+              'Крафт лише для гнома-воїна після першої професії: Збирач (Scavenger) або Ремісник (Artisan). Рецепти відкриваються за рівнем.',
           });
         }
         if (e instanceof Error && e.message === 'level_too_low') {

@@ -51,6 +51,8 @@
     var race = raceEl.value;
     var branch = document.querySelector('input[name="classBranch"]:checked');
     var classBranch = branch ? branch.value : 'fighter';
+    var genderEl = document.querySelector('input[name="gender"]:checked');
+    var gender = genderEl ? genderEl.value : 'male';
 
     if (password !== password2) {
       showErr('Паролі не збігаються.');
@@ -67,6 +69,7 @@
         characterName: characterName,
         race: race,
         classBranch: classBranch,
+        gender: gender,
       }),
     });
     var j = await r.json().catch(function () {
@@ -78,9 +81,10 @@
         return;
       }
       showErr(
-        window.L2 && window.L2.apiErrorUk
-          ? window.L2.apiErrorUk(j.error) + (r.status >= 500 ? ' (' + r.status + ')' : '')
-          : 'Помилка: ' + (j.error || r.status)
+        j.messageUk ||
+          (window.L2 && window.L2.apiErrorUk
+            ? window.L2.apiErrorUk(j.error) + (r.status >= 500 ? ' (' + r.status + ')' : '')
+            : 'Помилка: ' + (j.error || r.status))
       );
       return;
     }

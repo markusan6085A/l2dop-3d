@@ -10,10 +10,16 @@ body.l2-app-l2-chrome {
   --l2s-paper-radius: 3px;
   --l2-font-display: 'Lora', Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
   -webkit-tap-highlight-color: rgba(201, 164, 58, 0.22);
-  /* Зсув герба вліво/вправо: підгонка вісі меча під ромб /ref/8585 (рамку HUD не рухати — лише цей параметр). */
-  --l2s-crest-h-align-nudge: -2px;
-  /* Зсув ramки HUD (/ref/8585) вправо/вліво — добирання вирівнювання з гербом. */
-  --l2s-hud-citystrip-h-nudge: 2px;
+  /* Зсув герба вліво/вправо: підгонка під центральний герб на HUD-рамці 14f47b34. */
+  --l2s-crest-h-align-nudge: 0px;
+  /* HUD city-strip: висота + відступ зверху; без bleed — вміст у межах PNG-рамки. */
+  --l2s-hud-citystrip-w-bleed: 0px;
+  --l2s-hud-citystrip-top-gap: calc(1cm + 3mm);
+  --l2s-hud-citystrip-min-h: 112px;
+  --l2s-hud-citystrip-pad-top: 30px;
+  --l2s-hud-citystrip-pad-x: 22px;
+  --l2s-hud-citystrip-pad-bottom: 14px;
+  --l2s-hud-citystrip-bars-w: 2.75cm;
 }
 
 body.l2-body.l2-app-l2-chrome {
@@ -27,35 +33,111 @@ body.l2-app-l2-chrome .l2-shell {
   background: transparent;
 }
 
-body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
-  max-width: 420px !important;
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
+  --l2-flat-bg: #0f0d0b;
+  /* Телефон: як було (~420px). ПК: +30% (546px), по центру — див. media в кінці файлу. */
+  --l2s-chrome-column-base: 420px;
+  --l2s-chrome-column-w: min(100vw - 8px, var(--l2s-chrome-column-base));
+  width: var(--l2s-chrome-column-w) !important;
+  max-width: var(--l2s-chrome-column-w) !important;
   margin-left: auto;
   margin-right: auto;
   /* Закрити смугу «void» тла над верхом рамки: підняти колонку (підганяй --l2s-chrome-column-lift на body). */
   margin-top: calc(-1 * var(--l2s-chrome-column-lift, 14px));
   min-height: calc(100vh + var(--l2s-chrome-column-lift, 14px)) !important;
-  /* Один набір із styles.css (:root --l2-city-column-bg), той самий що .l2-page-city .l2-screen */
-  background: var(--l2-city-column-bg) !important;
-  background-color: var(--bg-deep, #0a0806) !important;
+  /* Єдиний нейтральний тон без коричневого градієнта. */
+  background-color: var(--l2-flat-bg) !important;
+  background-image: url('/assets/assets/center.png?v=20260705center1') !important;
+  background-repeat: no-repeat !important;
+  background-position: center top !important;
+  background-size: 100% 100% !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
   border: none !important;
 }
 
-body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
-  content: none !important;
-  display: none !important;
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background-color: var(--l2-flat-bg, #0f0d0b) !important;
+  background-image: url('/assets/assets/center.png?v=20260705center2') !important;
+  background-repeat: no-repeat !important;
+  background-position: center top !important;
+  background-size: 100% 100% !important;
   animation: none !important;
 }
 
-body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
-  content: none !important;
-  display: none !important;
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
+  --l2f-bottom-nudge: 1px;
+  --l2f-side-x-nudge: 3px;
+  --l2f-side-line-inset: 3px;
+  --l2f-top-corner-x-nudge: 3px;
+  --l2f-side-line-width: 24px;
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-image:
+    url('/assets/assets/top-left.png?v=20260705globalFrame1'),
+    url('/assets/assets/top-right.png?v=20260705globalFrame1'),
+    url('/assets/assets/bottom-left.png?v=20260705globalFrame1'),
+    url('/assets/assets/bottom-right.png?v=20260705globalFrame1'),
+    url('/assets/assets/top.png?v=20260705globalFrame1'),
+    url('/assets/assets/bottom.png?v=20260705globalFrame1'),
+    url('/assets/assets/left.png?v=20260705globalFrame1'),
+    url('/assets/assets/right.png?v=20260705globalFrame1');
+  background-repeat:
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    repeat-x,
+    repeat-x,
+    repeat-y,
+    repeat-y;
+  background-position:
+    left calc(0px - var(--l2f-top-corner-x-nudge)) top,
+    right calc(0px - var(--l2f-top-corner-x-nudge)) top,
+    left calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
+    right calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
+    top center,
+    center bottom var(--l2f-bottom-nudge),
+    left calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center,
+    right calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center;
+  background-size:
+    78px 78px,
+    78px 78px,
+    78px 54px,
+    78px 54px,
+    calc(100% - 156px) 78px,
+    calc(100% - 156px + (var(--l2f-side-x-nudge) * 2)) 54px,
+    var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge)),
+    var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge));
 }
 
-/* Вирівнювання герба з центром верхнього орнаменту (ромб) на ramci city-strip /ref/8585.png */
+/* Вирівнювання герба з центром верхнього орнаменту на HUD-рамці 14f47b34 */
 body.l2-app-l2-chrome .l2-outer-sframe-host > .l2-game-chrome-crest {
   left: calc(50% + var(--l2s-crest-h-align-nudge, 0px));
+}
+
+/* mount замінюється на .l2-hud-panel--city-strip (common.js replaceWith) — обидва селектори */
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-hud-panel-mount),
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--city-strip) {
+  padding-top: calc(var(--l2s-hud-citystrip-top-gap, 0px) + env(safe-area-inset-top, 0px)) !important;
+}
+
+body.l2-app-l2-chrome #l2-hud-panel-mount,
+body.l2-app-l2-chrome .l2-screen-inner > .l2-hud-panel--city-strip:first-child {
+  margin-top: 0;
 }
 
 body.l2-app-l2-chrome .l2-outer-sframe__g {
@@ -84,6 +166,7 @@ body.l2-app-l2-chrome .l2-screen-inner::after {
   content: none !important;
   display: none !important;
 }
+
 
 body.l2-app-l2-chrome.l2-page-has-fixed-nav #l2-nav-bottom {
   position: relative;
@@ -137,74 +220,252 @@ body.l2-app-l2-chrome .l2-screen-inner .l2-hud-panel {
   box-shadow: none !important;
 }
 
-/* Шапка з ніком і барами (лише .l2-hud-panel--city-strip): ref/8585.png на кожній сторінці з l2-app-l2-chrome. Інші .l2-hud-panel (напр. бій) — 222. */
+/* Шапка з ніком і барами (лише .l2-hud-panel--city-strip): /assets/14f47b34…png. Інші .l2-hud-panel (напр. бій) — 222. */
 body.l2-app-l2-chrome .l2-hud-panel.l2-hud-panel--city-strip,
 body.l2-app-l2-chrome .l2-screen-inner .l2-hud-panel.l2-hud-panel--city-strip {
-  --l2s-hud8585-slice-y: 30;
-  --l2s-hud8585-slice-x: 40;
-  --l2s-hud8585-bd-y: 12;
-  --l2s-hud8585-bd-x: 20;
+  box-sizing: border-box !important;
+  width: calc(100% + var(--l2s-hud-citystrip-w-bleed, 44px)) !important;
+  max-width: none !important;
+  margin-left: calc(-0.5 * var(--l2s-hud-citystrip-w-bleed, 44px)) !important;
+  margin-right: calc(-0.5 * var(--l2s-hud-citystrip-w-bleed, 44px)) !important;
+  margin-bottom: 6px !important;
+  min-height: var(--l2s-hud-citystrip-min-h, 112px);
+  padding:
+    var(--l2s-hud-citystrip-pad-top, 30px)
+    var(--l2s-hud-citystrip-pad-x, 22px)
+    var(--l2s-hud-citystrip-pad-bottom, 14px)
+    var(--l2s-hud-citystrip-pad-x, 22px) !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
   border-radius: 0 !important;
-  border-width: calc(1px * var(--l2s-hud8585-bd-y)) calc(1px * var(--l2s-hud8585-bd-x)) !important;
-  border-image-source: url('/ref/8585.png') !important;
-  border-image-slice: var(--l2s-hud8585-slice-y) var(--l2s-hud8585-slice-x) var(--l2s-hud8585-slice-y)
-    var(--l2s-hud8585-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-hud8585-bd-y)) calc(1px * var(--l2s-hud8585-bd-x)) !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/assets/14f47b34-846a-4856-9c5e-223f6c9f4e13-removebg-preview.png?v=20260705hud14f4') !important;
+  background-repeat: no-repeat !important;
+  background-position: center top !important;
+  background-size: 100% 100% !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
   position: relative;
-  transform: translateX(var(--l2s-hud-citystrip-h-nudge, 0px));
+  transform: none;
 }
 
-/* Верхня сітка — ref/541.png. Нижня окремим блоком: тонший border-image по висоті + менший padding. */
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-top--city {
+  gap: 6px 8px;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-identity {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: calc(100% - var(--l2s-hud-citystrip-bars-w, 2.75cm) - 8px);
+  overflow: hidden;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-identity-text {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-nick {
+  font-size: 13px;
+  line-height: 1.15;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-meta {
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-meta-ic {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-meta-txt {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-prof-line {
+  margin-top: 3px;
+  padding-left: 20px;
+  font-size: 9px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-city-bars {
+  flex: 0 0 var(--l2s-hud-citystrip-bars-w, 2.75cm);
+  width: var(--l2s-hud-citystrip-bars-w, 2.75cm);
+  min-width: 0;
+  max-width: var(--l2s-hud-citystrip-bars-w, 2.75cm);
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-city-bar .l2-hud-stat-bar {
+  min-height: 12px !important;
+  height: 12px !important;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-exp-inline {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 5px;
+  padding-left: 20px;
+  padding-right: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-exp-bar.l2-hud-exp-bar--inline {
+  flex: 1 1 auto;
+  display: block !important;
+  position: relative;
+  width: auto !important;
+  min-width: 0;
+  max-width: none !important;
+  height: 2px !important;
+  min-height: 2px !important;
+  max-height: 2px !important;
+  border-radius: 0;
+  overflow: hidden;
+  background: #3a3a3a !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-exp-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  height: 100% !important;
+  min-height: 0 !important;
+  border-radius: 0;
+  background: #8f8f8f !important;
+  box-shadow: none !important;
+  transform-origin: left center;
+  transition: width 0.25s ease;
+}
+
+body.l2-app-l2-chrome .l2-hud-panel--city-strip .l2-hud-exp-inline-pct {
+  flex: 0 0 auto;
+  font-size: 9px;
+  color: #a8a8a8;
+  line-height: 1;
+}
+
+/* Верхня сітка (Чат…Ринок) — одна рамка /assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png */
 body.l2-app-l2-chrome #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top {
-  --l2s-wap541-slice-y: 30;
-  --l2s-wap541-slice-x: 40;
-  /* bd-y не занадто малий — кути 541 лишаються цілими; «щільність» дає padding/gap. */
-  --l2s-wap541-bd-y: 9;
-  --l2s-wap541-bd-x: 20;
   box-sizing: border-box !important;
-  border-radius: 0 !important;
-  border-style: solid !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
   border-color: transparent !important;
-  border-width: calc(1px * var(--l2s-wap541-bd-y)) calc(1px * var(--l2s-wap541-bd-x)) !important;
-  border-image-source: url('/ref/541.png') !important;
-  border-image-slice: var(--l2s-wap541-slice-y) var(--l2s-wap541-slice-x) var(--l2s-wap541-slice-y)
-    var(--l2s-wap541-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-wap541-bd-y)) calc(1px * var(--l2s-wap541-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
-  background: transparent !important;
-  background-image: none !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png?v=20260705topWap45a') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  padding: 1px 3px 2px !important;
+  padding: 8px 12px 10px !important;
   gap: 0 2px !important;
   margin-bottom: 5px !important;
 }
 
-body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom {
-  --l2s-wap541-slice-y: 30;
-  --l2s-wap541-slice-x: 40;
-  --l2s-wap541-bd-y: 7;
-  --l2s-wap541-bd-x: 20;
-  box-sizing: border-box !important;
-  border-radius: 0 !important;
-  border-style: solid !important;
-  border-color: transparent !important;
-  border-width: calc(1px * var(--l2s-wap541-bd-y)) calc(1px * var(--l2s-wap541-bd-x)) !important;
-  border-image-source: url('/ref/541.png') !important;
-  border-image-slice: var(--l2s-wap541-slice-y) var(--l2s-wap541-slice-x) var(--l2s-wap541-slice-y)
-    var(--l2s-wap541-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-wap541-bd-y)) calc(1px * var(--l2s-wap541-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
+body.l2-app-l2-chrome #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top .l2-wap-cell {
   background: transparent !important;
-  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  min-height: 0 !important;
+  padding: 2px 1px !important;
+}
+
+body.l2-app-l2-chrome #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top .l2-wap-cell:hover,
+body.l2-app-l2-chrome #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top .l2-wap-cell:focus {
+  background: rgba(100, 75, 40, 0.22) !important;
+  filter: none;
+  -webkit-filter: none;
+  outline: none;
+}
+
+/* Верхній док: Чат — PNG з прозорими полями, трохи більша за базові 32px. */
+body.l2-app-l2-chrome #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top .l2-wap-cell:has(.l2-wap-lbl--t1) img {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+/* Нижня сітка (Профіль…Опції) — одна рамка /assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png */
+body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom {
+  box-sizing: border-box !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png?v=20260705topWap45a') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  padding: 0 4px 0 !important;
+  padding: 8px 12px 10px !important;
   gap: 0 2px !important;
+}
+
+body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 2px 1px !important;
+}
+
+body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:hover,
+body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:focus {
+  background: rgba(100, 75, 40, 0.22) !important;
+  filter: none;
+  -webkit-filter: none;
+  outline: none;
+}
+
+/* Нижній док: Профіль і Місто — іконки трохи більші за решту. */
+body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:has(.l2-wap-lbl--p1) img,
+body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:has(.l2-wap-lbl--p4) img {
+  width: 44px !important;
+  height: 44px !important;
 }
 
 /* Верхня компактна рамка (2121) — той самий підхід, що HUD 222. */
@@ -240,23 +501,44 @@ body.l2-app-l2-chrome .l2-hud-stat-bar {
   box-shadow: none !important;
 }
 
-/* Авторизація: док у колонці (не fixed), теплі тони як у міста */
+/* Авторизація: док у колонці (не fixed), без коричневого фону */
 body.l2-app-l2-chrome.l2-page-auth .l2-dock.l2-dock--auth {
   max-width: 100%;
   width: 100%;
   margin-left: 0;
   margin-right: 0;
   margin-top: 10px;
-  background: linear-gradient(to top, rgba(14, 11, 8, 0.98), rgba(20, 16, 12, 0.94));
-  border: 1px solid rgba(100, 80, 48, 0.45);
-  border-top: 1px solid rgba(140, 120, 60, 0.35);
-  border-radius: 0 0 10px 10px;
-  -webkit-box-shadow:
-    0 -4px 20px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 200, 120, 0.05);
-  box-shadow:
-    0 -4px 20px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 200, 120, 0.05);
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Авторизація: «Головна» / «Про сервер» — рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-auth .l2-dock.l2-dock--auth a.l2-dock-tile {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705authDock1512') center / 100% 100%
+    no-repeat !important;
+  min-height: 32px;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-auth .l2-dock.l2-dock--auth a.l2-dock-tile:hover,
+body.l2-app-l2-chrome.l2-page-auth .l2-dock.l2-dock--auth a.l2-dock-tile:focus-visible {
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705authDock1512') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
 }
 
 /**
@@ -279,7 +561,6 @@ body.l2-app-l2-chrome a.l2-town-btn,
 body.l2-app-l2-chrome button.l2-town-btn,
 body.l2-app-l2-chrome .l2-city-tp-item,
 body.l2-app-l2-chrome .l2-map-mob-page-btn,
-body.l2-app-l2-chrome button.l2-map-mob-title--tap-full,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow,
 body.l2-app-l2-chrome .l2-gm-modal-buy,
@@ -288,8 +569,7 @@ body.l2-app-l2-chrome .l2-battle-victory-link--primary,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted,
 body.l2-app-l2-chrome .l2-battle-back-map,
 body.l2-app-l2-chrome .l2-battle-victory-backloc,
-body.l2-app-l2-chrome .l2-battle-defeat-tocity,
-body.l2-app-l2-chrome .l2-map-mob-modal__battle {
+body.l2-app-l2-chrome .l2-battle-defeat-tocity {
   border-color: transparent !important;
   border-style: solid;
   border-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
@@ -390,125 +670,153 @@ body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta {
   color: #f3e4c4 !important;
 }
 
-/* Реєстрація: «Створити героя» — рамка ref/8585.png */
+/* Реєстрація: «Створити героя» — рамка be40521b */
 body.l2-app-l2-chrome.l2-page-auth button.btn-l2#btn-register {
-  --l2s-reg8585-slice-y: 30;
-  --l2s-reg8585-slice-x: 40;
-  --l2s-reg8585-bd-y: 12;
-  --l2s-reg8585-bd-x: 20;
   box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   width: auto !important;
   max-width: min(320px, 94vw) !important;
+  min-height: 40px;
   margin-left: auto !important;
   margin-right: auto !important;
-  display: block !important;
-  border-radius: 0 !important;
-  border-style: solid !important;
+  padding: 12px 20px !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
   border-color: transparent !important;
-  border-width: calc(1px * var(--l2s-reg8585-bd-y)) calc(1px * var(--l2s-reg8585-bd-x)) !important;
-  border-image-source: url('/ref/8585.png') !important;
-  border-image-slice: var(--l2s-reg8585-slice-y) var(--l2s-reg8585-slice-x) var(--l2s-reg8585-slice-y)
-    var(--l2s-reg8585-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-reg8585-bd-y)) calc(1px * var(--l2s-reg8585-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
-  background: transparent !important;
-  background-image: none !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/be40521b-2919-47e3-af36-d5cec379a522-removebg-preview%20(1).png?v=20260705regBe405') center / 100% 100%
+    no-repeat !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  padding: 14px 18px !important;
   font-family: 'Lora', Georgia, 'Times New Roman', serif !important;
   font-size: 13px !important;
   font-weight: 600 !important;
   letter-spacing: 0.08em !important;
   text-transform: none !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
-  color: #f3e4c4 !important;
+  color: #f0e6b8 !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-auth button.btn-l2#btn-register:hover,
 body.l2-app-l2-chrome.l2-page-auth button.btn-l2#btn-register:focus-visible {
-  filter: brightness(1.08);
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/be40521b-2919-47e3-af36-d5cec379a522-removebg-preview%20(1).png?v=20260705regBe405') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.08) !important;
+  -webkit-filter: brightness(1.08) !important;
   outline: none;
+  transform: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-auth button.btn-l2#btn-register:active {
-  filter: brightness(0.96);
+  filter: brightness(0.96) !important;
+  -webkit-filter: brightness(0.96) !important;
 }
 
-/* Реєстрація: «На головну» — рамка ref/541.png (як док авторизації) */
+/* Реєстрація: «← На головну» — рамка 1512125 */
 body.l2-app-l2-chrome.l2-page-auth .l2-auth-back a.btn-l2.btn-l2-secondary {
-  --l2s-auth-back541-slice-y: 30;
-  --l2s-auth-back541-slice-x: 40;
-  --l2s-auth-back541-bd-y: 5;
-  --l2s-auth-back541-bd-x: 9;
   box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   width: auto !important;
   max-width: 100%;
-  display: inline-block !important;
+  min-height: 32px;
   margin-left: auto !important;
   margin-right: auto !important;
   padding: 6px 14px !important;
-  border-radius: 0 !important;
-  border-style: solid !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
   border-color: transparent !important;
-  border-width: calc(1px * var(--l2s-auth-back541-bd-y)) calc(1px * var(--l2s-auth-back541-bd-x)) !important;
-  border-image-source: url('/ref/541.png') !important;
-  border-image-slice: var(--l2s-auth-back541-slice-y) var(--l2s-auth-back541-slice-x) var(--l2s-auth-back541-slice-y)
-    var(--l2s-auth-back541-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-auth-back541-bd-y)) calc(1px * var(--l2s-auth-back541-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
-  background: transparent !important;
-  background-image: none !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705regBack1512') center / 100% 100%
+    no-repeat !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
   text-decoration: none !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
-  color: #e8dcc8 !important;
+  color: #f0e6b8 !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+/* Реєстрація: L2MuLti та «Створення героя» — колір як у кнопки «Крафт» */
+body.l2-app-l2-chrome.l2-page-auth .l2-city-head .l2-logo {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  color: #f0e6b8 !important;
+  filter: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-auth div.main .logo {
+  color: #f0e6b8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
 }
 
 /**
- * «Новачкам!» — та сама 9-slice рамка ref/8585.png, що кнопки сервісів у місті (l2-city-222-skin).
+ * «Новачкам!» — рамка /assets/1512125-removebg-preview-removebg-preview.png
  */
 body.l2-app-l2-chrome .l2-pers-newbie-link {
-  --l2s-nb8585-slice-y: 30;
-  --l2s-nb8585-slice-x: 40;
-  --l2s-nb8585-bd-y: 12;
-  --l2s-nb8585-bd-x: 20;
   box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
   border-color: transparent !important;
-  border-style: solid !important;
-  border-width: calc(1px * var(--l2s-nb8585-bd-y)) calc(1px * var(--l2s-nb8585-bd-x)) !important;
   border-radius: 0 !important;
-  border-image-source: url('/ref/8585.png') !important;
-  border-image-slice: var(--l2s-nb8585-slice-y) var(--l2s-nb8585-slice-x) var(--l2s-nb8585-slice-y)
-    var(--l2s-nb8585-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-nb8585-bd-y)) calc(1px * var(--l2s-nb8585-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
-  background: transparent !important;
-  background-image: none !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705newbie1512') center / 100% 100%
+    no-repeat !important;
+  min-height: 32px;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  padding: 7px 14px !important;
+  padding: 8px 18px !important;
   text-decoration: none !important;
   filter: none !important;
   -webkit-filter: none !important;
 }
 
-/* Футер: Форум / Новини / Підтримка / Правила — рамка ref/4187.png (поверх 222 вище) */
+/* Футер: Форум / Новини / Підтримка / Правила — рамка /assets/1512125-removebg-preview-removebg-preview.png */
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--frame4187 {
-  --l2-foot4187-slice-y: 30;
-  --l2-foot4187-slice-x: 40;
-  --l2-foot4187-bd-y: 12;
-  --l2-foot4187-bd-x: 14;
-  border-width: calc(1px * var(--l2-foot4187-bd-y)) calc(1px * var(--l2-foot4187-bd-x)) !important;
-  border-image-source: url('/ref/4187.png') !important;
-  border-image-slice: var(--l2-foot4187-slice-y) var(--l2-foot4187-slice-x) var(--l2-foot4187-slice-y)
-    var(--l2-foot4187-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2-foot4187-bd-y)) calc(1px * var(--l2-foot4187-bd-x)) !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
   border-radius: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705foot1512') center / 100% 100%
+    no-repeat !important;
+  min-height: 28px;
+  padding: 6px 12px !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
 }
 
 body.l2-app-l2-chrome .btn-cta {
@@ -538,11 +846,6 @@ body.l2-app-l2-chrome .l2-city-tp-item {
 
 body.l2-app-l2-chrome .l2-map-mob-page-btn {
   border-radius: var(--l2s-paper-radius, 3px) !important;
-}
-
-body.l2-app-l2-chrome button.l2-map-mob-title--tap-full {
-  border-radius: var(--l2s-paper-radius, 3px) !important;
-  color: #f0e8d8 !important;
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar__label {
@@ -593,17 +896,6 @@ body.l2-app-l2-chrome .l2-battle-defeat-tocity {
   color: #ffe8e0 !important;
 }
 
-body.l2-app-l2-chrome .l2-map-mob-modal__battle {
-  display: block;
-  text-align: center;
-  padding: 7px 11px !important;
-  margin-top: 10px;
-  box-sizing: border-box;
-  border-radius: var(--l2s-paper-radius, 3px) !important;
-  border-width: calc(0.7px * var(--l2s-in222-w-y)) calc(0.7px * var(--l2s-in222-w-x)) !important;
-  border-image-width: calc(0.7px * var(--l2s-in222-w-y)) calc(0.7px * var(--l2s-in222-w-x)) !important;
-}
-
 body.l2-app-l2-chrome .l2-map-mob-page-btn:disabled {
   opacity: 0.38;
   cursor: default;
@@ -624,8 +916,6 @@ body.l2-app-l2-chrome .l2-city-tp-item:hover,
 body.l2-app-l2-chrome .l2-city-tp-item:focus,
 body.l2-app-l2-chrome .l2-map-mob-page-btn:hover:not(:disabled),
 body.l2-app-l2-chrome .l2-map-mob-page-btn:focus:not(:disabled),
-body.l2-app-l2-chrome button.l2-map-mob-title--tap-full:hover,
-body.l2-app-l2-chrome button.l2-map-mob-title--tap-full:focus,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:hover,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:focus,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow:hover,
@@ -643,9 +933,7 @@ body.l2-app-l2-chrome .l2-battle-back-map:focus,
 body.l2-app-l2-chrome .l2-battle-victory-backloc:hover,
 body.l2-app-l2-chrome .l2-battle-victory-backloc:focus,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity:hover,
-body.l2-app-l2-chrome .l2-battle-defeat-tocity:focus,
-body.l2-app-l2-chrome .l2-map-mob-modal__battle:hover,
-body.l2-app-l2-chrome .l2-map-mob-modal__battle:focus {
+body.l2-app-l2-chrome .l2-battle-defeat-tocity:focus {
   outline: none;
   filter: brightness(1.07);
   transform: translateY(-1px);
@@ -666,36 +954,18 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus {
   border-image-source: url('/ref/8888888.png') !important;
 }
 
-body.l2-app-l2-chrome.l2-page-options .l2-opt-lang-row .btn-l2:hover,
-body.l2-app-l2-chrome.l2-page-options .l2-opt-lang-row .btn-l2:focus,
-body.l2-app-l2-chrome.l2-page-options .l2-opt-lang-row .btn-l2:focus-visible {
-  border-image-source: url('/ref/77777.png') !important;
-  border-image-slice: var(--l2s-opt-lang777-slice-y) var(--l2s-opt-lang777-slice-x) var(--l2s-opt-lang777-slice-y)
-    var(--l2s-opt-lang777-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-opt-lang777-bd-y)) calc(1px * var(--l2s-opt-lang777-bd-x)) !important;
-  -webkit-box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.45) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.45) !important;
-}
-
 body.l2-app-l2-chrome .l2-pers-newbie-link:hover,
 body.l2-app-l2-chrome .l2-pers-newbie-link:focus {
   outline: none;
-  filter: brightness(1.07) !important;
+  filter: brightness(1.08) !important;
+  -webkit-filter: brightness(1.08) !important;
   transform: translateY(-1px);
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  border-color: transparent !important;
-  border-style: solid !important;
-  border-width: calc(1px * var(--l2s-nb8585-bd-y)) calc(1px * var(--l2s-nb8585-bd-x)) !important;
-  border-image-source: url('/ref/8585.png') !important;
-  border-image-slice: var(--l2s-nb8585-slice-y) var(--l2s-nb8585-slice-x) var(--l2s-nb8585-slice-y)
-    var(--l2s-nb8585-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-nb8585-bd-y)) calc(1px * var(--l2s-nb8585-bd-x)) !important;
-  border-image-repeat: stretch !important;
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705newbie1512') center / 100% 100%
+    no-repeat !important;
 }
 
 body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta:hover,
@@ -729,26 +999,36 @@ body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta:active {
 body.l2-app-l2-chrome.l2-page-auth button.btn-l2#btn-register:hover,
 body.l2-app-l2-chrome.l2-page-auth button.btn-l2#btn-register:focus,
 body.l2-app-l2-chrome.l2-page-auth button.btn-l2#btn-register:focus-visible {
-  border-image-source: url('/ref/8585.png') !important;
-  border-image-slice: var(--l2s-reg8585-slice-y) var(--l2s-reg8585-slice-x) var(--l2s-reg8585-slice-y)
-    var(--l2s-reg8585-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-reg8585-bd-y)) calc(1px * var(--l2s-reg8585-bd-x)) !important;
-  border-image-repeat: stretch !important;
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/be40521b-2919-47e3-af36-d5cec379a522-removebg-preview%20(1).png?v=20260705regBe405') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.08) !important;
+  -webkit-filter: brightness(1.08) !important;
+  transform: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-auth .l2-auth-back a.btn-l2.btn-l2-secondary:hover,
 body.l2-app-l2-chrome.l2-page-auth .l2-auth-back a.btn-l2.btn-l2-secondary:focus,
 body.l2-app-l2-chrome.l2-page-auth .l2-auth-back a.btn-l2.btn-l2-secondary:focus-visible {
-  border-image-source: url('/ref/541.png') !important;
-  border-image-slice: var(--l2s-auth-back541-slice-y) var(--l2s-auth-back541-slice-x) var(--l2s-auth-back541-slice-y)
-    var(--l2s-auth-back541-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-auth-back541-bd-y)) calc(1px * var(--l2s-auth-back541-bd-x)) !important;
-  border-image-repeat: stretch !important;
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705regBack1512') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
+  transform: none !important;
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--frame4187:hover,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--frame4187:focus {
-  border-image-source: url('/ref/4187.png') !important;
+  border: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705foot1512') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.08);
+  -webkit-filter: brightness(1.08);
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:hover .l2-foot-linkbar__label,
@@ -766,7 +1046,6 @@ body.l2-app-l2-chrome button.l2-town-btn:active,
 body.l2-app-l2-chrome .l2-pers-newbie-link:active,
 body.l2-app-l2-chrome .l2-city-tp-item:active,
 body.l2-app-l2-chrome .l2-map-mob-page-btn:active:not(:disabled),
-body.l2-app-l2-chrome button.l2-map-mob-title--tap-full:active,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:active,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow:active,
 body.l2-app-l2-chrome .l2-gm-modal-buy:active,
@@ -775,8 +1054,7 @@ body.l2-app-l2-chrome .l2-battle-victory-link--primary:active,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted:active,
 body.l2-app-l2-chrome .l2-battle-back-map:active,
 body.l2-app-l2-chrome .l2-battle-victory-backloc:active,
-body.l2-app-l2-chrome .l2-battle-defeat-tocity:active,
-body.l2-app-l2-chrome .l2-map-mob-modal__battle:active {
+body.l2-app-l2-chrome .l2-battle-defeat-tocity:active {
   transform: translateY(0);
   filter: brightness(0.98);
 }
@@ -798,7 +1076,9 @@ body.l2-app-l2-chrome :focus-visible {
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar {
-  gap: 6px;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 8px;
   padding: 8px 4px 6px;
   margin-top: 8px;
 }
@@ -809,7 +1089,10 @@ body.l2-app-l2-chrome .l2-foot-linkbar--inset {
 
 body.l2-app-l2-chrome .l2-foot-linkbar__btn {
   padding: 4px 10px !important;
-  min-width: 48px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: none !important;
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar__label {
@@ -818,12 +1101,14 @@ body.l2-app-l2-chrome .l2-foot-linkbar__label {
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--wide {
-  flex: 1 1 calc(50% - 5px) !important;
-  max-width: calc(50% - 5px) !important;
+  width: 100% !important;
+  max-width: none !important;
   min-width: 0 !important;
+  flex: none !important;
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar__subrow {
+  grid-column: 1 / -1;
   gap: 3px;
   padding: 6px 2px 0;
   margin-top: 3px;
@@ -849,9 +1134,8 @@ body.l2-app-l2-chrome button.l2-town-btn {
   margin: 0 0 8px !important;
 }
 
-/* «Новачкам!» — рамка 8585 як у місті; ширина ~8 см по центру. */
+/* «Новачкам!» — рамка 1512125; ширина ~8 см по центру. */
 body.l2-app-l2-chrome .l2-pers-newbie-link {
-  display: block;
   width: 100%;
   max-width: 8cm;
   margin: 0 auto 8px !important;
@@ -916,70 +1200,546 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-logbox {
   box-shadow: none;
 }
 
+/* battle: поразка — «Повернутися в місто!» рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity {
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 280px !important;
+  margin: 14px auto 0 !important;
+  min-height: 32px;
+  padding: 6px 14px !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background-color: transparent !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260707battleDefeatTocity') center / 100% 100%
+    no-repeat !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  color: #ffe8e0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260707battleDefeatTocity') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
+  outline: none !important;
+  transform: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:active {
+  filter: brightness(0.98) !important;
+  -webkit-filter: brightness(0.98) !important;
+  transform: none !important;
+}
+
+/* battle: модалка панелі швидкого доступу — center.png + кнопки 1512125 */
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__panel {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: rgba(8, 14, 20, 0.94) !important;
+  background-image: url('/assets/assets/center.png?v=20260707battleHotbarModal') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  -webkit-box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__close.btn-l2,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__foot #l2-bh-modal-done.btn-l2 {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background-color: transparent !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260707battleHotbarBtn') center / 100% 100%
+    no-repeat !important;
+  min-height: 32px;
+  padding: 6px 14px !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  color: #f0e6b8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__foot {
+  justify-content: center !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__foot #l2-bh-modal-done.btn-l2 {
+  width: 100% !important;
+  max-width: 280px !important;
+  margin: 0 auto !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__close.btn-l2:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__close.btn-l2:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__close.btn-l2:focus-visible,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__foot #l2-bh-modal-done.btn-l2:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__foot #l2-bh-modal-done.btn-l2:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__foot #l2-bh-modal-done.btn-l2:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260707battleHotbarBtn') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+/* battle: модалка — іконки скілів без квадрата, лише обводка навколо іконки */
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick {
+  aspect-ratio: auto;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick:focus-visible {
+  border: none !important;
+  background: transparent !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick-img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  max-width: 34px;
+  max-height: 34px;
+  object-fit: contain;
+  box-sizing: border-box;
+  border: 1px solid rgba(199, 173, 128, 0.55);
+  border-radius: 3px;
+  background: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick:hover .l2-battle-hotbar-pick-img,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick:focus .l2-battle-hotbar-pick-img,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick:focus-visible .l2-battle-hotbar-pick-img {
+  border-color: rgba(232, 200, 120, 0.9);
+  filter: brightness(1.08);
+  -webkit-filter: brightness(1.08);
+}
+
+/* battle: нижня панель швидкого доступу — іконки без темного квадрата, лише обводка */
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot {
+  overflow: visible;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:focus-visible {
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-iconwrap {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  max-width: 34px;
+  max-height: 34px;
+  margin: 0;
+  object-fit: contain;
+  box-sizing: border-box;
+  border: 1px solid rgba(199, 173, 128, 0.55);
+  border-radius: 3px;
+  background: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:hover .l2-battle-hotbar-slot-img,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:focus .l2-battle-hotbar-slot-img,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:focus-visible .l2-battle-hotbar-slot-img {
+  border-color: rgba(232, 200, 120, 0.9);
+  filter: brightness(1.08);
+  -webkit-filter: brightness(1.08);
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd {
+  border-radius: 3px;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd__short {
+  border-radius: 3px;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--empty {
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  border: 1px solid rgba(199, 173, 128, 0.55) !important;
+  border-radius: 3px;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--empty:hover {
+  border-color: rgba(232, 200, 120, 0.9) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-plus {
+  color: #c5b398;
+  opacity: 1;
+}
+
+/* battle: «Убр» — колір тексту як у місті + суцільна золота обводка як у слотів */
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove {
+  box-sizing: border-box !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  padding: 2px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  color: #c5b398 !important;
+  cursor: pointer;
+  border: 1px solid rgba(199, 173, 128, 0.55) !important;
+  border-radius: 3px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: rgba(201, 164, 58, 0.15);
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:focus {
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:focus-visible {
+  outline: none;
+  border-color: rgba(232, 200, 120, 0.9) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:hover {
+  border-color: rgba(232, 200, 120, 0.9) !important;
+  color: #e4d5b7 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:active {
+  color: #b8a88c !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--toggle-on .l2-battle-hotbar-slot-img {
+  border-color: rgba(212, 175, 90, 0.95);
+  box-shadow: 0 0 6px rgba(200, 150, 70, 0.55);
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--soulshot-on .l2-battle-hotbar-slot-img {
+  border-color: rgba(255, 248, 220, 0.95);
+  box-shadow:
+    0 0 8px rgba(255, 235, 160, 0.85),
+    0 0 3px rgba(180, 220, 255, 0.45);
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--toggle-on,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--soulshot-on {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* battle: модалка — вкладки Магія/Розхідники/… рамка 05d5d21e; сітка скілів — обводка */
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-tab {
+  box-sizing: border-box !important;
+  flex: 1 1 calc(50% - 3px);
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  background-color: transparent !important;
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260707battleHotbarTab') center /
+    100% 100% no-repeat !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  color: #f0e6b8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transform: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-tab:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-tab:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-tab:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260707battleHotbarTab') center /
+    100% 100% no-repeat !important;
+  filter: brightness(1.08) !important;
+  -webkit-filter: brightness(1.08) !important;
+  outline: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-tab--on {
+  color: #fff8e8 !important;
+  filter: brightness(1.12) !important;
+  -webkit-filter: brightness(1.12) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__body {
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid rgba(199, 173, 128, 0.5);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
 /* Exp під рядком HP/MP/CP у бою — на всю ширину */
 body.l2-app-l2-chrome .l2-battle-player-exp .l2-hud-exp-bar {
   width: 100% !important;
   max-width: 100% !important;
 }
 
-body.l2-app-l2-chrome.l2-page-options .l2-opt-lang-row {
-  justify-content: center;
-  gap: 8px;
-}
-
-/* Рамка /ref/77777.png — вище за глобальний chrome .btn-l2 (222.png). */
-body.l2-app-l2-chrome.l2-page-options .l2-opt-lang-row .btn-l2 {
-  --l2s-opt-lang777-slice-y: 24;
-  --l2s-opt-lang777-slice-x: 32;
-  --l2s-opt-lang777-bd-y: 8;
-  --l2s-opt-lang777-bd-x: 12;
-  width: auto !important;
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: 38%;
-  padding: 5px 12px !important;
-  margin: 4px 0;
-  font-size: 10px !important;
-  font-weight: 600;
-  border-radius: 0 !important;
-  border-width: calc(1px * var(--l2s-opt-lang777-bd-y)) calc(1px * var(--l2s-opt-lang777-bd-x)) !important;
-  border-image-source: url('/ref/77777.png') !important;
-  border-image-slice: var(--l2s-opt-lang777-slice-y) var(--l2s-opt-lang777-slice-x) var(--l2s-opt-lang777-slice-y)
-    var(--l2s-opt-lang777-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-opt-lang777-bd-y)) calc(1px * var(--l2s-opt-lang777-bd-x)) !important;
-  border-image-repeat: stretch !important;
-  -webkit-box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.45) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.45) !important;
-}
-
-/* gm-shop.html: «Купити» + підтвердження кількості — рамка /ref/541.png (як таби магазину). */
-body.l2-app-l2-chrome.l2-page-gm-shop button.l2-gm-shop-buy:not(:disabled),
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-buy-qty-btn.l2-drops-buy-qty-btn--primary:not(:disabled) {
-  --l2s-gm-buy541-slice-y: 30;
-  --l2s-gm-buy541-slice-x: 40;
-  --l2s-gm-buy541-bd-y: 5;
-  --l2s-gm-buy541-bd-x: 9;
-  box-sizing: border-box !important;
-  border-radius: 0 !important;
-  border-style: solid !important;
-  border-color: transparent !important;
-  border-width: calc(1px * var(--l2s-gm-buy541-bd-y)) calc(1px * var(--l2s-gm-buy541-bd-x)) !important;
-  border-image-source: url('/ref/541.png') !important;
-  border-image-slice: var(--l2s-gm-buy541-slice-y) var(--l2s-gm-buy541-slice-x) var(--l2s-gm-buy541-slice-y)
-    var(--l2s-gm-buy541-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-gm-buy541-bd-y)) calc(1px * var(--l2s-gm-buy541-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
-  background: transparent !important;
-  background-image: none !important;
+body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row {
+  border: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705optMenu05d5') center / 100% 100%
+    no-repeat !important;
+  min-height: 34px;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  color: #f0e6b8;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row:hover,
+body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row:focus,
+body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705optMenu05d5') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.08);
+  -webkit-filter: brightness(1.08);
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row--exit:hover,
+body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row--exit:focus {
+  filter: brightness(1.08) !important;
+  -webkit-filter: brightness(1.08) !important;
+}
+
+/* map.html: «Моби в околицях», «До карти», «У бій» — /assets/05d5d21e…png */
+body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full,
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle {
+  box-sizing: border-box !important;
+  display: block;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background-color: transparent !important;
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705mapBtn05d5') center / 100% 100%
+    no-repeat !important;
+  min-height: 34px;
+  padding: 8px 12px !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #f0e6b8 !important;
+  text-align: center;
+  text-decoration: none !important;
+  cursor: pointer;
+  transform: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full {
+  margin-bottom: 6px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e0c878 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle {
+  margin-top: 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:hover,
+body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:focus,
+body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:focus-visible,
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:hover,
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:focus,
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:focus-visible,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:hover,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:focus,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705mapBtn05d5') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.08);
+  -webkit-filter: brightness(1.08);
+  outline: none;
+  transform: none !important;
+  text-decoration: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:active,
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:active,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:active {
+  filter: brightness(0.96);
+  -webkit-filter: brightness(0.96);
+  transform: none !important;
+}
+
+/* map.html: модалка моба — рамка ref/222 + пергамент center.png */
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-modal__panel {
+  box-sizing: border-box !important;
+  border-color: transparent !important;
+  border-style: solid !important;
+  border-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
+  border-radius: var(--l2s-paper-radius, 3px) !important;
+  border-image-source: url('/ref/222.png') !important;
+  border-image-slice: var(--l2s-in222-slice-y) var(--l2s-in222-slice-x) var(--l2s-in222-slice-y)
+    var(--l2s-in222-slice-x) !important;
+  border-image-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
+  border-image-outset: 0 !important;
+  border-image-repeat: stretch !important;
+  background-color: rgba(8, 14, 20, 0.94) !important;
+  background-image: url('/assets/assets/center.png?v=20260707mapModalFrame') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  background-clip: padding-box !important;
+  -webkit-box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
+  padding: calc(12px + 1px * var(--l2s-in222-w-y)) calc(12px + 1px * var(--l2s-in222-w-x))
+    calc(14px + 1px * var(--l2s-in222-w-y)) !important;
+}
+
+/* map.html: список мобів — фон center.png замість синього/темного */
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-section,
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-detail {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/assets/assets/center.png?v=20260705mapMobCenter') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-section {
+  padding: 8px 10px 10px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-detail {
+  padding: 10px 10px 12px !important;
+}
+
+/* pers.html: блок статів — фон center.png замість синього rgba(4,10,22) */
+body.l2-app-l2-chrome.l2-page-pers .l2-pers-mobi {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/assets/assets/center.png?v=20260705persCenter') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-pers .l2-pers-mobi::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Нижній док (Профіль…Опції) — фон center.png замість синього/градієнта */
+body.l2-app-l2-chrome.l2-page-has-fixed-nav #l2-nav-bottom {
+  background-color: transparent !important;
+  background-image: url('/assets/assets/center.png?v=20260705navCenter') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  border: none !important;
+  border-top: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* gm-shop.html: «Купити» + підтвердження кількості — рамка 1512125, тонка */
+body.l2-app-l2-chrome.l2-page-gm-shop button.l2-gm-shop-buy:not(:disabled),
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-buy-qty-btn.l2-drops-buy-qty-btn--primary:not(:disabled) {
+  box-sizing: border-box !important;
+  border: 0 !important;
+  border-radius: 2px !important;
+  background-color: transparent !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260707gmShopBuy3') center / 100% 100%
+    no-repeat !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  color: #f0e6b8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop button.l2-gm-shop-buy:hover:not(:disabled),
@@ -987,30 +1747,50 @@ body.l2-app-l2-chrome.l2-page-gm-shop button.l2-gm-shop-buy:focus:not(:disabled)
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-buy-qty-btn.l2-drops-buy-qty-btn--primary:hover:not(:disabled),
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-buy-qty-btn.l2-drops-buy-qty-btn--primary:focus:not(:disabled),
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-buy-qty-btn.l2-drops-buy-qty-btn--primary:focus-visible:not(:disabled) {
-  outline: none;
-  filter: brightness(1.07);
-  transform: translateY(-1px);
+  outline: none !important;
+  filter: brightness(1.06) !important;
+  transform: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  border-color: transparent !important;
-  border-image-source: url('/ref/541.png') !important;
-  border-image-slice: var(--l2s-gm-buy541-slice-y) var(--l2s-gm-buy541-slice-x) var(--l2s-gm-buy541-slice-y)
-    var(--l2s-gm-buy541-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-gm-buy541-bd-y)) calc(1px * var(--l2s-gm-buy541-bd-x)) !important;
-  color: #fff4d6;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop button.l2-gm-shop-buy:active:not(:disabled),
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-buy-qty-btn.l2-drops-buy-qty-btn--primary:active:not(:disabled) {
-  transform: translateY(0);
-  filter: brightness(0.98);
-  border-image-source: url('/ref/541.png') !important;
+  transform: none !important;
+  filter: brightness(0.98) !important;
 }
 
-/* magisters.html: «Назад до міста» та «Вивчити навички» — одна й та сама рамка /ref/989899.png (без додаткового фону). */
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn {
+/* char.html: «Одіти» / «Використати» у списку сумки та модалці — рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-equip,
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action {
+  box-sizing: border-box !important;
+  border: 0 !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260707charBagBtn1512') center / 100% 100%
+    no-repeat !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  color: #f0e6b8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-equip:hover,
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-equip:focus,
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-equip:focus-visible,
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action:hover,
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action:focus,
+body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action:focus-visible {
+  outline: none !important;
+  filter: brightness(1.06) !important;
+  transform: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* magisters.html: «Назад до міста» — рамка /ref/989899.png */
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn {
   --l2s-mag989-slice-y: 24;
   --l2s-mag989-slice-x: 32;
   --l2s-mag989-bd-y: 8;
@@ -1032,13 +1812,7 @@ body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-tow
 
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:hover,
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus-visible,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:hover,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus-visible,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:hover,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:focus-visible {
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus-visible {
   border-image-source: url('/ref/989899.png') !important;
   border-image-slice: var(--l2s-mag989-slice-y) var(--l2s-mag989-slice-x) var(--l2s-mag989-slice-y)
     var(--l2s-mag989-slice-x) fill !important;
@@ -1048,6 +1822,59 @@ body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-tow
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
   filter: brightness(1.06) !important;
+}
+
+/* magisters.html: «Вивчити навички» та «Вивчені скіли» — рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705mag1512') center / 100% 100%
+    no-repeat !important;
+  min-height: 36px;
+  padding: 10px 14px !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus-visible,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705mag1512') center / 100% 100%
+    no-repeat !important;
+  transform: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn::before,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn::after,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn::before,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn::after {
+  content: none !important;
+  display: none !important;
 }
 
 /* magister.html: «Назад до міста» — така ж рамка /ref/989899.png */
@@ -1073,6 +1900,107 @@ body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus-vis
   border-image-slice: var(--l2s-mastBack989-slice-y) var(--l2s-mastBack989-slice-x) var(--l2s-mastBack989-slice-y)
     var(--l2s-mastBack989-slice-x) fill !important;
   border-image-width: calc(1px * var(--l2s-mastBack989-bd-y)) calc(1px * var(--l2s-mastBack989-bd-x)) !important;
+}
+
+/* magister.html: блок вибору профи — без зовнішнього квадрата */
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession {
+  margin: 0 0 12px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* magister.html: кнопки вибору профи (усі раси) — рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2 {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 36px;
+  margin: 8px 0 !important;
+  padding: 10px 14px !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magProf1512') center / 100% 100%
+    no-repeat !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  color: #f0e6b8 !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2:focus,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magProf1512') center / 100% 100%
+    no-repeat !important;
+  transform: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
+}
+
+/* magister.html: «Вивчити» / «Підвищити ранг» — рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2 {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magister1512') center / 100% 100%
+    no-repeat !important;
+  min-height: 28px;
+  padding: 4px 10px !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:focus,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magister1512') center / 100% 100%
+    no-repeat !important;
+  transform: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:focus {
+  filter: grayscale(0.2) !important;
+  -webkit-filter: grayscale(0.2) !important;
+  transform: none !important;
 }
 
 /* teleport.html: колонка кнопок по центру, ширина як сервіси в місті (l2-city-222-skin .l2-town-main). */
@@ -1272,4 +2200,90 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
   transform: translateY(0);
   filter: none !important;
   -webkit-filter: none !important;
+}
+
+/* ПК (не телефон): колонка +30% від базових 420px → 546px, без розтягування на весь екран. */
+@media (min-width: 520px) {
+  html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
+    --l2s-chrome-column-w: min(100vw - 16px, calc(var(--l2s-chrome-column-base) * 1.3));
+  }
+}
+
+/* Авторизація: форма реєстрації — фон center.png замість коричневого градієнта */
+body.l2-app-l2-chrome.l2-page-auth div.main {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/assets/assets/center.png?v=20260705authCenter') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Авторизація: головна — панель входу з center.png */
+body.l2-app-l2-chrome.l2-page-auth main.l2-auth-home {
+  box-sizing: border-box;
+  padding: 14px 12px 16px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/assets/assets/center.png?v=20260705authCenter') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* dev-boost.html: «Застосувати» та «До меню» — рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-dev-boost button.l2-dev-boost-submit.btn-l2,
+body.l2-app-l2-chrome.l2-page-dev-boost a.l2-dev-boost-menu.l2-town-btn {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 32px;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 6px 12px !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705devBoost1512') center / 100% 100%
+    no-repeat !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  color: #f0e6b8 !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-dev-boost button.l2-dev-boost-submit.btn-l2:hover,
+body.l2-app-l2-chrome.l2-page-dev-boost button.l2-dev-boost-submit.btn-l2:focus,
+body.l2-app-l2-chrome.l2-page-dev-boost button.l2-dev-boost-submit.btn-l2:focus-visible,
+body.l2-app-l2-chrome.l2-page-dev-boost a.l2-dev-boost-menu.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-dev-boost a.l2-dev-boost-menu.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-dev-boost a.l2-dev-boost-menu.l2-town-btn:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705devBoost1512') center / 100% 100%
+    no-repeat !important;
+  transform: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
 }

@@ -1,15 +1,10 @@
 /**
- * Місто: l2-app-chrome-skin + сітка навігації; кнопки сервісів — border-image /ref/8585.png.
- * Ширина: --l2s-city-town-btn-w. Slice під реальний PNG.
+ * Місто: l2-app-chrome-skin + сітка навігації; список сервісів — текст зліва, без рамок.
  */
-@import url('l2-app-chrome-skin.css?v=20260509skinCrestR4');
+@import url('l2-app-chrome-skin.css?v=20260705hudFit');
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive {
-  --l2s-city-town-slice-y: 30;
-  --l2s-city-town-slice-x: 40;
-  --l2s-city-town-bd-y: 12;
-  /* Було 14px — боки рамки майже не було видно; трохи ширше для «повної» 9-slice. */
-  --l2s-city-town-bd-x: 20;
+  --l2s-city-town-btn-w: 100%;
 }
 
 body.l2-app-l2-chrome.l2-page-city .l2-wap-grid {
@@ -25,15 +20,36 @@ body.l2-app-l2-chrome.l2-page-city .l2-wap-grid.l2-wap-grid--bottom {
   background: linear-gradient(to top, rgba(12, 10, 8, 0.97), rgba(18, 14, 10, 0.93));
 }
 
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive #l2-nav-bottom .l2-wap-grid,
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive #l2-nav-bottom .l2-wap-grid.l2-wap-grid--bottom {
-  border: 1px solid rgba(100, 80, 48, 0.55) !important;
+body.l2-app-l2-chrome.l2-page-city #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top {
+  border: 0 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  background-image: url('/assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png?v=20260705topWap45a') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top .l2-wap-cell:hover,
+body.l2-app-l2-chrome.l2-page-city #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--top .l2-wap-cell:focus {
+  background: rgba(100, 75, 40, 0.22) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom {
+  border: 0 !important;
   margin-top: 0 !important;
-  padding-top: 3px !important;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 200, 120, 0.06) !important;
-  background: linear-gradient(165deg, rgba(26, 22, 14, 0.94) 0%, rgba(8, 6, 4, 0.97) 100%) !important;
+  padding: 8px 12px 10px !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  background-image: url('/assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png?v=20260705topWap45a') !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:hover,
+body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:focus {
+  background: rgba(100, 75, 40, 0.22) !important;
 }
 
 body.l2-app-l2-chrome.l2-page-city .l2-wap-cell:hover,
@@ -49,49 +65,52 @@ body.l2-app-l2-chrome.l2-page-city .l2-wap-lbl {
 }
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main {
-  --l2s-city-town-btn-w: min(7cm, calc(100% - 24px));
-  align-items: center;
-  gap: 14px;
-  padding: 8px 0 12px;
+  --l2s-city-town-btn-w: 100%;
+  align-items: stretch;
+  gap: 2px;
+  padding: 6px 12px 12px;
   box-sizing: border-box;
 }
 
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn {
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main a.l2-town-btn,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main button.l2-town-btn {
   box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
   width: var(--l2s-city-town-btn-w) !important;
-  min-width: var(--l2s-city-town-btn-w) !important;
-  max-width: var(--l2s-city-town-btn-w) !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
   flex-shrink: 0;
-  align-self: center;
+  align-self: stretch;
   margin: 0 !important;
-  padding: 7px 14px !important;
-  font-size: 11.5px !important;
-  line-height: 1.28 !important;
-  letter-spacing: 0.04em;
+  padding: 5px 4px !important;
+  gap: 8px;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.02em;
+  text-align: left !important;
   overflow-wrap: anywhere;
   word-wrap: break-word;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
   border-color: transparent !important;
-  border-style: solid;
-  border-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
   border-radius: 0 !important;
-  border-image-source: url('/ref/8585.png') !important;
-  /* «fill» — центр тайлу теж малюється (ціла рамка + серединка з PNG, без «обірваних» боків). */
-  border-image-slice: var(--l2s-city-town-slice-y) var(--l2s-city-town-slice-x) var(--l2s-city-town-slice-y)
-    var(--l2s-city-town-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
   background: transparent !important;
   background-image: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  color: #f0e6b8;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  color: #c5b398 !important;
+  text-shadow: none;
   filter: none !important;
   -webkit-filter: none !important;
-  transition:
-    transform 0.16s ease,
-    color 0.16s ease;
+  transition: color 0.16s ease;
 }
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main .l2-town-btn:nth-child(even) {
@@ -101,37 +120,68 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-h
   box-shadow: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn::before,
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn::after {
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main a.l2-town-btn::before,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main a.l2-town-btn::after,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main button.l2-town-btn::before,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main button.l2-town-btn::after {
   content: none !important;
   display: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn:hover,
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn:focus {
-  border-color: transparent !important;
-  border-style: solid !important;
-  border-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
-  border-image-source: url('/ref/8585.png') !important;
-  border-image-slice: var(--l2s-city-town-slice-y) var(--l2s-city-town-slice-x) var(--l2s-city-town-slice-y)
-    var(--l2s-city-town-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-city-town-bd-y)) calc(1px * var(--l2s-city-town-bd-x)) !important;
-  border-image-repeat: stretch !important;
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main a.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main a.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main button.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main button.l2-town-btn:focus {
+  border: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background: transparent !important;
+  background-image: none !important;
   outline: none;
-  transform: translateY(-1px);
+  transform: none;
   filter: none !important;
   -webkit-filter: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
-  color: #fff4d6;
+  text-shadow: none;
+  color: #e4d5b7 !important;
 }
 
-body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-btn:active {
-  transform: translateY(0);
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main a.l2-town-btn:active,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main button.l2-town-btn:active {
+  transform: none;
   filter: none !important;
   -webkit-filter: none !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  text-shadow: none;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
+  color: #b8a88c !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main .l2-town-btn__icon {
+  display: block;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  object-fit: contain;
+  image-rendering: auto;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main .l2-town-btn__label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main .l2-town-sep {
+  display: block;
+  width: 100%;
+  height: 0;
+  margin: 6px 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid rgba(58, 48, 34, 0.72);
+  background: none;
+  opacity: 1;
 }

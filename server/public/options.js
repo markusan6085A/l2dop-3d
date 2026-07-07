@@ -1,5 +1,5 @@
 /**
- * Сторінка опцій — меню, вихід, вибір мови інтерфейсу (uk | ru).
+ * Сторінка опцій — меню, вихід (лише українська мова інтерфейсу).
  */
 (function () {
   function $(id) {
@@ -7,9 +7,6 @@
   }
 
   function stubTail() {
-    if (window.L2 && typeof L2.t === 'function') {
-      return L2.t('заглушка, з’явиться пізніше.', 'заглушка, скоро будет.');
-    }
     return 'заглушка, з’явиться пізніше.';
   }
 
@@ -17,51 +14,13 @@
     return '«' + label + '» — ' + stubTail();
   }
 
-  function refreshLangSection() {
-    if (!window.L2) return;
-    var title = $('opt-page-title');
-    if (title) title.textContent = L2.t('Опції', 'Опции');
-    var lang = L2.getUiLang();
-    var uk = $('opt-lang-uk');
-    var ru = $('opt-lang-ru');
-    if (uk) uk.classList.toggle('l2-opt-lang--active', lang === 'uk');
-    if (ru) ru.classList.toggle('l2-opt-lang--active', lang === 'ru');
-  }
-
-  function wireLangButtons() {
-    var uk = $('opt-lang-uk');
-    var ru = $('opt-lang-ru');
-    if (uk && window.L2) {
-      uk.addEventListener('click', function () {
-        L2.setUiLang('uk');
-        refreshLangSection();
-      });
-    }
-    if (ru && window.L2) {
-      ru.addEventListener('click', function () {
-        L2.setUiLang('ru');
-        refreshLangSection();
-      });
-    }
-  }
-
-  function logout() {
-    try {
-      localStorage.removeItem('token');
-      try {
-        sessionStorage.removeItem('token');
-      } catch (e2) {
-        /* ignore */
-      }
-    } catch (e) {
-      /* ignore */
-    }
-    window.location.href = '/';
-  }
-
   function init() {
-    refreshLangSection();
-    wireLangButtons();
+    if (window.L2 && typeof L2.setUiLang === 'function') {
+      L2.setUiLang('uk');
+    }
+
+    var title = $('opt-page-title');
+    if (title) title.textContent = 'Опції';
 
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
@@ -100,7 +59,17 @@
     var btn = $('opt-logout');
     if (btn) {
       btn.addEventListener('click', function () {
-        logout();
+        try {
+          localStorage.removeItem('token');
+          try {
+            sessionStorage.removeItem('token');
+          } catch (e2) {
+            /* ignore */
+          }
+        } catch (e) {
+          /* ignore */
+        }
+        window.location.href = '/';
       });
     }
 

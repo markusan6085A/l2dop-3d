@@ -1,5 +1,5 @@
 /**
- * Меню: HUD, навігація, кнопка «Крафт» лише для Scavenger / Artisan / Maestro.
+ * Меню: HUD, навігація, кнопка «Крафт» для гнома-воїна з 1-ї профи (Scavenger / Artisan…).
  */
 (function () {
   function $(id) {
@@ -13,7 +13,29 @@
     wrap.hidden = !ok;
   }
 
+  function wireDevBoost(enabled) {
+    var wrap = $('l2-menu-dev-boost-wrap');
+    if (!wrap) return;
+    wrap.hidden = !enabled;
+  }
+
+  function loadClientConfig() {
+    return fetch('/game/client-config')
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (cfg) {
+        wireDevBoost(cfg && cfg.devSelfBoost === true);
+      })
+      .catch(function () {
+        wireDevBoost(false);
+      });
+  }
+
   function init() {
+    wireDevBoost(false);
+    loadClientConfig();
+
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
         onStub: function (label) {

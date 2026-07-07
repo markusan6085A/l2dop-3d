@@ -14,17 +14,22 @@
       }
       .l2-town-buffer-card {
         margin-top: 8px;
-        background:
-          linear-gradient(to bottom, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.5)),
-          url('/ref/989899.png') center / 100% 100% no-repeat;
+        border: none;
+        border-radius: 0;
+        background-color: transparent;
+        background-image: url('/assets/assets/center.png?v=20260705bufferCenter');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 100% 100%;
+        box-shadow: none;
         padding: 18px 12px 14px;
       }
       .l2-town-buffer-title {
         margin: 0 0 12px;
         text-align: center;
-        color: #f2ddb0;
-        text-shadow: 0 1px 0 #1a1306;
-        font-weight: 700;
+        color: #d8c8a8;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+        font: 700 17px/1.2 'Lora', Georgia, serif;
       }
       .l2-town-buffer-row {
         display: grid;
@@ -52,19 +57,29 @@
       .l2-town-buffer-fee {
         margin: 0;
         font-size: 12px;
-        color: #e4c787;
-        text-shadow: 0 1px 0 #211307;
+        color: #c9b99a;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
       }
       .l2-town-buffer-apply-btn {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 196px;
-        height: 34px;
+        min-height: 32px;
         border: 0;
-        padding: 0 14px;
-        background: url('/ref/8888888.png') center / 100% 100% no-repeat;
-        color: #f2deb8;
-        font: 700 15px/1 'Lora', serif;
-        text-shadow: 0 1px 0 #2c1b08;
+        padding: 6px 14px;
+        background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705buffer1512') center / 100% 100%
+          no-repeat;
+        color: #f0e6b8;
+        font: 600 12px/1.25 'Lora', Georgia, serif;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
         cursor: pointer;
+      }
+      .l2-town-buffer-apply-btn:hover:not(:disabled),
+      .l2-town-buffer-apply-btn:focus-visible:not(:disabled) {
+        filter: brightness(1.06);
+        outline: none;
       }
       .l2-town-buffer-apply-btn:disabled {
         filter: grayscale(0.35) brightness(0.85);
@@ -74,8 +89,10 @@
         margin: 0;
         min-height: 16px;
         font-size: 12px;
-        color: #d7c6a2;
+        color: #b8a888;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
         text-align: center;
+        line-height: 1.35;
       }
     </style>
   </head>
@@ -123,7 +140,7 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260509city59621"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/town-buffer.js?v=20260510bufferpage1"></script>
   </body>
 </html>

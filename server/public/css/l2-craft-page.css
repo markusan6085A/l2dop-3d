@@ -1,4 +1,28 @@
 /* Сітка крафту ресурсів (український UI l2dop-3d). */
+
+/* Крафт: теплі тони як у місті, трохи темніше */
+body.l2-app-l2-chrome.l2-page-craft.l2-page-city .l2-wap-grid {
+  border-color: rgba(72, 58, 34, 0.55) !important;
+  background: linear-gradient(165deg, rgba(14, 11, 8, 0.97) 0%, rgba(4, 3, 2, 0.99) 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(200, 160, 90, 0.04) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-craft.l2-page-city .l2-wap-grid.l2-wap-grid--bottom {
+  border-top-color: rgba(72, 58, 34, 0.45) !important;
+  background: linear-gradient(to top, rgba(6, 5, 4, 0.99), rgba(12, 10, 8, 0.95)) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-craft .l2-craft-panel {
+  color: #d8c8a8;
+}
+
+body.l2-app-l2-chrome.l2-page-craft .l2-pers-h1 {
+  color: #e8dcc0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
 .l2-craft-tier {
   margin-bottom: 1.5rem;
 }
@@ -23,10 +47,15 @@ body.l2-page-craft .l2-craft-tier > .l2-pers-h2 {
   margin-top: 0.5rem;
 }
 .l2-craft-card {
-  border: 1px solid rgba(92, 74, 50, 0.45);
-  border-radius: 6px;
+  border: none;
+  border-radius: 0;
   padding: 0.65rem 0.75rem;
-  background: rgba(0, 0, 0, 0.22);
+  background-color: transparent;
+  background-image: url('/assets/assets/center.png?v=20260705craftCenter');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  box-shadow: none;
 }
 .l2-craft-card__title,
 .l2-craft-ing-title {
@@ -56,8 +85,8 @@ body.l2-page-craft .l2-craft-tier > .l2-pers-h2 {
   width: 28px;
   height: 28px;
   object-fit: contain;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(180, 150, 90, 0.28);
+  background: rgba(8, 6, 4, 0.35);
   flex-shrink: 0;
 }
 .l2-craft-icon--lg {
@@ -80,43 +109,51 @@ body.l2-page-craft .l2-craft-tier > .l2-pers-h2 {
 }
 
 /**
- * Кнопка «Крафт» у картці: ~половина ширини картки, рамка ref/541.png (як WAP-грід / таби магазину).
+ * Кнопка «Крафт» у картці та модалці — рамка 1512125.
  */
 body.l2-page-craft button.l2-craft-btn.btn-l2 {
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   width: 50%;
   max-width: 148px;
+  min-height: 32px;
   margin-left: auto;
   margin-right: auto;
-  padding: 5px 8px !important;
+  padding: 6px 10px !important;
   font-size: 11px !important;
   line-height: 1.25;
-  --l2s-craft541-slice-y: 30;
-  --l2s-craft541-slice-x: 40;
-  --l2s-craft541-bd-y: 3;
-  --l2s-craft541-bd-x: 5;
-  border-radius: 0 !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
   border-color: transparent !important;
-  border-style: solid !important;
-  border-width: calc(1px * var(--l2s-craft541-bd-y)) calc(1px * var(--l2s-craft541-bd-x)) !important;
-  border-image-source: url('/ref/541.png') !important;
-  border-image-slice: var(--l2s-craft541-slice-y) var(--l2s-craft541-slice-x) var(--l2s-craft541-slice-y)
-    var(--l2s-craft541-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-craft541-bd-y)) calc(1px * var(--l2s-craft541-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
-  background: transparent !important;
-  background-image: none !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705craftBtn1512') center / 100% 100%
+    no-repeat !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
   color: #f0e6b8 !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
 }
 
 body.l2-page-craft button.l2-craft-btn.btn-l2:hover:not(:disabled),
-body.l2-page-craft button.l2-craft-btn.btn-l2:focus:not(:disabled) {
-  filter: brightness(1.08);
-  border-image-source: url('/ref/541.png') !important;
+body.l2-page-craft button.l2-craft-btn.btn-l2:focus:not(:disabled),
+body.l2-page-craft button.l2-craft-btn.btn-l2:focus-visible:not(:disabled) {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705craftBtn1512') center / 100% 100%
+    no-repeat !important;
+  filter: brightness(1.08) !important;
+  -webkit-filter: brightness(1.08) !important;
+  transform: none !important;
 }
 
 body.l2-page-craft button.l2-craft-btn.btn-l2:disabled {
@@ -160,12 +197,14 @@ body.l2-page-craft button.l2-craft-btn.btn-l2:disabled {
   overflow-y: auto;
   padding: 16px 16px 18px;
   box-sizing: border-box;
-  border: 1px solid rgba(201, 168, 96, 0.85);
-  border-radius: 10px;
-  background: linear-gradient(165deg, rgba(16, 22, 18, 0.98) 0%, rgba(6, 10, 8, 0.99) 100%);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.5),
-    0 16px 48px rgba(0, 0, 0, 0.82);
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url('/assets/assets/center.png?v=20260705craftCenter');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.72);
 }
 
 .l2-craft-modal__close {
@@ -204,9 +243,9 @@ body.l2-page-craft button.l2-craft-btn.btn-l2:disabled {
   width: 44px;
   height: 44px;
   object-fit: contain;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(180, 150, 90, 0.28);
+  border-radius: 4px;
+  background: rgba(8, 6, 4, 0.35);
 }
 
 .l2-craft-modal__head-txt {
@@ -242,9 +281,14 @@ body.l2-page-craft button.l2-craft-btn.btn-l2:disabled {
   flex: 1 1 220px;
   min-width: 0;
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(92, 74, 50, 0.5);
-  background: rgba(0, 0, 0, 0.28);
+  border-radius: 0;
+  border: none;
+  background-color: transparent;
+  background-image: url('/assets/assets/center.png?v=20260705craftCenter');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  box-shadow: none;
 }
 
 .l2-craft-modal__ing-list {
@@ -270,9 +314,9 @@ body.l2-page-craft button.l2-craft-btn.btn-l2:disabled {
   width: 26px;
   height: 26px;
   object-fit: contain;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(180, 150, 90, 0.28);
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(8, 6, 4, 0.35);
   flex-shrink: 0;
 }
 
@@ -328,9 +372,9 @@ body.l2-page-craft .l2-craft-modal__confirm.l2-craft-btn.btn-l2 {
   font-size: 15px;
   font-weight: 600;
   color: #f4ecd8;
-  border: 1px solid rgba(201, 168, 96, 0.55);
+  border: 1px solid rgba(160, 130, 72, 0.55);
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(8, 6, 4, 0.55);
   box-sizing: border-box;
 }
 
@@ -354,4 +398,58 @@ body.l2-page-craft .l2-craft-modal__confirm.l2-craft-btn.btn-l2 {
 
 .l2-craft-modal__err[hidden] {
   display: none !important;
+}
+
+/* craft.html: «Назад до меню» — рамка 1512125 */
+body.l2-app-l2-chrome.l2-page-craft .l2-teleport-panel__back {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+body.l2-app-l2-chrome.l2-page-craft .l2-teleport-panel__back a.l2-town-btn {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 50%;
+  max-width: 148px;
+  min-height: 32px;
+  padding: 6px 10px !important;
+  margin: 0.25rem 0 !important;
+  font-size: 11px !important;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none !important;
+  color: #f0e6b8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-image-slice: none !important;
+  border-image-width: 0 !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705craftBack1512') center / 100% 100%
+    no-repeat !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-craft .l2-teleport-panel__back a.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-craft .l2-teleport-panel__back a.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-craft .l2-teleport-panel__back a.l2-town-btn:focus-visible {
+  border: 0 !important;
+  border-image: none !important;
+  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705craftBack1512') center / 100% 100%
+    no-repeat !important;
+  transform: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: brightness(1.06) !important;
+  -webkit-filter: brightness(1.06) !important;
 }

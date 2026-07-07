@@ -1,8 +1,8 @@
 /**
  * Верхня й нижня сітки іконок. Підписи — L2.tr (ui-i18n.js після common.js).
  * Верх: рамка /ref/2121.png (Lv · клас, HP/MP на мапі) + ряд іконок /ref/35–41.png.
- * Низ (док): /ref/8484541 · 985952 · 59621 · 5885582 · 424524 · 222414.png —
- * Профіль, Магія, Місто, Меню, Маммон, Опції.
+ * Низ (док): Профіль, Перс, Пошта, Місто, Меню, Маммон, Опції.
+ * Магія — у верхньому ряду (другий слот).
  */
 (function (global) {
   var L2 = global.L2 || (global.L2 = {});
@@ -11,7 +11,7 @@
 
   var TOP = [
     {
-      iconPath: '/ref/35.png',
+      iconPath: '/assets/photo_1_2026-07-05_18-17-32-removebg-preview.png',
       href: null,
       stubKey: 'nav_chat',
       i18nKey: 'nav_chat',
@@ -19,11 +19,11 @@
       lbl: 't1',
     },
     {
-      iconPath: '/ref/39.png',
-      href: '/char.html',
+      iconPath: '/ref/photo_2026-07-05_13-24-32-removebg-preview.png',
+      href: '/magisters.html',
       stub: null,
-      i18nKey: 'nav_pers',
-      i18nTitleKey: 'nav_pers_title',
+      i18nKey: 'nav_magic',
+      i18nTitleKey: 'nav_magic_title',
       lbl: 't2',
     },
     {
@@ -70,7 +70,7 @@
 
   var BOTTOM = [
     {
-      iconPath: '/ref/8484541.png',
+      iconPath: '/ref/d1b88552-5bbf-44ac-bc1a-58149ea8cc9b__1_-removebg-preview.png',
       href: '/pers.html',
       stub: null,
       i18nKey: 'nav_profile',
@@ -78,39 +78,47 @@
       lbl: 'p1',
     },
     {
-      iconPath: '/ref/985952.png',
-      href: '/magisters.html',
+      iconPath: '/ref/39.png',
+      href: '/char.html',
       stub: null,
-      i18nKey: 'nav_magic',
-      i18nTitleKey: 'nav_magic_title',
+      i18nKey: 'nav_pers',
+      i18nTitleKey: 'nav_pers_title',
       lbl: 'p2',
     },
     {
-      iconPath: '/ref/59621.png',
+      iconPath: '/ref/35.png',
+      href: null,
+      stubKey: 'nav_mail',
+      i18nKey: 'nav_mail',
+      i18nTitleKey: 'nav_mail_title',
+      lbl: 'p3',
+    },
+    {
+      iconPath: '/ref/d1b88552-5bbf-44ac-bc1a-58149ea8cc9b-removebg-preview.png',
       href: '/city.html',
       stub: null,
       i18nKey: 'nav_town',
       i18nTitleKey: 'nav_town_title',
-      lbl: 'p3',
+      lbl: 'p4',
     },
     {
-      iconPath: '/ref/5885582.png',
+      iconPath: '/ref/photo_2026-07-05_13-19-04-removebg-preview.png',
       href: '/menu.html',
       stub: null,
       i18nKey: 'nav_menu',
       i18nTitleKey: 'nav_menu_title',
-      lbl: 'p4',
+      lbl: 'p5',
     },
     {
-      iconPath: '/ref/424524.png',
+      iconPath: '/ref/photo_2026-07-05_13-18-58-removebg-preview.png',
       href: '/mammon.html',
       stub: null,
       i18nKey: 'nav_mammon',
       i18nTitleKey: 'nav_mammon_title',
-      lbl: 'p5',
+      lbl: 'p6',
     },
     {
-      iconPath: '/ref/222414.png',
+      iconPath: '/ref/photo_2026-07-05_13-19-01-removebg-preview.png',
       href: '/options.html',
       stub: null,
       i18nKey: 'nav_options',

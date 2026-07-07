@@ -10,10 +10,10 @@
       href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <link rel="stylesheet" href="/styles.css?v=20260707devBoostBtnAlign1" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260707navChatIconSize1" />
   </head>
   <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-dev-boost l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
@@ -85,12 +85,11 @@
                 <label class="lbl-l2" for="l2-dev-boost-sp">SP</label>
                 <input class="inp-l2" type="number" id="l2-dev-boost-sp" name="sp" min="0" max="2147483647" step="1" placeholder="не змінювати" />
               </div>
-              <button type="submit" class="btn-l2 l2-dev-boost-submit" id="l2-dev-boost-submit">Застосувати</button>
+              <div class="l2-dev-boost-actions">
+                <button type="submit" class="btn-l2 l2-dev-boost-submit" id="l2-dev-boost-submit">Застосувати</button>
+                <a class="l2-town-btn l2-dev-boost-menu" href="/menu.html">До меню</a>
+              </div>
             </form>
-
-            <p class="l2-dev-boost-back">
-              <a class="l2-town-btn" href="/menu.html">До меню</a>
-            </p>
           </section>
 
           <div id="l2-nav-bottom"></div>
@@ -100,7 +99,7 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260509city59621"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/dev-boost.js"></script>
   </body>
 </html>

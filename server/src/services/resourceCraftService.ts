@@ -1,5 +1,6 @@
 /**
- * Крафт ресурсів: лише dwarf_scavenger / _artisan / _maestro (l2Profession у БД).
+ * Крафт ресурсів: гном-воїн після 1-ї профи (Збирач / Ремісник) і далі по гілці.
+ * Рецепти відкриваються лише за рівнем (tier.unlockLevel).
  */
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
@@ -21,9 +22,13 @@ import {
 } from './charService.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
+/** Усі профи гілки крафту гнома (від 1-ї профи, без прив’язки до Maestro). */
 const CRAFT_L2_PROFESSION = new Set([
   'dwarf_scavenger',
   'dwarf_artisan',
+  'dwarf_bounty_hunter',
+  'dwarf_warsmith',
+  'dwarf_fortune_seeker',
   'dwarf_maestro',
 ]);
 

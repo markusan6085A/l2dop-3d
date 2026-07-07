@@ -364,7 +364,6 @@ body.l2-page-story .l2-hud-stat-bar {
   margin-bottom: 10px;
 }
 
-body.l2-app-l2-chrome .l2-hud-panel.l2-hud-panel--city-strip,
 body.l2-page-story .l2-screen-inner.l2-story .l2-hud-panel.l2-hud-panel--city-strip {
   -webkit-box-shadow:
     0 0 0 1px rgba(255, 42, 42, 0.92),

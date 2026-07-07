@@ -304,6 +304,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     cityId: row.cityId,
     race: row.race,
     classBranch: row.classBranch,
+    gender: row.gender === 'female' ? 'female' : 'male',
     l2Profession: l2ProfResolved,
     adena: row.adena.toString(),
     exp: row.exp.toString(),

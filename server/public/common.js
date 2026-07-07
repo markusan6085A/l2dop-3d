@@ -88,6 +88,7 @@
       revision_conflict: 'Конфлікт версії даних — оновлено з сервера.',
       database_unavailable:
         'База даних недоступна. Запусти PostgreSQL або перевір DATABASE_URL у .env.',
+      too_many_requests: 'Забагато спроб. Зачекай хвилину і спробуй знову.',
     };
     return m[code] != null ? m[code] : String(code);
   }
@@ -552,7 +553,13 @@
       });
       ['l2-hud-exp-fill', 'l2-hud-hp-inner', 'l2-hud-mp-inner', 'l2-hud-cp-inner'].forEach(function (id) {
         var el = document.getElementById(id);
-        if (el) el.style.width = '0%';
+        if (!el) return;
+        if (id === 'l2-hud-exp-fill') {
+          el.style.width = '0%';
+          el.style.height = '100%';
+        } else {
+          el.style.width = '0%';
+        }
       });
     },
 
@@ -572,6 +579,15 @@
         p = Math.max(0, Math.min(100, p));
         el.style.width = p + '%';
       }
+      function setExpFillPct(pct) {
+        var el = document.getElementById('l2-hud-exp-fill');
+        if (!el) return;
+        var p = Number(pct);
+        if (!Number.isFinite(p)) p = 0;
+        p = Math.max(0, Math.min(100, p));
+        el.style.width = p + '%';
+        el.style.height = '100%';
+      }
       if (!c) {
         global.L2.clearHudPanel();
         return;
@@ -588,7 +604,7 @@
       set('l2-hud-exp-cur', c.expBarCur != null ? c.expBarCur : '—');
       set('l2-hud-exp-max', c.expBarMax != null ? c.expBarMax : '—');
       var expPct = c.expBarPct != null ? Number(c.expBarPct) : 0;
-      setWidthPct('l2-hud-exp-fill', expPct);
+      setExpFillPct(expPct);
       set('l2-hud-exp-pct', Math.max(0, Math.min(100, expPct)).toFixed(1) + '%');
       var expBar = document.getElementById('l2-hud-exp-bar');
       if (expBar) {
@@ -648,7 +664,7 @@
         '<p class="l2-hud-prof-line"><span class="l2-hud-prof-label">Професія:</span> <span id="l2-hud-prof-val">—</span></p>' +
         '<div class="l2-hud-exp-inline">' +
         '<div class="l2-hud-exp-bar l2-hud-exp-bar--inline" id="l2-hud-exp-bar" role="progressbar" aria-label="Досвід" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
-        '<span class="l2-hud-exp-fill" id="l2-hud-exp-fill" style="width:0%"></span>' +
+        '<span class="l2-hud-exp-fill" id="l2-hud-exp-fill" style="width:0%;height:100%"></span>' +
         '</div>' +
         '<span class="l2-hud-exp-inline-pct" id="l2-hud-exp-pct">0.0%</span>' +
         '</div>' +

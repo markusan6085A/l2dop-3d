@@ -106,14 +106,14 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
-  color: #e87850;
-  text-decoration: underline;
+  color: #f0e6b8;
+  text-decoration: none;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
 
 .l2-pers-newbie-link:hover,
 .l2-pers-newbie-link:focus {
-  color: #ff9a70;
+  color: #fff4d6;
   outline: none;
 }
 
@@ -262,55 +262,6 @@
   text-align: center;
 }
 
-/* Вибір мови (options.html) */
-.l2-opt-lang-section {
-  margin: 0 0 12px;
-  padding: 8px 6px;
-}
-.l2-opt-lang-section .l2-opt-lang-hint {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: #a09080;
-}
-.l2-opt-lang-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-.l2-opt-lang--active {
-  box-shadow: 0 0 0 2px #c9a227;
-}
-
-/* Кнопки «Українська» / «Русский» (options.html) — рамка /ref/77777.png */
-.l2-page-options .l2-opt-lang-row .btn-l2 {
-  --l2s-opt-lang777-slice-y: 24;
-  --l2s-opt-lang777-slice-x: 32;
-  --l2s-opt-lang777-bd-y: 8;
-  --l2s-opt-lang777-bd-x: 12;
-  box-sizing: border-box;
-  border-radius: 0;
-  border-style: solid;
-  border-color: transparent;
-  border-width: calc(1px * var(--l2s-opt-lang777-bd-y)) calc(1px * var(--l2s-opt-lang777-bd-x));
-  border-image-source: url('/ref/77777.png');
-  border-image-slice: var(--l2s-opt-lang777-slice-y) var(--l2s-opt-lang777-slice-x) var(--l2s-opt-lang777-slice-y)
-    var(--l2s-opt-lang777-slice-x) fill;
-  border-image-width: calc(1px * var(--l2s-opt-lang777-bd-y)) calc(1px * var(--l2s-opt-lang777-bd-x));
-  border-image-outset: 0;
-  border-image-repeat: stretch;
-  background: transparent;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.45);
-}
-
-.l2-page-options .l2-opt-lang-row .btn-l2:hover,
-.l2-page-options .l2-opt-lang-row .btn-l2:focus-visible {
-  filter: brightness(1.08);
-  outline: none;
-}
-
 /* Меню опцій (l2dop other.php): рядок іконка + текст, золото / білий */
 .l2-opt-menu {
   margin-top: 8px;
@@ -331,45 +282,37 @@
   padding: 0;
 }
 
-/* Рядки меню опцій (options.html) — та сама рамка що валюта/фільтри: /ref/8888888.png */
+/* Рядки меню опцій (options.html) — рамка /assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png */
 .l2-opt-row {
-  --l2s-opt-row888-slice-y: 24;
-  --l2s-opt-row888-slice-x: 32;
-  --l2s-opt-row888-bd-y: 8;
-  --l2s-opt-row888-bd-x: 12;
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
   margin: 0;
   padding: 8px 12px;
+  min-height: 34px;
   box-sizing: border-box;
   text-align: left;
   font-family: var(--l2-font-body);
   font-size: 12px;
   line-height: 1.35;
   cursor: pointer;
+  border: 0;
   border-radius: 0;
-  border-style: solid;
-  border-color: transparent;
-  border-width: calc(1px * var(--l2s-opt-row888-bd-y)) calc(1px * var(--l2s-opt-row888-bd-x));
-  border-image-source: url('/ref/8888888.png');
-  border-image-slice: var(--l2s-opt-row888-slice-y) var(--l2s-opt-row888-slice-x) var(--l2s-opt-row888-slice-y)
-    var(--l2s-opt-row888-slice-x) fill;
-  border-image-width: calc(1px * var(--l2s-opt-row888-bd-y)) calc(1px * var(--l2s-opt-row888-bd-x));
-  border-image-outset: 0;
-  border-image-repeat: stretch;
-  background: transparent;
+  border-image: none;
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705optMenu05d5') center / 100% 100%
+    no-repeat;
   color: #e8c56e;
   box-shadow: none;
-  transition: filter 0.12s ease, background 0.12s ease;
+  transition: filter 0.12s ease;
 }
 
 .l2-opt-row:hover,
 .l2-opt-row:focus {
   outline: none;
-  background: rgba(90, 55, 28, 0.22);
-  filter: brightness(1.06);
+  filter: brightness(1.08);
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705optMenu05d5') center / 100% 100%
+    no-repeat;
 }
 
 .l2-opt-row--gold {
@@ -396,7 +339,9 @@
 
 .l2-opt-row--exit:hover,
 .l2-opt-row--exit:focus {
-  background: rgba(120, 40, 40, 0.18);
+  filter: brightness(1.08);
+  background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705optMenu05d5') center / 100% 100%
+    no-repeat;
 }
 
 /* Іконки з server/public/assets/l2dop (копія l2dop/img/newicons + icons/exit.jpg, items/4037.jpg) */
@@ -492,10 +437,25 @@
   box-sizing: border-box;
 }
 
-.l2-page-dev-boost .l2-dev-boost-submit {
-  margin-top: 6px;
+.l2-page-dev-boost .l2-dev-boost-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
   width: 100%;
   max-width: 280px;
+  margin: 6px auto 0;
+}
+
+.l2-page-dev-boost .l2-dev-boost-submit,
+.l2-page-dev-boost .l2-dev-boost-menu {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.l2-page-dev-boost .l2-dev-boost-submit {
+  margin-top: 0;
+  max-width: none;
 }
 
 .l2-page-dev-boost .l2-dev-boost-back {

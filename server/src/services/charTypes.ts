@@ -13,6 +13,8 @@ export interface CharacterRow {
   cityId: string;
   race: string;
   classBranch: string;
+  /** male | female */
+  gender: string;
   /** human_fighter | human_warrior | … */
   l2Profession: string;
   adena: bigint;
@@ -70,6 +72,7 @@ export interface CharacterSnapshot {
   cityId: string;
   race: string;
   classBranch: string;
+  gender: string;
   l2Profession: string;
   adena: string;
   /** Накопичений EXP (рядок для BigInt у JSON) */

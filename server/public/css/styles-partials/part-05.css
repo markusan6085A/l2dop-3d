@@ -72,21 +72,6 @@
   font-size: 13px;
 }
 
-.l2-page-magisters .l2-town-btn--learned-skills {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.l2-page-magisters .l2-town-btn--learned-skills .l2-town-btn__icon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  image-rendering: auto;
-}
-
-
 /* Місто (townlive): знову на всю ширину як раніше; стиль — бронза/золото як футер, не старий синій */
 .l2-town-main {
   display: flex;
@@ -459,7 +444,7 @@ a.l2-town-btn {
 .l2-wap-grid--bottom {
   margin-top: 8px;
   margin-bottom: 4px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 /* Нижній док: нижче рамка ближче до іконок і підписів (менший внутрішній блок). */
@@ -1171,24 +1156,13 @@ a.l2-foot-linkbar__btn--link {
   position: relative;
   padding: 18px 16px 20px;
   border-radius: 14px;
-  border: 1px solid rgba(115, 88, 52, 0.28);
-  background: rgba(18, 14, 10, 0.38);
-  box-shadow:
-    0 2px 22px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(199, 173, 128, 0.42);
+  background: url('/assets/assets/center.png?v=20260707gmShopCenter') center / 100% 100% no-repeat;
+  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.32);
   overflow: hidden;
 }
 
 .l2-gm-shop-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    105deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.03) 42%,
-    transparent 72%
-  );
+  content: none;
 }
 

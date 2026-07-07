@@ -15,6 +15,7 @@ const RACES = [
 ] as const;
 
 const CLASS_BRANCHES = ['fighter', 'mystic'] as const;
+const GENDERS = ['male', 'female'] as const;
 
 function normalizeLogin(login: unknown): string | null {
   if (typeof login !== 'string') return null;
@@ -50,6 +51,12 @@ function normalizeClassBranch(branch: unknown): string | null {
     : null;
 }
 
+function normalizeGender(gender: unknown): string {
+  if (typeof gender !== 'string') return 'male';
+  const s = gender.trim().toLowerCase();
+  return GENDERS.includes(s as (typeof GENDERS)[number]) ? s : 'male';
+}
+
 export async function register(input: {
   login: unknown;
   password: unknown;
@@ -57,11 +64,13 @@ export async function register(input: {
   characterName: unknown;
   race: unknown;
   classBranch: unknown;
+  gender?: unknown;
 }): Promise<{ token: string }> {
   const login = normalizeLogin(input.login);
   const characterName = normalizeCharacterName(input.characterName);
   const race = normalizeRace(input.race);
   const classBranch = normalizeClassBranch(input.classBranch);
+  const gender = normalizeGender(input.gender);
 
   if (
     typeof input.password !== 'string' ||
@@ -110,6 +119,7 @@ export async function register(input: {
         userId: u.id,
         race,
         classBranch,
+        gender,
         l2Profession,
         cityId: start.cityId,
         worldX: start.worldX,

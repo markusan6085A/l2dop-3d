@@ -1,6 +1,7 @@
-# /etc/nginx/sites-available/api.l2dop.com
-# Symlink to sites-enabled after review:
-# ln -s /etc/nginx/sites-available/api.l2dop.com /etc/nginx/sites-enabled/api.l2dop.com
+# /etc/nginx/sites-available/l2dop-3d
+# Один домен: UI + API на Fastify :3000
+# Symlink: ln -s /etc/nginx/sites-available/l2dop-3d /etc/nginx/sites-enabled/l2dop-3d
+# HTTPS: certbot --nginx -d game.example.com
 
 map $http_upgrade $connection_upgrade {
   default upgrade;
@@ -9,7 +10,7 @@ map $http_upgrade $connection_upgrade {
 
 server {
   listen 80;
-  server_name api.l2dop.com;
+  server_name game.example.com;
 
   client_max_body_size 10m;
 

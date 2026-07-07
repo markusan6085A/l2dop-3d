@@ -1,9 +1,11 @@
 import './env.js';
 import { buildApp } from './app.js';
+import { assertProductionEnv } from './lib/productionGuards.js';
 
 const port = Number(process.env.PORT) || 3000;
 
 async function main() {
+  assertProductionEnv();
   const app = await buildApp();
   await app.listen({ port, host: '0.0.0.0' });
   app.log.info(`listening on ${port}`);

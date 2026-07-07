@@ -1,9 +1,10 @@
+/** pm2: запуск з кореня репо l2dop-3d (не з server/). */
 module.exports = {
   apps: [
     {
-      name: 'text-rpg-api',
-      cwd: '/opt/text-rpg/server',
-      script: 'dist/index.js',
+      name: 'l2dop-3d',
+      cwd: __dirname,
+      script: 'dist/server/src/index.js',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -16,9 +17,9 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000,
       },
-      error_file: '/var/log/text-rpg-api/error.log',
-      out_file: '/var/log/text-rpg-api/out.log',
-      log_file: '/var/log/text-rpg-api/combined.log',
+      error_file: '/var/log/l2dop-3d/error.log',
+      out_file: '/var/log/l2dop-3d/out.log',
+      log_file: '/var/log/l2dop-3d/combined.log',
       time: true,
       merge_logs: true,
     },

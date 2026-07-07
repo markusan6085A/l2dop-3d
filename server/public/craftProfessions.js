@@ -1,10 +1,17 @@
 /**
- * Крафт: l2Profession у БД (dwarf_scavenger / _artisan / _maestro).
- * classBranch лишається «fighter» для гнома — перевірка тільки по l2Profession.
+ * Крафт: l2Profession у БД — гілка гнома від 1-ї профи (Scavenger / Artisan) і далі.
+ * classBranch лишається «fighter» — перевірка тільки по l2Profession.
  */
 (function (global) {
   var L2 = global.L2 || (global.L2 = {});
-  var CRAFT_L2 = ['dwarf_scavenger', 'dwarf_artisan', 'dwarf_maestro'];
+  var CRAFT_L2 = [
+    'dwarf_scavenger',
+    'dwarf_artisan',
+    'dwarf_bounty_hunter',
+    'dwarf_warsmith',
+    'dwarf_fortune_seeker',
+    'dwarf_maestro',
+  ];
   L2.CRAFT_L2_PROFESSIONS = CRAFT_L2;
   /** Застаріло: раніше перевіряли classBranch; лишено для сумісності. */
   L2.CRAFT_CLASS_BRANCHES = [];

@@ -139,6 +139,18 @@
   var revision = 0;
   var equipRequestInFlight = false;
 
+  function expectedRevisionForMutation() {
+    var snap =
+      window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+    if (snap && snap.revision != null && Number.isFinite(Number(snap.revision))) {
+      return Number(snap.revision);
+    }
+    return revision;
+  }
+  var HP_MP_POTION_IDS = { 1060: true, 1061: true, 726: true, 728: true };
+  var craftBookIndex = null;
+  var bagModalCtx = null;
+
   /** Як у GM-шопу: категорія + грейд + підтип */
   var bagInvCat = 'weapon';
   /** '' — усі грейди (кнопка «Усі»); ng|d|c|b|a|s */
@@ -222,7 +234,7 @@
     return s;
   }
 
-  /** Повний шлях до портрета в /characters (як profession + race у text-rpg; без gender у БД — чоловічі бази). */
+  /** Повний шлях до портрета в /characters (legacy fallback). */
   function portraitUrl(c) {
     if (!c) return '/characters/Human-voin.jpg';
     var nm = c.name != null ? String(c.name).trim().toLowerCase() : '';
@@ -238,15 +250,331 @@
     return '/characters/Human-voin.jpg';
   }
 
+  /** Герой поверх сцени — ключ `l2Profession` або `race|branch|gender`. */
+  var SCENE_HERO_OVERLAYS = {
+    human_fighter: {
+      url: '/characters/photo_5_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-m',
+      blackKey: false,
+    },
+    human_rogue: {
+      url: '/characters/photo_4_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-rogue-m',
+      blackKey: false,
+    },
+    human_warrior: {
+      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_knight: {
+      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_dark_avenger: {
+      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_paladin: {
+      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_treasure_hunter: {
+      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_warlord: {
+      url: '/characters/photo_2_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-warlord-m',
+      blackKey: false,
+    },
+    human_gladiator: {
+      url: '/characters/photo_1_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-gladiator-m',
+      blackKey: false,
+    },
+    'human_fighter|female': {
+      url: '/characters/photo_6_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_warrior|female': {
+      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_knight|female': {
+      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_paladin|female': {
+      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_dark_avenger|female': {
+      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_treasure_hunter|female': {
+      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_warlord|female': {
+      url: '/characters/photo_9_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-warlord-f',
+      blackKey: false,
+    },
+    'human_gladiator|female': {
+      url: '/characters/photo_7_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_hawkeye|female': {
+      url: '/characters/photo_10_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-hawkeye-f',
+      blackKey: false,
+    },
+    'human_rogue|female': {
+      url: '/characters/photo_10_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-hawkeye-f',
+      blackKey: false,
+    },
+    'human_sagittarius|female': {
+      url: '/characters/photo_10_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-hawkeye-f',
+      blackKey: false,
+    },
+    dwarf_fighter: {
+      url: '/characters/photo_24_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'dwarf-fighter-m',
+      blackKey: false,
+    },
+    'dwarf_fighter|female': {
+      url: '/characters/photo_23_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'dwarf-fighter-f',
+      blackKey: false,
+    },
+    dwarf_scavenger: {
+      url: '/characters/photo_26_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'dwarf-scavenger-m',
+      blackKey: false,
+    },
+    dwarf_artisan: {
+      url: '/characters/photo_26_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'dwarf-scavenger-m',
+      blackKey: false,
+    },
+    'dwarf_scavenger|female': {
+      url: '/characters/photo_25_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'dwarf-fighter-f',
+      blackKey: false,
+    },
+    'dwarf_artisan|female': {
+      url: '/characters/photo_25_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'dwarf-fighter-f',
+      blackKey: false,
+    },
+    orc_fighter: {
+      url: '/characters/photo_15_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-fighter-m',
+      blackKey: false,
+    },
+    orc_raider: {
+      url: '/characters/photo_19_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-raider-m',
+      blackKey: false,
+    },
+    orc_monk: {
+      url: '/characters/photo_21_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-monk-m',
+      blackKey: false,
+    },
+    orc_mage: {
+      url: '/characters/photo_17_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-mystic-m',
+      blackKey: false,
+    },
+    'orc_fighter|female': {
+      url: '/characters/photo_16_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-fighter-f',
+      blackKey: false,
+    },
+    'orc_raider|female': {
+      url: '/characters/photo_22_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-raider-f',
+      blackKey: false,
+    },
+    'orc_monk|female': {
+      url: '/characters/photo_20_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-monk-f',
+      blackKey: false,
+    },
+    'orc_mage|female': {
+      url: '/characters/photo_18_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'orc-mystic-f',
+      blackKey: false,
+    },
+    human_mage: {
+      url: '/characters/photo_12_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-mage-m',
+      blackKey: false,
+    },
+    human_wizard: {
+      url: '/characters/photo_14_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-wizard-m',
+      blackKey: false,
+    },
+    human_cleric: {
+      url: '/characters/photo_14_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-wizard-m',
+      blackKey: false,
+    },
+    'human_mage|female': {
+      url: '/characters/photo_11_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-mage-f',
+      blackKey: false,
+    },
+    'human_wizard|female': {
+      url: '/characters/photo_13_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-wizard-f',
+      blackKey: false,
+    },
+    'human_cleric|female': {
+      url: '/characters/photo_13_2026-07-05_18-17-32-removebg-preview.png',
+      skin: 'human-wizard-f',
+      blackKey: false,
+    },
+    'dark-elf|mystic|male': {
+      url: '/characters/photo_2026-07-05_14-45-08-removebg-preview.png',
+      skin: 'dark-elf-mystic-m',
+      blackKey: false,
+    },
+  };
+
+  /** 2–3 профа гілки — та сама картинка, що на базовій 2-й (або 1-й для rogue/luk). */
+  var SCENE_HERO_PROF_ALIAS = {
+    human_dreadnought: 'human_warlord',
+    human_duelist: 'human_gladiator',
+    human_adventurer: 'human_treasure_hunter',
+    human_hell_knight: 'human_dark_avenger',
+    human_phoenix_knight: 'human_paladin',
+    human_hawkeye: 'human_rogue',
+    human_sagittarius: 'human_rogue',
+    human_sorcerer: 'human_wizard',
+    human_necromancer: 'human_wizard',
+    human_warlock: 'human_wizard',
+    human_archmage: 'human_wizard',
+    human_soultaker: 'human_wizard',
+    human_arcana_lord: 'human_wizard',
+    human_bishop: 'human_cleric',
+    human_prophet: 'human_cleric',
+    human_cardinal: 'human_cleric',
+    human_hierophant: 'human_cleric',
+    dwarf_bounty_hunter: 'dwarf_scavenger',
+    dwarf_fortune_seeker: 'dwarf_scavenger',
+    dwarf_warsmith: 'dwarf_artisan',
+    dwarf_maestro: 'dwarf_artisan',
+    orc_destroyer: 'orc_raider',
+    orc_tyrant: 'orc_monk',
+    orc_titan: 'orc_raider',
+    orc_grand_khavatari: 'orc_monk',
+    orc_shaman: 'orc_mage',
+    orc_overlord: 'orc_mage',
+    orc_warcryer: 'orc_mage',
+    orc_dominator: 'orc_mage',
+    orc_doomcryer: 'orc_mage',
+  };
+
+  var HERO_BG_SKIN_PREFIX = 'l2-char-equip-bg--hero-';
+
+  function snapshotGender(c) {
+    return c && c.gender === 'female' ? 'female' : 'male';
+  }
+
+  function sceneHeroOverlayLookupKey(prof, gender) {
+    if (gender === 'female') {
+      var femKey = prof + '|female';
+      if (SCENE_HERO_OVERLAYS[femKey]) return femKey;
+    }
+    return prof;
+  }
+
+  function sceneHeroLegacyKey(c) {
+    if (!c) return null;
+    var race = normRace(c.race);
+    var branch = c.classBranch != null ? String(c.classBranch).toLowerCase() : 'fighter';
+    if (race === 'Dark Elf' && branch === 'mystic') return 'dark-elf|mystic|male';
+    return null;
+  }
+
+  function resolveSceneHeroOverlay(c) {
+    if (!c) return null;
+    var gender = snapshotGender(c);
+    var profRaw = c.l2Profession != null ? String(c.l2Profession).trim() : '';
+    /** Спочатку prof|female до alias (hawkeye ≠ rogue на жіночих артах). */
+    var directKey = sceneHeroOverlayLookupKey(profRaw, gender);
+    if (directKey && SCENE_HERO_OVERLAYS[directKey]) return SCENE_HERO_OVERLAYS[directKey];
+    var prof = profRaw;
+    if (prof && SCENE_HERO_PROF_ALIAS[prof]) prof = SCENE_HERO_PROF_ALIAS[prof];
+    var key = sceneHeroOverlayLookupKey(prof, gender);
+    if (key && SCENE_HERO_OVERLAYS[key]) return SCENE_HERO_OVERLAYS[key];
+    var legacy = sceneHeroLegacyKey(c);
+    if (!legacy) return null;
+    key = sceneHeroOverlayLookupKey(legacy, gender);
+    return key && SCENE_HERO_OVERLAYS[key] ? SCENE_HERO_OVERLAYS[key] : null;
+  }
+
+  function clearHeroBgSkins(bg) {
+    if (!bg || !bg.classList) return;
+    var cl = bg.classList;
+    for (var i = cl.length - 1; i >= 0; i--) {
+      var name = cl[i];
+      if (name.indexOf(HERO_BG_SKIN_PREFIX) === 0) cl.remove(name);
+    }
+  }
+
   function renderHeroPortrait(c) {
     var img = $('char-hero-img');
+    var stage = $('char-hero-stage');
+    var bg = document.querySelector('.l2-char-equip-bg');
     if (!img) return;
-    var url = portraitUrl(c);
+    var overlay = resolveSceneHeroOverlay(c);
+    img.dataset.portraitUrl = portraitUrl(c);
+    clearHeroBgSkins(bg);
+    img.classList.remove('l2-char-equip-hero-overlay--black-key');
+    if (!overlay || !overlay.url) {
+      img.hidden = true;
+      img.removeAttribute('src');
+      img.onerror = null;
+      img.alt = '';
+      if (stage) stage.hidden = true;
+      return;
+    }
     img.onerror = function () {
       img.onerror = null;
-      img.src = '/characters/Human-voin.jpg';
+      img.hidden = true;
+      img.removeAttribute('src');
+      if (stage) stage.hidden = true;
+      clearHeroBgSkins(bg);
+      img.classList.remove('l2-char-equip-hero-overlay--black-key');
     };
-    img.src = url;
+    img.src = overlay.url;
+    img.hidden = false;
+    img.alt = 'Герой';
+    if (overlay.blackKey) img.classList.add('l2-char-equip-hero-overlay--black-key');
+    if (stage) stage.hidden = false;
+    if (bg) {
+      bg.classList.add(HERO_BG_SKIN_PREFIX + 'on-stairs');
+      if (overlay.skin) bg.classList.add(HERO_BG_SKIN_PREFIX + overlay.skin);
+    }
   }
 
   /** Див. GET /character itemBlocksShieldById — дворуч займає слот щита візуально. */
@@ -507,20 +835,108 @@
     return true;
   }
 
-  /** Є слот екіпу (зброя/щит/броня/аксесуари) і не свиток/рецепт тощо. */
+  /** Лише зброя / щит / броня / аксесуари — не розхідники й ресурси. */
   function canEquipFromBag(itemId) {
-    if (!bagEquipSegment(itemId)) return false;
+    if (itemInConsumableBagBucket(itemId)) return false;
+    var seg = bagEquipSegment(itemId);
+    if (!seg) return false;
+    if (
+      seg !== 'weapon' &&
+      seg !== 'shield' &&
+      seg !== 'armor' &&
+      seg !== 'accessor'
+    ) {
+      return false;
+    }
     var tab = bagInvTabHint(itemId);
     if (
       tab === 'recipe' ||
       tab === 'consumable' ||
       tab === 'quest' ||
       tab === 'book' ||
-      tab === 'enchantment'
+      tab === 'enchantment' ||
+      tab === 'resource'
     ) {
       return false;
     }
     return true;
+  }
+
+  function isHpMpPotion(itemId) {
+    return !!HP_MP_POTION_IDS[Number(itemId)];
+  }
+
+  function isCraftHintItem(itemId) {
+    return itemInConsumableBagBucket(itemId) && !isHpMpPotion(itemId);
+  }
+
+  function buildCraftBookIndex(tiers) {
+    var asOutput = {};
+    var asIngredient = {};
+    (tiers || []).forEach(function (tier) {
+      (tier.recipes || []).forEach(function (recipe) {
+        var outId = Number(recipe.outputL2ItemId);
+        if (!Number.isFinite(outId)) return;
+        if (!asOutput[outId]) asOutput[outId] = [];
+        (recipe.ingredients || []).forEach(function (ing) {
+          var ingId = Number(ing.l2ItemId);
+          var cnt = Number(ing.count);
+          if (!Number.isFinite(ingId) || !Number.isFinite(cnt)) return;
+          asOutput[outId].push({ itemId: ingId, count: cnt });
+          if (!asIngredient[ingId]) asIngredient[ingId] = [];
+          asIngredient[ingId].push({ outId: outId, count: cnt, tier: tier.tier });
+        });
+      });
+    });
+    return { asOutput: asOutput, asIngredient: asIngredient };
+  }
+
+  function craftHintForItem(itemId) {
+    var id = Number(itemId);
+    if (!Number.isFinite(id)) return 'Розхідник — не одягається.';
+    if (!craftBookIndex) {
+      return 'Розхідник — не одягається. Для крафту відкрий меню «Крафт».';
+    }
+    var lines = [];
+    var outs = craftBookIndex.asOutput[id];
+    if (outs && outs.length) {
+      var parts = outs.map(function (row) {
+        return row.count + '× ' + itemDisplayName(row.itemId);
+      });
+      lines.push('Отримання: ' + parts.join(', '));
+    }
+    var uses = craftBookIndex.asIngredient[id];
+    if (uses && uses.length) {
+      uses.forEach(function (row) {
+        lines.push(
+          'Потрібно для крафту: ' +
+            itemDisplayName(row.outId) +
+            ' — ' +
+            row.count +
+            '×'
+        );
+      });
+    }
+    if (lines.length) return lines.join('\n');
+    return 'Розхідник — не одягається.';
+  }
+
+  function loadCraftBookForChar(token) {
+    if (!token || craftBookIndex) return Promise.resolve();
+    return fetch('/game/resource-craft/book', {
+      headers: { Authorization: 'Bearer ' + token },
+    })
+      .then(function (r) {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then(function (j) {
+        if (!j || !Array.isArray(j.tiers)) return;
+        craftBookIndex = buildCraftBookIndex(j.tiers);
+      })
+      .catch(function () {
+        /* ignore */
+      });
   }
 
   function normalizedItemGradeKey(itemId) {
@@ -791,7 +1207,7 @@
       if (canEquipFromBag(st.itemId)) {
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'l2-char-bag-equip';
+        btn.className = 'l2-char-bag-equip l2-char-bag-modal-action';
         btn.textContent = 'Одіти';
         btn.setAttribute('data-item-id', String(st.itemId));
         btn.setAttribute('data-item-enchant', String(en));
@@ -880,6 +1296,80 @@
         L2.applyHudFromSnapshot(c);
       }
       renderAll(c);
+    } catch (_e) {
+      var stubNet = $('char-stub-msg');
+      if (stubNet) {
+        stubNet.hidden = false;
+        stubNet.textContent = 'Збій мережі — спробуй ще раз.';
+      }
+    } finally {
+      equipRequestInFlight = false;
+    }
+  }
+
+  async function apiUsePotion(itemId, quantity) {
+    if (equipRequestInFlight) return;
+    equipRequestInFlight = true;
+    try {
+      var t = localStorage.getItem('token');
+      var r = await fetch('/character/consumable/use', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + t,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemId: itemId,
+          quantity: quantity,
+          expectedRevision: expectedRevisionForMutation(),
+        }),
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      if (r.status === 409) {
+        await resyncCharacterFromServer();
+        return;
+      }
+      if (!r.ok) {
+        var msg = 'Не вдалося використати зілля.';
+        try {
+          var j = await r.json();
+          if (j && j.messageUk) msg = j.messageUk;
+        } catch (e) {
+          /* ignore */
+        }
+        var stub = $('char-stub-msg');
+        if (stub) {
+          stub.hidden = false;
+          stub.textContent = msg;
+        }
+        return;
+      }
+      var out = await r.json();
+      var c = out.character;
+      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(c);
+      } else {
+        window.L2.setLastSnapshot(c);
+        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
+      }
+      renderAll(c);
+      var stubOk = $('char-stub-msg');
+      if (stubOk) {
+        stubOk.hidden = false;
+        stubOk.textContent = 'Зілля використано.';
+        window.setTimeout(function () {
+          if (stubOk.textContent === 'Зілля використано.') {
+            stubOk.hidden = true;
+            stubOk.textContent = '';
+          }
+        }, 2200);
+      }
     } catch (_e) {
       var stubNet = $('char-stub-msg');
       if (stubNet) {
@@ -1078,6 +1568,7 @@
       ov.hidden = true;
       ov.setAttribute('aria-hidden', 'true');
     }
+    bagModalCtx = null;
     document.body.classList.remove('l2-gm-modal-open');
   }
 
@@ -1196,14 +1687,67 @@
         window.L2ArmorSetBonusesUI.hide(armorSetsEl);
       }
     }
+
+    var craftHintEl = $('char-bag-modal-craft-hint');
+    var useRow = $('char-bag-modal-use-row');
+    var useBtn = $('char-bag-modal-use');
+    var useQty = $('char-bag-modal-use-qty');
     var canEq = canEquipFromBag(itemId);
-    equipBtn.hidden = !canEq;
+    var isPotion = isHpMpPotion(itemId);
+    var showCraft = isCraftHintItem(itemId);
+
+    bagModalCtx = {
+      itemId: itemId,
+      qty: Number.isFinite(qty) ? qty : 1,
+      enchant: modalEn,
+    };
+
     if (canEq) {
+      equipBtn.hidden = false;
+      equipBtn.removeAttribute('hidden');
       equipBtn.setAttribute('data-item-id', String(itemId));
       equipBtn.setAttribute('data-item-enchant', String(modalEn));
     } else {
+      equipBtn.hidden = true;
+      equipBtn.setAttribute('hidden', '');
       equipBtn.removeAttribute('data-item-id');
       equipBtn.removeAttribute('data-item-enchant');
+    }
+
+    if (craftHintEl) {
+      if (showCraft) {
+        craftHintEl.hidden = false;
+        craftHintEl.removeAttribute('hidden');
+        craftHintEl.textContent = craftHintForItem(itemId);
+      } else {
+        craftHintEl.hidden = true;
+        craftHintEl.setAttribute('hidden', '');
+        craftHintEl.textContent = '';
+      }
+    }
+    if (useRow) {
+      if (isPotion) {
+        useRow.hidden = false;
+        useRow.removeAttribute('hidden');
+      } else {
+        useRow.hidden = true;
+        useRow.setAttribute('hidden', '');
+      }
+    }
+    if (useBtn) {
+      if (isPotion) {
+        useBtn.hidden = false;
+        useBtn.removeAttribute('hidden');
+      } else {
+        useBtn.hidden = true;
+        useBtn.setAttribute('hidden', '');
+      }
+    }
+    if (isPotion && useQty) {
+      var maxQ = Math.max(1, Math.floor(Number.isFinite(qty) ? qty : 1));
+      useQty.min = '1';
+      useQty.max = String(maxQ);
+      useQty.value = '1';
     }
     ov.hidden = false;
     ov.setAttribute('aria-hidden', 'false');
@@ -1235,6 +1779,27 @@
         var ben = equipBtn.getAttribute('data-item-enchant');
         closeBagModal();
         apiEquip(Number(id), ben != null ? Number(ben) : 0);
+      });
+    }
+    var useBtn = $('char-bag-modal-use');
+    var useQty = $('char-bag-modal-use-qty');
+    if (useBtn) {
+      useBtn.addEventListener('click', function () {
+        if (!bagModalCtx || bagModalCtx.itemId == null) return;
+        var q = useQty ? Number(useQty.value) : 1;
+        if (!Number.isFinite(q) || q < 1) q = 1;
+        q = Math.min(Math.max(1, Math.floor(q)), bagModalCtx.qty || 1);
+        var useItemId = bagModalCtx.itemId;
+        closeBagModal();
+        apiUsePotion(useItemId, q);
+      });
+    }
+    if (useQty) {
+      useQty.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (useBtn && !useBtn.hidden) useBtn.click();
+        }
       });
     }
     document.addEventListener('keydown', function (e) {
@@ -1292,6 +1857,8 @@
       if (window.L2 && typeof L2.clearHudPanel === 'function') L2.clearHudPanel();
       return;
     }
+
+    loadCraftBookForChar(t);
 
     var r = await fetch('/character', {
       headers: { Authorization: 'Bearer ' + t },

@@ -25,6 +25,8 @@ model Character {
   /** Раса / гілка 1 профи (як у L2): fighter | mystic */
   race       String   @default("Human")
   classBranch String  @default("fighter")
+  /** male | female — для портрета героя на екрані Перс */
+  gender     String   @default("male")
   /** human_fighter → гілки 1–3 профи (rogue→hawkeye|th→sagittarius|adventurer; scout→hawkeye тощо) */
   l2Profession String  @default("human_fighter")
   adena      BigInt   @default(0)

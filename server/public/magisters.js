@@ -74,18 +74,7 @@
         var learnedLink = document.createElement('a');
         learnedLink.className = 'l2-town-btn l2-town-btn--learned-skills';
         learnedLink.href = magisterLearnedHref(a.href);
-        var icon = document.createElement('img');
-        icon.className = 'l2-town-btn__icon';
-        icon.alt = '';
-        icon.decoding = 'async';
-        icon.width = 18;
-        icon.height = 18;
-        icon.src = '/ref/77777.png';
-        icon.addEventListener('error', function () {
-          icon.src = '/icons/drops/other.svg';
-        });
-        learnedLink.appendChild(icon);
-        learnedLink.appendChild(document.createTextNode('Вивчені скіли'));
+        learnedLink.textContent = 'Вивчені скіли';
         actionsWrap.appendChild(learnedLink);
       });
       if (!actionsWrap.childNodes.length) return;

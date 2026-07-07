@@ -19,6 +19,17 @@
     showStub('«' + L2.tr(key) + '» — ' + L2.tr('stub_later'));
   }
 
+  function wireTownIcons() {
+    document.querySelectorAll('.l2-town-main .l2-town-btn__icon').forEach(function (icon) {
+      if (icon.dataset.fallbackWired === '1') return;
+      icon.dataset.fallbackWired = '1';
+      icon.addEventListener('error', function onIconError() {
+        icon.removeEventListener('error', onIconError);
+        icon.src = '/icons/drops/other.svg';
+      });
+    });
+  }
+
   function wireStubs() {
     var root = $('city-services');
     if (root) {
@@ -64,6 +75,7 @@
     }
 
     wireStubs();
+    wireTownIcons();
 
     var t = localStorage.getItem('token');
     var errEl = $('city-load-err');

@@ -12,7 +12,7 @@
     />
     <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260707navChatIconSize1" />
   </head>
   <body class="l2-body l2-page-city l2-page-townlive l2-page-auth l2-app-l2-chrome">
     <div class="l2-shell">
@@ -105,6 +105,18 @@
                     <option value="Dwarf">Гном</option>
                   </select>
 
+                  <p class="desc" style="margin-top: 10px; margin-bottom: 6px">Стать</p>
+                  <div role="group" aria-label="Стать персонажа">
+                    <label class="lbl-l2" style="display: block; font-weight: normal">
+                      <input type="radio" name="gender" value="male" checked />
+                      Чоловік
+                    </label>
+                    <label class="lbl-l2" style="display: block; font-weight: normal">
+                      <input type="radio" name="gender" value="female" />
+                      Жінка
+                    </label>
+                  </div>
+
                   <p class="desc" style="margin-top: 10px; margin-bottom: 6px">Гілка старту</p>
                   <div role="group" aria-label="Гілка класу">
                     <label class="lbl-l2" style="display: block; font-weight: normal">
@@ -137,8 +149,6 @@
               <a href="/" class="l2-dock-tile"><span data-i18n="auth_dock_home">Головна</span></a>
               <a href="#" class="l2-dock-tile"><span data-i18n="auth_dock_about">Про сервер</span></a>
             </nav>
-
-            <p class="footer-links">L2DOP</p>
           </div>
         </div>
       </div>

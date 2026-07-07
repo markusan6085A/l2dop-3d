@@ -657,6 +657,14 @@ select.sel-l2 {
     0 0 20px rgba(255, 190, 60, 0.06);
 }
 
+/* Для chrome-оболонки вимикаємо цю декоративну золоту рамку. */
+body.l2-app-l2-chrome.l2-page-city .l2-screen::after {
+  content: none !important;
+  display: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
 .l2-city-ui-l2test.l2-page-city .l2-screen {
   box-shadow: none;
 }

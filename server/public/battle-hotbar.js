@@ -1045,8 +1045,9 @@
 
         var isSoulRow = FIGHTER_SOULSHOT_ITEM_IDS[slot.id] === true;
         var isBlessRow = MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS[slot.id] === true;
+        var isPotionRow = BATTLE_POTION_ITEM_IDS[slot.id] === true;
 
-        if (isSoulRow || isBlessRow) {
+        if (isSoulRow || isBlessRow || isPotionRow) {
           var qtyEl = document.createElement('span');
           qtyEl.className = 'l2-battle-hotbar-slot-uqty';
           qtyEl.setAttribute('aria-hidden', 'true');
@@ -1062,6 +1063,12 @@
           btn.title = blessedOn
             ? itemNameUk(slot.id) + ' — активний'
             : itemNameUk(slot.id) + ' — благословений заряд духу: натисни для активації';
+        } else if (isPotionRow) {
+          btn.title =
+            itemNameUk(slot.id) +
+            ' — зілля: натисни для використання (' +
+            bagQtyPlain(character, slot.id) +
+            ' у сумці)';
         } else {
           btn.title = itemNameUk(slot.id);
         }
@@ -1079,9 +1086,21 @@
             }
             return;
           }
+          if (isPotionRow) {
+            if (bagQtyPlain(character, slot.id) < 1) {
+              if (typeof opts.showToast === 'function') {
+                opts.showToast('Немає цього зілля в сумці.');
+              }
+              return;
+            }
+            if (typeof opts.onBattlePotionUse === 'function') {
+              opts.onBattlePotionUse(slot.id);
+            }
+            return;
+          }
           if (typeof opts.showToast === 'function') {
             opts.showToast(
-              'Цей розхідник з панелі ще не підтримується — лише заряд душі (воїн) або благословений заряд духу (маг).'
+              'Цей розхідник з панелі ще не підтримується — лише HP/MP зілля, заряд душі (воїн) або благословений заряд духу (маг).'
             );
           }
         });

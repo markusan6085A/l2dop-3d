@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=48crestR4" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260705citySep" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -79,76 +79,152 @@
               <p class="l2-city-stub-msg" id="city-stub-msg" hidden></p>
 
               <div class="l2-town-main">
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_trade"
-                  data-i18n-stub="city_btn_trade"
-                >
-                  Торгова площа
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_trade">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_trade">Торгова площа</span>
                 </button>
-                <a class="l2-town-btn" href="/town-buffer.html" data-i18n="city_btn_buffer">Бафер</a>
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_sellers"
-                  data-i18n-stub="city_btn_sellers"
-                >
-                  Продавці
+                <a class="l2-town-btn" href="/town-buffer.html">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-53-01.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_buffer">Бафер</span>
+                </a>
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_sellers">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-53-14.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_sellers">Продавці</span>
                 </button>
-                <a class="l2-town-btn" href="/teleport.html" data-i18n="city_link_teleport">Телепорт</a>
-                <a class="l2-town-btn" href="/gm-shop.html" data-i18n="city_link_gm_shop">Магазин вищей</a>
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_warehouse"
-                  data-i18n-stub="city_btn_warehouse"
-                >
-                  Склад
+                <hr class="l2-town-sep" aria-hidden="true" />
+                <a class="l2-town-btn" href="/teleport.html">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-53-23.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_link_teleport">Телепорт</span>
+                </a>
+                <a class="l2-town-btn" href="/gm-shop.html">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-52-52.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_link_gm_shop">Магазин вищей</span>
+                </a>
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_warehouse">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-53-04.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_warehouse">Склад</span>
                 </button>
-                <a class="l2-town-btn" href="/magister.html?npcId=30344" data-i18n="city_link_skills"
-                  >Вивчити навички</a
-                >
-                <a class="l2-town-btn" href="/magisters.html" data-i18n="city_link_magisters">Магістри</a>
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_blacksmith"
-                  data-i18n-stub="city_btn_blacksmith"
-                >
-                  Кузнеці
+                <hr class="l2-town-sep" aria-hidden="true" />
+                <a class="l2-town-btn" href="/magister.html?npcId=30344">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-52-52.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_link_skills">Вивчити навички</span>
+                </a>
+                <a class="l2-town-btn" href="/magisters.html">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-52-44.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_link_magisters">Магістри</span>
+                </a>
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_blacksmith">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-53-19.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_blacksmith">Кузнеці</span>
                 </button>
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_mammon_npc"
-                  data-i18n-stub="city_btn_mammon_npc"
-                >
-                  Торговець Маммон
+                <hr class="l2-town-sep" aria-hidden="true" />
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_mammon_npc">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-53-01.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_mammon_npc">Торговець Маммон</span>
                 </button>
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_olympiad"
-                  data-i18n-stub="city_btn_olympiad"
-                >
-                  Менеджер Олімпіади
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_olympiad">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-52-44.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_olympiad">Менеджер Олімпіади</span>
                 </button>
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_supremacy"
-                  data-i18n-stub="city_btn_supremacy"
-                >
-                  Верховенство
+                <hr class="l2-town-sep" aria-hidden="true" />
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_supremacy">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-53-11.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_supremacy">Верховенство</span>
                 </button>
-                <button
-                  type="button"
-                  class="l2-town-btn"
-                  data-i18n="city_btn_residents"
-                  data-i18n-stub="city_btn_residents"
-                >
-                  Усі мешканці
+                <button type="button" class="l2-town-btn" data-i18n-stub="city_btn_residents">
+                  <img
+                    class="l2-town-btn__icon"
+                    src="/assets/assets/photo_2026-07-05_12-52-33.jpg"
+                    alt=""
+                    width="15"
+                    height="15"
+                    decoding="async"
+                  />
+                  <span class="l2-town-btn__label" data-i18n="city_btn_residents">Усі мешканці</span>
                 </button>
               </div>
 
@@ -163,7 +239,7 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260509city59621"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/city.js"></script>
   </body>
 </html>

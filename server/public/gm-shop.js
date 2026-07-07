@@ -685,14 +685,10 @@
 
   function syncMeta(metaEl, snap) {
     if (!metaEl || !snap) return;
-    var rev = snap.revision != null ? snap.revision : null;
     metaEl.innerHTML =
       '<span class="l2-gm-shop-adena">Адена: <strong>' +
       fmtAdena(snap.adena) +
-      '</strong></span>' +
-      (rev != null
-        ? ' · <span class="l2-gm-shop-rev">rev ' + rev + '</span>'
-        : '');
+      '</strong></span>';
   }
 
   function addPurchaseRows(
@@ -706,8 +702,20 @@
     shopCategory
   ) {
     var rev = snap && snap.revision != null ? snap.revision : null;
+    var EPIC_SKIP = new Set([
+      'necklace of frintessa i00',
+      'necklace of valakas i00',
+      'earring of antaras i00',
+      'earring of zaken i00',
+      'earring orfen',
+      'ring of baium i00',
+      'ring of core i00',
+      'ring of queen ant',
+    ]);
     for (var ii = 0; ii < items.length; ii++) {
       (function (it) {
+        var nameLc = String(it.nameUk || it.shopKey || '').trim().toLowerCase();
+        if (EPIC_SKIP.has(nameLc)) return;
         var row = document.createElement('div');
         row.className = 'l2-gm-shop-row';
 

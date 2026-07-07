@@ -10,11 +10,11 @@
       href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/styles.css?v=20260509charBagTabs" />
+    <link rel="stylesheet" href="/styles.css?v=20260705deMysticHero" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=7" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260509skinCrestR4" />
-    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=12bagfiltersInset35mm" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260707navChatIconSize1" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260707charBagUseFix2" />
   </head>
   <body
     class="l2-body l2-page-city l2-page-char l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -81,13 +81,21 @@
                 <div class="l2-char-equip-frame">
                   <div class="l2-char-equip-bg">
                     <img
-                      id="char-hero-img"
-                      class="l2-char-equip-hero"
-                      src="/characters/Human-voin.jpg"
+                      class="l2-char-equip-scene"
+                      src="/assets/photo_2026-07-05_14-33-19.jpg"
                       width="300"
                       height="220"
                       alt=""
+                      decoding="async"
                     />
+                    <div class="l2-char-equip-hero-stage" id="char-hero-stage" hidden>
+                      <img
+                        id="char-hero-img"
+                        class="l2-char-equip-hero l2-char-equip-hero-overlay"
+                        alt=""
+                        decoding="async"
+                      />
+                    </div>
                   </div>
                   <div class="l2-char-equip-slots l2-char-equip-slots--left">
                     <img data-l2-slot="head" data-l2-eq-key="lh" class="l2-char-slot-icon" src="/icons/slot_head.png" alt="" />
@@ -211,7 +219,25 @@
               <dl class="l2-gm-modal-stats" id="char-bag-modal-stats"></dl>
               <p class="l2-gm-modal-price" id="char-bag-modal-qty"></p>
               <div id="char-bag-modal-armor-sets" class="l2-drops-stats-modal__armor-sets" hidden></div>
-              <button type="button" class="l2-gm-modal-buy" id="char-bag-modal-equip">Одіти</button>
+              <p class="l2-char-bag-modal-craft-hint" id="char-bag-modal-craft-hint" hidden></p>
+              <div class="l2-char-bag-modal-use-row" id="char-bag-modal-use-row" hidden>
+                <label class="l2-char-bag-modal-use-label" for="char-bag-modal-use-qty">Кількість</label>
+                <input
+                  type="number"
+                  id="char-bag-modal-use-qty"
+                  class="l2-char-bag-modal-use-qty"
+                  min="1"
+                  max="1"
+                  value="1"
+                  inputmode="numeric"
+                />
+                <button type="button" class="l2-char-bag-modal-action" id="char-bag-modal-use">
+                  Використати
+                </button>
+              </div>
+              <button type="button" class="l2-char-bag-modal-action" id="char-bag-modal-equip" hidden>
+                Одіти
+              </button>
             </div>
           </div>
 
@@ -222,8 +248,8 @@
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260509city59621"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/armor-set-bonuses-ui.js?v=5"></script>
-    <script src="/char.js?v=20260509bagWideMagicRes"></script>
+    <script src="/char.js?v=20260707charBagUseFix3"></script>
   </body>
 </html>

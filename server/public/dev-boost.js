@@ -79,15 +79,7 @@
     return body;
   }
 
-  function init() {
-    if (window.L2 && typeof L2.mountL2Nav === 'function') {
-      L2.mountL2Nav({
-        onStub: function () {},
-      });
-    }
-
-    loadCharacter();
-
+  function bindForm() {
     var form = $('l2-dev-boost-form');
     if (!form) return;
 
@@ -155,6 +147,29 @@
           if (btn) btn.disabled = false;
         });
     });
+  }
+
+  function init() {
+    fetch('/game/client-config')
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (cfg) {
+        if (!cfg || cfg.devSelfBoost !== true) {
+          window.location.replace('/menu.html');
+          return;
+        }
+        if (window.L2 && typeof L2.mountL2Nav === 'function') {
+          L2.mountL2Nav({
+            onStub: function () {},
+          });
+        }
+        loadCharacter();
+        bindForm();
+      })
+      .catch(function () {
+        window.location.replace('/menu.html');
+      });
   }
 
   if (document.readyState === 'loading') {
