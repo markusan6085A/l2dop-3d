@@ -1197,15 +1197,6 @@
     renderBag(inv);
   }
 
-  function eqEnchant(slotVal) {
-    if (slotVal == null) return 0;
-    if (typeof slotVal === 'object' && slotVal.enchant != null) {
-      var n = Number(slotVal.enchant);
-      return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
-    }
-    return 0;
-  }
-
   function bagRenderEntries(inv) {
     inv = inv || defaultInventory();
     var entries = [];
@@ -1214,24 +1205,8 @@
         itemId: st.itemId,
         qty: st.qty,
         enchant: st.enchant != null ? Number(st.enchant) : 0,
-        equipped: false,
       });
     });
-    if (bagInvShowAll) {
-      for (var ei = 0; ei < EQ_SLOT_TO_UI.length; ei++) {
-        var map = EQ_SLOT_TO_UI[ei];
-        var slotVal = inv.eq && inv.eq[map.key];
-        var eid = eqItemId(slotVal);
-        if (!eid) continue;
-        entries.push({
-          itemId: eid,
-          qty: 1,
-          enchant: eqEnchant(slotVal),
-          equipped: true,
-          eqKey: map.key,
-        });
-      }
-    }
     return entries;
   }
 
@@ -1249,10 +1224,7 @@
       return;
     }
     if (empty) empty.hidden = true;
-    var filtered = entries.filter(function (st) {
-      if (st.equipped) return bagInvShowAll;
-      return stackPassesBagFilters(st);
-    });
+    var filtered = entries.filter(stackPassesBagFilters);
     if (filtered.length === 0) {
       if (filtEmpty) filtEmpty.hidden = false;
       return;
@@ -1263,7 +1235,6 @@
       if (!Number.isFinite(en) || en < 0) en = 0;
       var row = document.createElement('div');
       row.className = 'l2-char-bag-row';
-      if (st.equipped) row.classList.add('l2-char-bag-row--equipped');
       row.setAttribute(
         'data-item-json',
         JSON.stringify({ itemId: st.itemId, qty: st.qty, enchant: en })
@@ -1288,7 +1259,6 @@
       label.className = 'l2-char-bag-name';
       var nameLine = itemDisplayName(st.itemId) + bagQtySuffix(st.itemId, st.qty);
       if (en > 0) nameLine += ' +' + en;
-      if (st.equipped) nameLine += ' · одягнено';
       label.textContent = nameLine;
       mid.appendChild(label);
       var statLine = itemStatsLine(st.itemId);
@@ -1300,7 +1270,7 @@
       }
       row.appendChild(ic);
       row.appendChild(mid);
-      if (!st.equipped && canEquipFromBag(st.itemId)) {
+      if (canEquipFromBag(st.itemId)) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'l2-char-bag-equip l2-char-bag-modal-action';

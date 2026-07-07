@@ -224,7 +224,7 @@ export function removeBagQty(
   return next;
 }
 
-export function parseInventory(raw: unknown): InventoryState {
+export function parseInventoryRaw(raw: unknown): InventoryState {
   if (raw == null || typeof raw !== 'object') return emptyInventory();
   const o = raw as Record<string, unknown>;
   const stacksRaw = o.stacks;
@@ -279,6 +279,27 @@ export function parseInventory(raw: unknown): InventoryState {
     }
   }
   return inv;
+}
+
+/** Одягнене не лишається в stacks (антидубль у snapshot / UI). */
+export function stripEquippedFromStacks(inv: InventoryState): InventoryState {
+  const stacks = inv.stacks.map((s) => ({ ...s }));
+  for (const v of Object.values(inv.eq || {})) {
+    const slot = normalizeEqSlot(v as EqSlotValue);
+    if (!slot) continue;
+    const idx = stacks.findIndex(
+      (s) =>
+        s.itemId === slot.itemId && normEnchant(s.enchant) === slot.enchant,
+    );
+    if (idx < 0) continue;
+    stacks[idx].qty -= 1;
+    if (stacks[idx].qty <= 0) stacks.splice(idx, 1);
+  }
+  return { ...inv, stacks };
+}
+
+export function parseInventory(raw: unknown): InventoryState {
+  return stripEquippedFromStacks(parseInventoryRaw(raw));
 }
 
 function addStack(

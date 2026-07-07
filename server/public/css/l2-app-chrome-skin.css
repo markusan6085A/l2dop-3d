@@ -1648,7 +1648,7 @@ body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:active {
   transform: none !important;
 }
 
-/* map.html: модалка моба — рамка ref/222 + пергамент center.png */
+/* map.html: модалка моба — рамка ref/222 + суцільний фон #1d1c1a */
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-modal__panel {
   box-sizing: border-box !important;
   border-color: transparent !important;
@@ -1661,12 +1661,8 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-mob-modal__panel {
   border-image-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
   border-image-outset: 0 !important;
   border-image-repeat: stretch !important;
-  background-color: rgba(8, 14, 20, 0.94) !important;
-  background-image: url('/assets/assets/center.png?v=20260707mapModalFrame') !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 100% 100% !important;
-  background-clip: padding-box !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   -webkit-box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
   padding: calc(12px + 1px * var(--l2s-in222-w-y)) calc(12px + 1px * var(--l2s-in222-w-x))

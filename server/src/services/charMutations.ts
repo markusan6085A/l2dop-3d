@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import {
   parseInventory,
+  parseInventoryRaw,
+  stripEquippedFromStacks,
   needsStarterKitMigration,
   migrateInventoryToSk2,
   equipFromBag,
@@ -120,9 +122,19 @@ export async function getSnapshotForUser(
     let bumpRevision = false;
 
     let invJsonForShadow = cr.inventoryJson;
-    const inv = parseInventory(cr.inventoryJson);
+    const invRaw = parseInventoryRaw(cr.inventoryJson);
+    const invStripped = stripEquippedFromStacks(invRaw);
+    if (
+      JSON.stringify(invRaw.stacks) !== JSON.stringify(invStripped.stacks)
+    ) {
+      invJsonForShadow = invStripped as unknown as Prisma.JsonValue;
+      data.inventoryJson = invStripped as unknown as Prisma.InputJsonValue;
+      bumpRevision = true;
+    }
+    let inv = invStripped;
     if (needsStarterKitMigration(inv)) {
       const migrated = migrateInventoryToSk2(inv);
+      inv = migrated;
       invJsonForShadow = migrated as unknown as Prisma.JsonValue;
       data.inventoryJson = migrated as unknown as Prisma.InputJsonValue;
       bumpRevision = true;

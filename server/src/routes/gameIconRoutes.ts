@@ -1,4 +1,5 @@
 import { createReadStream } from 'node:fs';
+import path from 'node:path';
 import type { FastifyInstance } from 'fastify';
 import { resolveL2dopItemIconJpgPath } from '../services/l2dopItemIconPath.js';
 import { resolveL2dopSkillIconJpgPath } from '../services/l2dopSkillIconPath.js';
@@ -24,7 +25,10 @@ export function registerGameIconRoutes(app: FastifyInstance): void {
       return reply.redirect('/icons/drops/other.svg', 302);
     }
     reply.header('Cache-Control', 'public, max-age=86400');
-    return reply.type('image/jpeg').send(createReadStream(filePath));
+    const ext = path.extname(filePath).toLowerCase();
+    const mime =
+      ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
+    return reply.type(mime).send(createReadStream(filePath));
   });
 
   /**

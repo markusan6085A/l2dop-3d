@@ -1,9 +1,31 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+function publicDirCandidates(relParts: string[]): string[] {
+  const cwd = process.cwd();
+  return [
+    path.join(cwd, 'public', ...relParts),
+    path.join(cwd, 'server', 'public', ...relParts),
+  ];
+}
+
+function firstExistingPath(candidates: string[]): string | null {
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
+export function craftResourceIconRelUrl(itemId: number): string {
+  return `/icons/drops/resours/l2dop-by-itemid/${itemId}.jpg`;
+}
+
 /**
- * Реальні іконки предметів як у PHP l2dop: `img/items/{itemId}.jpg`
- * (див. index.php `$allimg/items/$item_id.jpg`).
+ * Реальні іконки предметів:
+ * 1) L2DOP_ITEM_ICONS_DIR / `{id}.jpg`
+ * 2) зовнішній l2dop `img/items/{id}.jpg`
+ * 3) статика репо `icons/drops/resours/l2dop-by-itemid/{id}.jpg`
+ * 4) adena `assets/l2dop/etc_adena_i00.png`
  */
 export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
   if (!Number.isFinite(itemId) || itemId < 1 || itemId > 9_999_999) {
@@ -16,13 +38,42 @@ export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
     if (fs.existsSync(p)) return p;
   }
   const cwd = process.cwd();
-  const candidates = [
+  const legacyCandidates = [
     path.join(cwd, '..', 'l2dop', 'img', 'items', file),
     path.join(cwd, '..', '..', 'l2dop', 'img', 'items', file),
     path.join(cwd, 'l2dop', 'img', 'items', file),
   ];
-  for (const p of candidates) {
-    if (fs.existsSync(p)) return p;
+  const legacy = firstExistingPath(legacyCandidates);
+  if (legacy) return legacy;
+
+  const craft = firstExistingPath(
+    publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', file]),
+  );
+  if (craft) return craft;
+
+  if (itemId === 57) {
+    return firstExistingPath(
+      publicDirCandidates(['assets', 'l2dop', 'etc_adena_i00.png']),
+    );
   }
   return null;
+}
+
+/** URL для `<img src>`: прямий шлях до статики, інакше проксі `/game/item-icon/`. */
+export function resolveItemIconPublicUrl(itemId: number): string {
+  if (!Number.isFinite(itemId) || itemId < 1) {
+    return '/icons/drops/other.svg';
+  }
+  if (itemId === 57) {
+    const adena = firstExistingPath(
+      publicDirCandidates(['assets', 'l2dop', 'etc_adena_i00.png']),
+    );
+    if (adena) return '/assets/l2dop/etc_adena_i00.png';
+  }
+  const craftFile = `${itemId}.jpg`;
+  const craft = firstExistingPath(
+    publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', craftFile]),
+  );
+  if (craft) return craftResourceIconRelUrl(itemId);
+  return `/game/item-icon/${itemId}`;
 }

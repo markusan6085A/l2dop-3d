@@ -195,7 +195,7 @@ button.l2-map-mob-title--tap-full:focus {
   box-sizing: border-box;
   border: 1px solid var(--l2-gold-frame, #c9a860);
   border-radius: 8px;
-  background: rgba(8, 14, 20, 0.96);
+  background: #1d1c1a;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75);
 }
 

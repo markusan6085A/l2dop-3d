@@ -15,6 +15,7 @@ import {
   resolveMobIconFromName,
 } from '../utils/mobPublicIcon.js';
 import { dropDisplayNameShort } from '../utils/dropDisplayName.js';
+import { resolveItemIconPublicUrl } from './l2dopItemIconPath.js';
 import { viewerMaySeeSpoilLoot } from '../domain/dwarfSpoilerLootGate.js';
 import type { Prisma } from '@prisma/client';
 
@@ -40,12 +41,12 @@ export function mobIconUrlForSpawn(s: MapWorldSpawn): string {
   return nameIcon ?? getMobPublicIconSrc(s.name) ?? '/mobs/1.png';
 }
 
-/** Іконки з l2dop `img/items/{id}.jpg` через GET /game/item-icon/:id */
+/** Статика репо або GET /game/item-icon/:id для canonical l2dop. */
 function dropRowIconUrl(d: DropEntry): string {
   if (d.l2ItemId != null && d.l2ItemId > 0) {
-    return `/game/item-icon/${d.l2ItemId}`;
+    return resolveItemIconPublicUrl(d.l2ItemId);
   }
-  if (d.kind === 'adena') return '/game/item-icon/57';
+  if (d.kind === 'adena') return resolveItemIconPublicUrl(57);
   return '/icons/drops/other.svg';
 }
 
