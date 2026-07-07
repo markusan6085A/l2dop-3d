@@ -91,10 +91,20 @@
     return { ok: true, character: j.character };
   }
 
-  async function loadSnapshot() {
+  /** Кожні 10 с — легкий GET /game/map/sync (не повний /character). */
+  var MAP_POLL_MS = 10000;
+
+  async function loadFullSnapshot() {
+    if (window.L2 && typeof L2.fetchSnapshot === 'function') {
+      return await L2.fetchSnapshot();
+    }
+    return null;
+  }
+
+  async function loadMapSync() {
     var t = localStorage.getItem('token');
     if (!t) return null;
-    var r = await fetch('/character', {
+    var r = await fetch('/game/map/sync', {
       headers: { Authorization: 'Bearer ' + t },
     });
     if (r.status === 401) {
@@ -103,14 +113,11 @@
       return null;
     }
     if (!r.ok) return null;
-    var j = await r.json();
-    if (j.character && window.L2 && typeof L2.setLastSnapshot === 'function') {
-      L2.setLastSnapshot(j.character);
-    }
-    if (j.character && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-      L2.applyHudFromSnapshot(j.character);
-    }
-    return j.character;
+    return r.json();
+  }
+
+  async function loadSnapshot() {
+    return loadFullSnapshot();
   }
 
   async function loadMapAround() {
@@ -946,15 +953,21 @@
     }
 
     var poll = setInterval(async function () {
-      var nc = await loadSnapshot();
-      if (nc && img && dot) {
-        c = nc;
-        aroundData = await loadMapAround();
-        worldSpawns = await loadMapSpawns();
+      var sync = await loadMapSync();
+      if (sync && sync.mapState && img && dot) {
+        if (window.L2 && typeof L2.mergeMapStateIntoSnapshot === 'function') {
+          L2.mergeMapStateIntoSnapshot(sync.mapState);
+        }
+        c = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : sync.mapState;
+        if (c && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
+        aroundData = sync.around;
+        worldSpawns = sync.spawns || [];
         paintMain(false);
         renderMobMarkers(img, markersLayer, worldSpawns);
       }
-    }, 2500);
+    }, MAP_POLL_MS);
 
     window.addEventListener('beforeunload', function () {
       clearInterval(poll);

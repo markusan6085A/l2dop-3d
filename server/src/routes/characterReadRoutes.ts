@@ -13,6 +13,7 @@ import {
 import { craftResourceIconHintsForClient } from '../data/resourceCraftIconHints.js';
 import { itemBlocksShieldHintsForClient } from '../data/l2dopTwoHandedWeapon.js';
 import { getSnapshotForUser } from '../services/charService.js';
+import { getCharacterMapStateForUser } from '../services/charMapStateService.js';
 import { getMagisterDialogForUser } from '../services/skillLearnService.js';
 import { characterDbErrorPayload } from './characterRouteErrors.js';
 
@@ -47,6 +48,29 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         });
       } catch (err) {
         request.log.error({ err }, 'GET /character');
+        const { code, body } = characterDbErrorPayload(err);
+        return reply.code(code).send(body);
+      }
+    }
+  );
+
+  /** Легкий зріз для poll карти (без gearCatalog / інвентаря). */
+  app.get(
+    '/map-state',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      try {
+        const mapState = await getCharacterMapStateForUser(userId);
+        if (!mapState) {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        return reply.send(mapState);
+      } catch (err) {
+        request.log.error({ err }, 'GET /character/map-state');
         const { code, body } = characterDbErrorPayload(err);
         return reply.code(code).send(body);
       }

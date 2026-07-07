@@ -57,15 +57,19 @@ function nearbySpawnsForPlayer(
   return out.slice(0, 400);
 }
 
+export function getMapAroundAt(worldX: number, worldY: number) {
+  const base = resolveMapLocality(worldX, worldY);
+  return {
+    ...base,
+    nearbySpawns: nearbySpawnsForPlayer(worldX, worldY),
+  };
+}
+
 export async function getMapAroundForUser(userId: string) {
   const row = await prisma.character.findFirst({
     where: { userId },
     select: { worldX: true, worldY: true },
   });
   if (!row) return null;
-  const base = resolveMapLocality(row.worldX, row.worldY);
-  return {
-    ...base,
-    nearbySpawns: nearbySpawnsForPlayer(row.worldX, row.worldY),
-  };
+  return getMapAroundAt(row.worldX, row.worldY);
 }

@@ -24,6 +24,18 @@ const publicDir = resolvePublicDir();
 export async function buildApp() {
   const app = Fastify({ logger: true, trustProxy: true });
 
+  app.addHook('onSend', async (request, reply, payload) => {
+    const path = request.url.split('?')[0] || '';
+    if (
+      path.startsWith('/character') ||
+      path.startsWith('/game/') ||
+      path.startsWith('/auth/')
+    ) {
+      reply.header('Cache-Control', 'no-store');
+    }
+    return payload;
+  });
+
   app.get('/health', async () => ({ ok: true }));
 
   await app.register(authRoutes, { prefix: '/auth' });
@@ -41,6 +53,22 @@ export async function buildApp() {
   await app.register(fastifyStatic, {
     root: publicDir,
     prefix: '/',
+    setHeaders(res, filePath) {
+      const normalized = filePath.replace(/\\/g, '/');
+      const rel = normalized.includes('/public/')
+        ? normalized.slice(normalized.indexOf('/public/') + '/public'.length)
+        : normalized;
+      if (/\.html$/i.test(rel)) {
+        res.setHeader('Cache-Control', 'no-cache');
+        return;
+      }
+      if (
+        /^\/(assets|icons|ref|characters|mobs|css|js|skills)\//.test(rel) ||
+        /\.(jpg|jpeg|png|gif|webp|svg|woff2?|ico)$/i.test(rel)
+      ) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    },
   });
 
   return app;

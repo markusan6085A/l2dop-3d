@@ -66,6 +66,61 @@
   }
 
   var lastSnapshot = null;
+  var sessionCatalogMerged = false;
+
+  function mergeCharacterCatalogHints(j) {
+    if (!j || sessionCatalogMerged) return;
+    sessionCatalogMerged = true;
+    if (j.gearCatalog && global.L2.mergeGearCatalog) {
+      global.L2.mergeGearCatalog(j.gearCatalog);
+    }
+    if (global.L2.mergeCraftResourceIconHints) {
+      global.L2.mergeCraftResourceIconHints(j);
+    }
+    if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && global.L2.itemNameById) {
+      Object.keys(j.itemNamesUk).forEach(function (k) {
+        global.L2.itemNameById[k] = j.itemNamesUk[k];
+      });
+    }
+    if (j.itemSlotHints && typeof j.itemSlotHints === 'object' && global.L2.itemSlotById) {
+      Object.keys(j.itemSlotHints).forEach(function (k) {
+        if (global.L2.itemSlotById[k] == null) {
+          global.L2.itemSlotById[k] = j.itemSlotHints[k];
+        }
+      });
+    }
+    if (
+      j.itemInventoryTabHints &&
+      typeof j.itemInventoryTabHints === 'object' &&
+      global.L2.itemInventoryTabById
+    ) {
+      Object.keys(j.itemInventoryTabHints).forEach(function (k) {
+        global.L2.itemInventoryTabById[k] = j.itemInventoryTabHints[k];
+      });
+    }
+    if (j.itemGradeHints && typeof j.itemGradeHints === 'object' && global.L2.itemGradeById) {
+      Object.keys(j.itemGradeHints).forEach(function (k) {
+        global.L2.itemGradeById[k] = j.itemGradeHints[k];
+      });
+    }
+    if (j.itemStatsHints && typeof j.itemStatsHints === 'object' && global.L2.itemStatsById) {
+      Object.keys(j.itemStatsHints).forEach(function (k) {
+        var st = j.itemStatsHints[k];
+        if (!st || typeof st !== 'object') return;
+        var prev = global.L2.itemStatsById[k] || {};
+        global.L2.itemStatsById[k] = Object.assign({}, prev, st);
+      });
+    }
+    if (
+      j.itemBlocksShieldById &&
+      typeof j.itemBlocksShieldById === 'object' &&
+      global.L2.itemBlocksShieldById
+    ) {
+      Object.keys(j.itemBlocksShieldById).forEach(function (k) {
+        global.L2.itemBlocksShieldById[k] = j.itemBlocksShieldById[k];
+      });
+    }
+  }
 
   /** Коди помилок API → повідомлення для гравця (uk/ru через ui-i18n.js). */
   function apiErrorUk(code) {
@@ -105,6 +160,16 @@
     },
     setLastSnapshot: function (s) {
       lastSnapshot = s;
+    },
+    /** Оновити лише поля карти/HUD у глобальному snapshot (poll map-state). */
+    mergeMapStateIntoSnapshot: function (partial) {
+      if (!partial || typeof partial !== 'object') return lastSnapshot;
+      if (!lastSnapshot) {
+        lastSnapshot = partial;
+        return lastSnapshot;
+      }
+      lastSnapshot = Object.assign({}, lastSnapshot, partial);
+      return lastSnapshot;
     },
 
     /** Заповнюється з GET /shop/gm: itemId → iconUrl, nameUk */
@@ -289,54 +354,9 @@
       if (!r.ok) return null;
       var j = await r.json();
       lastSnapshot = j.character;
-      if (j.gearCatalog && global.L2.mergeGearCatalog) {
-        global.L2.mergeGearCatalog(j.gearCatalog);
-      }
-      if (global.L2.mergeCraftResourceIconHints) {
-        global.L2.mergeCraftResourceIconHints(j);
-      }
-      if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && global.L2.itemNameById) {
-        Object.keys(j.itemNamesUk).forEach(function (k) {
-          global.L2.itemNameById[k] = j.itemNamesUk[k];
-        });
-      }
-      if (j.itemSlotHints && typeof j.itemSlotHints === 'object' && global.L2.itemSlotById) {
-        Object.keys(j.itemSlotHints).forEach(function (k) {
-          if (global.L2.itemSlotById[k] == null) {
-            global.L2.itemSlotById[k] = j.itemSlotHints[k];
-          }
-        });
-      }
-      if (
-        j.itemInventoryTabHints &&
-        typeof j.itemInventoryTabHints === 'object' &&
-        global.L2.itemInventoryTabById
-      ) {
-        Object.keys(j.itemInventoryTabHints).forEach(function (k) {
-          global.L2.itemInventoryTabById[k] = j.itemInventoryTabHints[k];
-        });
-      }
-      if (j.itemGradeHints && typeof j.itemGradeHints === 'object' && global.L2.itemGradeById) {
-        Object.keys(j.itemGradeHints).forEach(function (k) {
-          global.L2.itemGradeById[k] = j.itemGradeHints[k];
-        });
-      }
-      if (j.itemStatsHints && typeof j.itemStatsHints === 'object' && global.L2.itemStatsById) {
-        Object.keys(j.itemStatsHints).forEach(function (k) {
-          var st = j.itemStatsHints[k];
-          if (!st || typeof st !== 'object') return;
-          var prev = global.L2.itemStatsById[k] || {};
-          global.L2.itemStatsById[k] = Object.assign({}, prev, st);
-        });
-      }
-      if (
-        j.itemBlocksShieldById &&
-        typeof j.itemBlocksShieldById === 'object' &&
-        global.L2.itemBlocksShieldById
-      ) {
-        Object.keys(j.itemBlocksShieldById).forEach(function (k) {
-          global.L2.itemBlocksShieldById[k] = j.itemBlocksShieldById[k];
-        });
+      mergeCharacterCatalogHints(j);
+      if (j.character && typeof global.L2.applyHudFromSnapshot === 'function') {
+        global.L2.applyHudFromSnapshot(j.character);
       }
       return lastSnapshot;
     },
@@ -767,5 +787,13 @@
     } else {
       runHudMount();
     }
+  }
+
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js?v=20260707perf1').catch(function () {
+        /* ignore */
+      });
+    });
   }
 })(window);

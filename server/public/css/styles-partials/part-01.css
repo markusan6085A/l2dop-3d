@@ -243,8 +243,7 @@ div.main {
   position: relative;
   overflow: visible;
   background-color: var(--l2-classic-panel);
-  background-image: url('https://www.transparenttextures.com/patterns/old-wall.png');
-  background-repeat: repeat;
+  background-image: none;
   border: 2px solid var(--l2-classic-border);
   border-radius: 6px;
   padding: 0;

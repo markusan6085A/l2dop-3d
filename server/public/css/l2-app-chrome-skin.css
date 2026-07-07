@@ -9,7 +9,7 @@ body.l2-app-l2-chrome {
   --l2s-in222-w-y: 9;
   --l2s-in222-w-x: 15;
   --l2s-paper-radius: 3px;
-  --l2-font-display: 'Lora', Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+  --l2-font-display: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
   -webkit-tap-highlight-color: rgba(201, 164, 58, 0.22);
   /* Зсув герба вліво/вправо: підгонка під центральний герб на HUD-рамці 14f47b34. */
   --l2s-crest-h-align-nudge: 0px;

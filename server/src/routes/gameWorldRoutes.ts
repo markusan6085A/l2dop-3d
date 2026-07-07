@@ -9,6 +9,7 @@ import {
 } from '../services/charService.js';
 import { getMapAroundForUser } from '../services/mapAroundService.js';
 import { getMapWorldSpawnsNearPlayer } from '../services/mapSpawnsService.js';
+import { getMapSyncForUser } from '../services/charMapStateService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { prisma } from '../lib/prisma.js';
 import type { CharacterRow } from '../services/charService.js';
@@ -53,6 +54,22 @@ async function logMutationOutcome(
 }
 
 export function registerGameWorldRoutes(app: FastifyInstance): void {
+  app.get(
+    '/map/sync',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const data = await getMapSyncForUser(userId);
+      if (!data) {
+        return reply.code(404).send({ error: 'forbidden' });
+      }
+      return reply.send(data);
+    }
+  );
+
   app.get(
     '/map/spawns',
     { preHandler: requireAuth },
