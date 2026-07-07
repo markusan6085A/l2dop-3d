@@ -18,8 +18,18 @@ import {
 import { mapFighterProfessionToHumanSkillCatalog } from './fighterProfessionHumanCatalogMap.js';
 
 /** Тип зброї в l1 (для Whirlwind — лише `pole`). */
+function equippedRightHandSlot(inv: InventoryState) {
+  const eq = inv.eq || {};
+  return (
+    normalizeEqSlot(eq.l1) ||
+    normalizeEqSlot(eq.rhand) ||
+    normalizeEqSlot(eq.weapon)
+  );
+}
+
+/** Тип зброї в l1 (для Whirlwind — лише `pole`). */
 export function equippedWeaponKind(inv: InventoryState): string | undefined {
-  const w = normalizeEqSlot(inv.eq?.l1);
+  const w = equippedRightHandSlot(inv);
   const id = w?.itemId;
   if (typeof id !== 'number' || id <= 0) return undefined;
   return ITEM_CATALOG[id]?.weaponType;
@@ -29,7 +39,7 @@ export function equippedWeaponKind(inv: InventoryState): string | undefined {
 export function equippedWeaponGmGrade(
   inv: InventoryState
 ): GmShopGrade | undefined {
-  const w = normalizeEqSlot(inv.eq?.l1);
+  const w = equippedRightHandSlot(inv);
   const id = w?.itemId;
   if (typeof id !== 'number' || id <= 0) return undefined;
   if (!ITEM_CATALOG[id]?.weaponType) return undefined;
