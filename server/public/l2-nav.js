@@ -207,8 +207,15 @@
     opts = opts || {};
     if (document && document.body) {
       document.body.classList.add('l2-nav-minimal');
+      if (typeof L2.mountStandardHudPanel === 'function') {
+        L2.mountStandardHudPanel();
+      }
     }
     if (mounted) {
+      if (typeof L2.lastSnapshot === 'function' && typeof L2.applyHudFromSnapshot === 'function') {
+        var snapAgain = L2.lastSnapshot();
+        if (snapAgain) L2.applyHudFromSnapshot(snapAgain);
+      }
       wireStubHandler(opts.onStub);
       return;
     }
@@ -232,6 +239,10 @@
     );
     okBot = mountInto('l2-nav-bottom', bottomNav);
     if (okTop || okBot) mounted = true;
+    if (typeof L2.lastSnapshot === 'function' && typeof L2.applyHudFromSnapshot === 'function') {
+      var snap = L2.lastSnapshot();
+      if (snap) L2.applyHudFromSnapshot(snap);
+    }
     wireStubHandler(opts.onStub);
   };
 

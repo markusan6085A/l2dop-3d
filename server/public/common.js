@@ -637,6 +637,10 @@
      * Заповнити панель l2-hud-panel з character snapshot (GET /character).
      */
     applyHudFromSnapshot: function (c) {
+      var isLegacyMinimal =
+        typeof document !== 'undefined' &&
+        document.body &&
+        document.body.classList.contains('l2-nav-minimal');
       function set(id, txt) {
         var el = document.getElementById(id);
         if (el) el.textContent = txt != null ? String(txt) : '—';
@@ -675,7 +679,12 @@
       set('l2-hud-exp-max', c.expBarMax != null ? c.expBarMax : '—');
       var expPct = c.expBarPct != null ? Number(c.expBarPct) : 0;
       setExpFillPct(expPct);
-      set('l2-hud-exp-pct', Math.max(0, Math.min(100, expPct)).toFixed(1) + '%');
+      set(
+        'l2-hud-exp-pct',
+        isLegacyMinimal
+          ? Math.max(0, Math.min(100, expPct)).toFixed(2) + ' %'
+          : Math.max(0, Math.min(100, expPct)).toFixed(1) + '%'
+      );
       var expBar = document.getElementById('l2-hud-exp-bar');
       if (expBar) {
         expBar.setAttribute('aria-valuenow', String(Math.round(expPct)));
@@ -713,6 +722,14 @@
       set('l2-hud-cp-cur', c.cp != null ? Math.round(Number(c.cp)) : '—');
       set('l2-hud-cp-max', c.maxCp != null ? Math.round(Number(c.maxCp)) : '—');
       setWidthPct('l2-hud-cp-inner', cpPct);
+      if (isLegacyMinimal) {
+        set(
+          'l2-legacy-headline',
+          String(c.level != null ? c.level : '—') +
+            ' ур. - ' +
+            String(c.name != null ? c.name : '—')
+        );
+      }
     },
 
     /**
@@ -720,6 +737,23 @@
      * Сторінка: замість повного <header> — лише <div id="l2-hud-panel-mount"></div>; mount на DOMContentLoaded.
      */
     getHudPanelMarkup: function () {
+      var isLegacyMinimal =
+        typeof document !== 'undefined' &&
+        document.body &&
+        document.body.classList.contains('l2-nav-minimal');
+      if (isLegacyMinimal) {
+        return (
+          '<header class="l2-hud-panel l2-hud-panel--legacy-minimal" aria-label="Персонаж">' +
+          '<div class="l2-hud-legacy-title">Wap LineAge</div>' +
+          '<div class="l2-hud-legacy-body">' +
+          '<div class="l2-hud-legacy-headline" id="l2-legacy-headline">—</div>' +
+          '<div class="l2-hud-legacy-line l2-hud-legacy-line--hp"><span class="l2-hud-legacy-key">HP:</span> <span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></div>' +
+          '<div class="l2-hud-legacy-line l2-hud-legacy-line--mp"><span class="l2-hud-legacy-key">MP:</span> <span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></div>' +
+          '<div class="l2-hud-legacy-line l2-hud-legacy-line--exp"><span class="l2-hud-legacy-key">EXP:</span> <span id="l2-hud-exp-pct">0.00 %</span></div>' +
+          '</div>' +
+          '</header>'
+        );
+      }
       return (
         '<header class="l2-hud-panel l2-hud-panel--city-strip" aria-label="Персонаж">' +
         '<div class="l2-hud-top l2-hud-top--city">' +
