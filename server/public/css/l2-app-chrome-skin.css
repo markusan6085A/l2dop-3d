@@ -2284,7 +2284,11 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal 
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
-  padding-top: calc(var(--l2-frame-top-h) + 3mm) !important;
+  padding:
+    calc(var(--l2-frame-top-h) + 3mm)
+    8px
+    calc(8px + env(safe-area-inset-bottom, 0px))
+    8px !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
@@ -2334,6 +2338,12 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key 
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-key {
   color: #2d43ff;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-hud-panel-mount {
+  display: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom {
