@@ -1311,6 +1311,35 @@
     });
   }
 
+  function renderBagSkeleton() {
+    var root = $('char-bag-list');
+    var empty = $('char-bag-empty');
+    var filtEmpty = $('char-bag-filter-empty');
+    if (!root) return;
+    root.innerHTML = '';
+    if (empty) empty.hidden = true;
+    if (filtEmpty) filtEmpty.hidden = true;
+    for (var i = 0; i < 8; i++) {
+      var row = document.createElement('div');
+      row.className = 'l2-char-bag-row l2-char-bag-row--skeleton';
+      var ic = document.createElement('span');
+      ic.className = 'l2-char-bag-icon l2-char-bag-icon--skeleton';
+      var txt = document.createElement('div');
+      txt.className = 'l2-char-bag-row-text';
+      var nm = document.createElement('span');
+      nm.className = 'l2-char-bag-name l2-char-bag-name--skeleton';
+      nm.textContent = 'Завантаження...';
+      var st = document.createElement('span');
+      st.className = 'l2-char-bag-stats l2-char-bag-stats--skeleton';
+      st.textContent = '...';
+      txt.appendChild(nm);
+      txt.appendChild(st);
+      row.appendChild(ic);
+      row.appendChild(txt);
+      root.appendChild(row);
+    }
+  }
+
   function stubWeight(inv) {
     inv = inv || defaultInventory();
     var n = (inv.stacks || []).length;
@@ -1966,6 +1995,9 @@
     var cached =
       window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
     if (!cached) cached = readCachedCharSnapshot();
+    if (!cached) {
+      renderBagSkeleton();
+    }
     if (cached) {
       var nbCached = $('char-name-bracket');
       if (nbCached && cached.name != null && cached.level != null) {
