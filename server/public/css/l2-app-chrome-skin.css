@@ -2280,39 +2280,45 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal 
   background: transparent !important;
   box-shadow: none !important;
   overflow: hidden;
+  position: relative;
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title {
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
+  padding-top: 56px !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -28px;
+  height: 24px;
+  display: block;
+  text-align: center;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.03em;
   color: #efe7d6;
-  background: linear-gradient(180deg, #2e2b28 0%, #1c1917 100%);
-  border-top: 1px solid rgba(178, 145, 79, 0.55);
-  border-bottom: 1px solid rgba(178, 145, 79, 0.35);
+  line-height: 24px;
+  pointer-events: none;
+  background: transparent !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
-  padding: 8px 10px 6px;
-  border-left: 1px solid rgba(178, 145, 79, 0.28);
-  border-right: 1px solid rgba(178, 145, 79, 0.28);
-  border-bottom: 1px solid rgba(178, 145, 79, 0.28);
-  background: #1d1c1a;
+  padding: 2px 10px 6px;
+  border: 0 !important;
+  background: transparent !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
   color: #f0eee8;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.15;
   margin: 0 0 4px;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.15;
   color: #f0eee8;
 }
