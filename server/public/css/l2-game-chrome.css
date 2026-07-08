@@ -5,7 +5,7 @@
  * Панель ніку/барів: /css/l2-hud-panel.css + /partials/l2-hud-panel.html.
  * HTML: /partials/l2-game-chrome.html; шаблон: /template-l2-chrome-page.html
  */
-@import url("l2-outer-sframe.css?v=20260707centerSolid5");
+@import url("l2-outer-sframe.css?v=20260708globalClsAll1");
 
 /* Герб: одне ціле з ref-рамкою; токени --l2s-sframe-* з .l2-outer-sframe-host; z-index > рамки (5) */
 .l2-outer-sframe-host > .l2-game-chrome-crest {
