@@ -2275,8 +2275,8 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom {
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px 6px !important;
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
@@ -2284,13 +2284,16 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell {
-  min-height: 26px !important;
-  padding: 4px 6px !important;
+  min-height: 22px !important;
+  padding: 2px 5px !important;
   border: 1px solid rgba(174, 141, 73, 0.42) !important;
-  border-radius: 2px !important;
-  background: #1c1916 !important;
+  border-radius: 10px !important;
+  background: #2a2724 !important;
   box-shadow: none !important;
   text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell img {
@@ -2299,10 +2302,30 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-lbl {
   display: block !important;
-  font-size: 10px !important;
-  line-height: 1.15 !important;
+  font-size: 9px !important;
+  line-height: 1.1 !important;
   letter-spacing: 0.02em !important;
   color: #f0e6b8 !important;
+  position: relative;
+  padding: 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-lbl::before,
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-lbl::after {
+  content: '•';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-52%);
+  font-size: 8px;
+  color: rgba(230, 199, 116, 0.85);
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-lbl::before {
+  left: 0;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-lbl::after {
+  right: 0;
 }
 
 /* Авторизація: форма реєстрації — суцільний фон #1d1c1a */
