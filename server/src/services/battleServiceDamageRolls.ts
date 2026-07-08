@@ -28,6 +28,25 @@ import {
 } from '../data/l2dopFocusAttack.js';
 import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
 
+/**
+ * Анти-оверкіл для ранніх рівнів: synthetic `mobPAtk` з карти проходить через
+ * м'який скейл перед формулою `l2dopPhysicalBaseDamage`.
+ *
+ * Чому так:
+ * - у нас `mobPAtk` показується компактним числом у картці моба;
+ * - базова формула фіз. урону має великий коефіцієнт (70 * atk / def);
+ * - на низькому pDef це давало піки на кшталт 200+ від low-lvl мобів.
+ */
+function mobOutgoingPatkScaleByLevel(spawnLevel: number): number {
+  const lvl = Math.max(1, Math.floor(spawnLevel));
+  /**
+   * Ранній контент (1..20): суттєво м'якше.
+   * Середній/пізній: поступово повертаємо коефіцієнт, щоб high-lvl контент
+   * не став "ватним".
+   */
+  return Math.max(0.12, Math.min(0.52, 0.1 + lvl * 0.0045));
+}
+
 export function mobEvasionForBattle(
   st: BattleJsonState,
   spawnLevel: number
@@ -244,7 +263,10 @@ export function rollMobPhysicalVsPlayer(
   }
   const pDefEff = Math.max(1, Math.floor(combat.pDef * pDefMulEff));
   const deb = mods?.mobPatkDebuffMul;
-  let atk = mobPAtk;
+  let atk = Math.max(
+    1,
+    Math.floor(mobPAtk * mobOutgoingPatkScaleByLevel(spawnLevel))
+  );
   if (typeof deb === 'number' && deb > 0 && deb < 1 && Number.isFinite(deb)) {
     atk = Math.max(1, Math.floor(atk * deb));
   }
