@@ -841,7 +841,7 @@
 
   if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/sw.js?v=20260707perf1').catch(function () {
+      navigator.serviceWorker.register('/sw.js?v=20260708gameCache1').catch(function () {
         /* ignore */
       });
     });

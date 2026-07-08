@@ -2,6 +2,28 @@
  * Перс — сумка (POST /character/equip). Портрет і слоти як у text-rpg CharacterEquipmentFrame.
  */
 (function () {
+  var CHAR_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
+
+  function readCachedCharSnapshot() {
+    try {
+      var raw = sessionStorage.getItem(CHAR_SNAPSHOT_CACHE_KEY);
+      if (!raw) return null;
+      var j = JSON.parse(raw);
+      return j && typeof j === 'object' ? j : null;
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  function writeCachedCharSnapshot(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object') return;
+    try {
+      sessionStorage.setItem(CHAR_SNAPSHOT_CACHE_KEY, JSON.stringify(snapshot));
+    } catch (_e) {
+      /* ignore cache quota errors */
+    }
+  }
+
   var RACE_UK = {
     Human: 'Людина',
     'Dark Elf': 'Темний ельф',
@@ -1313,6 +1335,21 @@
     if ($('char-sp')) $('char-sp').textContent = c.sp != null ? String(c.sp) : '0';
 
     revision = c.revision != null ? Number(c.revision) : 0;
+    writeCachedCharSnapshot(c);
+  }
+
+  async function fetchCharacterSnapshotFast(token) {
+    var r = await fetch('/character', {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (r.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+      return null;
+    }
+    if (!r.ok) return null;
+    var j = await r.json();
+    return j && j.character ? j.character : null;
   }
 
   async function apiEquip(itemId, enchant) {
@@ -1926,17 +1963,39 @@
 
     loadCraftBookForChar(t);
 
-    var snap =
-      window.L2 && typeof L2.fetchSnapshot === 'function'
-        ? await L2.fetchSnapshot()
-        : null;
+    var cached =
+      window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+    if (!cached) cached = readCachedCharSnapshot();
+    if (cached) {
+      var nbCached = $('char-name-bracket');
+      if (nbCached && cached.name != null && cached.level != null) {
+        nbCached.textContent = String(cached.name) + '[' + String(cached.level) + ']';
+      }
+      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(cached);
+      } else if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(cached);
+      }
+      renderAll(cached);
+    }
+
+    var hintsPromise =
+      window.L2 && typeof L2.fetchCatalogHints === 'function'
+        ? L2.fetchCatalogHints().catch(function () {
+            return false;
+          })
+        : Promise.resolve(false);
+
+    var snap = await fetchCharacterSnapshotFast(t);
     if (!snap) {
-      if (content) content.hidden = true;
+      if (!cached) {
+        if (content) content.hidden = true;
+      }
       if (!localStorage.getItem('token')) {
         window.location.href = '/';
         return;
       }
-      if (errEl) {
+      if (!cached && errEl) {
         errEl.hidden = false;
         errEl.textContent = 'Не вдалося завантажити персонажа.';
       }
@@ -1948,10 +2007,23 @@
       nb.textContent = String(snap.name) + '[' + String(snap.level) + ']';
     }
 
+    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+      L2.applyCharacterSnapshot(snap);
+    } else {
+      if (window.L2 && typeof L2.setLastSnapshot === 'function') L2.setLastSnapshot(snap);
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') L2.applyHudFromSnapshot(snap);
+    }
+
     if (errEl) errEl.hidden = true;
     if (content) content.hidden = false;
 
     renderAll(snap);
+
+    hintsPromise.then(function () {
+      var latest =
+        window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+      if (latest) renderAll(latest);
+    });
   }
 
   init();

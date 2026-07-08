@@ -8,9 +8,31 @@
   var MOBS_PER_PAGE = 15;
   var mobListPage = 0;
   var mobDetailPage = 0;
+  var MAP_SNAPSHOT_CACHE_KEY = 'l2-map-snapshot-cache-v1';
 
   function $(id) {
     return document.getElementById(id);
+  }
+
+  function readCachedMapSnapshot() {
+    try {
+      var raw = sessionStorage.getItem(MAP_SNAPSHOT_CACHE_KEY);
+      if (!raw) return null;
+      var j = JSON.parse(raw);
+      if (!j || typeof j !== 'object') return null;
+      return j;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeCachedMapSnapshot(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object') return;
+    try {
+      sessionStorage.setItem(MAP_SNAPSHOT_CACHE_KEY, JSON.stringify(snapshot));
+    } catch (e) {
+      /* ignore */
+    }
   }
 
   function mapPixelToWorld(mx, my) {
@@ -94,13 +116,6 @@
   /** Кожні 10 с — легкий GET /game/map/sync (не повний /character). */
   var MAP_POLL_MS = 10000;
 
-  async function loadFullSnapshot() {
-    if (window.L2 && typeof L2.fetchSnapshot === 'function') {
-      return await L2.fetchSnapshot();
-    }
-    return null;
-  }
-
   async function loadMapSync() {
     var t = localStorage.getItem('token');
     if (!t) return null;
@@ -117,7 +132,29 @@
   }
 
   async function loadSnapshot() {
-    return loadFullSnapshot();
+    var t = localStorage.getItem('token');
+    if (!t) return null;
+    var r = await fetch('/character', {
+      headers: { Authorization: 'Bearer ' + t },
+      cache: 'no-store',
+    });
+    if (r.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+      return null;
+    }
+    if (!r.ok) return null;
+    var j = await r.json();
+    var snap = j && j.character ? j.character : null;
+    if (!snap) return null;
+    if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+      L2.setLastSnapshot(snap);
+    }
+    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+      L2.applyHudFromSnapshot(snap);
+    }
+    writeCachedMapSnapshot(snap);
+    return snap;
   }
 
   async function loadMapAround() {
@@ -463,18 +500,24 @@
       return;
     }
 
-    var c = await loadSnapshot();
-    if (!c) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent =
-          'Не вдалося завантажити персонажа. Якщо щойно додавали карту в БД — виконай у корені: npm run db:push і перезапусти сервер.';
+    var c = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+    if (!c) c = readCachedMapSnapshot();
+    if (c) {
+      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(c);
       }
-      return;
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(c);
+      }
+      writeCachedMapSnapshot(c);
     }
 
-    var aroundData = await loadMapAround();
-    var worldSpawns = await loadMapSpawns();
+    var snapshotPromise = loadSnapshot();
+    var aroundPromise = loadMapAround();
+    var spawnsPromise = loadMapSpawns();
+
+    var aroundData = { nearbySpawns: [] };
+    var worldSpawns = [];
 
     var MAP_SCALE_MIN = 0.45;
     var MAP_SCALE_MAX = 2.75;
@@ -634,7 +677,25 @@
 
     if (content) content.hidden = false;
     if (errEl) errEl.hidden = true;
-    paintMain(false);
+    if (c) paintMain(false);
+
+    var freshSnapshot = await snapshotPromise;
+    if (!freshSnapshot && !c) {
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent =
+          'Не вдалося завантажити персонажа. Якщо щойно додавали карту в БД — виконай у корені: npm run db:push і перезапусти сервер.';
+      }
+      return;
+    }
+    if (freshSnapshot) {
+      c = freshSnapshot;
+      writeCachedMapSnapshot(c);
+    }
+
+    aroundData = (await aroundPromise) || { nearbySpawns: [] };
+    worldSpawns = (await spawnsPromise) || [];
+    if (c) paintMain(false);
 
     var mobModal = $('map-mob-modal');
     var mobModalBackdrop = $('map-mob-modal-backdrop');
@@ -925,6 +986,7 @@
         var r = await postMove(w.x, w.y);
         if (r.ok && r.character) {
           c = r.character;
+          writeCachedMapSnapshot(c);
           mobListPage = 0;
           aroundData = await loadMapAround();
           worldSpawns = await loadMapSpawns();
@@ -935,6 +997,7 @@
           var fresh = await loadSnapshot();
           if (fresh) {
             c = fresh;
+            writeCachedMapSnapshot(c);
             mobListPage = 0;
             aroundData = await loadMapAround();
             worldSpawns = await loadMapSpawns();
@@ -959,6 +1022,7 @@
           L2.mergeMapStateIntoSnapshot(sync.mapState);
         }
         c = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : sync.mapState;
+        if (c) writeCachedMapSnapshot(c);
         if (c && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(c);
         }

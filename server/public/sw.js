@@ -2,46 +2,43 @@
  * Service Worker: браузер як "тонкий клієнт" для статики.
  * Живі дані гри завжди йдуть у мережу (сервер = джерело правди).
  */
-var SW_VERSION = '20260708clientCache1';
-var STATIC_CACHE = 'l2dop-static-' + SW_VERSION;
+var GAME_CACHE_VERSION = '20260708gameCache1';
+var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
 var PRECACHE_URLS = [
-  '/',
-  '/index.html',
+  '/assets/maps/aden2.jpg',
+  '/icons/drops/other.svg',
+  '/ref/2.png',
+  '/ref/18.png',
+  '/ref/19.png',
   '/styles.css',
   '/common.js',
   '/ui-i18n.js',
   '/l2-nav.js',
-  '/css/l2-outer-sframe.css',
-  '/css/l2-game-chrome.css',
-  '/css/l2-hud-panel.css',
-  '/css/l2-app-chrome-skin.css',
-  '/assets/maps/aden2.jpg',
-  '/icons/drops/other.svg',
 ];
 
 function isLiveDataPath(pathname) {
   return (
-    pathname.indexOf('/character') === 0 ||
+    pathname.indexOf('/character/') === 0 ||
+    pathname === '/character' ||
     pathname.indexOf('/auth/') === 0 ||
     pathname.indexOf('/game/') === 0 ||
     pathname.indexOf('/battle/') === 0 ||
-    pathname.indexOf('/shop/buy') === 0
+    pathname === '/battle'
   );
 }
 
 function isStaticAssetPath(pathname) {
   if (isLiveDataPath(pathname)) return false;
-  if (/\.html$/i.test(pathname)) return false;
+  if (pathname === '/' || /\.html$/i.test(pathname)) return false;
   return (
     pathname.indexOf('/assets/') === 0 ||
     pathname.indexOf('/icons/') === 0 ||
     pathname.indexOf('/ref/') === 0 ||
     pathname.indexOf('/characters/') === 0 ||
-    pathname.indexOf('/mobs/') === 0 ||
     pathname.indexOf('/css/') === 0 ||
-    pathname.indexOf('/skills/') === 0 ||
-    /\.(css|js|jpg|jpeg|png|gif|webp|svg|woff2?|ico)$/i.test(pathname)
+    /\.js$/i.test(pathname) ||
+    /\.(woff2?|ttf|otf|eot)$/i.test(pathname)
   );
 }
 
@@ -100,15 +97,6 @@ self.addEventListener('fetch', function (event) {
 
   if (isLiveDataPath(url.pathname)) {
     event.respondWith(fetch(event.request, { cache: 'no-store' }));
-    return;
-  }
-
-  if (/\.html$/i.test(url.pathname)) {
-    event.respondWith(
-      fetch(event.request, { cache: 'no-store' }).catch(function () {
-        return caches.match(event.request);
-      })
-    );
     return;
   }
 
