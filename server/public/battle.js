@@ -210,47 +210,24 @@
     return null;
   }
 
-  /** Рядок підсумку на екрані перемоги: іконки адени / EXP / SP як у лозі. */
+  /** Рядок підсумку на екрані перемоги у компактному текстовому форматі. */
   function fillVictoryLootLine(el, victory) {
     if (!el || !victory) return;
-    el.textContent = '';
-    el.className =
-      'l2-battle-victory-notify__loot l2-battle-victory-notify__loot--icons';
-
-    function addIcon(src, fallback) {
-      var img = document.createElement('img');
-      img.className = 'l2-battle-victory-loot__icon';
-      img.alt = '';
-      img.src = src;
-      img.addEventListener('error', function () {
-        img.src = fallback;
-      });
-      el.appendChild(img);
-    }
-
-    el.appendChild(document.createTextNode(tr('battle_victory_dropped', 'Випало: ')));
-    addIcon(L2_LOG_ICON_ADENA, '/icons/drops/adena.svg');
-    var adenaSpan = document.createElement('span');
-    adenaSpan.className =
-      'l2-battle-victory-loot__val l2-battle-victory-loot__val--adena';
-    adenaSpan.textContent = victory.adenaGain + tr('battle_loot_adena', ' аден');
-    el.appendChild(adenaSpan);
-    el.appendChild(document.createTextNode(', '));
-    addIcon(L2_LOG_ICON_EXP, '/icons/drops/resource.svg');
-    var expSpan = document.createElement('span');
-    expSpan.className =
-      'l2-battle-victory-loot__val l2-battle-victory-loot__val--exp';
-    expSpan.textContent =
-      victory.expGain + ' ' + tr('battle_exp_abbr', 'EXP');
-    el.appendChild(expSpan);
-    el.appendChild(document.createTextNode(tr('battle_loot_and', ' і ')));
-    addIcon(L2_LOG_ICON_SP, '/icons/drops/resource.svg');
-    var spSpan = document.createElement('span');
-    spSpan.className =
-      'l2-battle-victory-loot__val l2-battle-victory-loot__val--sp';
-    spSpan.textContent = victory.spGain + ' ' + tr('battle_sp_abbr', 'SP');
-    el.appendChild(spSpan);
-    el.appendChild(document.createTextNode('.'));
+    el.className = 'l2-battle-victory-notify__loot';
+    el.textContent =
+      tr('battle_victory_dropped', 'Випало: ') +
+      '+' +
+      String(victory.adenaGain) +
+      tr('battle_loot_adena', ' аден') +
+      ', +' +
+      String(victory.expGain) +
+      ' ' +
+      tr('battle_exp_abbr', 'EXP') +
+      ', +' +
+      String(victory.spGain) +
+      ' ' +
+      tr('battle_sp_abbr', 'SP') +
+      '.';
   }
 
   function appendLogRowWithIcon(container, line, iconSrc, onImgErr) {
@@ -507,6 +484,22 @@
     battleToastTimer = setTimeout(function () {
       el.hidden = true;
     }, 3200);
+  }
+
+  function battleErrorMessageUk(errBody, fallback) {
+    if (!errBody || typeof errBody !== 'object') return fallback;
+    if (
+      errBody.code === 'revision_conflict' ||
+      errBody.error === 'revision_conflict'
+    ) {
+      return tr(
+        'battle_toast_revision_conflict',
+        'Стан персонажа оновлено з сервера. Повтори дію.'
+      );
+    }
+    if (errBody.messageUk) return errBody.messageUk;
+    if (errBody.error) return String(errBody.error);
+    return fallback;
   }
 
   async function runWithBattleActionLock(fn) {
@@ -916,7 +909,10 @@
     if (!spawnId) {
       if (errEl) {
         errEl.hidden = false;
-        errEl.textContent = tr('battle_err_no_mob', 'Не вказано моба. Перейди з карти.');
+        errEl.textContent = tr(
+          'battle_err_no_mob',
+          'Не вказано моба. Перейди через місто і телепорт.'
+        );
       }
       return;
     }
@@ -1093,17 +1089,14 @@
             return;
           }
           if (res._err) {
-            if (parsedErrBody && parsedErrBody.messageUk) {
-              showBattleToast(parsedErrBody.messageUk);
-            } else if (parsedErrBody && parsedErrBody.error) {
-              showBattleToast(String(parsedErrBody.error));
-            } else {
-              showBattleToast(
+            showBattleToast(
+              battleErrorMessageUk(
+                parsedErrBody,
                 tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
                   res._err +
                   ').'
-              );
-            }
+              )
+            );
             return;
           }
         }
@@ -1158,17 +1151,14 @@
         if (res && res.raw) {
           try {
             var ej2 = await res.raw.json();
-            if (ej2 && ej2.messageUk) {
-              showBattleToast(ej2.messageUk);
-            } else if (ej2 && ej2.error) {
-              showBattleToast(String(ej2.error));
-            } else {
-              showBattleToast(
+            showBattleToast(
+              battleErrorMessageUk(
+                ej2,
                 tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
                   res._err +
                   ').'
-              );
-            }
+              )
+            );
           } catch (parseErr2) {
             showBattleToast(
               tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
@@ -1232,17 +1222,14 @@
         if (res && res.raw) {
           try {
             var ej2m = await res.raw.json();
-            if (ej2m && ej2m.messageUk) {
-              showBattleToast(ej2m.messageUk);
-            } else if (ej2m && ej2m.error) {
-              showBattleToast(String(ej2m.error));
-            } else {
-              showBattleToast(
+            showBattleToast(
+              battleErrorMessageUk(
+                ej2m,
                 tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
                   res._err +
                   ').'
-              );
-            }
+              )
+            );
           } catch (parseErr2) {
             showBattleToast(
               tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
@@ -1306,17 +1293,14 @@
         if (res && res.raw) {
           try {
             var ejP = await res.raw.json();
-            if (ejP && ejP.messageUk) {
-              showBattleToast(ejP.messageUk);
-            } else if (ejP && ejP.error) {
-              showBattleToast(String(ejP.error));
-            } else {
-              showBattleToast(
+            showBattleToast(
+              battleErrorMessageUk(
+                ejP,
                 tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
                   res._err +
                   ').'
-              );
-            }
+              )
+            );
           } catch (parseErrP) {
             showBattleToast(
               tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
@@ -1447,7 +1431,7 @@
       var hint = $('battle-defeat-town-hint');
       if (hint && defeat) {
         hint.textContent =
-          tr('battle_defeat_hint_prefix', 'Найближче безпечне місце на карті: ') +
+          tr('battle_defeat_hint_prefix', 'Найближче безпечне місце: ') +
           defeat.nearestTownLabelUk +
           tr('battle_defeat_hint_suffix', '. Натисни кнопку — опинишся там.');
       }
@@ -1506,7 +1490,7 @@
 
     refreshUI();
 
-    async function leaveToMap() {
+    async function leaveToCity() {
       await runWithBattleNavLock(async function () {
         var resLm = await leaveBattle(character.revision);
         if (resLm && resLm._err === 409) {
@@ -1519,22 +1503,22 @@
         if (resLm && resLm.character && L2.setLastSnapshot) {
           L2.setLastSnapshot(resLm.character);
         }
-        window.location.href = '/map.html';
+        window.location.href = '/city.html';
       });
     }
 
     var back = $('battle-back-map');
     if (back) {
-      back.addEventListener('click', leaveToMap);
+      back.addEventListener('click', leaveToCity);
     }
 
     var vMap = $('battle-victory-map');
     if (vMap) {
-      vMap.addEventListener('click', leaveToMap);
+      vMap.addEventListener('click', leaveToCity);
     }
     var vCont = $('battle-victory-continue');
     if (vCont) {
-      vCont.addEventListener('click', leaveToMap);
+      vCont.addEventListener('click', leaveToCity);
     }
     var vHunt = $('battle-victory-hunt');
     if (vHunt) {

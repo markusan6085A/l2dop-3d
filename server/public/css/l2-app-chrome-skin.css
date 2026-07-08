@@ -147,13 +147,13 @@ body.l2-app-l2-chrome #l2-hud-panel-mount {
 }
 
 body.l2-app-l2-chrome #l2-nav-top {
-  display: block;
-  min-height: 74px;
+  display: none;
+  min-height: 0;
 }
 
 body.l2-app-l2-chrome #l2-nav-bottom {
   display: block;
-  min-height: 92px;
+  min-height: 56px;
 }
 
 body.l2-app-l2-chrome .l2-outer-sframe__g {
@@ -423,8 +423,8 @@ body.l2-app-l2-chrome #l2-nav-top nav#l2-wap-top-icons.l2-wap-grid.l2-wap-grid--
   border-image-source: none !important;
   border-image-slice: none !important;
   border-image-width: 0 !important;
-  background-color: transparent !important;
-  background-image: url('/assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png?v=20260705topWap45a') !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
   background-size: 100% 100% !important;
@@ -469,8 +469,8 @@ body.l2-app-l2-chrome #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bot
   border-image-source: none !important;
   border-image-slice: none !important;
   border-image-width: 0 !important;
-  background-color: transparent !important;
-  background-image: url('/assets/45a3b583-ad13-47d8-9227-814c48c6aefe-removebg-preview.png?v=20260705topWap45a') !important;
+  background-color: #1d1c1a !important;
+  background-image: none !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
   background-size: 100% 100% !important;
@@ -1207,10 +1207,12 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-log {
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify {
-  border: 1px solid rgba(200, 160, 70, 0.35) !important;
-  background: rgba(6, 10, 8, 0.28) !important;
+  border: 0 !important;
+  background: transparent !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 0 8px !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-notify {
@@ -1221,10 +1223,37 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-notify {
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-logbox {
-  border: 1px solid rgba(130, 100, 55, 0.32);
-  background: rgba(6, 5, 4, 0.2);
+  border: 1px solid rgba(130, 100, 55, 0.22);
+  background: rgba(6, 5, 4, 0.12);
   -webkit-box-shadow: none;
   box-shadow: none;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__title-row {
+  justify-content: flex-start;
+  gap: 4px;
+  margin: 0 0 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__swords,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__divider {
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__shout {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em !important;
+  color: #9fd55a !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__loot {
+  margin: 0 0 6px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__links {
+  justify-content: flex-start !important;
+  gap: 6px !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-logbox {
@@ -2226,6 +2255,54 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
   html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
     --l2s-chrome-column-w: min(100vw - 16px, calc(var(--l2s-chrome-column-base) * 1.3));
   }
+}
+
+/* ============================================================
+ * Legacy-minimal nav mode (вмикається body.l2-nav-minimal з l2-nav.js)
+ * ============================================================ */
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-top {
+  display: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom {
+  min-height: 0 !important;
+  margin-top: 6px !important;
+  padding: 0 0 calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell {
+  min-height: 26px !important;
+  padding: 4px 6px !important;
+  border: 1px solid rgba(174, 141, 73, 0.42) !important;
+  border-radius: 2px !important;
+  background: #1c1916 !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell img {
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-lbl {
+  display: block !important;
+  font-size: 10px !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0.02em !important;
+  color: #f0e6b8 !important;
 }
 
 /* Авторизація: форма реєстрації — суцільний фон #1d1c1a */

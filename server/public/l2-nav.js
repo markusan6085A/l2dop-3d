@@ -1,76 +1,18 @@
 /**
- * Верхня й нижня сітки іконок. Підписи — L2.tr (ui-i18n.js після common.js).
- * Верх: рамка /ref/2121.png (Lv · клас, HP/MP на мапі) + ряд іконок /ref/35–41.png.
- * Низ (док): Профіль, Перс, Пошта, Місто, Меню, Маммон, Опції.
- * Магія — у верхньому ряду (другий слот).
+ * Legacy-minimal навігація:
+ * - верхня сітка вимкнена (мінімум декоративних ассетів),
+ * - нижній док лишається компактним і тексто-орієнтованим.
  */
 (function (global) {
   var L2 = global.L2 || (global.L2 = {});
 
   var ASSETS = '/assets/l2dop';
 
-  var TOP = [
-    {
-      iconPath: '/assets/photo_1_2026-07-05_18-17-32-removebg-preview.png',
-      href: null,
-      stubKey: 'nav_chat',
-      i18nKey: 'nav_chat',
-      i18nTitleKey: 'nav_chat_title',
-      lbl: 't1',
-    },
-    {
-      iconPath: '/ref/photo_2026-07-05_13-24-32-removebg-preview.png',
-      href: '/magisters.html',
-      stub: null,
-      i18nKey: 'nav_magic',
-      i18nTitleKey: 'nav_magic_title',
-      lbl: 't2',
-    },
-    {
-      iconPath: '/ref/38.png',
-      href: '/map.html',
-      stub: null,
-      i18nKey: 'nav_top_map',
-      i18nTitleKey: 'nav_top_map_title',
-      lbl: 't3',
-    },
-    {
-      iconPath: '/ref/40.png',
-      href: '/donate.html',
-      stub: null,
-      i18nKey: 'nav_top_donate',
-      i18nTitleKey: 'nav_donate_title',
-      lbl: 't4',
-    },
-    {
-      iconPath: '/ref/37.png',
-      href: null,
-      stubKey: 'nav_quests',
-      i18nKey: 'nav_quests',
-      i18nTitleKey: 'nav_quests_title',
-      lbl: 't5',
-    },
-    {
-      iconPath: '/ref/36.png',
-      href: null,
-      stubKey: 'nav_clan',
-      i18nKey: 'nav_clan',
-      i18nTitleKey: 'nav_clan_title',
-      lbl: 't6',
-    },
-    {
-      iconPath: '/ref/41.png',
-      href: null,
-      stubKey: 'nav_market',
-      i18nKey: 'nav_market',
-      i18nTitleKey: 'nav_market_title',
-      lbl: 't7',
-    },
-  ];
+  var TOP = [];
 
   var BOTTOM = [
     {
-      iconPath: '/ref/d1b88552-5bbf-44ac-bc1a-58149ea8cc9b__1_-removebg-preview.png',
+      iconPath: null,
       href: '/pers.html',
       stub: null,
       i18nKey: 'nav_profile',
@@ -78,7 +20,7 @@
       lbl: 'p1',
     },
     {
-      iconPath: '/ref/39.png',
+      iconPath: null,
       href: '/char.html',
       stub: null,
       i18nKey: 'nav_pers',
@@ -86,7 +28,7 @@
       lbl: 'p2',
     },
     {
-      iconPath: '/ref/35.png',
+      iconPath: null,
       href: null,
       stubKey: 'nav_mail',
       i18nKey: 'nav_mail',
@@ -94,7 +36,7 @@
       lbl: 'p3',
     },
     {
-      iconPath: '/ref/d1b88552-5bbf-44ac-bc1a-58149ea8cc9b-removebg-preview.png',
+      iconPath: null,
       href: '/city.html',
       stub: null,
       i18nKey: 'nav_town',
@@ -102,7 +44,7 @@
       lbl: 'p4',
     },
     {
-      iconPath: '/ref/photo_2026-07-05_13-19-04-removebg-preview.png',
+      iconPath: null,
       href: '/menu.html',
       stub: null,
       i18nKey: 'nav_menu',
@@ -110,7 +52,7 @@
       lbl: 'p5',
     },
     {
-      iconPath: '/ref/photo_2026-07-05_13-18-58-removebg-preview.png',
+      iconPath: null,
       href: '/mammon.html',
       stub: null,
       i18nKey: 'nav_mammon',
@@ -118,7 +60,7 @@
       lbl: 'p6',
     },
     {
-      iconPath: '/ref/photo_2026-07-05_13-19-01-removebg-preview.png',
+      iconPath: null,
       href: '/options.html',
       stub: null,
       i18nKey: 'nav_options',
@@ -145,15 +87,20 @@
         a.setAttribute('data-stub', item.stub);
       }
     }
-    var img = document.createElement('img');
-    img.src = item.iconPath ? item.iconPath : ASSETS + '/' + item.icon;
-    img.width = 32;
-    img.height = 32;
-    img.alt = '';
     var span = document.createElement('span');
     span.className = 'l2-wap-lbl l2-wap-lbl--' + item.lbl;
     span.textContent = item.i18nKey && L2.tr ? L2.tr(item.i18nKey) : item.label || '';
-    a.appendChild(img);
+    var hasIcon =
+      (typeof item.iconPath === 'string' && item.iconPath.length > 0) ||
+      (typeof item.icon === 'string' && item.icon.length > 0);
+    if (hasIcon) {
+      var img = document.createElement('img');
+      img.src = item.iconPath ? item.iconPath : ASSETS + '/' + item.icon;
+      img.width = 32;
+      img.height = 32;
+      img.alt = '';
+      a.appendChild(img);
+    }
     a.appendChild(span);
     return a;
   }
@@ -239,6 +186,9 @@
 
   L2.mountL2Nav = function (opts) {
     opts = opts || {};
+    if (document && document.body) {
+      document.body.classList.add('l2-nav-minimal');
+    }
     if (mounted) {
       wireStubHandler(opts.onStub);
       return;
