@@ -1,15 +1,18 @@
 /**
- * Service Worker: кеш лише статики (assets/icons/css/js).
- * API (/character, /game/, /auth/) — завжди мережа (сервер = джерело правди).
+ * Service Worker: браузер як "тонкий клієнт" для статики.
+ * Живі дані гри завжди йдуть у мережу (сервер = джерело правди).
  */
-var SW_VERSION = '20260707perf11';
-var CACHE_NAME = 'l2dop-static-' + SW_VERSION;
+var SW_VERSION = '20260708clientCache1';
+var STATIC_CACHE = 'l2dop-static-' + SW_VERSION;
 
 var PRECACHE_URLS = [
+  '/',
+  '/index.html',
   '/styles.css',
   '/common.js',
   '/ui-i18n.js',
   '/l2-nav.js',
+  '/css/l2-outer-sframe.css',
   '/css/l2-game-chrome.css',
   '/css/l2-hud-panel.css',
   '/css/l2-app-chrome-skin.css',
@@ -17,16 +20,18 @@ var PRECACHE_URLS = [
   '/icons/drops/other.svg',
 ];
 
-function isApiPath(pathname) {
+function isLiveDataPath(pathname) {
   return (
     pathname.indexOf('/character') === 0 ||
+    pathname.indexOf('/auth/') === 0 ||
     pathname.indexOf('/game/') === 0 ||
-    pathname.indexOf('/auth/') === 0
+    pathname.indexOf('/battle/') === 0 ||
+    pathname.indexOf('/shop/buy') === 0
   );
 }
 
 function isStaticAssetPath(pathname) {
-  if (isApiPath(pathname)) return false;
+  if (isLiveDataPath(pathname)) return false;
   if (/\.html$/i.test(pathname)) return false;
   return (
     pathname.indexOf('/assets/') === 0 ||
@@ -40,16 +45,30 @@ function isStaticAssetPath(pathname) {
   );
 }
 
+function shouldCacheResponse(resp) {
+  if (!resp || resp.status !== 200) return false;
+  var ct = String(resp.headers.get('content-type') || '').toLowerCase();
+  return (
+    ct.indexOf('text/css') !== -1 ||
+    ct.indexOf('javascript') !== -1 ||
+    ct.indexOf('image/') !== -1 ||
+    ct.indexOf('font/') !== -1
+  );
+}
+
 self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then(function (cache) {
-        return cache.addAll(PRECACHE_URLS);
-      })
-      .then(function () {
+    caches.open(STATIC_CACHE).then(function (cache) {
+      return Promise.all(
+        PRECACHE_URLS.map(function (u) {
+          return cache.add(u).catch(function () {
+            return null;
+          });
+        })
+      ).then(function () {
         return self.skipWaiting();
-      })
+      });
+    })
   );
 });
 
@@ -61,7 +80,7 @@ self.addEventListener('activate', function (event) {
         return Promise.all(
           keys
             .filter(function (k) {
-              return k.indexOf('l2dop-static-') === 0 && k !== CACHE_NAME;
+              return k.indexOf('l2dop-static-') === 0 && k !== STATIC_CACHE;
             })
             .map(function (k) {
               return caches.delete(k);
@@ -78,25 +97,37 @@ self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
   var url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  if (isApiPath(url.pathname)) return;
+
+  if (isLiveDataPath(url.pathname)) {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
 
   if (/\.html$/i.test(url.pathname)) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).catch(function () {
+        return caches.match(event.request);
+      })
+    );
     return;
   }
 
   if (!isStaticAssetPath(url.pathname)) return;
 
   event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      if (cached) return cached;
-      return fetch(event.request).then(function (response) {
-        if (!response || response.status !== 200) return response;
-        var clone = response.clone();
-        caches.open(CACHE_NAME).then(function (cache) {
-          cache.put(event.request, clone);
+    caches.open(STATIC_CACHE).then(function (cache) {
+      return cache.match(event.request).then(function (cached) {
+        var networkPromise = fetch(event.request).then(function (response) {
+          if (shouldCacheResponse(response)) {
+            cache.put(event.request, response.clone());
+          }
+          return response;
         });
-        return response;
+        if (cached) {
+          event.waitUntil(networkPromise.catch(function () {}));
+          return cached;
+        }
+        return networkPromise;
       });
     })
   );
