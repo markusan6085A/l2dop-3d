@@ -432,6 +432,24 @@ export async function performBattleAction(
         itemId: pid,
         nowMs: nowMsTurn,
       });
+      /**
+       * Одразу прокручуємо імпульс зілля в тому ж POST /battle/action,
+       * щоб HP/MP бари оновлювалися без перезавантаження сторінки.
+       */
+      {
+        const hoNow = applyBattlePotionHoTTicks({
+          nowMs: nowMsTurn,
+          st,
+          playerHp,
+          maxHpBattle,
+          currentMp,
+          maxMpEff,
+          log,
+        });
+        playerHp = hoNow.playerHp;
+        currentMp = hoNow.currentMp;
+        st.playerMp = currentMp;
+      }
       inventoryDirty = true;
     }
 

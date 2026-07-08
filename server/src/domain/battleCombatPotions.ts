@@ -141,7 +141,11 @@ export function startBattlePotionHoT(args: {
   const entry: BattlePotionHoTEntry = {
     remaining: p.total,
     perTick: p.perTick,
-    nextTickAtMs: args.nowMs + BATTLE_POTION_TICK_MS,
+    /**
+     * Перший імпульс застосовуємо в поточному ході (миттєвий фідбек у HUD),
+     * далі — за стандартним інтервалом `BATTLE_POTION_TICK_MS`.
+     */
+    nextTickAtMs: args.nowMs,
   };
   if (p.channel === 'hp') {
     args.st.battlePotionHpHoT = entry;
