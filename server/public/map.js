@@ -302,6 +302,18 @@
     listEl.appendChild(li);
   }
 
+  function renderAroundSkeleton(listEl) {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    for (var i = 0; i < MOBS_PER_PAGE; i++) {
+      var li = document.createElement('li');
+      li.className =
+        'l2-map-mob-item l2-map-mob-item--battle l2-map-mob-item--with-icon l2-map-mob-item--hint';
+      li.textContent = 'Завантаження мобів...';
+      listEl.appendChild(li);
+    }
+  }
+
   function kindModalUk(k) {
     var m = {
       passive: 'пасивний',
@@ -677,6 +689,7 @@
 
     if (content) content.hidden = false;
     if (errEl) errEl.hidden = true;
+    renderAroundSkeleton($('map-mob-list'));
     if (c) paintMain(false);
 
     var freshSnapshot = await snapshotPromise;

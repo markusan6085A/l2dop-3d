@@ -75,6 +75,7 @@ button.l2-map-mob-title--tap-full:focus {
 #map-mob-list {
   overflow-y: visible;
   max-height: none;
+  min-height: calc(var(--l2-map-mob-row, 32px) * 15);
 }
 
 .l2-map-mob-item {
@@ -446,6 +447,7 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-map-mob-list-detail {
   max-height: calc(var(--l2-map-mob-row, 30px) * 15);
+  min-height: calc(var(--l2-map-mob-row, 30px) * 15);
   overflow-y: hidden;
 }
 
