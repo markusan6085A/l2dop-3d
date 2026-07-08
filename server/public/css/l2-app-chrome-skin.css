@@ -2056,6 +2056,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-screen.l2-outer-sframe-host .l2-telep
   margin: 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  min-height: 260px;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport

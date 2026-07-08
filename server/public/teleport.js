@@ -3,9 +3,45 @@
  */
 (function () {
   var teleportInFlight = false;
+  var TELEPORT_SNAPSHOT_CACHE_KEY = 'l2-teleport-snapshot-cache-v1';
 
   function $(id) {
     return document.getElementById(id);
+  }
+
+  function readCachedTeleportSnapshot() {
+    try {
+      var raw = sessionStorage.getItem(TELEPORT_SNAPSHOT_CACHE_KEY);
+      if (!raw) return null;
+      var j = JSON.parse(raw);
+      return j && typeof j === 'object' ? j : null;
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  function writeCachedTeleportSnapshot(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object') return;
+    try {
+      sessionStorage.setItem(TELEPORT_SNAPSHOT_CACHE_KEY, JSON.stringify(snapshot));
+    } catch (_e) {
+      /* ignore */
+    }
+  }
+
+  function renderSkeletonList(listEl) {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    for (var i = 0; i < 6; i++) {
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'l2-city-tp-item';
+      b.disabled = true;
+      b.textContent = 'Завантаження...';
+      li.appendChild(b);
+      listEl.appendChild(li);
+    }
   }
 
   function renderList(listEl, rows) {
@@ -45,6 +81,7 @@
       if (typeof L2.applyHudFromSnapshot === 'function') {
         L2.applyHudFromSnapshot(jj.character);
       }
+      writeCachedTeleportSnapshot(jj.character);
       return jj.character;
     } catch (_e) {
       if (errEl) {
@@ -174,20 +211,41 @@
       return;
     }
 
-    var r = await fetch('/character', {
+    if (content) content.hidden = false;
+    renderSkeletonList(listEl);
+
+    var cached =
+      window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+    if (!cached) cached = readCachedTeleportSnapshot();
+    if (cached) {
+      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(cached);
+      }
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(cached);
+      }
+    }
+
+    var charPromise = fetch('/character', {
       headers: { Authorization: 'Bearer ' + t },
     });
+    var locPromise = fetch('/game/teleport/locations', {
+      headers: { Authorization: 'Bearer ' + t },
+    });
+
+    var r = await charPromise;
     if (r.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/';
       return;
     }
+
     if (!r.ok) {
       var errMsg = 'Не вдалося завантажити героя.';
       try {
         var errJson = await r.json();
         if (errJson && errJson.messageUk) errMsg = errJson.messageUk;
-      } catch (e) {
+      } catch (_e2) {
         /* ignore */
       }
       if (errEl) {
@@ -200,6 +258,7 @@
     var j = await r.json();
     var c = j.character;
     window.L2.setLastSnapshot(c);
+    writeCachedTeleportSnapshot(c);
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(c);
     }
@@ -210,9 +269,7 @@
       L2.mergeCraftResourceIconHints(j);
     }
 
-    var locR = await fetch('/game/teleport/locations', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
+    var locR = await locPromise;
     if (locR.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/';
@@ -228,8 +285,7 @@
     var locJ = await locR.json();
     var locs = locJ.locations || [];
     renderList(listEl, locs);
-
-    if (content) content.removeAttribute('hidden');
+    if (errEl) errEl.hidden = true;
 
     if (listEl) {
       listEl.addEventListener('click', function (e) {
