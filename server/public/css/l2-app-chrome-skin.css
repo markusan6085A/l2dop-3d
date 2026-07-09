@@ -938,11 +938,14 @@ body.l2-app-l2-chrome .l2-battle-victory-backloc {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
-/* Бій: «Назад на карту» / «Назад до міста» — рамка ref/8888888.png */
+/* Бій: «Назад на карту» / «Назад до міста» — без ref/8888888.png (файлу немає) */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc {
-  border-radius: 0 !important;
-  border-image-source: url('/ref/8888888.png') !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(200, 160, 90, 0.45) !important;
+  border-image: none !important;
+  background: rgba(8, 12, 22, 0.92) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 215, 0, 0.08) !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-defeat-tocity {
@@ -996,7 +999,8 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:hover,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:focus,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:hover,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus {
-  border-image-source: url('/ref/8888888.png') !important;
+  border-image: none !important;
+  border-color: rgba(212, 175, 55, 0.65) !important;
 }
 
 /* Перемога: «Продовжити» / «Полювати далі» — лише текст, без ref-рамки */

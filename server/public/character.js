@@ -107,6 +107,23 @@
         showStub(label);
       });
     });
+
+    var logoutBtn = $('character-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function () {
+        try {
+          localStorage.removeItem('token');
+          try {
+            sessionStorage.removeItem('token');
+          } catch (e2) {
+            /* ignore */
+          }
+        } catch (e) {
+          /* ignore */
+        }
+        window.location.href = '/';
+      });
+    }
   }
 
   async function init() {

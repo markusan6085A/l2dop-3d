@@ -173,3 +173,17 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-row--all-white .l2-charact
 body.l2-app-l2-chrome.l2-page-character .l2-city-stub-msg {
   margin: 8px 0.5cm 0;
 }
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit {
+  margin-top: 6px;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit .l2-character-row__label {
+  color: #e04040 !important;
+  font-weight: 700;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit:hover .l2-character-row__label,
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit:focus .l2-character-row__label {
+  color: #ff5858 !important;
+}
