@@ -455,50 +455,40 @@
   width: 100%;
   max-width: 280px;
   margin: 0;
-  padding: 5px 14px;
+  padding: 4px 0;
   text-align: center;
   font-family: var(--l2-font-display);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  line-height: 1.25;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
   cursor: pointer;
-  border-radius: 8px;
-  border: 1px solid var(--l2-gold-frame);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   text-decoration: none;
-  transition:
-    border-color 0.12s ease,
-    filter 0.12s ease;
+  transition: color 0.12s ease;
 }
 
 .l2-battle-victory-link--primary {
-  color: #fff4d6;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
-  background: linear-gradient(180deg, var(--btn-blue-top) 0%, var(--btn-blue-mid) 50%, var(--btn-blue-bot) 100%);
-  border-color: rgba(200, 160, 90, 0.5);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 10px rgba(120, 80, 40, 0.2);
+  color: #4a3820;
+  text-shadow: none;
 }
 
 .l2-battle-victory-link--primary:hover,
 .l2-battle-victory-link--primary:focus {
-  filter: brightness(1.08);
-  border-color: rgba(232, 200, 120, 0.55);
+  color: #2e2214;
   outline: none;
 }
 
 .l2-battle-victory-link--muted {
-  color: #e8dcc8;
-  background: rgba(8, 12, 22, 0.92);
-  border-color: var(--l2-gold-frame);
-  box-shadow: inset 0 1px 0 rgba(255, 215, 0, 0.06);
+  color: #5c4a32;
 }
 
 .l2-battle-victory-link--muted:hover,
 .l2-battle-victory-link--muted:focus {
-  border-color: rgba(212, 175, 55, 0.55);
-  color: #fff4e0;
+  color: #3d3020;
   outline: none;
 }
 

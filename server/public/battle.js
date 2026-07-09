@@ -927,7 +927,9 @@
     }
 
     var snap = null;
-    var jChar = await loadCharacter();
+    var charPromise = loadCharacter();
+    var statePromise = getBattleState();
+    var jChar = await charPromise;
     if (!jChar || !jChar.character) {
       if (errEl) {
         errEl.hidden = false;
@@ -948,7 +950,7 @@
       L2BattleHotbar.mergeCharacterCatalog(jChar);
     }
 
-    var state = await getBattleState();
+    var state = await statePromise;
     if (!state || state._err) {
       if (errEl) {
         errEl.hidden = false;
@@ -1356,7 +1358,17 @@
       el.appendChild(lvl);
     }
 
+    function hideVictoryScreen() {
+      var active = $('battle-active-root');
+      var vicRoot = $('battle-victory-root');
+      if (active) active.hidden = false;
+      if (vicRoot) vicRoot.hidden = true;
+    }
+
+    var lastVictorySummary = null;
+
     function showVictoryScreen(victory) {
+      lastVictorySummary = victory || null;
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
@@ -1490,6 +1502,15 @@
 
     refreshUI();
 
+    async function goToMap() {
+      await runWithBattleNavLock(async function () {
+        if (window.L2 && L2.setLastSnapshot && character) {
+          L2.setLastSnapshot(character);
+        }
+        window.location.href = '/map.html';
+      });
+    }
+
     async function leaveToCity() {
       await runWithBattleNavLock(async function () {
         var resLm = await leaveBattle(character.revision);
@@ -1518,13 +1539,27 @@
     }
     var vCont = $('battle-victory-continue');
     if (vCont) {
-      vCont.addEventListener('click', leaveToCity);
+      vCont.addEventListener('click', goToMap);
     }
     var vHunt = $('battle-victory-hunt');
     if (vHunt) {
       vHunt.addEventListener('click', function () {
-        window.location.href =
-          '/battle.html?spawnId=' + encodeURIComponent(spawnId);
+        runWithBattleNavLock(async function () {
+          hideVictoryScreen();
+          battle = null;
+          await ensureBattle();
+          if (errEl && !errEl.hidden) {
+            if (window.L2 && L2.setLastSnapshot && character) {
+              L2.setLastSnapshot(character);
+            }
+            window.location.href = '/map.html';
+            return;
+          }
+          if (window.L2 && L2.applyHudFromSnapshot) {
+            L2.applyHudFromSnapshot(character);
+          }
+          refreshUI();
+        });
       });
     }
 

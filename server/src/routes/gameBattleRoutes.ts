@@ -37,20 +37,29 @@ async function logBattleMutation(
   action: string,
   expectedRevision: number,
   result: 'ok' | 'conflict' | 'error',
-  actualRevision?: number
+  actualRevision?: number,
+  characterId?: string | null
 ): Promise<void> {
   if (!request.userId) return;
-  const row = await prisma.character.findFirst({
-    where: { userId: request.userId },
-    orderBy: { lastUpdate: 'desc' },
-    select: { id: true, revision: true },
-  });
+  let characterIdLog = characterId ?? null;
+  let actualRevisionLog = actualRevision ?? null;
+  if (!characterIdLog || actualRevisionLog == null) {
+    const row = await prisma.character.findFirst({
+      where: { userId: request.userId },
+      orderBy: { lastUpdate: 'desc' },
+      select: { id: true, revision: true },
+    });
+    characterIdLog = row?.id ?? null;
+    if (actualRevisionLog == null) {
+      actualRevisionLog = row?.revision ?? null;
+    }
+  }
   request.log.info(
     {
       action,
-      characterId: row?.id ?? null,
+      characterId: characterIdLog,
       expectedRevision,
-      actualRevision: actualRevision ?? row?.revision ?? null,
+      actualRevision: actualRevisionLog,
       result,
     },
     'battle-mutation'
@@ -111,7 +120,8 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           'battle_start',
           er,
           'ok',
-          result.character.revision
+          result.character.revision,
+          result.character.id
         );
         return reply.send(result);
       } catch (e) {
@@ -263,7 +273,8 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           'battle_action:' + String(actionNorm),
           er,
           'ok',
-          result.character.revision
+          result.character.revision,
+          result.character.id
         );
         return reply.send(result);
       } catch (e) {
@@ -474,7 +485,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       }
       try {
         const character = await leaveBattle(userId, er);
-        await logBattleMutation(request, 'battle_leave', er, 'ok', character.revision);
+        await logBattleMutation(request, 'battle_leave', er, 'ok', character.revision, character.id);
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
@@ -514,7 +525,8 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           'battle_return_to_town',
           er,
           'ok',
-          character.revision
+          character.revision,
+          character.id
         );
         return reply.send({ character });
       } catch (e) {

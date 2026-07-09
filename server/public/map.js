@@ -113,6 +113,84 @@
     return { ok: true, character: j.character };
   }
 
+  var battleStartInFlight = false;
+
+  async function startBattleFromMap(spawnId) {
+    if (!spawnId || battleStartInFlight) return;
+    battleStartInFlight = true;
+    try {
+      var t = localStorage.getItem('token');
+      var snap =
+        window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+      if (!t || !snap) {
+        window.location.href = '/';
+        return;
+      }
+      async function postStart(revision) {
+        return fetch('/game/battle/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + t,
+          },
+          body: JSON.stringify({
+            spawnId: spawnId,
+            expectedRevision: revision,
+          }),
+        });
+      }
+      var r = await postStart(snap.revision);
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      if (r.status === 409) {
+        var fresh = await loadSnapshot();
+        if (!fresh) return;
+        r = await postStart(fresh.revision);
+      }
+      if (!r.ok) {
+        var errMsg = 'Не вдалося розпочати бій.';
+        try {
+          var ej = await r.json();
+          if (ej && ej.messageUk) errMsg = ej.messageUk;
+        } catch (eErr) {
+          /* ignore */
+        }
+        if (window.L2 && typeof L2.showToast === 'function') {
+          L2.showToast(errMsg);
+        } else {
+          alert(errMsg);
+        }
+        return;
+      }
+      var j = await r.json();
+      if (j.character && window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(j.character);
+      }
+      if (j.character && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(j.character);
+      }
+      window.location.href =
+        '/battle.html?spawnId=' + encodeURIComponent(spawnId);
+    } finally {
+      battleStartInFlight = false;
+    }
+  }
+
+  function onMobBattleLinkClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var a = e.currentTarget;
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    var m = href.match(/[?&]spawnId=([^&]+)/);
+    if (!m) return;
+    var sid = decodeURIComponent(m[1]);
+    if (sid) startBattleFromMap(sid);
+  }
+
   /** Кожні 10 с — легкий GET /game/map/sync (не повний /character). */
   var MAP_POLL_MS = 10000;
 
@@ -296,6 +374,7 @@
     var a = document.createElement('a');
     a.className = mobLinkClass(s, playerLevel);
     a.href = '/battle.html?spawnId=' + encodeURIComponent(s.id);
+    a.addEventListener('click', onMobBattleLinkClick);
     a.textContent = mobDisplayLine(s);
     li.appendChild(btn);
     li.appendChild(a);
@@ -812,6 +891,11 @@
       }
       if (mobModalBattle) {
         mobModalBattle.href = '/battle.html?spawnId=' + encodeURIComponent(spawnId);
+        mobModalBattle.onclick = function (ev) {
+          ev.preventDefault();
+          closeMobModal();
+          startBattleFromMap(spawnId);
+        };
       }
       if (mobModal) mobModal.hidden = false;
     }

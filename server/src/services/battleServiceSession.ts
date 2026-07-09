@@ -206,6 +206,8 @@ export async function startBattle(
       st.warCryPatkMul = wcSync;
     }
 
+    const freezeX = base.worldX;
+    const freezeY = base.worldY;
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,
@@ -214,13 +216,13 @@ export async function startBattle(
         changed: true,
         data: {
           hp: base.hp,
-          worldX: base.worldX,
-          worldY: base.worldY,
-          targetX: base.targetX,
-          targetY: base.targetY,
-          moveStartAt: base.moveStartAt,
-          moveFromX: base.moveFromX,
-          moveFromY: base.moveFromY,
+          worldX: freezeX,
+          worldY: freezeY,
+          targetX: 0,
+          targetY: 0,
+          moveStartAt: null,
+          moveFromX: freezeX,
+          moveFromY: freezeY,
           battleJson: serializeBattleJsonForDb(st),
           worldCombatStateJson: Prisma.JsonNull,
         },

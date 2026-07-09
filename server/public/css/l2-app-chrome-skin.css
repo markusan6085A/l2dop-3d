@@ -630,8 +630,6 @@ body.l2-app-l2-chrome .l2-foot-linkbar__btn,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow,
 body.l2-app-l2-chrome .l2-gm-modal-buy,
 body.l2-app-l2-chrome .l2-char-cat-btn,
-body.l2-app-l2-chrome .l2-battle-victory-link--primary,
-body.l2-app-l2-chrome .l2-battle-victory-link--muted,
 body.l2-app-l2-chrome .l2-battle-back-map,
 body.l2-app-l2-chrome .l2-battle-victory-backloc,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity {
@@ -935,22 +933,12 @@ body.l2-app-l2-chrome .l2-char-cat-btn {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
-body.l2-app-l2-chrome .l2-battle-victory-link--primary {
-  border-color: transparent !important;
-}
-
-body.l2-app-l2-chrome .l2-battle-victory-link--muted {
-  color: #e8dcc8 !important;
-}
-
 body.l2-app-l2-chrome .l2-battle-back-map,
 body.l2-app-l2-chrome .l2-battle-victory-backloc {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
-/* Бій: «Продовжити», «Полювати далі», обидва «Назад на карту» — рамка ref/8888888.png */
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-link--primary,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-link--muted,
+/* Бій: «Назад на карту» / «Назад до міста» — рамка ref/8888888.png */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc {
   border-radius: 0 !important;
@@ -989,10 +977,6 @@ body.l2-app-l2-chrome .l2-gm-modal-buy:hover,
 body.l2-app-l2-chrome .l2-gm-modal-buy:focus,
 body.l2-app-l2-chrome .l2-char-cat-btn:hover,
 body.l2-app-l2-chrome .l2-char-cat-btn:focus,
-body.l2-app-l2-chrome .l2-battle-victory-link--primary:hover,
-body.l2-app-l2-chrome .l2-battle-victory-link--primary:focus,
-body.l2-app-l2-chrome .l2-battle-victory-link--muted:hover,
-body.l2-app-l2-chrome .l2-battle-victory-link--muted:focus,
 body.l2-app-l2-chrome .l2-battle-back-map:hover,
 body.l2-app-l2-chrome .l2-battle-back-map:focus,
 body.l2-app-l2-chrome .l2-battle-victory-backloc:hover,
@@ -1008,15 +992,50 @@ body.l2-app-l2-chrome .l2-battle-defeat-tocity:focus {
   border-image-source: url('/ref/222.png') !important;
 }
 
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-link--primary:hover,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-link--primary:focus,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-link--muted:hover,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-link--muted:focus,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:hover,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:focus,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:hover,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus {
   border-image-source: url('/ref/8888888.png') !important;
+}
+
+/* Перемога: «Продовжити» / «Полювати далі» — лише текст, без ref-рамки */
+body.l2-app-l2-chrome .l2-battle-victory-link--primary,
+body.l2-app-l2-chrome .l2-battle-victory-link--muted {
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+  padding: 4px 0 !important;
+}
+
+body.l2-app-l2-chrome .l2-battle-victory-link--primary {
+  color: #4a3820 !important;
+}
+
+body.l2-app-l2-chrome .l2-battle-victory-link--muted {
+  color: #5c4a32 !important;
+}
+
+body.l2-app-l2-chrome .l2-battle-victory-link--primary:hover,
+body.l2-app-l2-chrome .l2-battle-victory-link--primary:focus {
+  color: #2e2214 !important;
+  outline: none;
+}
+
+body.l2-app-l2-chrome .l2-battle-victory-link--muted:hover,
+body.l2-app-l2-chrome .l2-battle-victory-link--muted:focus {
+  color: #3d3020 !important;
+  outline: none;
+}
+
+body.l2-app-l2-chrome .l2-battle-victory-link--primary:active,
+body.l2-app-l2-chrome .l2-battle-victory-link--muted:active {
+  transform: none !important;
+  filter: none !important;
 }
 
 body.l2-app-l2-chrome .l2-pers-newbie-link:hover,
@@ -1115,8 +1134,6 @@ body.l2-app-l2-chrome .l2-foot-linkbar__btn:active,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow:active,
 body.l2-app-l2-chrome .l2-gm-modal-buy:active,
 body.l2-app-l2-chrome .l2-char-cat-btn:active,
-body.l2-app-l2-chrome .l2-battle-victory-link--primary:active,
-body.l2-app-l2-chrome .l2-battle-victory-link--muted:active,
 body.l2-app-l2-chrome .l2-battle-back-map:active,
 body.l2-app-l2-chrome .l2-battle-victory-backloc:active,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity:active {
