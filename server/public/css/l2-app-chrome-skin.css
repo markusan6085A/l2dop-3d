@@ -2259,9 +2259,11 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
 
 /* ============================================================
  * Legacy-minimal nav mode (вмикається body.l2-nav-minimal з l2-nav.js)
+ * Макет як miru: заголовок у верхній смузі рамки, бари одразу під нею.
  * ============================================================ */
 body.l2-app-l2-chrome.l2-nav-minimal {
-  --l2s-legacy-title-nudge-y: 3px;
+  --l2s-legacy-cap-h: var(--l2-frame-top-h, 54px);
+  --l2s-legacy-title-nudge-y: 2px;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-top {
@@ -2275,11 +2277,17 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-game-chrome-crest {
   display: none !important;
 }
 
-/* city-strip / mount — не додавати зайвий відступ зверху в minimal-режимі */
+/* Перебиває l2-outer-sframe (--l2-frame-pad-top ~88–132px) і city-strip gap */
+html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner,
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-hud-panel-mount),
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--city-strip),
-html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--legacy-minimal) {
-  padding-top: var(--l2-frame-top-h, 54px) !important;
+html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--legacy-minimal),
+html body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
+  padding:
+    0
+    8px
+    calc(8px + env(safe-area-inset-bottom, 0px))
+    8px !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal {
@@ -2296,26 +2304,29 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal 
   position: relative;
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
-  padding:
-    var(--l2-frame-top-h, 54px)
-    8px
-    calc(8px + env(safe-area-inset-bottom, 0px))
-    8px !important;
-}
-
-/* «Wap LineAge» — у смузі верхньої зовнішньої рамки (top.png), не під нею */
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(-1 * var(--l2-frame-top-h, 54px));
-  height: var(--l2-frame-top-h, 54px);
+/* Смуга верхньої рамки — лише «Wap LineAge» */
+html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-cap {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: var(--l2s-legacy-title-nudge-y, 0px);
+  height: var(--l2s-legacy-cap-h, 54px);
+  min-height: var(--l2s-legacy-cap-h, 54px);
+  max-height: var(--l2s-legacy-cap-h, 54px);
+  margin: 0;
+  padding: var(--l2s-legacy-title-nudge-y, 0px) 0 0;
   box-sizing: border-box;
+  flex-shrink: 0;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
+  position: static;
+  left: auto;
+  right: auto;
+  top: auto;
+  height: auto;
+  display: block;
   text-align: center;
   font-size: 13px;
   font-weight: 700;
@@ -2328,8 +2339,8 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
-  padding: 0 10px 2px;
+html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
+  padding: 0 2px 4px 10px;
   margin: 0;
   border: 0 !important;
   background: transparent !important;
@@ -2365,6 +2376,7 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-hud-panel-mount {
   display: none !important;
   min-height: 0 !important;
   margin: 0 !important;
+  padding: 0 !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom {
