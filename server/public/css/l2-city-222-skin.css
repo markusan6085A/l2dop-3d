@@ -310,3 +310,118 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-h
   background: none;
   opacity: 1;
 }
+
+/* teleport.html — miru-список «Города» (#e8dcc0 + іконка pin) */
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru {
+  --l2s-city-miru-text: #e8dcc0;
+  --l2s-city-miru-text-hover: #f5ecd0;
+  padding: 4px 8px 8px;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru .l2-town-miru-loc {
+  margin: 0 0 6px;
+  padding: 6px 4px 8px;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--l2s-city-miru-text, #e8dcc0);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-head-tag {
+  flex-shrink: 0;
+  color: #d4c8a8;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-head-city {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-you {
+  margin: 0 0 10px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--l2s-city-miru-text, #e8dcc0);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-section {
+  margin: 0 0 4px;
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--l2s-city-miru-text, #e8dcc0);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 4px;
+  border: 0;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.88);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  text-decoration: none;
+  color: var(--l2s-city-miru-text, #e8dcc0);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item:first-of-type {
+  border-top: 1px dotted rgba(80, 80, 80, 0.75);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item--last {
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item:hover,
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item:focus {
+  outline: none;
+  color: var(--l2s-city-miru-text-hover, #f5ecd0);
+  background: rgba(56, 56, 56, 0.35);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-ico {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru > .err,
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru > .l2-city-stub-msg {
+  margin: 8px 4px 0;
+}

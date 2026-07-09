@@ -3,13 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Телепорт — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <title>Телепорт — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav9" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260709tpMiru1" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-teleport l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-teleport l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
@@ -54,30 +58,40 @@
           />
         </div>
         <div class="l2-screen-inner l2-teleport-root">
-          <div id="l2-hud-panel-mount"></div>
+          <div class="l2-chrome-nav-column l2-teleport-column">
+            <div id="l2-hud-panel-mount"></div>
 
-          <div id="l2-nav-top"></div>
+            <div id="l2-nav-top"></div>
 
-          <p class="err" id="tp-load-err" hidden></p>
+            <p class="err" id="tp-load-err" hidden></p>
 
-          <section class="l2-teleport-panel" id="tp-content" aria-label="Телепорт">
-            <h1 class="l2-teleport-panel__title">Телепорт</h1>
-            <p class="l2-teleport-panel__back">
-              <a class="l2-town-btn" href="/city.html">Назад до міста</a>
-            </p>
-            <ul id="tp-list" class="l2-city-tp-list"></ul>
-            <p class="err l2-city-tp-modal__err" id="tp-err" hidden></p>
-            <p class="l2-city-stub-msg" id="tp-ok" hidden></p>
-          </section>
+            <section class="l2-teleport-miru" id="tp-content" aria-label="Телепорт" hidden>
+              <div class="l2-town-miru-loc" id="tp-loc-header">
+                <p class="l2-teleport-miru-head">
+                  <span class="l2-teleport-miru-head-tag">[Телепорт]</span>
+                  <span class="l2-teleport-miru-head-city" id="tp-header-city">—</span>
+                </p>
+              </div>
+              <p class="l2-teleport-miru-you">
+                Ви в місті <span id="tp-current-city">—</span>.
+              </p>
 
-          <div id="l2-nav-bottom"></div>
+              <h2 class="l2-teleport-miru-section">Города:</h2>
+              <nav class="l2-town-miru-list" id="tp-cities-list" aria-label="Города"></nav>
+
+              <p class="err" id="tp-err" hidden></p>
+              <p class="l2-city-stub-msg" id="tp-ok" hidden></p>
+            </section>
+
+            <div id="l2-nav-bottom"></div>
+          </div>
         </div>
       </div>
     </div>
 
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/teleport.js?v=20260708tpFastFirst1"></script>
+    <script src="/l2-nav.js?v=20260709miruNav9"></script>
+    <script src="/teleport.js?v=20260709tpMiru1"></script>
   </body>
 </html>

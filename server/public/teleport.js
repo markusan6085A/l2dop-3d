@@ -1,9 +1,32 @@
 /**
- * Окрема сторінка телепорту: список пунктів англійською, POST /game/teleport.
+ * Сторінка телепорту: miru-список «Города», POST /game/teleport.
  */
 (function () {
   var teleportInFlight = false;
   var TELEPORT_SNAPSHOT_CACHE_KEY = 'l2-teleport-snapshot-cache-v1';
+  var TP_ICON = '/assets/assets/photo_2026-07-05_12-52-33.jpg';
+
+  /** Фіксований порядок міст (окрестности — окремо пізніше). */
+  var TELEPORT_CITIES = [
+    { label: 'Talking Island Village', teleportId: 'talking_island' },
+    { label: 'Elven Village', teleportId: 'elf_village' },
+    { label: 'Dark Elven Village', teleportId: 'dark_elf_village' },
+    { label: 'Orc Village', teleportId: 'orc_village' },
+    { label: 'Dwarven Village', teleportId: 'dwarf_village' },
+    { label: 'Gludin Village', teleportId: null },
+    { label: 'Town of Gludio', teleportId: 'gludio' },
+    { label: 'Town of Dion', teleportId: 'dion' },
+    { label: 'Giran Castle Town', teleportId: 'giran' },
+    { label: 'Town of Oren', teleportId: 'oren' },
+    { label: 'Town of Aden', teleportId: 'aden' },
+    { label: 'Town of Goddard', teleportId: 'goddard' },
+    { label: 'Rune Township', teleportId: 'rune' },
+    { label: 'Town of Schuttgart', teleportId: 'schuttgart' },
+    { label: 'Heine', teleportId: 'heine' },
+    { label: 'Hunters Village', teleportId: 'hunters' },
+    { label: "Hardin's Academy", teleportId: null },
+    { label: 'Seven Signs', teleportId: null },
+  ];
 
   function $(id) {
     return document.getElementById(id);
@@ -29,35 +52,81 @@
     }
   }
 
+  function cityNameFromSnapshot(c) {
+    if (!c) return '—';
+    return window.L2 && typeof L2.cityDisplayName === 'function'
+      ? L2.cityDisplayName(c.cityId)
+      : String(c.cityId || '—');
+  }
+
+  function applyCurrentLocation(c) {
+    var name = cityNameFromSnapshot(c);
+    var header = $('tp-header-city');
+    var current = $('tp-current-city');
+    if (header) header.textContent = name;
+    if (current) current.textContent = name;
+  }
+
+  function wireMiruIcons(root) {
+    if (!root) return;
+    root.querySelectorAll('.l2-town-miru-ico').forEach(function (icon) {
+      if (icon.dataset.fallbackWired === '1') return;
+      icon.dataset.fallbackWired = '1';
+      icon.addEventListener('error', function onIconError() {
+        icon.removeEventListener('error', onIconError);
+        icon.src = '/icons/drops/other.svg';
+      });
+    });
+  }
+
+  function createMiruItem(row, disabled) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'l2-town-miru-item';
+    if (row.teleportId) {
+      btn.setAttribute('data-teleport-id', row.teleportId);
+    } else {
+      btn.setAttribute('data-teleport-stub', row.label || '');
+    }
+    if (disabled) btn.disabled = true;
+
+    var img = document.createElement('img');
+    img.className = 'l2-town-miru-ico';
+    img.src = TP_ICON;
+    img.alt = '';
+    img.width = 14;
+    img.height = 14;
+    img.decoding = 'async';
+
+    var span = document.createElement('span');
+    span.textContent = row.label || '—';
+
+    btn.appendChild(img);
+    btn.appendChild(span);
+    return btn;
+  }
+
   function renderSkeletonList(listEl) {
     if (!listEl) return;
     listEl.innerHTML = '';
     for (var i = 0; i < 6; i++) {
-      var li = document.createElement('li');
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'l2-city-tp-item';
-      b.disabled = true;
-      b.textContent = 'Завантаження...';
-      li.appendChild(b);
-      listEl.appendChild(li);
+      listEl.appendChild(createMiruItem({ label: 'Завантаження…' }, true));
     }
+    wireMiruIcons(listEl);
   }
 
-  function renderList(listEl, rows) {
+  function renderCityList(listEl) {
     if (!listEl) return;
     listEl.innerHTML = '';
-    for (var i = 0; i < rows.length; i++) {
-      var row = rows[i];
-      var li = document.createElement('li');
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'l2-city-tp-item';
-      b.setAttribute('data-teleport-id', row.teleportId || '');
-      b.textContent = row.labelEn || row.labelUk || row.teleportId || '—';
-      li.appendChild(b);
-      listEl.appendChild(li);
+    for (var i = 0; i < TELEPORT_CITIES.length; i++) {
+      var row = TELEPORT_CITIES[i];
+      var item = createMiruItem(row, false);
+      if (i === TELEPORT_CITIES.length - 1) {
+        item.classList.add('l2-town-miru-item--last');
+      }
+      listEl.appendChild(item);
     }
+    wireMiruIcons(listEl);
   }
 
   async function resyncCharacter(errEl) {
@@ -81,6 +150,7 @@
       if (typeof L2.applyHudFromSnapshot === 'function') {
         L2.applyHudFromSnapshot(jj.character);
       }
+      applyCurrentLocation(jj.character);
       writeCachedTeleportSnapshot(jj.character);
       return jj.character;
     } catch (_e) {
@@ -182,22 +252,24 @@
     }
   }
 
+  function showStub(label, okEl) {
+    if (!okEl) return;
+    okEl.hidden = false;
+    okEl.textContent = '«' + label + '» — скоро з’явиться.';
+  }
+
   async function init() {
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
         onStub: function (label) {
-          var stub = $('tp-ok');
-          if (stub) {
-            stub.hidden = false;
-            stub.textContent = '«' + label + '» — заглушка, з’явиться пізніше.';
-          }
+          showStub(label, $('tp-ok'));
         },
       });
     }
 
     var errEl = $('tp-load-err');
     var content = $('tp-content');
-    var listEl = $('tp-list');
+    var listEl = $('tp-cities-list');
     var tpErr = $('tp-err');
     var tpOk = $('tp-ok');
 
@@ -224,16 +296,12 @@
       if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
         L2.applyHudFromSnapshot(cached);
       }
+      applyCurrentLocation(cached);
     }
 
-    var charPromise = fetch('/character', {
+    var r = await fetch('/character', {
       headers: { Authorization: 'Bearer ' + t },
     });
-    var locPromise = fetch('/game/teleport/locations', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-
-    var r = await charPromise;
     if (r.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/';
@@ -262,6 +330,7 @@
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(c);
     }
+    applyCurrentLocation(c);
     if (j.gearCatalog && window.L2 && typeof L2.mergeGearCatalog === 'function') {
       L2.mergeGearCatalog(j.gearCatalog);
     }
@@ -269,30 +338,20 @@
       L2.mergeCraftResourceIconHints(j);
     }
 
-    var locR = await locPromise;
-    if (locR.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
-    }
-    if (!locR.ok) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent = 'Не вдалося завантажити список телепортів.';
-      }
-      return;
-    }
-    var locJ = await locR.json();
-    var locs = locJ.locations || [];
-    renderList(listEl, locs);
+    renderCityList(listEl);
     if (errEl) errEl.hidden = true;
 
     if (listEl) {
       listEl.addEventListener('click', function (e) {
-        var btn = e.target && e.target.closest ? e.target.closest('.l2-city-tp-item') : null;
-        if (!btn) return;
+        var btn = e.target && e.target.closest ? e.target.closest('.l2-town-miru-item') : null;
+        if (!btn || btn.disabled) return;
         var id = btn.getAttribute('data-teleport-id');
-        if (id) doTeleport(id, tpErr, tpOk);
+        if (id) {
+          doTeleport(id, tpErr, tpOk);
+          return;
+        }
+        var stub = btn.getAttribute('data-teleport-stub');
+        if (stub) showStub(stub, tpOk);
       });
     }
   }
