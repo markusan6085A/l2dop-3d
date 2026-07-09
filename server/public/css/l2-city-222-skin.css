@@ -330,14 +330,15 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-you {
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-banner {
   display: block;
-  width: 100%;
-  max-width: 100%;
+  width: 70%;
+  max-width: 70%;
   height: auto;
-  margin: 0 0 10px;
-  padding: 0 4px 8px;
+  margin: 0 auto 10px 0;
+  padding: 0 0 8px 4px;
   box-sizing: border-box;
   border-bottom: 1px solid rgba(48, 48, 48, 0.95);
   object-fit: contain;
+  object-position: left center;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-section {
