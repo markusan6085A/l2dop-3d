@@ -7,6 +7,8 @@
   var currentPage = 1;
   var chatInFlight = false;
   var sendInFlight = false;
+  var deleteInFlight = false;
+  var myCharacterId = '';
 
   function $(id) {
     return document.getElementById(id);
@@ -116,6 +118,17 @@
       head.appendChild(reply);
       head.appendChild(ago);
 
+      if (myCharacterId && m.characterId === myCharacterId) {
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'l2-chat-msg__delete';
+        delBtn.setAttribute('aria-label', 'Видалити повідомлення');
+        delBtn.title = 'Видалити';
+        delBtn.textContent = '×';
+        delBtn.setAttribute('data-message-id', String(m.id || ''));
+        head.appendChild(delBtn);
+      }
+
       var text = document.createElement('p');
       text.className = 'l2-chat-msg__text';
       text.textContent = String(m.text || '');
@@ -129,6 +142,12 @@
     listEl.querySelectorAll('.l2-chat-msg__reply').forEach(function (btn) {
       btn.addEventListener('click', function () {
         showStub(btn.getAttribute('data-stub') || 'Відповідь');
+      });
+    });
+    listEl.querySelectorAll('.l2-chat-msg__delete').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-message-id');
+        if (id) deleteChatMessage(id);
       });
     });
   }
@@ -265,6 +284,40 @@
     }
   }
 
+  async function deleteChatMessage(messageId) {
+    if (deleteInFlight) return;
+    var token = localStorage.getItem('token');
+    if (!token || !messageId) return;
+
+    deleteInFlight = true;
+    var stubEl = $('chat-stub-msg');
+    if (stubEl) stubEl.hidden = true;
+
+    try {
+      var r = await fetch('/game/chat/' + encodeURIComponent(messageId), {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      var j = await r.json().catch(function () {
+        return {};
+      });
+      if (!r.ok) {
+        showStub(j.messageUk || 'Видалення повідомлення');
+        return;
+      }
+      await loadChat();
+    } catch (_e) {
+      showStub('Видалення повідомлення');
+    } finally {
+      deleteInFlight = false;
+    }
+  }
+
   function wireUi() {
     document.querySelectorAll('.l2-chat-tabs__btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -275,19 +328,6 @@
 
     var sendBtn = $('chat-send-btn');
     if (sendBtn) sendBtn.addEventListener('click', sendChat);
-
-    var clearBtn = $('chat-clear-btn');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', function () {
-        var input = $('chat-input');
-        if (input) {
-          input.value = '';
-          input.focus();
-        }
-        var stubEl = $('chat-stub-msg');
-        if (stubEl) stubEl.hidden = true;
-      });
-    }
 
     var refreshBtn = $('chat-refresh-btn');
     if (refreshBtn) refreshBtn.addEventListener('click', loadChat);
@@ -333,6 +373,9 @@
     }
     if (r.ok) {
       var j = await r.json();
+      if (j.character) {
+        myCharacterId = j.character.id != null ? String(j.character.id) : '';
+      }
       if (j.character && typeof L2.setLastSnapshot === 'function') {
         L2.setLastSnapshot(j.character);
       }

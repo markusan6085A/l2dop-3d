@@ -50,18 +50,17 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-input {
   max-width: 100%;
   margin: 0;
   padding: 4px 6px;
-  border: 2px solid #fff;
+  border: 1px solid #888;
   border-radius: 0;
-  background: #2c2824;
-  color: #e8dcc0;
-  caret-color: #d4c4a8;
+  background: #fff;
+  color: #111;
   font: inherit;
   font-size: 12px;
   line-height: 1.35;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-input::placeholder {
-  color: rgba(232, 220, 192, 0.55);
+  color: #666;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-compose-actions {
@@ -84,28 +83,6 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-send {
   line-height: 1.35;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-}
-
-body.l2-app-l2-chrome.l2-page-chat .l2-chat-clear {
-  margin: 0;
-  padding: 0 3px;
-  min-width: 16px;
-  height: 18px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #111;
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-body.l2-app-l2-chrome.l2-page-chat .l2-chat-clear:hover,
-body.l2-app-l2-chrome.l2-page-chat .l2-chat-clear:focus {
-  color: #000;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-link {
@@ -167,7 +144,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__ico {
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__nick {
-  color: #d4a040;
+  color: #e8dcc0;
   font-weight: 600;
 }
 
@@ -188,12 +165,31 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__ago {
   color: #fff;
 }
 
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__delete {
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  color: #9a9590;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__delete:hover,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__delete:focus {
+  color: #b8b0a8;
+}
+
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
   margin: 0;
   padding: 0 0 0 18px;
   font-size: 12px;
   line-height: 1.4;
-  color: #e8dcc0;
+  color: #fff;
   word-break: break-word;
 }
 

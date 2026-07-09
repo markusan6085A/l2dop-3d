@@ -5,6 +5,7 @@ export type ChatChannel = 'all' | 'trade' | 'my';
 export type ChatMessageDto = {
   id: string;
   channel: ChatChannel;
+  characterId: string;
   characterName: string;
   text: string;
   createdAt: string;
@@ -39,6 +40,7 @@ function sanitizeChatText(raw: unknown): string {
 function toDto(row: {
   id: string;
   channel: string;
+  characterId: string;
   text: string;
   createdAt: Date;
   character: { name: string };
@@ -46,6 +48,7 @@ function toDto(row: {
   return {
     id: row.id,
     channel: parseChatChannel(row.channel),
+    characterId: row.characterId,
     characterName: row.character.name,
     text: row.text,
     createdAt: row.createdAt.toISOString(),
@@ -122,6 +125,26 @@ export async function sendChatMessage(
   });
 
   return toDto(row);
+}
+
+export async function deleteChatMessage(
+  userId: string,
+  messageIdRaw: unknown
+): Promise<void> {
+  const messageId = String(messageIdRaw || '').trim();
+  if (!messageId) throw new Error('chat_message_not_found');
+
+  const char = await characterForUser(userId);
+  if (!char) throw new Error('character_not_found');
+
+  const msg = await prisma.chatMessage.findUnique({
+    where: { id: messageId },
+    select: { id: true, characterId: true },
+  });
+  if (!msg) throw new Error('chat_message_not_found');
+  if (msg.characterId !== char.id) throw new Error('chat_forbidden');
+
+  await prisma.chatMessage.delete({ where: { id: messageId } });
 }
 
 export { CHANNELS, PAGE_SIZE };

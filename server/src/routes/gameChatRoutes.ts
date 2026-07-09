@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../lib/auth.js';
 import {
+  deleteChatMessage,
   listChatMessages,
   parseChatChannel,
   sendChatMessage,
@@ -59,6 +60,46 @@ export function registerGameChatRoutes(app: FastifyInstance): void {
       return reply.code(500).send({
         error: 'server_error',
         messageUk: 'Не вдалося надіслати повідомлення.',
+      });
+    }
+  });
+
+  app.delete('/chat/:messageId', { preHandler: requireAuth }, async (request, reply) => {
+    const userId = request.userId;
+    if (!userId) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const params = request.params as { messageId?: string };
+
+    try {
+      await deleteChatMessage(userId, params?.messageId);
+      request.log.info({ action: 'chat_delete', result: 'ok' }, 'chat-mutation');
+      return reply.send({ ok: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'chat_message_not_found') {
+        return reply.code(404).send({
+          error: 'not_found',
+          messageUk: 'Повідомлення не знайдено.',
+        });
+      }
+      if (msg === 'chat_forbidden') {
+        return reply.code(403).send({
+          error: 'forbidden',
+          messageUk: 'Можна видалити лише своє повідомлення.',
+        });
+      }
+      if (msg === 'character_not_found') {
+        return reply.code(404).send({
+          error: 'not_found',
+          messageUk: 'Персонажа не знайдено.',
+        });
+      }
+      request.log.info({ action: 'chat_delete', result: 'error' }, 'chat-mutation');
+      return reply.code(500).send({
+        error: 'server_error',
+        messageUk: 'Не вдалося видалити повідомлення.',
       });
     }
   });
