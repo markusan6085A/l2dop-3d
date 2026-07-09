@@ -438,6 +438,21 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-head-ico {
   pointer-events: none;
 }
 
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-subhead {
+  margin: 10px 2px 4px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport
+  .l2-teleport-miru-surroundings-list
+  .l2-teleport-miru-surroundings-subhead:first-child {
+  margin-top: 0;
+}
+
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-list .l2-town-miru-item {
   color: #e8dcc0;
 }
