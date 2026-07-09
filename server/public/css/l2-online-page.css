@@ -1,0 +1,121 @@
+/* online.html — список гравців онлайн (miru / WAP-стиль) */
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-panel {
+  padding: 4px 0 8px;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-head {
+  margin: 0 0 8px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-head__count {
+  color: #3ecf5a;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-sort {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-sort__label {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-sort__sep {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-sort__btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: underline;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-sort__btn--active {
+  color: #f5ecd0;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-clan-filter {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c8c0b0;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-col-head {
+  margin: 0 0 4px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #8a8a8a;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__ico {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__nick {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #e8dcc0;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__city {
+  margin: 2px 0 0 20px;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #9a9488;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-empty {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  color: #9a9488;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-chrome-nav-column > .err {
+  margin: 0 0 8px;
+}

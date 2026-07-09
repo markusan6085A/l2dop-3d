@@ -2737,6 +2737,26 @@ html body.l2-app-l2-chrome .l2-online-foot {
   text-align: center;
 }
 
+html body.l2-app-l2-chrome .l2-online-foot__link {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #626262;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html body.l2-app-l2-chrome .l2-online-foot__link:hover,
+html body.l2-app-l2-chrome .l2-online-foot__link:focus {
+  color: #787878;
+}
+
 html body.l2-app-l2-chrome .l2-online-foot__btn {
   margin: 0;
   padding: 0;

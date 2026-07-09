@@ -1,16 +1,19 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Меню — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <title>Онлайн — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav14" />
-    <link rel="stylesheet" href="/css/l2-menu-page.css?v=20260705menuCraft1512" />
+    <link rel="stylesheet" href="/css/l2-online-page.css?v=20260709online1" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal">
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-online l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
@@ -54,25 +57,34 @@
             decoding="async"
           />
         </div>
-        <div class="l2-screen-inner l2-menu-root">
+        <div class="l2-screen-inner l2-online-root">
           <div class="l2-chrome-nav-column">
             <div id="l2-hud-panel-mount"></div>
-
             <div id="l2-nav-top"></div>
 
-            <section class="l2-menu-panel" aria-label="Меню">
-              <h1 class="l2-pers-h1">Меню</h1>
-              <p class="l2-city-stub-msg" id="l2-menu-stub-msg" hidden></p>
-              <div id="l2-menu-craft-wrap" class="l2-menu-craft-wrap" hidden>
-                <a class="l2-town-btn l2-menu-btn-541" href="/craft.html">Крафт</a>
+            <p class="err" id="online-load-err" hidden></p>
+
+            <section class="l2-online-panel" id="online-content" aria-label="Онлайн" hidden>
+              <h1 class="l2-online-head">
+                Зараз у грі (<span class="l2-online-head__count" id="online-count">0</span>)
+              </h1>
+
+              <div class="l2-online-sort" role="group" aria-label="Сортування">
+                <span class="l2-online-sort__label">Сортувати за:</span>
+                <button type="button" class="l2-online-sort__btn" data-sort="level" id="online-sort-level">
+                  рівнем
+                </button>
+                <span class="l2-online-sort__sep" aria-hidden="true">|</span>
+                <button type="button" class="l2-online-sort__btn" data-sort="name" id="online-sort-name">
+                  ніком
+                </button>
               </div>
-              <div id="l2-menu-dev-boost-wrap" class="l2-menu-craft-wrap" hidden>
-                <a class="l2-town-btn l2-menu-btn-541" href="/dev-boost.html">Тест: Lv / Адена / SP</a>
-              </div>
-              <div id="l2-menu-body"></div>
-              <p class="l2-teleport-panel__back">
-                <a class="l2-town-btn l2-menu-btn-4187" href="/city.html">Назад до міста</a>
-              </p>
+
+              <p class="l2-online-clan-filter">Без клану</p>
+
+              <p class="l2-online-col-head">Нік</p>
+
+              <div class="l2-online-list" id="online-players-list" aria-live="polite"></div>
             </section>
 
             <div id="l2-nav-bottom"></div>
@@ -83,8 +95,7 @@
 
     <script src="/common.js?v=20260709miruNav14"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260709miruNav8"></script>
-    <script src="/craftProfessions.js"></script>
-    <script src="/menu.js"></script>
+    <script src="/l2-nav.js?v=20260709miruNav9"></script>
+    <script src="/online.js?v=20260709online1"></script>
   </body>
 </html>
