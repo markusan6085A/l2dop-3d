@@ -1,8 +1,82 @@
 /**
- * Сторінка «Персонаж»: snapshot з GET /character + портрет як у інвентарі.
+ * Сторінка «Персонаж»: шапка профілю + портрет героя.
  */
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel {
+  margin-top: 0.5cm;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__title {
+  margin: 0 0 8px;
+  padding: 0;
+  text-align: center;
+  font-family: var(--l2-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__rule {
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__nick {
+  margin: 0 0 6px;
+  padding: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #f0d880;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 10px rgba(200, 150, 60, 0.2);
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 8px;
+  margin: 0 0 10px;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__status {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c8c0b0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__edit {
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #e07070;
+  text-decoration: underline;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__edit:hover,
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__edit:focus {
+  color: #ff9090;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel__edit:active {
+  color: #ffb0b0;
+}
+
 body.l2-app-l2-chrome.l2-page-character .l2-character-hero-panel {
-  margin-top: 4cm;
+  margin-top: 0;
   padding: 0;
 }
 
@@ -13,4 +87,8 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-hero-panel .l2-char-photo-
 
 body.l2-app-l2-chrome.l2-page-character .l2-char-equip-frame--hero-only {
   margin: 0 auto;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-city-stub-msg {
+  margin-top: 8px;
 }

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav15" />
     <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260708charClsHold1" />
-    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260709character1" />
+    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260709character2" />
   </head>
   <body
     class="l2-body l2-page-city l2-page-char l2-page-character l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -65,31 +65,53 @@
 
           <p class="err" id="character-load-err" hidden></p>
 
-          <section class="l2-character-hero-panel" id="character-content" aria-label="Персонаж" hidden>
-            <div class="l2-char-photo-wrap">
-              <div class="l2-char-equip-frame l2-char-equip-frame--hero-only">
-                <div class="l2-char-equip-bg">
-                  <img
-                    class="l2-char-equip-scene"
-                    src="/assets/photo_2026-07-05_14-33-19.jpg"
-                    width="300"
-                    height="220"
-                    alt=""
-                    decoding="async"
-                    fetchpriority="high"
-                  />
-                  <div class="l2-char-equip-hero-stage" id="char-hero-stage" hidden>
+          <section class="l2-character-panel" id="character-content" aria-label="Персонаж" hidden>
+            <h1 class="l2-character-panel__title">Мій персонаж</h1>
+
+            <hr class="l2-pers-rule l2-character-panel__rule" />
+
+            <p class="l2-character-panel__nick" id="character-nick">—</p>
+
+            <div class="l2-character-panel__status-row">
+              <span class="l2-character-panel__status" id="character-status">Немає статусу</span>
+              <button
+                type="button"
+                class="l2-character-panel__edit"
+                id="character-status-edit"
+                data-stub="Редагування статусу"
+              >
+                ред.
+              </button>
+            </div>
+
+            <div class="l2-character-hero-panel">
+              <div class="l2-char-photo-wrap">
+                <div class="l2-char-equip-frame l2-char-equip-frame--hero-only">
+                  <div class="l2-char-equip-bg">
                     <img
-                      id="char-hero-img"
-                      class="l2-char-equip-hero l2-char-equip-hero-overlay"
+                      class="l2-char-equip-scene"
+                      src="/assets/photo_2026-07-05_14-33-19.jpg"
+                      width="300"
+                      height="220"
                       alt=""
                       decoding="async"
+                      fetchpriority="high"
                     />
+                    <div class="l2-char-equip-hero-stage" id="char-hero-stage" hidden>
+                      <img
+                        id="char-hero-img"
+                        class="l2-char-equip-hero l2-char-equip-hero-overlay"
+                        alt=""
+                        decoding="async"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </section>
+
+          <p class="l2-city-stub-msg" id="character-stub-msg" hidden></p>
 
           <div id="l2-nav-bottom"></div>
         </div>
@@ -100,6 +122,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709character1"></script>
     <script src="/charHeroPortrait.js?v=20260709character1"></script>
-    <script src="/character.js?v=20260709character1"></script>
+    <script src="/character.js?v=20260709character2"></script>
   </body>
 </html>
