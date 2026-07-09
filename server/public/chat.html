@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Онлайн — L2WAP</title>
+    <title>Чат — L2WAP</title>
     <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav15" />
-    <link rel="stylesheet" href="/css/l2-online-page.css?v=20260709online1" />
+    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260709chat1" />
   </head>
   <body
-    class="l2-body l2-page-city l2-city-ui-l2 l2-page-online l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-chat l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
   >
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
@@ -57,34 +57,50 @@
             decoding="async"
           />
         </div>
-        <div class="l2-screen-inner l2-online-root">
+        <div class="l2-screen-inner l2-chat-root">
           <div class="l2-chrome-nav-column">
             <div id="l2-hud-panel-mount"></div>
             <div id="l2-nav-top"></div>
 
-            <p class="err" id="online-load-err" hidden></p>
+            <p class="err" id="chat-load-err" hidden></p>
 
-            <section class="l2-online-panel" id="online-content" aria-label="Онлайн" hidden>
-              <h1 class="l2-online-head">
-                Зараз у грі (<span class="l2-online-head__count" id="online-count">0</span>)
-              </h1>
-
-              <div class="l2-online-sort" role="group" aria-label="Сортування">
-                <span class="l2-online-sort__label">Сортувати за:</span>
-                <button type="button" class="l2-online-sort__btn" data-sort="level" id="online-sort-level">
-                  рівнем
+            <section class="l2-chat-panel" id="chat-content" aria-label="Чат" hidden>
+              <div class="l2-chat-tabs" role="tablist" aria-label="Канали чату">
+                <button type="button" class="l2-chat-tabs__btn l2-chat-tabs__btn--active" data-channel="all" id="chat-tab-all">
+                  Заг
                 </button>
-                <span class="l2-online-sort__sep" aria-hidden="true">|</span>
-                <button type="button" class="l2-online-sort__btn" data-sort="name" id="online-sort-name">
-                  ніком
+                <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
+                <button type="button" class="l2-chat-tabs__btn" data-channel="trade" id="chat-tab-trade">
+                  Торг
                 </button>
+                <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
+                <button type="button" class="l2-chat-tabs__btn" data-channel="my" id="chat-tab-my">Мій</button>
               </div>
 
-              <p class="l2-online-clan-filter">Без клану</p>
+              <label class="l2-chat-input-wrap">
+                <input
+                  type="text"
+                  class="l2-chat-input"
+                  id="chat-input"
+                  maxlength="220"
+                  autocomplete="off"
+                  aria-label="Повідомлення"
+                  placeholder="Введіть повідомлення..."
+                />
+              </label>
 
-              <p class="l2-online-col-head">Нік</p>
+              <div class="l2-chat-compose-actions">
+                <button type="button" class="l2-chat-send" id="chat-send-btn">Написати</button>
+                <button type="button" class="l2-chat-link" id="chat-refresh-btn">Оновити</button>
+                <span class="l2-chat-actions-sep" aria-hidden="true">|</span>
+                <button type="button" class="l2-chat-link" id="chat-smiles-btn" data-stub="Смайли">Смайли</button>
+              </div>
 
-              <div class="l2-online-list" id="online-players-list" aria-live="polite"></div>
+              <p class="l2-city-stub-msg" id="chat-stub-msg" hidden></p>
+
+              <div class="l2-chat-list" id="chat-messages" aria-live="polite"></div>
+
+              <nav class="l2-chat-pages" id="chat-pages" aria-label="Сторінки чату" hidden></nav>
             </section>
 
             <div id="l2-nav-bottom"></div>
@@ -96,6 +112,6 @@
     <script src="/common.js?v=20260709miruNav16"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709chat1"></script>
-    <script src="/online.js?v=20260709online1"></script>
+    <script src="/chat.js?v=20260709chat1"></script>
   </body>
 </html>

@@ -22,8 +22,7 @@
     },
     {
       iconPath: NAV_ICON + 'photo_2026-07-05_12-52-37.jpg',
-      href: null,
-      stubKey: 'nav_chat',
+      href: '/chat.html',
       i18nKey: 'nav_chat',
       i18nTitleKey: 'nav_chat_title',
       lbl: 'p2',

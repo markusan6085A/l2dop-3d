@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { registerGameBattleRoutes } from './gameBattleRoutes.js';
 import { registerGameIconRoutes } from './gameIconRoutes.js';
+import { registerGameChatRoutes } from './gameChatRoutes.js';
 import { registerGameOnlineRoutes } from './gameOnlineRoutes.js';
 import { registerGameResourceCraftRoutes } from './gameResourceCraftRoutes.js';
 import { registerGameWorldRoutes } from './gameWorldRoutes.js';
@@ -11,4 +12,5 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
   registerGameBattleRoutes(app);
   registerGameResourceCraftRoutes(app);
   registerGameOnlineRoutes(app);
+  registerGameChatRoutes(app);
 };

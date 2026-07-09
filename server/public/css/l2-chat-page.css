@@ -1,0 +1,206 @@
+/**
+ * chat.html — WAP-чат (Заг | Торг | Мій).
+ */
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-panel {
+  margin-top: 0.5cm;
+  padding: 0 0.5cm;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #e8dcc0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__btn--active {
+  color: #fff;
+  font-weight: 700;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__sep {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-input-wrap {
+  display: block;
+  margin: 0 0 6px;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px 6px;
+  border: 1px solid #888;
+  border-radius: 0;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-input::placeholder {
+  color: #666;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-compose-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-send {
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid #333;
+  border-radius: 0;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #e8dcc0;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-actions-sep {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty {
+  margin: 0;
+  padding: 8px 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c8c0b0;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg {
+  margin: 0;
+  padding: 0 0 6px;
+  border-bottom: 1px dotted rgba(80, 80, 80, 0.55);
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 2px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__ico {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__nick {
+  color: #d4a040;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__reply {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #e8dcc0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__ago {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #fff;
+  word-break: break-word;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-pages__btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: #e8dcc0;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-pages__btn--active {
+  color: #fff;
+  font-weight: 700;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-city-stub-msg {
+  margin: 0 0 8px;
+}

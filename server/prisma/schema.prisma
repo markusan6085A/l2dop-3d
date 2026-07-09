@@ -71,6 +71,19 @@ model Character {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastUpdate DateTime @updatedAt
+  chatMessages ChatMessage[]
 
   @@index([userId, lastUpdate(sort: Desc)])
+}
+
+model ChatMessage {
+  id          String    @id @default(uuid())
+  /** all | trade | my */
+  channel     String    @default("all")
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  text        String
+  createdAt   DateTime  @default(now())
+
+  @@index([channel, createdAt(sort: Desc)])
 }
