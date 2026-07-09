@@ -50,17 +50,18 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-input {
   max-width: 100%;
   margin: 0;
   padding: 4px 6px;
-  border: 1px solid #888;
+  border: 2px solid #fff;
   border-radius: 0;
-  background: #fff;
-  color: #111;
+  background: #2c2824;
+  color: #e8dcc0;
+  caret-color: #d4c4a8;
   font: inherit;
   font-size: 12px;
   line-height: 1.35;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-input::placeholder {
-  color: #666;
+  color: rgba(232, 220, 192, 0.55);
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-compose-actions {
@@ -83,6 +84,28 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-send {
   line-height: 1.35;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-clear {
+  margin: 0;
+  padding: 0 3px;
+  min-width: 16px;
+  height: 18px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #111;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-clear:hover,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-clear:focus {
+  color: #000;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-link {
@@ -170,7 +193,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
   padding: 0 0 0 18px;
   font-size: 12px;
   line-height: 1.4;
-  color: #fff;
+  color: #e8dcc0;
   word-break: break-word;
 }
 

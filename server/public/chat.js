@@ -276,6 +276,19 @@
     var sendBtn = $('chat-send-btn');
     if (sendBtn) sendBtn.addEventListener('click', sendChat);
 
+    var clearBtn = $('chat-clear-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function () {
+        var input = $('chat-input');
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
+        var stubEl = $('chat-stub-msg');
+        if (stubEl) stubEl.hidden = true;
+      });
+    }
+
     var refreshBtn = $('chat-refresh-btn');
     if (refreshBtn) refreshBtn.addEventListener('click', loadChat);
 
