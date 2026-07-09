@@ -103,8 +103,8 @@
       var img = document.createElement('img');
       img.className = 'l2-wap-ico';
       img.src = item.iconPath ? item.iconPath : ASSETS + '/' + item.icon;
-      img.width = 16;
-      img.height = 16;
+      img.width = 12;
+      img.height = 12;
       img.alt = '';
       img.decoding = 'async';
       img.addEventListener('error', function onIcoErr() {
