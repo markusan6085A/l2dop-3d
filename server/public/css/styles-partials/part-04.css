@@ -405,7 +405,7 @@
   font-size: 12px;
   line-height: 1.45;
   text-align: left;
-  color: #d4c4a8;
+  color: #ffffff;
   font-variant-numeric: tabular-nums;
 }
 
@@ -458,7 +458,7 @@
   padding: 4px 0;
   text-align: center;
   font-family: var(--l2-font-display);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.03em;
   line-height: 1.35;
@@ -472,23 +472,24 @@
 }
 
 .l2-battle-victory-link--primary {
-  color: #4a3820;
-  text-shadow: none;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .l2-battle-victory-link--primary:hover,
 .l2-battle-victory-link--primary:focus {
-  color: #2e2214;
+  color: #f0f0f0;
   outline: none;
 }
 
 .l2-battle-victory-link--muted {
-  color: #5c4a32;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .l2-battle-victory-link--muted:hover,
 .l2-battle-victory-link--muted:focus {
-  color: #3d3020;
+  color: #f0f0f0;
   outline: none;
 }
 

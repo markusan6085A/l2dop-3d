@@ -1010,13 +1010,6 @@
       });
     }
 
-    var openDetailBtn = $('map-mob-open-detail');
-    if (openDetailBtn) {
-      openDetailBtn.addEventListener('click', function () {
-        showMobDetailView();
-      });
-    }
-
     var pagePrev = $('map-mob-page-prev');
     var pageNext = $('map-mob-page-next');
     if (pagePrev) {

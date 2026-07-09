@@ -6,6 +6,7 @@ export {
   startBattle,
   leaveBattle,
 } from './battleServiceSession.js';
+export { saveBattleHotbar } from './battleServiceHotbar.js';
 export { performBattleAction } from './battleServicePerformBattleAction.js';
 export type {
   BattleBuffIcon,

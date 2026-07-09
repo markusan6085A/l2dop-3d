@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import type { InventoryState } from '../data/inventory.js';
 import type { LearnedSkillEntry } from '../data/humanFighterSkillCatalog.js';
 import type { CastableSelfBuffEntry } from '../data/castableSelfBuffs.js';
+import type { BattleHotbarSlot } from '../domain/battleHotbar.js';
 
 /** Рядок Character з БД (Prisma XOR інколи «губить» Json у create/update — тут явно). */
 export interface CharacterRow {
@@ -38,6 +39,8 @@ export interface CharacterRow {
   activeBuffsJson: Prisma.JsonValue | null;
   /** Перезарядки скілів поза боєм: `[{skillId, readyAt}]` (мс epoch). */
   skillCooldownsJson: Prisma.JsonValue | null;
+  /** Розкладка панелі скілів у бою (41 слот). */
+  battleHotbarJson: Prisma.JsonValue | null;
   buffHeroicTier: number | null;
   buffZealotStacks: number | null;
   chatRepliesReadAt: Date;
@@ -159,4 +162,6 @@ export interface CharacterSnapshot {
    * і MP cost). Для UI: `active`, `activeRemainingSec`, `readyRemainingSec`.
    */
   castableSelfBuffs: CastableSelfBuffEntry[];
+  /** Розкладка панелі скілів у бою (41 слот); `null` — ще не збережено. */
+  battleHotbarSlots: (BattleHotbarSlot | null)[] | null;
 }

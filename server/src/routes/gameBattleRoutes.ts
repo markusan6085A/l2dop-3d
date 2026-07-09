@@ -8,6 +8,7 @@ import {
   getBattleState,
   leaveBattle,
   performBattleAction,
+  saveBattleHotbar,
   startBattle,
 } from '../services/battleService.js';
 import type { BattleActionId } from '../domain/battle.js';
@@ -497,6 +498,68 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           return reply.code(404).send({ error: 'forbidden' });
         }
         await logBattleMutation(request, 'battle_leave', er, 'error');
+        throw e;
+      }
+    }
+  );
+
+  app.post(
+    '/battle/hotbar',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const body = request.body;
+      if (!body || typeof body !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = body as Record<string, unknown>;
+      const er = b.expectedRevision;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      if (!('slots' in b)) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен масив слотів панелі скілів.',
+        });
+      }
+      try {
+        const character = await saveBattleHotbar(userId, er, b.slots);
+        await logBattleMutation(
+          request,
+          'battle_hotbar',
+          er,
+          'ok',
+          character.revision,
+          character.id
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logBattleMutation(request, 'battle_hotbar', er, 'conflict');
+          return sendRevisionConflict(reply);
+        }
+        if (e instanceof Error && e.message === 'hotbar_invalid') {
+          await logBattleMutation(request, 'battle_hotbar', er, 'error');
+          return reply.code(400).send({
+            error: 'invalid_input',
+            messageUk: 'Некоректна розкладка панелі скілів.',
+          });
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          await logBattleMutation(request, 'battle_hotbar', er, 'error');
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        await logBattleMutation(request, 'battle_hotbar', er, 'error');
         throw e;
       }
     }

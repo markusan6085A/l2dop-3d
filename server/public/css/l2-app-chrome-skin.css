@@ -1013,22 +1013,24 @@ body.l2-app-l2-chrome .l2-battle-victory-link--muted {
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--primary {
-  color: #4a3820 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55) !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--muted {
-  color: #5c4a32 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55) !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--primary:hover,
 body.l2-app-l2-chrome .l2-battle-victory-link--primary:focus {
-  color: #2e2214 !important;
+  color: #f0f0f0 !important;
   outline: none;
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--muted:hover,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted:focus {
-  color: #3d3020 !important;
+  color: #f0f0f0 !important;
   outline: none;
 }
 
@@ -1235,9 +1237,9 @@ body.l2-app-l2-chrome .l2-battle-defeat-tocity {
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link {
-  padding: 5px 12px !important;
-  font-size: 11px !important;
-  line-height: 1.2 !important;
+  padding: 4px 0 !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
 }
 
 /* Бій: те саме тло колонки, що місто/перс (просвічує radial+void), без важких «коробок» */
@@ -1297,6 +1299,7 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__shout {
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__loot {
   margin: 0 0 6px !important;
+  color: #ffffff !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__links {

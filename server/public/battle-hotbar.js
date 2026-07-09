@@ -376,10 +376,31 @@
     return 'l2dop_battle_hotbar_v3_' + characterId;
   }
 
-  function loadSlots(characterId) {
+  function slotsHaveContent(slots) {
+    if (!slots || !slots.length) return false;
+    for (var hi = 0; hi < slots.length; hi++) {
+      if (slots[hi]) return true;
+    }
+    return false;
+  }
+
+  function loadSlots(characterId, serverSlots) {
     var out = new Array(HOTBAR_SLOTS);
     for (var i = 0; i < HOTBAR_SLOTS; i++) out[i] = null;
     if (!characterId) return out;
+
+    if (serverSlots && Array.isArray(serverSlots)) {
+      var fromServer = [];
+      var hasServer = false;
+      for (var si = 0; si < HOTBAR_SLOTS; si++) {
+        var norm =
+          si < serverSlots.length ? normalizeSlot(serverSlots[si]) : null;
+        fromServer[si] = norm;
+        if (norm) hasServer = true;
+      }
+      if (hasServer) return fromServer;
+    }
+
     try {
       var raw = localStorage.getItem(storageKey(characterId));
       if (!raw) {
@@ -414,13 +435,69 @@
     return null;
   }
 
-  function saveSlots(characterId, slots) {
+  var hotbarPersistCtx = null;
+  var hotbarPersistTimer = null;
+
+  function setHotbarPersistCtx(ctx) {
+    hotbarPersistCtx = ctx;
+  }
+
+  function scheduleHotbarPersist(character, slots) {
+    if (!hotbarPersistCtx || !character || !character.revision) return;
+    if (hotbarPersistTimer != null) clearTimeout(hotbarPersistTimer);
+    hotbarPersistTimer = setTimeout(function () {
+      hotbarPersistTimer = null;
+      flushHotbarPersist(character, slots);
+    }, 500);
+  }
+
+  async function flushHotbarPersist(character, slots) {
+    var ctx = hotbarPersistCtx;
+    if (!ctx) return;
+    var t = ctx.getToken ? ctx.getToken() : null;
+    if (!t) return;
+    var c = ctx.getCharacter ? ctx.getCharacter() : character;
+    if (!c || !c.revision) return;
+    async function postOnce(revision) {
+      return fetch('/game/battle/hotbar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + t,
+        },
+        body: JSON.stringify({
+          slots: slots,
+          expectedRevision: revision,
+        }),
+      });
+    }
+    try {
+      var r = await postOnce(c.revision);
+      if (r.status === 409 && window.L2 && L2.resyncCharacterAfterConflict) {
+        await L2.resyncCharacterAfterConflict();
+        c = ctx.getCharacter ? ctx.getCharacter() : null;
+        if (!c || !c.revision) return;
+        r = await postOnce(c.revision);
+      }
+      if (!r.ok) return;
+      var j = await r.json();
+      if (j.character) {
+        if (ctx.setCharacter) ctx.setCharacter(j.character);
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(j.character);
+      }
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  function saveSlots(characterId, slots, characterOpt) {
     if (!characterId) return;
     try {
       localStorage.setItem(storageKey(characterId), JSON.stringify(slots));
     } catch (e) {
       /* ignore */
     }
+    if (characterOpt) scheduleHotbarPersist(characterOpt, slots);
   }
 
   /**
@@ -493,7 +570,7 @@
       }
     }
     if (changed && characterId) {
-      saveSlots(characterId, out);
+      saveSlots(characterId, out, character);
     }
     return out;
   }
@@ -543,6 +620,7 @@
    * @param {{ container: HTMLElement, getBattle: function(): object, getCharacter: function(): object, setCharacter: function(c: object): void, onBattleAction: function(actionId: string): void, onFighterSoulshotToggle?: function(itemId: number): void, onMysticSpiritshotToggle?: function(itemId: number): void, onBattlePotionUse?: function(itemId: number): void, getToken: function(): string|null, showToast: function(msg: string): void }} opts
    */
   function mountBattleHotbar(opts) {
+    setHotbarPersistCtx(opts);
     var modal = null;
     var pickerSlot = null;
     var category = 'magic';
@@ -773,7 +851,7 @@
               b.addEventListener('click', function () {
                 if (pickerSlot == null) return;
                 slotsCache[pickerSlot] = { k: 'a', a: canonicalBattleActionId(sk.id) };
-                saveSlots(character.id, slotsCache);
+                saveSlots(character.id, slotsCache, character);
                 closeModal();
                 render();
               });
@@ -806,7 +884,7 @@
               bc.addEventListener('click', function () {
                 if (pickerSlot == null) return;
                 slotsCache[pickerSlot] = { k: 'u', id: row.itemId };
-                saveSlots(character.id, slotsCache);
+                saveSlots(character.id, slotsCache, character);
                 closeModal();
                 render();
               });
@@ -838,7 +916,7 @@
               b2.addEventListener('click', function () {
                 if (pickerSlot == null) return;
                 slotsCache[pickerSlot] = { k: 'i', id: row.itemId, e: row.enchant };
-                saveSlots(character.id, slotsCache);
+                saveSlots(character.id, slotsCache, character);
                 closeModal();
                 render();
               });
@@ -880,7 +958,7 @@
               b3.innerHTML = '<img src="' + src + '" alt="" class="l2-battle-hotbar-pick-img"/>';
               b3.addEventListener('click', function () {
                 slotsCache[ent.idx] = null;
-                saveSlots(character.id, slotsCache);
+                saveSlots(character.id, slotsCache, character);
                 syncModalContent();
                 render();
               });
@@ -1132,7 +1210,13 @@
       box.innerHTML = '';
       if (!battle) return;
 
-      slotsCache = loadSlots(character.id);
+      slotsCache = loadSlots(character.id, character.battleHotbarSlots);
+      if (
+        !slotsHaveContent(character.battleHotbarSlots || []) &&
+        slotsHaveContent(slotsCache)
+      ) {
+        saveSlots(character.id, slotsCache, character);
+      }
       var allowed = allowedActionsSet(battle);
       slotsCache = sanitizeSlotsAgainstBattle(
         slotsCache,

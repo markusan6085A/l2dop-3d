@@ -15,6 +15,7 @@ import {
   resolveL2ProfessionForSkillsRow,
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { mapMoveSpeedFromRunSpeed } from '../domain/mapMovement.js';
+import { parseBattleHotbarSlots } from '../domain/battleHotbar.js';
 import {
   effectiveBattleAccuracyDisplay,
   effectiveBattleCritRateDisplay,
@@ -394,5 +395,6 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
       skillCooldownsJson: row.skillCooldownsJson,
       nowMs,
     }),
+    battleHotbarSlots: parseBattleHotbarSlots(row.battleHotbarJson),
   };
 }
