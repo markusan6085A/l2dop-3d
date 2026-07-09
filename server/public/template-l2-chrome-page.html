@@ -58,7 +58,11 @@
         </div>
 
         <div class="l2-screen-inner l2-your-content-root">
-          <!-- HUD: <div id="l2-hud-panel-mount"></div> + /common.js (L2.getHudPanelMarkup збігається з /partials/l2-hud-panel.html) -->
+  <!--
+    HUD + nav: /partials/l2-chrome-nav-column.html
+    Розмітка HUD: common.js → L2.getHudPanelMarkup() (+ /partials/l2-hud-panel.html для city-strip).
+    Якщо є #l2-nav-bottom — автоматично legacy-minimal (як city), без рамки 222 на барах.
+  -->
           <p style="color: #a08c70; padding: 1rem; margin: 0">Вміст сторінки — сюди.</p>
         </div>
       </div>

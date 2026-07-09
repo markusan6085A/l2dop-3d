@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav4" />
     <link rel="stylesheet" href="/css/l2-menu-page.css?v=20260705menuCraft1512" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal">
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
@@ -55,33 +55,35 @@
           />
         </div>
         <div class="l2-screen-inner l2-menu-root">
-          <div id="l2-hud-panel-mount"></div>
+          <div class="l2-chrome-nav-column">
+            <div id="l2-hud-panel-mount"></div>
 
-          <div id="l2-nav-top"></div>
+            <div id="l2-nav-top"></div>
 
-          <section class="l2-menu-panel" aria-label="Меню">
-            <h1 class="l2-pers-h1">Меню</h1>
-            <p class="l2-city-stub-msg" id="l2-menu-stub-msg" hidden></p>
-            <div id="l2-menu-craft-wrap" class="l2-menu-craft-wrap" hidden>
-              <a class="l2-town-btn l2-menu-btn-541" href="/craft.html">Крафт</a>
-            </div>
-            <div id="l2-menu-dev-boost-wrap" class="l2-menu-craft-wrap" hidden>
-              <a class="l2-town-btn l2-menu-btn-541" href="/dev-boost.html">Тест: Lv / Адена / SP</a>
-            </div>
-            <div id="l2-menu-body"></div>
-            <p class="l2-teleport-panel__back">
-              <a class="l2-town-btn l2-menu-btn-4187" href="/city.html">Назад до міста</a>
-            </p>
-          </section>
+            <section class="l2-menu-panel" aria-label="Меню">
+              <h1 class="l2-pers-h1">Меню</h1>
+              <p class="l2-city-stub-msg" id="l2-menu-stub-msg" hidden></p>
+              <div id="l2-menu-craft-wrap" class="l2-menu-craft-wrap" hidden>
+                <a class="l2-town-btn l2-menu-btn-541" href="/craft.html">Крафт</a>
+              </div>
+              <div id="l2-menu-dev-boost-wrap" class="l2-menu-craft-wrap" hidden>
+                <a class="l2-town-btn l2-menu-btn-541" href="/dev-boost.html">Тест: Lv / Адена / SP</a>
+              </div>
+              <div id="l2-menu-body"></div>
+              <p class="l2-teleport-panel__back">
+                <a class="l2-town-btn l2-menu-btn-4187" href="/city.html">Назад до міста</a>
+              </p>
+            </section>
 
-          <div id="l2-nav-bottom"></div>
+            <div id="l2-nav-bottom"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <script src="/common.js"></script>
+    <script src="/common.js?v=20260709miruNav4"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
+    <script src="/l2-nav.js?v=20260709miruNav4"></script>
     <script src="/craftProfessions.js"></script>
     <script src="/menu.js"></script>
   </body>

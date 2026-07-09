@@ -739,7 +739,20 @@
      * Єдина розмітка HUD (рамка + нік/Lv/клас + HP/MP/CP). Тримати в синхроні з /partials/l2-hud-panel.html.
      * Сторінка: замість повного <header> — лише <div id="l2-hud-panel-mount"></div>; mount на DOMContentLoaded.
      */
+    /**
+     * Сторінки з #l2-nav-bottom — legacy-minimal HUD (як city), без рамки 222 на барах.
+     */
+    ensureNavMinimalChrome: function () {
+      if (typeof document === 'undefined' || !document.body) return;
+      if (document.getElementById('l2-nav-bottom')) {
+        document.body.classList.add('l2-nav-minimal');
+      }
+    },
+
     getHudPanelMarkup: function () {
+      if (global.L2.ensureNavMinimalChrome) {
+        global.L2.ensureNavMinimalChrome();
+      }
       var isLegacyMinimal =
         typeof document !== 'undefined' &&
         document.body &&
@@ -794,15 +807,30 @@
     },
 
     mountStandardHudPanel: function () {
+      if (global.L2.ensureNavMinimalChrome) {
+        global.L2.ensureNavMinimalChrome();
+      }
       var m = document.getElementById('l2-hud-panel-mount');
-      if (!m) return;
+      var existing = document.querySelector(
+        '.l2-chrome-nav-column > .l2-hud-panel, .l2-townlive-column > .l2-hud-panel, .l2-screen-inner > .l2-hud-panel'
+      );
       var html = global.L2.getHudPanelMarkup();
       var tpl = document.createElement('template');
       /* template розбирає одразу вузол <header> */
       tpl.innerHTML = html;
       var node = tpl.content.firstElementChild;
-      if (node && node.classList.contains('l2-hud-panel')) {
+      if (!node || !node.classList.contains('l2-hud-panel')) return;
+      if (m) {
         m.replaceWith(node);
+        return;
+      }
+      if (existing) {
+        var needLegacy = document.body.classList.contains('l2-nav-minimal');
+        var hasLegacy = existing.classList.contains('l2-hud-panel--legacy-minimal');
+        var hasStrip = existing.classList.contains('l2-hud-panel--city-strip');
+        if ((needLegacy && !hasLegacy) || (!needLegacy && !hasStrip)) {
+          existing.replaceWith(node);
+        }
       }
     },
 

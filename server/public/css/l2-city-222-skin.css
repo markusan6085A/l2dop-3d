@@ -1,7 +1,7 @@
 /**
  * Місто: l2-app-chrome-skin + сітка навігації; список сервісів — текст зліва, без рамок.
  */
-@import url('l2-app-chrome-skin.css?v=20260709miruNav3');
+@import url('l2-app-chrome-skin.css?v=20260709miruNav4');
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive {
   --l2s-city-town-btn-w: 100%;
@@ -75,10 +75,10 @@ body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-
 
 body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell {
   border: 1px solid #303030 !important;
-  border-radius: 8px !important;
+  border-radius: 9px !important;
   background: #303030 !important;
   box-shadow: none !important;
-  padding: 2px 5px !important;
+  padding: 3px 7px !important;
 }
 
 body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:hover,
