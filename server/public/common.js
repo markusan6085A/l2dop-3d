@@ -811,6 +811,100 @@
       );
     },
 
+    mountOnlineFoot: function () {
+      if (typeof document === 'undefined') return;
+      if (!document.body || !document.body.classList.contains('l2-app-l2-chrome')) return;
+      var shell = document.querySelector('.l2-shell');
+      var screen = shell && shell.querySelector('.l2-screen.l2-outer-sframe-host');
+      if (!shell || !screen) return;
+      if (document.getElementById('l2-online-foot')) return;
+
+      var foot = document.createElement('div');
+      foot.className = 'l2-online-foot';
+      foot.id = 'l2-online-foot';
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'l2-online-foot__btn';
+      btn.id = 'l2-online-btn';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.innerHTML =
+        'Онлайн: <span class="l2-online-foot__count" id="l2-online-count">—</span>';
+
+      var list = document.createElement('div');
+      list.className = 'l2-online-foot__list';
+      list.id = 'l2-online-list';
+      list.hidden = true;
+
+      foot.appendChild(btn);
+      foot.appendChild(list);
+      shell.insertBefore(foot, screen.nextSibling);
+
+      var onlineInFlight = false;
+      btn.addEventListener('click', async function () {
+        if (onlineInFlight) return;
+        if (!list.hidden) {
+          list.hidden = true;
+          btn.setAttribute('aria-expanded', 'false');
+          return;
+        }
+
+        var token = global.L2 && typeof global.L2.token === 'function' ? global.L2.token() : null;
+        if (!token) {
+          list.hidden = false;
+          btn.setAttribute('aria-expanded', 'true');
+          list.textContent = 'Потрібен вхід.';
+          return;
+        }
+
+        onlineInFlight = true;
+        btn.disabled = true;
+        try {
+          var r = await fetch('/game/online', {
+            headers: { Authorization: 'Bearer ' + token },
+          });
+          if (r.status === 401) {
+            list.hidden = false;
+            btn.setAttribute('aria-expanded', 'true');
+            list.textContent = 'Потрібен вхід.';
+            return;
+          }
+          if (!r.ok) {
+            list.hidden = false;
+            btn.setAttribute('aria-expanded', 'true');
+            list.textContent = 'Не вдалося завантажити онлайн.';
+            return;
+          }
+          var j = await r.json();
+          var countEl = document.getElementById('l2-online-count');
+          var count = j && j.count != null ? Number(j.count) : 0;
+          if (countEl) countEl.textContent = String(Number.isFinite(count) ? count : 0);
+
+          list.innerHTML = '';
+          var players = j && j.players ? j.players : [];
+          if (!players.length) {
+            list.textContent = 'Нікого в онлайні.';
+          } else {
+            for (var i = 0; i < players.length; i++) {
+              var row = document.createElement('div');
+              row.className = 'l2-online-foot__name';
+              row.textContent = players[i].name || '—';
+              list.appendChild(row);
+            }
+          }
+          list.hidden = false;
+          btn.setAttribute('aria-expanded', 'true');
+        } catch (_e) {
+          list.hidden = false;
+          btn.setAttribute('aria-expanded', 'true');
+          list.textContent = 'Не вдалося завантажити онлайн.';
+        } finally {
+          btn.disabled = false;
+          onlineInFlight = false;
+        }
+      });
+    },
+
     mountStandardHudPanel: function () {
       if (global.L2.ensureNavMinimalChrome) {
         global.L2.ensureNavMinimalChrome();
@@ -900,6 +994,9 @@
     function runHudMount() {
       if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
         global.L2.mountStandardHudPanel();
+      }
+      if (global.L2 && typeof global.L2.mountOnlineFoot === 'function') {
+        global.L2.mountOnlineFoot();
       }
     }
     if (document.readyState === 'loading') {

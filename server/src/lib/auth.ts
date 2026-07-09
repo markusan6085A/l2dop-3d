@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { verifyAccessToken } from './jwt.js';
+import { touchOnlinePresence } from '../services/onlinePresenceService.js';
 
 export async function requireAuth(
   request: FastifyRequest,
@@ -18,6 +19,9 @@ export async function requireAuth(
   try {
     const { sub } = verifyAccessToken(token);
     request.userId = sub;
+    touchOnlinePresence(sub).catch(() => {
+      /* presence — фоновий шум, не блокує запит */
+    });
   } catch {
     await reply.code(401).send({ error: 'Unauthorized' });
     return;
