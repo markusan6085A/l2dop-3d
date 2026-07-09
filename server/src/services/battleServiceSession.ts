@@ -31,7 +31,7 @@ import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { parseSkillsLearnedJson } from './skillLearnService.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
-import { battleViewFromState } from './battleServiceBattleUi.js';
+import { battleViewFromState, skillCooldownUiContextFromParts } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
 import { applyPassiveAndMove } from './battleServiceApplyPassive.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
@@ -91,7 +91,13 @@ export async function getBattleState(
       (row as CharacterRow).activeBuffsJson,
       Date.now()
     ),
-    parseSkillCooldowns((row as CharacterRow).skillCooldownsJson, Date.now())
+    parseSkillCooldowns((row as CharacterRow).skillCooldownsJson, Date.now()),
+    skillCooldownUiContextFromParts(
+      row.classBranch,
+      snap.castSpd,
+      snap.pAtkSpd,
+      snap.learnedBattleSkillsDetail
+    )
   );
   return { character: snap, battle: view };
 }
@@ -253,7 +259,13 @@ export async function startBattle(
         row.activeBuffsJson,
         Date.now()
       ),
-      parseSkillCooldowns(row.skillCooldownsJson, Date.now())
+      parseSkillCooldowns(row.skillCooldownsJson, Date.now()),
+      skillCooldownUiContextFromParts(
+        base.classBranch,
+        snap.castSpd,
+        snap.pAtkSpd,
+        snap.learnedBattleSkillsDetail
+      )
     );
     return { character: snap, battle: view };
   });

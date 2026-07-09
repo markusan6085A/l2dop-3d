@@ -54,7 +54,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'insect', weaknessPatkMul: 1.3 },
-      ...legacyBuffCdAndExpirePatches(75),
+      ...legacyBuffCdAndExpirePatches(75, ctx),
     };
   }
 
@@ -74,7 +74,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'monster', weaknessPatkMul: 1.3 },
-      ...legacyBuffCdAndExpirePatches(80),
+      ...legacyBuffCdAndExpirePatches(80, ctx),
     };
   }
 
@@ -93,7 +93,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'animal', weaknessPatkMul: 1.3 },
-      ...legacyBuffCdAndExpirePatches(87),
+      ...legacyBuffCdAndExpirePatches(87, ctx),
     };
   }
 
@@ -112,7 +112,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'dragon', weaknessPatkMul: 1.35 },
-      ...legacyBuffCdAndExpirePatches(88),
+      ...legacyBuffCdAndExpirePatches(88, ctx),
     };
   }
 
@@ -132,7 +132,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'plant', weaknessPatkMul: 1.3 },
-      ...legacyBuffCdAndExpirePatches(104),
+      ...legacyBuffCdAndExpirePatches(104, ctx),
     };
   }
 
@@ -152,7 +152,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { mobPatkDebuffMul: HOWL_MOB_PATK },
-      ...legacyBuffCdAndExpirePatches(116),
+      ...legacyBuffCdAndExpirePatches(116, ctx),
     };
   }
 
@@ -280,7 +280,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { lionheartIncomingPhysMul: LION_INCOMING },
-      ...legacyBuffCdAndExpirePatches(287),
+      ...legacyBuffCdAndExpirePatches(287, ctx),
     };
   }
 
@@ -301,7 +301,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'eye_hunter', weaknessPatkMul: 1.4 },
-      ...legacyBuffCdAndExpirePatches(359),
+      ...legacyBuffCdAndExpirePatches(359, ctx),
     };
   }
 
@@ -322,7 +322,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'eye_slayer', weaknessPatkMul: 1.4 },
-      ...legacyBuffCdAndExpirePatches(360),
+      ...legacyBuffCdAndExpirePatches(360, ctx),
     };
   }
 
@@ -349,7 +349,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { focusAttackActive: true },
-      ...legacyBuffCdAndExpirePatches(317),
+      ...legacyBuffCdAndExpirePatches(317, ctx),
     };
   }
 

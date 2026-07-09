@@ -28,6 +28,7 @@ import {
   markSkillCast,
   parseSkillCooldowns,
 } from '../data/skillCooldowns.js';
+import { resolveBattleSkillCooldownSec } from '../data/skillCooldownScaling.js';
 import {
   canonicalBattleSkillId,
   normalizeLearnedSkillsJson,
@@ -239,7 +240,19 @@ export async function castActiveSelfBuff(
       nowMs
     );
 
-    const cdSec = entry.cooldownSec ?? cooldownSecForSkillId(skillId);
+    const cdSecRaw = entry.cooldownSec ?? cooldownSecForSkillId(skillId);
+    const cdSec =
+      cdSecRaw !== undefined && cdSecRaw !== null
+        ? resolveBattleSkillCooldownSec({
+            classBranch: row.classBranch,
+            category: undefined,
+            kind: entry.kind,
+            skillRank: skillLevel,
+            baseCdSec: cdSecRaw,
+            castSpd: preSnap.castSpd,
+            pAtkSpd: preSnap.pAtkSpd,
+          })
+        : undefined;
     const nextCooldowns =
       cdSec !== undefined && cdSec !== null
         ? markSkillCast(cds, skillId, cdSec, nowMs)

@@ -29,7 +29,7 @@ import type {
   BattleView,
 } from './battleServiceTypes.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
-import { battleViewFromState } from './battleServiceBattleUi.js';
+import { battleViewFromState, skillCooldownUiContextFromParts } from './battleServiceBattleUi.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
@@ -348,7 +348,13 @@ export async function persistBattleContinueTurnInTx(
       row.activeBuffsJson,
       nowForView
     ),
-    parseSkillCooldowns(row.skillCooldownsJson, nowForView)
+    parseSkillCooldowns(row.skillCooldownsJson, nowForView),
+    skillCooldownUiContextFromParts(
+      char.classBranch,
+      snap.castSpd,
+      snap.pAtkSpd,
+      snap.learnedBattleSkillsDetail
+    )
   );
   return { character: snap, battle: view };
 }

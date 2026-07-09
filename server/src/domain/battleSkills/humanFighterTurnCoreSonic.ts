@@ -356,7 +356,7 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { dashRunSpeedFlat: 30 },
-      ...legacyBuffCdAndExpirePatches(451),
+      ...legacyBuffCdAndExpirePatches(451, ctx),
     };
   }
 
@@ -389,7 +389,7 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       magicOutcome: null,
       battleModsPatch: { sanctuaryIncomingPhysMul: 0.7 },
       sonicChargesPatch: { delta: -cost },
-      ...legacyBuffCdAndExpirePatches(442),
+      ...legacyBuffCdAndExpirePatches(442, ctx),
     };
   }
   return undefined;

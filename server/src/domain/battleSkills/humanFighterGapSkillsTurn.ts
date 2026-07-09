@@ -33,6 +33,7 @@ import type {
 import {
   assertSkillCooldownReady,
   isCooldownBlocked,
+  scaledSkillCooldownSec,
 } from './humanFighterTurnHelpers.js';
 
 function reqEntry(
@@ -71,11 +72,15 @@ function rank(ctx: BattleSkillResolveContext): number {
   return typeof v === 'number' && v >= 1 ? v : 1;
 }
 
-function cooldownPatchForSkill(skillId: number): Record<string, number> | undefined {
+function cooldownPatchForSkill(
+  skillId: number,
+  ctx: BattleSkillResolveContext
+): Record<string, number> | undefined {
   const catalogEntry = humanFighterCatalogEntry('l2_' + skillId);
-  const cdSec =
+  const rawCd =
     catalogEntry?.kind === 'toggle' ? 1 : cooldownSecForSkillId(skillId);
-  if (cdSec === undefined || cdSec <= 0) return undefined;
+  const cdSec = scaledSkillCooldownSec(ctx, rawCd, catalogEntry);
+  if (cdSec <= 0) return undefined;
   return { ['l2_' + skillId]: Date.now() + Math.floor(cdSec * 1000) };
 }
 
@@ -219,7 +224,7 @@ export function resolveHumanFighterGapSkillsTurn(
       assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const UE_DURATION_SEC = buffDurationSecForSkillId(111) ?? 30;
-    const cdPatch = cooldownPatchForSkill(111);
+    const cdPatch = cooldownPatchForSkill(111, ctx);
     return {
       mpCost: 50,
       pDmg: 0,
@@ -288,7 +293,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const FCC = 35;
     const FC_DURATION_SEC = buffDurationSecForSkillId(356) ?? 300;
-    const cdPatch = cooldownPatchForSkill(356);
+    const cdPatch = cooldownPatchForSkill(356, ctx);
     return {
       mpCost: 42,
       pDmg: 0,
@@ -309,7 +314,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const FPM = 1.12;
     const FP_DURATION_SEC = buffDurationSecForSkillId(357) ?? 300;
-    const cdPatch = cooldownPatchForSkill(357);
+    const cdPatch = cooldownPatchForSkill(357, ctx);
     return {
       mpCost: 42,
       pDmg: 0,
@@ -331,7 +336,7 @@ export function resolveHumanFighterGapSkillsTurn(
     const BLUFF_PDEF = 0.9;
     const BLUFF_CRIT = 1.25;
     const BLUFF_DURATION_SEC = buffDurationSecForSkillId(358) ?? 8;
-    const cdPatch = cooldownPatchForSkill(358);
+    const cdPatch = cooldownPatchForSkill(358, ctx);
     return {
       mpCost: 48,
       pDmg: 0,
@@ -356,7 +361,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const AGG_DEBUFF = 0.92;
     const AGG_DURATION_SEC = buffDurationSecForSkillId(18) ?? 15;
-    const cdPatch = cooldownPatchForSkill(18);
+    const cdPatch = cooldownPatchForSkill(18, ctx);
     return {
       mpCost: 28,
       pDmg: 0,
@@ -404,7 +409,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const SAN_MUL = 0.82;
     const SAN_DURATION_SEC = buffDurationSecForSkillId(97) ?? 30;
-    const cdPatch = cooldownPatchForSkill(97);
+    const cdPatch = cooldownPatchForSkill(97, ctx);
     return {
       mpCost: 38,
       pDmg: 0,
@@ -453,7 +458,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const HOR_DEBUFF = 0.82;
     const HOR_DURATION_SEC = buffDurationSecForSkillId(65) ?? 20;
-    const cdPatch = cooldownPatchForSkill(65);
+    const cdPatch = cooldownPatchForSkill(65, ctx);
     return {
       mpCost: 35,
       pDmg: 0,
@@ -474,7 +479,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const REFL = 0.18;
     const REFL_DURATION_SEC = buffDurationSecForSkillId(86) ?? 60;
-    const cdPatch = cooldownPatchForSkill(86);
+    const cdPatch = cooldownPatchForSkill(86, ctx);
     return {
       mpCost: 40,
       pDmg: 0,
@@ -527,7 +532,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const PANTHER_THRILL = 1.06;
     const PANTHER_DURATION_SEC = buffDurationSecForSkillId(283) ?? 60;
-    const cdPatch = cooldownPatchForSkill(283);
+    const cdPatch = cooldownPatchForSkill(283, ctx);
     return {
       mpCost: 70,
       pDmg: 0,
@@ -549,7 +554,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const SHIELD_MUL = 1.14;
     const SHIELD_DURATION_SEC = buffDurationSecForSkillId(322) ?? 30;
-    const cdPatch = cooldownPatchForSkill(322);
+    const cdPatch = cooldownPatchForSkill(322, ctx);
     return {
       mpCost: 55,
       pDmg: 0,
@@ -572,7 +577,7 @@ export function resolveHumanFighterGapSkillsTurn(
     const heal = Math.floor(
       ctx.playerMaxHpInBattle * 0.15 + row.power * 0.08
     );
-    const cdPatch = cooldownPatchForSkill(341);
+    const cdPatch = cooldownPatchForSkill(341, ctx);
     return {
       mpCost: row.mp,
       pDmg: 0,
@@ -594,7 +599,7 @@ export function resolveHumanFighterGapSkillsTurn(
     const row = touchOfDeathMpAndPower(rk);
     const atk = Math.floor(combat.pAtk * (1.25 + row.power / 400) * profM);
     const r = rollPhys(atk);
-    const cdPatch = cooldownPatchForSkill(342);
+    const cdPatch = cooldownPatchForSkill(342, ctx);
     return {
       mpCost: row.mp,
       pDmg: r.damage,
@@ -614,7 +619,7 @@ export function resolveHumanFighterGapSkillsTurn(
     }
     const MIR = 0.22;
     const MIR_DURATION_SEC = buffDurationSecForSkillId(350) ?? 60;
-    const cdPatch = cooldownPatchForSkill(350);
+    const cdPatch = cooldownPatchForSkill(350, ctx);
     return {
       mpCost: 52,
       pDmg: 0,
@@ -637,7 +642,7 @@ export function resolveHumanFighterGapSkillsTurn(
     const VIM = 0.88;
     const VRR = 0.12;
     const VENGEANCE_DURATION_SEC = buffDurationSecForSkillId(368) ?? 30;
-    const cdPatch = cooldownPatchForSkill(368);
+    const cdPatch = cooldownPatchForSkill(368, ctx);
     return {
       mpCost: 48,
       pDmg: 0,

@@ -22,6 +22,8 @@ import {
   parseSkillCooldowns,
   type SkillCooldownEntry,
 } from '../data/skillCooldowns.js';
+import { resolveBattleSkillCooldownSec } from '../data/skillCooldownScaling.js';
+import { humanFighterCatalogEntry } from '../data/humanFighterSkillCatalog.js';
 import {
   parseWorldCombatState,
   stanceCount,
@@ -100,6 +102,12 @@ import {
   applySonicChargesPatchInPlace,
   mergeMysticSkillCdUntilPatchIntoCooldownRows,
 } from './battleServicePerformBattleAction.turnPatches.js';
+
+function catalogEntryCategory(entry: unknown): string | null | undefined {
+  if (!entry || typeof entry !== 'object') return undefined;
+  const c = (entry as { category?: unknown }).category;
+  return typeof c === 'string' ? c : undefined;
+}
 
 export async function performBattleAction(
   userId: string,
@@ -678,7 +686,21 @@ export async function performBattleAction(
         } else {
           nextActiveBuffs.push(entry);
         }
-        const cdSec = cooldownSecForSkillId(skillId);
+        const buffEntry = humanFighterCatalogEntry('l2_' + skillId);
+        const rawCd = buffEntry?.cooldownSec ?? cooldownSecForSkillId(skillId);
+        const cdSec =
+          rawCd !== undefined && rawCd > 0
+            ? resolveBattleSkillCooldownSec({
+                classBranch: char.classBranch,
+                category: catalogEntryCategory(buffEntry),
+                kind: buffEntry?.kind,
+                skillRank: level,
+                baseCdSec: rawCd,
+                castSpd: combat.castSpd,
+                pAtkSpd: combat.pAtkSpd,
+                cooldownReductionMul: combat.cooldownReductionMul,
+              })
+            : undefined;
         if (cdSec !== undefined && cdSec > 0) {
           nextCooldowns = markSkillCast(
             nextCooldowns,

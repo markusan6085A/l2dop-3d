@@ -225,7 +225,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
       battleModsPatch: {
         dashRunSpeedFlat: dashRow?.s ?? DASH_RUN_FLAT[idx]!,
       },
-      ...legacyBuffCdAndExpirePatches(4),
+      ...legacyBuffCdAndExpirePatches(4, ctx),
     };
   }
 
@@ -248,7 +248,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { rapidShotAspdMul: RAPID_MUL },
-      ...legacyBuffCdAndExpirePatches(99),
+      ...legacyBuffCdAndExpirePatches(99, ctx),
     };
   }
 
@@ -277,7 +277,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
         snipeAccuracyFlat: pow,
         snipeCritRateAdd: 20,
       },
-      ...legacyBuffCdAndExpirePatches(313),
+      ...legacyBuffCdAndExpirePatches(313, ctx),
     };
   }
 

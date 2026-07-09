@@ -23,7 +23,11 @@ import {
 } from '../data/humanFighterSkillCatalog.js';
 import { fighterCatalogEntryForRace } from '../data/fighterSkillCatalog.byRace.js';
 import { mysticCatalogEntryForRace } from '../data/mysticSkillCatalog.byRace.js';
-import { mysticGlobalSkillCooldownSec } from '../data/mysticSkillCooldown.js';
+import {
+  CAST_SPD_BASELINE,
+  PATK_SPD_BASELINE,
+  resolveBattleSkillCooldownSec,
+} from '../data/skillCooldownScaling.js';
 import type { BattleView } from './battleServiceTypes.js';
 import {
   battleBuffLinesUk,
@@ -52,26 +56,103 @@ function effectiveBattleProfession(
     : 'human_fighter';
 }
 
+function catalogEntryCategory(entry: unknown): string | null | undefined {
+  if (!entry || typeof entry !== 'object') return undefined;
+  const c = (entry as { category?: unknown }).category;
+  return typeof c === 'string' ? c : undefined;
+}
+
+export type SkillCooldownUiContext = {
+  classBranch: string;
+  castSpd?: number;
+  pAtkSpd?: number;
+  cooldownReductionMul?: number;
+  learnedSkillRanks?: Record<string, number>;
+};
+
+export function skillCooldownUiContextFromParts(
+  classBranch: string,
+  castSpd?: number,
+  pAtkSpd?: number,
+  learnedEntries?: readonly { battleId: string; level: number }[],
+  cooldownReductionMul?: number
+): SkillCooldownUiContext {
+  const learnedSkillRanks: Record<string, number> = {};
+  if (learnedEntries) {
+    for (const e of learnedEntries) {
+      if (e.level >= 1) learnedSkillRanks[e.battleId] = e.level;
+    }
+  }
+  return {
+    classBranch,
+    castSpd,
+    pAtkSpd,
+    cooldownReductionMul,
+    learnedSkillRanks,
+  };
+}
+
+function skillRankForUi(
+  battleId: string,
+  cdCtx?: SkillCooldownUiContext
+): number {
+  const v = cdCtx?.learnedSkillRanks?.[battleId];
+  return typeof v === 'number' && v >= 1 ? Math.floor(v) : 1;
+}
+
+function resolveUiSkillCooldownSec(
+  input: {
+    classBranch: string;
+    category?: string | null;
+    kind?: string | null;
+    battleId: string;
+    baseCdSec?: number | null;
+  },
+  cdCtx?: SkillCooldownUiContext
+): number | undefined {
+  const cd = resolveBattleSkillCooldownSec({
+    classBranch: input.classBranch,
+    category: input.category,
+    kind: input.kind,
+    skillRank: skillRankForUi(input.battleId, cdCtx),
+    baseCdSec: input.baseCdSec,
+    castSpd: cdCtx?.castSpd ?? CAST_SPD_BASELINE,
+    pAtkSpd: cdCtx?.pAtkSpd ?? PATK_SPD_BASELINE,
+    cooldownReductionMul: cdCtx?.cooldownReductionMul,
+  });
+  return cd > 0 ? cd : undefined;
+}
+
 function mysticCooldownSecForBattleAction(
   id: BattleActionId,
-  race: string
+  race: string,
+  cdCtx?: SkillCooldownUiContext
 ): number | undefined {
   const s = String(id);
   if (!/^l2_\d+$/.test(s)) return undefined;
-  const e = mysticCatalogEntryForRace(race, canonicalBattleSkillId(s));
-  if (e?.kind === 'toggle') return 1;
-  const c = e?.cooldownSec;
-  if (typeof c === 'number' && c > 0) return c;
-  const m = /^l2_(\d+)$/.exec(s);
-  if (m) {
-    const sid = parseInt(m[1]!, 10);
-    const l2dbCd = L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[sid];
-    if (typeof l2dbCd === 'number' && l2dbCd > 0) return l2dbCd;
-  }
-  if (e && e.kind !== 'passive') {
-    return mysticGlobalSkillCooldownSec(500);
-  }
-  return undefined;
+  const battleId = canonicalBattleSkillId(s);
+  const e = mysticCatalogEntryForRace(race, battleId);
+  if (!e || e.kind === 'passive') return undefined;
+  const fixed =
+    typeof e.cooldownSec === 'number' && e.cooldownSec > 0
+      ? e.cooldownSec
+      : (() => {
+          const m = /^l2_(\d+)$/.exec(battleId);
+          if (!m) return null;
+          const sid = parseInt(m[1]!, 10);
+          const l2dbCd = L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[sid];
+          return typeof l2dbCd === 'number' && l2dbCd > 0 ? l2dbCd : null;
+        })();
+  return resolveUiSkillCooldownSec(
+    {
+      classBranch: cdCtx?.classBranch ?? 'mystic',
+      category: catalogEntryCategory(e),
+      kind: e.kind,
+      battleId,
+      baseCdSec: fixed,
+    },
+    cdCtx
+  );
 }
 
 /**
@@ -82,7 +163,8 @@ function mysticCooldownSecForBattleAction(
 function fighterCooldownSecForBattleAction(
   id: BattleActionId,
   race: string,
-  classBranch: string
+  classBranch: string,
+  cdCtx?: SkillCooldownUiContext
 ): number | undefined {
   let bid = canonicalBattleSkillId(String(id));
   if (!/^l2_\d+$/.test(bid)) {
@@ -93,24 +175,32 @@ function fighterCooldownSecForBattleAction(
   const e =
     humanFighterCatalogEntry(bid) ??
     fighterCatalogEntryForRace(race, classBranch, bid);
-  if (e?.kind === 'toggle') return 1;
-  const c = e?.cooldownSec;
-  if (typeof c === 'number' && c > 0) return c;
-  /**
-   * Fallback до автогенерованих XML cooldown'ів: каталожний `cooldownSec` можна
-   * не заповнювати, якщо він збігається з XML (sonic-скіли). Дзеркалить логіку
-   * `applyStandardFighterCooldown` у turn-резолвері, щоб хотбар показував ту
-   * саму лічильну смужку, яку потім виставить сервер після каста.
-   */
-  const m = /^l2_(\d+)$/.exec(bid);
-  if (m) {
-    const sid = parseInt(m[1]!, 10);
-    if (Number.isFinite(sid) && sid > 0) {
-      const xmlCd = cooldownSecForSkillId(sid);
-      if (typeof xmlCd === 'number' && xmlCd > 0) return xmlCd;
+  if (!e) return undefined;
+  let rawCd =
+    typeof e.cooldownSec === 'number' && e.cooldownSec > 0 ? e.cooldownSec : null;
+  if (rawCd == null) {
+    const m = /^l2_(\d+)$/.exec(bid);
+    if (m) {
+      const sid = parseInt(m[1]!, 10);
+      if (Number.isFinite(sid) && sid > 0) {
+        const xmlCd = cooldownSecForSkillId(sid);
+        if (typeof xmlCd === 'number' && xmlCd > 0) rawCd = xmlCd;
+      }
     }
   }
-  return undefined;
+  return resolveUiSkillCooldownSec(
+    {
+      classBranch,
+      category: catalogEntryCategory(e),
+      kind: e.kind,
+      battleId: bid,
+      baseCdSec: rawCd,
+    },
+    {
+      ...(cdCtx ?? {}),
+      classBranch,
+    }
+  );
 }
 
 export function battleSkillBarForChar(
@@ -119,7 +209,8 @@ export function battleSkillBarForChar(
   classBranch: string,
   learnedBattle: string[],
   l2Profession: string,
-  _inv?: InventoryState | null
+  _inv?: InventoryState | null,
+  cdCtx?: SkillCooldownUiContext
 ): {
   id: BattleActionId;
   labelUk: string;
@@ -138,7 +229,10 @@ export function battleSkillBarForChar(
       l2SkillId: number;
       cooldownSec?: number;
     }[] = bar.map((s) => {
-      const cdSec = mysticCooldownSecForBattleAction(s.id, _race);
+      const cdSec = mysticCooldownSecForBattleAction(s.id, _race, {
+        ...(cdCtx ?? {}),
+        classBranch,
+      });
       return {
         id: s.id,
         labelUk: s.labelUk,
@@ -177,7 +271,11 @@ export function battleSkillBarForChar(
       const cdPick = fighterCooldownSecForBattleAction(
         row.id,
         _race,
-        classBranch
+        classBranch,
+        {
+          ...(cdCtx ?? {}),
+          classBranch,
+        }
       );
       out.push({
         id: row.id,
@@ -257,7 +355,8 @@ export function battleViewFromState(
   l2Profession: string,
   inv?: InventoryState | null,
   activeBuffs: readonly ActiveBuffEntry[] = [],
-  skillCooldowns: readonly SkillCooldownEntry[] = []
+  skillCooldowns: readonly SkillCooldownEntry[] = [],
+  cdCtx?: SkillCooldownUiContext
 ): BattleView {
   const buffs = battleBuffLinesUk(st, activeBuffs);
   const mobDebuffIcons = battleMobDebuffIconsForUi(st);
@@ -301,7 +400,11 @@ export function battleViewFromState(
       classBranch,
       learnedBattle,
       l2Profession,
-      inv
+      inv,
+      {
+        ...(cdCtx ?? {}),
+        classBranch,
+      }
     ),
     ...(st.battleMods ? { battleMods: st.battleMods } : {}),
     ...(buffs.length > 0 ? { battleBuffsUk: buffs } : {}),

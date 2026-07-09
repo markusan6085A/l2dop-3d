@@ -10,11 +10,6 @@ import type { HumanMysticSkillCatalogEntry } from '../../data/humanMysticSkillCa
 import { l2dopXmlSkillRow } from '../../data/l2dopXmlSkillLevels.lookup.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import { fighterCatalogEntryForRace } from '../../data/fighterSkillCatalog.byRace.js';
-import {
-  applyCooldownReductionMul,
-  mysticGlobalSkillCooldownSec,
-  scaleSkillCooldownByCastSpeed,
-} from '../../data/mysticSkillCooldown.js';
 import { jsonFiniteNum } from '../battle.js';
 import type {
   BattleSkillResolveContext,
@@ -256,30 +251,6 @@ export function tryResolveFighterRaceCatalogTurn(
         : rowPower;
 
   const { combat, st, preLevel, l2Profession } = ctx;
-  const effectiveCastSpd = Math.max(
-    1,
-    Math.floor(
-      combat.castSpd * (jsonFiniteNum(st.battleMods?.mysticCastSpdBuffMul) ?? 1)
-    )
-  );
-  const cdSec =
-    entry.kind === 'toggle'
-      ? 1
-      : typeof entry.cooldownSec === 'number' && entry.cooldownSec > 0
-        ? applyCooldownReductionMul(
-            scaleSkillCooldownByCastSpeed(entry.cooldownSec, effectiveCastSpd),
-            combat.cooldownReductionMul
-          )
-        : applyCooldownReductionMul(
-            mysticGlobalSkillCooldownSec(effectiveCastSpd),
-            combat.cooldownReductionMul
-          );
-  const mysticSkillCdUntilPatch: Record<string, number> = {};
-  if (typeof cdSec === 'number' && cdSec > 0) {
-    mysticSkillCdUntilPatch[mysticCdKey(entry.l2SkillId)] =
-      Date.now() + cdSec * 1000;
-  }
-
   const skillLine = entry.nameUk + '.';
   const profM = humanFighterProfessionAtkMult(preLevel, l2Profession);
 
@@ -301,7 +272,6 @@ export function tryResolveFighterRaceCatalogTurn(
       skillLine,
       physOutcome: r.outcome,
       magicOutcome: null,
-      mysticSkillCdUntilPatch,
       ...(r.weaknessLogLineUk ? { weaknessLogLineUk: r.weaknessLogLineUk } : {}),
     };
   }
@@ -335,7 +305,6 @@ export function tryResolveFighterRaceCatalogTurn(
       skillLine,
       physOutcome: null,
       magicOutcome: r.outcome,
-      mysticSkillCdUntilPatch,
     };
   }
 
@@ -351,7 +320,6 @@ export function tryResolveFighterRaceCatalogTurn(
       physOutcome: null,
       magicOutcome: null,
       playerHeal: heal,
-      mysticSkillCdUntilPatch,
     };
   }
 
@@ -371,7 +339,6 @@ export function tryResolveFighterRaceCatalogTurn(
         magicOutcome: null,
         battleModsPatch: patch,
         ...(expPatch ? { battleModsExpiresPatch: expPatch } : {}),
-        mysticSkillCdUntilPatch,
       };
     }
     if (entry.kind === 'toggle' && toggleOnNow) {
@@ -388,7 +355,6 @@ export function tryResolveFighterRaceCatalogTurn(
         ...(Object.keys(offPatch).length > 0
           ? { battleModsPatch: offPatch }
           : {}),
-        mysticSkillCdUntilPatch,
       };
     }
     const patch = mysticBuffPatch(entry, rank, skillPower);
@@ -402,7 +368,6 @@ export function tryResolveFighterRaceCatalogTurn(
       magicOutcome: null,
       battleModsPatch: patch,
       ...(expPatch ? { battleModsExpiresPatch: expPatch } : {}),
-      mysticSkillCdUntilPatch,
     };
   }
 
@@ -445,7 +410,6 @@ export function tryResolveFighterRaceCatalogTurn(
       ...(mobRetaliationDelayHits !== undefined
         ? { mobRetaliationDelayHits }
         : {}),
-      mysticSkillCdUntilPatch,
     };
   }
 
@@ -455,6 +419,5 @@ export function tryResolveFighterRaceCatalogTurn(
     skillLine,
     physOutcome: null,
     magicOutcome: null,
-    mysticSkillCdUntilPatch,
   };
 }

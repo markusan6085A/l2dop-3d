@@ -31,11 +31,10 @@ import {
   type MysticDebuffControlKind,
 } from '../../data/l2dopMysticDebuffProfiles.js';
 import { mysticDebuffSpotChanceMultiplier } from '../../data/l2dopMysticDebuffSpotTuning.js';
+import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.js';
 import {
-  applyCooldownReductionMul,
-  mysticGlobalSkillCooldownSec,
-  scaleSkillCooldownByCastSpeed,
-} from '../../data/mysticSkillCooldown.js';
+  effectiveCastSpdForCooldown,
+} from './humanFighterTurnHelpers.js';
 import { L2DB_INTERLUDE_SKILL_COOLDOWN_SEC } from '../../data/l2dbSkillCooldowns.generated.js';
 import {
   assertSkillCooldownReady,
@@ -650,12 +649,7 @@ export function resolveHumanMysticTurn(
           entry.category === 'heal'
         ? xmlRow.p
         : rowPower;
-  const effectiveCastSpd = Math.max(
-    1,
-    Math.floor(
-      combat.castSpd * (jsonFiniteNum(st.battleMods?.mysticCastSpdBuffMul) ?? 1)
-    )
-  );
+  const effectiveCastSpd = effectiveCastSpdForCooldown(ctx);
   const fixedCdRaw =
     typeof entry.cooldownSec === 'number' && entry.cooldownSec > 0
       ? entry.cooldownSec
@@ -663,18 +657,16 @@ export function resolveHumanMysticTurn(
           (L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] as number) > 0
         ? (L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] as number)
         : null;
-  const cdSec =
-    entry.kind === 'toggle'
-      ? 1
-      : fixedCdRaw != null
-        ? applyCooldownReductionMul(
-            scaleSkillCooldownByCastSpeed(fixedCdRaw, effectiveCastSpd),
-            combat.cooldownReductionMul
-          )
-        : applyCooldownReductionMul(
-            mysticGlobalSkillCooldownSec(effectiveCastSpd),
-            combat.cooldownReductionMul
-          );
+  const cdSec = resolveBattleSkillCooldownSec({
+    classBranch: ctx.classBranch,
+    category: entry.category,
+    kind: entry.kind,
+    skillRank: rank,
+    baseCdSec: fixedCdRaw,
+    castSpd: effectiveCastSpd,
+    pAtkSpd: combat.pAtkSpd,
+    cooldownReductionMul: combat.cooldownReductionMul,
+  });
   const mysticSkillCdUntilPatch: Record<string, number> = {};
   if (typeof cdSec === 'number' && cdSec > 0) {
     mysticSkillCdUntilPatch[mysticCdKey(entry.l2SkillId)] =

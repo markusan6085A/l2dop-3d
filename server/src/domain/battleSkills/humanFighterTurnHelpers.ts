@@ -29,6 +29,7 @@ import { fighterCatalogEntryForRace } from '../../data/fighterSkillCatalog.byRac
 import { raceFighterCatalogEntryVisibleForProfession } from '../../data/raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from '../../data/l2dopXmlSkillLevels.lookup.js';
 import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
+import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import { sonicChargeRequirementForSkillId } from '../sonicCharges.js';
 import { BattleSkillNotAllowedError } from '../battleSkillNotAllowedError.js';
@@ -296,7 +297,42 @@ export function legacyBuffOnCd(
  * Обидва значення беруться з генеричних таблиць (`humanFighterSkillCooldowns`,
  * `l2dopBuffDurations`), тож нові бафи автоматично отримують коректну поведінку.
  */
-export function legacyBuffCdAndExpirePatches(skillId: number): {
+export function effectiveCastSpdForCooldown(
+  ctx: BattleSkillResolveContext
+): number {
+  return Math.max(
+    1,
+    Math.floor(
+      ctx.combat.castSpd *
+        (jsonFiniteNum(ctx.st.battleMods?.mysticCastSpdBuffMul) ?? 1)
+    )
+  );
+}
+
+export function scaledSkillCooldownSec(
+  ctx: BattleSkillResolveContext,
+  baseCdSec: number | undefined | null,
+  entry?: { kind?: string; category?: string | null } | null
+): number {
+  if (typeof baseCdSec !== 'number' || !Number.isFinite(baseCdSec) || baseCdSec <= 0) {
+    return 0;
+  }
+  return resolveBattleSkillCooldownSec({
+    classBranch: ctx.classBranch,
+    category: entry?.category,
+    kind: entry?.kind,
+    skillRank: skillRankForCurrentAction(ctx),
+    baseCdSec,
+    castSpd: effectiveCastSpdForCooldown(ctx),
+    pAtkSpd: ctx.combat.pAtkSpd,
+    cooldownReductionMul: ctx.combat.cooldownReductionMul,
+  });
+}
+
+export function legacyBuffCdAndExpirePatches(
+  skillId: number,
+  ctx: BattleSkillResolveContext
+): {
   mysticSkillCdUntilPatch?: Record<string, number>;
   battleModsExpiresPatch?: Record<string, number>;
 } {
@@ -305,8 +341,11 @@ export function legacyBuffCdAndExpirePatches(skillId: number): {
     battleModsExpiresPatch?: Record<string, number>;
   } = {};
   const nowMs = Date.now();
-  const cdSec = cooldownSecForSkillId(skillId);
-  if (typeof cdSec === 'number' && cdSec > 0) {
+  const entry = humanFighterCatalogEntry('l2_' + skillId);
+  const rawCd =
+    entry?.kind === 'toggle' ? 1 : cooldownSecForSkillId(skillId);
+  const cdSec = scaledSkillCooldownSec(ctx, rawCd, entry);
+  if (cdSec > 0) {
     out.mysticSkillCdUntilPatch = {
       ['l2_' + skillId]: nowMs + Math.floor(cdSec * 1000),
     };
@@ -493,10 +532,27 @@ export function applyStandardFighterCooldown(
   const ent =
     humanFighterCatalogEntry(battleId) ??
     fighterCatalogEntryForRace(ctx.race, ctx.classBranch, battleId);
-  const isToggle = ent?.kind === 'toggle';
-  const entryCd = isToggle
-    ? 1
-    : typeof ent?.cooldownSec === 'number' && ent.cooldownSec > 0
+  if (ent?.kind === 'toggle') {
+    const cdSec = 1;
+    const until = jsonFiniteNum(ctx.st.mysticSkillCdUntil?.[battleId]);
+    const toggleAlreadyOn =
+      (battleId === 'l2_256' && isStanceAccuracyActive(ctx.st.battleMods)) ||
+      (battleId === 'l2_312' && isStanceViciousActive(ctx.st.battleMods)) ||
+      (battleId === 'l2_339' && isStanceParryActive(ctx.st.battleMods)) ||
+      (battleId === 'l2_318' && ctx.st.battleMods?.aegisStanceActive === true);
+    if (isCooldownBlocked(until) && !toggleAlreadyOn) {
+      assertSkillCooldownReady(until);
+    }
+    return {
+      ...result,
+      mysticSkillCdUntilPatch: {
+        ...(result.mysticSkillCdUntilPatch ?? {}),
+        [battleId]: Date.now() + cdSec * 1000,
+      },
+    };
+  }
+  const entryCd =
+    typeof ent?.cooldownSec === 'number' && ent.cooldownSec > 0
       ? ent.cooldownSec
       : undefined;
   /**
@@ -506,24 +562,24 @@ export function applyStandardFighterCooldown(
    * Blaster/Buster/Storm, Double/Triple Sonic Slash, Fatal Strike, Hammer Crush),
    * у яких CD задано в XML, а в каталозі поле лишилось порожнім.
    */
-  let cdSec = entryCd;
-  if (cdSec == null) {
+  let rawCdSec = entryCd;
+  if (rawCdSec == null) {
     const m = /^l2_(\d+)$/.exec(battleId);
     if (m) {
       const sid = parseInt(m[1]!, 10);
       if (Number.isFinite(sid) && sid > 0) {
         const xmlCd = cooldownSecForSkillId(sid);
         if (typeof xmlCd === 'number' && xmlCd > 0) {
-          cdSec = xmlCd;
+          rawCdSec = xmlCd;
         }
       }
     }
   }
-  if (cdSec == null) return result;
+  const cdSec = scaledSkillCooldownSec(ctx, rawCdSec, ent);
+  if (cdSec <= 0) return result;
 
   const until = jsonFiniteNum(ctx.st.mysticSkillCdUntil?.[battleId]);
   const toggleAlreadyOn =
-    isToggle &&
     ((battleId === 'l2_256' && isStanceAccuracyActive(ctx.st.battleMods)) ||
       (battleId === 'l2_312' && isStanceViciousActive(ctx.st.battleMods)) ||
       (battleId === 'l2_339' && isStanceParryActive(ctx.st.battleMods)) ||
