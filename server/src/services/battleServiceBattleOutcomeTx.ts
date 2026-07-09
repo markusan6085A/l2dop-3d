@@ -33,6 +33,12 @@ import { battleViewFromState, skillCooldownUiContextFromParts } from './battleSe
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import {
+  clearMobSpawnHpEntry,
+  mergeMobSpawnHpEntry,
+  parseMobSpawnHpState,
+  serializeMobSpawnHpState,
+} from '../domain/mobSpawnHpState.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -131,6 +137,10 @@ export async function persistBattleVictoryInTx(
   );
 
   void userId;
+  const mobHpAfterVictory = clearMobSpawnHpEntry(
+    parseMobSpawnHpState(char.mobSpawnHpJson),
+    bj.spawnId
+  );
   const result = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -147,6 +157,7 @@ export async function persistBattleVictoryInTx(
         mobsKilled: { increment: 1 },
         inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
         battleJson: Prisma.JsonNull,
+        mobSpawnHpJson: serializeMobSpawnHpState(mobHpAfterVictory),
         worldCombatStateJson:
           worldVictory != null
             ? (JSON.parse(JSON.stringify(worldVictory)) as Prisma.InputJsonValue)
@@ -215,6 +226,12 @@ export async function persistBattleDefeatInTx(
   );
 
   void userId;
+  const mobHpAfterDefeat = mergeMobSpawnHpEntry(
+    parseMobSpawnHpState(char.mobSpawnHpJson),
+    bj.spawnId,
+    st.mobHp,
+    st.mobMaxHp
+  );
   const lost = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -224,6 +241,7 @@ export async function persistBattleDefeatInTx(
       data: {
         hp: recoverHp,
         battleJson: Prisma.JsonNull,
+        mobSpawnHpJson: serializeMobSpawnHpState(mobHpAfterDefeat),
         worldCombatStateJson:
           worldDefeat != null
             ? (JSON.parse(JSON.stringify(worldDefeat)) as Prisma.InputJsonValue)

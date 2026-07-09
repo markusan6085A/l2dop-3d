@@ -13,6 +13,13 @@ import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { parseBattleJson } from './battleServiceParseBattleJson.js';
+import {
+  mergeMobSpawnHpEntry,
+  mobSpawnHpFromBattleJson,
+  parseMobSpawnHpState,
+  serializeMobSpawnHpState,
+} from '../domain/mobSpawnHpState.js';
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
   return resolveMapMovement(applyPassiveHpRegen(row));
@@ -174,6 +181,19 @@ export async function performTeleport(
           base.cityId !== dest.cityId ||
           base.battleJson != null;
         if (!changed) return { changed: false };
+        const bj = parseBattleJson(base.battleJson);
+        const hpSnap = mobSpawnHpFromBattleJson(bj);
+        let nextMobSpawnHpJson: Prisma.InputJsonValue | typeof Prisma.JsonNull =
+          serializeMobSpawnHpState(parseMobSpawnHpState(base.mobSpawnHpJson));
+        if (hpSnap) {
+          const merged = mergeMobSpawnHpEntry(
+            parseMobSpawnHpState(base.mobSpawnHpJson),
+            hpSnap.spawnId,
+            hpSnap.mobHp,
+            hpSnap.mobMaxHp
+          );
+          nextMobSpawnHpJson = serializeMobSpawnHpState(merged);
+        }
         return {
           changed: true,
           data: {
@@ -187,6 +207,7 @@ export async function performTeleport(
             moveFromY: wy,
             cityId: dest.cityId,
             battleJson: Prisma.JsonNull,
+            mobSpawnHpJson: nextMobSpawnHpJson,
           } as Prisma.CharacterUpdateManyMutationInput,
         };
       }

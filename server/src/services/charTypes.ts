@@ -36,6 +36,8 @@ export interface CharacterRow {
   battleJson: Prisma.JsonValue | null;
   /** Поза боєм: стійки / MP після бою — див. `worldCombatState.ts`. */
   worldCombatStateJson: Prisma.JsonValue | null;
+  /** Залишок HP мобів на карті (spawnId → hp) між боями. */
+  mobSpawnHpJson: Prisma.JsonValue | null;
   skillsLearnedJson: Prisma.JsonValue | null;
   activeBuffsJson: Prisma.JsonValue | null;
   /** Перезарядки скілів поза боєм: `[{skillId, readyAt}]` (мс epoch). */

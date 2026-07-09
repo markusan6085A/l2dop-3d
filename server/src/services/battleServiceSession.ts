@@ -40,6 +40,13 @@ import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
+import {
+  mergeMobSpawnHpEntry,
+  mobSpawnHpFromBattleJson,
+  parseMobSpawnHpState,
+  resolveMobHpAtSpawnStart,
+  serializeMobSpawnHpState,
+} from '../domain/mobSpawnHpState.js';
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
@@ -162,12 +169,33 @@ export async function startBattle(
     );
 
     const mobMaxCp0 = mobMaxCpFromMobMaxHp(mc.maxHp);
+    const spawnHpState = parseMobSpawnHpState(base.mobSpawnHpJson);
+    const mobHpStart = resolveMobHpAtSpawnStart(
+      spawnHpState,
+      spawnId,
+      mc.maxHp
+    );
+    if (mobHpStart < mc.maxHp) {
+      startLog.push(
+        'Моб ще поранений: HP ' + mobHpStart + ' / ' + mc.maxHp + '.'
+      );
+    }
+    const mobCpStart =
+      mobHpStart >= mc.maxHp
+        ? mobMaxCp0
+        : Math.max(
+            0,
+            Math.min(
+              mobMaxCp0,
+              Math.floor((mobMaxCp0 * mobHpStart) / mc.maxHp)
+            )
+          );
     const nowStartMs = Date.now();
     const st: BattleJsonState = {
       spawnId,
-      mobHp: mc.maxHp,
+      mobHp: mobHpStart,
       mobMaxHp: mc.maxHp,
-      mobCp: mobMaxCp0,
+      mobCp: mobCpStart,
       mobMaxCp: mobMaxCp0,
       mobPAtk: mc.pAtk,
       mobPDef: mc.pDef,
@@ -323,6 +351,19 @@ export async function leaveBattle(
       nextWorldJson = cr.worldCombatStateJson as Prisma.InputJsonValue;
     }
 
+    let nextMobSpawnHpJson: Prisma.InputJsonValue | typeof Prisma.JsonNull =
+      serializeMobSpawnHpState(parseMobSpawnHpState(cr.mobSpawnHpJson));
+    const hpSnap = mobSpawnHpFromBattleJson(bj);
+    if (hpSnap) {
+      const merged = mergeMobSpawnHpEntry(
+        parseMobSpawnHpState(cr.mobSpawnHpJson),
+        hpSnap.spawnId,
+        hpSnap.mobHp,
+        hpSnap.mobMaxHp
+      );
+      nextMobSpawnHpJson = serializeMobSpawnHpState(merged);
+    }
+
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,
@@ -332,6 +373,7 @@ export async function leaveBattle(
         data: {
           battleJson: Prisma.JsonNull,
           worldCombatStateJson: nextWorldJson,
+          mobSpawnHpJson: nextMobSpawnHpJson,
         },
       })
     );
