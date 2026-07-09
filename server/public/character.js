@@ -78,6 +78,28 @@
     if (profEl) profEl.textContent = professionLabel(c);
   }
 
+  function applySocial(c) {
+    var karmaEl = $('character-karma');
+    var pkEl = $('character-pk');
+    var recEl = $('character-rec');
+    var recLeftEl = $('character-rec-left');
+    var mobsEl = $('character-mobs');
+    var pvpEl = $('character-pvp');
+    if (karmaEl) karmaEl.textContent = c && c.karma != null ? fmtInt(c.karma) : '0';
+    if (pkEl) pkEl.textContent = c && c.pk != null ? fmtInt(c.pk) : '0';
+    if (recEl) recEl.textContent = c && c.recommendations != null ? fmtInt(c.recommendations) : '0';
+    if (recLeftEl) {
+      recLeftEl.textContent =
+        c && c.recommendationsLeft != null ? fmtInt(c.recommendationsLeft) : '10';
+    }
+    if (mobsEl) mobsEl.textContent = c && c.mobsKilled != null ? fmtInt(c.mobsKilled) : '0';
+    if (pvpEl) {
+      var wins = c && c.pvpWins != null ? fmtInt(c.pvpWins) : '0';
+      var losses = c && c.pvpLosses != null ? fmtInt(c.pvpLosses) : '0';
+      pvpEl.textContent = wins + '/' + losses;
+    }
+  }
+
   function wireIcons(root) {
     if (!root) return;
     root.querySelectorAll('.l2-character-row__ico').forEach(function (icon) {
@@ -170,6 +192,7 @@
       }
       applyProfile(c);
       applyStats(c);
+      applySocial(c);
       if (c && window.L2CharHero && typeof L2CharHero.renderPortrait === 'function') {
         L2CharHero.renderPortrait(c);
       }

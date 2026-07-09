@@ -32,6 +32,7 @@ const PROFILE_SELECT = {
   gender: true,
   l2Profession: true,
   cityId: true,
+  mobsKilled: true,
   lastUpdate: true,
 } as const;
 
@@ -44,6 +45,7 @@ type ProfileRow = {
   gender: string;
   l2Profession: string;
   cityId: string;
+  mobsKilled: number;
   lastUpdate: Date;
 };
 
@@ -70,7 +72,7 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
     pk: 0,
     recommendations: 0,
     recommendationsLeft: 10,
-    mobsKilled: 0,
+    mobsKilled: Math.max(0, Math.floor(Number(row.mobsKilled) || 0)),
     pvpWins: 0,
     pvpLosses: 0,
     registeredAt: row.lastUpdate.toISOString(),

@@ -144,6 +144,7 @@ export async function persistBattleVictoryInTx(
         adena: { increment: loot.adena },
         exp: newExp,
         sp: { increment: loot.spGain },
+        mobsKilled: { increment: 1 },
         inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
         battleJson: Prisma.JsonNull,
         worldCombatStateJson:

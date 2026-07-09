@@ -19,7 +19,10 @@
   }
 
   function tr(k, fb) {
-    if (window.L2 && L2.tr) return L2.tr(k);
+    if (window.L2 && L2.tr) {
+      var t = L2.tr(k);
+      if (t !== k) return t;
+    }
     return fb != null ? fb : k;
   }
 
@@ -503,10 +506,7 @@
   }
 
   async function runWithBattleActionLock(fn) {
-    if (battleActionInFlight) {
-      showBattleToast(tr('battle_toast_action_wait', 'Зачекай завершення поточної дії.'));
-      return;
-    }
+    if (battleActionInFlight) return;
     battleActionInFlight = true;
     try {
       await fn();

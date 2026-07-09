@@ -21,6 +21,7 @@ export interface CharacterRow {
   adena: bigint;
   exp: bigint;
   sp: number;
+  mobsKilled: number;
   revision: number;
   userId: string;
   lastUpdate: Date;
@@ -86,6 +87,13 @@ export interface CharacterSnapshot {
   expBarMax: string;
   expBarPct: number;
   sp: number;
+  mobsKilled: number;
+  karma: number;
+  pk: number;
+  recommendations: number;
+  recommendationsLeft: number;
+  pvpWins: number;
+  pvpLosses: number;
   revision: number;
   lastUpdate: string;
   inventory: InventoryState;
