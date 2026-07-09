@@ -2279,8 +2279,9 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
  * ============================================================ */
 body.l2-app-l2-chrome.l2-nav-minimal {
   --l2s-legacy-inner-pad-x: 8px;
-  --l2s-legacy-bars-gap: 3mm;
+  --l2s-legacy-bars-gap: calc(3mm - 0.5cm);
   --l2s-legacy-rule-color: #303030;
+  --l2s-legacy-nav-cell-bg: #303030;
   --l2s-legacy-title-nudge-y: 1px;
 }
 
@@ -2345,10 +2346,11 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
 }
 
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
-  margin: var(--l2s-legacy-bars-gap, 3mm) 0 0;
-  padding: 6px 2px 4px 10px;
+  margin: var(--l2s-legacy-bars-gap, 0) 0 0;
+  padding: 4px 2px 6px 10px;
   border: 0 !important;
-  border-top: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
   background: transparent !important;
 }
 
@@ -2404,14 +2406,38 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell {
   min-height: 22px !important;
   padding: 2px 5px !important;
-  border: 1px solid rgba(174, 141, 73, 0.42) !important;
+  border: 1px solid var(--l2s-legacy-nav-cell-bg, #303030) !important;
   border-radius: 10px !important;
-  background: #2a2724 !important;
+  background: var(--l2s-legacy-nav-cell-bg, #303030) !important;
   box-shadow: none !important;
   text-decoration: none !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:hover,
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:focus {
+  background: #3a3a3a !important;
+  border-color: #3a3a3a !important;
+}
+
+/* city.html: прибрати PNG-рамку навколо нижньої сітки (l2-city-222-skin) */
+body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom {
+  margin-top: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:hover,
+body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell:focus {
+  background: #3a3a3a !important;
+  border-color: #3a3a3a !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom .l2-wap-cell img {
