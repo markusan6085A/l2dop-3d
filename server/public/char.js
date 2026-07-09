@@ -1350,6 +1350,24 @@
     return 'Предмет';
   }
 
+  function weaponTypeLabelUk(itemId) {
+    var wt =
+      window.L2 && L2.itemWeaponTypeById && L2.itemWeaponTypeById[itemId];
+    if (!wt) return '';
+    var map = {
+      sword: 'Меч',
+      blunt: 'Булава',
+      dagger: 'Кинджал',
+      bow: 'Лук',
+      bigsword: 'Дворучний меч',
+      bigblunt: 'Дворучний тупий',
+      dual: 'Подвійні мечі',
+      pole: 'Спис',
+      fist: 'Кастети',
+    };
+    return map[wt] || String(wt);
+  }
+
   function closeBagModal() {
     var ov = $('char-bag-modal-overlay');
     if (ov) {
@@ -1458,6 +1476,10 @@
       if (st.rCrit != null && Number(st.rCrit) > 0) {
         addRow('Крит.', '+' + String(st.rCrit));
       }
+      var wpnLbl = weaponTypeLabelUk(itemId);
+      if (wpnLbl) addRow('Тип зброї', wpnLbl);
+      if (st.castSpd != null) addRow('Швидкість касту', String(st.castSpd));
+      if (st.mCritPct != null) addRow('Маг. крит', String(st.mCritPct) + '%');
     }
     qtyEl.textContent =
       'У сумці' +

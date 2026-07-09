@@ -37,6 +37,7 @@ import {
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { dropsShopConsumableGearCatalogExtras } from './dropsShopConsumableGearExtras.js';
 import { dropsShopGearCatalogExtras } from './dropsShopGearCatalogExtras.js';
+import { authorGiftGearCatalogExtras, mergeAuthorGiftItems } from './itemsCatalogAuthorGifts.js';
 import { starterGearCatalogExtras } from './starterGearCatalogExtras.js';
 
 export type ItemSlotKind =
@@ -92,6 +93,10 @@ export interface ItemMeta {
   wpnCrit?: number;
   /** Бонус до крит-стату з предмета $WpnCRIT (rCrit у items3 / екіп). */
   rCrit?: number;
+  /** При екіпі в rhand: цільова швидкість касту (перезаписує розрахунок). */
+  equipCastSpd?: number;
+  /** При екіпі в rhand: шанс маг. крита, % (перезаписує cap). */
+  equipMCritPct?: number;
 }
 
 /** Ключ = item_id у БД l2dop */
@@ -201,6 +206,7 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   };
 
   mergeNgDropsWeapons(o);
+  mergeAuthorGiftItems(o);
   for (const patch of Object.values(L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER)) {
     o[patch.itemId] = {
       nameUk: patch.nameUk,
@@ -384,6 +390,10 @@ export type ItemStatsHintForClient = {
   jewelEva?: number;
   jewelMpRegenMul?: number;
   jewelHoldResistMul?: number;
+  /** Підказка для модалки: швидкість касту з екіпу. */
+  castSpd?: number;
+  /** Підказка для модалки: шанс маг. крита, %. */
+  mCritPct?: number;
 };
 
 /** Для GET /character — стати предметів для модалки/списку (усі записи ITEM_CATALOG з числовими статами). */
@@ -427,6 +437,12 @@ export function itemStatsHintsForClient(): Record<number, ItemStatsHintForClient
       Number.isFinite(m.jewelHoldResistMul)
     ) {
       st.jewelHoldResistMul = m.jewelHoldResistMul;
+    }
+    if (typeof m.equipCastSpd === 'number' && m.equipCastSpd > 0) {
+      st.castSpd = m.equipCastSpd;
+    }
+    if (typeof m.equipMCritPct === 'number' && m.equipMCritPct > 0) {
+      st.mCritPct = m.equipMCritPct;
     }
     if (Object.keys(st).length > 0) out[id] = st;
   }
@@ -489,6 +505,8 @@ export interface GearCatalogRow {
     rCrit?: number;
     /** Бонус для біжутерії (колонка 23 у items3) */
     jewelryMAtk?: number;
+    castSpd?: number;
+    mCritPct?: number;
   };
 }
 
@@ -546,6 +564,11 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
     rows.push(extra);
   }
   for (const extra of starterGearCatalogExtras()) {
+    if (seen.has(extra.itemId)) continue;
+    seen.add(extra.itemId);
+    rows.push(extra);
+  }
+  for (const extra of authorGiftGearCatalogExtras()) {
     if (seen.has(extra.itemId)) continue;
     seen.add(extra.itemId);
     rows.push(extra);

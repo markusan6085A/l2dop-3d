@@ -34,6 +34,7 @@ export const L2DOP_ITEM_GRADE_UK: Record<number, string> = {
   8336: 'B',
   8340: 'B',
   900224: 'C',
+  9009154: 'NG',
 };
 
 /**

@@ -489,6 +489,24 @@ function sumEquippedJewelryPDef(eq: InventoryState['eq']): number {
   return sum;
 }
 
+function weaponEquipCombatBonus(eq: InventoryState['eq']): {
+  castSpd?: number;
+  mCritPct?: number;
+} {
+  const slot = normalizeEqSlot(eq.rhand);
+  if (!slot) return {};
+  const m = ITEM_CATALOG[slot.itemId];
+  if (!m) return {};
+  const out: { castSpd?: number; mCritPct?: number } = {};
+  if (typeof m.equipCastSpd === 'number' && Number.isFinite(m.equipCastSpd)) {
+    out.castSpd = Math.max(100, Math.min(2000, Math.floor(m.equipCastSpd)));
+  }
+  if (typeof m.equipMCritPct === 'number' && Number.isFinite(m.equipMCritPct)) {
+    out.mCritPct = Math.max(1, Math.min(100, m.equipMCritPct));
+  }
+  return out;
+}
+
 function weaponStats(
   itemId: number | undefined,
   enchant: number
@@ -796,7 +814,7 @@ export function computeCombatStats(
   const runSpeed = Math.floor(Math.floor(speed) * 2);
 
   const castingspd = 333 * M.witCastSpeedMul * B.buffCast + B.addCast;
-  const castSpd = Math.max(
+  let castSpd = Math.max(
     100,
     Math.min(2000, Math.floor(castingspd * 1.25))
   );
@@ -810,6 +828,10 @@ export function computeCombatStats(
     30,
     Math.max(1, Math.round((mCritPct + B.addMCritPct) * 100) / 100)
   );
+
+  const weaponBonus = weaponEquipCombatBonus(eq);
+  if (weaponBonus.castSpd != null) castSpd = weaponBonus.castSpd;
+  if (weaponBonus.mCritPct != null) mCritPct = weaponBonus.mCritPct;
 
   const magicCritDmgMul = clampMagicCritDmgMulForDamage(M.intMagicCritDmgMul);
   /** Спочатку множник від STR, потім бафи (Death Whisper / тощо з `B.critDmgMul`). */

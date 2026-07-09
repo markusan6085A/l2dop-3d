@@ -26,6 +26,7 @@ export const ITEM_ICON_PATH: Record<number, string> = {
   168: 'weapon_d/kv_shop/Titan_Hammer.jpg',
   169: 'weapon_d/War_Hammer.jpg',
   172: 'weapon_d/Atuba_Hammer.jpg',
+  9009154: 'weapon_ng/weapon_dwarven_mace_i00.png',
   179: 'weapon_ng/weapon_mace_i00.png',
   180: 'weapon_ng/weapon_dwarven_mace_i00.png',
   181: 'weapon_ng/weapon_buzdygan_i00.png',
