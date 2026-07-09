@@ -2278,7 +2278,10 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
  * Макет як miru: заголовок у верхній смузі рамки, бари одразу під нею.
  * ============================================================ */
 body.l2-app-l2-chrome.l2-nav-minimal {
-  --l2s-legacy-title-nudge-y: 2px;
+  --l2s-legacy-inner-pad-x: 8px;
+  --l2s-legacy-bars-gap: 3mm;
+  --l2s-legacy-rule-color: #303030;
+  --l2s-legacy-title-nudge-y: 1px;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-top {
@@ -2319,12 +2322,17 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal 
   position: relative;
 }
 
-/* «Wap LineAge» — у верхній смузі host::after (top.png); бари одразу під нею */
+/* «Wap LineAge» — по центру верхньої смузі host::after; риска #303030; бари +3mm */
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
-  display: block;
-  margin: 0;
-  padding: calc(var(--l2s-legacy-title-nudge-y, 0px) + 8px) 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
+  width: calc(100% + (2 * var(--l2s-legacy-inner-pad-x, 8px)));
+  margin: 0 calc(-1 * var(--l2s-legacy-inner-pad-x, 8px));
+  padding: var(--l2s-legacy-title-nudge-y, 0px) 0 0;
+  height: var(--l2-frame-top-h, 54px);
+  min-height: var(--l2-frame-top-h, 54px);
   text-align: center;
   font-size: 13px;
   font-weight: 700;
@@ -2337,9 +2345,10 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
 }
 
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
-  padding: 0 2px 4px 10px;
-  margin: 0;
+  margin: var(--l2s-legacy-bars-gap, 3mm) 0 0;
+  padding: 6px 2px 4px 10px;
   border: 0 !important;
+  border-top: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
   background: transparent !important;
 }
 
