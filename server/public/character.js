@@ -1,5 +1,5 @@
 /**
- * Сторінка «Персонаж» — GET /character, HUD, шапка профілю, портрет героя.
+ * Сторінка «Персонаж» — GET /character, HUD, шапка, стати, меню дій.
  */
 (function () {
   function $(id) {
@@ -17,6 +17,36 @@
     msg.textContent = '«' + label + '» — ' + stubTail();
   }
 
+  function fmtNum(s) {
+    if (s == null || s === '') return '0';
+    try {
+      return BigInt(String(s)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+    } catch (_e) {
+      return String(s);
+    }
+  }
+
+  function fmtInt(n) {
+    if (n == null || n === '') return '0';
+    var v = Number(n);
+    if (!Number.isFinite(v)) return '0';
+    return String(Math.trunc(v));
+  }
+
+  function professionLabel(c) {
+    if (window.L2 && typeof L2.hudL2ProfessionUkFromSnapshot === 'function') {
+      return L2.hudL2ProfessionUkFromSnapshot(c);
+    }
+    if (!c || c.l2Profession == null) return '—';
+    return String(c.l2Profession);
+  }
+
+  function coinOfLuckCount(c) {
+    if (!c) return '0';
+    if (c.coinOfLuck != null) return fmtNum(c.coinOfLuck);
+    return '0';
+  }
+
   function applyProfile(c) {
     var nickEl = $('character-nick');
     var statusEl = $('character-status');
@@ -32,6 +62,34 @@
     }
   }
 
+  function applyStats(c) {
+    var levelEl = $('character-level');
+    var adenaEl = $('character-adena');
+    var coinEl = $('character-coin-luck');
+    var expEl = $('character-exp');
+    var spEl = $('character-sp');
+    var profEl = $('character-profession');
+
+    if (levelEl) levelEl.textContent = c && c.level != null ? fmtInt(c.level) : '—';
+    if (adenaEl) adenaEl.textContent = c && c.adena != null ? fmtNum(c.adena) : '0';
+    if (coinEl) coinEl.textContent = coinOfLuckCount(c);
+    if (expEl) expEl.textContent = c && c.exp != null ? fmtNum(c.exp) : '0';
+    if (spEl) spEl.textContent = c && c.sp != null ? fmtInt(c.sp) : '0';
+    if (profEl) profEl.textContent = professionLabel(c);
+  }
+
+  function wireIcons(root) {
+    if (!root) return;
+    root.querySelectorAll('.l2-character-row__ico').forEach(function (icon) {
+      if (icon.dataset.fallbackWired === '1') return;
+      icon.dataset.fallbackWired = '1';
+      icon.addEventListener('error', function onIconError() {
+        icon.removeEventListener('error', onIconError);
+        icon.src = '/icons/drops/other.svg';
+      });
+    });
+  }
+
   function wireStubs() {
     var editBtn = $('character-status-edit');
     if (editBtn) {
@@ -40,6 +98,15 @@
         showStub(label);
       });
     }
+
+    var actions = $('character-actions');
+    if (!actions) return;
+    actions.querySelectorAll('[data-stub]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var label = btn.getAttribute('data-stub') || 'Дія';
+        showStub(label);
+      });
+    });
   }
 
   async function init() {
@@ -48,6 +115,7 @@
     }
 
     wireStubs();
+    wireIcons($('character-content'));
 
     var token = localStorage.getItem('token');
     if (!token) {
@@ -84,6 +152,7 @@
         L2.applyHudFromSnapshot(c);
       }
       applyProfile(c);
+      applyStats(c);
       if (c && window.L2CharHero && typeof L2CharHero.renderPortrait === 'function') {
         L2CharHero.renderPortrait(c);
       }

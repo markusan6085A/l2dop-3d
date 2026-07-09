@@ -1,16 +1,16 @@
 /**
- * Сторінка «Персонаж»: шапка профілю + портрет героя.
+ * Сторінка «Персонаж»: шапка профілю, портрет, стати, меню дій.
  */
 body.l2-app-l2-chrome.l2-page-character .l2-character-panel {
   margin-top: 0.5cm;
-  padding: 0;
+  padding: 0 0.5cm;
   box-sizing: border-box;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-panel__title {
   margin: 0 0 8px;
   padding: 0;
-  text-align: center;
+  text-align: left;
   font-family: var(--l2-font-display);
   font-size: 13px;
   font-weight: 700;
@@ -27,7 +27,7 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-panel__rule {
 body.l2-app-l2-chrome.l2-page-character .l2-character-panel__nick {
   margin: 0 0 6px;
   padding: 0;
-  text-align: center;
+  text-align: left;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
@@ -41,7 +41,7 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-panel__status-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px 8px;
   margin: 0 0 10px;
 }
@@ -76,19 +76,100 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-panel__edit:active {
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-hero-panel {
-  margin-top: 0;
+  margin: 0 0 12px;
   padding: 0;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-hero-panel .l2-char-photo-wrap {
-  margin: 0 auto;
+  margin: 0;
   max-width: 320px;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-char-equip-frame--hero-only {
-  margin: 0 auto;
+  margin: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-stats,
+body.l2-app-l2-chrome.l2-page-character .l2-character-actions {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-actions {
+  margin-top: 0.5cm;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.88);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  text-decoration: none;
+  color: #e8dcc0;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-stats > .l2-character-row:first-child,
+body.l2-app-l2-chrome.l2-page-character .l2-character-actions > .l2-character-row:first-child {
+  border-top: 1px dotted rgba(80, 80, 80, 0.75);
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--link {
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--link:hover,
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--link:focus {
+  outline: none;
+  color: #f5ecd0;
+  background: rgba(56, 56, 56, 0.35);
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row__ico {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row__label {
+  color: #e8dcc0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row__val {
+  color: #e8dcc0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row__val--white {
+  color: #fff;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row__info {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--all-white .l2-character-row__label,
+body.l2-app-l2-chrome.l2-page-character .l2-character-row--all-white .l2-character-row__val {
+  color: #fff;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-city-stub-msg {
-  margin-top: 8px;
+  margin: 8px 0.5cm 0;
 }

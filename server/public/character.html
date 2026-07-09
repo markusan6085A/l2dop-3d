@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav15" />
     <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260708charClsHold1" />
-    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260709character2" />
+    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260709character3" />
   </head>
   <body
     class="l2-body l2-page-city l2-page-char l2-page-character l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -109,6 +109,196 @@
                 </div>
               </div>
             </div>
+
+            <div class="l2-character-stats" id="character-stats">
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-53-25.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Рівень:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-level">—</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Адена:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-adena">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Coin of Luck:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-coin-luck">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Досвід:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-exp">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--info">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__info">Кількість отримуваного досвіду:</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Очки умінь:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-sp">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat l2-character-row--all-white">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-44.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Професія:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-profession">—</span>
+              </div>
+            </div>
+
+            <nav class="l2-character-actions" id="character-actions" aria-label="Дії персонажа">
+              <a class="l2-character-row l2-character-row--link" href="/pers.html">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Характеристики</span>
+              </a>
+
+              <button type="button" class="l2-character-row l2-character-row--link" data-stub="Уміння">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Уміння</span>
+              </button>
+
+              <button type="button" class="l2-character-row l2-character-row--link" data-stub="Мої квести">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Мої квести</span>
+              </button>
+
+              <button type="button" class="l2-character-row l2-character-row--link" data-stub="Рейтинги">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-53-25.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Рейтинги</span>
+              </button>
+
+              <button type="button" class="l2-character-row l2-character-row--link" data-stub="Досягнення">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-53-25.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Досягнення</span>
+              </button>
+
+              <button type="button" class="l2-character-row l2-character-row--link" data-stub="Щоденні завдання">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-53-14.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Щоденні завдання</span>
+              </button>
+
+              <a class="l2-character-row l2-character-row--link" href="/donate.html">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Поповнити рахунок</span>
+              </a>
+
+              <button type="button" class="l2-character-row l2-character-row--link" data-stub="Преміум-акаунт">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Преміум-акаунт</span>
+              </button>
+            </nav>
           </section>
 
           <p class="l2-city-stub-msg" id="character-stub-msg" hidden></p>
@@ -122,6 +312,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709character1"></script>
     <script src="/charHeroPortrait.js?v=20260709character1"></script>
-    <script src="/character.js?v=20260709character2"></script>
+    <script src="/character.js?v=20260709character3"></script>
   </body>
 </html>
