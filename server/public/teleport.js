@@ -5,8 +5,9 @@
   var teleportInFlight = false;
   var TELEPORT_SNAPSHOT_CACHE_KEY = 'l2-teleport-snapshot-cache-v1';
   var TP_ICON = '/assets/assets/photo_2026-07-05_12-52-33.jpg';
+  var activeSurroundingsKey = null;
 
-  /** Фіксований порядок міст (окрестности — окремо пізніше). */
+  /** Фіксований порядок міст; окремі блоки «Окресности» — через surroundingsKey. */
   var TELEPORT_CITIES = [
     { label: 'Talking Island Village', teleportId: 'talking_island' },
     { label: 'Elven Village', teleportId: 'elf_village' },
@@ -24,9 +25,18 @@
     { label: 'Town of Schuttgart', teleportId: 'schuttgart' },
     { label: 'Heine', teleportId: 'heine' },
     { label: 'Hunters Village', teleportId: 'hunters' },
-    { label: "Hardin's Academy", teleportId: null },
+    { label: "Hardin's Academy", surroundingsKey: 'hardin' },
     { label: 'Seven Signs', teleportId: null },
   ];
+
+  var TELEPORT_SURROUNDINGS = {
+    hardin: [
+      { label: "Hardin's Academy", teleportId: 'hardins_academy' },
+      { label: 'Necropolis of Martyrdom', teleportId: 'necropolis_of_martyrdom' },
+      { label: 'Catacomb of the Witch', teleportId: 'catacomb_of_the_witch' },
+      { label: 'Sea of Spores', teleportId: 'sea_of_spores' },
+    ],
+  };
 
   function $(id) {
     return document.getElementById(id);
@@ -81,7 +91,9 @@
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'l2-town-miru-item';
-    if (row.teleportId) {
+    if (row.surroundingsKey) {
+      btn.setAttribute('data-surroundings-key', row.surroundingsKey);
+    } else if (row.teleportId) {
       btn.setAttribute('data-teleport-id', row.teleportId);
     } else {
       btn.setAttribute('data-teleport-stub', row.label || '');
@@ -125,6 +137,61 @@
       listEl.appendChild(item);
     }
     wireMiruIcons(listEl);
+  }
+
+  function clearSurroundingsActive(listEl) {
+    if (!listEl) return;
+    listEl.querySelectorAll('.l2-town-miru-item--surroundings-active').forEach(function (el) {
+      el.classList.remove('l2-town-miru-item--surroundings-active');
+    });
+  }
+
+  function hideSurroundings(listEl) {
+    var panel = $('tp-surroundings');
+    var surroundList = $('tp-surroundings-list');
+    activeSurroundingsKey = null;
+    clearSurroundingsActive(listEl);
+    if (panel) panel.hidden = true;
+    if (surroundList) surroundList.innerHTML = '';
+  }
+
+  function renderSurroundingsList(key) {
+    var rows = TELEPORT_SURROUNDINGS[key];
+    var surroundList = $('tp-surroundings-list');
+    if (!rows || !surroundList) return;
+    surroundList.innerHTML = '';
+    for (var i = 0; i < rows.length; i++) {
+      var item = createMiruItem(rows[i], false);
+      item.classList.add('l2-teleport-miru-surroundings-item');
+      if (i === rows.length - 1) {
+        item.classList.add('l2-town-miru-item--last');
+      }
+      surroundList.appendChild(item);
+    }
+    wireMiruIcons(surroundList);
+  }
+
+  function toggleSurroundings(key, listEl, tpOk) {
+    var panel = $('tp-surroundings');
+    if (!panel) return;
+    if (tpOk) {
+      tpOk.hidden = true;
+      tpOk.textContent = '';
+    }
+    if (activeSurroundingsKey === key) {
+      hideSurroundings(listEl);
+      return;
+    }
+    activeSurroundingsKey = key;
+    clearSurroundingsActive(listEl);
+    if (listEl) {
+      var trigger = listEl.querySelector(
+        '.l2-town-miru-item[data-surroundings-key="' + key + '"]'
+      );
+      if (trigger) trigger.classList.add('l2-town-miru-item--surroundings-active');
+    }
+    renderSurroundingsList(key);
+    panel.hidden = false;
   }
 
   async function resyncCharacter(errEl) {
@@ -339,10 +406,26 @@
     renderCityList(listEl);
     if (errEl) errEl.hidden = true;
 
+    var surroundListEl = $('tp-surroundings-list');
+    if (surroundListEl) {
+      surroundListEl.addEventListener('click', function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest('.l2-town-miru-item') : null;
+        if (!btn || btn.disabled) return;
+        var id = btn.getAttribute('data-teleport-id');
+        if (id) doTeleport(id, tpErr, tpOk);
+      });
+    }
+
     if (listEl) {
       listEl.addEventListener('click', function (e) {
         var btn = e.target && e.target.closest ? e.target.closest('.l2-town-miru-item') : null;
         if (!btn || btn.disabled) return;
+        var sk = btn.getAttribute('data-surroundings-key');
+        if (sk) {
+          toggleSurroundings(sk, listEl, tpOk);
+          return;
+        }
+        hideSurroundings(listEl);
         var id = btn.getAttribute('data-teleport-id');
         if (id) {
           doTeleport(id, tpErr, tpOk);

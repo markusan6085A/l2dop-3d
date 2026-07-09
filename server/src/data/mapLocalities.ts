@@ -159,6 +159,38 @@ export const MAP_TOWNS: MapTownRef[] = [
     cityId: 'ancient_tomb_fields',
     teleportId: 'ancient_tomb_fields',
   },
+  {
+    worldX: 91628,
+    worldY: -44879,
+    labelUk: 'Академія Hardin',
+    labelEn: "Hardin's Academy",
+    cityId: 'l2dop_aden',
+    teleportId: 'hardins_academy',
+  },
+  {
+    worldX: 118518,
+    worldY: 132829,
+    labelUk: 'Некрополь Мучеників',
+    labelEn: 'Necropolis of Martyrdom',
+    cityId: 'l2dop_aden',
+    teleportId: 'necropolis_of_martyrdom',
+  },
+  {
+    worldX: 139976,
+    worldY: 79704,
+    labelUk: 'Катакомби Відьми',
+    labelEn: 'Catacomb of the Witch',
+    cityId: 'l2dop_giran',
+    teleportId: 'catacomb_of_the_witch',
+  },
+  {
+    worldX: 6432,
+    worldY: 35745,
+    labelUk: 'Море спор',
+    labelEn: 'Sea of Spores',
+    cityId: 'l2dop_oren',
+    teleportId: 'sea_of_spores',
+  },
 ];
 
 export function getTeleportDestination(
