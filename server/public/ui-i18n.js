@@ -7,9 +7,13 @@
 
   L2.UI = {
     tagline: {
-      uk: 'Онлайн гра Lineage II',
-      ru: 'Онлайн-игра Lineage II',
+      uk: 'Онлайн гра L2WAP',
+      ru: 'Онлайн игра L2WAP',
     },
+    page_home_title: { uk: 'Головна — L2WAP', ru: 'Главная — L2WAP' },
+    page_register_title: { uk: 'Реєстрація — L2WAP', ru: 'Регистрация — L2WAP' },
+    auth_home_head: { uk: 'Онлайн гра L2WAP', ru: 'Онлайн игра L2WAP' },
+    auth_brand_name: { uk: 'L2WAP', ru: 'L2WAP' },
     aria_header: { uk: 'Заголовок', ru: 'Заголовок' },
 
     stub_later: {
@@ -66,7 +70,7 @@
     nav_mail_title: { uk: 'Пошта', ru: 'Почта' },
     nav_mammon: { uk: 'Маммон', ru: 'Маммон' },
     nav_mammon_title: { uk: 'Маммон / Rift', ru: 'Маммон / Rift' },
-    page_mammon_title: { uk: 'Маммон — L2DOP', ru: 'Маммон — L2DOP' },
+    page_mammon_title: { uk: 'Маммон — L2WAP', ru: 'Маммон — L2WAP' },
     mammon_section_aria: { uk: 'Маммон', ru: 'Маммон' },
     nav_menu: { uk: 'Меню', ru: 'Меню' },
     nav_menu_title: { uk: 'Меню', ru: 'Меню' },
@@ -135,7 +139,7 @@
       ru: 'Не удалось загрузить персонажа.',
     },
     city_aria_services: { uk: 'Місто', ru: 'Город' },
-    page_city_title: { uk: 'Місто — L2DOP', ru: 'Город — L2DOP' },
+    page_city_title: { uk: 'Місто — L2WAP', ru: 'Город — L2WAP' },
 
     city_btn_trade: { uk: 'Торгова площа', ru: 'Торговая площадь' },
     city_link_gm_shop: { uk: 'Магазин вищей', ru: 'Магазин вищей' },
@@ -181,7 +185,7 @@
     },
 
     /** Бій — UI */
-    battle_title: { uk: 'Бій — L2DOP', ru: 'Бой — L2DOP' },
+    battle_title: { uk: 'Бій — L2WAP', ru: 'Бой — L2WAP' },
     battle_lbl_cp: { uk: 'CP', ru: 'CP' },
     battle_lbl_hp: { uk: 'HP', ru: 'HP' },
     battle_lbl_mp: { uk: 'MP', ru: 'MP' },
@@ -329,8 +333,8 @@
 
     abbr_level: { uk: 'ур.', ru: 'ур.' },
 
-    page_profile_title: { uk: 'Профіль — L2DOP', ru: 'Профиль — L2DOP' },
-    page_magisters_title: { uk: 'Магістри — L2DOP', ru: 'Магистры — L2DOP' },
+    page_profile_title: { uk: 'Профіль — L2WAP', ru: 'Профиль — L2WAP' },
+    page_magisters_title: { uk: 'Магістри — L2WAP', ru: 'Магистры — L2WAP' },
     magisters_back_city: { uk: 'Назад до міста', ru: 'Назад в город' },
     magisters_intro_p1: {
       uk:

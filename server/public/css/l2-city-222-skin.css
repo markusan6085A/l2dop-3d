@@ -1,7 +1,7 @@
 /**
  * Місто: l2-app-chrome-skin + сітка навігації; список сервісів — текст зліва, без рамок.
  */
-@import url('l2-app-chrome-skin.css?v=20260709miruNav8');
+@import url('l2-app-chrome-skin.css?v=20260709miruNav9');
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive {
   --l2s-city-town-btn-w: 100%;
@@ -107,8 +107,8 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc {
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-art {
   flex-shrink: 0;
   width: auto;
-  height: 2.4cm;
-  max-height: 2.4cm;
+  height: 1.92cm;
+  max-height: 1.92cm;
   object-fit: contain;
   pointer-events: none;
 }

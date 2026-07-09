@@ -760,7 +760,7 @@
       if (isLegacyMinimal) {
         return (
           '<header class="l2-hud-panel l2-hud-panel--legacy-minimal" aria-label="Персонаж">' +
-          '<div class="l2-hud-legacy-title-inline">Wap LineAge</div>' +
+          '<div class="l2-hud-legacy-title-inline">L2WAP</div>' +
           '<div class="l2-hud-legacy-body">' +
           '<div class="l2-hud-legacy-headline" id="l2-legacy-headline">—</div>' +
           '<div class="l2-hud-legacy-line l2-hud-legacy-line--hp"><span class="l2-hud-legacy-key">HP:</span> <span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></div>' +
