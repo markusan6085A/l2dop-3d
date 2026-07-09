@@ -726,12 +726,13 @@
       set('l2-hud-cp-max', c.maxCp != null ? Math.round(Number(c.maxCp)) : '—');
       setWidthPct('l2-hud-cp-inner', cpPct);
       if (isLegacyMinimal) {
+        var lvlAbbr =
+          global.L2 && global.L2.tr ? global.L2.tr('abbr_level') : 'ур.';
         set(
-          'l2-legacy-headline',
-          String(c.level != null ? c.level : '—') +
-            ' ур. - ' +
-            String(c.name != null ? c.name : '—')
+          'l2-hud-legacy-lvl',
+          String(c.level != null ? c.level : '—') + ' ' + lvlAbbr
         );
+        set('l2-hud-legacy-name', c.name != null ? c.name : '—');
       }
     },
 
@@ -762,7 +763,11 @@
           '<header class="l2-hud-panel l2-hud-panel--legacy-minimal" aria-label="Персонаж">' +
           '<div class="l2-hud-legacy-title-inline">L2WAP</div>' +
           '<div class="l2-hud-legacy-body">' +
-          '<div class="l2-hud-legacy-headline" id="l2-legacy-headline">—</div>' +
+          '<div class="l2-hud-legacy-headline">' +
+          '<span class="l2-hud-legacy-level" id="l2-hud-legacy-lvl">—</span>' +
+          ' - ' +
+          '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
+          '</div>' +
           '<div class="l2-hud-legacy-line l2-hud-legacy-line--hp"><span class="l2-hud-legacy-key">HP:</span> <span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></div>' +
           '<div class="l2-hud-legacy-line l2-hud-legacy-line--mp"><span class="l2-hud-legacy-key">MP:</span> <span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></div>' +
           '<div class="l2-hud-legacy-line l2-hud-legacy-line--exp"><span class="l2-hud-legacy-key">EXP:</span> <span id="l2-hud-exp-pct">0.00 %</span></div>' +

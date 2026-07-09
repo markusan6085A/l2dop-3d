@@ -39,6 +39,8 @@ body.l2-app-l2-chrome .l2-shell {
 
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   --l2-flat-bg: #1d1c1a;
+  --l2f-top-thin: 3mm;
+  --l2f-top-piece-h: calc(78px - var(--l2f-top-thin));
   /* Телефон: як було (~420px). ПК: +30% (546px), по центру — див. media в кінці файлу. */
   --l2s-chrome-column-base: 420px;
   --l2s-chrome-column-w: min(100vw - 8px, var(--l2s-chrome-column-base));
@@ -113,11 +115,11 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
     left calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center,
     right calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center;
   background-size:
-    78px 78px,
-    78px 78px,
+    78px var(--l2f-top-piece-h),
+    78px var(--l2f-top-piece-h),
     78px 54px,
     78px 54px,
-    calc(100% - 156px) 78px,
+    calc(100% - 156px) var(--l2f-top-piece-h),
     calc(100% - 156px + (var(--l2f-side-x-nudge) * 2)) 54px,
     var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge)),
     var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge));
@@ -2355,8 +2357,8 @@ body.l2-app-l2-chrome.l2-nav-minimal.l2-page-has-fixed-nav .l2-screen-inner {
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal {
-  --l2s-content-edge-pad: 2mm;
-  --l2s-legacy-inner-pad-x: var(--l2s-content-edge-pad, 2mm);
+  --l2s-content-edge-pad: 0.5cm;
+  --l2s-legacy-inner-pad-x: var(--l2s-content-edge-pad, 0.5cm);
   --l2s-legacy-bars-gap: calc(3mm - 0.5cm);
   --l2s-legacy-rule-color: #303030;
   --l2s-legacy-nav-cell-bg: #303030;
@@ -2387,9 +2389,9 @@ html body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city .l2-screen.l2-outer-sfram
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-nav-bottom) {
   padding:
     0
-    var(--l2s-content-edge-pad, 2mm)
+    var(--l2s-content-edge-pad, 0.5cm)
     calc(12px + env(safe-area-inset-bottom, 0px))
-    var(--l2s-content-edge-pad, 2mm) !important;
+    var(--l2s-content-edge-pad, 0.5cm) !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal {
@@ -2415,8 +2417,8 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
   width: calc(100% + (2 * var(--l2s-legacy-inner-pad-x, 8px)));
   margin: 0 calc(-1 * var(--l2s-legacy-inner-pad-x, 8px));
   padding: var(--l2s-legacy-title-nudge-y, 0px) 0 0;
-  height: var(--l2-frame-top-h, 54px);
-  min-height: var(--l2-frame-top-h, 54px);
+  height: calc(var(--l2-frame-top-h, 54px) - var(--l2f-top-thin, 3mm));
+  min-height: calc(var(--l2-frame-top-h, 54px) - var(--l2f-top-thin, 3mm));
   text-align: center;
   font-size: 13px;
   font-weight: 700;
@@ -2444,8 +2446,12 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
   margin: 0 0 2px;
 }
 
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-level {
+  color: #fff;
+}
+
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line {
-  font-size: 14px;
+  font-size: 12.6px;
   line-height: 1.12;
   color: #f0eee8;
   margin: 0;
