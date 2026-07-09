@@ -166,6 +166,22 @@ body.l2-app-l2-chrome .l2-outer-sframe__br {
   display: none !important;
 }
 
+/*
+ * Дубль ref-рамки в DOM (.l2-outer-sframe) — лише декор через ::after на host.
+ * Інакше блок займає ~110px у потоці → порожня смуга над «Wap LineAge».
+ */
+html body.l2-app-l2-chrome .l2-outer-sframe-host > .l2-outer-sframe {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+}
+
 body.l2-app-l2-chrome .l2-screen-inner {
   position: relative;
   z-index: 4;
@@ -233,8 +249,8 @@ body.l2-app-l2-chrome .l2-hud-panel .l2-hud-vitals {
   box-shadow: none !important;
 }
 
-body.l2-app-l2-chrome .l2-hud-panel,
-body.l2-app-l2-chrome .l2-screen-inner .l2-hud-panel {
+body.l2-app-l2-chrome .l2-hud-panel:not(.l2-hud-panel--legacy-minimal),
+body.l2-app-l2-chrome .l2-screen-inner .l2-hud-panel:not(.l2-hud-panel--legacy-minimal) {
   margin: 0 0 14px;
   border-color: transparent !important;
   border-style: solid;
@@ -2262,7 +2278,6 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
  * Макет як miru: заголовок у верхній смузі рамки, бари одразу під нею.
  * ============================================================ */
 body.l2-app-l2-chrome.l2-nav-minimal {
-  --l2s-legacy-cap-h: var(--l2-frame-top-h, 54px);
   --l2s-legacy-title-nudge-y: 2px;
 }
 
@@ -2304,29 +2319,12 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal 
   position: relative;
 }
 
-/* Смуга верхньої рамки — лише «Wap LineAge» */
-html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-cap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: var(--l2s-legacy-cap-h, 54px);
-  min-height: var(--l2s-legacy-cap-h, 54px);
-  max-height: var(--l2s-legacy-cap-h, 54px);
-  margin: 0;
-  padding: var(--l2s-legacy-title-nudge-y, 0px) 0 0;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  border: 0 !important;
-  background: transparent !important;
-}
-
+/* «Wap LineAge» — у верхній смузі host::after (top.png); бари одразу під нею */
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
-  position: static;
-  left: auto;
-  right: auto;
-  top: auto;
-  height: auto;
   display: block;
+  margin: 0;
+  padding: calc(var(--l2s-legacy-title-nudge-y, 0px) + 8px) 0 4px;
+  box-sizing: border-box;
   text-align: center;
   font-size: 13px;
   font-weight: 700;
@@ -2334,7 +2332,6 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
   color: #efe7d6;
   line-height: 1.1;
   pointer-events: none;
-  z-index: 2;
   background: transparent !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
