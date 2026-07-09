@@ -1,12 +1,6 @@
 /**
  * Кнопка «Онлайн» під головною рамкою (l2-online-foot.js).
  */
-html body.l2-app-l2-chrome:not(.l2-page-online) .l2-shell {
-  display: flex;
-  flex-direction: column;
-  align-items: center !important;
-}
-
 html body.l2-app-l2-chrome .l2-shell:has(.l2-online-foot) {
   display: flex;
   flex-direction: column;

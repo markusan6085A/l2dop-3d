@@ -826,7 +826,7 @@
       var node = tpl.content.firstElementChild;
       if (!node || !node.classList.contains('l2-hud-panel')) return;
       if (m) {
-        m.replaceChildren(node);
+        m.replaceWith(node);
         return;
       }
       if (existing) {
@@ -938,46 +938,7 @@
   }
 
   var CHAT_REPLY_NOTIFY_VER = '20260709perf1';
-  var ONLINE_FOOT_ASSET_VER = '20260709perf1';
-  var COMMON_ASSET_VER = '20260709perf1';
-
-  function ensureOnlineFootShell() {
-    if (typeof document === 'undefined' || !document.body) return;
-    if (!document.body.classList.contains('l2-app-l2-chrome')) return;
-    if (document.body.classList.contains('l2-page-online')) return;
-
-    if (!document.getElementById('l2-online-foot-css')) {
-      var cssFoot = document.createElement('link');
-      cssFoot.id = 'l2-online-foot-css';
-      cssFoot.rel = 'stylesheet';
-      cssFoot.href = '/css/l2-online-foot.css?v=' + ONLINE_FOOT_ASSET_VER;
-      (document.head || document.documentElement).appendChild(cssFoot);
-    }
-
-    if (document.getElementById('l2-online-foot')) return;
-
-    var shell = document.querySelector('.l2-shell');
-    if (!shell) return;
-    var screen = shell.querySelector('.l2-screen.l2-outer-sframe-host');
-    if (!screen) return;
-
-    var foot = document.createElement('div');
-    foot.className = 'l2-online-foot';
-    foot.id = 'l2-online-foot';
-
-    var link = document.createElement('a');
-    link.className = 'l2-online-foot__link';
-    link.id = 'l2-online-link';
-    link.href = '/online.html';
-    link.textContent = 'Онлайн: —';
-    foot.appendChild(link);
-
-    if (screen.nextSibling) {
-      shell.insertBefore(foot, screen.nextSibling);
-    } else {
-      shell.appendChild(foot);
-    }
-  }
+  var ONLINE_FOOT_ASSET_VER = '20260709perfLayout1';
 
   function bootstrapChatReplyNotify() {
     if (typeof document === 'undefined' || !document.body) return;
@@ -1053,13 +1014,10 @@
       if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
         global.L2.mountStandardHudPanel();
       }
-      ensureOnlineFootShell();
       bootstrapOnlineFoot();
       bootstrapChatReplyNotify();
     }
-    if (document.body) {
-      runHudMount();
-    } else if (document.readyState === 'loading') {
+    if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', runHudMount);
     } else {
       runHudMount();

@@ -161,10 +161,6 @@ body.l2-app-l2-chrome #l2-hud-panel-mount {
   margin: 0 0 6px;
 }
 
-body.l2-app-l2-chrome #l2-hud-panel-mount > .l2-hud-panel {
-  margin-bottom: 0;
-}
-
 body.l2-app-l2-chrome #l2-nav-top {
   display: none;
   min-height: 0;
@@ -2481,7 +2477,7 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-hud-panel-mount {
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom {
-  min-height: 132px !important;
+  min-height: 0 !important;
   margin-top: 4px !important;
   padding: 0 0 calc(2px + env(safe-area-inset-bottom, 0px)) !important;
 }
