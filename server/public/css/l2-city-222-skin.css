@@ -1,7 +1,7 @@
 /**
  * Місто: l2-app-chrome-skin + сітка навігації; список сервісів — текст зліва, без рамок.
  */
-@import url('l2-app-chrome-skin.css?v=20260709miruNav4');
+@import url('l2-app-chrome-skin.css?v=20260709miruNav5');
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive {
   --l2s-city-town-btn-w: 100%;

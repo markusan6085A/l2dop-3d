@@ -131,6 +131,9 @@ body.l2-app-l2-chrome .l2-outer-sframe-host > .l2-game-chrome-crest {
 /* Сторінки з нижньою сіткою — без відступу city-strip зверху до mount HUD */
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-nav-bottom) {
   padding-top: 0 !important;
+  padding-left: max(8px, var(--l2-frame-pad-x, 8px)) !important;
+  padding-right: max(8px, var(--l2-frame-pad-x, 8px)) !important;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 body.l2-app-l2-chrome .l2-screen-inner:has(#l2-nav-bottom) #l2-hud-panel-mount {
@@ -2284,6 +2287,37 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-panel__back a.l2-town-btn:ac
 }
 
 /* ============================================================
+ * Головна рамка (host ::after): висота по контенту, низ під нижньою сіткою.
+ * Сторінки з #l2-nav-bottom — без 100vh / flex-grow і без великого pad-bottom.
+ * ============================================================ */
+html body.l2-app-l2-chrome .l2-shell:has(#l2-nav-bottom) {
+  min-height: 0 !important;
+  height: auto !important;
+  align-items: flex-start !important;
+}
+
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host:has(#l2-nav-bottom),
+html body.l2-app-l2-chrome.l2-page-city .l2-screen:has(#l2-nav-bottom),
+html body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen:has(#l2-nav-bottom) {
+  --l2-frame-pad-bottom: 12px;
+  min-height: 0 !important;
+  height: fit-content !important;
+  flex: 0 0 auto !important;
+}
+
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host:has(#l2-nav-bottom) > .l2-screen-inner {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host:has(#l2-nav-bottom) #l2-nav-bottom {
+  min-height: 0 !important;
+  margin-top: 4px !important;
+}
+
+/* ============================================================
  * Legacy-minimal nav mode (вмикається body.l2-nav-minimal з l2-nav.js)
  * Макет як miru: заголовок у верхній смузі рамки, бари одразу під нею.
  * ============================================================ */
@@ -2317,7 +2351,7 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-screen-inner:has(#l2-nav-bottom) #l2-hu
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal.l2-page-has-fixed-nav .l2-screen-inner {
-  padding-bottom: calc(2px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal {
@@ -2340,6 +2374,10 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-game-chrome-crest {
 }
 
 /* Перебиває l2-outer-sframe (--l2-frame-pad-top ~88–132px) і city-strip gap */
+html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host:has(#l2-nav-bottom) {
+  --l2-frame-pad-top: var(--l2-frame-top-h, clamp(54px, 12.4vw, 86px));
+}
+
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner,
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-hud-panel-mount),
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--city-strip),
@@ -2348,7 +2386,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city .l2-screen.l2-outer-sfram
   padding:
     0
     8px
-    calc(2px + env(safe-area-inset-bottom, 0px))
+    calc(12px + env(safe-area-inset-bottom, 0px))
     8px !important;
 }
 
