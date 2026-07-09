@@ -2428,7 +2428,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
 
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
   margin: var(--l2s-legacy-bars-gap, 0) 0 0;
-  padding: 4px 2px 6px 10px;
+  padding: 3px 2px 5px 9px;
   border: 0 !important;
   border-top: 0 !important;
   border-bottom: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
@@ -2436,14 +2436,14 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
-  color: #f0eee8;
-  font-size: 16px;
+  color: #e8dcc0;
+  font-size: 14px;
   line-height: 1.15;
   margin: 0 0 2px;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line {
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.12;
   color: #f0eee8;
   margin: 0;
