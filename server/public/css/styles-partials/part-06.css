@@ -35,9 +35,20 @@
   color: #c4bcb0;
 }
 
-.l2-gm-shop-adena strong {
-  color: #e8c56e;
+.l2-gm-shop-adena strong,
+.l2-gm-shop-adena__amount {
+  color: #ffdc5c;
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(255, 210, 80, 0.35);
+}
+
+.l2-drops-shop-purchase-ok {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.4;
   font-weight: 600;
+  color: #5cdc7a;
+  text-shadow: 0 0 8px rgba(70, 200, 110, 0.25);
 }
 
 .l2-gm-shop-rev {

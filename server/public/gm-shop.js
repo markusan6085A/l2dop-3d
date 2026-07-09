@@ -6,6 +6,22 @@
  */
 (function () {
   var SS_UI = 'drops-shop-ui';
+  /** Повідомлення після успішної покупки (під заголовком грейду). */
+  var lastPurchaseMsg = null;
+
+  function setPurchaseCongrats(nameUk, qty) {
+    var name = String(nameUk || 'предмет').trim();
+    var q = Math.max(1, Math.floor(Number(qty) || 1));
+    if (q > 1) {
+      lastPurchaseMsg = 'Вітаємо! Ви придбали «' + name + '» × ' + q;
+    } else {
+      lastPurchaseMsg = 'Вітаємо! Ви придбали «' + name + '»';
+    }
+  }
+
+  function clearPurchaseCongrats() {
+    lastPurchaseMsg = null;
+  }
 
   /** Порядок кнопок підкатегорій у UI (ключі як у API). */
   var CAT_ORDER = ['weapon', 'shield', 'armor', 'earring', 'consumable'];
@@ -366,6 +382,7 @@
         }
         if (closeModalOnSuccess) closeBuyQtyModal();
         var nc = pair.j.character;
+        setPurchaseCongrats(it.nameUk || it.shopKey, qty);
         if (window.L2 && window.L2.setLastSnapshot)
           window.L2.setLastSnapshot(nc);
         if (
@@ -686,7 +703,7 @@
   function syncMeta(metaEl, snap) {
     if (!metaEl || !snap) return;
     metaEl.innerHTML =
-      '<span class="l2-gm-shop-adena">Адена: <strong>' +
+      '<span class="l2-gm-shop-adena">Адена: <strong class="l2-gm-shop-adena__amount">' +
       fmtAdena(snap.adena) +
       '</strong></span>';
   }
@@ -1268,10 +1285,16 @@
       var ht = document.createElement('div');
       ht.className = 'l2-drops-grade__title';
       ht.textContent = 'Грейд ' + stateGrade;
+      titles.appendChild(ht);
+      if (lastPurchaseMsg) {
+        var okMsg = document.createElement('div');
+        okMsg.className = 'l2-drops-shop-purchase-ok';
+        okMsg.textContent = lastPurchaseMsg;
+        titles.appendChild(okMsg);
+      }
       var sub = document.createElement('div');
       sub.className = 'l2-drops-shop-pane-cat';
       sub.textContent = catUk;
-      titles.appendChild(ht);
       titles.appendChild(sub);
       pane.appendChild(titles);
 
@@ -1311,6 +1334,7 @@
           btn.addEventListener('click', function () {
             var gx = btn.getAttribute('data-grade');
             if (!gx) return;
+            clearPurchaseCongrats();
             stateGrade = gx;
             saveUiState(
               stateCat,
@@ -1357,6 +1381,7 @@
         btn.addEventListener('click', function () {
           var cx = btn.getAttribute('data-category');
           if (!cx) return;
+          clearPurchaseCongrats();
           stateCat = cx;
           var avail = gradesWithItemsForCategory(gradesSorted, stateCat);
           if (avail.indexOf(stateGrade) === -1) {

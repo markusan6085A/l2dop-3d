@@ -176,25 +176,26 @@ body.l2-app-l2-chrome.l2-page-character .l2-city-stub-msg {
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit {
   margin-top: 10px;
-  background: rgba(110, 18, 18, 0.55);
-  border: 1px solid #c03030;
-  border-radius: 2px;
+  padding: 4px 0;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit .l2-character-row__label {
-  color: #ff5050 !important;
+  color: #e04040 !important;
   font-weight: 700;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit:hover,
 body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit:focus {
-  background: rgba(150, 24, 24, 0.72);
-  border-color: #ff5858;
+  background: transparent !important;
+  border: 0 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit:hover .l2-character-row__label,
 body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit:focus .l2-character-row__label {
-  color: #ff8080 !important;
+  color: #ff5858 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-social-title {
