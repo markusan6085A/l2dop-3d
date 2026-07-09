@@ -73,7 +73,7 @@ export function buildDropsShopStatsPreviewUk(
       lines.push({ labelUk: 'Маг. атака', valueUk: String(meta.mAtk) });
     }
     if (meta.atkSpd != null) {
-      lines.push({ labelUk: 'Швидкість атаки', valueUk: String(meta.atkSpd) });
+      lines.push({ labelUk: 'Швидкість бою', valueUk: String(meta.atkSpd) });
     }
     if (meta.weaponType) {
       lines.push({
@@ -83,12 +83,12 @@ export function buildDropsShopStatsPreviewUk(
     }
     if (meta.wpnCrit != null) {
       lines.push({
-        labelUk: 'Крит бази (тип)',
+        labelUk: 'Крит.',
         valueUk: String(meta.wpnCrit),
       });
     }
     if (meta.rCrit != null && meta.rCrit > 0) {
-      lines.push({ labelUk: 'Крит із предмета', valueUk: '+' + meta.rCrit });
+      lines.push({ labelUk: 'Крит.', valueUk: '+' + meta.rCrit });
     }
     return lines;
   }

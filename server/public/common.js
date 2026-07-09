@@ -296,6 +296,25 @@
       if (u != null && String(u).trim() !== '') return String(u);
       return '/game/item-icon/' + id;
     },
+    /** Тон рядка статів модалки предмета (як у класичному L2-клієнті). */
+    itemStatLineTone: function (labelUk) {
+      var s = String(labelUk || '').toLowerCase();
+      if (/фіз\.?\s*атак|p\.?\s*atk\b/i.test(s)) return 'patk';
+      if (/маг\.?\s*атак|m\.?\s*atk\b/i.test(s)) return 'matk';
+      if (/крит|crit/i.test(s)) return 'crit';
+      return 'default';
+    },
+    /** Один рядок «Підпис: значення» у модалці предмета. */
+    appendItemStatLine: function (parent, labelUk, valueUk) {
+      if (!parent) return;
+      var label = labelUk != null ? String(labelUk).trim() : '';
+      var val = valueUk != null ? String(valueUk) : '';
+      var p = document.createElement('p');
+      var tone = global.L2.itemStatLineTone(label);
+      p.className = 'l2-item-modal-stat l2-item-modal-stat--' + tone;
+      p.textContent = label ? label + ': ' + val : val;
+      parent.appendChild(p);
+    },
     resolveSkillIconUrl: function (skillId, iconUrl) {
       if (iconUrl != null && String(iconUrl).charAt(0) === '/') {
         return String(iconUrl);

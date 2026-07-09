@@ -36,6 +36,7 @@ import {
 } from './l2dopItemInventoryTab.generated.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { dropsShopConsumableGearCatalogExtras } from './dropsShopConsumableGearExtras.js';
+import { dropsShopGearCatalogExtras } from './dropsShopGearCatalogExtras.js';
 import { starterGearCatalogExtras } from './starterGearCatalogExtras.js';
 
 export type ItemSlotKind =
@@ -539,6 +540,11 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
   }
   rows.push(...dropsShopConsumableGearCatalogExtras());
   const seen = new Set(rows.map((r) => r.itemId));
+  for (const extra of dropsShopGearCatalogExtras()) {
+    if (seen.has(extra.itemId)) continue;
+    seen.add(extra.itemId);
+    rows.push(extra);
+  }
   for (const extra of starterGearCatalogExtras()) {
     if (seen.has(extra.itemId)) continue;
     seen.add(extra.itemId);

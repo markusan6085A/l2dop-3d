@@ -206,20 +206,23 @@
           <p class="l2-city-stub-msg" id="char-stub-msg" hidden></p>
 
           <div id="char-bag-modal-overlay" class="l2-gm-modal-overlay" hidden aria-hidden="true">
-            <div class="l2-gm-modal" role="dialog" aria-modal="true" aria-labelledby="char-bag-modal-title">
+            <div class="l2-gm-modal" role="dialog" aria-modal="true" aria-labelledby="char-bag-modal-section-title">
               <button type="button" class="l2-gm-modal-close" id="char-bag-modal-close" aria-label="Закрити">
                 ×
               </button>
+              <h2 id="char-bag-modal-section-title" class="l2-item-modal-heading">
+                Інформація про предмет
+              </h2>
               <div class="l2-gm-modal-head">
                 <img id="char-bag-modal-icon" class="l2-gm-modal-icon" width="48" height="48" alt="" />
                 <div>
-                  <h2 id="char-bag-modal-title" class="l2-gm-modal-title"></h2>
+                  <p id="char-bag-modal-title" class="l2-gm-modal-title"></p>
                   <p class="l2-gm-modal-sub">
                     <span id="char-bag-modal-grade">—</span> · <span id="char-bag-modal-kind"></span>
                   </p>
                 </div>
               </div>
-              <dl class="l2-gm-modal-stats" id="char-bag-modal-stats"></dl>
+              <div class="l2-item-modal-stats" id="char-bag-modal-stats"></div>
               <p class="l2-gm-modal-price" id="char-bag-modal-qty"></p>
               <div id="char-bag-modal-armor-sets" class="l2-drops-stats-modal__armor-sets" hidden></div>
               <p class="l2-char-bag-modal-craft-hint" id="char-bag-modal-craft-hint" hidden></p>

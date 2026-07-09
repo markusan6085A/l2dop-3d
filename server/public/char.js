@@ -1384,12 +1384,14 @@
     if (icon) setItemIconSrc(icon, itemId);
     statsEl.innerHTML = '';
     function addRow(k, v) {
-      var dt = document.createElement('dt');
-      dt.textContent = k;
-      var dd = document.createElement('dd');
-      dd.textContent = v;
-      statsEl.appendChild(dt);
-      statsEl.appendChild(dd);
+      if (window.L2 && typeof L2.appendItemStatLine === 'function') {
+        L2.appendItemStatLine(statsEl, k, v);
+        return;
+      }
+      var p = document.createElement('p');
+      p.className = 'l2-item-modal-stat l2-item-modal-stat--default';
+      p.textContent = k ? k + ': ' + v : String(v);
+      statsEl.appendChild(p);
     }
     if (modalEn > 0) addRow('Заточка', '+' + modalEn);
     var st = window.L2 && L2.itemStatsById && L2.itemStatsById[itemId];
@@ -1411,7 +1413,7 @@
       slKind === 'earring' ||
       hasJewelAuthorModal;
     if (st && typeof st === 'object') {
-      if (st.pAtk != null) addRow('P. Atk.', String(st.pAtk));
+      if (st.pAtk != null) addRow('Фіз. атака', String(st.pAtk));
       if (isJewelModal) {
         var mdef =
           st.jewelMdefFlat != null
@@ -1419,7 +1421,7 @@
             : st.jewelryMAtk != null
               ? st.jewelryMAtk
               : st.mAtk;
-        if (mdef != null) addRow('Маг. захист (M.Def)', String(mdef));
+        if (mdef != null) addRow('Маг. захист', String(mdef));
         if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
           addRow('HP макс.', '+' + String(st.jewelMaxHp));
         }
@@ -1446,15 +1448,15 @@
         ) {
           addRow('Стійкість до утримання', pctFromMulUk(st.jewelHoldResistMul));
         }
-        if (st.pDef != null) addRow('P. Def.', String(st.pDef));
+        if (st.pDef != null) addRow('Фіз. захист', String(st.pDef));
       } else {
-        if (st.mAtk != null) addRow('M. Atk.', String(st.mAtk));
-        if (st.pDef != null) addRow('P. Def.', String(st.pDef));
+        if (st.mAtk != null) addRow('Маг. атака', String(st.mAtk));
+        if (st.pDef != null) addRow('Фіз. захист', String(st.pDef));
       }
-      if (st.atkSpd != null) addRow('Скор. атаки', String(st.atkSpd));
-      if (st.wpnCrit != null) addRow('Крит (база типу)', String(st.wpnCrit));
+      if (st.atkSpd != null) addRow('Швидкість бою', String(st.atkSpd));
+      if (st.wpnCrit != null) addRow('Крит.', String(st.wpnCrit));
       if (st.rCrit != null && Number(st.rCrit) > 0) {
-        addRow('Шанс крит (зброя)', '+' + String(st.rCrit));
+        addRow('Крит.', '+' + String(st.rCrit));
       }
     }
     qtyEl.textContent =

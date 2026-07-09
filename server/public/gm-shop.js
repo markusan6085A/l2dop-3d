@@ -171,6 +171,9 @@
     clo.setAttribute('aria-label', 'Закрити');
     clo.appendChild(document.createTextNode('\u00D7'));
     clo.addEventListener('click', closeDropsStatsModal);
+    var sectTitle = document.createElement('h2');
+    sectTitle.className = 'l2-item-modal-heading';
+    sectTitle.textContent = 'Інформація про предмет';
     var head = document.createElement('div');
     head.className = 'l2-drops-stats-modal__head';
     var ico = document.createElement('img');
@@ -192,6 +195,7 @@
     armorSets.setAttribute('data-modal-armor-sets', '');
     armorSets.hidden = true;
     pan.appendChild(clo);
+    pan.appendChild(sectTitle);
     pan.appendChild(head);
     pan.appendChild(statsMount);
     pan.appendChild(hin);
@@ -383,6 +387,15 @@
         if (closeModalOnSuccess) closeBuyQtyModal();
         var nc = pair.j.character;
         setPurchaseCongrats(it.nameUk || it.shopKey, qty);
+        if (
+          window.L2 &&
+          typeof window.L2.rememberItemIconHint === 'function' &&
+          it &&
+          it.itemId != null &&
+          it.iconUrl
+        ) {
+          window.L2.rememberItemIconHint(it.itemId, it.iconUrl);
+        }
         if (window.L2 && window.L2.setLastSnapshot)
           window.L2.setLastSnapshot(nc);
         if (
@@ -522,20 +535,22 @@
         'Для цього предмета в каталозі ще нема числових характеристик або не зібраний GM-каталог за іконкою.';
       statsMount.appendChild(fallback);
     } else {
-      var dl = document.createElement('dl');
-      dl.className = 'l2-drops-stats-modal__stats';
+      var statsBox = document.createElement('div');
+      statsBox.className = 'l2-item-modal-stats';
       for (var li = 0; li < lines.length; li++) {
         var ln = lines[li];
-        var dt = document.createElement('dt');
-        dt.className = 'l2-drops-stats-modal__k';
-        dt.textContent = ln.labelUk || '';
-        var dd = document.createElement('dd');
-        dd.className = 'l2-drops-stats-modal__v';
-        dd.textContent = ln.valueUk != null ? String(ln.valueUk) : '';
-        dl.appendChild(dt);
-        dl.appendChild(dd);
+        if (window.L2 && typeof window.L2.appendItemStatLine === 'function') {
+          window.L2.appendItemStatLine(statsBox, ln.labelUk, ln.valueUk);
+        } else {
+          var sp = document.createElement('p');
+          sp.className = 'l2-item-modal-stat l2-item-modal-stat--default';
+          var lbl = ln.labelUk != null ? String(ln.labelUk).trim() : '';
+          var val = ln.valueUk != null ? String(ln.valueUk) : '';
+          sp.textContent = lbl ? lbl + ': ' + val : val;
+          statsBox.appendChild(sp);
+        }
       }
-      statsMount.appendChild(dl);
+      statsMount.appendChild(statsBox);
     }
 
     if (it.purchasable && it.priceAdena != null) {
