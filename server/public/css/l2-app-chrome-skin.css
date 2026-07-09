@@ -161,6 +161,10 @@ body.l2-app-l2-chrome #l2-hud-panel-mount {
   margin: 0 0 6px;
 }
 
+body.l2-app-l2-chrome #l2-hud-panel-mount > .l2-hud-panel {
+  margin-bottom: 0;
+}
+
 body.l2-app-l2-chrome #l2-nav-top {
   display: none;
   min-height: 0;

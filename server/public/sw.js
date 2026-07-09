@@ -2,7 +2,7 @@
  * Service Worker: браузер як "тонкий клієнт" для статики.
  * Живі дані гри завжди йдуть у мережу (сервер = джерело правди).
  */
-var GAME_CACHE_VERSION = '20260708gameCache1';
+var GAME_CACHE_VERSION = '20260709perf1';
 var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
 var PRECACHE_URLS = [
@@ -105,17 +105,13 @@ self.addEventListener('fetch', function (event) {
   event.respondWith(
     caches.open(STATIC_CACHE).then(function (cache) {
       return cache.match(event.request).then(function (cached) {
-        var networkPromise = fetch(event.request).then(function (response) {
+        if (cached) return cached;
+        return fetch(event.request).then(function (response) {
           if (shouldCacheResponse(response)) {
             cache.put(event.request, response.clone());
           }
           return response;
         });
-        if (cached) {
-          event.waitUntil(networkPromise.catch(function () {}));
-          return cached;
-        }
-        return networkPromise;
       });
     })
   );

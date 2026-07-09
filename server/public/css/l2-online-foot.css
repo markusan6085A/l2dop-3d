@@ -7,17 +7,6 @@ html body.l2-app-l2-chrome:not(.l2-page-online) .l2-shell {
   align-items: center !important;
 }
 
-html body.l2-app-l2-chrome:not(.l2-page-online) .l2-shell:not(:has(.l2-online-foot))::after {
-  content: '';
-  display: block;
-  flex: 0 0 auto;
-  width: var(--l2s-chrome-column-w, min(100vw - 8px, 420px));
-  max-width: 100%;
-  min-height: calc(0.5cm + 22px + env(safe-area-inset-bottom, 0px));
-  pointer-events: none;
-  visibility: hidden;
-}
-
 html body.l2-app-l2-chrome .l2-shell:has(.l2-online-foot) {
   display: flex;
   flex-direction: column;

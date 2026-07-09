@@ -1,13 +1,13 @@
-п»ї<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>РљСЂР°С„С‚ вЂ” L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <title>Крафт — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709perf1" />
     <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260705craftCity" />
     <link rel="stylesheet" href="/css/l2-craft-page.css?v=20260707centerSolid2" />
   </head>
@@ -60,25 +60,25 @@
 
           <div id="l2-nav-top"></div>
 
-          <section class="l2-craft-panel" aria-label="РљСЂР°С„С‚">
-            <h1 class="l2-pers-h1">РљСЂР°С„С‚</h1>
+          <section class="l2-craft-panel" aria-label="Крафт">
+            <h1 class="l2-pers-h1">Крафт</h1>
             <p class="l2-city-stub-msg" id="l2-craft-stub-msg" hidden></p>
 
             <div id="l2-craft-denied" class="l2-craft-denied" hidden>
               <p class="l2-city-stub-msg">
-                РљСЂР°С„С‚ РґРѕСЃС‚СѓРїРЅРёР№ РґР»СЏ РіРЅРѕРјР°-РІРѕС—РЅР° РїС–СЃР»СЏ РїРµСЂС€РѕС— РїСЂРѕС„РµСЃС–С—: Р—Р±РёСЂР°С‡ (Scavenger) Р°Р±Рѕ Р РµРјС–СЃРЅРёРє
-                (Artisan). Р РµС†РµРїС‚Рё РІС–РґРєСЂРёРІР°СЋС‚СЊСЃСЏ Р·Р° СЂС–РІРЅРµРј.
+                Крафт доступний для гнома-воїна після першої професії: Збирач (Scavenger) або Ремісник
+                (Artisan). Рецепти відкриваються за рівнем.
               </p>
               <p class="l2-teleport-panel__back">
-                <a class="l2-town-btn" href="/menu.html">РќР°Р·Р°Рґ РґРѕ РјРµРЅСЋ</a>
+                <a class="l2-town-btn" href="/menu.html">Назад до меню</a>
               </p>
             </div>
 
             <div id="l2-craft-main" class="l2-craft-main" hidden>
-              <p class="l2-city-stub-msg" id="l2-craft-hint">Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ СЂРµС†РµРїС‚С–РІвЂ¦</p>
+              <p class="l2-city-stub-msg" id="l2-craft-hint">Завантаження рецептів…</p>
               <div id="l2-craft-body"></div>
               <p class="l2-teleport-panel__back">
-                <a class="l2-town-btn" href="/menu.html">РќР°Р·Р°Рґ РґРѕ РјРµРЅСЋ</a>
+                <a class="l2-town-btn" href="/menu.html">Назад до меню</a>
               </p>
             </div>
           </section>
@@ -93,7 +93,7 @@
               type="button"
               class="l2-craft-modal__backdrop"
               id="l2-craft-modal-backdrop"
-              aria-label="Р—Р°РєСЂРёС‚Рё"
+              aria-label="Закрити"
             ></button>
             <div
               class="l2-craft-modal__panel"
@@ -105,9 +105,9 @@
                 type="button"
                 class="l2-craft-modal__close"
                 id="l2-craft-modal-close"
-                aria-label="Р—Р°РєСЂРёС‚Рё"
+                aria-label="Закрити"
               >
-                Г—
+                ?
               </button>
               <div class="l2-craft-modal__head">
                 <img
@@ -118,7 +118,7 @@
                   alt=""
                 />
                 <div class="l2-craft-modal__head-txt">
-                  <h2 id="l2-craft-modal-title" class="l2-craft-modal__title">РљСЂР°С„С‚</h2>
+                  <h2 id="l2-craft-modal-title" class="l2-craft-modal__title">Крафт</h2>
                   <p id="l2-craft-modal-sub" class="l2-craft-modal__sub"></p>
                 </div>
               </div>
@@ -129,11 +129,11 @@
                   class="btn-l2 l2-craft-btn l2-craft-modal__confirm"
                   id="l2-craft-modal-confirm"
                 >
-                  РљСЂР°С„С‚
+                  Крафт
                 </button>
               </div>
               <div class="l2-craft-modal__row l2-craft-modal__row--qty">
-                <label class="l2-craft-modal__label" for="l2-craft-modal-qty">РљС–Р»СЊРєС–СЃС‚СЊ</label>
+                <label class="l2-craft-modal__label" for="l2-craft-modal-qty">Кількість</label>
                 <input
                   type="number"
                   id="l2-craft-modal-qty"
@@ -155,7 +155,7 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260709miruNav16"></script>
+    <script src="/common.js?v=20260709perf1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709chat1"></script>
     <script src="/craftProfessions.js"></script>
