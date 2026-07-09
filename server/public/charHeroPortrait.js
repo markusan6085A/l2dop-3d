@@ -227,6 +227,46 @@
       skin: 'human-wizard-f',
       blackKey: false,
     },
+    dark_elf_mage: {
+      url: '/characters/photo_2026-07-05_14-45-08-removebg-preview.png',
+      skin: 'dark-elf-mystic-m',
+      blackKey: false,
+    },
+    'dark_elf_mage|female': {
+      url: '/characters/photo_2026-07-05_14-45-08-removebg-preview.png',
+      skin: 'dark-elf-mystic-m',
+      blackKey: false,
+    },
+    elf_mage: {
+      url: '/characters/Elf-mag.jpg',
+      skin: 'elf-mystic-m',
+      blackKey: true,
+    },
+    'elf_mage|female': {
+      url: '/characters/Elf-mag.jpg',
+      skin: 'elf-mystic-m',
+      blackKey: true,
+    },
+    dark_elf_fighter: {
+      url: '/characters/Dark_Elf-voinn.jpg',
+      skin: 'dark-elf-fighter-m',
+      blackKey: true,
+    },
+    'dark_elf_fighter|female': {
+      url: '/characters/Dark_Elf-voinn.jpg',
+      skin: 'dark-elf-fighter-m',
+      blackKey: true,
+    },
+    elf_fighter: {
+      url: '/characters/Elf-voinn.jpg',
+      skin: 'elf-fighter-m',
+      blackKey: true,
+    },
+    'elf_fighter|female': {
+      url: '/characters/Elf-voinn.jpg',
+      skin: 'elf-fighter-m',
+      blackKey: true,
+    },
     'dark-elf|mystic|male': {
       url: '/characters/photo_2026-07-05_14-45-08-removebg-preview.png',
       skin: 'dark-elf-mystic-m',
@@ -266,6 +306,42 @@
     orc_warcryer: 'orc_mage',
     orc_dominator: 'orc_mage',
     orc_doomcryer: 'orc_mage',
+    elf_elven_wizard: 'elf_mage',
+    elf_elven_oracle: 'elf_mage',
+    elf_elemental_summoner: 'elf_elven_wizard',
+    elf_spellsinger: 'elf_elven_wizard',
+    elf_elven_elder: 'elf_elven_oracle',
+    elf_elemental_master: 'elf_elemental_summoner',
+    elf_mystic_muse: 'elf_spellsinger',
+    elf_evas_saint: 'elf_elven_elder',
+    dark_elf_dark_wizard: 'dark_elf_mage',
+    dark_elf_shillien_oracle: 'dark_elf_mage',
+    dark_elf_phantom_summoner: 'dark_elf_dark_wizard',
+    dark_elf_spellhowler: 'dark_elf_dark_wizard',
+    dark_elf_shillien_elder: 'dark_elf_shillien_oracle',
+    dark_elf_spectral_master: 'dark_elf_phantom_summoner',
+    dark_elf_storm_screamer: 'dark_elf_spellhowler',
+    dark_elf_shillien_saint: 'dark_elf_shillien_elder',
+    dark_elf_palus_knight: 'dark_elf_fighter',
+    dark_elf_assassin: 'dark_elf_fighter',
+    dark_elf_shillien_knight: 'dark_elf_palus_knight',
+    dark_elf_bladedancer: 'dark_elf_palus_knight',
+    dark_elf_abyss_walker: 'dark_elf_assassin',
+    dark_elf_phantom_ranger: 'dark_elf_assassin',
+    dark_elf_shillien_templar: 'dark_elf_shillien_knight',
+    dark_elf_spectral_dancer: 'dark_elf_bladedancer',
+    dark_elf_ghost_hunter: 'dark_elf_abyss_walker',
+    dark_elf_ghost_sentinel: 'dark_elf_phantom_ranger',
+    elf_elven_scout: 'elf_fighter',
+    elf_elven_knight: 'elf_fighter',
+    elf_temple_knight: 'elf_elven_knight',
+    elf_swordsinger: 'elf_elven_knight',
+    elf_plainswalker: 'elf_elven_scout',
+    elf_silver_ranger: 'elf_elven_scout',
+    elf_evas_templar: 'elf_temple_knight',
+    elf_sword_muse: 'elf_swordsinger',
+    elf_wind_rider: 'elf_plainswalker',
+    elf_moonlight_sentinel: 'elf_silver_ranger',
   };
 
   var HERO_BG_SKIN_PREFIX = 'l2-char-equip-bg--hero-';
@@ -286,7 +362,10 @@
     if (!c) return null;
     var race = normRace(c.race);
     var branch = c.classBranch != null ? String(c.classBranch).toLowerCase() : 'fighter';
-    if (race === 'Dark Elf' && branch === 'mystic') return 'dark-elf|mystic|male';
+    if (race === 'Dark Elf' && branch === 'mystic') return 'dark_elf_mage';
+    if (race === 'Dark Elf' && branch === 'fighter') return 'dark_elf_fighter';
+    if (race === 'Elf' && branch === 'mystic') return 'elf_mage';
+    if (race === 'Elf' && branch === 'fighter') return 'elf_fighter';
     return null;
   }
 
@@ -336,6 +415,13 @@
     }
     img.onerror = function () {
       img.onerror = null;
+      var fallback = portraitUrl(c);
+      if (fallback && img.getAttribute('src') !== fallback) {
+        img.src = fallback;
+        img.hidden = false;
+        if (stage) stage.hidden = false;
+        return;
+      }
       img.hidden = true;
       img.removeAttribute('src');
       if (stage) stage.hidden = true;

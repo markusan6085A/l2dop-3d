@@ -254,6 +254,13 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-mystic-m .l2
   transform: translateY(-1%) scale(1.04);
 }
 
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-elf-mystic-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-elf-fighter-m .l2-char-equip-hero-overlay {
+  height: 88%;
+  transform: translateY(-1%) scale(1.04);
+}
+
 body.l2-app-l2-chrome.l2-page-char .l2-char-slot-icon {
   border: 1px solid rgba(200, 160, 95, 0.5);
   background: rgba(8, 6, 5, 0.78);
