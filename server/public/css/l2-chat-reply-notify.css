@@ -6,14 +6,14 @@ body.l2-app-l2-chrome .l2-chat-reply-notify {
   font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
-  color: #6eb5ff;
+  color: #e8dcc0;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 body.l2-app-l2-chrome .l2-chat-reply-notify:hover,
 body.l2-app-l2-chrome .l2-chat-reply-notify:focus {
-  color: #9eceff;
+  color: #f5ead4;
   text-decoration: underline;
 }
 

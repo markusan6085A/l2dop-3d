@@ -175,9 +175,6 @@
       if (m.replyToCharacterName) {
         var replyTo = document.createElement('span');
         replyTo.className = 'l2-chat-msg__reply-to';
-        if (myCharacterId && m.replyToCharacterId === myCharacterId) {
-          replyTo.className += ' l2-chat-msg__reply-to--me';
-        }
         replyTo.textContent = String(m.replyToCharacterName) + ', ';
         text.appendChild(replyTo);
       }

@@ -2,9 +2,9 @@
  * «+N» непрочитані відповіді в чаті — під HUD-барами зліва (усі l2-app-l2-chrome).
  */
 (function (global) {
-  var mounted = false;
   var pollTimer = null;
-  var POLL_MS = 45000;
+  var POLL_MS = 20000;
+  var mountRetryTimer = null;
 
   function authToken() {
     if (global.L2 && typeof global.L2.token === 'function') {
@@ -17,8 +17,12 @@
     }
   }
 
-  function findMountAfterHud() {
-    return document.getElementById('l2-hud-panel-mount');
+  function findHudAnchor() {
+    return (
+      document.querySelector(
+        '.l2-chrome-nav-column > .l2-hud-panel, .l2-townlive-column > .l2-hud-panel, .l2-screen-inner > .l2-hud-panel'
+      ) || document.getElementById('l2-hud-panel-mount')
+    );
   }
 
   function setCount(linkEl, count) {
@@ -70,11 +74,19 @@
   }
 
   function mount() {
-    if (typeof document === 'undefined' || mounted) return;
+    if (typeof document === 'undefined') return;
     if (!document.body || !document.body.classList.contains('l2-app-l2-chrome')) return;
 
-    var hudMount = findMountAfterHud();
-    if (!hudMount) return;
+    var hudAnchor = findHudAnchor();
+    if (!hudAnchor) {
+      if (!mountRetryTimer) {
+        mountRetryTimer = setTimeout(function () {
+          mountRetryTimer = null;
+          mount();
+        }, 120);
+      }
+      return;
+    }
 
     var link = document.getElementById('l2-chat-reply-notify');
     if (!link) {
@@ -83,16 +95,27 @@
       link.id = 'l2-chat-reply-notify';
       link.href = '/chat.html';
       link.hidden = true;
-      hudMount.insertAdjacentElement('afterend', link);
+      hudAnchor.insertAdjacentElement('afterend', link);
+    } else if (link.previousElementSibling !== hudAnchor) {
+      hudAnchor.insertAdjacentElement('afterend', link);
     }
 
-    mounted = true;
     refreshCount(link);
 
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(function () {
       refreshCount();
     }, POLL_MS);
+
+    if (!global.__l2ChatReplyNotifyFocusBound) {
+      global.__l2ChatReplyNotifyFocusBound = true;
+      global.addEventListener('focus', function () {
+        refreshCount();
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) refreshCount();
+      });
+    }
   }
 
   global.L2ChatReplyNotify = {

@@ -734,6 +734,14 @@
         );
         set('l2-hud-legacy-name', c.name != null ? c.name : '—');
       }
+      if (global.L2ChatReplyNotify) {
+        if (typeof global.L2ChatReplyNotify.mount === 'function') {
+          global.L2ChatReplyNotify.mount();
+        }
+        if (typeof global.L2ChatReplyNotify.refreshCount === 'function') {
+          global.L2ChatReplyNotify.refreshCount();
+        }
+      }
     },
 
     /**
@@ -897,7 +905,7 @@
   }
 
   var ONLINE_FOOT_ASSET_VER = '20260709onlineFoot1';
-  var CHAT_REPLY_NOTIFY_VER = '20260709chatReply1';
+  var CHAT_REPLY_NOTIFY_VER = '20260709chatReply2';
 
   function bootstrapChatReplyNotify() {
     if (typeof document === 'undefined' || !document.body) return;
