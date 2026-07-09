@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav5" />
-    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260709miruNav5" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav7" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260709miruNav7" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -74,61 +74,78 @@
               <p class="l2-city-stub-msg" id="city-stub-msg" hidden></p>
 
               <div class="l2-town-miru">
-                <p class="l2-town-miru-loc" id="city-loc-name">
-                  <span class="l2-town-miru-loc-glyph" aria-hidden="true">🏰</span>
-                  <span class="l2-town-miru-loc-text">—</span>
-                </p>
+                <div class="l2-town-miru-loc" id="city-loc-name">
+                  <img
+                    class="l2-town-miru-loc-art"
+                    src="/assets/gorod.png"
+                    alt=""
+                    width="48"
+                    height="48"
+                    decoding="async"
+                  />
+                  <p class="l2-town-miru-loc-title">
+                    <img
+                      class="l2-town-miru-loc-pin"
+                      src="/assets/assets/photo_2026-07-05_12-52-33.jpg"
+                      alt=""
+                      width="14"
+                      height="14"
+                      decoding="async"
+                    />
+                    <span class="l2-town-miru-loc-text">—</span>
+                  </p>
+                </div>
                 <nav class="l2-town-miru-list" aria-label="Місто">
                   <a class="l2-town-miru-item" href="/teleport.html">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">✝️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-23.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_link_teleport">Телепорт</span>
                   </a>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="city_btn_arena_pvp">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-52-12.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_arena_pvp">Арена PVP</span>
                   </button>
                   <a class="l2-town-miru-item" href="/town-buffer.html">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">👑</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-52-47.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_buffer_statue">Магічна статуя</span>
                   </a>
                   <a class="l2-town-miru-item" href="/gm-shop.html">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-14.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_link_gm_shop_items">Магазин речей</span>
                   </a>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="nav_market">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-14.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="nav_market">Ринок</span>
                   </button>
                   <a class="l2-town-miru-item" href="/magisters.html">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-01.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_link_magisters_guild">Гільдія магів</span>
                   </a>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="city_btn_warehouse">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-21.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_warehouse">Склад</span>
                   </button>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="city_btn_fisher">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-14.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_fisher">Рибалка</span>
                   </button>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="city_btn_manor">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-01.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_manor">Манор</span>
                   </button>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="city_btn_seven_seals">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-14.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_seven_seals">7 Печатей</span>
                   </button>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="city_btn_olympiad_short">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-52-52.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_olympiad_short">Олімпіада</span>
                   </button>
                   <button type="button" class="l2-town-miru-item" data-i18n-stub="city_btn_brave_hunter">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">⚔️</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-53-19.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_brave_hunter">Відважний мисливець</span>
                   </button>
                   <button type="button" class="l2-town-miru-item l2-town-miru-item--last" data-i18n-stub="nav_clan">
-                    <span class="l2-town-miru-glyph" aria-hidden="true">👑</span>
+                    <img class="l2-town-miru-ico" src="/assets/assets/photo_2026-07-05_12-52-33.jpg" alt="" width="14" height="14" decoding="async" />
                     <span data-i18n="city_btn_clans">Клани</span>
                   </button>
                 </nav>
@@ -143,9 +160,9 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260709miruNav5"></script>
+    <script src="/common.js?v=20260709miruNav7"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260709miruNav5"></script>
+    <script src="/l2-nav.js?v=20260709miruNav7"></script>
     <script src="/city.js"></script>
   </body>
 </html>

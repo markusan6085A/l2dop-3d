@@ -2477,9 +2477,15 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom {
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom.l2-wap-grid--miru {
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 4px 5px !important;
+  row-gap: 4px !important;
   border-top: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
   padding: 6px 6px 2px !important;
   margin-top: 2px !important;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:nth-child(4),
+body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:nth-child(5) {
+  margin-top: 3mm;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:nth-child(-n + 3) {
@@ -2495,8 +2501,9 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:nth-child(8) {
   grid-column: 1 / -1;
-  max-width: 38%;
-  justify-self: center;
+  max-width: none !important;
+  width: 100% !important;
+  justify-self: stretch !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell {

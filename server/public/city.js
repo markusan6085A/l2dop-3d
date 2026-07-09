@@ -19,6 +19,17 @@
     showStub('«' + L2.tr(key) + '» — ' + L2.tr('stub_later'));
   }
 
+  function wireMiruIcons() {
+    document.querySelectorAll('.l2-town-miru-ico, .l2-town-miru-loc-pin').forEach(function (icon) {
+      if (icon.dataset.fallbackWired === '1') return;
+      icon.dataset.fallbackWired = '1';
+      icon.addEventListener('error', function onIconError() {
+        icon.removeEventListener('error', onIconError);
+        icon.src = '/icons/drops/other.svg';
+      });
+    });
+  }
+
   function applyCityLocation(c) {
     var locText = document.querySelector('#city-loc-name .l2-town-miru-loc-text');
     if (!locText || !c) return;
@@ -74,6 +85,7 @@
     }
 
     wireStubs();
+    wireMiruIcons();
 
     var t = localStorage.getItem('token');
     var errEl = $('city-load-err');
