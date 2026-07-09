@@ -1,20 +1,19 @@
 /**
- * Service Worker: браузер як "тонкий клієнт" для статики.
- * Живі дані гри завжди йдуть у мережу (сервер = джерело правди).
+ * Service Worker: cache-first для статики (фото, ref, css, js).
+ * HTML і API — завжди мережа (сервер = джерело правди).
  */
-var GAME_CACHE_VERSION = '20260709perf1';
+var GAME_CACHE_VERSION = '20260709perf2';
 var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
 var PRECACHE_URLS = [
-  '/assets/maps/aden2.jpg',
-  '/icons/drops/other.svg',
-  '/ref/2.png',
-  '/ref/18.png',
-  '/ref/19.png',
   '/styles.css',
   '/common.js',
   '/ui-i18n.js',
   '/l2-nav.js',
+  '/icons/drops/other.svg',
+  '/ref/2.png',
+  '/ref/18.png',
+  '/ref/19.png',
 ];
 
 function isLiveDataPath(pathname) {
@@ -31,15 +30,32 @@ function isLiveDataPath(pathname) {
 function isStaticAssetPath(pathname) {
   if (isLiveDataPath(pathname)) return false;
   if (pathname === '/' || /\.html$/i.test(pathname)) return false;
+  if (pathname === '/sw.js') return false;
   return (
     pathname.indexOf('/assets/') === 0 ||
     pathname.indexOf('/icons/') === 0 ||
     pathname.indexOf('/ref/') === 0 ||
     pathname.indexOf('/characters/') === 0 ||
+    pathname.indexOf('/mobs/') === 0 ||
     pathname.indexOf('/css/') === 0 ||
-    /\.js$/i.test(pathname) ||
-    /\.(woff2?|ttf|otf|eot)$/i.test(pathname)
+    pathname.indexOf('/skills/') === 0 ||
+    pathname === '/styles.css' ||
+    /\.(css|js|woff2?|ttf|otf|eot|svg|png|jpe?g|gif|webp|ico)$/i.test(pathname)
   );
+}
+
+function shouldIgnoreSearchForPath(pathname) {
+  return (
+    pathname.indexOf('/assets/') === 0 ||
+    pathname.indexOf('/icons/') === 0 ||
+    pathname.indexOf('/ref/') === 0 ||
+    pathname.indexOf('/characters/') === 0 ||
+    pathname.indexOf('/mobs/') === 0
+  );
+}
+
+function pathOnlyRequest(url) {
+  return new Request(url.origin + url.pathname, { mode: 'same-origin' });
 }
 
 function shouldCacheResponse(resp) {
@@ -49,8 +65,29 @@ function shouldCacheResponse(resp) {
     ct.indexOf('text/css') !== -1 ||
     ct.indexOf('javascript') !== -1 ||
     ct.indexOf('image/') !== -1 ||
-    ct.indexOf('font/') !== -1
+    ct.indexOf('font/') !== -1 ||
+    ct.indexOf('svg') !== -1
   );
+}
+
+function cacheLookup(cache, request) {
+  var url = new URL(request.url);
+  return cache.match(request).then(function (cached) {
+    if (cached) return cached;
+    if (shouldIgnoreSearchForPath(url.pathname)) {
+      return cache.match(pathOnlyRequest(url));
+    }
+    return null;
+  });
+}
+
+function cacheStore(cache, request, response) {
+  var url = new URL(request.url);
+  var jobs = [cache.put(request, response.clone())];
+  if (shouldIgnoreSearchForPath(url.pathname)) {
+    jobs.push(cache.put(pathOnlyRequest(url), response.clone()));
+  }
+  return Promise.all(jobs);
 }
 
 self.addEventListener('install', function (event) {
@@ -104,11 +141,13 @@ self.addEventListener('fetch', function (event) {
 
   event.respondWith(
     caches.open(STATIC_CACHE).then(function (cache) {
-      return cache.match(event.request).then(function (cached) {
+      return cacheLookup(cache, event.request).then(function (cached) {
         if (cached) return cached;
         return fetch(event.request).then(function (response) {
           if (shouldCacheResponse(response)) {
-            cache.put(event.request, response.clone());
+            return cacheStore(cache, event.request, response).then(function () {
+              return response;
+            });
           }
           return response;
         });

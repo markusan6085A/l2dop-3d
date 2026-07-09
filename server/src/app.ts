@@ -68,8 +68,8 @@ export async function buildApp() {
       const rel = normalized.includes('/public/')
         ? normalized.slice(normalized.indexOf('/public/') + '/public'.length)
         : normalized;
-      if (/\.html$/i.test(rel)) {
-        res.setHeader('Cache-Control', 'no-cache');
+      if (/\.html$/i.test(rel) || /\/sw\.js$/i.test(rel)) {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate');
         return;
       }
       if (

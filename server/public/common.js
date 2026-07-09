@@ -1067,10 +1067,15 @@
   }
 
   if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/sw.js?v=20260709perf1').catch(function () {
-        /* ignore */
+    if (!global.__l2SwRegisterStarted) {
+      global.__l2SwRegisterStarted = true;
+      window.addEventListener('load', function () {
+        navigator.serviceWorker
+          .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+          .catch(function () {
+            /* ignore */
+          });
       });
-    });
+    }
   }
 })(window);
