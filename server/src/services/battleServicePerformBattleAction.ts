@@ -696,6 +696,7 @@ export async function performBattleAction(
                 kind: buffEntry?.kind,
                 skillRank: level,
                 baseCdSec: rawCd,
+                l2SkillId: skillId,
                 castSpd: combat.castSpd,
                 pAtkSpd: combat.pAtkSpd,
                 cooldownReductionMul: combat.cooldownReductionMul,

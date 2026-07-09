@@ -663,6 +663,7 @@ export function resolveHumanMysticTurn(
     kind: entry.kind,
     skillRank: rank,
     baseCdSec: fixedCdRaw,
+    l2SkillId: entry.l2SkillId,
     castSpd: effectiveCastSpd,
     pAtkSpd: combat.pAtkSpd,
     cooldownReductionMul: combat.cooldownReductionMul,

@@ -110,12 +110,15 @@ function resolveUiSkillCooldownSec(
   },
   cdCtx?: SkillCooldownUiContext
 ): number | undefined {
+  const l2Match = /^l2_(\d+)$/.exec(input.battleId);
+  const l2SkillId = l2Match ? parseInt(l2Match[1]!, 10) : undefined;
   const cd = resolveBattleSkillCooldownSec({
     classBranch: input.classBranch,
     category: input.category,
     kind: input.kind,
     skillRank: skillRankForUi(input.battleId, cdCtx),
     baseCdSec: input.baseCdSec,
+    l2SkillId,
     castSpd: cdCtx?.castSpd ?? CAST_SPD_BASELINE,
     pAtkSpd: cdCtx?.pAtkSpd ?? PATK_SPD_BASELINE,
     cooldownReductionMul: cdCtx?.cooldownReductionMul,

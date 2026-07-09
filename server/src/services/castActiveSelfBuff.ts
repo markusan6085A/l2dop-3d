@@ -249,6 +249,7 @@ export async function castActiveSelfBuff(
             kind: entry.kind,
             skillRank: skillLevel,
             baseCdSec: cdSecRaw,
+            l2SkillId: skillId,
             castSpd: preSnap.castSpd,
             pAtkSpd: preSnap.pAtkSpd,
           })

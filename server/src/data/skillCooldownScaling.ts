@@ -6,6 +6,7 @@
  * - pAtkSpd: 100..1500, baseline 600
  */
 import { isMysticClassBranch } from './l2dopHumanMysticBattleSkills.js';
+import { mysticStarterCastBaseSec } from './mysticStarterCastBaseSec.js';
 
 export const CAST_SPD_BASELINE = 600;
 export const CAST_SPD_MIN = 100;
@@ -128,6 +129,8 @@ export type BattleSkillCooldownResolveInput = {
   kind?: string | null;
   skillRank: number;
   baseCdSec?: number | null;
+  /** L2 skill id — для override базового касту стартових mystic bolt-скілів. */
+  l2SkillId?: number | null;
   castSpd: number;
   pAtkSpd: number;
   cooldownReductionMul?: number;
@@ -155,7 +158,17 @@ export function resolveBattleSkillCooldownSec(
   let cd: number;
   let minFloor = MYSTIC_CD_FLOOR_SEC;
 
-  if (category === 'magic_attack') {
+  const starterCastBase =
+    isMystic &&
+    typeof input.l2SkillId === 'number' &&
+    Number.isFinite(input.l2SkillId) &&
+    input.l2SkillId > 0
+      ? mysticStarterCastBaseSec(input.l2SkillId, input.classBranch)
+      : null;
+
+  if (starterCastBase != null) {
+    cd = scaleMysticCooldownByCastSpeed(starterCastBase, input.castSpd);
+  } else if (category === 'magic_attack') {
     cd = scaleMysticCooldownByCastSpeed(
       mysticMagicAttackBaseCdSec(rank),
       input.castSpd
