@@ -1,0 +1,46 @@
+/**
+ * Кнопка «Онлайн» під головною рамкою (l2-online-foot.js).
+ */
+html body.l2-app-l2-chrome .l2-shell:has(.l2-online-foot) {
+  display: flex;
+  flex-direction: column;
+  align-items: center !important;
+}
+
+html body.l2-app-l2-chrome .l2-shell:has(#l2-nav-bottom):has(.l2-online-foot) {
+  align-items: center !important;
+}
+
+html body.l2-app-l2-chrome .l2-online-foot {
+  flex: 0 0 auto;
+  align-self: center !important;
+  width: var(--l2s-chrome-column-w, min(100vw - 8px, 420px));
+  max-width: 100%;
+  margin-top: 0.5cm;
+  padding: 0 0 calc(6px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+html body.l2-app-l2-chrome .l2-online-foot__link {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #9a9a9a;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html body.l2-app-l2-chrome .l2-online-foot__link:hover,
+html body.l2-app-l2-chrome .l2-online-foot__link:focus {
+  color: #b8b8b8;
+}

@@ -811,33 +811,6 @@
       );
     },
 
-    mountOnlineFoot: function () {
-      if (typeof document === 'undefined') return;
-      if (!document.body || !document.body.classList.contains('l2-app-l2-chrome')) return;
-      if (document.body.classList.contains('l2-page-online')) return;
-      var shell = document.querySelector('.l2-shell');
-      var screen = shell && shell.querySelector('.l2-screen.l2-outer-sframe-host');
-      if (!shell || !screen) return;
-      if (document.getElementById('l2-online-foot')) return;
-
-      var foot = document.createElement('div');
-      foot.className = 'l2-online-foot';
-      foot.id = 'l2-online-foot';
-
-      var link = document.createElement('a');
-      link.className = 'l2-online-foot__link';
-      link.id = 'l2-online-link';
-      link.href = '/online.html';
-      link.textContent = 'Онлайн:';
-
-      foot.appendChild(link);
-      if (screen.nextSibling) {
-        shell.insertBefore(foot, screen.nextSibling);
-      } else {
-        shell.appendChild(foot);
-      }
-    },
-
     mountStandardHudPanel: function () {
       if (global.L2.ensureNavMinimalChrome) {
         global.L2.ensureNavMinimalChrome();
@@ -923,14 +896,49 @@
     /* ignore */
   }
 
+  var ONLINE_FOOT_ASSET_VER = '20260709onlineFoot1';
+
+  function bootstrapOnlineFoot() {
+    if (typeof document === 'undefined' || !document.body) return;
+    if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+    if (document.body.classList.contains('l2-page-online')) return;
+
+    if (!document.getElementById('l2-online-foot-css')) {
+      var css = document.createElement('link');
+      css.id = 'l2-online-foot-css';
+      css.rel = 'stylesheet';
+      css.href = '/css/l2-online-foot.css?v=' + ONLINE_FOOT_ASSET_VER;
+      (document.head || document.documentElement).appendChild(css);
+    }
+
+    function runMount() {
+      if (global.L2OnlineFoot && typeof global.L2OnlineFoot.mount === 'function') {
+        global.L2OnlineFoot.mount();
+      }
+    }
+
+    if (global.L2OnlineFoot) {
+      runMount();
+      return;
+    }
+
+    if (document.getElementById('l2-online-foot-js')) {
+      return;
+    }
+
+    var script = document.createElement('script');
+    script.id = 'l2-online-foot-js';
+    script.src = '/l2-online-foot.js?v=' + ONLINE_FOOT_ASSET_VER;
+    script.onload = runMount;
+    (document.head || document.documentElement).appendChild(script);
+  }
+
   if (typeof document !== 'undefined') {
     function runHudMount() {
       if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
         global.L2.mountStandardHudPanel();
       }
-      if (global.L2 && typeof global.L2.mountOnlineFoot === 'function') {
-        global.L2.mountOnlineFoot();
-      }
+      bootstrapOnlineFoot();
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', runHudMount);
