@@ -40,6 +40,7 @@ export interface CharacterRow {
   skillCooldownsJson: Prisma.JsonValue | null;
   buffHeroicTier: number | null;
   buffZealotStacks: number | null;
+  chatRepliesReadAt: Date;
 }
 
 /** Активний баф у снепшоті (для UI): з урахуванням `expiresAt` (L2 abnormalTime). */

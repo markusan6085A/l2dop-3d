@@ -897,6 +897,41 @@
   }
 
   var ONLINE_FOOT_ASSET_VER = '20260709onlineFoot1';
+  var CHAT_REPLY_NOTIFY_VER = '20260709chatReply1';
+
+  function bootstrapChatReplyNotify() {
+    if (typeof document === 'undefined' || !document.body) return;
+    if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+
+    if (!document.getElementById('l2-chat-reply-notify-css')) {
+      var cssReply = document.createElement('link');
+      cssReply.id = 'l2-chat-reply-notify-css';
+      cssReply.rel = 'stylesheet';
+      cssReply.href = '/css/l2-chat-reply-notify.css?v=' + CHAT_REPLY_NOTIFY_VER;
+      (document.head || document.documentElement).appendChild(cssReply);
+    }
+
+    function runReplyMount() {
+      if (global.L2ChatReplyNotify && typeof global.L2ChatReplyNotify.mount === 'function') {
+        global.L2ChatReplyNotify.mount();
+      }
+    }
+
+    if (global.L2ChatReplyNotify) {
+      runReplyMount();
+      return;
+    }
+
+    if (document.getElementById('l2-chat-reply-notify-js')) {
+      return;
+    }
+
+    var scriptReply = document.createElement('script');
+    scriptReply.id = 'l2-chat-reply-notify-js';
+    scriptReply.src = '/l2-chat-reply-notify.js?v=' + CHAT_REPLY_NOTIFY_VER;
+    scriptReply.onload = runReplyMount;
+    (document.head || document.documentElement).appendChild(scriptReply);
+  }
 
   function bootstrapOnlineFoot() {
     if (typeof document === 'undefined' || !document.body) return;
@@ -939,6 +974,7 @@
         global.L2.mountStandardHudPanel();
       }
       bootstrapOnlineFoot();
+      bootstrapChatReplyNotify();
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', runHudMount);

@@ -8,6 +8,8 @@ export type ChatMessageDto = {
   characterId: string;
   characterName: string;
   text: string;
+  replyToCharacterId: string | null;
+  replyToCharacterName: string | null;
   createdAt: string;
 };
 
@@ -42,6 +44,8 @@ function toDto(row: {
   channel: string;
   characterId: string;
   text: string;
+  replyToCharacterId: string | null;
+  replyToCharacterName: string | null;
   createdAt: Date;
   character: { name: string };
 }): ChatMessageDto {
@@ -51,6 +55,8 @@ function toDto(row: {
     characterId: row.characterId,
     characterName: row.character.name,
     text: row.text,
+    replyToCharacterId: row.replyToCharacterId,
+    replyToCharacterName: row.replyToCharacterName,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -59,8 +65,24 @@ async function characterForUser(userId: string) {
   return prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
+    select: { id: true, name: true, chatRepliesReadAt: true },
+  });
+}
+
+async function resolveReplyTarget(
+  senderId: string,
+  replyToCharacterIdRaw: unknown
+): Promise<{ id: string; name: string } | null> {
+  const replyId = String(replyToCharacterIdRaw || '').trim();
+  if (!replyId) return null;
+
+  const target = await prisma.character.findUnique({
+    where: { id: replyId },
     select: { id: true, name: true },
   });
+  if (!target) throw new Error('chat_reply_target_not_found');
+  if (target.id === senderId) throw new Error('chat_reply_self');
+  return target;
 }
 
 export async function listChatMessages(
@@ -103,7 +125,8 @@ export async function listChatMessages(
 export async function sendChatMessage(
   userId: string,
   channel: ChatChannel,
-  textRaw: unknown
+  textRaw: unknown,
+  replyToCharacterIdRaw?: unknown
 ): Promise<ChatMessageDto> {
   if (channel !== 'all') {
     throw new Error('chat_channel_unavailable');
@@ -115,11 +138,15 @@ export async function sendChatMessage(
   const char = await characterForUser(userId);
   if (!char) throw new Error('character_not_found');
 
+  const replyTarget = await resolveReplyTarget(char.id, replyToCharacterIdRaw);
+
   const row = await prisma.chatMessage.create({
     data: {
       channel: 'all',
       characterId: char.id,
       text,
+      replyToCharacterId: replyTarget?.id ?? null,
+      replyToCharacterName: replyTarget?.name ?? null,
     },
     include: { character: { select: { name: true } } },
   });
@@ -145,6 +172,29 @@ export async function deleteChatMessage(
   if (msg.characterId !== char.id) throw new Error('chat_forbidden');
 
   await prisma.chatMessage.delete({ where: { id: messageId } });
+}
+
+export async function getUnreadReplyCount(userId: string): Promise<number> {
+  const char = await characterForUser(userId);
+  if (!char) return 0;
+
+  return prisma.chatMessage.count({
+    where: {
+      channel: 'all',
+      replyToCharacterId: char.id,
+      createdAt: { gt: char.chatRepliesReadAt },
+    },
+  });
+}
+
+export async function markChatRepliesRead(userId: string): Promise<void> {
+  const char = await characterForUser(userId);
+  if (!char) throw new Error('character_not_found');
+
+  await prisma.character.update({
+    where: { id: char.id },
+    data: { chatRepliesReadAt: new Date() },
+  });
 }
 
 export { CHANNELS, PAGE_SIZE };

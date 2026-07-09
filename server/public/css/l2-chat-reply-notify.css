@@ -1,0 +1,26 @@
+/* «+N» — непрочитані відповіді в чаті, під HUD зліва */
+body.l2-app-l2-chrome .l2-chat-reply-notify {
+  display: inline-block;
+  margin: 2px 0 6px;
+  padding: 0 2px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #6eb5ff;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome .l2-chat-reply-notify:hover,
+body.l2-app-l2-chrome .l2-chat-reply-notify:focus {
+  color: #9eceff;
+  text-decoration: underline;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-chat-reply-notify {
+  margin-left: var(--l2s-content-edge-pad, 0.5cm);
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-reply-notify {
+  display: none !important;
+}

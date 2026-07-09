@@ -67,6 +67,8 @@ model Character {
   buffHeroicTier    Int?
   /** cs1.php $zealot для скіла 420 (Zealot). */
   buffZealotStacks  Int?
+  /** Останній перегляд чату — для лічильника непрочитаних відповідей. */
+  chatRepliesReadAt DateTime @default(now())
   revision   Int      @default(1)
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -83,7 +85,10 @@ model ChatMessage {
   characterId String
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
   text        String
+  replyToCharacterId   String?
+  replyToCharacterName String?
   createdAt   DateTime  @default(now())
 
   @@index([channel, createdAt(sort: Desc)])
+  @@index([replyToCharacterId, createdAt(sort: Desc)])
 }

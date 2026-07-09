@@ -2,7 +2,9 @@ import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../lib/auth.js';
 import {
   deleteChatMessage,
+  getUnreadReplyCount,
   listChatMessages,
+  markChatRepliesRead,
   parseChatChannel,
   sendChatMessage,
 } from '../services/chatService.js';
@@ -20,21 +22,61 @@ export function registerGameChatRoutes(app: FastifyInstance): void {
     return reply.send(result);
   });
 
+  app.get('/chat/replies/unread-count', { preHandler: requireAuth }, async (request, reply) => {
+    const userId = request.userId;
+    if (!userId) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const count = await getUnreadReplyCount(userId);
+    return reply.send({ count });
+  });
+
+  app.post('/chat/replies/mark-read', { preHandler: requireAuth }, async (request, reply) => {
+    const userId = request.userId;
+    if (!userId) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    try {
+      await markChatRepliesRead(userId);
+      return reply.send({ ok: true, count: 0 });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'character_not_found') {
+        return reply.code(404).send({
+          error: 'not_found',
+          messageUk: 'Персонажа не знайдено.',
+        });
+      }
+      return reply.code(500).send({
+        error: 'server_error',
+        messageUk: 'Не вдалося оновити стан чату.',
+      });
+    }
+  });
+
   app.post('/chat', { preHandler: requireAuth }, async (request, reply) => {
     const userId = request.userId;
     if (!userId) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
 
-    const body = request.body as { channel?: string; text?: string } | null;
+    const body = request.body as {
+      channel?: string;
+      text?: string;
+      replyToCharacterId?: string;
+    } | null;
     const channel = parseChatChannel(body?.channel);
 
     try {
-      const message = await sendChatMessage(userId, channel, body?.text);
-      request.log.info(
-        { action: 'chat_send', characterId: null, result: 'ok' },
-        'chat-mutation'
+      const message = await sendChatMessage(
+        userId,
+        channel,
+        body?.text,
+        body?.replyToCharacterId
       );
+      request.log.info({ action: 'chat_send', result: 'ok' }, 'chat-mutation');
       return reply.send({ ok: true, message });
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
@@ -48,6 +90,18 @@ export function registerGameChatRoutes(app: FastifyInstance): void {
         return reply.code(400).send({
           error: 'invalid_input',
           messageUk: 'Цей канал чату ще недоступний.',
+        });
+      }
+      if (msg === 'chat_reply_target_not_found') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Гравця для відповіді не знайдено.',
+        });
+      }
+      if (msg === 'chat_reply_self') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Не можна відповісти самому собі.',
         });
       }
       if (msg === 'character_not_found') {

@@ -9,6 +9,7 @@
   var sendInFlight = false;
   var deleteInFlight = false;
   var myCharacterId = '';
+  var replyTarget = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -55,6 +56,41 @@
         btn.getAttribute('data-channel') === currentChannel
       );
     });
+  }
+
+  function updateReplyHint() {
+    var hint = $('chat-reply-hint');
+    var nameEl = $('chat-reply-hint-name');
+    if (!hint || !nameEl) return;
+    if (!replyTarget || !replyTarget.characterName) {
+      hint.hidden = true;
+      nameEl.textContent = '';
+      return;
+    }
+    hint.hidden = false;
+    nameEl.textContent = replyTarget.characterName;
+  }
+
+  function setReplyTarget(characterId, characterName) {
+    if (!characterId || !characterName) return;
+    if (myCharacterId && characterId === myCharacterId) {
+      showStub('Не можна відповісти самому собі');
+      return;
+    }
+    replyTarget = {
+      characterId: String(characterId),
+      characterName: String(characterName),
+    };
+    updateReplyHint();
+    var input = $('chat-input');
+    if (input) input.focus();
+    var stubEl = $('chat-stub-msg');
+    if (stubEl) stubEl.hidden = true;
+  }
+
+  function clearReplyTarget() {
+    replyTarget = null;
+    updateReplyHint();
   }
 
   function wireIcons(root) {
@@ -107,7 +143,12 @@
       reply.type = 'button';
       reply.className = 'l2-chat-msg__reply';
       reply.textContent = '[відповісти]';
-      reply.setAttribute('data-stub', 'Відповідь');
+      if (!myCharacterId || m.characterId !== myCharacterId) {
+        reply.setAttribute('data-reply-character-id', String(m.characterId || ''));
+        reply.setAttribute('data-reply-character-name', String(m.characterName || ''));
+      } else {
+        reply.hidden = true;
+      }
 
       var ago = document.createElement('span');
       ago.className = 'l2-chat-msg__ago';
@@ -131,7 +172,16 @@
 
       var text = document.createElement('p');
       text.className = 'l2-chat-msg__text';
-      text.textContent = String(m.text || '');
+      if (m.replyToCharacterName) {
+        var replyTo = document.createElement('span');
+        replyTo.className = 'l2-chat-msg__reply-to';
+        if (myCharacterId && m.replyToCharacterId === myCharacterId) {
+          replyTo.className += ' l2-chat-msg__reply-to--me';
+        }
+        replyTo.textContent = String(m.replyToCharacterName) + ', ';
+        text.appendChild(replyTo);
+      }
+      text.appendChild(document.createTextNode(String(m.text || '')));
 
       item.appendChild(head);
       item.appendChild(text);
@@ -141,7 +191,11 @@
     wireIcons(listEl);
     listEl.querySelectorAll('.l2-chat-msg__reply').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        showStub(btn.getAttribute('data-stub') || 'Відповідь');
+        var cid = btn.getAttribute('data-reply-character-id');
+        var cname = btn.getAttribute('data-reply-character-name');
+        if (cid && cname) {
+          setReplyTarget(cid, cname);
+        }
       });
     });
     listEl.querySelectorAll('.l2-chat-msg__delete').forEach(function (btn) {
@@ -254,13 +308,18 @@
     if (stubEl) stubEl.hidden = true;
 
     try {
+      var payload = { channel: currentChannel, text: text };
+      if (replyTarget && replyTarget.characterId) {
+        payload.replyToCharacterId = replyTarget.characterId;
+      }
+
       var r = await fetch('/game/chat', {
         method: 'POST',
         headers: {
           Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ channel: currentChannel, text: text }),
+        body: JSON.stringify(payload),
       });
       if (r.status === 401) {
         localStorage.removeItem('token');
@@ -275,6 +334,7 @@
         return;
       }
       input.value = '';
+      clearReplyTarget();
       currentPage = 1;
       await loadChat();
     } catch (_e) {
@@ -318,6 +378,22 @@
     }
   }
 
+  async function markChatRepliesRead() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      await fetch('/game/chat/replies/mark-read', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (window.L2ChatReplyNotify && typeof L2ChatReplyNotify.refreshCount === 'function') {
+        L2ChatReplyNotify.refreshCount();
+      }
+    } catch (_e) {
+      /* ignore */
+    }
+  }
+
   function wireUi() {
     document.querySelectorAll('.l2-chat-tabs__btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -328,6 +404,9 @@
 
     var sendBtn = $('chat-send-btn');
     if (sendBtn) sendBtn.addEventListener('click', sendChat);
+
+    var cancelReplyBtn = $('chat-reply-cancel');
+    if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', clearReplyTarget);
 
     var refreshBtn = $('chat-refresh-btn');
     if (refreshBtn) refreshBtn.addEventListener('click', loadChat);
@@ -386,6 +465,7 @@
 
     var content = $('chat-content');
     if (content) content.hidden = false;
+    await markChatRepliesRead();
     await loadChat();
   }
 
