@@ -108,10 +108,13 @@ export async function register(input: {
                 ? 'orc_mage'
                 : 'human_mage'
           : defaultFighterBaseProfessionForRace(race);
-      /** Стартовий бойовий скіл мага — «Удар вітру» (l2_1177), як у L2. */
+      /** Стартові скіли мага — Wind Strike + Spellcraft, як у L2. */
       const mysticStarterSkills: Prisma.InputJsonValue | undefined =
         classBranch === 'mystic'
-          ? ([{ battleId: 'l2_1177', level: 1 }] as Prisma.InputJsonValue)
+          ? ([
+              { battleId: 'l2_1177', level: 1 },
+              { battleId: 'l2_163', level: 1 },
+            ] as Prisma.InputJsonValue)
           : undefined;
       const start = starterWorldForNewCharacter(race, classBranch);
       const charData = {

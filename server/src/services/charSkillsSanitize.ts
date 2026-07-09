@@ -4,34 +4,52 @@ import {
   isFighterClassBranch,
   resolveL2ProfessionForSkillsRow,
 } from '../data/l2dopHumanFighterBattleSkills.js';
-import { isMysticClassBranch } from '../data/l2dopHumanMysticBattleSkills.js';
+import {
+  isMysticClassBranch,
+  MYSTIC_STARTER_LEARNED_SKILLS,
+} from '../data/l2dopHumanMysticBattleSkills.js';
 import { normalizeLearnedSkillsJson } from '../data/humanFighterSkillCatalog.js';
 import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
 import type { CharacterRow } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
-const MYSTIC_STARTER_BATTLE_ID = 'l2_1177';
+function mergeMissingMysticStarterSkills(
+  entries: ReturnType<typeof normalizeLearnedSkillsJson>
+): ReturnType<typeof normalizeLearnedSkillsJson> | null {
+  const have = new Set(
+    entries.filter((e) => e.level >= 1).map((e) => e.battleId)
+  );
+  const missing = MYSTIC_STARTER_LEARNED_SKILLS.filter(
+    (s) => !have.has(s.battleId)
+  );
+  if (missing.length === 0) return null;
+  return normalizeLearnedSkillsJson([...entries, ...missing]);
+}
 
 /**
- * Старі персонажі-містики без жодного вивченого скіла: один раз додаємо «Удар вітру».
+ * Старі персонажі-містики: один раз додаємо стартові Wind Strike + Spellcraft.
  */
 export async function ensureMysticStarterSkillsRow(
   row: CharacterRow
 ): Promise<CharacterRow> {
   if (!isMysticClassBranch(row.classBranch)) return row;
   const prof = resolveL2ProfessionForSkillsRow(row);
-  const entries = filterLearnedSkillEntriesForCharacter(
-    normalizeLearnedSkillsJson(row.skillsLearnedJson),
+  const current = normalizeLearnedSkillsJson(row.skillsLearnedJson);
+  const mergedRaw = mergeMissingMysticStarterSkills(current);
+  if (!mergedRaw) return row;
+  const merged = filterLearnedSkillEntriesForCharacter(
+    mergedRaw,
     row.race,
     row.classBranch,
     prof
   );
-  if (entries.some((e) => e.level >= 1)) return row;
-
-  const merged = normalizeLearnedSkillsJson([
-    ...normalizeLearnedSkillsJson(row.skillsLearnedJson),
-    { battleId: MYSTIC_STARTER_BATTLE_ID, level: 1 },
-  ]);
+  const sa = JSON.stringify(
+    [...current].sort((x, y) => x.battleId.localeCompare(y.battleId))
+  );
+  const sb = JSON.stringify(
+    [...merged].sort((x, y) => x.battleId.localeCompare(y.battleId))
+  );
+  if (sa === sb) return row;
   return prisma.$transaction(async (tx) => {
     const result = await mutateCharacterWithRevision(
       tx,

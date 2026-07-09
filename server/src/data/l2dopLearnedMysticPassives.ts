@@ -2,6 +2,7 @@
  * Пасиви Human Mystic з `skillsLearnedJson` → модифікатори `computeCombatStats`.
  */
 import type { InventoryState } from './inventory.js';
+import { equippedArmorKindForPassives } from './inventory.js';
 import {
   applyBuffDelta,
   neutralCombatBuffs,
@@ -10,7 +11,11 @@ import {
 } from './l2dopCombatBuffModifiers.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
 import type { LearnedSkillEntry } from './humanFighterSkillCatalog.types.js';
-import { defaultMysticL2ProfessionForRace } from './l2dopHumanMysticBattleSkills.js';
+import {
+  defaultMysticL2ProfessionForRace,
+  MYSTIC_SPELLCRAFT_L2_SKILL_ID,
+  MYSTIC_SPELLCRAFT_ROBE_BUFF_CAST,
+} from './l2dopHumanMysticBattleSkills.js';
 import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
 import { maxMysticSkillRankForBattleId } from './humanMysticSkillCatalog.learnedRanks.js';
 import { mysticCatalogEntryForRace } from './mysticSkillCatalog.byRace.js';
@@ -99,12 +104,13 @@ function deltaFromEffect(
 
 export function learnedMysticPassivesBuffDelta(
   entries: LearnedSkillEntry[],
-  _inv: InventoryState,
+  inv: InventoryState,
   l2Profession: string,
   race: string
 ): Partial<L2dopCombatBuffModifiers> {
   const prof =
     String(l2Profession || '').trim() || defaultMysticL2ProfessionForRace(race);
+  const armorKind = equippedArmorKindForPassives(inv);
   let acc = neutralCombatBuffs();
 
   for (const e of entries) {
@@ -113,6 +119,15 @@ export function learnedMysticPassivesBuffDelta(
     const cat = mysticCatalogEntryForRace(race, bid);
     if (!cat || cat.kind !== 'passive') continue;
     if (!mysticCatalogEntryVisibleForProfession(cat, prof)) continue;
+    /** Spellcraft: подвоєння castSpd лише в мантії (magic armor). */
+    if (cat.l2SkillId === MYSTIC_SPELLCRAFT_L2_SKILL_ID) {
+      if (armorKind === 'magic') {
+        acc = applyBuffDelta(acc, {
+          buffCast: MYSTIC_SPELLCRAFT_ROBE_BUFF_CAST,
+        });
+      }
+      continue;
+    }
     const r = clampMysticRank(bid, e.level, race);
     const row = cat.levels[r - 1];
     if (!row) continue;

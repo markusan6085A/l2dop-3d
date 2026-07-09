@@ -17,10 +17,12 @@ import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { normalizeLearnedSkillsJson } from '../data/humanFighterSkillCatalog.js';
 import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
 import { resolveL2ProfessionForSkillsRow } from '../data/l2dopHumanFighterBattleSkills.js';
-import { isMysticClassBranch } from '../data/l2dopHumanMysticBattleSkills.js';
+import {
+  isMysticClassBranch,
+  MYSTIC_STARTER_LEARNED_SKILLS,
+} from '../data/l2dopHumanMysticBattleSkills.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
-const MYSTIC_STARTER_BATTLE_ID = 'l2_1177';
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
   return resolveMapMovement(applyPassiveHpRegen(row));
@@ -157,15 +159,20 @@ export async function getSnapshotForUser(
     if (sa !== sbFiltered) {
       bumpRevision = true;
     }
-    if (
-      isMysticClassBranch(cr.classBranch) &&
-      !nextEntries.some((e) => e.level >= 1)
-    ) {
-      nextEntries = normalizeLearnedSkillsJson([
-        ...nextEntries,
-        { battleId: MYSTIC_STARTER_BATTLE_ID, level: 1 },
-      ]);
-      bumpRevision = true;
+    if (isMysticClassBranch(cr.classBranch)) {
+      const have = new Set(
+        nextEntries.filter((e) => e.level >= 1).map((e) => e.battleId)
+      );
+      const missingStarters = MYSTIC_STARTER_LEARNED_SKILLS.filter(
+        (s) => !have.has(s.battleId)
+      );
+      if (missingStarters.length > 0) {
+        nextEntries = normalizeLearnedSkillsJson([
+          ...nextEntries,
+          ...missingStarters,
+        ]);
+        bumpRevision = true;
+      }
     }
     const sb = JSON.stringify(
       [...nextEntries].sort((x, y) => x.battleId.localeCompare(y.battleId))

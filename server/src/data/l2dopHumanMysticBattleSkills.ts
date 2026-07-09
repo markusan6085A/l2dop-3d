@@ -4,6 +4,16 @@
 import type { BattleActionId } from '../domain/battle.js';
 import { learnedMysticHotbarPickSkills } from './humanMysticSkillCatalog.js';
 
+/** Spellcraft (l2_163): ×2 швидкість касту в мантії (Interlude). */
+export const MYSTIC_SPELLCRAFT_L2_SKILL_ID = 163;
+export const MYSTIC_SPELLCRAFT_ROBE_BUFF_CAST = 2;
+
+/** Стартові вивчені скіли мага (як у L2: Wind Strike + Spellcraft). */
+export const MYSTIC_STARTER_LEARNED_SKILLS = [
+  { battleId: 'l2_1177', level: 1 },
+  { battleId: 'l2_163', level: 1 },
+] as const;
+
 /** 1-ша профа (Wizard / Cleric) — як у HF. */
 export const HUMAN_MYSTIC_FIRST_PROFESSION_LEVEL = 20;
 export const HUMAN_MYSTIC_SECOND_PROFESSION_LEVEL = 40;
