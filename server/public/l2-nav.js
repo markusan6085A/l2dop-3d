@@ -61,7 +61,7 @@
     },
     {
       iconPath: NAV_ICON + 'photo_2026-07-05_12-52-47.jpg',
-      href: '/pers.html',
+      href: '/character.html',
       i18nKey: 'nav_profile',
       i18nTitleKey: 'nav_profile_title',
       lbl: 'p7',

@@ -1,20 +1,23 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="page_mammon_title">Маммон — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <title>Персонаж — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
+    <link rel="preload" as="image" href="/assets/photo_2026-07-05_14-33-19.jpg" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260708globalClsAll2" />
-    <link rel="stylesheet" href="/css/l2-menu-page.css?v=3" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav15" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260708charClsHold1" />
+    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260709character1" />
   </head>
   <body
-    class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-mammon l2-page-has-fixed-nav l2-app-l2-chrome"
+    class="l2-body l2-page-city l2-page-char l2-page-character l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome"
   >
     <div class="l2-shell">
-      <div class="l2-screen l2-outer-sframe-host">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
           <div class="l2-outer-sframe__g">
             <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
@@ -56,17 +59,36 @@
             decoding="async"
           />
         </div>
-        <div class="l2-screen-inner l2-menu-root">
+        <div class="l2-screen-inner l2-character-root">
           <div id="l2-hud-panel-mount"></div>
-
           <div id="l2-nav-top"></div>
 
-          <section class="l2-menu-panel" data-i18n-attr="aria-label:mammon_section_aria" aria-label="Маммон">
-            <p class="l2-teleport-panel__back">
-              <a class="l2-town-btn l2-menu-btn-4187" href="/city.html" data-i18n="magisters_back_city"
-                >Назад до міста</a
-              >
-            </p>
+          <p class="err" id="character-load-err" hidden></p>
+
+          <section class="l2-character-hero-panel" id="character-content" aria-label="Персонаж" hidden>
+            <div class="l2-char-photo-wrap">
+              <div class="l2-char-equip-frame l2-char-equip-frame--hero-only">
+                <div class="l2-char-equip-bg">
+                  <img
+                    class="l2-char-equip-scene"
+                    src="/assets/photo_2026-07-05_14-33-19.jpg"
+                    width="300"
+                    height="220"
+                    alt=""
+                    decoding="async"
+                    fetchpriority="high"
+                  />
+                  <div class="l2-char-equip-hero-stage" id="char-hero-stage" hidden>
+                    <img
+                      id="char-hero-img"
+                      class="l2-char-equip-hero l2-char-equip-hero-overlay"
+                      alt=""
+                      decoding="async"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
 
           <div id="l2-nav-bottom"></div>
@@ -77,6 +99,7 @@
     <script src="/common.js?v=20260709miruNav16"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709character1"></script>
-    <script src="/mammon.js"></script>
+    <script src="/charHeroPortrait.js?v=20260709character1"></script>
+    <script src="/character.js?v=20260709character1"></script>
   </body>
 </html>

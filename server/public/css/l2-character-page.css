@@ -1,0 +1,16 @@
+/**
+ * Сторінка «Персонаж»: snapshot з GET /character + портрет як у інвентарі.
+ */
+body.l2-app-l2-chrome.l2-page-character .l2-character-hero-panel {
+  margin-top: 4cm;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-hero-panel .l2-char-photo-wrap {
+  margin: 0 auto;
+  max-width: 320px;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-frame--hero-only {
+  margin: 0 auto;
+}
