@@ -27,45 +27,15 @@
     { label: 'Heine', teleportId: 'heine' },
     { label: 'Hunters Village', teleportId: 'hunters' },
     { label: "Hardin's Academy", surroundingsKey: 'hardin' },
-    { label: 'Seven Signs', surroundingsKey: 'seven_signs' },
   ];
 
   var TELEPORT_SURROUNDINGS = {
-    hardin: {
-      items: [
-        { label: "Hardin's Academy", teleportId: 'hardins_academy' },
-        { label: 'Necropolis of Martyrdom', teleportId: 'necropolis_of_martyrdom' },
-        { label: 'Catacomb of the Witch', teleportId: 'catacomb_of_the_witch' },
-        { label: 'Sea of Spores', teleportId: 'sea_of_spores' },
-      ],
-    },
-    seven_signs: {
-      sections: [
-        {
-          title: 'Necropolis',
-          items: [
-            { label: 'Necropolis of Sacrifice', teleportId: 'necropolis_of_sacrifice' },
-            { label: "Pilgrim's Necropolis", teleportId: 'pilgrims_necropolis' },
-            { label: 'Patriots Necropolis', teleportId: 'patriots_necropolis' },
-            { label: 'Necropolis of Devotion', teleportId: 'necropolis_of_devotion' },
-            { label: 'Necropolis of Martyrdom', teleportId: 'necropolis_of_martyrdom' },
-            { label: 'Saints Necropolis', teleportId: 'saints_necropolis' },
-            { label: 'Necropolis of Worship', teleportId: 'necropolis_of_worship' },
-          ],
-        },
-        {
-          title: 'Catacombs',
-          items: [
-            { label: 'Catacomb of the Heretic', teleportId: 'catacomb_of_the_heretic' },
-            { label: 'Catacomb of the Branded', teleportId: 'catacomb_of_the_branded' },
-            { label: 'Catacomb of the Apostate', teleportId: 'catacomb_of_the_apostate' },
-            { label: 'Catacomb of the Witch', teleportId: 'catacomb_of_the_witch' },
-            { label: 'Catacomb of the Dark Omens', teleportId: 'catacomb_of_dark_omens' },
-            { label: 'Catacomb of the Forbidden Path', teleportId: 'catacomb_of_the_forbidden_path' },
-          ],
-        },
-      ],
-    },
+    hardin: [
+      { label: "Hardin's Academy", teleportId: 'hardins_academy' },
+      { label: 'Necropolis of Martyrdom', teleportId: 'necropolis_of_martyrdom' },
+      { label: 'Catacomb of the Witch', teleportId: 'catacomb_of_the_witch' },
+      { label: 'Sea of Spores', teleportId: 'sea_of_spores' },
+    ],
   };
 
   function $(id) {
@@ -185,13 +155,6 @@
     if (surroundList) surroundList.innerHTML = '';
   }
 
-  function getSurroundingsDef(key) {
-    var def = TELEPORT_SURROUNDINGS[key];
-    if (!def) return null;
-    if (Array.isArray(def)) return { items: def };
-    return def;
-  }
-
   function filterAvailableSurroundRows(rows) {
     if (!rows || !rows.length) return [];
     if (!availableTeleportIds) return rows;
@@ -200,7 +163,12 @@
     });
   }
 
-  function appendSurroundingsRows(surroundList, rows) {
+  function renderSurroundingsList(key) {
+    var rows = filterAvailableSurroundRows(TELEPORT_SURROUNDINGS[key]);
+    var surroundList = $('tp-surroundings-list');
+    var panel = $('tp-surroundings');
+    if (!rows || !surroundList) return false;
+    surroundList.innerHTML = '';
     for (var i = 0; i < rows.length; i++) {
       var item = createMiruItem(rows[i], false);
       item.classList.add('l2-teleport-miru-surroundings-item');
@@ -209,33 +177,8 @@
       }
       surroundList.appendChild(item);
     }
-  }
 
-  function renderSurroundingsList(key) {
-    var def = getSurroundingsDef(key);
-    var surroundList = $('tp-surroundings-list');
-    var panel = $('tp-surroundings');
-    if (!def || !surroundList) return false;
-    surroundList.innerHTML = '';
-
-    if (def.sections) {
-      for (var s = 0; s < def.sections.length; s++) {
-        var section = def.sections[s];
-        var sectionRows = filterAvailableSurroundRows(section.items);
-        if (!sectionRows.length) continue;
-
-        var subHead = document.createElement('h3');
-        subHead.className = 'l2-teleport-miru-surroundings-subhead';
-        subHead.textContent = section.title || '';
-        surroundList.appendChild(subHead);
-        appendSurroundingsRows(surroundList, sectionRows);
-      }
-    } else {
-      var flatRows = filterAvailableSurroundRows(def.items);
-      appendSurroundingsRows(surroundList, flatRows);
-    }
-
-    if (!surroundList.children.length) {
+    if (!rows.length) {
       if (panel) panel.hidden = true;
       activeSurroundingsKey = null;
       return false;

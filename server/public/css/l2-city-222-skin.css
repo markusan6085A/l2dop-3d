@@ -91,7 +91,7 @@ body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru {
   --l2s-city-miru-text: #e8dcc0;
   --l2s-city-miru-text-hover: #f5ecd0;
-  padding: 4px 8px 8px;
+  padding: 4px 0 8px;
   box-sizing: border-box;
 }
 
@@ -100,7 +100,7 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc {
   align-items: center;
   gap: 8px;
   margin: 0 0 8px;
-  padding: 0 2px 8px;
+  padding: 0 0 8px;
   border-bottom: 1px solid rgba(48, 48, 48, 0.95);
 }
 
@@ -151,7 +151,7 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-item {
   gap: 6px;
   width: 100%;
   margin: 0;
-  padding: 6px 2px;
+  padding: 6px 0;
   border: 0;
   border-bottom: 1px solid rgba(48, 48, 48, 0.88);
   border-radius: 0;
@@ -315,13 +315,13 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-h
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru {
   --l2s-city-miru-text: #e8dcc0;
   --l2s-city-miru-text-hover: #f5ecd0;
-  padding: 4px 8px 8px;
+  padding: 4px 0 8px;
   box-sizing: border-box;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-you {
   margin: 0 0 8px;
-  padding: 6px 4px 0;
+  padding: 6px 0 0;
   border-bottom: 0;
   font-size: 12px;
   line-height: 1.4;
@@ -334,7 +334,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-banner {
   max-width: 70%;
   height: auto;
   margin: 0 auto 10px 0;
-  padding: 0 0 8px 4px;
+  padding: 0 0 8px;
   box-sizing: border-box;
   border-bottom: 1px solid rgba(48, 48, 48, 0.95);
   object-fit: contain;
@@ -343,7 +343,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-banner {
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-section {
   margin: 0 0 4px;
-  padding: 0 4px;
+  padding: 0;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
@@ -364,7 +364,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item {
   gap: 6px;
   width: 100%;
   margin: 0;
-  padding: 6px 4px;
+  padding: 6px 0;
   border: 0;
   border-bottom: 1px solid rgba(48, 48, 48, 0.88);
   border-radius: 0;
@@ -409,12 +409,12 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-ico {
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru > .err,
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru > .l2-city-stub-msg {
-  margin: 8px 4px 0;
+  margin: 8px 0 0;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings {
   margin: 0;
-  padding: 8px 4px 4px;
+  padding: 8px 0 4px;
   border-top: 1px solid rgba(80, 80, 80, 0.85);
 }
 
@@ -423,7 +423,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-head {
   align-items: center;
   gap: 6px;
   margin: 0 0 6px;
-  padding: 0 2px;
+  padding: 0;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
@@ -436,21 +436,6 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-head-ico {
   height: 14px;
   object-fit: contain;
   pointer-events: none;
-}
-
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-subhead {
-  margin: 10px 2px 4px;
-  padding: 0;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
-  color: #fff;
-}
-
-body.l2-app-l2-chrome.l2-page-teleport
-  .l2-teleport-miru-surroundings-list
-  .l2-teleport-miru-surroundings-subhead:first-child {
-  margin-top: 0;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-list .l2-town-miru-item {

@@ -2355,7 +2355,8 @@ body.l2-app-l2-chrome.l2-nav-minimal.l2-page-has-fixed-nav .l2-screen-inner {
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal {
-  --l2s-legacy-inner-pad-x: 8px;
+  --l2s-content-edge-pad: 2mm;
+  --l2s-legacy-inner-pad-x: var(--l2s-content-edge-pad, 2mm);
   --l2s-legacy-bars-gap: calc(3mm - 0.5cm);
   --l2s-legacy-rule-color: #303030;
   --l2s-legacy-nav-cell-bg: #303030;
@@ -2382,12 +2383,13 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-hud-panel-mount),
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--city-strip),
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--legacy-minimal),
-html body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
+html body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city .l2-screen.l2-outer-sframe-host > .l2-screen-inner,
+html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-nav-bottom) {
   padding:
     0
-    8px
+    var(--l2s-content-edge-pad, 2mm)
     calc(12px + env(safe-area-inset-bottom, 0px))
-    8px !important;
+    var(--l2s-content-edge-pad, 2mm) !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal {
@@ -2428,7 +2430,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
 
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
   margin: var(--l2s-legacy-bars-gap, 0) 0 0;
-  padding: 3px 2px 5px 9px;
+  padding: 3px 0 5px;
   border: 0 !important;
   border-top: 0 !important;
   border-bottom: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
