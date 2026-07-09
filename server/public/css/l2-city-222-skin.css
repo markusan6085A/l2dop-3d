@@ -319,40 +319,25 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru {
   box-sizing: border-box;
 }
 
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru .l2-town-miru-loc {
-  margin: 0 0 6px;
-  padding: 6px 4px 8px;
-  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
-}
-
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.35;
-  color: var(--l2s-city-miru-text, #e8dcc0);
-}
-
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-head-tag {
-  flex-shrink: 0;
-  color: #d4c8a8;
-}
-
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-head-city {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-you {
-  margin: 0 0 10px;
-  padding: 0 4px;
+  margin: 0 0 8px;
+  padding: 6px 4px 0;
+  border-bottom: 0;
   font-size: 12px;
   line-height: 1.4;
-  color: var(--l2s-city-miru-text, #e8dcc0);
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-banner {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0 0 10px;
+  padding: 0 4px 8px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+  object-fit: contain;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-section {
@@ -361,7 +346,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-section {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
-  color: var(--l2s-city-miru-text, #e8dcc0);
+  color: #fff;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-list {

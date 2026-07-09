@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav9" />
-    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260709tpMiru1" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260709tpMiru3" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-teleport l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -66,15 +66,18 @@
             <p class="err" id="tp-load-err" hidden></p>
 
             <section class="l2-teleport-miru" id="tp-content" aria-label="Телепорт" hidden>
-              <div class="l2-town-miru-loc" id="tp-loc-header">
-                <p class="l2-teleport-miru-head">
-                  <span class="l2-teleport-miru-head-tag">[Телепорт]</span>
-                  <span class="l2-teleport-miru-head-city" id="tp-header-city">—</span>
-                </p>
-              </div>
               <p class="l2-teleport-miru-you">
-                Ви в місті <span id="tp-current-city">—</span>.
+                Ви в Городі <span id="tp-current-city">—</span>.
               </p>
+
+              <img
+                class="l2-teleport-miru-banner"
+                src="/assets/gk.jpg"
+                alt=""
+                width="320"
+                height="80"
+                decoding="async"
+              />
 
               <h2 class="l2-teleport-miru-section">Города:</h2>
               <nav class="l2-town-miru-list" id="tp-cities-list" aria-label="Города"></nav>
@@ -92,6 +95,6 @@
     <script src="/common.js"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709miruNav9"></script>
-    <script src="/teleport.js?v=20260709tpMiru1"></script>
+    <script src="/teleport.js?v=20260709tpMiru2"></script>
   </body>
 </html>

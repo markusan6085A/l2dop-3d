@@ -61,9 +61,7 @@
 
   function applyCurrentLocation(c) {
     var name = cityNameFromSnapshot(c);
-    var header = $('tp-header-city');
     var current = $('tp-current-city');
-    if (header) header.textContent = name;
     if (current) current.textContent = name;
   }
 
