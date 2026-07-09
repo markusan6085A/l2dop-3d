@@ -151,6 +151,16 @@
     city_btn_olympiad: { uk: 'Менеджер Олімпіади', ru: 'Менеджер Олимпиады' },
     city_btn_supremacy: { uk: 'Верховенство', ru: 'Верховенство' },
     city_btn_residents: { uk: 'Усі мешканці', ru: 'Все жители' },
+    city_btn_arena_pvp: { uk: 'Арена PVP', ru: 'Арена PVP' },
+    city_btn_buffer_statue: { uk: 'Магічна статуя', ru: 'Магическая статуя' },
+    city_link_gm_shop_items: { uk: 'Магазин речей', ru: 'Магазин вещей' },
+    city_link_magisters_guild: { uk: 'Гільдія магів', ru: 'Гильдия магов' },
+    city_btn_fisher: { uk: 'Рибалка', ru: 'Рыбак' },
+    city_btn_manor: { uk: 'Манор', ru: 'Манор' },
+    city_btn_seven_seals: { uk: '7 Печатей', ru: '7 Печатей' },
+    city_btn_olympiad_short: { uk: 'Олімпіада', ru: 'Олимпиада' },
+    city_btn_brave_hunter: { uk: 'Відважний мисливець', ru: 'Отважный охотник' },
+    city_btn_clans: { uk: 'Клани', ru: 'Кланы' },
 
     /** Профіль */
     pers_need_login: {

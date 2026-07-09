@@ -19,21 +19,20 @@
     showStub('«' + L2.tr(key) + '» — ' + L2.tr('stub_later'));
   }
 
-  function wireTownIcons() {
-    document.querySelectorAll('.l2-town-main .l2-town-btn__icon').forEach(function (icon) {
-      if (icon.dataset.fallbackWired === '1') return;
-      icon.dataset.fallbackWired = '1';
-      icon.addEventListener('error', function onIconError() {
-        icon.removeEventListener('error', onIconError);
-        icon.src = '/icons/drops/other.svg';
-      });
-    });
+  function applyCityLocation(c) {
+    var locText = document.querySelector('#city-loc-name .l2-town-miru-loc-text');
+    if (!locText || !c) return;
+    var name =
+      window.L2 && typeof L2.cityDisplayName === 'function'
+        ? L2.cityDisplayName(c.cityId)
+        : String(c.cityId || '—');
+    locText.textContent = name;
   }
 
   function wireStubs() {
     var root = $('city-services');
     if (root) {
-      root.querySelectorAll('.l2-town-btn[data-i18n-stub]').forEach(function (btn) {
+      root.querySelectorAll('.l2-town-miru-item[data-i18n-stub]').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var k = btn.getAttribute('data-i18n-stub');
           if (k) showStubI18n(k);
@@ -75,7 +74,6 @@
     }
 
     wireStubs();
-    wireTownIcons();
 
     var t = localStorage.getItem('token');
     var errEl = $('city-load-err');
@@ -140,6 +138,7 @@
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(c);
     }
+    applyCityLocation(c);
 
     if (services) services.removeAttribute('hidden');
     if (wapTop) wapTop.hidden = false;

@@ -11,81 +11,14 @@
   var TOP = [];
 
   var BOTTOM = [
-    {
-      iconPath: null,
-      href: null,
-      stubKey: 'nav_mail',
-      stub: null,
-      i18nKey: 'nav_mail',
-      i18nTitleKey: 'nav_mail_title',
-      lbl: 'p1',
-    },
-    {
-      iconPath: null,
-      href: null,
-      stubKey: 'nav_chat',
-      stub: null,
-      i18nKey: 'nav_chat',
-      i18nTitleKey: 'nav_chat_title',
-      lbl: 'p2',
-    },
-    {
-      iconPath: null,
-      href: null,
-      stubKey: 'foot_forum',
-      i18nKey: 'foot_forum',
-      title: 'Форум',
-      label: 'Форум',
-      lbl: 'p3',
-    },
-    {
-      iconPath: null,
-      href: '/teleport.html',
-      stub: null,
-      title: 'Околиці',
-      label: 'Околиці',
-      lbl: 'p4',
-    },
-    {
-      iconPath: null,
-      href: null,
-      stubKey: 'nav_clan',
-      i18nKey: 'nav_clan',
-      i18nTitleKey: 'nav_clan_title',
-      lbl: 'p5',
-    },
-    {
-      iconPath: null,
-      href: '/city.html',
-      stub: null,
-      title: 'Місто',
-      label: 'Місто',
-      lbl: 'p6',
-    },
-    {
-      iconPath: null,
-      href: '/char.html',
-      stub: null,
-      title: 'Інвентар',
-      label: 'Інвентар',
-      lbl: 'p7',
-    },
-    {
-      iconPath: null,
-      href: '/pers.html',
-      stub: null,
-      title: 'Персонаж',
-      label: 'Персонаж',
-      lbl: 'p8',
-    },
-    {
-      iconPath: null,
-      href: null,
-      stub: 'Рейтинг',
-      title: 'Рейтинг',
-      label: 'Рейтинг',
-      lbl: 'p9',
-    },
+    { glyph: '📜', href: null, stubKey: 'nav_mail', i18nKey: 'nav_mail', i18nTitleKey: 'nav_mail_title', lbl: 'p1' },
+    { glyph: '💬', href: null, stubKey: 'nav_chat', i18nKey: 'nav_chat', i18nTitleKey: 'nav_chat_title', lbl: 'p2' },
+    { glyph: '📜', href: null, stubKey: 'foot_forum', i18nKey: 'foot_forum', title: 'Форум', label: 'Форум', lbl: 'p3' },
+    { glyph: '👑', href: null, stubKey: 'nav_clan', i18nKey: 'nav_clan', i18nTitleKey: 'nav_clan_title', lbl: 'p4' },
+    { glyph: '✨', href: '/city.html', i18nKey: 'nav_town', i18nTitleKey: 'nav_town_title', title: 'Місто', label: 'Місто', lbl: 'p5' },
+    { glyph: '🛡️', href: '/char.html', i18nKey: 'nav_inventory', i18nTitleKey: 'nav_inventory_title', title: 'Інвентар', label: 'Інвентар', lbl: 'p6' },
+    { glyph: '👤', href: '/pers.html', i18nKey: 'nav_profile', i18nTitleKey: 'nav_profile_title', title: 'Персонаж', label: 'Персонаж', lbl: 'p7' },
+    { glyph: '🏠', href: '/menu.html', i18nKey: 'nav_menu', i18nTitleKey: 'nav_menu_title', title: 'Меню', label: 'Меню', lbl: 'p8' },
   ];
 
   var mounted = false;
@@ -109,6 +42,13 @@
     var span = document.createElement('span');
     span.className = 'l2-wap-lbl l2-wap-lbl--' + item.lbl;
     span.textContent = item.i18nKey && L2.tr ? L2.tr(item.i18nKey) : item.label || '';
+    if (item.glyph) {
+      var glyph = document.createElement('span');
+      glyph.className = 'l2-wap-glyph';
+      glyph.setAttribute('aria-hidden', 'true');
+      glyph.textContent = item.glyph;
+      a.appendChild(glyph);
+    }
     var hasIcon =
       (typeof item.iconPath === 'string' && item.iconPath.length > 0) ||
       (typeof item.icon === 'string' && item.icon.length > 0);
@@ -234,7 +174,7 @@
     var bottomNav = renderGrid(
       BOTTOM,
       'wap-bottom',
-      'l2-wap-grid--bottom',
+      'l2-wap-grid--bottom l2-wap-grid--miru',
       'nav_bottom_aria'
     );
     okBot = mountInto('l2-nav-bottom', bottomNav);

@@ -1,7 +1,7 @@
 /**
  * Місто: l2-app-chrome-skin + сітка навігації; список сервісів — текст зліва, без рамок.
  */
-@import url('l2-app-chrome-skin.css?v=20260709legacyHudTop5');
+@import url('l2-app-chrome-skin.css?v=20260709miruNav1');
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive {
   --l2s-city-town-btn-w: 100%;
@@ -62,6 +62,102 @@ body.l2-app-l2-chrome.l2-page-city .l2-wap-lbl {
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.85),
     0 0 8px rgba(180, 140, 80, 0.12);
+}
+
+body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru {
+  border: 0 !important;
+  margin-top: 0 !important;
+  padding: 8px 10px 10px !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell {
+  border: 1px solid #303030 !important;
+  background: #303030 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:hover,
+body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:focus {
+  background: #3a3a3a !important;
+  border-color: #3a3a3a !important;
+}
+
+/* Місто — miru-список (зелені посилання, розділювачі) */
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru {
+  padding: 4px 10px 8px;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+  font-size: 13px;
+  line-height: 1.35;
+  color: #ece6dc;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-glyph {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  margin: 0;
+  padding: 7px 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.88);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  text-decoration: none;
+  color: #6fbf6f;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-item:first-of-type {
+  border-top: 1px dotted rgba(80, 80, 80, 0.75);
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-item--last {
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-item:hover,
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-item:focus {
+  outline: none;
+  color: #8ed48e;
+  background: rgba(40, 60, 40, 0.12);
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-glyph {
+  flex-shrink: 0;
+  width: 16px;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
 }
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-screen.l2-outer-sframe-host .l2-town-main {
