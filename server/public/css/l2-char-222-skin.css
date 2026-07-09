@@ -249,7 +249,8 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-gladiator-m .l2
   transform: translateY(2%) scale(1.05);
 }
 
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-mystic-m .l2-char-equip-hero-overlay {
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-mystic-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-mystic-f .l2-char-equip-hero-overlay {
   height: 88%;
   transform: translateY(-1%) scale(1.04);
 }

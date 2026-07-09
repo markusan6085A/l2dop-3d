@@ -19,7 +19,11 @@
     var mystic = branch === 'mystic';
     if (race === 'Human') return mystic ? '/characters/Human-mistsk.jpg' : '/characters/Human-voin.jpg';
     if (race === 'Elf') return mystic ? '/characters/Elf-mag.jpg' : '/characters/Elf-voin.jpg';
-    if (race === 'Dark Elf') return mystic ? '/characters/Dark_Elf_mag.jpg' : '/characters/Dark_Elf-voinn.jpg';
+    if (race === 'Dark Elf') {
+      return mystic
+        ? '/characters/photo_2026-07-09_21-51-13-removebg-preview.png'
+        : '/characters/Dark_Elf-voinn.jpg';
+    }
     if (race === 'Dwarf') return '/characters/Dwarf_voin.jpg';
     if (race === 'Orc') return mystic ? '/characters/Orc_mag.jpg' : '/characters/Orc_voinn.jpg';
     return '/characters/Human-voin.jpg';
@@ -228,13 +232,33 @@
       blackKey: false,
     },
     dark_elf_mage: {
-      url: '/characters/photo_2026-07-05_14-45-08-removebg-preview.png',
+      url: '/characters/photo_2026-07-09_21-51-13-removebg-preview.png',
       skin: 'dark-elf-mystic-m',
       blackKey: false,
     },
     'dark_elf_mage|female': {
-      url: '/characters/photo_2026-07-05_14-45-08-removebg-preview.png',
+      url: '/characters/photo_2026-07-09_21-53-58-removebg-preview.png',
+      skin: 'dark-elf-mystic-f',
+      blackKey: false,
+    },
+    dark_elf_dark_wizard: {
+      url: '/characters/photo_2026-07-09_21-53-08-removebg-preview.png',
       skin: 'dark-elf-mystic-m',
+      blackKey: false,
+    },
+    'dark_elf_dark_wizard|female': {
+      url: '/characters/photo_2026-07-09_21-54-38-removebg-preview.png',
+      skin: 'dark-elf-mystic-f',
+      blackKey: false,
+    },
+    dark_elf_shillien_oracle: {
+      url: '/characters/photo_2026-07-09_21-53-08-removebg-preview.png',
+      skin: 'dark-elf-mystic-m',
+      blackKey: false,
+    },
+    'dark_elf_shillien_oracle|female': {
+      url: '/characters/photo_2026-07-09_21-54-38-removebg-preview.png',
+      skin: 'dark-elf-mystic-f',
       blackKey: false,
     },
     elf_mage: {
@@ -268,7 +292,7 @@
       blackKey: true,
     },
     'dark-elf|mystic|male': {
-      url: '/characters/photo_2026-07-05_14-45-08-removebg-preview.png',
+      url: '/characters/photo_2026-07-09_21-51-13-removebg-preview.png',
       skin: 'dark-elf-mystic-m',
       blackKey: false,
     },
@@ -314,8 +338,6 @@
     elf_elemental_master: 'elf_elemental_summoner',
     elf_mystic_muse: 'elf_spellsinger',
     elf_evas_saint: 'elf_elven_elder',
-    dark_elf_dark_wizard: 'dark_elf_mage',
-    dark_elf_shillien_oracle: 'dark_elf_mage',
     dark_elf_phantom_summoner: 'dark_elf_dark_wizard',
     dark_elf_spellhowler: 'dark_elf_dark_wizard',
     dark_elf_shillien_elder: 'dark_elf_shillien_oracle',
