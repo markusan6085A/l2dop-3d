@@ -3,8 +3,14 @@
  */
 (function (global) {
   var pollTimer = null;
-  var POLL_MS = 20000;
+  var pollStarted = false;
   var mountRetryTimer = null;
+  var refreshInFlight = false;
+  var refreshQueued = false;
+  var refreshDebounceTimer = null;
+  var lastRefreshAt = 0;
+  var POLL_MS = 20000;
+  var MIN_REFRESH_GAP_MS = 8000;
 
   function authToken() {
     if (global.L2 && typeof global.L2.token === 'function') {
@@ -38,7 +44,7 @@
     link.textContent = '+' + String(Math.min(99, Math.floor(n)));
   }
 
-  function refreshCount(linkEl) {
+  function fetchUnreadCount(linkEl) {
     var link = linkEl || document.getElementById('l2-chat-reply-notify');
     if (!link) return;
 
@@ -52,6 +58,25 @@
       setCount(link, 0);
       return;
     }
+
+    if (refreshInFlight) {
+      refreshQueued = true;
+      return;
+    }
+
+    var now = Date.now();
+    if (now - lastRefreshAt < MIN_REFRESH_GAP_MS) {
+      if (!refreshDebounceTimer) {
+        refreshDebounceTimer = setTimeout(function () {
+          refreshDebounceTimer = null;
+          fetchUnreadCount(link);
+        }, MIN_REFRESH_GAP_MS - (now - lastRefreshAt));
+      }
+      return;
+    }
+
+    refreshInFlight = true;
+    lastRefreshAt = now;
 
     fetch('/game/chat/replies/unread-count', {
       headers: { Authorization: 'Bearer ' + token },
@@ -70,7 +95,36 @@
       })
       .catch(function () {
         /* ignore */
+      })
+      .finally(function () {
+        refreshInFlight = false;
+        if (refreshQueued) {
+          refreshQueued = false;
+          fetchUnreadCount(link);
+        }
       });
+  }
+
+  function refreshCount(linkEl) {
+    fetchUnreadCount(linkEl);
+  }
+
+  function ensurePoll(linkEl) {
+    if (pollStarted) return;
+    pollStarted = true;
+    pollTimer = setInterval(function () {
+      fetchUnreadCount();
+    }, POLL_MS);
+
+    if (!global.__l2ChatReplyNotifyFocusBound) {
+      global.__l2ChatReplyNotifyFocusBound = true;
+      global.addEventListener('focus', function () {
+        fetchUnreadCount();
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) fetchUnreadCount();
+      });
+    }
   }
 
   function mount() {
@@ -96,25 +150,10 @@
       link.href = '/chat.html';
       link.hidden = true;
       hudAnchor.insertAdjacentElement('afterend', link);
+      fetchUnreadCount(link);
+      ensurePoll(link);
     } else if (link.previousElementSibling !== hudAnchor) {
       hudAnchor.insertAdjacentElement('afterend', link);
-    }
-
-    refreshCount(link);
-
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(function () {
-      refreshCount();
-    }, POLL_MS);
-
-    if (!global.__l2ChatReplyNotifyFocusBound) {
-      global.__l2ChatReplyNotifyFocusBound = true;
-      global.addEventListener('focus', function () {
-        refreshCount();
-      });
-      document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) refreshCount();
-      });
     }
   }
 

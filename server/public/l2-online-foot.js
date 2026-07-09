@@ -4,6 +4,9 @@
  */
 (function (global) {
   var mounted = false;
+  var refreshInFlight = false;
+  var lastRefreshAt = 0;
+  var MIN_REFRESH_GAP_MS = 10000;
 
   function authToken() {
     if (global.L2 && typeof global.L2.token === 'function') {
@@ -34,6 +37,13 @@
       return;
     }
 
+    if (refreshInFlight) return;
+    var now = Date.now();
+    if (now - lastRefreshAt < MIN_REFRESH_GAP_MS) return;
+
+    refreshInFlight = true;
+    lastRefreshAt = now;
+
     fetch('/game/online', {
       headers: { Authorization: 'Bearer ' + token },
     })
@@ -53,6 +63,9 @@
       })
       .catch(function () {
         /* ignore */
+      })
+      .finally(function () {
+        refreshInFlight = false;
       });
   }
 
