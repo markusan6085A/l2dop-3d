@@ -104,6 +104,14 @@ export const MAP_TOWNS: MapTownRef[] = [
     teleportId: 'talking_island',
   },
   {
+    worldX: -80853,
+    worldY: 149257,
+    labelUk: 'Селище Глудін',
+    labelEn: 'Gludin Village',
+    cityId: 'gludin_village',
+    teleportId: 'gludin',
+  },
+  {
     worldX: -44836,
     worldY: -112524,
     labelUk: 'Селище орків',

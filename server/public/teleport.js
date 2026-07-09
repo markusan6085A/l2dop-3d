@@ -13,7 +13,7 @@
     { label: 'Dark Elven Village', teleportId: 'dark_elf_village' },
     { label: 'Orc Village', teleportId: 'orc_village' },
     { label: 'Dwarven Village', teleportId: 'dwarf_village' },
-    { label: 'Gludin Village', teleportId: null },
+    { label: 'Gludin Village', teleportId: 'gludin' },
     { label: 'Town of Gludio', teleportId: 'gludio' },
     { label: 'Town of Dion', teleportId: 'dion' },
     { label: 'Giran Castle Town', teleportId: 'giran' },
