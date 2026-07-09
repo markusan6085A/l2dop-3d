@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import type { InventoryState } from '../data/inventory.js';
-import type { LearnedSkillEntry } from '../data/humanFighterSkillCatalog.js';
+import type { LearnedSkillSnapshotEntry } from './charLearnedSkillsSnapshot.js';
 import type { CastableSelfBuffEntry } from '../data/castableSelfBuffs.js';
 import type { BattleHotbarSlot } from '../domain/battleHotbar.js';
 
@@ -148,7 +148,7 @@ export interface CharacterSnapshot {
   /** Вивчені скіли (battle action id), напр. power_strike */
   learnedBattleSkills: string[];
   /** Ранг кожного вивченого скіла (для UI / магістра). */
-  learnedBattleSkillsDetail: LearnedSkillEntry[];
+  learnedBattleSkillsDetail: LearnedSkillSnapshotEntry[];
   /** cs1 $heroic (1 атака / 2 захист / 3 підмога); null — вимкнено. */
   buffHeroicTier: number | null;
   /** Zealot (420), верстви; null — вимкнено. */

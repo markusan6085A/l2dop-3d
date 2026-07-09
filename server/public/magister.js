@@ -239,23 +239,38 @@
       head.appendChild(frame);
       var name = document.createElement('h2');
       name.className = 'l2-magister-skill-card__name';
-      name.textContent = s && s.nameUk ? s.nameUk : bid;
+      name.textContent =
+        e && e.nameUk && String(e.nameUk).trim()
+          ? String(e.nameUk).trim()
+          : s && s.nameUk
+            ? s.nameUk
+            : bid;
       head.appendChild(name);
       li.appendChild(head);
 
       var meta = document.createElement('p');
       meta.className = 'l2-magister-skill-card__meta';
-      var maxPart =
-        s && s.maxSkillLevel != null && Number(s.maxSkillLevel) > 1
-          ? '/' + String(Math.floor(Number(s.maxSkillLevel)))
-          : '';
-      var kindUk = s && s.kind === 'passive' ? 'пасив' : 'активний';
+      var kindUk =
+        e && e.kind === 'passive'
+          ? 'пасив'
+          : s && s.kind === 'passive'
+            ? 'пасив'
+            : 'активний';
+      var maxLvl =
+        e && e.maxSkillLevel != null && Number(e.maxSkillLevel) > 1
+          ? Number(e.maxSkillLevel)
+          : s && s.maxSkillLevel != null && Number(s.maxSkillLevel) > 1
+            ? Number(s.maxSkillLevel)
+            : null;
+      var maxPart = maxLvl != null ? '/' + String(Math.floor(maxLvl)) : '';
       meta.textContent = 'Ранг: ' + Math.floor(Number(e.level)) + maxPart + ' · ' + kindUk;
       li.appendChild(meta);
 
       var desc = document.createElement('p');
       desc.className = 'l2-magister-skill-card__desc';
-      if (s && s.hintUk && String(s.hintUk).trim()) {
+      if (e && e.hintUk && String(e.hintUk).trim()) {
+        desc.textContent = String(e.hintUk).trim();
+      } else if (s && s.hintUk && String(s.hintUk).trim()) {
         desc.textContent = String(s.hintUk).trim();
       } else if (s && s.statsNoteUk && String(s.statsNoteUk).trim()) {
         desc.textContent = String(s.statsNoteUk).trim();

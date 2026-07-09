@@ -16,6 +16,7 @@ import { prisma } from '../lib/prisma.js';
 import {
   combatOptsFromRow,
   ensureSanitizedSkillsLearnedRow,
+  ensureMysticStarterSkillsRow,
   GameConflictError,
   toSnapshot,
   type CharacterRow,
@@ -53,6 +54,9 @@ export async function getBattleState(
   });
   if (!row) return null;
   row = (await ensureSanitizedSkillsLearnedRow(
+    row as CharacterRow
+  )) as CharacterRow;
+  row = (await ensureMysticStarterSkillsRow(
     row as CharacterRow
   )) as CharacterRow;
   row = (await applyPassiveAndMove(row as CharacterRow)) as CharacterRow;

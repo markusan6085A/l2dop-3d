@@ -16,6 +16,7 @@ import {
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { mapMoveSpeedFromRunSpeed } from '../domain/mapMovement.js';
 import { parseBattleHotbarSlots } from '../domain/battleHotbar.js';
+import { enrichLearnedSkillsForSnapshot } from './charLearnedSkillsSnapshot.js';
 import {
   effectiveBattleAccuracyDisplay,
   effectiveBattleCritRateDisplay,
@@ -209,11 +210,15 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
   );
   const hp = Math.min(Math.max(0, row.hp), maxHp);
   const l2ProfResolved = resolveL2ProfessionForSkillsRow(row);
-  const learnedDetail = filterLearnedSkillEntriesForCharacter(
-    normalizeLearnedSkillsJson(row.skillsLearnedJson),
+  const learnedDetail = enrichLearnedSkillsForSnapshot(
+    filterLearnedSkillEntriesForCharacter(
+      normalizeLearnedSkillsJson(row.skillsLearnedJson),
+      row.race,
+      row.classBranch,
+      l2ProfResolved
+    ),
     row.race,
-    row.classBranch,
-    l2ProfResolved
+    row.classBranch
   );
   const focusAttackRank = focusAttackRankFromLearnedEntries(learnedDetail);
   const accuracyStanceRank =

@@ -8,6 +8,7 @@ import {
   migrateInventoryToSk2,
   equipFromBag,
   unequipSlot,
+  ensureMysticRobeStarterPieces,
 } from '../data/inventory.js';
 import { resolveMapMovement, resolveMapMovementPatch } from '../domain/mapMovement.js';
 import { GameConflictError } from './charErrors.js';
@@ -139,6 +140,13 @@ export async function getSnapshotForUser(
       inv = migrated;
       invJsonForShadow = migrated as unknown as Prisma.JsonValue;
       data.inventoryJson = migrated as unknown as Prisma.InputJsonValue;
+      bumpRevision = true;
+    }
+    const robePatch = ensureMysticRobeStarterPieces(inv, cr.classBranch);
+    if (robePatch.changed) {
+      inv = robePatch.inv;
+      invJsonForShadow = robePatch.inv as unknown as Prisma.JsonValue;
+      data.inventoryJson = robePatch.inv as unknown as Prisma.InputJsonValue;
       bumpRevision = true;
     }
 

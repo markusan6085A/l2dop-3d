@@ -437,6 +437,8 @@
 
   var hotbarPersistCtx = null;
   var hotbarPersistTimer = null;
+  /** Локальні зміни панелі ще не на сервері — не перезаписувати зі snapshot. */
+  var hotbarSlotsDirty = false;
 
   function setHotbarPersistCtx(ctx) {
     hotbarPersistCtx = ctx;
@@ -484,6 +486,12 @@
       if (j.character) {
         if (ctx.setCharacter) ctx.setCharacter(j.character);
         if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(j.character);
+        if (typeof ctx.onHotbarPersisted === 'function') {
+          ctx.onHotbarPersisted(j.character);
+        } else if (typeof ctx.renderHotbar === 'function') {
+          hotbarSlotsDirty = false;
+          ctx.renderHotbar();
+        }
       }
     } catch (e) {
       /* ignore */
@@ -497,7 +505,11 @@
     } catch (e) {
       /* ignore */
     }
-    if (characterOpt) scheduleHotbarPersist(characterOpt, slots);
+    if (characterOpt) {
+      hotbarSlotsDirty = true;
+      characterOpt.battleHotbarSlots = slots.slice();
+      scheduleHotbarPersist(characterOpt, slots);
+    }
   }
 
   /**
@@ -620,11 +632,12 @@
    * @param {{ container: HTMLElement, getBattle: function(): object, getCharacter: function(): object, setCharacter: function(c: object): void, onBattleAction: function(actionId: string): void, onFighterSoulshotToggle?: function(itemId: number): void, onMysticSpiritshotToggle?: function(itemId: number): void, onBattlePotionUse?: function(itemId: number): void, getToken: function(): string|null, showToast: function(msg: string): void }} opts
    */
   function mountBattleHotbar(opts) {
-    setHotbarPersistCtx(opts);
     var modal = null;
     var pickerSlot = null;
     var category = 'magic';
     var slotsCache = [];
+    var slotsLoadedForCharacterId = null;
+    var slotsLoadedRevision = null;
     var cdTimer = null;
     var equipInFlight = false;
 
@@ -1201,6 +1214,30 @@
       grid.appendChild(btn);
     }
 
+    function ensureSlotsCache(character) {
+      if (!character || !character.id) {
+        slotsCache = new Array(HOTBAR_SLOTS);
+        for (var zi = 0; zi < HOTBAR_SLOTS; zi++) slotsCache[zi] = null;
+        slotsLoadedForCharacterId = null;
+        slotsLoadedRevision = null;
+        return;
+      }
+      if (hotbarSlotsDirty && slotsLoadedForCharacterId === character.id) {
+        return;
+      }
+      var rev = character.revision;
+      if (
+        slotsLoadedForCharacterId === character.id &&
+        slotsLoadedRevision === rev &&
+        slotsCache.length === HOTBAR_SLOTS
+      ) {
+        return;
+      }
+      slotsCache = loadSlots(character.id, character.battleHotbarSlots);
+      slotsLoadedForCharacterId = character.id;
+      slotsLoadedRevision = rev;
+    }
+
     function render() {
       var box = opts.container;
       if (!box) return;
@@ -1208,9 +1245,9 @@
       var battle = opts.getBattle();
       var character = opts.getCharacter();
       box.innerHTML = '';
-      if (!battle) return;
+      if (!battle || !character) return;
 
-      slotsCache = loadSlots(character.id, character.battleHotbarSlots);
+      ensureSlotsCache(character);
       if (
         !slotsHaveContent(character.battleHotbarSlots || []) &&
         slotsHaveContent(slotsCache)
@@ -1342,7 +1379,25 @@
         modal.parentNode.removeChild(modal);
       }
       modal = null;
+      slotsLoadedForCharacterId = null;
+      slotsLoadedRevision = null;
+      slotsCache = [];
+      hotbarSlotsDirty = false;
+      setHotbarPersistCtx(null);
     }
+
+    setHotbarPersistCtx(
+      Object.assign({}, opts, {
+        renderHotbar: render,
+        onHotbarPersisted: function (snap) {
+          hotbarSlotsDirty = false;
+          slotsCache = loadSlots(snap.id, snap.battleHotbarSlots);
+          slotsLoadedForCharacterId = snap.id;
+          slotsLoadedRevision = snap.revision;
+          render();
+        },
+      })
+    );
 
     return { render: render, destroy: destroy };
   }

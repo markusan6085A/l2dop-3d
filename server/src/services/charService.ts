@@ -9,7 +9,7 @@ export {
   toSnapshot,
 } from './charSnapshotLogic.js';
 export { applyPassiveHpRegen, applyPassiveHpRegenPure } from './charPassiveRegen.js';
-export { ensureSanitizedSkillsLearnedRow } from './charSkillsSanitize.js';
+export { ensureSanitizedSkillsLearnedRow, ensureMysticStarterSkillsRow } from './charSkillsSanitize.js';
 export {
   applyPersistedCombatBuffs,
   getSnapshotForUser,

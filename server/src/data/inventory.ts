@@ -5,9 +5,10 @@ import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
 /**
  * Версія стартового набору в сумці; піднімаємо при зміні складу старту.
+ * v7 — маг: Devotion tunic/stockings + auto-equip мантії (Spellcraft).
  * v6 — Club + Rod + Devotion helmet/gloves, зілля, обидва заряди; лише при register.
  */
-export const STARTER_KIT_VERSION = 6;
+export const STARTER_KIT_VERSION = 7;
 
 /** Стартова адена нового героя. */
 export const STARTER_ADENA = 50_000;
@@ -18,6 +19,8 @@ const STARTER_WEAPON_PHYS_ID = 4;
 const STARTER_WEAPON_MAGIC_ID = 7;
 /** Devotion Helmet / gloves — NG-броня з GM-шопу (синтетичні id). */
 const STARTER_DEVOTION_HELMET_ID = 9002261;
+const STARTER_DEVOTION_TUNIC_ID = 9002263;
+const STARTER_DEVOTION_STOCKINGS_ID = 9002265;
 const STARTER_DEVOTION_GLOVES_ID = 9002267;
 const STARTER_LESSER_HEALING_ID = 1060;
 const STARTER_MANA_SMALL_ID = 726;
@@ -135,13 +138,92 @@ export function emptyInventory(): InventoryState {
 export type StarterClassBranch = 'fighter' | 'mystic';
 
 /** Стартова сумка нового героя (лише register). */
-export function starterInventory(_classBranch?: StarterClassBranch): InventoryState {
+export function starterInventory(classBranch?: StarterClassBranch): InventoryState {
+  if (classBranch !== 'mystic') {
+    return {
+      v: 1,
+      _sk: STARTER_KIT_VERSION,
+      stacks: STARTER_BAG_STACKS.map((row) => ({ ...row })),
+      eq: {},
+    };
+  }
+  const eq: Partial<Record<string, EqSlotValue>> = {
+    l1: STARTER_WEAPON_MAGIC_ID,
+    l3: STARTER_DEVOTION_TUNIC_ID,
+    l4: STARTER_DEVOTION_STOCKINGS_ID,
+    lh: STARTER_DEVOTION_HELMET_ID,
+    lg: STARTER_DEVOTION_GLOVES_ID,
+  };
+  const equippedIds = new Set(
+    Object.values(eq).map((v) =>
+      typeof v === 'number' ? v : Number((v as { itemId: number }).itemId)
+    )
+  );
+  const extraStacks: BagStack[] = [
+    { itemId: STARTER_DEVOTION_TUNIC_ID, qty: 1 },
+    { itemId: STARTER_DEVOTION_STOCKINGS_ID, qty: 1 },
+  ];
+  const stacks = [...STARTER_BAG_STACKS, ...extraStacks]
+    .filter((row) => !equippedIds.has(row.itemId))
+    .map((row) => ({ ...row }));
   return {
     v: 1,
     _sk: STARTER_KIT_VERSION,
-    stacks: STARTER_BAG_STACKS.map((row) => ({ ...row })),
-    eq: {},
+    stacks,
+    eq,
   };
+}
+
+/**
+ * Старі маги без мантії: додати tunic/stockings у сумку й одягнути, якщо слоти порожні.
+ */
+export function ensureMysticRobeStarterPieces(
+  inv: InventoryState,
+  classBranch: string
+): { inv: InventoryState; changed: boolean } {
+  if (String(classBranch).toLowerCase().trim() !== 'mystic') {
+    return { inv, changed: false };
+  }
+  let next = inv;
+  let changed = false;
+  const eq: Partial<Record<string, EqSlotValue>> = { ...next.eq };
+
+  const ensureInBag = (itemId: number) => {
+    if (
+      normalizeEqSlot(eq.l3)?.itemId === itemId ||
+      normalizeEqSlot(eq.l4)?.itemId === itemId
+    ) {
+      return;
+    }
+    if (countBagQty(next, itemId) > 0) return;
+    const stacks = [...next.stacks];
+    stacks.push({ itemId, qty: 1 });
+    next = { ...next, stacks };
+    changed = true;
+  };
+
+  ensureInBag(STARTER_DEVOTION_TUNIC_ID);
+  ensureInBag(STARTER_DEVOTION_STOCKINGS_ID);
+
+  if (
+    !normalizeEqSlot(eq.l3) &&
+    countBagQty(next, STARTER_DEVOTION_TUNIC_ID) > 0
+  ) {
+    eq.l3 = STARTER_DEVOTION_TUNIC_ID;
+    next = removeBagQty(next, STARTER_DEVOTION_TUNIC_ID, 1);
+    changed = true;
+  }
+  if (
+    !normalizeEqSlot(eq.l4) &&
+    countBagQty(next, STARTER_DEVOTION_STOCKINGS_ID) > 0
+  ) {
+    eq.l4 = STARTER_DEVOTION_STOCKINGS_ID;
+    next = removeBagQty(next, STARTER_DEVOTION_STOCKINGS_ID, 1);
+    changed = true;
+  }
+
+  if (!changed) return { inv, changed: false };
+  return { inv: { ...next, eq }, changed: true };
 }
 
 export function needsStarterKitMigration(inv: InventoryState): boolean {
