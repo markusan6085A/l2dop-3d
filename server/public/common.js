@@ -461,13 +461,8 @@
       lastSnapshot = null;
     },
 
-    /** Форум / Новини / Донат / GM / Підтримка / Правила (підписи через i18nKey) */
-    FOOT_LINK_ITEMS: [
-      { i18nKey: 'foot_forum', stubKey: 'foot_forum' },
-      { i18nKey: 'foot_news', stubKey: 'foot_news' },
-      { i18nKey: 'foot_support', stubKey: 'foot_support', wide: true },
-      { i18nKey: 'foot_rules', stubKey: 'foot_rules', wide: true },
-    ],
+    /** Футер (перший ряд) — вимкнено; ті самі пункти в нижній сітці l2-nav.js. */
+    FOOT_LINK_ITEMS: [],
 
     /** Раніше тут був другий ряд (чат/карта/…) — прибрано, бо ті самі пункти в верхній сітці l2-nav.js. */
     FOOT_LINK_ROW2: [],
@@ -531,6 +526,14 @@
 
       var items = global.L2.FOOT_LINK_ITEMS;
       el.textContent = '';
+      if (!items || !items.length) {
+        el.className = '';
+        el.hidden = true;
+        el.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      el.hidden = false;
+      el.removeAttribute('aria-hidden');
       el.className =
         'l2-foot-linkbar' + (opts.inset ? ' l2-foot-linkbar--inset' : '');
       el.setAttribute(
