@@ -135,9 +135,19 @@
       img.height = 14;
       img.decoding = 'async';
 
-      var nick = document.createElement('span');
-      nick.className = 'l2-chat-msg__nick';
-      nick.textContent = String(m.characterName || '—');
+      var nick =
+        window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+          ? L2.createPlayerProfileNickEl({
+              characterId: m.characterId,
+              name: m.characterName,
+              className: 'l2-chat-msg__nick',
+            })
+          : (function () {
+              var span = document.createElement('span');
+              span.className = 'l2-chat-msg__nick';
+              span.textContent = String(m.characterName || '—');
+              return span;
+            })();
 
       var reply = document.createElement('button');
       reply.type = 'button';

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Профіль гравця — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
+    <link rel="preload" as="image" href="/assets/photo_2026-07-05_14-33-19.jpg" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260709miruNav15" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260708charClsHold1" />
+    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260709character3" />
+    <link rel="stylesheet" href="/css/l2-player-page.css?v=20260709player1" />
+  </head>
+  <body
+    class="l2-body l2-page-city l2-page-player l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-player-root">
+          <div class="l2-chrome-nav-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="player-load-err" hidden></p>
+
+            <section class="l2-player-panel" id="player-content" aria-label="Профіль гравця" hidden>
+              <p class="l2-player-panel__headline" id="player-headline">—</p>
+              <p class="l2-player-panel__status" id="player-status">Немає статусу</p>
+
+              <div class="l2-character-hero-panel l2-player-hero-panel">
+                <div class="l2-char-photo-wrap">
+                  <div class="l2-char-equip-frame l2-char-equip-frame--hero-only">
+                    <div class="l2-char-equip-bg">
+                      <img
+                        class="l2-char-equip-scene"
+                        src="/assets/photo_2026-07-05_14-33-19.jpg"
+                        width="300"
+                        height="220"
+                        alt=""
+                        decoding="async"
+                      />
+                      <div class="l2-char-equip-hero-stage" id="player-hero-stage" hidden>
+                        <img
+                          id="player-hero-img"
+                          class="l2-char-equip-hero l2-char-equip-hero-overlay"
+                          alt=""
+                          decoding="async"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="l2-player-social-actions" id="player-social-actions">
+                <button type="button" class="l2-player-social-actions__btn" data-stub="Запросити в групу">
+                  Запросити в групу
+                </button>
+                <button
+                  type="button"
+                  class="l2-player-social-actions__btn"
+                  id="player-clan-action"
+                  data-stub="Запросити в клан"
+                >
+                  Запросити в клан
+                </button>
+              </div>
+
+              <h2 class="l2-player-section-title">Соціальний статус</h2>
+
+              <table class="l2-player-social-table" width="99%">
+                <tr>
+                  <td class="l2-player-social-table__label">Карма</td>
+                  <td class="l2-player-social-table__val" id="player-karma">0</td>
+                  <td class="l2-player-social-table__gap" aria-hidden="true"></td>
+                  <td class="l2-player-social-table__label l2-player-social-table__label--right">PK</td>
+                  <td class="l2-player-social-table__val l2-player-social-table__val--right" id="player-pk">
+                    0
+                  </td>
+                </tr>
+                <tr>
+                  <td class="l2-player-social-table__label">Рек.</td>
+                  <td class="l2-player-social-table__val l2-player-social-table__val--rec" id="player-rec">0</td>
+                  <td class="l2-player-social-table__gap" aria-hidden="true"></td>
+                  <td class="l2-player-social-table__label l2-player-social-table__label--right">Ост. рек.</td>
+                  <td
+                    class="l2-player-social-table__val l2-player-social-table__val--right"
+                    id="player-rec-left"
+                  >
+                    10
+                  </td>
+                </tr>
+                <tr>
+                  <td class="l2-player-social-table__label">Убито мобів</td>
+                  <td class="l2-player-social-table__val" id="player-mobs">0</td>
+                  <td class="l2-player-social-table__gap" aria-hidden="true"></td>
+                  <td class="l2-player-social-table__label l2-player-social-table__label--right">
+                    PvP перемог/поразок
+                  </td>
+                  <td class="l2-player-social-table__val l2-player-social-table__val--right" id="player-pvp">
+                    0/0
+                  </td>
+                </tr>
+              </table>
+
+              <p class="l2-player-location" id="player-location">—</p>
+
+              <hr class="l2-pers-rule l2-player-panel__rule" />
+
+              <p class="l2-player-registered" id="player-registered">Рег-я: —</p>
+            </section>
+
+            <p class="l2-city-stub-msg" id="player-stub-msg" hidden></p>
+
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260709miruNav17"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260709chat1"></script>
+    <script src="/charHeroPortrait.js?v=20260709character1"></script>
+    <script src="/player.js?v=20260709player1"></script>
+  </body>
+</html>

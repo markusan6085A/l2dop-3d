@@ -1,0 +1,148 @@
+/**
+ * Сторінка «Профіль гравця» — перегляд чужого персонажа.
+ */
+body.l2-app-l2-chrome.l2-page-player .l2-player-panel {
+  margin-top: 0.5cm;
+  padding: 0 0.5cm;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-panel__headline {
+  margin: 0 0 6px;
+  padding: 0;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #f0d880;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 10px rgba(200, 150, 60, 0.2);
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-panel__status {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c8c0b0;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel {
+  margin: 0 auto 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0 0 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-actions__btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #e8dcc0;
+  text-decoration: underline;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-section-title {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table {
+  width: 100%;
+  margin: 0 0 10px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__label {
+  width: 34%;
+  padding: 2px 0;
+  color: #fff;
+  vertical-align: top;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__label--right {
+  width: 34%;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__val {
+  width: 12%;
+  padding: 2px 0;
+  color: #fff;
+  vertical-align: top;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__val--right {
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__val--rec {
+  color: #e8dcc0;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__gap {
+  width: 1cm;
+  min-width: 1cm;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-location {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-panel__rule {
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-registered {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome .l2-player-profile-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome .l2-player-profile-link:hover,
+body.l2-app-l2-chrome .l2-player-profile-link:focus {
+  text-decoration: underline;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__nick.l2-player-profile-link {
+  color: #cfc3a4;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__nick.l2-player-profile-link {
+  color: inherit;
+}

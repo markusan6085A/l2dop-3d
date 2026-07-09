@@ -84,9 +84,19 @@
       img.height = 14;
       img.decoding = 'async';
 
-      var nick = document.createElement('span');
-      nick.className = 'l2-online-player__nick';
-      nick.textContent = String(p.name || '—');
+      var nick =
+        window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+          ? L2.createPlayerProfileNickEl({
+              characterId: p.characterId,
+              name: p.name,
+              className: 'l2-online-player__nick',
+            })
+          : (function () {
+              var span = document.createElement('span');
+              span.className = 'l2-online-player__nick';
+              span.textContent = String(p.name || '—');
+              return span;
+            })();
 
       row.appendChild(img);
       row.appendChild(nick);

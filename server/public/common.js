@@ -847,6 +847,47 @@
       }
     },
 
+    shouldLinkPlayerProfile: function () {
+      if (typeof document === 'undefined' || !document.body) return false;
+      if (document.body.classList.contains('l2-page-battle')) return false;
+      if (document.body.classList.contains('l2-page-olympiad')) return false;
+      return document.body.classList.contains('l2-app-l2-chrome');
+    },
+
+    playerProfileHref: function (opts) {
+      opts = opts || {};
+      var id =
+        opts.characterId != null ? String(opts.characterId).trim() : '';
+      var name = opts.name != null ? String(opts.name).trim() : '';
+      if (id) return '/player.html?id=' + encodeURIComponent(id);
+      if (name) return '/player.html?name=' + encodeURIComponent(name);
+      return '/player.html';
+    },
+
+    createPlayerProfileNickEl: function (opts) {
+      opts = opts || {};
+      var label = opts.name != null ? String(opts.name) : '—';
+      var className = opts.className != null ? String(opts.className) : '';
+      var id = opts.characterId != null ? String(opts.characterId).trim() : '';
+      var name = opts.name != null ? String(opts.name).trim() : '';
+      if (
+        !global.L2.shouldLinkPlayerProfile() ||
+        (!id && !name)
+      ) {
+        var span = document.createElement('span');
+        if (className) span.className = className;
+        span.textContent = label;
+        return span;
+      }
+      var link = document.createElement('a');
+      link.className = className
+        ? className + ' l2-player-profile-link'
+        : 'l2-player-profile-link';
+      link.href = global.L2.playerProfileHref({ characterId: id, name: name });
+      link.textContent = label;
+      return link;
+    },
+
     hunt: async function (ids) {
       var t = global.L2.token();
       var snap = lastSnapshot;

@@ -7,6 +7,7 @@ const ONLINE_TTL_MS = 10 * 60 * 1000;
 export type OnlineSortMode = 'level' | 'name';
 
 type PresenceEntry = {
+  characterId: string;
   name: string;
   level: number;
   cityId: string;
@@ -30,10 +31,11 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
-    select: { name: true, level: true, cityId: true },
+    select: { id: true, name: true, level: true, cityId: true },
   });
   const labels = resolveCityLabels(row?.cityId ?? '');
   return {
+    characterId: row?.id?.trim() || '',
     name: row?.name?.trim() || '—',
     level: row?.level != null ? Number(row.level) : 1,
     cityId: row?.cityId?.trim() || '',
@@ -52,6 +54,7 @@ export async function touchOnlinePresence(userId: string): Promise<void> {
 }
 
 export type OnlinePresencePlayer = {
+  characterId: string;
   name: string;
   level: number;
   cityId: string;
@@ -99,6 +102,7 @@ export function getOnlinePresenceSnapshot(
   for (const entry of byUserId.values()) {
     if (now - entry.lastSeenMs <= ONLINE_TTL_MS) {
       players.push({
+        characterId: entry.characterId,
         name: entry.name,
         level: entry.level,
         cityId: entry.cityId,
