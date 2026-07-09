@@ -7,18 +7,72 @@
   var L2 = global.L2 || (global.L2 = {});
 
   var ASSETS = '/assets/l2dop';
+  var NAV_ICON = '/assets/assets/';
 
   var TOP = [];
 
   var BOTTOM = [
-    { glyph: '📜', href: null, stubKey: 'nav_mail', i18nKey: 'nav_mail', i18nTitleKey: 'nav_mail_title', lbl: 'p1' },
-    { glyph: '💬', href: null, stubKey: 'nav_chat', i18nKey: 'nav_chat', i18nTitleKey: 'nav_chat_title', lbl: 'p2' },
-    { glyph: '📜', href: null, stubKey: 'foot_forum', i18nKey: 'foot_forum', title: 'Форум', label: 'Форум', lbl: 'p3' },
-    { glyph: '👑', href: null, stubKey: 'nav_clan', i18nKey: 'nav_clan', i18nTitleKey: 'nav_clan_title', lbl: 'p4' },
-    { glyph: '✨', href: '/city.html', i18nKey: 'nav_town', i18nTitleKey: 'nav_town_title', title: 'Місто', label: 'Місто', lbl: 'p5' },
-    { glyph: '🛡️', href: '/char.html', i18nKey: 'nav_inventory', i18nTitleKey: 'nav_inventory_title', title: 'Інвентар', label: 'Інвентар', lbl: 'p6' },
-    { glyph: '👤', href: '/pers.html', i18nKey: 'nav_profile', i18nTitleKey: 'nav_profile_title', title: 'Персонаж', label: 'Персонаж', lbl: 'p7' },
-    { glyph: '🏠', href: '/menu.html', i18nKey: 'nav_menu', i18nTitleKey: 'nav_menu_title', title: 'Меню', label: 'Меню', lbl: 'p8' },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-52-52.jpg',
+      href: null,
+      stubKey: 'nav_mail',
+      i18nKey: 'nav_mail',
+      i18nTitleKey: 'nav_mail_title',
+      lbl: 'p1',
+    },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-52-37.jpg',
+      href: null,
+      stubKey: 'nav_chat',
+      i18nKey: 'nav_chat',
+      i18nTitleKey: 'nav_chat_title',
+      lbl: 'p2',
+    },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-53-06.jpg',
+      href: null,
+      stubKey: 'foot_forum',
+      i18nKey: 'foot_forum',
+      title: 'Форум',
+      label: 'Форум',
+      lbl: 'p3',
+    },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-52-44.jpg',
+      href: null,
+      stubKey: 'nav_clan',
+      i18nKey: 'nav_clan',
+      i18nTitleKey: 'nav_clan_title',
+      lbl: 'p4',
+    },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-53-23.jpg',
+      href: '/city.html',
+      i18nKey: 'nav_town',
+      i18nTitleKey: 'nav_town_title',
+      lbl: 'p5',
+    },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-52-47.jpg',
+      href: '/char.html',
+      i18nKey: 'nav_inventory',
+      i18nTitleKey: 'nav_inventory_title',
+      lbl: 'p6',
+    },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-52-47.jpg',
+      href: '/pers.html',
+      i18nKey: 'nav_profile',
+      i18nTitleKey: 'nav_profile_title',
+      lbl: 'p7',
+    },
+    {
+      iconPath: NAV_ICON + 'photo_2026-07-05_12-52-52.jpg',
+      href: '/menu.html',
+      i18nKey: 'nav_menu',
+      i18nTitleKey: 'nav_menu_title',
+      lbl: 'p8',
+    },
   ];
 
   var mounted = false;
@@ -42,22 +96,21 @@
     var span = document.createElement('span');
     span.className = 'l2-wap-lbl l2-wap-lbl--' + item.lbl;
     span.textContent = item.i18nKey && L2.tr ? L2.tr(item.i18nKey) : item.label || '';
-    if (item.glyph) {
-      var glyph = document.createElement('span');
-      glyph.className = 'l2-wap-glyph';
-      glyph.setAttribute('aria-hidden', 'true');
-      glyph.textContent = item.glyph;
-      a.appendChild(glyph);
-    }
     var hasIcon =
       (typeof item.iconPath === 'string' && item.iconPath.length > 0) ||
       (typeof item.icon === 'string' && item.icon.length > 0);
     if (hasIcon) {
       var img = document.createElement('img');
+      img.className = 'l2-wap-ico';
       img.src = item.iconPath ? item.iconPath : ASSETS + '/' + item.icon;
-      img.width = 32;
-      img.height = 32;
+      img.width = 16;
+      img.height = 16;
       img.alt = '';
+      img.decoding = 'async';
+      img.addEventListener('error', function onIcoErr() {
+        img.removeEventListener('error', onIcoErr);
+        img.src = '/icons/drops/other.svg';
+      });
       a.appendChild(img);
     }
     a.appendChild(span);
