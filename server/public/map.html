@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+п»ї<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Карта — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260708mapClsHold1" />
+    <title>РљР°СЂС‚Р° вЂ” L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260708mapClsHold1" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=24" />
@@ -64,12 +64,12 @@
             <p class="l2-map-hint" id="map-hint-line" hidden></p>
 
             <div id="map-stack">
-              <div class="l2-map-viewport" id="map-viewport" aria-label="Вікно карти — прокрутка або перетягування">
-                <div class="l2-map-zoom-btns" role="toolbar" aria-label="Масштаб карти">
-                  <button type="button" class="l2-map-zoom-square" id="map-zoom-out" aria-label="Зменшити карту">
-                    ?
+              <div class="l2-map-viewport" id="map-viewport" aria-label="Р’С–РєРЅРѕ РєР°СЂС‚Рё вЂ” РїСЂРѕРєСЂСѓС‚РєР° Р°Р±Рѕ РїРµСЂРµС‚СЏРіСѓРІР°РЅРЅСЏ">
+                <div class="l2-map-zoom-btns" role="toolbar" aria-label="РњР°СЃС€С‚Р°Р± РєР°СЂС‚Рё">
+                  <button type="button" class="l2-map-zoom-square" id="map-zoom-out" aria-label="Р—РјРµРЅС€РёС‚Рё РєР°СЂС‚Сѓ">
+                    в€’
                   </button>
-                  <button type="button" class="l2-map-zoom-square" id="map-zoom-in" aria-label="Збільшити карту">
+                  <button type="button" class="l2-map-zoom-square" id="map-zoom-in" aria-label="Р—Р±С–Р»СЊС€РёС‚Рё РєР°СЂС‚Сѓ">
                     +
                   </button>
                 </div>
@@ -78,7 +78,7 @@
                     id="map-img"
                     class="l2-map-img"
                     src="/assets/maps/aden2.jpg"
-                    alt="Карта світу (як у l2dop: img/aden2.jpg)"
+                    alt="РљР°СЂС‚Р° СЃРІС–С‚Сѓ (СЏРє Сѓ l2dop: img/aden2.jpg)"
                     width="1812"
                     height="2620"
                     draggable="false"
@@ -89,21 +89,21 @@
                 </div>
               </div>
 
-              <section class="l2-map-mob-section" id="map-mob-section" aria-label="Моби в околицях">
+              <section class="l2-map-mob-section" id="map-mob-section" aria-label="РњРѕР±Рё РІ РѕРєРѕР»РёС†СЏС…">
                 <button
                   type="button"
                   class="l2-map-mob-title l2-map-mob-title--tap-full"
                   id="map-mob-open-detail"
-                  aria-label="Моби в околицях. Відкрити повний список мобів у зоні"
+                  aria-label="РњРѕР±Рё РІ РѕРєРѕР»РёС†СЏС…. Р’С–РґРєСЂРёС‚Рё РїРѕРІРЅРёР№ СЃРїРёСЃРѕРє РјРѕР±С–РІ Сѓ Р·РѕРЅС–"
                 >
-                  Моби в околицях
+                  РњРѕР±Рё РІ РѕРєРѕР»РёС†СЏС…
                 </button>
                 <div class="l2-map-mob-pager l2-map-mob-pager--top" id="map-mob-pager" hidden>
-                  <button type="button" class="l2-map-mob-page-btn" id="map-mob-page-prev" aria-label="Попередня сторінка">
+                  <button type="button" class="l2-map-mob-page-btn" id="map-mob-page-prev" aria-label="РџРѕРїРµСЂРµРґРЅСЏ СЃС‚РѕСЂС–РЅРєР°">
                     &lt;
                   </button>
                   <span class="l2-map-mob-page-ind" id="map-mob-page-ind" aria-live="polite"></span>
-                  <button type="button" class="l2-map-mob-page-btn" id="map-mob-page-next" aria-label="Наступна сторінка">
+                  <button type="button" class="l2-map-mob-page-btn" id="map-mob-page-next" aria-label="РќР°СЃС‚СѓРїРЅР° СЃС‚РѕСЂС–РЅРєР°">
                     &gt;
                   </button>
                 </div>
@@ -112,19 +112,19 @@
             </div>
 
             <div class="l2-map-mob-detail" id="map-mob-detail" hidden>
-              <p class="l2-map-detail-head" id="map-detail-head">Моби поруч</p>
+              <p class="l2-map-detail-head" id="map-detail-head">РњРѕР±Рё РїРѕСЂСѓС‡</p>
               <ul class="l2-map-mob-list l2-map-mob-list-detail" id="map-mob-detail-list"></ul>
               <div class="l2-map-mob-pager" id="map-mob-detail-pager" hidden>
-                <button type="button" class="l2-map-mob-page-btn" id="map-mob-detail-prev" aria-label="Попередня сторінка">
+                <button type="button" class="l2-map-mob-page-btn" id="map-mob-detail-prev" aria-label="РџРѕРїРµСЂРµРґРЅСЏ СЃС‚РѕСЂС–РЅРєР°">
                   &lt;
                 </button>
                 <span class="l2-map-mob-page-ind" id="map-mob-detail-ind" aria-live="polite"></span>
-                <button type="button" class="l2-map-mob-page-btn" id="map-mob-detail-next" aria-label="Наступна сторінка">
+                <button type="button" class="l2-map-mob-page-btn" id="map-mob-detail-next" aria-label="РќР°СЃС‚СѓРїРЅР° СЃС‚РѕСЂС–РЅРєР°">
                   &gt;
                 </button>
               </div>
               <button type="button" class="l2-map-back-btn" id="map-back-to-map">
-                До карти
+                Р”Рѕ РєР°СЂС‚Рё
               </button>
             </div>
 
@@ -143,38 +143,38 @@
       aria-modal="true"
       aria-labelledby="map-mob-modal-title"
     >
-      <button type="button" class="l2-map-mob-modal__backdrop" id="map-mob-modal-backdrop" aria-label="Закрити"></button>
+      <button type="button" class="l2-map-mob-modal__backdrop" id="map-mob-modal-backdrop" aria-label="Р—Р°РєСЂРёС‚Рё"></button>
       <div class="l2-map-mob-modal__panel">
-        <button type="button" class="l2-map-mob-modal__close" id="map-mob-modal-close" aria-label="Закрити">
-          ?
+        <button type="button" class="l2-map-mob-modal__close" id="map-mob-modal-close" aria-label="Р—Р°РєСЂРёС‚Рё">
+          Г—
         </button>
         <div class="l2-map-mob-modal__head">
           <img id="map-mob-modal-icon" class="l2-map-mob-modal__icon" width="40" height="40" alt="" />
           <div>
-            <h3 id="map-mob-modal-title" class="l2-map-mob-modal__title">—</h3>
+            <h3 id="map-mob-modal-title" class="l2-map-mob-modal__title">вЂ”</h3>
             <p id="map-mob-modal-sub" class="l2-map-mob-modal__sub"></p>
           </div>
         </div>
         <div class="l2-map-mob-modal__section">
-          <div class="l2-map-mob-modal__sec-title">Параметри (бій)</div>
+          <div class="l2-map-mob-modal__sec-title">РџР°СЂР°РјРµС‚СЂРё (Р±С–Р№)</div>
           <dl class="l2-map-mob-modal__stats" id="map-mob-modal-stats"></dl>
         </div>
         <div class="l2-map-mob-modal__section">
-          <div class="l2-map-mob-modal__sec-title">Дроп (l2dop)</div>
+          <div class="l2-map-mob-modal__sec-title">Р”СЂРѕРї (l2dop)</div>
           <div id="map-mob-modal-drops" class="l2-map-mob-modal__drops"></div>
         </div>
         <div class="l2-map-mob-modal__section">
-          <div class="l2-map-mob-modal__sec-title">Спойл</div>
+          <div class="l2-map-mob-modal__sec-title">РЎРїРѕР№Р»</div>
           <div id="map-mob-modal-spoil" class="l2-map-mob-modal__drops"></div>
         </div>
         <p id="map-mob-modal-note" class="l2-map-mob-modal__note" hidden></p>
-        <a id="map-mob-modal-battle" class="l2-map-mob-modal__battle" href="#">У бій</a>
+        <a id="map-mob-modal-battle" class="l2-map-mob-modal__battle" href="#">РЈ Р±С–Р№</a>
       </div>
     </div>
 
     <script src="/common.js?v=20260709perf2"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260709chat1"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/map.js?v=20260708mapFastFirst2"></script>
   </body>
 </html>
