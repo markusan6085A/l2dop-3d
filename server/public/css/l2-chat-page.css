@@ -253,6 +253,11 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__reply-to {
   font-weight: 400;
 }
 
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__reply-to--me {
+  color: #6eb5ff;
+  font-weight: 600;
+}
+
 body.l2-app-l2-chrome.l2-page-chat .l2-city-stub-msg {
   margin: 0 0 8px;
 }
