@@ -628,6 +628,9 @@
     return out;
   }
 
+  /** Запас на межі КД: UI «готово» лише коли лишилось ≤ 0.2с (сервер ще тримає КД). */
+  var SKILL_CD_UI_RESERVE_MS = 200;
+
   /**
    * @param {{ container: HTMLElement, getBattle: function(): object, getCharacter: function(): object, setCharacter: function(c: object): void, onBattleAction: function(actionId: string): void, onFighterSoulshotToggle?: function(itemId: number): void, onMysticSpiritshotToggle?: function(itemId: number): void, onBattlePotionUse?: function(itemId: number): void, getToken: function(): string|null, showToast: function(msg: string): void }} opts
    */
@@ -648,39 +651,54 @@
       }
     }
 
-    /** КД: `cooldownSec` з battle.skills + `mysticSkillCdUntil` (ключі `l2_<id>` або дія для сумісності). */
+    /** КД: `cooldownSec` з battle.skills + `mysticSkillCdUntil` (ключі `l2_<id>` або дія). */
+    function mysticCdUntilForAction(m, aid, l2SkillId) {
+      if (!m || typeof m !== 'object') return null;
+      var until = m[aid];
+      if (typeof until === 'number' && Number.isFinite(until)) return until;
+      if (typeof l2SkillId === 'number' && l2SkillId > 0) {
+        until = m['l2_' + Math.floor(l2SkillId)];
+        if (typeof until === 'number' && Number.isFinite(until)) return until;
+      }
+      if (ACTION_L2_ICON[aid] != null) {
+        until = m['l2_' + ACTION_L2_ICON[aid]];
+        if (typeof until === 'number' && Number.isFinite(until)) return until;
+      }
+      return null;
+    }
+
     function skillCooldownMeta(battle, actionId) {
       if (!battle) return null;
       var aid = canonicalBattleActionId(actionId);
-      var skills = filterBattleSkillsForUi((battle.skills) || []);
+      var skills = filterBattleSkillsForUi(battle.skills || []);
       var cdSec = null;
+      var rowL2 = null;
       for (var i = 0; i < skills.length; i++) {
-        if (
-          battleSkillRowMatchesAction(skills[i].id, aid) &&
-          typeof skills[i].cooldownSec === 'number' &&
-          skills[i].cooldownSec > 0
-        ) {
-          cdSec = skills[i].cooldownSec;
+        if (battleSkillRowMatchesAction(skills[i].id, aid)) {
+          if (
+            typeof skills[i].cooldownSec === 'number' &&
+            skills[i].cooldownSec > 0
+          ) {
+            cdSec = skills[i].cooldownSec;
+          }
+          if (typeof skills[i].l2SkillId === 'number' && skills[i].l2SkillId > 0) {
+            rowL2 = skills[i].l2SkillId;
+          }
           break;
         }
       }
       if (cdSec == null && aid === 'zealot') {
         cdSec = 900;
       }
-      if (cdSec == null) return null;
-      var m = battle.mysticSkillCdUntil;
-      if (!m || typeof m !== 'object') return null;
-      var until = m[aid];
-      if ((typeof until !== 'number' || !Number.isFinite(until)) && ACTION_L2_ICON[aid] != null) {
-        until = m['l2_' + ACTION_L2_ICON[aid]];
-      }
+      var until = mysticCdUntilForAction(battle.mysticSkillCdUntil, aid, rowL2);
       if (typeof until !== 'number' || !Number.isFinite(until)) return null;
-      /**
-       * На межі КД (останні ~50мс) не тримаємо оверлей, щоб UX збігався
-       * з серверною перевіркою і не було раннього "готово".
-       */
-      if (until - Date.now() <= 50) return null;
-      return { until: until, cdMs: cdSec * 1000 };
+      var remMs = until - Date.now();
+      if (remMs <= SKILL_CD_UI_RESERVE_MS) return null;
+      var cdMs =
+        cdSec != null && cdSec > 0
+          ? cdSec * 1000
+          : Math.max(remMs, 1000);
+      return { until: until, cdMs: cdMs };
     }
 
     /**
@@ -706,7 +724,7 @@
         return false;
       }
       var remMs = meta.until - tnow;
-      if (remMs <= 0) {
+      if (remMs <= SKILL_CD_UI_RESERVE_MS) {
         cdRoot.hidden = true;
         return false;
       }
@@ -720,18 +738,16 @@
         deg +
         'deg)';
       shortEl.hidden = false;
-      if (remMs >= 1000) {
-        longEl.textContent = String(Math.max(1, Math.ceil(remMs / 1000)));
-        longEl.hidden = false;
-      } else {
-        longEl.hidden = true;
-      }
+      /* Цілі секунди на іконці (2 → 1), останні 0.2с — лише «запас», без «0». */
+      var displaySec = Math.max(1, Math.ceil(remMs / 1000));
+      longEl.textContent = String(displaySec);
+      longEl.hidden = false;
       return true;
     }
 
     function startCdTicker(wrap) {
       clearCdTimer();
-      if (!wrap || !wrap.querySelector('[data-slot-cd]')) return;
+      if (!wrap) return;
       function tick() {
         var battleNow = opts.getBattle();
         if (!battleNow) {
@@ -1024,9 +1040,9 @@
       btn.setAttribute('data-slot-idx', String(idx));
 
       if (slot.k === 'a') {
+        var actId = canonicalBattleActionId(slot.a);
         var wrapI = document.createElement('span');
         wrapI.className = 'l2-battle-hotbar-slot-iconwrap';
-        var actId = canonicalBattleActionId(slot.a);
         var imgA = document.createElement('img');
         imgA.className = 'l2-battle-hotbar-slot-img';
         imgA.alt = '';
@@ -1037,21 +1053,22 @@
         imgA.addEventListener('error', function () {
           imgA.src = '/icons/drops/other.svg';
         });
-        wrapI.appendChild(imgA);
         var metaCd = skillCooldownMeta(battle, slot.a);
+        var cdEl = document.createElement('span');
+        cdEl.className = 'l2-battle-hotbar-slot-cd';
+        cdEl.setAttribute('data-slot-cd', actId);
+        cdEl.hidden = true;
+        var cdShort = document.createElement('span');
+        cdShort.className = 'l2-battle-hotbar-slot-cd__short';
+        cdShort.setAttribute('aria-hidden', 'true');
+        var cdLong = document.createElement('span');
+        cdLong.className = 'l2-battle-hotbar-slot-cd__long';
+        cdEl.appendChild(cdShort);
+        cdEl.appendChild(cdLong);
+        wrapI.appendChild(imgA);
+        wrapI.appendChild(cdEl);
         if (metaCd) {
-          var cdEl = document.createElement('span');
-          cdEl.className = 'l2-battle-hotbar-slot-cd';
-          cdEl.setAttribute('data-slot-cd', actId);
-          var cdShort = document.createElement('span');
-          cdShort.className = 'l2-battle-hotbar-slot-cd__short';
-          cdShort.setAttribute('aria-hidden', 'true');
-          var cdLong = document.createElement('span');
-          cdLong.className = 'l2-battle-hotbar-slot-cd__long';
-          cdEl.appendChild(cdShort);
-          cdEl.appendChild(cdLong);
           applySkillCdOverlay(cdEl, metaCd, Date.now());
-          wrapI.appendChild(cdEl);
         }
         btn.appendChild(wrapI);
         if (!allowed[actId]) {
@@ -1301,23 +1318,26 @@
           var wrapI = btn.querySelector('.l2-battle-hotbar-slot-iconwrap');
           var metaCd = skillCooldownMeta(battle, slot.a);
           var cdEl = btn.querySelector('[data-slot-cd]');
-          if (metaCd) {
-            if (!cdEl && wrapI) {
-              cdEl = document.createElement('span');
-              cdEl.className = 'l2-battle-hotbar-slot-cd';
-              cdEl.setAttribute('data-slot-cd', actId);
-              var cdShort = document.createElement('span');
-              cdShort.className = 'l2-battle-hotbar-slot-cd__short';
-              cdShort.setAttribute('aria-hidden', 'true');
-              var cdLong = document.createElement('span');
-              cdLong.className = 'l2-battle-hotbar-slot-cd__long';
-              cdEl.appendChild(cdShort);
-              cdEl.appendChild(cdLong);
-              wrapI.appendChild(cdEl);
+          if (!cdEl && wrapI) {
+            cdEl = document.createElement('span');
+            cdEl.className = 'l2-battle-hotbar-slot-cd';
+            cdEl.setAttribute('data-slot-cd', actId);
+            cdEl.hidden = true;
+            var cdShort = document.createElement('span');
+            cdShort.className = 'l2-battle-hotbar-slot-cd__short';
+            cdShort.setAttribute('aria-hidden', 'true');
+            var cdLong = document.createElement('span');
+            cdLong.className = 'l2-battle-hotbar-slot-cd__long';
+            cdEl.appendChild(cdShort);
+            cdEl.appendChild(cdLong);
+            wrapI.appendChild(cdEl);
+          }
+          if (cdEl) {
+            if (metaCd) {
+              applySkillCdOverlay(cdEl, metaCd, Date.now());
+            } else {
+              cdEl.hidden = true;
             }
-            if (cdEl) applySkillCdOverlay(cdEl, metaCd, Date.now());
-          } else if (cdEl) {
-            cdEl.remove();
           }
         } else if (slot.k === 'u') {
           btn.className = 'l2-battle-hotbar-slot';
