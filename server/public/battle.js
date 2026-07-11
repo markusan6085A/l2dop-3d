@@ -1623,15 +1623,17 @@
       }
       var vHuntBtn = $('battle-victory-hunt');
       var vContBtn = $('battle-victory-continue');
-      if (vHuntBtn) {
-        vHuntBtn.hidden = false;
-        vHuntBtn.disabled = false;
-        vHuntBtn.classList.add('l2-battle-victory-link--primary');
-        vHuntBtn.classList.remove('l2-battle-victory-link--muted');
-      }
       if (vContBtn) {
         vContBtn.hidden = false;
         vContBtn.disabled = false;
+        vContBtn.classList.add('l2-battle-victory-link--primary');
+        vContBtn.classList.remove('l2-battle-victory-link--muted');
+      }
+      if (vHuntBtn) {
+        vHuntBtn.hidden = false;
+        vHuntBtn.disabled = false;
+        vHuntBtn.classList.remove('l2-battle-victory-link--primary');
+        vHuntBtn.classList.add('l2-battle-victory-link--muted');
       }
     }
 
@@ -1773,7 +1775,8 @@
     if (vCont) {
       vCont.addEventListener('click', function () {
         runWithBattleNavLock(async function () {
-          if (huntChainActive) return;
+          huntChainActive = false;
+          saveVictoryToSession(null);
           await goToMap();
         });
       });
