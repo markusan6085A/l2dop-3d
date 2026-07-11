@@ -123,6 +123,16 @@
       var m = messages[i];
       var item = document.createElement('article');
       item.className = 'l2-chat-msg';
+      var charId = String(m.characterId || '');
+      var isMine = !!(myCharacterId && charId && charId === myCharacterId);
+      if (isMine) item.classList.add('l2-chat-msg--mine');
+      if (i > 0) {
+        var prev = messages[i - 1];
+        var prevId = String(prev && prev.characterId ? prev.characterId : '');
+        if (charId && prevId && charId !== prevId) {
+          item.classList.add('l2-chat-msg--author-break');
+        }
+      }
 
       var head = document.createElement('div');
       head.className = 'l2-chat-msg__head';

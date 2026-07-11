@@ -118,6 +118,23 @@
     setOnlineStatusText(isOnline, c.lastUpdate);
   }
 
+  function formatRegisteredUk(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '—';
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var yyyy = d.getFullYear();
+    return dd + '.' + mm + '.' + yyyy;
+  }
+
+  function applyRegistered(c) {
+    var regEl = $('character-registered');
+    if (!regEl) return;
+    var iso = c && (c.registeredAt || c.lastUpdate);
+    regEl.textContent = 'Рег-я: ' + formatRegisteredUk(iso);
+  }
+
   function applyProfile(c) {
     var nickEl = $('character-nick');
     var statusEl = $('character-status');
@@ -265,6 +282,7 @@
       applyStats(c);
       applySocial(c);
       applyOnlineStatus(c);
+      applyRegistered(c);
       if (c && window.L2CharHero && typeof L2CharHero.renderPortrait === 'function') {
         L2CharHero.renderPortrait(c);
       }

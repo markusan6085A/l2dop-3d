@@ -160,7 +160,7 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-social-actions {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  margin: 0 0 12px;
+  margin: 0 0 8px;
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-social-actions__btn {
@@ -231,6 +231,31 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__gap {
   padding: 0;
 }
 
+body.l2-app-l2-chrome.l2-page-player .l2-player-online {
+  margin: 0 0 2px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-online--online {
+  color: #3db838;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-online--offline {
+  color: #a8a4a0;
+  font-weight: 500;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-registered {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #a8a4a0;
+}
+
 body.l2-app-l2-chrome.l2-page-player .l2-player-location {
   margin: 0 0 10px;
   padding: 0;
@@ -243,11 +268,7 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-panel__rule {
   margin: 0 0 8px;
 }
 
-body.l2-app-l2-chrome.l2-page-player .l2-player-registered {
-  margin: 0 0 8px;
-  padding: 0;
-  font-size: 12px;
-  line-height: 1.35;
+body.l2-app-l2-chrome.l2-page-player .l2-player-registered.l2-player-registered--legacy-bottom {
   color: #fff;
 }
 

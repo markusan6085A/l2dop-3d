@@ -1,5 +1,6 @@
 import { MAP_TOWNS } from '../data/mapLocalities.js';
 import { prisma } from '../lib/prisma.js';
+import { isCharacterOnlineNow } from './onlinePresenceService.js';
 
 export type PlayerPublicProfileDto = {
   id: string;
@@ -20,6 +21,9 @@ export type PlayerPublicProfileDto = {
   mobsKilled: number;
   pvpWins: number;
   pvpLosses: number;
+  /** ISO — остання активність (для «був у мережі …»). */
+  lastSeenAt: string;
+  isOnline: boolean;
   registeredAt: string;
 };
 
@@ -75,6 +79,8 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
     mobsKilled: Math.max(0, Math.floor(Number(row.mobsKilled) || 0)),
     pvpWins: 0,
     pvpLosses: 0,
+    lastSeenAt: row.lastUpdate.toISOString(),
+    isOnline: isCharacterOnlineNow(row.id),
     registeredAt: row.lastUpdate.toISOString(),
   };
 }

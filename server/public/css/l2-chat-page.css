@@ -107,14 +107,14 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-actions-sep {
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   margin: 0;
   padding: 0;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty {
   margin: 0;
-  padding: 8px 0;
+  padding: 4px 0;
   font-size: 12px;
   line-height: 1.35;
   color: #c8c0b0;
@@ -122,8 +122,16 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty {
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg {
   margin: 0;
-  padding: 0 0 6px;
+  padding: 0;
   border-bottom: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg--author-break {
+  margin-top: 2mm;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg--mine {
+  margin-bottom: 1mm;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__head {
@@ -131,9 +139,9 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__head {
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-  margin: 0 0 2px;
+  margin: 0;
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.25;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__ico {
@@ -188,7 +196,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
   margin: 0;
   padding: 0 0 0 18px;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.3;
   color: #fff;
   word-break: break-word;
 }

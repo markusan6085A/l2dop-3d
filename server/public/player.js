@@ -16,6 +16,38 @@
     return dd + '.' + mm + '.' + yyyy;
   }
 
+  function formatLastSeenUk(iso) {
+    if (!iso) return 'Офлайн';
+    var then = Date.parse(String(iso));
+    if (!Number.isFinite(then)) return 'Офлайн';
+    var diffMs = Math.max(0, Date.now() - then);
+    var sec = Math.floor(diffMs / 1000);
+    if (sec < 45) return 'був у мережі щойно';
+    var min = Math.floor(sec / 60);
+    if (min < 60) return 'був у мережі ' + min + ' хв тому';
+    var hr = Math.floor(min / 60);
+    var minRem = min % 60;
+    if (hr < 24) {
+      if (minRem === 0) return 'був у мережі ' + hr + ' год тому';
+      return 'був у мережі ' + hr + ' год ' + minRem + ' хв тому';
+    }
+    var days = Math.floor(hr / 24);
+    return 'був у мережі ' + days + ' дн тому';
+  }
+
+  function applyOnlineLine(p) {
+    var el = $('player-online-text');
+    if (!el || !p) return;
+    el.classList.remove('l2-player-online--online', 'l2-player-online--offline');
+    if (p.isOnline) {
+      el.textContent = 'Онлайн';
+      el.classList.add('l2-player-online--online');
+      return;
+    }
+    el.textContent = formatLastSeenUk(p.lastSeenAt || p.registeredAt);
+    el.classList.add('l2-player-online--offline');
+  }
+
   function profileApiUrl() {
     var params = new URLSearchParams(window.location.search);
     var id = params.get('id');
@@ -86,6 +118,8 @@
       var city = p.cityLabelUk || p.cityId || '—';
       locEl.textContent = 'У ' + city;
     }
+
+    applyOnlineLine(p);
 
     var regEl = $('player-registered');
     if (regEl) {

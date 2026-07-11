@@ -228,6 +228,14 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-online__text--offline {
   font-weight: 500;
 }
 
+body.l2-app-l2-chrome.l2-page-character .l2-character-registered {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #a8a4a0;
+}
+
 body.l2-app-l2-chrome.l2-page-character .l2-character-social-title {
   margin: 12px 0 6px;
   padding: 0;

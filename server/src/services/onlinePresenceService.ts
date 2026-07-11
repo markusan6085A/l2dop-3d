@@ -117,3 +117,17 @@ export function getOnlinePresenceSnapshot(
     players: sortPlayers(players, sort),
   };
 }
+
+/** Чи персонаж зараз у списку онлайн (TTL 10 хв). */
+export function isCharacterOnlineNow(characterId: string): boolean {
+  const id = String(characterId || '').trim();
+  if (!id) return false;
+  const now = Date.now();
+  pruneExpired(now);
+  for (const entry of byUserId.values()) {
+    if (entry.characterId === id && now - entry.lastSeenMs <= ONLINE_TTL_MS) {
+      return true;
+    }
+  }
+  return false;
+}

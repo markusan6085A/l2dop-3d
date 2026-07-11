@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711hudCp1" />
     <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711nickTone1" />
     <link rel="stylesheet" href="/css/l2-character-page.css?v=20260711nickTone1" />
-    <link rel="stylesheet" href="/css/l2-player-page.css?v=20260711hudFix2" />
+    <link rel="stylesheet" href="/css/l2-player-page.css?v=20260711playerOnline1" />
   </head>
   <body
     class="l2-body l2-page-city l2-page-player l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -110,6 +110,9 @@
                 </button>
               </div>
 
+              <p class="l2-player-online" id="player-online-text" aria-live="polite">—</p>
+              <p class="l2-player-registered" id="player-registered">Рег-я: —</p>
+
               <h2 class="l2-player-section-title">Соціальний статус</h2>
 
               <table class="l2-player-social-table" width="99%">
@@ -148,10 +151,6 @@
               </table>
 
               <p class="l2-player-location" id="player-location">—</p>
-
-              <hr class="l2-pers-rule l2-player-panel__rule" />
-
-              <p class="l2-player-registered" id="player-registered">Рег-я: —</p>
             </section>
 
             <p class="l2-city-stub-msg" id="player-stub-msg" hidden></p>
@@ -166,6 +165,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709chat1"></script>
     <script src="/charHeroPortrait.js?v=20260709darkElfMystic1"></script>
-    <script src="/player.js?v=20260709player1"></script>
+    <script src="/player.js?v=20260711playerOnline1"></script>
   </body>
 </html>
