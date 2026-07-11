@@ -7,6 +7,7 @@ import {
   castActiveSelfBuff,
   toggleSelfStance,
   applyTownBuffer,
+  applyTownRestoreVitals,
   GameConflictError,
 } from '../services/charService.js';
 import { learnSkillForUser } from '../services/skillLearnService.js';
@@ -98,6 +99,82 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         return reply.code(500).send({
           error: 'internal_error',
           messageUk: 'Не вдалося застосувати бафи міського бафера.',
+        });
+      }
+    }
+  );
+
+  app.post(
+    '/town/restore-vitals',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const raw = request.body;
+      if (!raw || typeof raw !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = raw as Record<string, unknown>;
+      const er = b.expectedRevision;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      try {
+        const res = await applyTownRestoreVitals(userId, er);
+        await logCharacterMutation(
+          request,
+          'town_restore_vitals',
+          er,
+          'ok',
+          res.character.revision
+        );
+        return reply.send({
+          character: res.character,
+          feeAdena: res.feeAdena,
+        });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          await logCharacterMutation(request, 'town_restore_vitals', er, 'conflict');
+          return reply.code(409).send({
+            error: 'revision_conflict',
+            messageUk: 'Дані застаріли — виконай синхронізацію.',
+          });
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'town_restore_not_enough_adena') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Недостатньо адени для відновлення.',
+          });
+        }
+        if (msg === 'town_restore_already_full') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'HP, MP і CP уже повні.',
+          });
+        }
+        if (msg === 'in_battle') {
+          return reply.code(400).send({
+            error: msg,
+            messageUk: 'Під час бою відновлення недоступне.',
+          });
+        }
+        if (msg === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        await logCharacterMutation(request, 'town_restore_vitals', er, 'error');
+        request.log.error({ err }, 'POST /character/town/restore-vitals');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося відновити HP, MP і CP.',
         });
       }
     }

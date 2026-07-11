@@ -44,12 +44,19 @@ body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-panel__lead {
 }
 
 body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-panel__stats {
-  margin: 0 0 12px;
+  margin: 0 0 6px;
   padding: 0;
   font-size: 12px;
   line-height: 1.5;
   color: #fff;
-  white-space: pre-line;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-panel__hint {
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #fff;
 }
 
 body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-colors {

@@ -1,7 +1,8 @@
 (function () {
   var FREE_MAX_LEVEL = 40;
   var FEE_ADENA = 140000;
-  var inFlight = false;
+  var applyInFlight = false;
+  var restoreInFlight = false;
   var SKILLS = [
     1036, 1040, 1045, 1048, 1059, 1062, 1068, 1077, 1085, 1086, 1240,
   ];
@@ -66,12 +67,12 @@
   }
 
   async function applyTownBuffer() {
-    if (inFlight) return;
+    if (applyInFlight) return;
     var t = localStorage.getItem('token');
     if (!t || !window.L2 || typeof L2.lastSnapshot !== 'function') return;
     var snap = L2.lastSnapshot();
     if (!snap || !snap.revision) return;
-    inFlight = true;
+    applyInFlight = true;
     try {
       setMsg('Застосування бафів...');
       var r = await fetch('/character/town/buffer', {
@@ -122,7 +123,68 @@
         setMsg('Бафи накладено. Списано ' + fee + ' адени.');
       }
     } finally {
-      inFlight = false;
+      applyInFlight = false;
+    }
+  }
+
+  async function applyTownRestore() {
+    if (restoreInFlight) return;
+    var t = localStorage.getItem('token');
+    if (!t || !window.L2 || typeof L2.lastSnapshot !== 'function') return;
+    var snap = L2.lastSnapshot();
+    if (!snap || !snap.revision) return;
+    restoreInFlight = true;
+    try {
+      setMsg('Відновлення HP, MP і CP...');
+      var r = await fetch('/character/town/restore-vitals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + t,
+        },
+        body: JSON.stringify({ expectedRevision: snap.revision }),
+      });
+      if (r.status === 409) {
+        var fresh = await loadCharacter();
+        if (fresh && fresh.character && window.L2) {
+          L2.setLastSnapshot(fresh.character);
+          if (typeof L2.applyHudFromSnapshot === 'function') {
+            L2.applyHudFromSnapshot(fresh.character);
+          }
+          renderFee(Number(fresh.character.level || 1));
+        }
+        setMsg('Конфлікт ревізії: синхронізовано, натисни ще раз.');
+        return;
+      }
+      var j = {};
+      try {
+        j = await r.json();
+      } catch (eJson) {
+        j = {};
+      }
+      if (!r.ok) {
+        setMsg(
+          j && j.messageUk
+            ? j.messageUk
+            : 'Не вдалося відновити HP, MP і CP.'
+        );
+        return;
+      }
+      if (j.character && window.L2) {
+        L2.setLastSnapshot(j.character);
+        if (typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(j.character);
+        }
+        renderFee(Number(j.character.level || 1));
+      }
+      var fee = j && j.feeAdena != null ? String(j.feeAdena) : '0';
+      if (fee === '0') {
+        setMsg('HP, MP і CP відновлено безкоштовно.');
+      } else {
+        setMsg('HP, MP і CP відновлено. Списано ' + fee + ' адени.');
+      }
+    } finally {
+      restoreInFlight = false;
     }
   }
 
@@ -168,6 +230,13 @@
     if (btn) {
       btn.addEventListener('click', function () {
         void applyTownBuffer();
+      });
+    }
+
+    var restoreBtn = $('town-buffer-restore-btn');
+    if (restoreBtn) {
+      restoreBtn.addEventListener('click', function () {
+        void applyTownRestore();
       });
     }
   }

@@ -8,6 +8,75 @@
   var SS_UI = 'drops-shop-ui';
   /** Повідомлення після успішної покупки (під заголовком грейду). */
   var lastPurchaseMsg = null;
+  var SHOP_PAGE_SIZE = 10;
+  var EPIC_SKIP = new Set([
+    'necklace of frintessa i00',
+    'necklace of valakas i00',
+    'earring of antaras i00',
+    'earring of zaken i00',
+    'earring orfen',
+    'ring of baium i00',
+    'ring of core i00',
+    'ring of queen ant',
+  ]);
+
+  function shopStatLabelTone(label) {
+    var s = String(label || '').trim().toLowerCase();
+    if (s === 'p.atk') return 'patk';
+    if (s === 'm.atk') return 'matk';
+    if (s === 'speed') return 'speed';
+    if (s === 'crit') return 'crit';
+    return 'default';
+  }
+
+  function appendShopRowStats(container, labelUk, valueUk) {
+    var label = labelUk != null ? String(labelUk).trim() : '';
+    var val = valueUk != null ? String(valueUk).trim() : '';
+    var raw = label ? label + ': ' + val : val;
+    var segments = raw.split('|');
+    for (var si = 0; si < segments.length; si++) {
+      if (si > 0) {
+        var sep = document.createElement('span');
+        sep.className = 'l2-gm-shop-stat-sep';
+        sep.textContent = ' | ';
+        container.appendChild(sep);
+      }
+      var chunk = segments[si].trim();
+      var ci = chunk.indexOf(':');
+      if (ci === -1) {
+        var plain = document.createElement('span');
+        plain.textContent = chunk;
+        container.appendChild(plain);
+        continue;
+      }
+      var lbl = chunk.slice(0, ci).trim();
+      var num = chunk.slice(ci + 1).trim();
+      var lblSpan = document.createElement('span');
+      lblSpan.className =
+        'l2-gm-shop-stat-lbl l2-gm-shop-stat-lbl--' + shopStatLabelTone(lbl);
+      lblSpan.textContent = lbl + ':';
+      var sp = document.createElement('span');
+      sp.className = 'l2-gm-shop-stat-sp';
+      sp.textContent = ' ';
+      var valSpan = document.createElement('span');
+      valSpan.className = 'l2-gm-shop-stat-val';
+      valSpan.textContent = num;
+      container.appendChild(lblSpan);
+      container.appendChild(sp);
+      container.appendChild(valSpan);
+    }
+  }
+
+  function filterEpicShopItems(items) {
+    var out = [];
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      var nameLc = String(it.nameUk || it.shopKey || '').trim().toLowerCase();
+      if (EPIC_SKIP.has(nameLc)) continue;
+      out.push(it);
+    }
+    return out;
+  }
 
   function setPurchaseCongrats(nameUk, qty) {
     var name = String(nameUk || 'предмет').trim();
@@ -734,20 +803,8 @@
     shopCategory
   ) {
     var rev = snap && snap.revision != null ? snap.revision : null;
-    var EPIC_SKIP = new Set([
-      'necklace of frintessa i00',
-      'necklace of valakas i00',
-      'earring of antaras i00',
-      'earring of zaken i00',
-      'earring orfen',
-      'ring of baium i00',
-      'ring of core i00',
-      'ring of queen ant',
-    ]);
     for (var ii = 0; ii < items.length; ii++) {
       (function (it) {
-        var nameLc = String(it.nameUk || it.shopKey || '').trim().toLowerCase();
-        if (EPIC_SKIP.has(nameLc)) return;
         var row = document.createElement('div');
         row.className = 'l2-gm-shop-row';
 
@@ -777,16 +834,16 @@
         if (it.statsPreview && it.statsPreview.lines && it.statsPreview.lines.length) {
           var statEl = document.createElement('div');
           statEl.className = 'l2-gm-shop-row-stat';
-          var statParts = [];
           for (var si = 0; si < it.statsPreview.lines.length; si++) {
             var ln = it.statsPreview.lines[si];
-            if (ln.labelUk) {
-              statParts.push(ln.labelUk + ': ' + ln.valueUk);
-            } else {
-              statParts.push(ln.valueUk);
+            if (si > 0) {
+              var dotSep = document.createElement('span');
+              dotSep.className = 'l2-gm-shop-stat-sep';
+              dotSep.textContent = ' · ';
+              statEl.appendChild(dotSep);
             }
+            appendShopRowStats(statEl, ln.labelUk, ln.valueUk);
           }
-          statEl.textContent = statParts.join(' · ');
           main.appendChild(statEl);
         }
         if (it.purchasable && it.priceAdena != null) {
@@ -963,6 +1020,58 @@
       CONSUMABLE_SUB_KEYS.indexOf(saved.csub) !== -1
         ? saved.csub
         : 'all';
+    var stateShopPage = 0;
+    var lastShopFilterKey = '';
+
+    function resetShopPageOnFilterChange() {
+      var filterKey = [
+        stateCat,
+        stateGrade,
+        stateWeaponSub,
+        stateArmorSub,
+        stateJewelrySub,
+        stateConsumableSub,
+      ].join('|');
+      if (filterKey !== lastShopFilterKey) {
+        stateShopPage = 0;
+        lastShopFilterKey = filterKey;
+      }
+    }
+
+    function appendShopPager(parent, totalItems) {
+      if (totalItems <= SHOP_PAGE_SIZE) return;
+      var totalPages = Math.ceil(totalItems / SHOP_PAGE_SIZE);
+      if (stateShopPage >= totalPages) stateShopPage = totalPages - 1;
+      if (stateShopPage < 0) stateShopPage = 0;
+
+      var pager = document.createElement('div');
+      pager.className = 'l2-gm-shop-pager l2-gm-shop-pager--arrow';
+      var prevBtn = document.createElement('button');
+      prevBtn.type = 'button';
+      prevBtn.className = 'l2-gm-shop-pager-btn';
+      prevBtn.textContent = '<';
+      prevBtn.setAttribute('aria-label', 'Попередня сторінка');
+      prevBtn.disabled = stateShopPage <= 0;
+      var nextBtn = document.createElement('button');
+      nextBtn.type = 'button';
+      nextBtn.className = 'l2-gm-shop-pager-btn';
+      nextBtn.textContent = '>';
+      nextBtn.setAttribute('aria-label', 'Наступна сторінка');
+      nextBtn.disabled = stateShopPage >= totalPages - 1;
+      prevBtn.addEventListener('click', function () {
+        if (stateShopPage <= 0) return;
+        stateShopPage -= 1;
+        paint();
+      });
+      nextBtn.addEventListener('click', function () {
+        if (stateShopPage >= totalPages - 1) return;
+        stateShopPage += 1;
+        paint();
+      });
+      pager.appendChild(prevBtn);
+      pager.appendChild(nextBtn);
+      parent.appendChild(pager);
+    }
 
     function filterWeaponItems(master, subKey) {
       if (
@@ -1313,9 +1422,15 @@
       titles.appendChild(sub);
       pane.appendChild(titles);
 
+      resetShopPageOnFilterChange();
+      items = filterEpicShopItems(items);
+      var totalListed = items.length;
+      var pageStart = stateShopPage * SHOP_PAGE_SIZE;
+      var pageItems = items.slice(pageStart, pageStart + SHOP_PAGE_SIZE);
+
       var list = document.createElement('div');
       list.className = 'l2-gm-shop-list';
-      if (!items.length) {
+      if (!totalListed) {
         var emptyIt = document.createElement('p');
         emptyIt.className = 'l2-drops-shop-empty';
         emptyIt.textContent = 'Немає позицій.';
@@ -1323,7 +1438,7 @@
       } else {
         addPurchaseRows(
           list,
-          items,
+          pageItems,
           snap,
           shopData,
           metaEl,
@@ -1332,6 +1447,7 @@
           stateCat
         );
         pane.appendChild(list);
+        appendShopPager(pane, totalListed);
       }
 
       syncMeta(metaEl, snap);

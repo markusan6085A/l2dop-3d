@@ -21,6 +21,7 @@ export { applyProfileStatus } from './charProfileStatusService.js';
 export { castActiveSelfBuff } from './castActiveSelfBuff.js';
 export { toggleSelfStance } from './toggleSelfStance.js';
 export { applyTownBuffer } from './townBufferService.js';
+export { applyTownRestoreVitals } from './townBufferRestoreService.js';
 export {
   performHunt,
   performMapMove,

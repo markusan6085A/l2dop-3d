@@ -51,37 +51,59 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
       }
       .l2-town-buffer-fee {
         margin: 0;
         font-size: 12px;
-        color: #c9b99a;
+        color: #fff;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
       }
-      .l2-town-buffer-apply-btn {
-        box-sizing: border-box;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 196px;
-        min-height: 32px;
+      .l2-town-buffer-text-btn {
+        margin: 0;
+        padding: 0 2px;
         border: 0;
-        padding: 6px 14px;
-        background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705buffer1512') center / 100% 100%
-          no-repeat;
-        color: #f0e6b8;
-        font: 600 12px/1.25 'Lora', Georgia, serif;
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        line-height: 1.35;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+        text-decoration: underline;
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
       }
-      .l2-town-buffer-apply-btn:hover:not(:disabled),
-      .l2-town-buffer-apply-btn:focus-visible:not(:disabled) {
-        filter: brightness(1.06);
+      .l2-town-buffer-text-btn--apply {
+        color: #5ec85e;
+      }
+      .l2-town-buffer-text-btn--apply:hover:not(:disabled),
+      .l2-town-buffer-text-btn--apply:focus-visible:not(:disabled) {
+        color: #7ee87e;
         outline: none;
       }
-      .l2-town-buffer-apply-btn:disabled {
-        filter: grayscale(0.35) brightness(0.85);
+      .l2-town-buffer-text-btn--restore {
+        color: #fff;
+        text-decoration: underline;
+      }
+      .l2-town-buffer-text-btn--restore:hover:not(:disabled),
+      .l2-town-buffer-text-btn--restore:focus-visible:not(:disabled) {
+        color: #fff;
+        outline: none;
+      }
+      .l2-town-buffer-restore-label,
+      .l2-town-buffer-restore-sep {
+        color: #e8dcc0;
+      }
+      .l2-town-buffer-vital--hp {
+        color: #c41818;
+      }
+      .l2-town-buffer-vital--mp {
+        color: #1e7ae8;
+      }
+      .l2-town-buffer-vital--cp {
+        color: #d4a020;
+      }
+      .l2-town-buffer-text-btn:disabled {
+        opacity: 0.45;
         cursor: default;
       }
       .l2-town-buffer-msg {
@@ -128,7 +150,10 @@
             <div class="l2-town-buffer-row" id="town-buffer-row"></div>
             <div class="l2-town-buffer-actions">
               <p class="l2-town-buffer-fee" id="town-buffer-fee">Ціна: —</p>
-              <button type="button" class="l2-town-buffer-apply-btn" id="town-buffer-apply-btn">Взяти баф</button>
+              <button type="button" class="l2-town-buffer-text-btn l2-town-buffer-text-btn--apply" id="town-buffer-apply-btn">Взяти баф</button>
+              <button type="button" class="l2-town-buffer-text-btn l2-town-buffer-text-btn--restore" id="town-buffer-restore-btn">
+                <span class="l2-town-buffer-restore-label">Відновити </span><span class="l2-town-buffer-vital l2-town-buffer-vital--hp">HP</span><span class="l2-town-buffer-restore-sep"> | </span><span class="l2-town-buffer-vital l2-town-buffer-vital--mp">MP</span><span class="l2-town-buffer-restore-sep"> | </span><span class="l2-town-buffer-vital l2-town-buffer-vital--cp">CP</span>
+              </button>
               <p class="l2-town-buffer-msg" id="town-buffer-msg"></p>
             </div>
           </section>
@@ -140,6 +165,6 @@
     <script src="/common.js?v=20260711nickTone3"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/town-buffer.js?v=20260510bufferpage1"></script>
+    <script src="/town-buffer.js?v=20260711bufferText1"></script>
   </body>
 </html>

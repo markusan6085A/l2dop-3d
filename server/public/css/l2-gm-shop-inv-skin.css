@@ -1,0 +1,294 @@
+/**
+ * gm-shop.html — таби як у сумці (char), текст «Купити», кольори статів/ціни.
+ */
+body.l2-app-l2-chrome.l2-page-gm-shop {
+  --l2-gm-shop-tab-text: #8c867b;
+  --l2-gm-shop-tab-text-hover: #9b9489;
+  --l2-gm-shop-tab-text-active: #a8a297;
+  --l2-gm-shop-tab-sep: #6a6358;
+  --l2-gm-shop-tab-font: 11px;
+  --l2-gm-shop-tab-gap: 5px;
+  --l2-gm-shop-stat-patk: #c41818;
+  --l2-gm-shop-stat-matk: #1e7ae8;
+  --l2-gm-shop-stat-speed: #9a9488;
+  --l2-gm-shop-stat-crit: #b060d0;
+  --l2-gm-shop-stat-val: #fff;
+  --l2-gm-shop-price-gold: #d4a020;
+  --l2-gm-shop-weapon-tab: #ffba00;
+  --l2-gm-shop-weapon-tab-active: #ffd040;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--l2-gm-shop-tab-gap) !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-bottom: none !important;
+  border-image: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  gap: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind {
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  flex-wrap: unset !important;
+  justify-content: stretch !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+  margin-bottom: 2px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  max-width: none !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 1px 4px !important;
+  border: 0 !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  font: inherit !important;
+  font-size: var(--l2-gm-shop-tab-font) !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+  color: var(--l2-gm-shop-tab-text) !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 2px 3px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  padding: 1px 3px !important;
+  color: var(--l2-gm-shop-weapon-tab) !important;
+  font-weight: 400 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab:hover,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab:focus,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab:hover,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab:focus {
+  color: var(--l2-gm-shop-weapon-tab-active) !important;
+  background: transparent !important;
+  filter: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab--active,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab--active {
+  color: var(--l2-gm-shop-weapon-tab-active) !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  filter: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab + .l2-drops-shop-tab::before,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab + .l2-drops-shop-tab::before {
+  content: '|' !important;
+  display: inline !important;
+  margin: 0 4px !important;
+  color: rgba(255, 186, 0, 0.55) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab + .l2-drops-shop-tab::before {
+  content: '|' !important;
+  display: inline !important;
+  margin: 0 4px !important;
+  color: var(--l2-gm-shop-tab-sep) !important;
+  font-weight: 400 !important;
+  pointer-events: none !important;
+}
+
+/* Броня/аксесуари/розхідники — сітка, без «|» */
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab::before,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab::before,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab::before {
+  content: none !important;
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab:hover,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab:focus {
+  background: transparent !important;
+  color: var(--l2-gm-shop-tab-text-hover) !important;
+  outline: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab--active {
+  background: transparent !important;
+  color: var(--l2-gm-shop-tab-text-active) !important;
+  font-weight: 600 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='NG'] {
+  color: #b8b0a4 !important;
+}
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='D'] {
+  color: #6a9a6a !important;
+}
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='C'] {
+  color: #6a8aaa !important;
+}
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='B'] {
+  color: #aa8a6a !important;
+}
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='A'] {
+  color: #c87840 !important;
+}
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='S'] {
+  color: #d4a020 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row .l2-gm-shop-buy {
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  font: inherit !important;
+  font-size: var(--l2-gm-shop-tab-font) !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+  color: var(--l2-gm-shop-tab-text) !important;
+  text-decoration: underline !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row .l2-gm-shop-buy:hover:not(:disabled),
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row .l2-gm-shop-buy:focus:not(:disabled),
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row .l2-gm-shop-buy:focus-visible:not(:disabled) {
+  background: transparent !important;
+  color: var(--l2-gm-shop-tab-text-hover) !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-price {
+  color: var(--l2-gm-shop-price-gold) !important;
+  font-size: 11px;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row-stat {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-sep {
+  color: var(--l2-gm-shop-tab-sep);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--patk {
+  color: var(--l2-gm-shop-stat-patk);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--matk {
+  color: var(--l2-gm-shop-stat-matk);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--speed {
+  color: var(--l2-gm-shop-stat-speed);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--crit {
+  color: var(--l2-gm-shop-stat-crit);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-val {
+  color: var(--l2-gm-shop-stat-val);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-pager--arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1cm;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-pager--arrow .l2-gm-shop-pager-btn {
+  min-width: 0;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--l2-gm-shop-tab-text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-pager--arrow .l2-gm-shop-pager-btn:hover:not(:disabled),
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-pager--arrow .l2-gm-shop-pager-btn:focus:not(:disabled) {
+  color: var(--l2-gm-shop-tab-text-hover);
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-pager--arrow .l2-gm-shop-pager-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  text-decoration: none;
+}
+
+@media (min-width: 380px) {
+  body.l2-app-l2-chrome.l2-page-gm-shop {
+    --l2-gm-shop-tab-font: 12px;
+  }
+}
