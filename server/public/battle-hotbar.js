@@ -643,11 +643,94 @@
     var slotsLoadedRevision = null;
     var cdTimer = null;
     var equipInFlight = false;
+    /** Локальний КД (optimistic + дзеркало сервера), ключі як у `mysticSkillCdUntil`. */
+    var localCdUntil = Object.create(null);
 
     function clearCdTimer() {
       if (cdTimer != null) {
         clearInterval(cdTimer);
         cdTimer = null;
+      }
+    }
+
+    function skillRowForAction(battle, actionId) {
+      if (!battle) return null;
+      var aid = canonicalBattleActionId(actionId);
+      var skills = filterBattleSkillsForUi(battle.skills || []);
+      for (var i = 0; i < skills.length; i++) {
+        if (battleSkillRowMatchesAction(skills[i].id, aid)) return skills[i];
+      }
+      return null;
+    }
+
+    function cdInfoForAction(battle, actionId) {
+      var aid = canonicalBattleActionId(actionId);
+      var row = skillRowForAction(battle, actionId);
+      var cdSec = null;
+      var rowL2 = null;
+      if (row) {
+        if (typeof row.cooldownSec === 'number' && row.cooldownSec > 0) {
+          cdSec = row.cooldownSec;
+        }
+        if (typeof row.l2SkillId === 'number' && row.l2SkillId > 0) {
+          rowL2 = row.l2SkillId;
+        }
+      }
+      if (cdSec == null && aid === 'zealot') cdSec = 900;
+      return { aid: aid, cdSec: cdSec, rowL2: rowL2 };
+    }
+
+    function stampLocalCd(aid, rowL2, untilMs) {
+      if (typeof untilMs !== 'number' || !Number.isFinite(untilMs)) return;
+      localCdUntil[aid] = untilMs;
+      if (typeof rowL2 === 'number' && rowL2 > 0) {
+        localCdUntil['l2_' + Math.floor(rowL2)] = untilMs;
+      }
+      if (ACTION_L2_ICON[aid] != null) {
+        localCdUntil['l2_' + ACTION_L2_ICON[aid]] = untilMs;
+      }
+    }
+
+    function mergedCdMap(battle) {
+      var out = Object.create(null);
+      var srv = battle && battle.mysticSkillCdUntil;
+      if (srv && typeof srv === 'object') {
+        for (var sk in srv) {
+          if (!Object.prototype.hasOwnProperty.call(srv, sk)) continue;
+          var sv = srv[sk];
+          if (typeof sv === 'number' && Number.isFinite(sv)) out[sk] = sv;
+        }
+      }
+      for (var lk in localCdUntil) {
+        if (!Object.prototype.hasOwnProperty.call(localCdUntil, lk)) continue;
+        var lv = localCdUntil[lk];
+        if (typeof lv !== 'number' || !Number.isFinite(lv)) continue;
+        if (typeof out[lk] !== 'number' || lv > out[lk]) out[lk] = lv;
+      }
+      return out;
+    }
+
+    function syncLocalCdFromBattle(battle) {
+      var srv = battle && battle.mysticSkillCdUntil;
+      if (!srv || typeof srv !== 'object') return;
+      var now = Date.now();
+      for (var k in srv) {
+        if (!Object.prototype.hasOwnProperty.call(srv, k)) continue;
+        var v = srv[k];
+        if (typeof v === 'number' && Number.isFinite(v) && v > now) {
+          if (typeof localCdUntil[k] !== 'number' || v > localCdUntil[k]) {
+            localCdUntil[k] = v;
+          }
+        }
+      }
+    }
+
+    function pruneLocalCd(now) {
+      for (var k in localCdUntil) {
+        if (!Object.prototype.hasOwnProperty.call(localCdUntil, k)) continue;
+        if (localCdUntil[k] <= now + SKILL_CD_UI_RESERVE_MS) {
+          delete localCdUntil[k];
+        }
       }
     }
 
@@ -669,28 +752,11 @@
 
     function skillCooldownMeta(battle, actionId) {
       if (!battle) return null;
-      var aid = canonicalBattleActionId(actionId);
-      var skills = filterBattleSkillsForUi(battle.skills || []);
-      var cdSec = null;
-      var rowL2 = null;
-      for (var i = 0; i < skills.length; i++) {
-        if (battleSkillRowMatchesAction(skills[i].id, aid)) {
-          if (
-            typeof skills[i].cooldownSec === 'number' &&
-            skills[i].cooldownSec > 0
-          ) {
-            cdSec = skills[i].cooldownSec;
-          }
-          if (typeof skills[i].l2SkillId === 'number' && skills[i].l2SkillId > 0) {
-            rowL2 = skills[i].l2SkillId;
-          }
-          break;
-        }
-      }
-      if (cdSec == null && aid === 'zealot') {
-        cdSec = 900;
-      }
-      var until = mysticCdUntilForAction(battle.mysticSkillCdUntil, aid, rowL2);
+      var info = cdInfoForAction(battle, actionId);
+      var aid = info.aid;
+      var cdSec = info.cdSec;
+      var rowL2 = info.rowL2;
+      var until = mysticCdUntilForAction(mergedCdMap(battle), aid, rowL2);
       if (typeof until !== 'number' || !Number.isFinite(until)) return null;
       var remMs = until - Date.now();
       if (remMs <= SKILL_CD_UI_RESERVE_MS) return null;
@@ -699,6 +765,56 @@
           ? cdSec * 1000
           : Math.max(remMs, 1000);
       return { until: until, cdMs: cdMs };
+    }
+
+    function setCdOverlayVisible(cdRoot, visible) {
+      if (!cdRoot) return;
+      if (visible) {
+        cdRoot.removeAttribute('hidden');
+        cdRoot.classList.add('l2-battle-hotbar-slot-cd--on');
+      } else {
+        cdRoot.setAttribute('hidden', '');
+        cdRoot.classList.remove('l2-battle-hotbar-slot-cd--on');
+      }
+    }
+
+    /** Одразу показати КД на іконці (до відповіді сервера). */
+    function primeSkillCd(actionId) {
+      var battle = opts.getBattle();
+      if (!battle) return;
+      var info = cdInfoForAction(battle, actionId);
+      if (info.cdSec == null || info.cdSec <= 0) return;
+      stampLocalCd(info.aid, info.rowL2, Date.now() + info.cdSec * 1000);
+      var box = opts.container;
+      var existing = box && box.querySelector('.l2-battle-hotbar');
+      if (existing) {
+        updateDynamicState(existing, battle, opts.getCharacter(), slotsCache);
+      } else {
+        render();
+      }
+    }
+
+    /** Після успішної дії — синхронізувати КД із snapshot бою. */
+    function notifySkillUsed(actionId, battleOpt) {
+      var battle = battleOpt || opts.getBattle();
+      if (!battle) return;
+      syncLocalCdFromBattle(battle);
+      var info = cdInfoForAction(battle, actionId);
+      var until = mysticCdUntilForAction(
+        mergedCdMap(battle),
+        info.aid,
+        info.rowL2
+      );
+      if (typeof until === 'number' && Number.isFinite(until)) {
+        stampLocalCd(info.aid, info.rowL2, until);
+      }
+      var box = opts.container;
+      var existing = box && box.querySelector('.l2-battle-hotbar');
+      if (existing) {
+        updateDynamicState(existing, battle, opts.getCharacter(), slotsCache);
+      } else {
+        render();
+      }
     }
 
     /**
@@ -720,15 +836,15 @@
         typeof meta.cdMs !== 'number' ||
         meta.cdMs <= 0
       ) {
-        cdRoot.hidden = true;
+        setCdOverlayVisible(cdRoot, false);
         return false;
       }
       var remMs = meta.until - tnow;
       if (remMs <= SKILL_CD_UI_RESERVE_MS) {
-        cdRoot.hidden = true;
+        setCdOverlayVisible(cdRoot, false);
         return false;
       }
-      cdRoot.hidden = false;
+      setCdOverlayVisible(cdRoot, true);
       var frac = Math.min(1, Math.max(0, remMs / meta.cdMs));
       var deg = 360 * frac;
       shortEl.style.background =
@@ -754,6 +870,8 @@
           clearCdTimer();
           return;
         }
+        syncLocalCdFromBattle(battleNow);
+        pruneLocalCd(Date.now());
         var els = wrap.querySelectorAll('[data-slot-cd]');
         var any = false;
         for (var i = 0; i < els.length; i++) {
@@ -766,6 +884,10 @@
       }
       tick();
       cdTimer = setInterval(tick, 100);
+    }
+
+    function hotbarHasSkillSlots(wrap) {
+      return wrap && wrap.querySelector('[data-slot-cd]');
     }
 
     function ensureModal() {
@@ -1277,6 +1399,7 @@
     }
 
     function updateDynamicState(wrap, battle, character, slots) {
+      syncLocalCdFromBattle(battle);
       var allowed = allowedActionsSet(battle);
       var toggleSkillIds = activeToggleSkillIdSet(battle);
       var bmU = battle && battle.battleMods;
@@ -1336,7 +1459,7 @@
             if (metaCd) {
               applySkillCdOverlay(cdEl, metaCd, Date.now());
             } else {
-              cdEl.hidden = true;
+              setCdOverlayVisible(cdEl, false);
             }
           }
         } else if (slot.k === 'u') {
@@ -1357,7 +1480,7 @@
           if (qtyElU) qtyElU.textContent = String(qtyU);
         }
       }
-      startCdTicker(wrap);
+      if (hotbarHasSkillSlots(wrap)) startCdTicker(wrap);
     }
 
     function render() {
@@ -1369,8 +1492,11 @@
         clearCdTimer();
         box.innerHTML = '';
         lastRenderKey = '';
+        localCdUntil = Object.create(null);
         return;
       }
+
+      syncLocalCdFromBattle(battle);
 
       ensureSlotsCache(character);
       if (
@@ -1450,7 +1576,7 @@
       wrap.appendChild(foot);
 
       box.appendChild(wrap);
-      startCdTicker(wrap);
+      if (hotbarHasSkillSlots(wrap)) startCdTicker(wrap);
     }
 
     async function equipFromBar(slot) {
@@ -1524,6 +1650,7 @@
       slotsCache = [];
       hotbarSlotsDirty = false;
       lastRenderKey = '';
+      localCdUntil = Object.create(null);
       setHotbarPersistCtx(null);
     }
 
@@ -1540,7 +1667,12 @@
       })
     );
 
-    return { render: render, destroy: destroy };
+    return {
+      render: render,
+      destroy: destroy,
+      primeSkillCd: primeSkillCd,
+      notifySkillUsed: notifySkillUsed,
+    };
   }
 
   global.L2BattleHotbar = {

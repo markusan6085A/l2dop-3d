@@ -1183,6 +1183,9 @@
         ) {
           act = L2BattleHotbar.canonicalBattleActionId(action);
         }
+        if (battleHotbar && typeof battleHotbar.primeSkillCd === 'function') {
+          battleHotbar.primeSkillCd(act);
+        }
         var res;
         try {
           res = await battleAction(act, character.revision);
@@ -1273,6 +1276,9 @@
         }
         character = res.character;
         battle = res.battle;
+        if (battleHotbar && typeof battleHotbar.notifySkillUsed === 'function') {
+          battleHotbar.notifySkillUsed(act, battle);
+        }
         if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
         if (res.victory) {
           await handleVictoryOutcome(res.victory);

@@ -1517,6 +1517,19 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:fo
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd {
   border-radius: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd--on {
+  display: flex !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd__long {
+  z-index: 2;
+  font-size: 13px;
+  line-height: 1;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd__short {
