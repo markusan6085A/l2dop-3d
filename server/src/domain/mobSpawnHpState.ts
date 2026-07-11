@@ -1,18 +1,23 @@
 /**
  * HP мобів на карті між боями (per character + spawnId).
  * Поки гравець не вбив моба — залишок HP зберігається після втечі/поразки/телепорту.
+ * Після kill звичайного моба — respawnUntilMs (див. mobSpawnRespawn.ts).
  */
 import { Prisma } from '@prisma/client';
 import type { BattleJsonState } from './battle.js';
 
 export type MobSpawnHpEntry = {
-  mobHp: number;
-  mobMaxHp: number;
+  mobHp?: number;
+  mobMaxHp?: number;
+  respawnUntilMs?: number;
 };
 
 export type MobSpawnHpState = Record<string, MobSpawnHpEntry>;
 
-export function parseMobSpawnHpState(raw: unknown): MobSpawnHpState {
+export function parseMobSpawnHpState(
+  raw: unknown,
+  nowMs: number = Date.now()
+): MobSpawnHpState {
   if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) {
     return {};
   }
@@ -21,6 +26,13 @@ export function parseMobSpawnHpState(raw: unknown): MobSpawnHpState {
     if (typeof spawnId !== 'string' || !spawnId.trim()) continue;
     if (ent == null || typeof ent !== 'object' || Array.isArray(ent)) continue;
     const o = ent as Record<string, unknown>;
+
+    const respawnUntilMs = Number(o.respawnUntilMs);
+    if (Number.isFinite(respawnUntilMs) && respawnUntilMs > nowMs) {
+      out[spawnId] = { respawnUntilMs: Math.floor(respawnUntilMs) };
+      continue;
+    }
+
     const mobHp = Number(o.mobHp);
     const mobMaxHp = Number(o.mobMaxHp);
     if (
@@ -48,7 +60,8 @@ export function resolveMobHpAtSpawnStart(
 ): number {
   const max = Math.max(1, Math.floor(mobMaxHp));
   const ent = state[spawnId];
-  if (!ent) return max;
+  if (!ent || ent.respawnUntilMs != null) return max;
+  if (ent.mobMaxHp == null || ent.mobHp == null) return max;
   if (ent.mobMaxHp !== max) return max;
   return Math.max(1, Math.min(max, Math.floor(ent.mobHp)));
 }

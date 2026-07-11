@@ -3,12 +3,18 @@ import {
   MAP_WORLD_SPAWNS,
   stripSpawnDupSuffix,
 } from '../data/mapWorldSpawns.js';
+import { filterSpawnsVisibleForPlayer } from '../domain/mobSpawnRespawn.js';
 import { mobIconUrlForSpawn } from './spawnCatalogService.js';
 
 const MAP_MARKER_MAX = 500;
 
 /** Тільки моби в радіусі гравця (для маркерів на карті) + іконка; дедуп як у списку «поруч». */
-export function getMapWorldSpawnsNearPlayer(worldX: number, worldY: number) {
+export function getMapWorldSpawnsNearPlayer(
+  worldX: number,
+  worldY: number,
+  mobSpawnHpJson?: unknown,
+  nowMs: number = Date.now()
+) {
   const R = MAP_NEARBY_LIST_RADIUS;
   const R2 = R * R;
   type Row = {
@@ -32,7 +38,12 @@ export function getMapWorldSpawnsNearPlayer(worldX: number, worldY: number) {
   }
   const merged = [...byBase.values()].sort((a, b) => a.d - b.d);
   const slice = merged.slice(0, MAP_MARKER_MAX);
-  return slice.map(({ s }) => ({
+  const visible = filterSpawnsVisibleForPlayer(
+    slice.map(({ s }) => s),
+    mobSpawnHpJson,
+    nowMs
+  );
+  return visible.map((s) => ({
     id: s.id,
     worldX: s.worldX,
     worldY: s.worldY,

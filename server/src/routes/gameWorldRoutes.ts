@@ -84,7 +84,11 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
         return reply.code(404).send({ error: 'forbidden' });
       }
       return reply.send({
-        spawns: getMapWorldSpawnsNearPlayer(row.worldX, row.worldY),
+        spawns: getMapWorldSpawnsNearPlayer(
+          row.worldX,
+          row.worldY,
+          row.mobSpawnHpJson
+        ),
       });
     }
   );

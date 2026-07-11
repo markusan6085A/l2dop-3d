@@ -6,6 +6,7 @@ import {
   type MapSpawnKind,
 } from '../data/mapWorldSpawns.js';
 import { BATTLE_RANGE } from '../domain/battle.js';
+import { filterSpawnsVisibleForPlayer } from '../domain/mobSpawnRespawn.js';
 import { prisma } from '../lib/prisma.js';
 import { mobIconUrlForSpawn } from './spawnCatalogService.js';
 
@@ -23,7 +24,9 @@ export interface NearbySpawnEntry {
 
 function nearbySpawnsForPlayer(
   worldX: number,
-  worldY: number
+  worldY: number,
+  mobSpawnHpJson?: unknown,
+  nowMs: number = Date.now()
 ): NearbySpawnEntry[] {
   const R = MAP_NEARBY_LIST_RADIUS;
   const R2 = R * R;
@@ -54,22 +57,28 @@ function nearbySpawnsForPlayer(
   }
   const out = [...byBase.values()];
   out.sort((a, b) => a.distance - b.distance);
-  return out.slice(0, 400);
+  return filterSpawnsVisibleForPlayer(out.slice(0, 400), mobSpawnHpJson, nowMs);
 }
 
-export function getMapAroundAt(worldX: number, worldY: number) {
+export function getMapAroundAt(
+  worldX: number,
+  worldY: number,
+  mobSpawnHpJson?: unknown,
+  nowMs: number = Date.now()
+) {
   const base = resolveMapLocality(worldX, worldY);
   return {
     ...base,
-    nearbySpawns: nearbySpawnsForPlayer(worldX, worldY),
+    nearbySpawns: nearbySpawnsForPlayer(worldX, worldY, mobSpawnHpJson, nowMs),
   };
 }
 
 export async function getMapAroundForUser(userId: string) {
   const row = await prisma.character.findFirst({
     where: { userId },
-    select: { worldX: true, worldY: true },
+    select: { worldX: true, worldY: true, mobSpawnHpJson: true },
   });
   if (!row) return null;
-  return getMapAroundAt(row.worldX, row.worldY);
+  const nowMs = Date.now();
+  return getMapAroundAt(row.worldX, row.worldY, row.mobSpawnHpJson, nowMs);
 }

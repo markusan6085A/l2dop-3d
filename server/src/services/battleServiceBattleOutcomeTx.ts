@@ -39,6 +39,12 @@ import {
   parseMobSpawnHpState,
   serializeMobSpawnHpState,
 } from '../domain/mobSpawnHpState.js';
+import type { MapSpawnKind } from '../data/mapWorldSpawns.js';
+import {
+  isRegularMobRespawnKind,
+  REGULAR_MOB_RESPAWN_MS,
+  setMobSpawnRespawnEntry,
+} from '../domain/mobSpawnRespawn.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -49,7 +55,7 @@ export async function persistBattleVictoryInTx(
     expectedRevision: number;
     char: CharacterRow;
     bj: { spawnId: string };
-    spawn: { name: string; level: number; aggressive: boolean };
+    spawn: { name: string; level: number; aggressive: boolean; kind: MapSpawnKind };
     inv: InventoryState;
     cr: CharacterRow;
     preLevel: number;
@@ -137,10 +143,17 @@ export async function persistBattleVictoryInTx(
   );
 
   void userId;
-  const mobHpAfterVictory = clearMobSpawnHpEntry(
-    parseMobSpawnHpState(char.mobSpawnHpJson),
-    bj.spawnId
-  );
+  const nowVictoryMs = Date.now();
+  let mobHpAfterVictory = parseMobSpawnHpState(char.mobSpawnHpJson, nowVictoryMs);
+  if (isRegularMobRespawnKind(spawn.kind)) {
+    mobHpAfterVictory = setMobSpawnRespawnEntry(
+      clearMobSpawnHpEntry(mobHpAfterVictory, bj.spawnId),
+      bj.spawnId,
+      nowVictoryMs + REGULAR_MOB_RESPAWN_MS
+    );
+  } else {
+    mobHpAfterVictory = clearMobSpawnHpEntry(mobHpAfterVictory, bj.spawnId);
+  }
   const result = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -194,7 +207,7 @@ export async function persistBattleDefeatInTx(
     expectedRevision: number;
     char: CharacterRow;
     bj: { spawnId: string };
-    spawn: { name: string; level: number; aggressive: boolean };
+    spawn: { name: string; level: number; aggressive: boolean; kind: MapSpawnKind };
     maxHpEff: number;
     maxMpEff: number;
     st: BattleJsonState;

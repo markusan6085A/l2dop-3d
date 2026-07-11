@@ -47,6 +47,10 @@ import {
   resolveMobHpAtSpawnStart,
   serializeMobSpawnHpState,
 } from '../domain/mobSpawnHpState.js';
+import {
+  isMobSpawnOnRespawn,
+  isRegularMobRespawnKind,
+} from '../domain/mobSpawnRespawn.js';
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
@@ -169,7 +173,14 @@ export async function startBattle(
     );
 
     const mobMaxCp0 = mobMaxCpFromMobMaxHp(mc.maxHp);
-    const spawnHpState = parseMobSpawnHpState(base.mobSpawnHpJson);
+    const nowStartMs = Date.now();
+    const spawnHpState = parseMobSpawnHpState(base.mobSpawnHpJson, nowStartMs);
+    if (
+      isRegularMobRespawnKind(spawn.kind) &&
+      isMobSpawnOnRespawn(spawnHpState, spawnId, nowStartMs)
+    ) {
+      throw new Error('mob_on_respawn');
+    }
     const mobHpStart = resolveMobHpAtSpawnStart(
       spawnHpState,
       spawnId,
@@ -190,7 +201,6 @@ export async function startBattle(
               Math.floor((mobMaxCp0 * mobHpStart) / mc.maxHp)
             )
           );
-    const nowStartMs = Date.now();
     const st: BattleJsonState = {
       spawnId,
       mobHp: mobHpStart,

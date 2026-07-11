@@ -146,6 +146,13 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             messageUk: 'Підійди ближче до моба на карті.',
           });
         }
+        if (e instanceof Error && e.message === 'mob_on_respawn') {
+          await logBattleMutation(request, 'battle_start', er, 'error');
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Моб ще не відродився. Зачекай трохи.',
+          });
+        }
         await logBattleMutation(request, 'battle_start', er, 'error');
         throw e;
       }

@@ -99,11 +99,31 @@ export interface MapSyncPayload {
 
 /** Один poll для map.html: позиція + околиці + маркери. */
 export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload | null> {
+  const row = await prisma.character.findFirst({
+    where: { userId },
+    orderBy: { lastUpdate: 'desc' },
+    select: { id: true },
+  });
+  if (!row) return null;
+
   const mapState = await getCharacterMapStateForUser(userId);
   if (!mapState) return null;
+
+  const hpRow = await prisma.character.findFirst({
+    where: { id: row.id },
+    select: { mobSpawnHpJson: true },
+  });
+  const nowMs = Date.now();
+  const mobSpawnHpJson = hpRow?.mobSpawnHpJson;
+
   return {
     mapState,
-    around: getMapAroundAt(mapState.worldX, mapState.worldY),
-    spawns: getMapWorldSpawnsNearPlayer(mapState.worldX, mapState.worldY),
+    around: getMapAroundAt(mapState.worldX, mapState.worldY, mobSpawnHpJson, nowMs),
+    spawns: getMapWorldSpawnsNearPlayer(
+      mapState.worldX,
+      mapState.worldY,
+      mobSpawnHpJson,
+      nowMs
+    ),
   };
 }
