@@ -1768,9 +1768,24 @@
 
     async function goToMap() {
       await runWithBattleNavLock(async function () {
-        if (window.L2 && L2.setLastSnapshot && character) {
+        if (battle && character && character.revision) {
+          var resLm = await leaveBattle(character.revision);
+          if (resLm && resLm._err === 409) {
+            var agLm = await loadCharacter();
+            if (agLm && agLm.character) {
+              character = agLm.character;
+              if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+              resLm = await leaveBattle(character.revision);
+            }
+          }
+          if (resLm && resLm.character && window.L2 && L2.setLastSnapshot) {
+            L2.setLastSnapshot(resLm.character);
+          }
+        } else if (window.L2 && L2.setLastSnapshot && character) {
           L2.setLastSnapshot(character);
         }
+        saveVictoryToSession(null);
+        huntChainActive = false;
         window.location.href = '/map.html';
       });
     }
@@ -1794,21 +1809,21 @@
 
     var back = $('battle-back-map');
     if (back) {
-      back.addEventListener('click', leaveToCity);
+      back.addEventListener('click', function () {
+        goToMap();
+      });
     }
 
     var vMap = $('battle-victory-map');
     if (vMap) {
-      vMap.addEventListener('click', leaveToCity);
+      vMap.addEventListener('click', function () {
+        goToMap();
+      });
     }
     var vCont = $('battle-victory-continue');
     if (vCont) {
       vCont.addEventListener('click', function () {
-        runWithBattleNavLock(async function () {
-          huntChainActive = false;
-          saveVictoryToSession(null);
-          await goToMap();
-        });
+        goToMap();
       });
     }
     var vHunt = $('battle-victory-hunt');
