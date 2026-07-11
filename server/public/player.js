@@ -104,7 +104,17 @@
     set('player-karma', p.karma != null ? p.karma : 0);
     set('player-pk', p.pk != null ? p.pk : 0);
     set('player-rec', p.recommendations != null ? p.recommendations : 0);
-    set('player-rec-left', p.recommendationsLeft != null ? p.recommendationsLeft : 10);
+
+    var recNickLink = $('player-rec-nick-link');
+    if (recNickLink) {
+      var q =
+        '/recommend-nick.html?targetId=' +
+        encodeURIComponent(String(p.id || '')) +
+        '&targetName=' +
+        encodeURIComponent(String(p.name || ''));
+      recNickLink.href = q;
+      recNickLink.textContent = 'рекомендовать';
+    }
     set('player-mobs', p.mobsKilled != null ? p.mobsKilled : 0);
     set(
       'player-pvp',

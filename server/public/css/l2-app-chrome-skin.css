@@ -2491,16 +2491,35 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line {
   margin: 0;
 }
 
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp {
+  display: grid;
+  grid-template-columns: 2.35em minmax(0, auto);
+  column-gap: 4px;
+  align-items: baseline;
+}
+
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-key {
   font-weight: 700;
   font-size: 0.8em;
   flex-shrink: 0;
 }
 
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-key,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp .l2-hud-legacy-key {
+  width: 2.35em;
+  min-width: 2.35em;
+  text-align: left;
+}
+
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-val {
-  margin-left: 5px;
+  margin-left: 0;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+  text-align: left;
+  min-width: 0;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key,

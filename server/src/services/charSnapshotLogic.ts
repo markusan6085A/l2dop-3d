@@ -322,7 +322,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     karma: 0,
     pk: 0,
     recommendations: 0,
-    recommendationsLeft: 10,
+    recommendationsLeft: 0,
     pvpWins: 0,
     pvpLosses: 0,
     revision: row.revision,

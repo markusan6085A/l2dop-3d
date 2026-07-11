@@ -75,7 +75,7 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
     karma: 0,
     pk: 0,
     recommendations: 0,
-    recommendationsLeft: 10,
+    recommendationsLeft: 0,
     mobsKilled: Math.max(0, Math.floor(Number(row.mobsKilled) || 0)),
     pvpWins: 0,
     pvpLosses: 0,

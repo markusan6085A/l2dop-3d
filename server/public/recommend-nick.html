@@ -3,15 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Магазин вищей — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260709gmShopBuyOk1" />
+    <title>Рекомендації — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260711nickTone1" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711hudVitAlign1" />
+    <link rel="stylesheet" href="/css/l2-recommend-nick-page.css?v=20260711recNick5" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-gm-shop l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body
+    class="l2-body l2-page-city l2-page-recommend-nick l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
     <div class="l2-shell">
-      <div class="l2-screen l2-outer-sframe-host">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
           <div class="l2-outer-sframe__g">
             <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
@@ -26,6 +30,7 @@
             </span>
             <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
             <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
             <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
             <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
             <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
@@ -53,19 +58,21 @@
             decoding="async"
           />
         </div>
-        <div class="l2-screen-inner l2-char-root">
+        <div class="l2-screen-inner l2-recommend-nick-root">
           <div id="l2-hud-panel-mount"></div>
-
           <div id="l2-nav-top"></div>
 
-          <div id="drops-shop-root" class="l2-gm-shop l2-gm-shop-card" style="width: 100%; max-width: 560px; margin: 0 auto; padding: 0 8px 20px">
-            <div class="l2-gm-shop-badge">Магазин вищей</div>
-            <p class="err" id="drops-shop-msg" hidden></p>
-            <div id="drops-shop-meta" class="l2-gm-shop-meta"></div>
-            <div id="drops-shop-mount"></div>
-          </div>
+          <section class="l2-recommend-nick-panel" id="recommend-nick-content" aria-label="Рекомендації">
+            <h1 class="l2-recommend-nick-panel__title" id="recommend-nick-title">покрасить ник!</h1>
+            <p class="l2-recommend-nick-panel__lead" id="recommend-nick-lead">Обміняй рекомендації на колір нікнейма.</p>
+            <p class="l2-recommend-nick-panel__stats" id="recommend-nick-stats">Рекомендації: 0
+Доступно для обміну: 0</p>
+            <div class="l2-recommend-nick-colors" id="recommend-nick-colors"></div>
+            <button type="button" class="l2-recommend-nick-back" id="recommend-nick-back">← Назад</button>
+          </section>
 
-          <div id="l2-foot-links"></div>
+          <p class="err" id="recommend-nick-err" hidden></p>
+          <p class="l2-city-stub-msg" id="recommend-nick-stub" hidden></p>
 
           <div id="l2-nav-bottom"></div>
         </div>
@@ -74,26 +81,8 @@
 
     <script src="/common.js?v=20260711hudVitAlign1"></script>
     <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/armor-set-bonuses-ui.js?v=5"></script>
-    <script src="/gm-shop.js?v=20260709itemModalStats1"></script>
-    <script>
-      (function () {
-        if (window.L2 && typeof L2.mountL2Nav === 'function') {
-          L2.mountL2Nav({
-            onStub: function (label) {
-              var el = document.getElementById('drops-shop-msg');
-              if (el) {
-                el.hidden = false;
-                el.textContent = '«' + label + '» — заглушка.';
-              }
-            },
-          });
-        }
-        if (window.L2 && typeof L2.mountFootLinkBar === 'function') {
-          L2.mountFootLinkBar('l2-foot-links', { inset: true });
-        }
-      })();
-    </script>
+    <script src="/l2-nav.js?v=20260709chat1"></script>
+    <script src="/recommendNickColors.js?v=20260711recNick5"></script>
+    <script src="/recommend-nick.js?v=20260711recNick5"></script>
   </body>
 </html>

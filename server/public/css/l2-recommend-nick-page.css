@@ -1,0 +1,133 @@
+/**
+ * recommend-nick.html — обмін рекомендацій / рекомендація гравця.
+ */
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-shell {
+  min-height: 100vh;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-screen.l2-outer-sframe-host {
+  max-height: calc(100vh - 8px);
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-screen-inner.l2-recommend-nick-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-panel {
+  margin-top: 0.5cm;
+  padding: 0 0.5cm 12px;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-panel__title {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #c9cdd4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-panel__lead {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #d8ccb0;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-panel__stats {
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #fff;
+  white-space: pre-line;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-colors {
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-colors__grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-colors__item {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-colors__nick {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-colors__nick--dark {
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.55), 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-back {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #d8ccb0;
+  text-decoration: underline;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-back:hover,
+body.l2-app-l2-chrome.l2-page-recommend-nick .l2-recommend-nick-back:focus {
+  color: #f5ecd0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-social-table__rec-action,
+body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__rec-action {
+  padding: 2px 0;
+  vertical-align: middle;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome .l2-rec-nick-link {
+  display: inline;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #d8ccb0;
+  text-decoration: underline;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome .l2-rec-nick-link:hover,
+body.l2-app-l2-chrome .l2-rec-nick-link:focus {
+  color: #f5ecd0;
+}

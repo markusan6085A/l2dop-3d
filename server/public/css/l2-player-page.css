@@ -42,24 +42,16 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-frame-
   margin: 0 auto;
   width: 100%;
   max-width: 300px;
-  padding: 0;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
-
-body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-frame--hero-only::before {
-  display: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-bg {
-  position: relative;
-  inset: auto;
+  position: absolute;
+  inset: 2px;
+  border-radius: 6px;
+  overflow: hidden;
   min-height: 194px;
-  background: transparent;
-  border-radius: 0;
-  overflow: visible;
+  background: rgba(16, 12, 10, 0.5);
+  z-index: 1;
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-hero-stage {
