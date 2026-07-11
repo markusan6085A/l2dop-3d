@@ -2382,7 +2382,7 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-townlive-column {
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-screen-inner:has(#l2-nav-bottom) #l2-hud-panel-mount {
-  min-height: 0 !important;
+  min-height: calc(var(--l2-frame-top-h, 54px) + 38px) !important;
   margin: 0 !important;
 }
 
@@ -2431,7 +2431,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-screen.l2-outer-sframe-host > .l2-
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-panel.l2-hud-panel--legacy-minimal {
   margin: 0 0 4px !important;
   padding: 0 !important;
-  min-height: 0 !important;
+  min-height: calc(var(--l2-frame-top-h, 54px) + 38px) !important;
   border: 0 !important;
   border-radius: 0 !important;
   border-image: none !important;

@@ -9,13 +9,13 @@
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260711nickTan1" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711nickTone3" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711charCls1" />
     <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711nickTone1" />
-    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260711profStatus3" />
+    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260711charCls1" />
     <link rel="stylesheet" href="/css/l2-recommend-nick-page.css?v=20260711recBlue1" />
   </head>
   <body
-    class="l2-body l2-page-city l2-page-char l2-page-character l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome"
+    class="l2-body l2-page-city l2-page-char l2-page-character l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
   >
     <div class="l2-shell">
       <div class="l2-screen l2-city-screen l2-outer-sframe-host">
@@ -66,7 +66,11 @@
 
           <p class="err" id="character-load-err" hidden></p>
 
-          <section class="l2-character-panel" id="character-content" aria-label="Персонаж" hidden>
+          <section
+            class="l2-character-panel l2-character-panel--loading"
+            id="character-content"
+            aria-label="Персонаж"
+          >
             <h1 class="l2-character-panel__title">Мій персонаж</h1>
 
             <hr class="l2-pers-rule l2-character-panel__rule" />
@@ -366,6 +370,12 @@
 
           <p class="l2-city-stub-msg" id="character-stub-msg" hidden></p>
 
+          <p class="l2-character-back-map-wrap">
+            <a href="/map.html" class="l2-character-back-map" data-i18n="battle_back_map"
+              >Назад на карту</a
+            >
+          </p>
+
           <div id="l2-nav-bottom"></div>
         </div>
       </div>
@@ -375,6 +385,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709chat1"></script>
     <script src="/charHeroPortrait.js?v=20260709darkElfMystic1"></script>
-    <script src="/character.js?v=20260711profStatus2"></script>
+    <script src="/character.js?v=20260711charCls1"></script>
   </body>
 </html>

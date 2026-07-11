@@ -415,7 +415,7 @@
       if (c && window.L2CharHero && typeof L2CharHero.renderPortrait === 'function') {
         L2CharHero.renderPortrait(c);
       }
-      if (contentEl) contentEl.hidden = false;
+      if (contentEl) contentEl.classList.remove('l2-character-panel--loading');
     } catch (_e) {
       if (errEl) {
         errEl.hidden = false;

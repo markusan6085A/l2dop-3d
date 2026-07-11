@@ -5,6 +5,37 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-panel {
   margin-top: 0.5cm;
   padding: 0 0.5cm;
   box-sizing: border-box;
+  min-height: clamp(420px, 68vh, 620px);
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-panel--loading {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-back-map-wrap {
+  margin: 10px 0 4px;
+  text-align: center;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-back-map {
+  display: inline-block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--l2-font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #bfa88a;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-back-map:hover,
+body.l2-app-l2-chrome.l2-page-character .l2-character-back-map:focus {
+  color: #d4c4a8;
+  outline: none;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-panel__title {
