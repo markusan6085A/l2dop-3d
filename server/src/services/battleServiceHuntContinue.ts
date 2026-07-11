@@ -25,18 +25,34 @@ export async function startHuntContinueBattle(
   const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));
   const nowMs = Date.now();
   const tol = Math.max(0, Math.min(10, Math.floor(levelTolerance)));
-  const next = findNextSameLevelHuntSpawn({
-    worldX: base.worldX,
-    worldY: base.worldY,
-    targetLevel: Math.max(1, Math.floor(targetLevel)),
-    excludeSpawnId,
-    mobSpawnHpJson: base.mobSpawnHpJson,
-    nowMs,
-    levelTolerance: tol,
-  });
-  if (!next) {
-    throw new Error('battle_hunt_no_targets');
+  let excluded = excludeSpawnId;
+  for (let i = 0; i < 5; i++) {
+    const next = findNextSameLevelHuntSpawn({
+      worldX: base.worldX,
+      worldY: base.worldY,
+      targetLevel: Math.max(1, Math.floor(targetLevel)),
+      excludeSpawnId: excluded,
+      mobSpawnHpJson: base.mobSpawnHpJson,
+      nowMs,
+      levelTolerance: tol,
+    });
+    if (!next) {
+      throw new Error('battle_hunt_no_targets');
+    }
+    try {
+      return await startBattle(userId, next.spawnId, expectedRevision);
+    } catch (e) {
+      if (
+        e instanceof Error &&
+        (e.message === 'mob_on_respawn' ||
+          e.message === 'battle_too_far' ||
+          e.message === 'battle_spawn_unknown')
+      ) {
+        excluded = next.spawnId;
+        continue;
+      }
+      throw e;
+    }
   }
-
-  return startBattle(userId, next.spawnId, expectedRevision);
+  throw new Error('battle_hunt_no_targets');
 }
