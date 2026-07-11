@@ -12,25 +12,14 @@
   var replyTarget = null;
   var smilesOpen = false;
   var smilesPage = 0;
+  var SMILE_COLS = 8;
   var SMILE_ROWS = 3;
-  var SMILE_ROW_H = 25;
-  var SMILE_COL_GAP = 4;
-  var SMILE_MIN_COLS = 4;
+  var SMILE_PAGE_SIZE = SMILE_COLS * SMILE_ROWS;
+  var SMILE_PICKER_H = 25;
   var SMILE_TOKEN_RE = /:([0-9]+|[a-z0-9_]+):/gi;
 
-  function computeSmileCols(grid) {
-    var w = grid && grid.clientWidth ? grid.clientWidth : 300;
-    if (w < 80) w = 300;
-    // Середня ширина колонки — GIF однакової висоти, ширина різна.
-    var avgColW = SMILE_ROW_H + 2;
-    return Math.max(
-      SMILE_MIN_COLS,
-      Math.floor((w + SMILE_COL_GAP) / (avgColW + SMILE_COL_GAP))
-    );
-  }
-
-  function getSmilePageSize(grid) {
-    return computeSmileCols(grid) * SMILE_ROWS;
+  function getSmilePageSize() {
+    return SMILE_PAGE_SIZE;
   }
 
   function getSmilesCatalog() {
@@ -79,6 +68,20 @@
     img.style.setProperty('max-height', px + 'px', 'important');
     img.style.setProperty('max-width', maxW + 'px', 'important');
     return scale;
+  }
+
+  function isSmileOnlyContent(container) {
+    if (!container || !container.querySelector('.l2-chat-smile')) return false;
+    var child = container.firstChild;
+    while (child) {
+      if (child.nodeType === 3) {
+        if (child.textContent && child.textContent.trim()) return false;
+      } else if (child.nodeType === 1) {
+        if (!child.classList.contains('l2-chat-smile')) return false;
+      }
+      child = child.nextSibling;
+    }
+    return true;
   }
 
   function appendMessageTextWithSmiles(container, rawText) {
@@ -148,7 +151,7 @@
       return;
     }
 
-    var pageSize = getSmilePageSize(grid);
+    var pageSize = getSmilePageSize();
     var totalPages = Math.max(1, Math.ceil(list.length / pageSize));
     if (smilesPage >= totalPages) smilesPage = totalPages - 1;
     if (smilesPage < 0) smilesPage = 0;
@@ -168,14 +171,10 @@
 
         var img = document.createElement('img');
         img.className = 'l2-chat-smiles__img';
-        if (smileScaleFor(item.code) > 1) {
-          img.className += ' l2-chat-smiles__img--scaled';
-        }
         img.src = item.src;
         img.alt = '';
         img.loading = 'lazy';
         img.decoding = 'async';
-        applySmileImgScale(img, item.code, 25);
 
         btn.appendChild(img);
         btn.addEventListener('click', function () {
@@ -207,20 +206,13 @@
       nextBtn.dataset.wired = '1';
       nextBtn.addEventListener('click', function () {
         var list = getSmilesList();
-        var grid = $('chat-smiles-grid');
-        var pageSize = getSmilePageSize(grid);
+        var pageSize = getSmilePageSize();
         var totalPages = Math.max(1, Math.ceil(list.length / pageSize));
         if (smilesPage >= totalPages - 1) return;
         smilesPage++;
         renderSmilesPickerPage();
       });
     }
-    if (window.__l2ChatSmilesResizeWired) return;
-    window.__l2ChatSmilesResizeWired = true;
-    window.addEventListener('resize', function () {
-      if (!smilesOpen) return;
-      renderSmilesPickerPage();
-    });
   }
 
   function setSmilesPanelOpen(open) {
@@ -432,9 +424,19 @@
         text.appendChild(replyTo);
       }
       appendMessageTextWithSmiles(text, m.text);
+      var smileOnly = isSmileOnlyContent(text);
+      if (smileOnly) {
+        item.classList.add('l2-chat-msg--smile-only');
+        var smileNodes = text.querySelectorAll('.l2-chat-smile');
+        for (var si = 0; si < smileNodes.length; si++) {
+          head.insertBefore(smileNodes[si], head.firstChild);
+        }
+        item.appendChild(head);
+      } else {
+        item.appendChild(head);
+        item.appendChild(text);
+      }
 
-      item.appendChild(head);
-      item.appendChild(text);
       listEl.appendChild(item);
     }
 

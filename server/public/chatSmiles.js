@@ -5,7 +5,7 @@
 (function (global) {
   var COUNT = 199;
   var BASE = '/ref/chat-smiles/';
-  var ASSET_VER = 'orig199v2';
+  var ASSET_VER = 'orig199v4';
   var LARGE_SCALE = 1.05;
   var BOOST_SCALE = 1.3;
   var LARGE_CODES = {
