@@ -14,10 +14,8 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-panel__headline {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
-  color: #f0d880;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.9),
-    0 0 10px rgba(200, 150, 60, 0.2);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-panel__status {
@@ -173,7 +171,7 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-social-actions__btn {
   font: inherit;
   font-size: 12px;
   line-height: 1.35;
-  color: #e8dcc0;
+  color: #d8ccb0;
   text-decoration: underline;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -223,7 +221,7 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__val--right {
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-social-table__val--rec {
-  color: #e8dcc0;
+  color: #d8ccb0;
   font-weight: 600;
 }
 
@@ -265,7 +263,7 @@ body.l2-app-l2-chrome .l2-player-profile-link:focus {
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__nick.l2-player-profile-link {
-  color: #cfc3a4;
+  color: #bab094;
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-online-player__nick.l2-player-profile-link {

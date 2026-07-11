@@ -96,7 +96,7 @@ body.l2-page-story .l2-hud-panel::before {
   font-family: var(--l2-font-display, Georgia, serif);
   font-size: 16px;
   font-weight: 600;
-  color: var(--l2s-gold-bright, var(--l2h-gold));
+  color: #cdb46e;
   line-height: 1.2;
   letter-spacing: 0.02em;
   text-align: left;

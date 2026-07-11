@@ -30,7 +30,7 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-title-empty {
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-name-bracket {
-  color: #f0d880;
+  color: #d8c273;
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.9),
     0 0 10px rgba(200, 150, 60, 0.25);
@@ -362,17 +362,10 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-inv-filters {
   max-width: none !important;
   margin-bottom: 1px !important;
   padding: 3px 0 2px !important;
-  border-radius: 0 !important;
-  border-style: solid !important;
-  border-color: transparent !important;
-  border-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x)) !important;
-  border-image-source: url('/ref/8888888.png') !important;
-  border-image-slice: var(--l2s-char-inv888-slice-y) var(--l2s-char-inv888-slice-x) var(--l2s-char-inv888-slice-y)
-    var(--l2s-char-inv888-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
-  background: transparent !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(100, 80, 52, 0.35) !important;
+  border-image: none !important;
+  background: rgba(16, 12, 10, 0.35) !important;
   box-shadow: none !important;
 }
 

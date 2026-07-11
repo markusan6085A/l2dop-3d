@@ -23,7 +23,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__btn {
   font: inherit;
   font-size: 12px;
   line-height: 1.35;
-  color: #e8dcc0;
+  color: #d8ccb0;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -93,7 +93,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-link {
   font: inherit;
   font-size: 12px;
   line-height: 1.35;
-  color: #e8dcc0;
+  color: #d8ccb0;
   text-decoration: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -123,7 +123,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty {
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg {
   margin: 0;
   padding: 0 0 6px;
-  border-bottom: 1px dotted rgba(80, 80, 80, 0.55);
+  border-bottom: 0;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__head {
@@ -144,7 +144,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__ico {
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__nick {
-  color: #cfc3a4;
+  color: #bab094;
   font-weight: 600;
 }
 
@@ -156,7 +156,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__reply {
   font: inherit;
   font-size: 12px;
   line-height: 1.35;
-  color: #e8dcc0;
+  color: #d8ccb0;
   text-decoration: none;
   cursor: pointer;
 }
@@ -211,7 +211,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-pages__btn {
   font: inherit;
   font-size: inherit;
   line-height: inherit;
-  color: #e8dcc0;
+  color: #d8ccb0;
   cursor: pointer;
 }
 
@@ -228,7 +228,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-reply-hint {
   margin: 0 0 6px;
   font-size: 12px;
   line-height: 1.35;
-  color: #e8dcc0;
+  color: #d8ccb0;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-reply-hint__name {

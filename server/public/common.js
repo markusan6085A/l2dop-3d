@@ -616,6 +616,14 @@
       return p || '';
     },
 
+    /** Ціле для HUD (HP/MP/SP): без дубля cur/max, лише поточне значення з snapshot. */
+    hudStatInt: function (v) {
+      if (v == null || v === '') return '—';
+      var n = Math.round(Number(v));
+      if (!Number.isFinite(n)) return '—';
+      return String(n);
+    },
+
     /** Очистити плейсхолдери l2-hud-* (немає вхідних даних). */
     clearHudPanel: function () {
       [
@@ -631,6 +639,7 @@
         'l2-hud-mp-max',
         'l2-hud-cp-cur',
         'l2-hud-cp-max',
+        'l2-hud-sp-val',
         'l2-hud-prof-val',
         'l2-top-strip-lvl',
         'l2-top-strip-class',
@@ -711,14 +720,14 @@
       if (expBar) {
         expBar.setAttribute('aria-valuenow', String(Math.round(expPct)));
       }
-      set('l2-hud-hp-cur', c.hp != null ? Math.round(Number(c.hp)) : '—');
+      set('l2-hud-hp-cur', global.L2.hudStatInt(c.hp));
       set('l2-hud-hp-max', c.maxHp != null ? Math.round(Number(c.maxHp)) : '—');
       var hpMax = Number(c.maxHp);
       var hpCur = Number(c.hp);
       var hpPct =
         Number.isFinite(hpMax) && hpMax > 0 && Number.isFinite(hpCur) ? (hpCur / hpMax) * 100 : 0;
       setWidthPct('l2-hud-hp-inner', hpPct);
-      set('l2-hud-mp-cur', c.mp != null ? Math.round(Number(c.mp)) : '—');
+      set('l2-hud-mp-cur', global.L2.hudStatInt(c.mp));
       set('l2-hud-mp-max', c.maxMp != null ? Math.round(Number(c.maxMp)) : '—');
       var mpMax = Number(c.maxMp);
       var mpCur = Number(c.mp);
@@ -741,7 +750,7 @@
       var cpCur = Number(c.cp);
       var cpPct =
         Number.isFinite(cpMax) && cpMax > 0 && Number.isFinite(cpCur) ? (cpCur / cpMax) * 100 : 0;
-      set('l2-hud-cp-cur', c.cp != null ? Math.round(Number(c.cp)) : '—');
+      set('l2-hud-cp-cur', global.L2.hudStatInt(c.cp));
       set('l2-hud-cp-max', c.maxCp != null ? Math.round(Number(c.maxCp)) : '—');
       setWidthPct('l2-hud-cp-inner', cpPct);
       if (isLegacyMinimal) {
@@ -787,9 +796,10 @@
           ' - ' +
           '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
           '</div>' +
-          '<div class="l2-hud-legacy-line l2-hud-legacy-line--hp"><span class="l2-hud-legacy-key">HP:</span> <span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></div>' +
-          '<div class="l2-hud-legacy-line l2-hud-legacy-line--mp"><span class="l2-hud-legacy-key">MP:</span> <span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></div>' +
-          '<div class="l2-hud-legacy-line l2-hud-legacy-line--exp"><span class="l2-hud-legacy-key">EXP:</span> <span id="l2-hud-exp-pct">0.00 %</span></div>' +
+          '<div class="l2-hud-legacy-line l2-hud-legacy-line--hp"><span class="l2-hud-legacy-key">HP:</span><span class="l2-hud-legacy-val" id="l2-hud-hp-cur">—</span></div>' +
+          '<div class="l2-hud-legacy-line l2-hud-legacy-line--mp"><span class="l2-hud-legacy-key">MP:</span><span class="l2-hud-legacy-val" id="l2-hud-mp-cur">—</span></div>' +
+          '<div class="l2-hud-legacy-line l2-hud-legacy-line--cp"><span class="l2-hud-legacy-key">CP:</span><span class="l2-hud-legacy-val" id="l2-hud-cp-cur">—</span></div>' +
+          '<div class="l2-hud-legacy-line l2-hud-legacy-line--exp"><span class="l2-hud-legacy-key">EXP:</span><span class="l2-hud-legacy-val" id="l2-hud-exp-pct">0.00 %</span></div>' +
           '</div>' +
           '</header>'
         );

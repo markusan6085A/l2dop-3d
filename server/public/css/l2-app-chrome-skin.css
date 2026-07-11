@@ -2464,7 +2464,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
-  color: #e8dcc0;
+  color: #d8ccb0;
   font-size: 14px;
   line-height: 1.15;
   margin: 0 0 2px;
@@ -2474,7 +2474,17 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-leve
   color: #fff;
 }
 
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-name {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-top-strip-vitals {
+  display: none !important;
+}
+
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line {
+  display: flex;
+  align-items: baseline;
   font-size: 12.6px;
   line-height: 1.12;
   color: #f0eee8;
@@ -2483,14 +2493,38 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line {
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-key {
   font-weight: 700;
+  font-size: 0.8em;
+  flex-shrink: 0;
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key {
-  color: #f13232;
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-val {
+  margin-left: 5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-key {
-  color: #2d43ff;
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-val,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp #l2-hud-hp-cur {
+  color: #c12828;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-key,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-val,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp #l2-hud-mp-cur {
+  color: #2436cc;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp .l2-hud-legacy-key,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp .l2-hud-legacy-val,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp #l2-hud-cp-cur {
+  color: #aa8019;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp .l2-hud-legacy-key,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp .l2-hud-legacy-val,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp #l2-hud-exp-pct {
+  color: #a8a4a0;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-hud-panel-mount {
@@ -2580,7 +2614,7 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
   font-size: 9px !important;
   line-height: 1.05 !important;
   text-align: left !important;
-  color: #e8dcc0 !important;
+  color: #d8ccb0 !important;
   white-space: nowrap;
 }
 

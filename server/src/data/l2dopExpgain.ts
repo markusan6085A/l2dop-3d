@@ -131,6 +131,9 @@ export function expSegmentForLevelBar(totalExp: bigint): {
   if (max <= 0n) {
     return { level, cur: 0n, max: 1n, pct: 100 };
   }
-  const pct = Math.min(100, Number((cur * 100n) / max));
+  const pct = Math.min(
+    100,
+    max > 0n ? Math.round((Number(cur) / Number(max)) * 10000) / 100 : 100
+  );
   return { level, cur, max, pct };
 }

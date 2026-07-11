@@ -47,6 +47,77 @@
     return '0';
   }
 
+  /** «був у мережі 23 хв тому», «1 год 28 хв тому» — за ISO lastUpdate з snapshot. */
+  function formatLastSeenUk(iso) {
+    if (!iso) return 'Офлайн';
+    var then = Date.parse(String(iso));
+    if (!Number.isFinite(then)) return 'Офлайн';
+    var diffMs = Math.max(0, Date.now() - then);
+    var sec = Math.floor(diffMs / 1000);
+    if (sec < 45) return 'був у мережі щойно';
+    var min = Math.floor(sec / 60);
+    if (min < 60) return 'був у мережі ' + min + ' хв тому';
+    var hr = Math.floor(min / 60);
+    var minRem = min % 60;
+    if (hr < 24) {
+      if (minRem === 0) return 'був у мережі ' + hr + ' год тому';
+      return 'був у мережі ' + hr + ' год ' + minRem + ' хв тому';
+    }
+    var days = Math.floor(hr / 24);
+    return 'був у мережі ' + days + ' дн тому';
+  }
+
+  function setOnlineStatusText(isOnline, lastUpdateIso) {
+    var textEl = $('character-online-text');
+    if (!textEl) return;
+    textEl.classList.remove('l2-character-online__text--online', 'l2-character-online__text--offline');
+    if (isOnline) {
+      textEl.textContent = 'Онлайн';
+      textEl.classList.add('l2-character-online__text--online');
+      return;
+    }
+    textEl.textContent = formatLastSeenUk(lastUpdateIso);
+    textEl.classList.add('l2-character-online__text--offline');
+  }
+
+  async function applyOnlineStatus(c) {
+    if (!c) {
+      setOnlineStatusText(false, null);
+      return;
+    }
+    var token = localStorage.getItem('token');
+    if (!token) {
+      setOnlineStatusText(false, c.lastUpdate);
+      return;
+    }
+
+    var charId = c.id != null ? String(c.id) : '';
+    var isOnline = false;
+    try {
+      var r = await fetch('/game/online?sort=level', {
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      if (r.ok) {
+        var j = await r.json();
+        var players = j && j.players ? j.players : [];
+        for (var i = 0; i < players.length; i++) {
+          if (String(players[i].characterId || '') === charId) {
+            isOnline = true;
+            break;
+          }
+        }
+      }
+    } catch (_e) {
+      /* fallback — lastUpdate */
+    }
+    setOnlineStatusText(isOnline, c.lastUpdate);
+  }
+
   function applyProfile(c) {
     var nickEl = $('character-nick');
     var statusEl = $('character-status');
@@ -193,6 +264,7 @@
       applyProfile(c);
       applyStats(c);
       applySocial(c);
+      applyOnlineStatus(c);
       if (c && window.L2CharHero && typeof L2CharHero.renderPortrait === 'function') {
         L2CharHero.renderPortrait(c);
       }

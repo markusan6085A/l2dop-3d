@@ -220,7 +220,7 @@
 }
 
 .l2-char-name-bracket {
-  color: #e8c56e;
+  color: #d1b163;
   font-weight: 600;
 }
 
@@ -373,12 +373,8 @@
   align-items: center;
 }
 
-/* Адена / EXP / SP / вага — рамка /ref/8888888.png (9-slice); --l2s-char-curr888-* під PNG */
+/* Адена / EXP / SP / вага */
 .l2-char-currency {
-  --l2s-char-curr888-slice-y: 24;
-  --l2s-char-curr888-slice-x: 32;
-  --l2s-char-curr888-bd-y: 8;
-  --l2s-char-curr888-bd-x: 12;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -389,17 +385,9 @@
   padding: 8px 10px;
   font-size: 11px;
   color: #c8c4b8;
-  border-radius: 0;
-  border-style: solid;
-  border-color: transparent;
-  border-width: calc(1px * var(--l2s-char-curr888-bd-y)) calc(1px * var(--l2s-char-curr888-bd-x));
-  border-image-source: url('/ref/8888888.png');
-  border-image-slice: var(--l2s-char-curr888-slice-y) var(--l2s-char-curr888-slice-x) var(--l2s-char-curr888-slice-y)
-    var(--l2s-char-curr888-slice-x) fill;
-  border-image-width: calc(1px * var(--l2s-char-curr888-bd-y)) calc(1px * var(--l2s-char-curr888-bd-x));
-  border-image-outset: 0;
-  border-image-repeat: stretch;
-  background: transparent;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 80, 52, 0.35);
+  background: rgba(16, 12, 10, 0.35);
   box-shadow: none;
 }
 
@@ -437,12 +425,8 @@
   letter-spacing: 0.06em;
 }
 
-/* Категорії сумки — рамка /ref/8888888.png (як блок Адена/EXP); --l2s-char-inv888-* під PNG */
+/* Категорії сумки (як блок Адена/EXP) */
 .l2-char-inv-filters {
-  --l2s-char-inv888-slice-y: 24;
-  --l2s-char-inv888-slice-x: 32;
-  --l2s-char-inv888-bd-y: 8;
-  --l2s-char-inv888-bd-x: 12;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -451,17 +435,9 @@
   padding: 7px 8px;
   font-size: 10px;
   color: #c8c0b0;
-  border-radius: 0;
-  border-style: solid;
-  border-color: transparent;
-  border-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x));
-  border-image-source: url('/ref/8888888.png');
-  border-image-slice: var(--l2s-char-inv888-slice-y) var(--l2s-char-inv888-slice-x) var(--l2s-char-inv888-slice-y)
-    var(--l2s-char-inv888-slice-x) fill;
-  border-image-width: calc(1px * var(--l2s-char-inv888-bd-y)) calc(1px * var(--l2s-char-inv888-bd-x));
-  border-image-outset: 0;
-  border-image-repeat: stretch;
-  background: transparent;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 80, 52, 0.35);
+  background: rgba(16, 12, 10, 0.35);
   box-shadow: none;
 }
 
