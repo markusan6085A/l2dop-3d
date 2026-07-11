@@ -48,6 +48,7 @@ import {
 import {
   countSameLevelHuntSpawnsNearby,
   findNextSameLevelHuntSpawn,
+  HUNT_LEVEL_TOLERANCE,
 } from '../domain/battleHuntChain.js';
 
 type Tx = Prisma.TransactionClient;
@@ -190,7 +191,8 @@ export async function persistBattleVictoryInTx(
   const huntOpts = {
     worldX: char.worldX,
     worldY: char.worldY,
-    targetLevel: spawn.level,
+    targetLevel: newLevel,
+    levelTolerance: HUNT_LEVEL_TOLERANCE,
     excludeSpawnId: bj.spawnId,
     mobSpawnHpJson: mobSpawnHpSerialized,
     nowMs: nowVictoryMs,

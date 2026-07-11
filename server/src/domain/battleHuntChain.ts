@@ -12,6 +12,9 @@ import {
 } from './mobSpawnRespawn.js';
 import { parseMobSpawnHpState } from './mobSpawnHpState.js';
 
+/** Допуск рівня моба відносно рівня персонажа для «Полювати далі». */
+export const HUNT_LEVEL_TOLERANCE = 5;
+
 export interface HuntNextSpawnResult {
   spawnId: string;
   name: string;
@@ -22,8 +25,9 @@ export interface HuntNextSpawnResult {
 export interface FindNextHuntSpawnOpts {
   worldX: number;
   worldY: number;
+  /** Рівень персонажа (або інший якір); шукаємо мобів у `[targetLevel ± levelTolerance]`. */
   targetLevel: number;
-  /** Діапазон рівнів, наприклад 0 (строго той самий) або 5 для ±5. */
+  /** Діапазон рівнів, наприклад 5 для ±5 від targetLevel. */
   levelTolerance?: number;
   excludeSpawnId?: string;
   mobSpawnHpJson?: unknown;
@@ -38,7 +42,7 @@ function sameLevelHuntCandidates(
     worldX,
     worldY,
     targetLevel,
-    levelTolerance = 0,
+    levelTolerance = HUNT_LEVEL_TOLERANCE,
     excludeSpawnId,
     mobSpawnHpJson,
     nowMs = Date.now(),
@@ -46,9 +50,7 @@ function sameLevelHuntCandidates(
 
   const lvl = Math.max(1, Math.floor(targetLevel));
   const tol = Math.max(0, Math.min(10, Math.floor(levelTolerance)));
-  const excludeBase = excludeSpawnId
-    ? stripSpawnDupSuffix(excludeSpawnId)
-    : '';
+  const excludeExact = excludeSpawnId ? String(excludeSpawnId).trim() : '';
 
   const viewR2 = MAP_NEARBY_LIST_RADIUS * MAP_NEARBY_LIST_RADIUS;
   const state = parseMobSpawnHpState(mobSpawnHpJson, nowMs);
@@ -60,7 +62,7 @@ function sameLevelHuntCandidates(
     if (isMobSpawnOnRespawn(state, sp.id, nowMs)) continue;
 
     const base = stripSpawnDupSuffix(sp.id);
-    if (excludeBase && base === excludeBase) continue;
+    if (excludeExact && sp.id === excludeExact) continue;
 
     const dx = sp.worldX - worldX;
     const dy = sp.worldY - worldY;

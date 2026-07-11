@@ -177,23 +177,12 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       }
       const b = body as Record<string, unknown>;
       const er = b.expectedRevision;
-      const rawLevel = b.targetLevel;
       const rawTol = b.levelTolerance;
       const excludeRaw = b.excludeSpawnId;
       if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
         return reply.code(400).send({
           error: 'invalid_input',
           messageUk: 'Некоректний expectedRevision.',
-        });
-      }
-      if (
-        typeof rawLevel !== 'number' ||
-        !Number.isFinite(rawLevel) ||
-        rawLevel < 1
-      ) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Потрібен рівень моба для полювання.',
         });
       }
       const excludeSpawnId =
@@ -203,12 +192,11 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       const levelTolerance =
         typeof rawTol === 'number' && Number.isFinite(rawTol)
           ? Math.max(0, Math.min(10, Math.floor(rawTol)))
-          : 0;
+          : undefined;
       try {
         const result = await startHuntContinueBattle(
           userId,
           er,
-          Math.floor(rawLevel),
           excludeSpawnId,
           levelTolerance
         );

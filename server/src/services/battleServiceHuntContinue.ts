@@ -2,19 +2,22 @@ import { prisma } from '../lib/prisma.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import type { CharacterRow } from './charService.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
-import { findNextSameLevelHuntSpawn } from '../domain/battleHuntChain.js';
+import {
+  findNextSameLevelHuntSpawn,
+  HUNT_LEVEL_TOLERANCE,
+} from '../domain/battleHuntChain.js';
+import { getEffectiveCharacterLevel } from '../domain/effectiveCharacterLevel.js';
 import { startBattle } from './battleServiceSession.js';
 
 /**
- * «Полювати далі»: знайти найближчого моба того ж рівня поруч і одразу розпочати бій.
+ * «Полювати далі»: знайти найближчого моба рівня персонажа ± tolerance поруч і одразу розпочати бій.
  * Пошук цілі — на момент запиту (актуальна позиція + mobSpawnHpJson).
  */
 export async function startHuntContinueBattle(
   userId: string,
   expectedRevision: number,
-  targetLevel: number,
   excludeSpawnId?: string,
-  levelTolerance: number = 10
+  levelTolerance?: number
 ) {
   const row = await prisma.character.findFirst({
     where: { userId },
@@ -24,14 +27,18 @@ export async function startHuntContinueBattle(
 
   const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));
   const nowMs = Date.now();
-  const tol = Math.max(0, Math.min(10, Math.floor(levelTolerance)));
+  const playerLevel = getEffectiveCharacterLevel(base.exp);
+  const tol = Math.max(
+    0,
+    Math.min(10, Math.floor(levelTolerance ?? HUNT_LEVEL_TOLERANCE))
+  );
   let excluded = excludeSpawnId;
   let lastErr: unknown = null;
   for (let i = 0; i < 10; i++) {
     const next = findNextSameLevelHuntSpawn({
       worldX: base.worldX,
       worldY: base.worldY,
-      targetLevel: Math.max(1, Math.floor(targetLevel)),
+      targetLevel: playerLevel,
       excludeSpawnId: excluded,
       mobSpawnHpJson: base.mobSpawnHpJson,
       nowMs,

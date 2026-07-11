@@ -859,13 +859,11 @@
   }
 
   async function startHuntContinueBattle(
-    targetLevel,
     expectedRevision,
     excludeSpawnId,
     levelTolerance
   ) {
     var body = {
-      targetLevel: Math.max(1, Math.floor(Number(targetLevel) || 1)),
       expectedRevision: expectedRevision,
     };
     if (excludeSpawnId) body.excludeSpawnId = excludeSpawnId;
@@ -1153,7 +1151,7 @@
           return;
         }
         if (res.defeat) {
-          huntChainLevel = null;
+          huntChainActive = false;
           renderPlayerBars(character);
           showDefeatScreen(res.defeat);
           return;
@@ -1224,7 +1222,7 @@
         return;
       }
       if (res.defeat) {
-        huntChainLevel = null;
+        huntChainActive = false;
         renderPlayerBars(character);
         showDefeatScreen(res.defeat);
         return;
@@ -1295,7 +1293,7 @@
         return;
       }
       if (res.defeat) {
-        huntChainLevel = null;
+        huntChainActive = false;
         renderPlayerBars(character);
         showDefeatScreen(res.defeat);
         return;
@@ -1366,7 +1364,7 @@
         return;
       }
       if (res.defeat) {
-        huntChainLevel = null;
+        huntChainActive = false;
         renderPlayerBars(character);
         showDefeatScreen(res.defeat);
         return;
@@ -1409,8 +1407,8 @@
     }
 
     var lastVictorySummary = null;
-    /** Рівень мобів для ланцюжка «Полювати далі» (null — звичайний режим). */
-    var huntChainLevel = null;
+    /** Ланцюжок «Полювати далі» активний (авто-перехід після перемоги). */
+    var huntChainActive = false;
 
     function showHuntChainLootToast(victory) {
       if (!victory) return;
@@ -1430,29 +1428,21 @@
     }
 
     async function huntChainContinue(victory) {
-      var targetLevel =
-        victory && victory.mobLevel != null
-          ? victory.mobLevel
-          : huntChainLevel;
-      if (targetLevel == null) return;
-
       var canHunt =
         victory &&
         (victory.nextHuntSpawnId ||
           (typeof victory.huntSameLevelRemaining === 'number' &&
             victory.huntSameLevelRemaining > 0));
       if (!canHunt) {
-        huntChainLevel = null;
+        huntChainActive = false;
         if (victory) showVictoryScreen(victory);
         return;
       }
 
       var er = character.revision;
       var st = await startHuntContinueBattle(
-        targetLevel,
         er,
-        victory ? victory.spawnId : undefined,
-        5
+        victory ? victory.spawnId : undefined
       );
       if (st && st._err === 409) {
         var again = await loadCharacter();
@@ -1460,15 +1450,13 @@
           character = again.character;
           if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
           st = await startHuntContinueBattle(
-            targetLevel,
             character.revision,
-            victory ? victory.spawnId : undefined,
-            5
+            victory ? victory.spawnId : undefined
           );
         }
       }
       if (!st || st._err) {
-        huntChainLevel = null;
+        huntChainActive = false;
         var failMsg = await parseFetchErrorUk(
           st,
           tr('battle_hunt_abort', 'Полювання перервано — не вдалося продовжити бій.')
@@ -1505,11 +1493,15 @@
         typeof victory.huntSameLevelRemaining === 'number' &&
         victory.huntSameLevelRemaining > 1
       ) {
+        var pl =
+          character && character.level != null
+            ? Math.floor(Number(character.level))
+            : null;
         showBattleToast(
           tr('battle_hunt_chain', 'Полювання: ще ') +
             (victory.huntSameLevelRemaining - 1) +
             tr('battle_hunt_chain_suffix', ' моб(ів) ур. ') +
-            targetLevel +
+            (pl != null ? pl + '±5' : '?') +
             '.',
           { long: true }
         );
@@ -1518,25 +1510,29 @@
 
     async function handleVictoryOutcome(victory) {
       renderPlayerBars(character);
-      if (
-        huntChainLevel != null &&
-        victory &&
-        victory.mobLevel === huntChainLevel
-      ) {
+      if (huntChainActive) {
         var chainHasNext =
-          victory.nextHuntSpawnId ||
-          (typeof victory.huntSameLevelRemaining === 'number' &&
-            victory.huntSameLevelRemaining > 0);
+          victory &&
+          (victory.nextHuntSpawnId ||
+            (typeof victory.huntSameLevelRemaining === 'number' &&
+              victory.huntSameLevelRemaining > 0));
         if (chainHasNext) {
           showHuntChainLootToast(victory);
           await huntChainContinue(victory);
           return;
         }
-        huntChainLevel = null;
+        huntChainActive = false;
         showVictoryScreen(victory);
+        var doneLvl =
+          character && character.level != null
+            ? Math.floor(Number(character.level))
+            : victory && victory.mobLevel != null
+              ? victory.mobLevel
+              : '?';
         showBattleToast(
           tr('battle_hunt_done', 'Усі моби ур. ') +
-            victory.mobLevel +
+            doneLvl +
+            '±5' +
             tr('battle_hunt_done_suffix', ' поруч переможені.')
         );
         return;
@@ -1734,7 +1730,7 @@
       vHunt.addEventListener('click', function () {
         runWithBattleNavLock(async function () {
           if (!lastVictorySummary) return;
-          huntChainLevel = lastVictorySummary.mobLevel;
+          huntChainActive = true;
           await huntChainContinue(lastVictorySummary);
         });
       });
