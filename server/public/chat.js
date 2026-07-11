@@ -70,20 +70,6 @@
     return scale;
   }
 
-  function isSmileOnlyContent(container) {
-    if (!container || !container.querySelector('.l2-chat-smile')) return false;
-    var child = container.firstChild;
-    while (child) {
-      if (child.nodeType === 3) {
-        if (child.textContent && child.textContent.trim()) return false;
-      } else if (child.nodeType === 1) {
-        if (!child.classList.contains('l2-chat-smile')) return false;
-      }
-      child = child.nextSibling;
-    }
-    return true;
-  }
-
   function appendMessageTextWithSmiles(container, rawText) {
     var text = String(rawText || '');
     if (!text) return;
@@ -424,18 +410,8 @@
         text.appendChild(replyTo);
       }
       appendMessageTextWithSmiles(text, m.text);
-      var smileOnly = isSmileOnlyContent(text);
-      if (smileOnly) {
-        item.classList.add('l2-chat-msg--smile-only');
-        var smileNodes = text.querySelectorAll('.l2-chat-smile');
-        for (var si = 0; si < smileNodes.length; si++) {
-          head.insertBefore(smileNodes[si], head.firstChild);
-        }
-        item.appendChild(head);
-      } else {
-        item.appendChild(head);
-        item.appendChild(text);
-      }
+      item.appendChild(head);
+      item.appendChild(text);
 
       listEl.appendChild(item);
     }
