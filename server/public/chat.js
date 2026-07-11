@@ -64,6 +64,23 @@
     if (stubEl) stubEl.hidden = true;
   }
 
+  function smileScaleFor(code) {
+    return window.L2ChatSmiles && typeof L2ChatSmiles.scaleFor === 'function'
+      ? L2ChatSmiles.scaleFor(code)
+      : 1;
+  }
+
+  function applySmileImgScale(img, code, basePx) {
+    var scale = smileScaleFor(code);
+    if (!img || scale === 1) return scale;
+    var px = Math.round(basePx * scale);
+    var maxW = Math.round(basePx * 1.95 * scale);
+    img.style.setProperty('height', px + 'px', 'important');
+    img.style.setProperty('max-height', px + 'px', 'important');
+    img.style.setProperty('max-width', maxW + 'px', 'important');
+    return scale;
+  }
+
   function appendMessageTextWithSmiles(container, rawText) {
     var text = String(rawText || '');
     if (!text) return;
@@ -85,10 +102,14 @@
         var tokenText = match[0];
         var img = document.createElement('img');
         img.className = 'l2-chat-smile';
+        if (smileScaleFor(code) > 1) {
+          img.className += ' l2-chat-smile--scaled';
+        }
         img.src = smile.src;
         img.alt = tokenText;
         img.loading = 'lazy';
         img.decoding = 'async';
+        applySmileImgScale(img, code, 20);
         img.addEventListener('error', function onSmileError() {
           img.removeEventListener('error', onSmileError);
           var fallback = document.createTextNode(tokenText);
@@ -147,10 +168,14 @@
 
         var img = document.createElement('img');
         img.className = 'l2-chat-smiles__img';
+        if (smileScaleFor(item.code) > 1) {
+          img.className += ' l2-chat-smiles__img--scaled';
+        }
         img.src = item.src;
         img.alt = '';
         img.loading = 'lazy';
         img.decoding = 'async';
+        applySmileImgScale(img, item.code, 25);
 
         btn.appendChild(img);
         btn.addEventListener('click', function () {
