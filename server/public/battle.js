@@ -884,13 +884,17 @@
   async function startHuntContinueBattle(
     expectedRevision,
     excludeSpawnId,
-    preferredSpawnId
+    preferredSpawnId,
+    targetLevel
   ) {
     var body = {
       expectedRevision: expectedRevision,
     };
     if (excludeSpawnId) body.excludeSpawnId = excludeSpawnId;
     if (preferredSpawnId) body.preferredSpawnId = preferredSpawnId;
+    if (typeof targetLevel === 'number' && targetLevel >= 1) {
+      body.targetLevel = Math.floor(targetLevel);
+    }
     return fetchJson('/game/battle/hunt-continue', {
       method: 'POST',
       headers: {
@@ -1036,7 +1040,7 @@
       }
     }
 
-    async function tryStartHuntContinue(excludeSpawnId, preferredSpawnId) {
+    async function tryStartHuntContinue(excludeSpawnId, preferredSpawnId, targetLevel) {
       var freshChar = await loadCharacter();
       if (freshChar && freshChar.character) {
         character = freshChar.character;
@@ -1045,7 +1049,8 @@
       var st = await startHuntContinueBattle(
         character.revision,
         excludeSpawnId,
-        preferredSpawnId
+        preferredSpawnId,
+        targetLevel
       );
       if (st && st._err === 409) {
         var again = await loadCharacter();
@@ -1055,7 +1060,8 @@
           st = await startHuntContinueBattle(
             character.revision,
             excludeSpawnId,
-            preferredSpawnId
+            preferredSpawnId,
+            targetLevel
           );
         }
       }
@@ -1071,7 +1077,8 @@
         st = await startHuntContinueBattle(
           character.revision,
           excludeSpawnId,
-          preferredSpawnId
+          preferredSpawnId,
+          targetLevel
         );
       }
       if (st && !st._err && st.battle && st.battle.spawnId) {
@@ -1527,7 +1534,11 @@
           victory && victory.nextHuntSpawnId
             ? victory.nextHuntSpawnId
             : undefined;
-        var ok = await tryStartHuntContinue(excludeId, preferredId);
+        var huntLevel =
+          victory && victory.mobLevel != null
+            ? Math.floor(Number(victory.mobLevel))
+            : undefined;
+        var ok = await tryStartHuntContinue(excludeId, preferredId, huntLevel);
         if (ok) return;
 
         huntChainActive = false;
@@ -1561,10 +1572,10 @@
         huntChainActive = false;
         showVictoryScreen(victory);
         var doneLvl =
-          character && character.level != null
-            ? Math.floor(Number(character.level))
-            : victory && victory.mobLevel != null
-              ? victory.mobLevel
+          victory && victory.mobLevel != null
+            ? Math.floor(Number(victory.mobLevel))
+            : character && character.level != null
+              ? Math.floor(Number(character.level))
               : '?';
         showBattleToast(
           tr('battle_hunt_done', 'Усі моби ур. ') +
@@ -1619,7 +1630,8 @@
         vHuntBtn.classList.remove('l2-battle-victory-link--muted');
       }
       if (vContBtn) {
-        vContBtn.hidden = true;
+        vContBtn.hidden = false;
+        vContBtn.disabled = false;
       }
     }
 

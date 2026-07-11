@@ -178,6 +178,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       const b = body as Record<string, unknown>;
       const er = b.expectedRevision;
       const rawTol = b.levelTolerance;
+      const rawTargetLevel = b.targetLevel;
       const excludeRaw = b.excludeSpawnId;
       const preferredRaw = b.preferredSpawnId;
       if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
@@ -198,13 +199,18 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         typeof rawTol === 'number' && Number.isFinite(rawTol)
           ? Math.max(0, Math.min(10, Math.floor(rawTol)))
           : undefined;
+      const targetLevel =
+        typeof rawTargetLevel === 'number' && Number.isFinite(rawTargetLevel)
+          ? Math.max(1, Math.floor(rawTargetLevel))
+          : undefined;
       try {
         const result = await startHuntContinueBattle(
           userId,
           er,
           excludeSpawnId,
           levelTolerance,
-          preferredSpawnId
+          preferredSpawnId,
+          targetLevel
         );
         await logBattleMutation(
           request,

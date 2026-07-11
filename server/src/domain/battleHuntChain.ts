@@ -10,7 +10,7 @@ import {
 } from './mobSpawnRespawn.js';
 import { parseMobSpawnHpState } from './mobSpawnHpState.js';
 
-/** Допуск рівня моба відносно рівня персонажа для «Полювати далі». */
+/** Допуск рівня моба відносно вбитого моба для «Полювати далі». */
 export const HUNT_LEVEL_TOLERANCE = 5;
 
 export interface HuntNextSpawnResult {
@@ -23,7 +23,7 @@ export interface HuntNextSpawnResult {
 export interface FindNextHuntSpawnOpts {
   worldX: number;
   worldY: number;
-  /** Рівень персонажа (або інший якір); шукаємо мобів у `[targetLevel ± levelTolerance]`. */
+  /** Рівень вбитого моба (або інший якір); шукаємо мобів у `[targetLevel ± levelTolerance]`. */
   targetLevel: number;
   /** Діапазон рівнів, наприклад 5 для ±5 від targetLevel. */
   levelTolerance?: number;

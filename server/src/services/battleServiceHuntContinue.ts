@@ -9,7 +9,7 @@ import {
   HUNT_LEVEL_TOLERANCE,
   listHuntCandidatesOrdered,
 } from '../domain/battleHuntChain.js';
-import { getEffectiveCharacterLevel } from '../domain/effectiveCharacterLevel.js';
+import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import { startBattleInTx } from './battleServiceSession.js';
 
 const HUNT_START_RETRYABLE = new Set([
@@ -18,8 +18,26 @@ const HUNT_START_RETRYABLE = new Set([
   'battle_spawn_unknown',
 ]);
 
+function resolveHuntTargetLevel(
+  targetLevel: number | undefined,
+  excludeSpawnId: string | undefined
+): number {
+  if (
+    typeof targetLevel === 'number' &&
+    Number.isFinite(targetLevel) &&
+    targetLevel >= 1
+  ) {
+    return Math.floor(targetLevel);
+  }
+  if (excludeSpawnId) {
+    const killed = getWorldSpawnById(excludeSpawnId);
+    if (killed && killed.level >= 1) return killed.level;
+  }
+  return 1;
+}
+
 /**
- * «Полювати далі»: знайти найближчого моба рівня персонажа ± tolerance поруч і одразу розпочати бій.
+ * «Полювати далі»: найближчий моб рівня вбитого ± tolerance поруч → одразу бій.
  * Пошук і старт — в одній транзакції (той самий snapshot mobSpawnHpJson).
  */
 export async function startHuntContinueBattle(
@@ -27,7 +45,8 @@ export async function startHuntContinueBattle(
   expectedRevision: number,
   excludeSpawnId?: string,
   levelTolerance?: number,
-  preferredSpawnId?: string
+  preferredSpawnId?: string,
+  targetLevel?: number
 ) {
   const tol = Math.max(
     0,
@@ -43,11 +62,11 @@ export async function startHuntContinueBattle(
 
     const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));
     const nowMs = Date.now();
-    const playerLevel = getEffectiveCharacterLevel(base.exp);
+    const huntLevel = resolveHuntTargetLevel(targetLevel, excludeSpawnId);
     const candidates = listHuntCandidatesOrdered({
       worldX: base.worldX,
       worldY: base.worldY,
-      targetLevel: playerLevel,
+      targetLevel: huntLevel,
       excludeSpawnId,
       preferredSpawnId,
       mobSpawnHpJson: base.mobSpawnHpJson,

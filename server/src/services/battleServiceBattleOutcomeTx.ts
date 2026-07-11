@@ -193,7 +193,7 @@ export async function persistBattleVictoryInTx(
   const huntOpts = {
     worldX: huntPos.worldX,
     worldY: huntPos.worldY,
-    targetLevel: newLevel,
+    targetLevel: spawn.level,
     levelTolerance: HUNT_LEVEL_TOLERANCE,
     excludeSpawnId: bj.spawnId,
     mobSpawnHpJson: mobSpawnHpSerialized,
