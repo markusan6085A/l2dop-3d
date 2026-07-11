@@ -1040,6 +1040,31 @@
       }
     }
 
+    function applyHuntContinueResult(st) {
+      saveVictoryToSession(null);
+      lastVictorySummary = null;
+      character = st.character;
+      battle = st.battle;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+      if (st.battle && st.battle.spawnId) {
+        spawnId = st.battle.spawnId;
+        try {
+          var uFix = new URL(window.location.href);
+          uFix.searchParams.set('spawnId', spawnId);
+          window.history.replaceState({}, '', uFix.pathname + uFix.search);
+        } catch (eFix) {
+          /* ignore */
+        }
+      }
+      var content = $('battle-content');
+      var errEl = $('battle-load-err');
+      if (content) content.hidden = false;
+      if (errEl) errEl.hidden = true;
+      hideVictoryScreen();
+      refreshUI();
+    }
+
     async function tryStartHuntContinue(excludeSpawnId, preferredSpawnId, targetLevel) {
       var freshChar = await loadCharacter();
       if (freshChar && freshChar.character) {
@@ -1082,11 +1107,7 @@
         );
       }
       if (st && !st._err && st.battle && st.battle.spawnId) {
-        saveVictoryToSession(null);
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(st.character);
-        window.location.replace(
-          '/battle.html?spawnId=' + encodeURIComponent(st.battle.spawnId)
-        );
+        applyHuntContinueResult(st);
         return true;
       }
       return false;
@@ -1141,7 +1162,16 @@
 
     async function runSkill(action) {
       await runWithBattleActionLock(async function () {
-        if (!action || !battle) return;
+        var vicRoot = $('battle-victory-root');
+        var defRoot = $('battle-defeat-root');
+        if (
+          !action ||
+          !battle ||
+          (vicRoot && !vicRoot.hidden) ||
+          (defRoot && !defRoot.hidden)
+        ) {
+          return;
+        }
         var act = action;
         if (
           window.L2BattleHotbar &&
