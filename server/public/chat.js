@@ -12,10 +12,26 @@
   var replyTarget = null;
   var smilesOpen = false;
   var smilesPage = 0;
-  var SMILE_COLS = 8;
   var SMILE_ROWS = 3;
-  var SMILE_PAGE_SIZE = SMILE_COLS * SMILE_ROWS;
+  var SMILE_ROW_H = 25;
+  var SMILE_COL_GAP = 4;
+  var SMILE_MIN_COLS = 4;
   var SMILE_TOKEN_RE = /:([0-9]+|[a-z0-9_]+):/gi;
+
+  function computeSmileCols(grid) {
+    var w = grid && grid.clientWidth ? grid.clientWidth : 300;
+    if (w < 80) w = 300;
+    // Середня ширина колонки — GIF однакової висоти, ширина різна.
+    var avgColW = SMILE_ROW_H + 2;
+    return Math.max(
+      SMILE_MIN_COLS,
+      Math.floor((w + SMILE_COL_GAP) / (avgColW + SMILE_COL_GAP))
+    );
+  }
+
+  function getSmilePageSize(grid) {
+    return computeSmileCols(grid) * SMILE_ROWS;
+  }
 
   function getSmilesCatalog() {
     return window.L2ChatSmiles && L2ChatSmiles.byCode ? L2ChatSmiles.byCode : {};
@@ -111,12 +127,13 @@
       return;
     }
 
-    var totalPages = Math.max(1, Math.ceil(list.length / SMILE_PAGE_SIZE));
+    var pageSize = getSmilePageSize(grid);
+    var totalPages = Math.max(1, Math.ceil(list.length / pageSize));
     if (smilesPage >= totalPages) smilesPage = totalPages - 1;
     if (smilesPage < 0) smilesPage = 0;
 
-    var start = smilesPage * SMILE_PAGE_SIZE;
-    var slice = list.slice(start, start + SMILE_PAGE_SIZE);
+    var start = smilesPage * pageSize;
+    var slice = list.slice(start, start + pageSize);
 
     grid.hidden = false;
     for (var i = 0; i < slice.length; i++) {
@@ -165,12 +182,20 @@
       nextBtn.dataset.wired = '1';
       nextBtn.addEventListener('click', function () {
         var list = getSmilesList();
-        var totalPages = Math.max(1, Math.ceil(list.length / SMILE_PAGE_SIZE));
+        var grid = $('chat-smiles-grid');
+        var pageSize = getSmilePageSize(grid);
+        var totalPages = Math.max(1, Math.ceil(list.length / pageSize));
         if (smilesPage >= totalPages - 1) return;
         smilesPage++;
         renderSmilesPickerPage();
       });
     }
+    if (window.__l2ChatSmilesResizeWired) return;
+    window.__l2ChatSmilesResizeWired = true;
+    window.addEventListener('resize', function () {
+      if (!smilesOpen) return;
+      renderSmilesPickerPage();
+    });
   }
 
   function setSmilesPanelOpen(open) {
