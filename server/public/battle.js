@@ -1761,14 +1761,16 @@
 
     var back = $('battle-back-map');
     if (back) {
-      back.addEventListener('click', function () {
+      back.addEventListener('click', function (e) {
+        e.preventDefault();
         goToMap();
       });
     }
 
     var vMap = $('battle-victory-map');
     if (vMap) {
-      vMap.addEventListener('click', function () {
+      vMap.addEventListener('click', function (e) {
+        e.preventDefault();
         goToMap();
       });
     }

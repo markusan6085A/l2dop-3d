@@ -630,8 +630,6 @@ body.l2-app-l2-chrome .l2-foot-linkbar__btn,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow,
 body.l2-app-l2-chrome .l2-gm-modal-buy,
 body.l2-app-l2-chrome .l2-char-cat-btn,
-body.l2-app-l2-chrome .l2-battle-back-map,
-body.l2-app-l2-chrome .l2-battle-victory-backloc,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity {
   border-color: transparent !important;
   border-style: solid;
@@ -933,25 +931,31 @@ body.l2-app-l2-chrome .l2-char-cat-btn {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
-body.l2-app-l2-chrome .l2-battle-back-map,
-body.l2-app-l2-chrome .l2-battle-victory-backloc {
-  border-radius: var(--l2s-paper-radius, 3px) !important;
-}
-
-/* Бій: «Назад на карту» — без рамки, лише текст #bfa88a */
+/* Бій: «Назад на карту» — лише текст #bfa88a, без ref-рамки */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline;
   border: none !important;
   border-image: none !important;
   background: transparent !important;
   box-shadow: none !important;
   color: #bfa88a !important;
   text-shadow: none !important;
+  text-decoration: none;
   padding: 0 !important;
+  margin: 0 !important;
   max-width: none !important;
   width: auto !important;
   filter: none !important;
   transform: none !important;
+  font-family: var(--l2-font-display);
+  font-size: 11px !important;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.35 !important;
+  cursor: pointer;
 }
 
 body.l2-app-l2-chrome .l2-battle-defeat-tocity {
@@ -986,10 +990,6 @@ body.l2-app-l2-chrome .l2-gm-modal-buy:hover,
 body.l2-app-l2-chrome .l2-gm-modal-buy:focus,
 body.l2-app-l2-chrome .l2-char-cat-btn:hover,
 body.l2-app-l2-chrome .l2-char-cat-btn:focus,
-body.l2-app-l2-chrome .l2-battle-back-map:hover,
-body.l2-app-l2-chrome .l2-battle-back-map:focus,
-body.l2-app-l2-chrome .l2-battle-victory-backloc:hover,
-body.l2-app-l2-chrome .l2-battle-victory-backloc:focus,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity:hover,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity:focus {
   outline: none;
@@ -1150,8 +1150,6 @@ body.l2-app-l2-chrome .l2-foot-linkbar__btn:active,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow:active,
 body.l2-app-l2-chrome .l2-gm-modal-buy:active,
 body.l2-app-l2-chrome .l2-char-cat-btn:active,
-body.l2-app-l2-chrome .l2-battle-back-map:active,
-body.l2-app-l2-chrome .l2-battle-victory-backloc:active,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity:active {
   transform: translateY(0);
   filter: brightness(0.98);
@@ -1242,8 +1240,6 @@ body.l2-app-l2-chrome .l2-pers-newbie-link {
   font-size: 12px !important;
 }
 
-body.l2-app-l2-chrome .l2-battle-back-map,
-body.l2-app-l2-chrome .l2-battle-victory-backloc,
 body.l2-app-l2-chrome .l2-battle-defeat-tocity {
   padding: 3px 12px !important;
   font-size: 11px !important;
