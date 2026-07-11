@@ -410,7 +410,9 @@ export function buildDropsShopCatalogForClient(): {
       .map((category) => ({
         category,
         categoryUk: CATEGORY_UK[category],
-        items: (byCat.get(category) ?? []).map((x) => rowToClient(x, overrides)),
+        items: (byCat.get(category) ?? [])
+          .map((x) => rowToClient(x, overrides))
+          .filter((item) => item.purchasable),
       }))
       .filter((s) => s.items.length > 0);
 
