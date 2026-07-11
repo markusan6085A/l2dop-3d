@@ -915,7 +915,7 @@
   min-width: 0;
   font-size: 14px;
   font-weight: 700;
-  color: #e8d4a0;
+  color: #fff;
 }
 
 .l2-magister-skill-card__meta-row {
@@ -990,29 +990,51 @@
 
 .l2-magister-skill-card__actions {
   margin: 0;
+  flex: 0 0 auto;
+  align-self: flex-start;
 }
 
-/* Компактна кнопка справа в рядку метаданих */
-.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2 {
-  width: auto;
-  max-width: none;
-  min-width: 0;
+/* «Вивчити скіл» — білий текст без рамки */
+.l2-magister-skill-card__learn-link {
+  display: inline-block;
   margin: 0;
-  box-sizing: border-box;
-  font-size: 9px;
-  line-height: 1.2;
-  padding: 2px 6px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--l2-font-display);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-align: right;
+  white-space: nowrap;
+  color: #fff;
+  cursor: pointer;
 }
 
-.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled {
-  opacity: 0.5;
+.l2-magister-skill-card__learn-link--rankup {
+  font-size: 12px;
+}
+
+.l2-magister-skill-card__learn-link:hover,
+.l2-magister-skill-card__learn-link:focus {
+  outline: none;
+  background: transparent;
+  color: #f0f0f0;
+}
+
+.l2-magister-skill-card__learn-link:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
-  filter: grayscale(0.2);
+  color: #fff;
+  filter: none;
 }
 
-.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:hover,
-.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:focus {
-  filter: grayscale(0.2);
+.l2-magister-skill-card__learn-link:disabled:hover,
+.l2-magister-skill-card__learn-link:disabled:focus {
+  color: #fff;
 }
 
 @media (max-width: 520px) {
@@ -1168,13 +1190,50 @@
 
 .l2-magisters-intro {
   margin: 0 0 12px;
+  padding-left: 0.35cm;
+  text-align: left;
 }
 
 .l2-magisters-intro p {
   margin: 0 0 10px;
   font-size: 12px;
   line-height: 1.55;
-  color: rgba(232, 228, 212, 0.92);
+  color: #bfa88a;
+  text-align: left;
+}
+
+.l2-page-magisters .l2-city-npc-card__actions {
+  align-items: flex-start;
+  padding-left: 0.35cm;
+}
+
+.l2-magisters-link {
+  display: inline-block;
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  text-align: left;
+  text-decoration: none;
+  color: #5dbd5d;
+  cursor: pointer;
+}
+
+.l2-magisters-link:hover,
+.l2-magisters-link:focus {
+  color: #7ed67e;
+  outline: none;
+  background: transparent;
 }
 
 .l2-magisters-intro p:last-child {

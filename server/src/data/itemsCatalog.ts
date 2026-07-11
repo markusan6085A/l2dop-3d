@@ -13,6 +13,7 @@ import type { WeaponKindForEnchant } from './l2dopEnchant.js';
 import { mergeNgDropsWeapons } from './itemsCatalogNgWeapons.js';
 import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
 import { JEWELRY_AUTHOR_ITEM_PATCH } from './l2dopJewelryAuthorStats.js';
+import { dropsShieldPatchByNameUk } from './l2dopDropsShieldPatches.js';
 
 /** Базовий крит типу зброї ($WpnCrt) — як у calc_stats для відображення в GM-шопі та каталозі. */
 export function wpnCritForWeaponKind(wt: WeaponKindForEnchant): number {
@@ -394,6 +395,10 @@ export type ItemStatsHintForClient = {
   castSpd?: number;
   /** Підказка для модалки: шанс маг. крита, %. */
   mCritPct?: number;
+  /** Щит: шанс блоку, %. */
+  shieldRatePercent?: number;
+  /** Щит: захист щита. */
+  shieldDef?: number;
 };
 
 /** Для GET /character — стати предметів для модалки/списку (усі записи ITEM_CATALOG з числовими статами). */
@@ -443,6 +448,14 @@ export function itemStatsHintsForClient(): Record<number, ItemStatsHintForClient
     }
     if (typeof m.equipMCritPct === 'number' && m.equipMCritPct > 0) {
       st.mCritPct = m.equipMCritPct;
+    }
+    if (m.slot === 'lhand' && m.nameUk) {
+      const shieldPatch = dropsShieldPatchByNameUk(m.nameUk);
+      if (shieldPatch) {
+        st.pDef = shieldPatch.pDef;
+        st.shieldRatePercent = shieldPatch.shieldRatePercent;
+        st.shieldDef = shieldPatch.shieldDef;
+      }
     }
     if (Object.keys(st).length > 0) out[id] = st;
   }

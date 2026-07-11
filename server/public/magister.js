@@ -913,12 +913,11 @@
       } else {
         var learnBtn = document.createElement('button');
         learnBtn.type = 'button';
+        var isRankUp = s.skillLevel != null && s.skillLevel >= 1;
         learnBtn.className =
-          'btn-l2 btn-l2-primary l2-magister-skill-card__learn-btn';
-        learnBtn.textContent =
-          s.skillLevel != null && s.skillLevel >= 1
-            ? 'Підвищити ранг (' + s.spCost + ' SP)'
-            : 'Вивчити (' + s.spCost + ' SP)';
+          'l2-magister-skill-card__learn-link' +
+          (isRankUp ? ' l2-magister-skill-card__learn-link--rankup' : '');
+        learnBtn.textContent = 'Вивчити скіл';
         if (!s.canLearn) {
           learnBtn.disabled = true;
           learnBtn.title = 'Недостатньо умов (рівень або SP).';

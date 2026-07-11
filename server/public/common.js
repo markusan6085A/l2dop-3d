@@ -296,23 +296,84 @@
       if (u != null && String(u).trim() !== '') return String(u);
       return '/game/item-icon/' + id;
     },
-    /** Тон рядка статів модалки предмета (як у класичному L2-клієнті). */
+    /** Тон підпису стата (магазин / сумка / модалка). */
     itemStatLineTone: function (labelUk) {
-      var s = String(labelUk || '').toLowerCase();
-      if (/фіз\.?\s*атак|p\.?\s*atk\b/i.test(s)) return 'patk';
-      if (/маг\.?\s*атак|m\.?\s*atk\b/i.test(s)) return 'matk';
+      var raw = String(labelUk || '').trim();
+      var s = raw.toLowerCase();
+      if (/hp\s*макс|hp\s*max\b/i.test(s)) return 'hpmax';
+      if (/mp\s*макс|mp\s*max\b/i.test(s)) return 'mpmax';
+      if (/блок\s*щитом/i.test(s)) return 'shield-block';
+      if (/захист\s*щита/i.test(s)) return 'shield-def';
+      if (/маг\.?\s*захист|^m\.?\s*def\b/i.test(s)) return 'mdef';
+      if (/фіз\.?\s*захист/i.test(s)) return 'pdef';
+      if (/^p\.?\s*def$/i.test(raw)) return 'pdef-shield';
+      if (/^p\.?\s*atk|фіз\.?\s*атак/i.test(s)) return 'patk';
+      if (/^m\.?\s*atk|маг\.?\s*атак/i.test(s)) return 'matk';
+      if (/швидк|speed|spd\.?|скор\.?|atk\s*spd|cast\s*spd/i.test(s)) return 'speed';
       if (/крит|crit/i.test(s)) return 'crit';
       return 'default';
+    },
+    /** Пара «Підпис: значення» з кольорами як у магазині. */
+    appendColoredItemStatPair: function (parent, labelUk, valueUk) {
+      if (!parent) return;
+      var label = labelUk != null ? String(labelUk).trim() : '';
+      var val = valueUk != null ? String(valueUk).trim() : '';
+      if (!label && !val) return;
+      if (!label) {
+        var plain = document.createElement('span');
+        plain.className = 'l2-item-stat-plain';
+        plain.textContent = val;
+        parent.appendChild(plain);
+        return;
+      }
+      var tone = global.L2.itemStatLineTone(label);
+      var lblSpan = document.createElement('span');
+      lblSpan.className = 'l2-item-stat-lbl l2-item-stat-lbl--' + tone;
+      lblSpan.textContent = label + ':';
+      var sp = document.createElement('span');
+      sp.className = 'l2-item-stat-sp';
+      sp.textContent = ' ';
+      var valSpan = document.createElement('span');
+      valSpan.className = 'l2-item-stat-val';
+      valSpan.textContent = val;
+      parent.appendChild(lblSpan);
+      parent.appendChild(sp);
+      parent.appendChild(valSpan);
+    },
+    /** Рядок stat preview (може містити «|» між частинами). */
+    appendColoredItemStatSegments: function (parent, labelUk, valueUk) {
+      if (!parent) return;
+      var label = labelUk != null ? String(labelUk).trim() : '';
+      var val = valueUk != null ? String(valueUk).trim() : '';
+      var raw = label ? label + ': ' + val : val;
+      var segments = raw.split('|');
+      for (var si = 0; si < segments.length; si++) {
+        if (si > 0) {
+          var sep = document.createElement('span');
+          sep.className = 'l2-item-stat-sep';
+          sep.textContent = ' | ';
+          parent.appendChild(sep);
+        }
+        var chunk = segments[si].trim();
+        var ci = chunk.indexOf(':');
+        if (ci === -1) {
+          var plain = document.createElement('span');
+          plain.className = 'l2-item-stat-plain';
+          plain.textContent = chunk;
+          parent.appendChild(plain);
+          continue;
+        }
+        var lbl = chunk.slice(0, ci).trim();
+        var num = chunk.slice(ci + 1).trim();
+        global.L2.appendColoredItemStatPair(parent, lbl, num);
+      }
     },
     /** Один рядок «Підпис: значення» у модалці предмета. */
     appendItemStatLine: function (parent, labelUk, valueUk) {
       if (!parent) return;
-      var label = labelUk != null ? String(labelUk).trim() : '';
-      var val = valueUk != null ? String(valueUk) : '';
       var p = document.createElement('p');
-      var tone = global.L2.itemStatLineTone(label);
-      p.className = 'l2-item-modal-stat l2-item-modal-stat--' + tone;
-      p.textContent = label ? label + ': ' + val : val;
+      p.className = 'l2-item-modal-stat';
+      global.L2.appendColoredItemStatPair(p, labelUk, valueUk);
       parent.appendChild(p);
     },
     resolveSkillIconUrl: function (skillId, iconUrl) {
@@ -616,6 +677,17 @@
       return p || '';
     },
 
+    /** Текст EXP% для legacy HUD. */
+    formatLegacyExpPctText: function (expPct) {
+      var p = Math.max(0, Math.min(100, Number(expPct) || 0));
+      return p.toFixed(2) + ' %';
+    },
+
+    /** HTML для EXP% у legacy HUD (deprecated — лишено для сумісності). */
+    formatLegacyExpPctHtml: function (expPct) {
+      return global.L2.formatLegacyExpPctText(expPct);
+    },
+
     /** Ціле для HUD (HP/MP/SP): без дубля cur/max, лише поточне значення з snapshot. */
     hudStatInt: function (v) {
       if (v == null || v === '') return '—';
@@ -650,7 +722,12 @@
         'l2-top-strip-mp-max',
       ].forEach(function (id) {
         var el = document.getElementById(id);
-        if (el) el.textContent = '—';
+        if (!el) return;
+        if (id === 'l2-hud-exp-pct' && el.classList.contains('l2-hud-legacy-val')) {
+          el.textContent = global.L2.formatLegacyExpPctText(0);
+          return;
+        }
+        el.textContent = '—';
       });
       ['l2-hud-exp-fill', 'l2-hud-hp-inner', 'l2-hud-mp-inner', 'l2-hud-cp-inner'].forEach(function (id) {
         var el = document.getElementById(id);
@@ -716,12 +793,17 @@
       set('l2-hud-exp-max', c.expBarMax != null ? c.expBarMax : '—');
       var expPct = c.expBarPct != null ? Number(c.expBarPct) : 0;
       setExpFillPct(expPct);
-      set(
-        'l2-hud-exp-pct',
-        isLegacyMinimal
-          ? Math.max(0, Math.min(100, expPct)).toFixed(2) + ' %'
-          : Math.max(0, Math.min(100, expPct)).toFixed(1) + '%'
-      );
+      if (isLegacyMinimal) {
+        set(
+          'l2-hud-exp-pct',
+          global.L2.formatLegacyExpPctText(expPct)
+        );
+      } else {
+        set(
+          'l2-hud-exp-pct',
+          Math.max(0, Math.min(100, expPct)).toFixed(1) + '%'
+        );
+      }
       var expBar = document.getElementById('l2-hud-exp-bar');
       if (expBar) {
         expBar.setAttribute('aria-valuenow', String(Math.round(expPct)));

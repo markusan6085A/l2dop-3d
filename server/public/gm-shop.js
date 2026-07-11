@@ -21,15 +21,30 @@
   ]);
 
   function shopStatLabelTone(label) {
-    var s = String(label || '').trim().toLowerCase();
-    if (s === 'p.atk') return 'patk';
-    if (s === 'm.atk') return 'matk';
-    if (s === 'speed') return 'speed';
-    if (s === 'crit') return 'crit';
+    if (window.L2 && typeof window.L2.itemStatLineTone === 'function') {
+      return window.L2.itemStatLineTone(label);
+    }
+    var raw = String(label || '').trim();
+    var s = raw.toLowerCase();
+    if (/hp\s*макс|hp\s*max\b/i.test(s)) return 'hpmax';
+    if (/mp\s*макс|mp\s*max\b/i.test(s)) return 'mpmax';
+    if (/блок\s*щитом/i.test(s)) return 'shield-block';
+    if (/захист\s*щита/i.test(s)) return 'shield-def';
+    if (/маг\.?\s*захист|^m\.?\s*def\b/i.test(s)) return 'mdef';
+    if (/фіз\.?\s*захист/i.test(s)) return 'pdef';
+    if (/^p\.?\s*def$/i.test(raw)) return 'pdef-shield';
+    if (/^p\.?\s*atk|фіз\.?\s*атак/i.test(s)) return 'patk';
+    if (/^m\.?\s*atk|маг\.?\s*атак/i.test(s)) return 'matk';
+    if (/швидк|speed|spd\.?|скор\.?|atk\s*spd|cast\s*spd/i.test(s)) return 'speed';
+    if (/крит|crit/i.test(s)) return 'crit';
     return 'default';
   }
 
   function appendShopRowStats(container, labelUk, valueUk) {
+    if (window.L2 && typeof window.L2.appendColoredItemStatSegments === 'function') {
+      window.L2.appendColoredItemStatSegments(container, labelUk, valueUk);
+      return;
+    }
     var label = labelUk != null ? String(labelUk).trim() : '';
     var val = valueUk != null ? String(valueUk).trim() : '';
     var raw = label ? label + ': ' + val : val;
@@ -37,7 +52,7 @@
     for (var si = 0; si < segments.length; si++) {
       if (si > 0) {
         var sep = document.createElement('span');
-        sep.className = 'l2-gm-shop-stat-sep';
+        sep.className = 'l2-item-stat-sep';
         sep.textContent = ' | ';
         container.appendChild(sep);
       }
@@ -53,13 +68,13 @@
       var num = chunk.slice(ci + 1).trim();
       var lblSpan = document.createElement('span');
       lblSpan.className =
-        'l2-gm-shop-stat-lbl l2-gm-shop-stat-lbl--' + shopStatLabelTone(lbl);
+        'l2-item-stat-lbl l2-item-stat-lbl--' + shopStatLabelTone(lbl);
       lblSpan.textContent = lbl + ':';
       var sp = document.createElement('span');
-      sp.className = 'l2-gm-shop-stat-sp';
+      sp.className = 'l2-item-stat-sp';
       sp.textContent = ' ';
       var valSpan = document.createElement('span');
-      valSpan.className = 'l2-gm-shop-stat-val';
+      valSpan.className = 'l2-item-stat-val';
       valSpan.textContent = num;
       container.appendChild(lblSpan);
       container.appendChild(sp);
@@ -850,7 +865,7 @@
             var ln = it.statsPreview.lines[si];
             if (si > 0) {
               var dotSep = document.createElement('span');
-              dotSep.className = 'l2-gm-shop-stat-sep';
+              dotSep.className = 'l2-item-stat-sep';
               dotSep.textContent = ' · ';
               statEl.appendChild(dotSep);
             }

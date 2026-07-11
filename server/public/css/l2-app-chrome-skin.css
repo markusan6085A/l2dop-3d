@@ -833,34 +833,6 @@ body.l2-app-l2-chrome.l2-page-auth div.main .logo {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
 }
 
-/**
- * «Новачкам!» — рамка /assets/1512125-removebg-preview-removebg-preview.png
- */
-body.l2-app-l2-chrome .l2-pers-newbie-link {
-  box-sizing: border-box !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: 0 !important;
-  border-width: 0 !important;
-  border-style: none !important;
-  border-color: transparent !important;
-  border-radius: 0 !important;
-  border-image: none !important;
-  border-image-source: none !important;
-  border-image-slice: none !important;
-  border-image-width: 0 !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705newbie1512') center / 100% 100%
-    no-repeat !important;
-  min-height: 32px;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
-  padding: 8px 18px !important;
-  text-decoration: none !important;
-  filter: none !important;
-  -webkit-filter: none !important;
-}
-
 /* Футер: Форум / Новини / Підтримка / Правила — рамка /assets/1512125-removebg-preview-removebg-preview.png */
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--frame4187 {
   border: 0 !important;
@@ -894,8 +866,7 @@ body.l2-app-l2-chrome .btn-l2-secondary {
 }
 
 body.l2-app-l2-chrome a.l2-town-btn,
-body.l2-app-l2-chrome button.l2-town-btn,
-body.l2-app-l2-chrome .l2-pers-newbie-link {
+body.l2-app-l2-chrome button.l2-town-btn {
   color: #f0e6b8 !important;
   text-decoration: none !important;
 }
@@ -1054,20 +1025,6 @@ body.l2-app-l2-chrome .l2-battle-victory-link--muted:active {
   filter: none !important;
 }
 
-body.l2-app-l2-chrome .l2-pers-newbie-link:hover,
-body.l2-app-l2-chrome .l2-pers-newbie-link:focus {
-  outline: none;
-  filter: brightness(1.08) !important;
-  -webkit-filter: brightness(1.08) !important;
-  transform: translateY(-1px);
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
-  border: 0 !important;
-  border-image: none !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705newbie1512') center / 100% 100%
-    no-repeat !important;
-}
-
 body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta:hover,
 body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta:focus,
 body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta:focus-visible {
@@ -1143,7 +1100,6 @@ body.l2-app-l2-chrome .btn-l2-secondary:active,
 body.l2-app-l2-chrome .btn-cta:active,
 body.l2-app-l2-chrome a.l2-town-btn:active,
 body.l2-app-l2-chrome button.l2-town-btn:active,
-body.l2-app-l2-chrome .l2-pers-newbie-link:active,
 body.l2-app-l2-chrome .l2-city-tp-item:active,
 body.l2-app-l2-chrome .l2-map-mob-page-btn:active:not(:disabled),
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:active,
@@ -1158,9 +1114,7 @@ body.l2-app-l2-chrome .l2-battle-defeat-tocity:active {
 body.l2-app-l2-chrome a.l2-town-btn::before,
 body.l2-app-l2-chrome a.l2-town-btn::after,
 body.l2-app-l2-chrome button.l2-town-btn::before,
-body.l2-app-l2-chrome button.l2-town-btn::after,
-body.l2-app-l2-chrome .l2-pers-newbie-link::before,
-body.l2-app-l2-chrome .l2-pers-newbie-link::after {
+body.l2-app-l2-chrome button.l2-town-btn::after {
   content: none !important;
   display: none !important;
 }
@@ -1228,16 +1182,6 @@ body.l2-app-l2-chrome button.l2-town-btn {
   padding: 6px 12px !important;
   font-size: 12px !important;
   margin: 0 0 8px !important;
-}
-
-/* «Новачкам!» — рамка 1512125; ширина ~8 см по центру. */
-body.l2-app-l2-chrome .l2-pers-newbie-link {
-  width: 100%;
-  max-width: 8cm;
-  margin: 0 auto 8px !important;
-  font-family: var(--l2-font-display);
-  font-weight: 600;
-  font-size: 12px !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-defeat-tocity {
@@ -1945,57 +1889,58 @@ body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus-v
   filter: brightness(1.06) !important;
 }
 
-/* magisters.html: «Вивчити навички» та «Вивчені скіли» — рамка 1512125 */
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn {
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* magisters.html: intro — #bfa88a; посилання навчання — зелений текст без рамки */
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-intro p {
+  color: #bfa88a !important;
+  text-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link {
+  display: inline-block !important;
+  width: auto !important;
+  max-width: 100% !important;
   margin: 0 !important;
-  border: 0 !important;
-  border-width: 0 !important;
-  border-style: none !important;
-  border-color: transparent !important;
-  border-radius: 0 !important;
+  padding: 4px 0 !important;
+  border: none !important;
   border-image: none !important;
-  border-image-source: none !important;
-  border-image-slice: none !important;
-  border-image-width: 0 !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705mag1512') center / 100% 100%
-    no-repeat !important;
-  min-height: 36px;
-  padding: 10px 14px !important;
-  -webkit-box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
   filter: none !important;
   -webkit-filter: none !important;
   transform: none !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #5dbd5d !important;
+  text-shadow: none !important;
+  text-decoration: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:hover,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus-visible,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:hover,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn:focus-visible {
-  border: 0 !important;
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link:hover,
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link:focus,
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link:focus-visible {
+  color: #7ed67e !important;
+  background: transparent !important;
+  border: none !important;
   border-image: none !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705mag1512') center / 100% 100%
-    no-repeat !important;
-  transform: none !important;
-  -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  filter: brightness(1.06) !important;
-  -webkit-filter: brightness(1.06) !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+  outline: none;
 }
 
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn::before,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn::after,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn::before,
-body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions button.l2-town-btn::after {
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link::before,
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link::after {
   content: none !important;
   display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions {
+  align-items: flex-start !important;
+  padding-left: 0.35cm;
 }
 
 /* magister.html: «Назад до міста» — така ж рамка /ref/989899.png */
@@ -2077,50 +2022,62 @@ body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2:focus-vis
   -webkit-filter: brightness(1.06) !important;
 }
 
-/* magister.html: «Вивчити» / «Підвищити ранг» — рамка 1512125 */
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2 {
-  box-sizing: border-box !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: 0 !important;
-  border-width: 0 !important;
-  border-style: none !important;
-  border-color: transparent !important;
-  border-radius: 0 !important;
+/* magister.html: назви скілів і «Вивчити скіл» — білий */
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__name {
+  color: #fff !important;
+  text-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link {
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
   border-image: none !important;
-  border-image-source: none !important;
-  border-image-slice: none !important;
-  border-image-width: 0 !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magister1512') center / 100% 100%
-    no-repeat !important;
-  min-height: 28px;
-  padding: 4px 10px !important;
-  -webkit-box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
   filter: none !important;
   -webkit-filter: none !important;
   transform: none !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  color: #fff !important;
+  text-shadow: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:hover,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:focus,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:focus-visible {
-  border: 0 !important;
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link--rankup {
+  font-size: 12px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link:focus,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link:focus-visible {
+  background: transparent !important;
+  border: none !important;
   border-image: none !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magister1512') center / 100% 100%
-    no-repeat !important;
-  transform: none !important;
-  -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  filter: brightness(1.06) !important;
-  -webkit-filter: brightness(1.06) !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+  outline: none;
+  color: #f0f0f0 !important;
 }
 
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:hover,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-btn.btn-l2:disabled:focus {
-  filter: grayscale(0.2) !important;
-  -webkit-filter: grayscale(0.2) !important;
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  color: #fff !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link:disabled:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-skill-card__learn-link:disabled:focus {
+  color: #fff !important;
+  filter: none !important;
+  -webkit-filter: none !important;
   transform: none !important;
 }
 
@@ -2480,6 +2437,14 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
   border-top: 0 !important;
   border-bottom: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
   background: transparent !important;
+  display: grid;
+  grid-template-columns: 2.75em 7ch;
+  column-gap: 4px;
+  row-gap: 0;
+  align-items: center;
+  font-size: 12.6px;
+  line-height: 1.12;
+  color: #f0eee8;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
@@ -2487,6 +2452,7 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
   font-size: 14px;
   line-height: 1.15;
   margin: 0 0 2px;
+  grid-column: 1 / -1;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-level {
@@ -2502,44 +2468,33 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-top-strip-vitals {
   display: none !important;
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line {
-  display: flex;
-  align-items: baseline;
-  font-size: 12.6px;
-  line-height: 1.12;
-  color: #f0eee8;
-  margin: 0;
-}
-
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp,
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp {
-  display: grid;
-  grid-template-columns: 2.35em minmax(0, auto);
-  column-gap: 4px;
-  align-items: baseline;
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp {
+  display: contents;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-key {
   font-weight: 700;
   font-size: 0.8em;
-  flex-shrink: 0;
-}
-
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-key,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp .l2-hud-legacy-key {
-  width: 2.35em;
-  min-width: 2.35em;
+  justify-self: start;
   text-align: left;
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-val {
-  margin-left: 0;
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-val,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-hp-cur,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-mp-cur,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-cp-cur,
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-exp-pct {
+  margin: 0;
+  justify-self: start;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+  font-size: 1em;
+  line-height: 1.12;
   text-align: left;
-  min-width: 0;
+  white-space: nowrap;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key,

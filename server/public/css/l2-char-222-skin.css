@@ -406,13 +406,14 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-dr
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--armor-piece,
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub {
   display: flex !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 0 !important;
-  overflow-x: visible !important;
-  overflow-y: visible !important;
-  -webkit-overflow-scrolling: auto !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats {
@@ -671,6 +672,88 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-inv-row--grades {
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--click:hover,
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--click:focus {
   background: rgba(40, 28, 12, 0.42);
+}
+
+/* Модалка предмета: без рамки 541 — фон #1d1c1a, легка обводка */
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-gm-modal {
+  border: 1px solid rgba(120, 100, 72, 0.42) !important;
+  border-width: 1px !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-radius: 4px;
+  background: #1d1c1a !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-modal-heading {
+  border-bottom-color: rgba(120, 100, 72, 0.35);
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--patk,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--patk {
+  color: #c41818;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--matk,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--matk {
+  color: #1e7ae8;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--speed,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--speed {
+  color: #9a9488;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--crit,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--crit {
+  color: #b060d0;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--pdef,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--pdef {
+  color: #c41818;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--pdef-shield,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--pdef-shield {
+  color: #9a9488;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--shield-block,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--shield-block {
+  color: #5dbd5d;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--shield-def,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--shield-def {
+  color: #c41818;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--mdef,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--mdef {
+  color: #1e7ae8;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--hpmax,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--hpmax {
+  color: #c41818;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-lbl--mpmax,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-lbl--mpmax {
+  color: #5ec8f0;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-val,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-val {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-stats .l2-item-stat-sep,
+body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-item-stat-sep {
+  color: #6a6358;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-modal-craft-hint {

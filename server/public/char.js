@@ -71,9 +71,9 @@
     };
   }
 
-  function itemStatsLine(id) {
+  function itemStatsParts(id) {
     var st = window.L2 && L2.itemStatsById && L2.itemStatsById[id];
-    if (!st || typeof st !== 'object') return '';
+    if (!st || typeof st !== 'object') return [];
     var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[id];
     var hasJewelAuthor =
       st.jewelMdefFlat != null ||
@@ -88,32 +88,106 @@
       sl === 'neck' ||
       sl === 'earring' ||
       hasJewelAuthor;
+    var isShield = sl === 'lhand' || sl === 'shield';
+    var isArmor =
+      sl === 'head' ||
+      sl === 'chest' ||
+      sl === 'legs' ||
+      sl === 'gloves' ||
+      sl === 'feet' ||
+      sl === 'fullarmor';
     var parts = [];
-    if (st.pAtk != null) parts.push('P.Atk ' + st.pAtk);
-    if (isJewel) {
-      var mdef = st.jewelMdefFlat != null ? st.jewelMdefFlat : st.jewelryMAtk != null ? st.jewelryMAtk : st.mAtk;
-      if (mdef != null) parts.push('M.Def ' + mdef);
-      if (st.jewelMaxHp != null) parts.push('HP +' + st.jewelMaxHp);
-      if (st.jewelMaxMp != null) parts.push('MP +' + st.jewelMaxMp);
-      if (st.jewelAcc != null) parts.push('Точн. +' + st.jewelAcc);
-      if (st.jewelEva != null) parts.push('Ухил. +' + st.jewelEva);
+    if (st.pAtk != null) parts.push({ label: 'P.Atk', value: String(st.pAtk) });
+    if (isShield) {
+      if (st.pDef != null) parts.push({ label: 'P.Def', value: String(st.pDef) });
+      if (st.shieldRatePercent != null) {
+        parts.push({
+          label: 'Блок щитом',
+          value: String(st.shieldRatePercent) + '%',
+        });
+      }
+      if (st.shieldDef != null) {
+        parts.push({ label: 'Захист щита', value: String(st.shieldDef) });
+      }
+    } else if (isJewel) {
+      var mdef =
+        st.jewelMdefFlat != null
+          ? st.jewelMdefFlat
+          : st.jewelryMAtk != null
+            ? st.jewelryMAtk
+            : st.mAtk;
+      if (mdef != null) {
+        parts.push({ label: 'Маг. захист (M.Def)', value: String(mdef) });
+      }
+      if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
+        parts.push({ label: 'HP макс.', value: '+' + String(st.jewelMaxHp) });
+      }
+      if (st.jewelMaxMp != null && st.jewelMaxMp > 0) {
+        parts.push({ label: 'MP макс.', value: '+' + String(st.jewelMaxMp) });
+      }
+      if (st.jewelAcc != null && st.jewelAcc > 0) {
+        parts.push({ label: 'Точність', value: '+' + String(st.jewelAcc) });
+      }
+      if (st.jewelEva != null && st.jewelEva > 0) {
+        parts.push({ label: 'Ухилення', value: '+' + String(st.jewelEva) });
+      }
       if (st.jewelMpRegenMul != null && st.jewelMpRegenMul > 1) {
-        parts.push('Реген MP ' + pctFromMulUk(st.jewelMpRegenMul));
+        parts.push({ label: 'Реген MP', value: pctFromMulUk(st.jewelMpRegenMul) });
       }
       if (st.jewelHoldResistMul != null && st.jewelHoldResistMul > 1) {
-        parts.push('Стійк. утрим. ' + pctFromMulUk(st.jewelHoldResistMul));
+        parts.push({
+          label: 'Стійкість до утримання',
+          value: pctFromMulUk(st.jewelHoldResistMul),
+        });
       }
-      if (st.pDef != null) parts.push('P.Def ' + st.pDef);
+      if (st.pDef != null && st.pDef > 0) {
+        parts.push({ label: 'Фіз. захист', value: String(st.pDef) });
+      }
     } else {
-      if (st.mAtk != null) parts.push('M.Atk ' + st.mAtk);
-      if (st.pDef != null) parts.push('P.Def ' + st.pDef);
+      if (st.mAtk != null) parts.push({ label: 'M.Atk', value: String(st.mAtk) });
+      if (isArmor && st.pDef != null) {
+        parts.push({ label: 'Фіз. захист (P.Def)', value: String(st.pDef) });
+      } else if (st.pDef != null) {
+        parts.push({ label: 'P.Def', value: String(st.pDef) });
+      }
     }
-    if (st.atkSpd != null) parts.push('Скор. ' + st.atkSpd);
-    if (st.wpnCrit != null) parts.push('Крит (база) ' + st.wpnCrit);
+    if (st.atkSpd != null) parts.push({ label: 'Spd.', value: String(st.atkSpd) });
+    if (st.wpnCrit != null) parts.push({ label: 'Crit', value: String(st.wpnCrit) });
     if (st.rCrit != null && Number(st.rCrit) > 0) {
-      parts.push('Шанс крит +' + String(st.rCrit));
+      parts.push({ label: 'Crit', value: '+' + String(st.rCrit) });
     }
-    return parts.length ? parts.join(' · ') : '';
+    return parts;
+  }
+
+  function itemStatsLine(id) {
+    var parts = itemStatsParts(id);
+    if (!parts.length) return '';
+    return parts
+      .map(function (p) {
+        return p.label + ' ' + p.value;
+      })
+      .join(' · ');
+  }
+
+  function appendBagRowStats(container, parts) {
+    if (!container || !parts || !parts.length) return;
+    for (var pi = 0; pi < parts.length; pi++) {
+      if (pi > 0) {
+        var sep = document.createElement('span');
+        sep.className = 'l2-item-stat-sep';
+        sep.textContent = ' · ';
+        container.appendChild(sep);
+      }
+      var part = parts[pi];
+      if (window.L2 && typeof L2.appendColoredItemStatPair === 'function') {
+        L2.appendColoredItemStatPair(container, part.label, part.value);
+      } else {
+        var plain = document.createElement('span');
+        plain.className = 'l2-item-stat-plain';
+        plain.textContent = part.label + ' ' + part.value;
+        container.appendChild(plain);
+      }
+    }
   }
 
   /** Дефолтні іконки слотів (як SLOT_ICONS у text-rpg) */
@@ -945,11 +1019,11 @@
       if (en > 0) nameLine += ' +' + en;
       label.textContent = nameLine;
       mid.appendChild(label);
-      var statLine = itemStatsLine(st.itemId);
-      if (statLine) {
+      var statParts = itemStatsParts(st.itemId);
+      if (statParts.length) {
         var stEl = document.createElement('span');
         stEl.className = 'l2-char-bag-stats';
-        stEl.textContent = statLine;
+        appendBagRowStats(stEl, statParts);
         mid.appendChild(stEl);
       }
       row.appendChild(ic);
@@ -1430,16 +1504,30 @@
       slKind === 'neck' ||
       slKind === 'earring' ||
       hasJewelAuthorModal;
+    var isShieldModal = slKind === 'lhand' || slKind === 'shield';
+    var isArmorModal =
+      slKind === 'head' ||
+      slKind === 'chest' ||
+      slKind === 'legs' ||
+      slKind === 'gloves' ||
+      slKind === 'feet' ||
+      slKind === 'fullarmor';
     if (st && typeof st === 'object') {
       if (st.pAtk != null) addRow('Фіз. атака', String(st.pAtk));
-      if (isJewelModal) {
+      if (isShieldModal) {
+        if (st.pDef != null) addRow('P.Def', String(st.pDef));
+        if (st.shieldRatePercent != null) {
+          addRow('Блок щитом', String(st.shieldRatePercent) + '%');
+        }
+        if (st.shieldDef != null) addRow('Захист щита', String(st.shieldDef));
+      } else if (isJewelModal) {
         var mdef =
           st.jewelMdefFlat != null
             ? st.jewelMdefFlat
             : st.jewelryMAtk != null
               ? st.jewelryMAtk
               : st.mAtk;
-        if (mdef != null) addRow('Маг. захист', String(mdef));
+        if (mdef != null) addRow('Маг. захист (M.Def)', String(mdef));
         if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
           addRow('HP макс.', '+' + String(st.jewelMaxHp));
         }
@@ -1466,10 +1554,14 @@
         ) {
           addRow('Стійкість до утримання', pctFromMulUk(st.jewelHoldResistMul));
         }
-        if (st.pDef != null) addRow('Фіз. захист', String(st.pDef));
+        if (st.pDef != null) addRow('Фіз. захист (P.Def)', String(st.pDef));
       } else {
         if (st.mAtk != null) addRow('Маг. атака', String(st.mAtk));
-        if (st.pDef != null) addRow('Фіз. захист', String(st.pDef));
+        if (isArmorModal && st.pDef != null) {
+          addRow('Фіз. захист (P.Def)', String(st.pDef));
+        } else if (st.pDef != null) {
+          addRow('P.Def', String(st.pDef));
+        }
       }
       if (st.atkSpd != null) addRow('Швидкість бою', String(st.atkSpd));
       if (st.wpnCrit != null) addRow('Крит.', String(st.wpnCrit));

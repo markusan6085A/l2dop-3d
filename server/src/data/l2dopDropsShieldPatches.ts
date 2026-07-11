@@ -139,6 +139,25 @@ export const L2DOP_DROPS_SHIELD_BY_SHOP_KEY_LOWER: Readonly<
   {} as Record<string, DropsShieldPatch>,
 );
 
+/** Пошук патча щита за назвою предмета (сумка / модалка). */
+export const L2DOP_DROPS_SHIELD_BY_NAME_UK_LOWER: Readonly<
+  Record<string, DropsShieldPatch>
+> = RAW.reduce(
+  (acc, [, patch]) => {
+    acc[patch.nameUk.trim().toLowerCase()] = patch;
+    return acc;
+  },
+  {} as Record<string, DropsShieldPatch>,
+);
+
+export function dropsShieldPatchByNameUk(
+  nameUk: string | undefined | null,
+): DropsShieldPatch | undefined {
+  const key = String(nameUk ?? '').trim().toLowerCase();
+  if (!key) return undefined;
+  return L2DOP_DROPS_SHIELD_BY_NAME_UK_LOWER[key];
+}
+
 export function dropsShieldShopPreviewLines(
   patch: DropsShieldPatch,
 ): DropsShopStatLineUk[] {

@@ -570,8 +570,13 @@
 .l2-gm-shop .l2-drops-shop-tablist--armor-piece,
 .l2-gm-shop .l2-drops-shop-tablist--jewelry-sub,
 .l2-gm-shop .l2-drops-shop-tablist--consumable-sub {
-  flex-wrap: wrap;
-  gap: 2px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  gap: 0;
   margin-bottom: 4px;
   padding-bottom: 4px;
 }
@@ -795,23 +800,69 @@ button.l2-gm-shop-icon-btn:hover .l2-gm-shop-icon-img {
   margin: 0 0 3px;
   font-size: 12px;
   line-height: 1.45;
-  color: #e8e4dc;
+  color: #fff;
 }
 
-.l2-item-modal-stat--patk {
-  color: #e8b878;
+/* Кольори статів (магазин / сумка / модалка): підпис + біле значення */
+.l2-item-stat-lbl--patk {
+  color: #c41818;
 }
 
-.l2-item-modal-stat--matk {
-  color: #78c8e8;
+.l2-item-stat-lbl--matk {
+  color: #1e7ae8;
 }
 
-.l2-item-modal-stat--crit {
-  color: #d878e8;
+.l2-item-stat-lbl--speed {
+  color: #9a9488;
 }
 
-.l2-item-modal-stat--default {
-  color: #e8e4dc;
+.l2-item-stat-lbl--crit {
+  color: #b060d0;
+}
+
+.l2-item-stat-lbl--pdef {
+  color: #c41818;
+}
+
+.l2-item-stat-lbl--pdef-shield {
+  color: #9a9488;
+}
+
+.l2-item-stat-lbl--shield-block {
+  color: #5dbd5d;
+}
+
+.l2-item-stat-lbl--shield-def {
+  color: #c41818;
+}
+
+.l2-item-stat-lbl--mdef {
+  color: #1e7ae8;
+}
+
+.l2-item-stat-lbl--hpmax {
+  color: #c41818;
+}
+
+.l2-item-stat-lbl--mpmax {
+  color: #5ec8f0;
+}
+
+.l2-item-stat-lbl--default {
+  color: #fff;
+}
+
+.l2-item-stat-val {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.l2-item-stat-plain {
+  color: #fff;
+}
+
+.l2-item-stat-sep {
+  color: #6a6358;
 }
 
 .l2-drops-stats-modal__ico {

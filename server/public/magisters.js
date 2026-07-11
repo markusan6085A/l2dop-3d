@@ -66,13 +66,13 @@
       (n.actions || []).forEach(function (a) {
         if (!isMagisterLearnHref(a)) return;
         var link = document.createElement('a');
-        link.className = 'l2-town-btn';
+        link.className = 'l2-magisters-link';
         link.href = a.href;
         link.textContent = a.labelUk;
         actionsWrap.appendChild(link);
 
         var learnedLink = document.createElement('a');
-        learnedLink.className = 'l2-town-btn l2-town-btn--learned-skills';
+        learnedLink.className = 'l2-magisters-link';
         learnedLink.href = magisterLearnedHref(a.href);
         learnedLink.textContent = 'Вивчені скіли';
         actionsWrap.appendChild(learnedLink);

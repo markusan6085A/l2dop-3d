@@ -12,6 +12,13 @@ body.l2-app-l2-chrome.l2-page-gm-shop {
   --l2-gm-shop-stat-matk: #1e7ae8;
   --l2-gm-shop-stat-speed: #9a9488;
   --l2-gm-shop-stat-crit: #b060d0;
+  --l2-gm-shop-stat-pdef: #c41818;
+  --l2-gm-shop-stat-pdef-shield: #9a9488;
+  --l2-gm-shop-stat-shield-block: #5dbd5d;
+  --l2-gm-shop-stat-shield-def: #c41818;
+  --l2-gm-shop-stat-mdef: #1e7ae8;
+  --l2-gm-shop-stat-hpmax: #c41818;
+  --l2-gm-shop-stat-mpmax: #5ec8f0;
   --l2-gm-shop-stat-val: #fff;
   --l2-gm-shop-price-gold: #d4a020;
   --l2-gm-shop-weapon-tab: #ffba00;
@@ -45,7 +52,10 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist {
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats,
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades,
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-all,
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind {
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub {
   flex-wrap: nowrap !important;
   justify-content: center !important;
   overflow-x: auto !important;
@@ -54,15 +64,9 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--
   scrollbar-width: thin !important;
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub,
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece,
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub {
-  display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  flex-wrap: unset !important;
-  justify-content: stretch !important;
-  align-items: stretch !important;
-  overflow: visible !important;
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub {
   margin-bottom: 2px !important;
 }
 
@@ -97,9 +101,34 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab {
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab,
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab,
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab {
-  width: 100% !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
   min-width: 0 !important;
-  padding: 2px 3px !important;
+  padding: 0 !important;
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+  color: var(--l2-gm-shop-weapon-tab) !important;
+  font-weight: 400 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab:hover,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab:focus,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab:hover,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab:focus,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab:hover,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab:focus {
+  color: var(--l2-gm-shop-weapon-tab-active) !important;
+  background: transparent !important;
+  filter: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab--active,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab--active,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab--active {
+  color: var(--l2-gm-shop-weapon-tab-active) !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  filter: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab {
@@ -153,11 +182,14 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--
   display: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab + .l2-drops-shop-tab::before {
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab + .l2-drops-shop-tab::before,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab + .l2-drops-shop-tab::before,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab + .l2-drops-shop-tab::before,
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab + .l2-drops-shop-tab::before {
   content: '|' !important;
   display: inline !important;
-  margin: 0 1px !important;
-  color: rgba(255, 186, 0, 0.45) !important;
+  margin: 0 4px !important;
+  color: rgba(255, 186, 0, 0.55) !important;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab + .l2-drops-shop-tab::before {
@@ -167,14 +199,6 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab + .l2
   color: var(--l2-gm-shop-tab-sep) !important;
   font-weight: 400 !important;
   pointer-events: none !important;
-}
-
-/* Броня/аксесуари/розхідники — сітка, без «|» */
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab::before,
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab::before,
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab::before {
-  content: none !important;
-  display: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab:hover,
@@ -250,27 +274,68 @@ body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row-stat {
   line-height: 1.35;
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-sep {
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-sep,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-sep {
   color: var(--l2-gm-shop-tab-sep);
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--patk {
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--patk,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--patk {
   color: var(--l2-gm-shop-stat-patk);
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--matk {
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--matk,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--matk {
   color: var(--l2-gm-shop-stat-matk);
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--speed {
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--speed,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--speed {
   color: var(--l2-gm-shop-stat-speed);
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--crit {
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--crit,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--crit {
   color: var(--l2-gm-shop-stat-crit);
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-val {
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--pdef,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--pdef {
+  color: var(--l2-gm-shop-stat-pdef);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--pdef-shield,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--pdef-shield {
+  color: var(--l2-gm-shop-stat-pdef-shield);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--shield-block,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--shield-block {
+  color: var(--l2-gm-shop-stat-shield-block);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--shield-def,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--shield-def {
+  color: var(--l2-gm-shop-stat-shield-def);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--mdef,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--mdef {
+  color: var(--l2-gm-shop-stat-mdef);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--hpmax,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--hpmax {
+  color: var(--l2-gm-shop-stat-hpmax);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--mpmax,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--mpmax {
+  color: var(--l2-gm-shop-stat-mpmax);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-val,
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-val {
   color: var(--l2-gm-shop-stat-val);
 }
 
@@ -338,4 +403,73 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--
   body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
     font-size: 13px !important;
   }
+}
+
+/* Модалка предмета в магазині: як у сумці — фон #1d1c1a, легка обводка */
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel {
+  border: 1px solid rgba(120, 100, 72, 0.42) !important;
+  border-width: 1px !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-radius: 4px;
+  background: #1d1c1a !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-modal-heading {
+  border-bottom-color: rgba(120, 100, 72, 0.35);
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__hint {
+  color: var(--l2-gm-shop-price-gold) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--patk {
+  color: var(--l2-gm-shop-stat-patk) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--matk {
+  color: var(--l2-gm-shop-stat-matk) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--speed {
+  color: var(--l2-gm-shop-stat-speed) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--crit {
+  color: var(--l2-gm-shop-stat-crit) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--pdef {
+  color: var(--l2-gm-shop-stat-pdef) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--pdef-shield {
+  color: var(--l2-gm-shop-stat-pdef-shield) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--shield-block {
+  color: var(--l2-gm-shop-stat-shield-block) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--shield-def {
+  color: var(--l2-gm-shop-stat-shield-def) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--mdef {
+  color: var(--l2-gm-shop-stat-mdef) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--hpmax {
+  color: var(--l2-gm-shop-stat-hpmax) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--mpmax {
+  color: var(--l2-gm-shop-stat-mpmax) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-val {
+  color: var(--l2-gm-shop-stat-val) !important;
 }

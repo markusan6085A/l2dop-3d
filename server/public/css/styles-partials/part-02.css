@@ -539,7 +539,7 @@
 .l2-char-bag-stats {
   font-size: 10px;
   line-height: 1.25;
-  color: #9a9080;
+  color: #fff;
 }
 
 .l2-char-bag-equip {
@@ -735,10 +735,6 @@
 .l2-char-cat-btn--wide {
   grid-column: 1 / -1;
   width: 100%;
-}
-
-.l2-page-char .l2-pers-newbie {
-  margin-top: 10px;
 }
 
 /* Нижня сітка (Профіль … Опції) — fixed у низу в’юпорту; контент скролиться вище */
