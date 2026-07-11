@@ -113,7 +113,7 @@
         '&targetName=' +
         encodeURIComponent(String(p.name || ''));
       recNickLink.href = q;
-      recNickLink.textContent = 'рекомендовать';
+      recNickLink.textContent = 'Рекомендовать';
     }
     set('player-mobs', p.mobsKilled != null ? p.mobsKilled : 0);
     set(

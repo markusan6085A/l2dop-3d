@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260711nickTone1" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711hudVitAlign1" />
-    <link rel="stylesheet" href="/css/l2-recommend-nick-page.css?v=20260711recNick5" />
+    <link rel="stylesheet" href="/css/l2-recommend-nick-page.css?v=20260711recGive1" />
   </head>
   <body
     class="l2-body l2-page-city l2-page-recommend-nick l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -62,13 +62,27 @@
           <div id="l2-hud-panel-mount"></div>
           <div id="l2-nav-top"></div>
 
-          <section class="l2-recommend-nick-panel" id="recommend-nick-content" aria-label="Рекомендації">
-            <h1 class="l2-recommend-nick-panel__title" id="recommend-nick-title">покрасить ник!</h1>
+          <section class="l2-recommend-nick-panel" id="recommend-nick-self-view" aria-label="Покрасить ник">
+            <h1 class="l2-recommend-nick-panel__title" id="recommend-nick-title">Покрасить ник</h1>
             <p class="l2-recommend-nick-panel__lead" id="recommend-nick-lead">Обміняй рекомендації на колір нікнейма.</p>
             <p class="l2-recommend-nick-panel__stats" id="recommend-nick-stats">Рекомендації: 0
 Доступно для обміну: 0</p>
             <div class="l2-recommend-nick-colors" id="recommend-nick-colors"></div>
             <button type="button" class="l2-recommend-nick-back" id="recommend-nick-back">← Назад</button>
+          </section>
+
+          <section
+            class="l2-recommend-nick-panel l2-recommend-nick-panel--give"
+            id="recommend-nick-give-view"
+            aria-label="Рекомендовать"
+            hidden
+          >
+            <h1 class="l2-recommend-nick-panel__title" id="recommend-give-title">Рекомендовать.</h1>
+            <p class="l2-recommend-nick-panel__lead" id="recommend-give-lead">1 Рек = 1 Coin of Luck.</p>
+            <button type="button" class="l2-recommend-nick-action" id="recommend-give-submit">Рекомендовать</button>
+            <p class="l2-recommend-nick-panel__stats" id="recommend-give-others">Твої рекомендації для інших: 0</p>
+            <div class="l2-recommend-nick-givers" id="recommend-give-givers" aria-label="Хто рекомендував"></div>
+            <button type="button" class="l2-recommend-nick-back" id="recommend-give-back">← Назад</button>
           </section>
 
           <p class="err" id="recommend-nick-err" hidden></p>
@@ -83,6 +97,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709chat1"></script>
     <script src="/recommendNickColors.js?v=20260711recNick5"></script>
-    <script src="/recommend-nick.js?v=20260711recNick5"></script>
+    <script src="/recommend-nick.js?v=20260711recGive1"></script>
   </body>
 </html>

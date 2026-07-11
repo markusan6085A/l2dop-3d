@@ -33,6 +33,13 @@
     return '/character.html';
   }
 
+  function showStub(label) {
+    var el = $('recommend-nick-stub');
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = '«' + label + '» — заглушка, з’явиться пізніше.';
+  }
+
   function colorList() {
     return Array.isArray(window.RECOMMEND_NICK_COLORS) ? window.RECOMMEND_NICK_COLORS : [];
   }
@@ -81,13 +88,55 @@
     });
   }
 
+  function renderGiversList(givers) {
+    var root = $('recommend-give-givers');
+    if (!root) return;
+    root.innerHTML = '';
+
+    var rows = Array.isArray(givers) ? givers : [];
+    if (!rows.length) return;
+
+    rows.forEach(function (row) {
+      var line = document.createElement('p');
+      line.className = 'l2-recommend-nick-givers__row';
+
+      var nameEl = document.createElement('span');
+      nameEl.className = 'l2-recommend-nick-givers__name';
+      nameEl.textContent = row && row.name != null ? String(row.name) : '—';
+
+      var countEl = document.createElement('span');
+      countEl.className = 'l2-recommend-nick-givers__count';
+      countEl.textContent = row && row.count != null ? fmtInt(row.count) : '0';
+
+      line.appendChild(nameEl);
+      line.appendChild(countEl);
+      root.appendChild(line);
+    });
+  }
+
+  function showSelfView() {
+    var selfView = $('recommend-nick-self-view');
+    var giveView = $('recommend-nick-give-view');
+    if (selfView) selfView.hidden = false;
+    if (giveView) giveView.hidden = true;
+  }
+
+  function showGiveView() {
+    var selfView = $('recommend-nick-self-view');
+    var giveView = $('recommend-nick-give-view');
+    if (selfView) selfView.hidden = true;
+    if (giveView) giveView.hidden = false;
+  }
+
   function applySelfMode(c) {
+    showSelfView();
+
     var title = $('recommend-nick-title');
     var lead = $('recommend-nick-lead');
     var stats = $('recommend-nick-stats');
     var nickName = c && c.name ? String(c.name) : '—';
 
-    if (title) title.textContent = 'покрасить ник!';
+    if (title) title.textContent = 'Покрасить ник';
     if (lead) lead.textContent = 'Обміняй рекомендації на колір нікнейма.';
     if (stats) {
       var rec = c && c.recommendations != null ? fmtInt(c.recommendations) : '0';
@@ -101,34 +150,42 @@
       var colorsEl = $('recommend-nick-colors');
       if (colorsEl) colorsEl.hidden = false;
     }
-    document.title = 'покрасить ник! — L2WAP';
+    document.title = 'Покрасить ник — L2WAP';
   }
 
-  function applyRecommendMode(params, selfChar) {
-    var title = $('recommend-nick-title');
-    var lead = $('recommend-nick-lead');
-    var stats = $('recommend-nick-stats');
-    var colorsEl = $('recommend-nick-colors');
-    var name = params.targetName || 'гравця';
+  function applyRecommendMode(params, selfChar, givers) {
+    showGiveView();
 
-    if (title) title.textContent = 'рекомендовать';
-    if (lead) lead.textContent = 'Рекомендуй гравця «' + name + '».';
-    if (stats) {
+    var name = params.targetName || 'гравця';
+    var othersEl = $('recommend-give-others');
+
+    if (othersEl) {
       var left =
         selfChar && selfChar.recommendationsLeft != null
           ? fmtInt(selfChar.recommendationsLeft)
           : '0';
-      stats.textContent = 'Твої рекомендації для інших: ' + left;
+      othersEl.textContent = 'Твої рекомендації для інших: ' + left;
     }
-    if (colorsEl) colorsEl.hidden = true;
-    document.title = 'рекомендовать — ' + name + ' — L2WAP';
+
+    renderGiversList(givers);
+    document.title = 'Рекомендовать — ' + name + ' — L2WAP';
   }
 
   function wireBack(params) {
-    var btn = $('recommend-nick-back');
+    var goBack = function () {
+      window.location.href = backHref(params);
+    };
+    var backSelf = $('recommend-nick-back');
+    var backGive = $('recommend-give-back');
+    if (backSelf) backSelf.addEventListener('click', goBack);
+    if (backGive) backGive.addEventListener('click', goBack);
+  }
+
+  function wireGiveStub() {
+    var btn = $('recommend-give-submit');
     if (!btn) return;
     btn.addEventListener('click', function () {
-      window.location.href = backHref(params);
+      showStub('Рекомендовать');
     });
   }
 
@@ -143,11 +200,13 @@
     var params = parseParams();
     var isRecommend = !!(params.targetId || params.targetName);
     wireBack(params);
+    wireGiveStub();
 
     if (!isRecommend) {
+      showSelfView();
       renderColorGrid('—');
     } else {
-      applyRecommendMode(params, null);
+      applyRecommendMode(params, null, []);
     }
 
     var token = localStorage.getItem('token');
@@ -185,7 +244,7 @@
       }
 
       if (isRecommend) {
-        applyRecommendMode(params, c);
+        applyRecommendMode(params, c, []);
       } else {
         applySelfMode(c);
       }
