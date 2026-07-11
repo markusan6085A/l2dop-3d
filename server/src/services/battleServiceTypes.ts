@@ -102,6 +102,10 @@ export interface BattleVictorySummary {
   spGain: number;
   items: BattleVictoryItem[];
   levelUp: number | null;
+  /** Найближчий моб того ж рівня для «Полювати далі» (null — більше немає в радіусі). */
+  nextHuntSpawnId?: string | null;
+  /** Скільки мобів цього рівня ще доступно поруч (включно з nextHuntSpawnId). */
+  huntSameLevelRemaining?: number;
 }
 
 /** Поразка в бою — екран поразки + підказка найближчого міста для кнопки «в місто». */

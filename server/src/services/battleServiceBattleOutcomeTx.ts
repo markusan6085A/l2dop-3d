@@ -45,6 +45,10 @@ import {
   REGULAR_MOB_RESPAWN_MS,
   setMobSpawnRespawnEntry,
 } from '../domain/mobSpawnRespawn.js';
+import {
+  countSameLevelHuntSpawnsNearby,
+  findNextSameLevelHuntSpawn,
+} from '../domain/battleHuntChain.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -182,6 +186,17 @@ export async function persistBattleVictoryInTx(
   );
   if (!result.ok) throw new GameConflictError();
   const row = result.character as CharacterRow;
+  const mobSpawnHpSerialized = serializeMobSpawnHpState(mobHpAfterVictory);
+  const huntOpts = {
+    worldX: char.worldX,
+    worldY: char.worldY,
+    targetLevel: spawn.level,
+    excludeSpawnId: bj.spawnId,
+    mobSpawnHpJson: mobSpawnHpSerialized,
+    nowMs: nowVictoryMs,
+  };
+  const nextHunt = findNextSameLevelHuntSpawn(huntOpts);
+  const huntSameLevelRemaining = countSameLevelHuntSpawnsNearby(huntOpts);
   const victory: BattleVictorySummary = {
     spawnId: bj.spawnId,
     mobName: spawn.name,
@@ -193,6 +208,8 @@ export async function persistBattleVictoryInTx(
     spGain: loot.spGain,
     items: loot.items.map((it) => ({ ...it })),
     levelUp: newLevel > preLevel ? newLevel : null,
+    nextHuntSpawnId: nextHunt?.spawnId ?? null,
+    huntSameLevelRemaining,
   };
   return {
     character: toSnapshot(row as CharacterRow),
