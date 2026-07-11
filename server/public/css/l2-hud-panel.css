@@ -1,11 +1,16 @@
 /**
  * l2-hud-panel — панель героя: рівень/клас, HP/MP/CP (city-strip у common.js).
- * v=24: рядок «Професія» (l2Profession) під Lv/клас.
+ * v=26: --l2-nick-color — базовий біло-сірий нік для всіх сторінок.
  * Порядок: після /styles.css і (за потреби) l2-game-chrome.css.
  * Рамка: /ref/222.png (905×231) — 9-slice, розтягування під ширину/висоту блоку.
  * slice = виріз у PNG; --l2h-frame-w-* = товщина рамки на екрані (окремо, тоншу/толсту).
  * На story: той самий «пергамент», що .l2-story-article (див. styles.css)
  */
+body.l2-app-l2-chrome {
+  --l2-nick-color: #d0cec8;
+  --l2-nick-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
 .l2-hud-panel {
   --l2h-hp: #c41818;
   --l2h-mp: #1e7ae8;
@@ -96,13 +101,11 @@ body.l2-page-story .l2-hud-panel::before {
   font-family: var(--l2-font-display, Georgia, serif);
   font-size: 16px;
   font-weight: 600;
-  color: #cdb46e;
+  color: var(--l2-nick-color);
   line-height: 1.2;
   letter-spacing: 0.02em;
   text-align: left;
-  text-shadow:
-    0 0 6px rgba(200, 160, 80, 0.2),
-    0 1px 2px rgba(0, 0, 0, 0.85);
+  text-shadow: var(--l2-nick-shadow);
 }
 
 .l2-hud-meta {

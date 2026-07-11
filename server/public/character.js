@@ -138,16 +138,156 @@
   function applyProfile(c) {
     var nickEl = $('character-nick');
     var statusEl = $('character-status');
+    var inputEl = $('character-status-input');
     if (nickEl) {
       nickEl.textContent = c && c.name != null ? String(c.name) : '—';
     }
+    var statusText =
+      c && c.profileStatus != null && String(c.profileStatus).trim()
+        ? String(c.profileStatus).trim()
+        : 'Немає статусу';
     if (statusEl) {
-      var status =
-        c && c.profileStatus != null && String(c.profileStatus).trim()
-          ? String(c.profileStatus).trim()
-          : 'Немає статусу';
-      statusEl.textContent = status;
+      statusEl.textContent = statusText;
     }
+    if (inputEl && document.activeElement !== inputEl) {
+      inputEl.value = statusText === 'Немає статусу' ? '' : statusText;
+    }
+  }
+
+  function setStatusEditOpen(open) {
+    var statusEl = $('character-status');
+    var editBtn = $('character-status-edit');
+    var inputEl = $('character-status-input');
+    var saveBtn = $('character-status-save');
+    if (statusEl) statusEl.hidden = !!open;
+    if (editBtn) editBtn.hidden = !!open;
+    if (inputEl) inputEl.hidden = !open;
+    if (saveBtn) saveBtn.hidden = !open;
+    if (open && inputEl) {
+      inputEl.focus();
+      inputEl.select();
+    }
+  }
+
+  function wireProfileStatusEdit() {
+    var editBtn = $('character-status-edit');
+    var saveBtn = $('character-status-save');
+    var inputEl = $('character-status-input');
+    var errEl = $('character-load-err');
+    var statusSaveInFlight = false;
+
+    if (editBtn) {
+      editBtn.addEventListener('click', function () {
+        setStatusEditOpen(true);
+      });
+    }
+
+    if (inputEl) {
+      inputEl.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          if (saveBtn) saveBtn.click();
+        }
+        if (ev.key === 'Escape') {
+          setStatusEditOpen(false);
+        }
+      });
+    }
+
+    if (!saveBtn || !inputEl) return;
+
+    saveBtn.addEventListener('click', async function () {
+      if (statusSaveInFlight) return;
+
+      var token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/';
+        return;
+      }
+
+      var snap =
+        window.L2 && typeof L2.lastSnapshot === 'function'
+          ? L2.lastSnapshot()
+          : null;
+      var rev = snap && snap.revision != null ? Number(snap.revision) : NaN;
+      if (!Number.isFinite(rev)) {
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent = 'Немає revision — оновіть сторінку.';
+        }
+        return;
+      }
+
+      statusSaveInFlight = true;
+      saveBtn.disabled = true;
+      try {
+        var r = await fetch('/character/profile-status', {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: inputEl.value,
+            expectedRevision: rev,
+          }),
+        });
+
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return;
+        }
+
+        if (r.status === 409) {
+          if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+            await L2.resyncCharacterAfterConflict(function (c) {
+              applyProfile(c);
+            });
+          }
+          if (errEl) {
+            errEl.hidden = false;
+            errEl.textContent = 'Стан оновлено — спробуйте ще раз.';
+          }
+          return;
+        }
+
+        if (!r.ok) {
+          var ej = null;
+          try {
+            ej = await r.json();
+          } catch (_e2) {
+            /* ignore */
+          }
+          if (errEl) {
+            errEl.hidden = false;
+            errEl.textContent =
+              (ej && ej.messageUk) || 'Не вдалося зберегти статус.';
+          }
+          return;
+        }
+
+        var j = await r.json();
+        var c = j.character;
+        if (c && window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+          L2.applyCharacterSnapshot(c, function (snap) {
+            applyProfile(snap);
+          });
+        } else {
+          applyProfile(c);
+        }
+        setStatusEditOpen(false);
+        if (errEl) errEl.hidden = true;
+      } catch (_e) {
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent = 'Не вдалося зберегти статус.';
+        }
+      } finally {
+        statusSaveInFlight = false;
+        saveBtn.disabled = false;
+      }
+    });
   }
 
   function applyStats(c) {
@@ -196,13 +336,7 @@
   }
 
   function wireStubs() {
-    var editBtn = $('character-status-edit');
-    if (editBtn) {
-      editBtn.addEventListener('click', function () {
-        var label = editBtn.getAttribute('data-stub') || 'Редагування статусу';
-        showStub(label);
-      });
-    }
+    wireProfileStatusEdit();
 
     var actions = $('character-actions');
     if (!actions) return;

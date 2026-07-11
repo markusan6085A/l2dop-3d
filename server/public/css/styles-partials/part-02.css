@@ -220,7 +220,7 @@
 }
 
 .l2-char-name-bracket {
-  color: #d1b163;
+  color: var(--l2-nick-color, #d0cec8);
   font-weight: 600;
 }
 

@@ -319,6 +319,10 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     expBarPct: expSeg.pct,
     sp: row.sp,
     mobsKilled: Math.max(0, Math.floor(Number(row.mobsKilled) || 0)),
+    profileStatus:
+      row.profileStatus != null && String(row.profileStatus).trim()
+        ? String(row.profileStatus).trim()
+        : null,
     karma: 0,
     pk: 0,
     recommendations: 0,

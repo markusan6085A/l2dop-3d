@@ -662,12 +662,18 @@
           el.style.width = '0%';
         }
       });
+      if (typeof global.L2.applyNickColorFromSnapshot === 'function') {
+        global.L2.applyNickColorFromSnapshot(null);
+      }
     },
 
     /**
      * Заповнити панель l2-hud-panel з character snapshot (GET /character).
      */
     applyHudFromSnapshot: function (c) {
+      if (typeof global.L2.applyNickColorFromSnapshot === 'function') {
+        global.L2.applyNickColorFromSnapshot(c);
+      }
       var isLegacyMinimal =
         typeof document !== 'undefined' &&
         document.body &&
@@ -761,6 +767,19 @@
           String(c.level != null ? c.level : '—') + ' ' + lvlAbbr
         );
         set('l2-hud-legacy-name', c.name != null ? c.name : '—');
+      }
+    },
+
+    /** Базовий колір ніка з HUD; пізніше — з snapshot.nickColor після «покраски». */
+    applyNickColorFromSnapshot: function (c) {
+      var fallback = '#d0cec8';
+      var hex = fallback;
+      if (c && typeof c.nickColor === 'string') {
+        var trimmed = c.nickColor.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(trimmed)) hex = trimmed;
+      }
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.style.setProperty('--l2-nick-color', hex);
       }
     },
 

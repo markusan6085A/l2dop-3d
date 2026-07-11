@@ -22,6 +22,8 @@ export interface CharacterRow {
   exp: bigint;
   sp: number;
   mobsKilled: number;
+  /** Текст статусу профілю для інших гравців. */
+  profileStatus: string | null;
   revision: number;
   userId: string;
   lastUpdate: Date;
@@ -90,6 +92,8 @@ export interface CharacterSnapshot {
   expBarPct: number;
   sp: number;
   mobsKilled: number;
+  /** Текст статусу профілю; `null` — «Немає статусу». */
+  profileStatus: string | null;
   karma: number;
   pk: number;
   recommendations: number;

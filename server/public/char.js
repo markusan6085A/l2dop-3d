@@ -183,7 +183,7 @@
   var craftBookIndex = null;
   var bagModalCtx = null;
 
-  /** Як у GM-шопу: категорія + грейд + підтип; '' — усі предмети (кнопка «все предмети»). */
+  /** Як у GM-шопу: категорія + грейд + підтип; '' — усі предмети (кнопка «Всі предмети»). */
   var bagInvCat = 'weapon';
   var bagInvShowAll = false;
   /** '' — усі грейди (кнопка «Усі»); ng|d|c|b|a|s */
@@ -720,7 +720,7 @@
     btn.setAttribute('data-inv-all-items', '1');
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-selected', 'false');
-    btn.textContent = 'все предмети';
+    btn.textContent = 'Всі предмети';
     host.appendChild(btn);
   }
 

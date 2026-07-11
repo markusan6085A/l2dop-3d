@@ -30,10 +30,8 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-title-empty {
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-name-bracket {
-  color: #d8c273;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.9),
-    0 0 10px rgba(200, 150, 60, 0.25);
+  color: var(--l2-nick-color);
+  text-shadow: var(--l2-nick-shadow);
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-equip-frame {
@@ -340,8 +338,12 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-block {
 body.l2-app-l2-chrome.l2-page-char {
   --l2-char-bag-tab-outset-x: calc(4px + 0.4mm);
   --l2s-char-inv888-bd-x: 12;
-  --l2-char-inv-tab-text: #a29984;
-  --l2-char-inv-tab-text-active: #b4aea2;
+  --l2-char-inv-tab-text: #8c867b;
+  --l2-char-inv-tab-text-hover: #9b9489;
+  --l2-char-inv-tab-text-active: #a8a297;
+  --l2-char-inv-tab-sep: #6a6358;
+  --l2-char-inv-tab-font: 10px;
+  --l2-char-inv-tab-gap: 5px;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-title {
@@ -357,21 +359,25 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-title {
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-filters {
   box-sizing: border-box !important;
-  gap: 2px !important;
-  margin-left: calc(-1 * var(--l2-char-bag-tab-outset-x)) !important;
-  margin-right: calc(-1 * var(--l2-char-bag-tab-outset-x)) !important;
-  width: calc(100% + (2 * var(--l2-char-bag-tab-outset-x))) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--l2-char-inv-tab-gap) !important;
+  width: 100% !important;
   max-width: none !important;
-  margin-bottom: 1px !important;
+  margin: 0 0 4px !important;
   padding: 0 !important;
   border: none !important;
   border-image: none !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+  min-height: 0 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--l2-char-inv-tab-gap) !important;
   padding-top: 0;
   width: 100% !important;
   max-width: none !important;
@@ -379,8 +385,9 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop {
 
 /* Таби всередині суцільнішої рамки: категорії та грейди — сітка, без горизонтального скролу */
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist {
-  margin: 0 0 2px !important;
-  padding-bottom: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
   border-bottom: none !important;
   width: 100% !important;
   max-width: none !important;
@@ -393,66 +400,91 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-dr
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats,
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades {
-  display: grid !important;
-  justify-content: stretch !important;
-  justify-items: stretch !important;
-  align-items: start !important;
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--weapon-kind,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--consumable-sub,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--armor-piece,
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
   overflow-x: visible !important;
   overflow-y: visible !important;
   -webkit-overflow-scrolling: auto !important;
-  gap: 2px !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats {
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  flex-wrap: nowrap !important;
 }
 
+/* Перший ряд: «Всі предмети | Зброя | …» — один суцільний ряд без розриву */
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-cats-wrap {
-  display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 2px !important;
-  width: 100% !important;
-  margin: 0 0 2px !important;
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-host {
-  grid-column: 2 / 5 !important;
-  grid-row: 1 !important;
   display: flex !important;
-  align-items: stretch !important;
-  justify-content: stretch !important;
-  min-width: 0 !important;
-  margin-bottom: 1px !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-cats-wrap #char-bag-tab-cats {
-  grid-column: 1 / -1 !important;
-  grid-row: 2 !important;
+  display: contents !important;
   margin-bottom: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-cats-wrap .l2-drops-shop-tablist--cats {
+  width: auto !important;
+  justify-content: flex-start !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-host {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-host::after {
+  content: '|' !important;
+  display: inline-block !important;
+  margin: 0 6px !important;
+  color: var(--l2-char-inv-tab-sep) !important;
+  font-weight: 400 !important;
+  pointer-events: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn {
   box-sizing: border-box !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 100% !important;
-  min-height: 22px !important;
+  width: auto !important;
+  min-height: 0 !important;
   margin: 0 !important;
-  padding: 3px 7px !important;
-  border: 1px solid #303030 !important;
-  border-radius: 9px !important;
+  padding: 2px 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
   border-image: none !important;
-  background: #303030 !important;
+  border-image-source: none !important;
+  border-width: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
   color: var(--l2-char-inv-tab-text) !important;
-  font-size: 9px !important;
+  font-size: var(--l2-char-inv-tab-font) !important;
   font-weight: 600 !important;
-  line-height: 1.05 !important;
+  line-height: 1.2 !important;
   letter-spacing: 0.02em !important;
   text-transform: none !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  text-shadow: none !important;
+  text-decoration: none !important;
   cursor: pointer !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -463,15 +495,17 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn {
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn:hover,
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn:focus {
-  background: #383838 !important;
-  border-color: #303030 !important;
+  background: transparent !important;
+  color: var(--l2-char-inv-tab-text-hover) !important;
   filter: none !important;
   outline: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-all-items-btn--active {
-  background: #383838 !important;
+  background: transparent !important;
   color: var(--l2-char-inv-tab-text-active) !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
   filter: none !important;
 }
 
@@ -479,153 +513,139 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--equipped {
   opacity: 0.92;
 }
 
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades {
-  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
-}
-
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats .l2-drops-shop-tab,
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab {
-  flex: unset !important;
-  width: 100% !important;
+  flex: 0 1 auto !important;
+  width: auto !important;
   min-width: 0 !important;
   min-height: 0 !important;
   box-sizing: border-box !important;
-  padding: 1px 2px !important;
-  font-size: 8px !important;
+  padding: 2px 0 !important;
+  font-size: var(--l2-char-inv-tab-font) !important;
   font-weight: 600 !important;
-  line-height: 1.08 !important;
+  line-height: 1.2 !important;
   letter-spacing: 0 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
-/* Зброя: обидва ряди табів одна висота (компактно, без «роздутого» першого ряду) */
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--weapon-kind {
-  display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 2px !important;
-  align-items: start !important;
-  justify-content: stretch !important;
-  justify-items: stretch !important;
-}
-
+/* Зброя: підкатегорії в один ряд з рисками */
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
-  width: 100% !important;
+  flex: 0 1 auto !important;
+  width: auto !important;
   min-height: 0 !important;
-  padding: 1px 2px !important;
-  font-size: 8px !important;
+  padding: 2px 0 !important;
+  font-size: var(--l2-char-inv-tab-font) !important;
   font-weight: 600 !important;
-  line-height: 1.08 !important;
+  line-height: 1.2 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--consumable-sub {
-  display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 2px !important;
-  justify-content: stretch !important;
-  justify-items: stretch !important;
-}
-
-/* Розхідники — ті самі пропорції висоти */
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab {
-  width: 100% !important;
-  padding: 1px 2px !important;
-  font-size: 8px !important;
-  line-height: 1.08 !important;
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-height: 0 !important;
+  padding: 2px 0 !important;
+  font-size: var(--l2-char-inv-tab-font) !important;
+  line-height: 1.2 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* Armour / аксесуари — узгоджено з висотою weapon-kind на персі */
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--armor-piece,
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub {
-  display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 2px !important;
-  justify-content: stretch !important;
-  justify-items: stretch !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab,
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab {
-  width: 100% !important;
+  flex: 0 1 auto !important;
+  width: auto !important;
   min-height: 0 !important;
-  padding: 1px 2px !important;
-  font-size: 8px !important;
-  line-height: 1.08 !important;
+  padding: 2px 0 !important;
+  font-size: var(--l2-char-inv-tab-font) !important;
+  line-height: 1.2 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
-/* Обраний грейд помітніший */
-body.l2-app-l2-chrome.l2-page-char #char-bag-tab-grades .l2-drops-shop-tab--active {
-  background: #383838 !important;
-  color: var(--l2-char-inv-tab-text-active) !important;
-  filter: none !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
-  z-index: 1;
-  position: relative;
+/* Вертикальна риска між сусідніми фільтрами в одному ряді */
+body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tab + .l2-drops-shop-tab::before {
+  content: '|' !important;
+  display: inline-block !important;
+  margin: 0 6px !important;
+  color: var(--l2-char-inv-tab-sep) !important;
+  font-weight: 400 !important;
+  pointer-events: none !important;
 }
 
-/* Фільтри сумки — плоскі кнопки як нижня nav-сітка (без /ref/541.png) */
+/* Фільтри сумки — лише текст на фоні сторінки (без ref/541.png і без «кнопок») */
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tab {
-  border: 1px solid #303030 !important;
-  border-radius: 9px !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-radius: 0 !important;
   border-image: none !important;
-  background: #303030 !important;
+  border-image-source: none !important;
+  border-image-width: 0 !important;
+  border-image-slice: none !important;
+  background: transparent !important;
   box-shadow: none !important;
   filter: none !important;
   color: var(--l2-char-inv-tab-text) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  text-shadow: none !important;
+  text-decoration: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tab:hover,
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tab:focus {
-  background: #383838 !important;
-  border-color: #303030 !important;
+  background: transparent !important;
+  color: var(--l2-char-inv-tab-text-hover) !important;
   filter: none !important;
   outline: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tab--active {
-  background: #383838 !important;
+  background: transparent !important;
   color: var(--l2-char-inv-tab-text-active) !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
   filter: none !important;
 }
 
-/* Грейди сумки — на 25% темніший текст, ніж у gm-shop */
+/* Обраний грейд — колір грейду + підкреслення */
+body.l2-app-l2-chrome.l2-page-char #char-bag-tab-grades .l2-drops-shop-tab--active {
+  background: transparent !important;
+  filter: none !important;
+  text-shadow: none !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  z-index: 1;
+  position: relative;
+}
+
+/* Грейди сумки — на 30% темніше */
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='NG'] {
-  color: #bfb875 !important;
+  color: #948c4d !important;
 }
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='D'] {
-  color: #aba9a7 !important;
+  color: #91908d !important;
 }
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='C'] {
-  color: #47a24e !important;
+  color: #4da354 !important;
 }
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='B'] {
-  color: #9374bf !important;
+  color: #8066b2 !important;
 }
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='A'] {
-  color: #bf752d !important;
+  color: #b2813f !important;
 }
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='S'] {
-  color: #bf9f67 !important;
+  color: #b29d70 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-list {
-  margin-top: 2px !important;
+  margin-top: 6px !important;
   min-height: 196px;
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-inv-filters {
-  min-height: 74px;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--skeleton {
@@ -760,15 +780,51 @@ body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action:focus-visible
   transform: none !important;
 }
 
+/* «Одіти» у списку сумки — лише текст, без рамки 1512125 */
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--l2-char-inv-tab-text) !important;
+  text-shadow: none !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip:hover,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip:focus,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip:focus-visible {
+  outline: none !important;
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--l2-char-inv-tab-text-hover) !important;
+  text-decoration: underline !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
 /* ПК (+30% колонки): трохи читабельніші таби сумки, портрет пропорційно ширший */
 @media (min-width: 520px) {
+  body.l2-app-l2-chrome.l2-page-char {
+    --l2-char-inv-tab-font: 11px;
+  }
+
   body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--cats .l2-drops-shop-tab,
   body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--grades .l2-drops-shop-tab,
   body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab,
   body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--consumable-sub .l2-drops-shop-tab,
   body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--armor-piece .l2-drops-shop-tab,
   body.l2-app-l2-chrome.l2-page-char .l2-char-inv-shop-tabs-host.l2-gm-shop .l2-drops-shop-tablist--jewelry-sub .l2-drops-shop-tab {
-    font-size: 9px !important;
+    font-size: var(--l2-char-inv-tab-font) !important;
   }
 
   body.l2-app-l2-chrome.l2-page-char .l2-char-equip-frame {

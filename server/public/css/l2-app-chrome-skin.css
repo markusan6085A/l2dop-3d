@@ -2475,7 +2475,8 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-leve
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-name {
-  color: #fff;
+  color: var(--l2-nick-color);
+  text-shadow: var(--l2-nick-shadow);
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-top-strip-vitals {
@@ -2793,4 +2794,16 @@ body.l2-app-l2-chrome.l2-page-dev-boost a.l2-dev-boost-menu.l2-town-btn:focus-vi
   box-shadow: none !important;
   filter: brightness(1.06) !important;
   -webkit-filter: brightness(1.06) !important;
+}
+
+/* Нік — один базовий колір з HUD (--l2-nick-color; майбутня «покраска» через L2.applyNickColorFromSnapshot). */
+body.l2-app-l2-chrome .l2-hud-nick,
+body.l2-app-l2-chrome .l2-hud-legacy-name,
+body.l2-app-l2-chrome .l2-char-name-bracket,
+body.l2-app-l2-chrome .l2-character-panel__nick,
+body.l2-app-l2-chrome .l2-player-panel__headline,
+body.l2-app-l2-chrome .l2-chat-msg__nick,
+body.l2-app-l2-chrome .l2-online-player__nick {
+  color: var(--l2-nick-color) !important;
+  text-shadow: var(--l2-nick-shadow) !important;
 }

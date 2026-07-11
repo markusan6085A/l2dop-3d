@@ -17,6 +17,7 @@ export {
   applyUnequip,
 } from './charMutations.js';
 export { applyUsePotionFromBag } from './charConsumableUseService.js';
+export { applyProfileStatus } from './charProfileStatusService.js';
 export { castActiveSelfBuff } from './castActiveSelfBuff.js';
 export { toggleSelfStance } from './toggleSelfStance.js';
 export { applyTownBuffer } from './townBufferService.js';

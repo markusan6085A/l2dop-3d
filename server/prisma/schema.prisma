@@ -36,6 +36,8 @@ model Character {
   sp         Int      @default(0)
   /** Убито мобів (PvE) — лічильник з бою. */
   mobsKilled Int      @default(0)
+  /** Текст статусу профілю — видимий іншим гравцям на player.html. */
+  profileStatus String?
   /** Інвентар + екіп: stacks [{ itemId, qty, enchant? }], eq слот: itemId або { itemId, enchant? } — як l2dop eqbonus */
   inventoryJson Json?
   /** l2dop map.php: світові координати та рух до цілі */

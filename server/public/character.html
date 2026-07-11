@@ -8,10 +8,10 @@
     <link rel="preload" as="image" href="/assets/photo_2026-07-05_14-33-19.jpg" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
-    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260711nickTone1" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711hudVitAlign1" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260711nickTone3" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711nickTone3" />
     <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711nickTone1" />
-    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260711recBlue1" />
+    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260711profStatus2" />
     <link rel="stylesheet" href="/css/l2-recommend-nick-page.css?v=20260711recBlue1" />
   </head>
   <body
@@ -73,15 +73,31 @@
 
             <p class="l2-character-panel__nick" id="character-nick">—</p>
 
-            <div class="l2-character-panel__status-row">
+            <div class="l2-character-panel__status-row" id="character-status-row">
               <span class="l2-character-panel__status" id="character-status">Немає статусу</span>
               <button
                 type="button"
                 class="l2-character-panel__edit"
                 id="character-status-edit"
-                data-stub="Редагування статусу"
               >
                 ред.
+              </button>
+              <input
+                type="text"
+                class="l2-character-panel__status-input"
+                id="character-status-input"
+                maxlength="100"
+                autocomplete="off"
+                aria-label="Статус профілю"
+                hidden
+              />
+              <button
+                type="button"
+                class="l2-character-panel__save"
+                id="character-status-save"
+                hidden
+              >
+                Зберегти
               </button>
             </div>
 
@@ -355,10 +371,10 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260711hudVitAlign1"></script>
+    <script src="/common.js?v=20260711nickTone3"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709chat1"></script>
     <script src="/charHeroPortrait.js?v=20260709darkElfMystic1"></script>
-    <script src="/character.js?v=20260711charReg1"></script>
+    <script src="/character.js?v=20260711profStatus2"></script>
   </body>
 </html>

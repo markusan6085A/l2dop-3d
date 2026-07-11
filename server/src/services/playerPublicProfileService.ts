@@ -37,6 +37,7 @@ const PROFILE_SELECT = {
   l2Profession: true,
   cityId: true,
   mobsKilled: true,
+  profileStatus: true,
   lastUpdate: true,
 } as const;
 
@@ -50,6 +51,7 @@ type ProfileRow = {
   l2Profession: string;
   cityId: string;
   mobsKilled: number;
+  profileStatus: string | null;
   lastUpdate: Date;
 };
 
@@ -70,7 +72,10 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
     l2Profession: row.l2Profession,
     cityId: row.cityId,
     cityLabelUk: resolveCityLabelUk(row.cityId),
-    profileStatus: null,
+    profileStatus:
+      row.profileStatus != null && String(row.profileStatus).trim()
+        ? String(row.profileStatus).trim()
+        : null,
     clanName: null,
     karma: 0,
     pk: 0,

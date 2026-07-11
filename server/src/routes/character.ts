@@ -3,6 +3,7 @@ import { registerCharacterReadRoutes } from './characterReadRoutes.js';
 import { registerCharacterProfessionRoutes } from './characterProfessionRoutes.js';
 import { registerCharacterSkillsBuffEquipRoutes } from './characterSkillsBuffEquipRoutes.js';
 import { registerCharacterConsumableUseRoutes } from './characterConsumableUseRoutes.js';
+import { registerCharacterProfileStatusRoutes } from './characterProfileStatusRoutes.js';
 import { registerDevSelfBoostRoutes } from './devSelfBoostRoutes.js';
 
 /**
@@ -13,5 +14,6 @@ export const characterRoutes: FastifyPluginAsync = async (app) => {
   registerCharacterProfessionRoutes(app);
   registerCharacterSkillsBuffEquipRoutes(app);
   registerCharacterConsumableUseRoutes(app);
+  registerCharacterProfileStatusRoutes(app);
   registerDevSelfBoostRoutes(app);
 };
