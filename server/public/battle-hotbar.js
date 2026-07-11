@@ -645,6 +645,37 @@
     var equipInFlight = false;
     /** Локальний КД (optimistic + дзеркало сервера), ключі як у `mysticSkillCdUntil`. */
     var localCdUntil = Object.create(null);
+    /** Фіксована тривалість поточного КД для conic-sweep (не перераховувати кожен tick). */
+    var localCdDuration = Object.create(null);
+
+    function cdTrackKey(aid, rowL2) {
+      if (typeof rowL2 === 'number' && rowL2 > 0) {
+        return 'l2_' + Math.floor(rowL2);
+      }
+      return String(aid || '');
+    }
+
+    function ensureCdDuration(trackKey, until, cdSec, now) {
+      var remMs = until - now;
+      if (remMs <= 0) {
+        delete localCdDuration[trackKey];
+        return 100;
+      }
+      var prev = localCdDuration[trackKey];
+      if (!prev || until > prev.until + 80) {
+        var fromCat =
+          cdSec != null && cdSec > 0 ? Math.floor(cdSec * 1000) : 0;
+        var cdMs = Math.max(fromCat, remMs, 100);
+        localCdDuration[trackKey] = { until: until, cdMs: cdMs };
+        return cdMs;
+      }
+      prev.until = until;
+      return prev.cdMs;
+    }
+
+    function clearCdDurationForAction(aid, rowL2) {
+      delete localCdDuration[cdTrackKey(aid, rowL2)];
+    }
 
     function clearCdTimer() {
       if (cdTimer != null) {
@@ -689,6 +720,14 @@
       if (ACTION_L2_ICON[aid] != null) {
         localCdUntil['l2_' + ACTION_L2_ICON[aid]] = untilMs;
       }
+      var battle = opts.getBattle();
+      var info = cdInfoForAction(battle, aid);
+      ensureCdDuration(
+        cdTrackKey(aid, rowL2),
+        untilMs,
+        info.cdSec,
+        Date.now()
+      );
     }
 
     function mergedCdMap(battle) {
@@ -728,8 +767,15 @@
     function pruneLocalCd(now) {
       for (var k in localCdUntil) {
         if (!Object.prototype.hasOwnProperty.call(localCdUntil, k)) continue;
-        if (localCdUntil[k] <= now + SKILL_CD_UI_RESERVE_MS) {
+        if (localCdUntil[k] <= now) {
           delete localCdUntil[k];
+        }
+      }
+      for (var dk in localCdDuration) {
+        if (!Object.prototype.hasOwnProperty.call(localCdDuration, dk)) continue;
+        var dur = localCdDuration[dk];
+        if (!dur || typeof dur.until !== 'number' || dur.until <= now) {
+          delete localCdDuration[dk];
         }
       }
     }
@@ -757,13 +803,18 @@
       var cdSec = info.cdSec;
       var rowL2 = info.rowL2;
       var until = mysticCdUntilForAction(mergedCdMap(battle), aid, rowL2);
-      if (typeof until !== 'number' || !Number.isFinite(until)) return null;
-      var remMs = until - Date.now();
-      if (remMs <= SKILL_CD_UI_RESERVE_MS) return null;
-      var cdMs =
-        cdSec != null && cdSec > 0
-          ? cdSec * 1000
-          : Math.max(remMs, 1000);
+      if (typeof until !== 'number' || !Number.isFinite(until)) {
+        clearCdDurationForAction(aid, rowL2);
+        return null;
+      }
+      var now = Date.now();
+      var remMs = until - now;
+      if (remMs <= 0) {
+        clearCdDurationForAction(aid, rowL2);
+        return null;
+      }
+      var trackKey = cdTrackKey(aid, rowL2);
+      var cdMs = ensureCdDuration(trackKey, until, cdSec, now);
       return { until: until, cdMs: cdMs };
     }
 
@@ -840,12 +891,14 @@
         return false;
       }
       var remMs = meta.until - tnow;
-      if (remMs <= SKILL_CD_UI_RESERVE_MS) {
+      if (remMs <= 0) {
         setCdOverlayVisible(cdRoot, false);
+        shortEl.style.background = '';
         return false;
       }
       setCdOverlayVisible(cdRoot, true);
-      var frac = Math.min(1, Math.max(0, remMs / meta.cdMs));
+      var cdMs = meta.cdMs > 0 ? meta.cdMs : remMs;
+      var frac = Math.min(1, Math.max(0, remMs / cdMs));
       var deg = 360 * frac;
       shortEl.style.background =
         'conic-gradient(from 0deg at 50% 50%, rgba(0,0,0,0.55) ' +
@@ -854,10 +907,13 @@
         deg +
         'deg)';
       shortEl.hidden = false;
-      /* Цілі секунди на іконці (2 → 1), останні 0.2с — лише «запас», без «0». */
-      var displaySec = Math.max(1, Math.ceil(remMs / 1000));
-      longEl.textContent = String(displaySec);
-      longEl.hidden = false;
+      /* Цілі секунди; останні 0.2с — sweep до нуля, цифру ховаємо. */
+      if (remMs > SKILL_CD_UI_RESERVE_MS) {
+        longEl.textContent = String(Math.max(1, Math.ceil(remMs / 1000)));
+        longEl.hidden = false;
+      } else {
+        longEl.hidden = true;
+      }
       return true;
     }
 
@@ -1493,6 +1549,7 @@
         box.innerHTML = '';
         lastRenderKey = '';
         localCdUntil = Object.create(null);
+        localCdDuration = Object.create(null);
         return;
       }
 
@@ -1651,6 +1708,7 @@
       hotbarSlotsDirty = false;
       lastRenderKey = '';
       localCdUntil = Object.create(null);
+      localCdDuration = Object.create(null);
       setHotbarPersistCtx(null);
     }
 
