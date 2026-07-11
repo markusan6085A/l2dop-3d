@@ -1447,10 +1447,6 @@
         return;
       }
 
-      hideVictoryScreen();
-      battle = null;
-      if (errEl) errEl.hidden = true;
-
       var er = character.revision;
       var st = await startHuntContinueBattle(
         targetLevel,
@@ -1481,6 +1477,10 @@
         if (victory) showVictoryScreen(victory);
         return;
       }
+
+      hideVictoryScreen();
+      battle = null;
+      if (errEl) errEl.hidden = true;
 
       character = st.character;
       battle = st.battle;
