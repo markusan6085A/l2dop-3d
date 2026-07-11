@@ -13,7 +13,8 @@ export async function startHuntContinueBattle(
   userId: string,
   expectedRevision: number,
   targetLevel: number,
-  excludeSpawnId?: string
+  excludeSpawnId?: string,
+  levelTolerance: number = 0
 ) {
   const row = await prisma.character.findFirst({
     where: { userId },
@@ -23,6 +24,7 @@ export async function startHuntContinueBattle(
 
   const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));
   const nowMs = Date.now();
+  const tol = Math.max(0, Math.min(10, Math.floor(levelTolerance)));
   const next = findNextSameLevelHuntSpawn({
     worldX: base.worldX,
     worldY: base.worldY,
@@ -30,6 +32,7 @@ export async function startHuntContinueBattle(
     excludeSpawnId,
     mobSpawnHpJson: base.mobSpawnHpJson,
     nowMs,
+    levelTolerance: tol,
   });
   if (!next) {
     throw new Error('battle_hunt_no_targets');

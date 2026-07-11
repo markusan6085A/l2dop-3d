@@ -858,12 +858,20 @@
     });
   }
 
-  async function startHuntContinueBattle(targetLevel, expectedRevision, excludeSpawnId) {
+  async function startHuntContinueBattle(
+    targetLevel,
+    expectedRevision,
+    excludeSpawnId,
+    levelTolerance
+  ) {
     var body = {
       targetLevel: Math.max(1, Math.floor(Number(targetLevel) || 1)),
       expectedRevision: expectedRevision,
     };
     if (excludeSpawnId) body.excludeSpawnId = excludeSpawnId;
+    if (typeof levelTolerance === 'number' && Number.isFinite(levelTolerance)) {
+      body.levelTolerance = levelTolerance;
+    }
     return fetchJson('/game/battle/hunt-continue', {
       method: 'POST',
       headers: {
@@ -1453,7 +1461,8 @@
       var st = await startHuntContinueBattle(
         targetLevel,
         er,
-        victory ? victory.spawnId : undefined
+        victory ? victory.spawnId : undefined,
+        5
       );
       if (st && st._err === 409) {
         var again = await loadCharacter();
@@ -1463,7 +1472,8 @@
           st = await startHuntContinueBattle(
             targetLevel,
             character.revision,
-            victory ? victory.spawnId : undefined
+            victory ? victory.spawnId : undefined,
+            5
           );
         }
       }

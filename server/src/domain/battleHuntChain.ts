@@ -7,8 +7,10 @@ import {
 import { BATTLE_RANGE } from './battleTypes.js';
 import {
   filterSpawnsVisibleForPlayer,
+  isMobSpawnOnRespawn,
   isRegularMobRespawnKind,
 } from './mobSpawnRespawn.js';
+import { parseMobSpawnHpState } from './mobSpawnHpState.js';
 
 export interface HuntNextSpawnResult {
   spawnId: string;
@@ -21,6 +23,8 @@ export interface FindNextHuntSpawnOpts {
   worldX: number;
   worldY: number;
   targetLevel: number;
+  /** Діапазон рівнів, наприклад 0 (строго той самий) або 5 для ±5. */
+  levelTolerance?: number;
   excludeSpawnId?: string;
   mobSpawnHpJson?: unknown;
   nowMs?: number;
@@ -34,22 +38,26 @@ function sameLevelHuntCandidates(
     worldX,
     worldY,
     targetLevel,
+    levelTolerance = 0,
     excludeSpawnId,
     mobSpawnHpJson,
     nowMs = Date.now(),
   } = opts;
 
   const lvl = Math.max(1, Math.floor(targetLevel));
+  const tol = Math.max(0, Math.min(10, Math.floor(levelTolerance)));
   const excludeBase = excludeSpawnId
     ? stripSpawnDupSuffix(excludeSpawnId)
     : '';
 
   const viewR2 = MAP_NEARBY_LIST_RADIUS * MAP_NEARBY_LIST_RADIUS;
+  const state = parseMobSpawnHpState(mobSpawnHpJson, nowMs);
   const bestByBase = new Map<string, { sp: MapWorldSpawn; d: number }>();
 
   for (const sp of MAP_WORLD_SPAWNS) {
-    if (sp.level !== lvl) continue;
+    if (Math.abs(sp.level - lvl) > tol) continue;
     if (!isRegularMobRespawnKind(sp.kind)) continue;
+    if (isMobSpawnOnRespawn(state, sp.id, nowMs)) continue;
 
     const base = stripSpawnDupSuffix(sp.id);
     if (excludeBase && base === excludeBase) continue;
@@ -67,7 +75,7 @@ function sameLevelHuntCandidates(
   }
 
   const merged = [...bestByBase.values()].map((x) => x.sp);
-  return filterSpawnsVisibleForPlayer(merged, mobSpawnHpJson, nowMs);
+  return filterSpawnsVisibleForPlayer(merged, state, nowMs);
 }
 
 export function findNextSameLevelHuntSpawn(
