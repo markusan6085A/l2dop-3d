@@ -1,1142 +1,997 @@
 [
   {
     "n": 1,
-    "oldName": "1.gif",
+    "oldName": "acute.gif",
     "newName": "1.gif"
   },
   {
     "n": 2,
-    "oldName": "2.gif",
+    "oldName": "aggressive.gif",
     "newName": "2.gif"
   },
   {
     "n": 3,
-    "oldName": "3.gif",
+    "oldName": "air_kiss.gif",
     "newName": "3.gif"
   },
   {
     "n": 4,
-    "oldName": "4.gif",
+    "oldName": "angel.gif",
     "newName": "4.gif"
   },
   {
     "n": 5,
-    "oldName": "5.gif",
+    "oldName": "bad.gif",
     "newName": "5.gif"
   },
   {
     "n": 6,
-    "oldName": "6.gif",
+    "oldName": "bb.gif",
     "newName": "6.gif"
   },
   {
     "n": 7,
-    "oldName": "7.gif",
+    "oldName": "beach.gif",
     "newName": "7.gif"
   },
   {
     "n": 8,
-    "oldName": "8.gif",
+    "oldName": "beee.gif",
     "newName": "8.gif"
   },
   {
     "n": 9,
-    "oldName": "banned.gif",
+    "oldName": "big_boss.gif",
     "newName": "9.gif"
   },
   {
     "n": 10,
-    "oldName": "bb.gif",
+    "oldName": "biggrin.gif",
     "newName": "10.gif"
   },
   {
     "n": 11,
-    "oldName": "bb2.gif",
+    "oldName": "blum.gif",
     "newName": "11.gif"
   },
   {
     "n": 12,
-    "oldName": "beach.gif",
+    "oldName": "blum3.gif",
     "newName": "12.gif"
   },
   {
     "n": 13,
-    "oldName": "beta.gif",
+    "oldName": "blush.gif",
     "newName": "13.gif"
   },
   {
     "n": 14,
-    "oldName": "big_boss.gif",
+    "oldName": "boast.gif",
     "newName": "14.gif"
   },
   {
     "n": 15,
-    "oldName": "biggrin.gif",
+    "oldName": "bomb.gif",
     "newName": "15.gif"
   },
   {
     "n": 16,
-    "oldName": "blind.gif",
+    "oldName": "boredom.gif",
     "newName": "16.gif"
   },
   {
     "n": 17,
-    "oldName": "blum1.gif",
+    "oldName": "buba_phone.gif",
     "newName": "17.gif"
   },
   {
     "n": 18,
-    "oldName": "bomb.gif",
+    "oldName": "buba.gif",
     "newName": "18.gif"
   },
   {
     "n": 19,
-    "oldName": "brunette.gif",
+    "oldName": "bye.gif",
     "newName": "19.gif"
   },
   {
     "n": 20,
-    "oldName": "buba.gif",
+    "oldName": "clapping.gif",
     "newName": "20.gif"
   },
   {
     "n": 21,
-    "oldName": "butcher.gif",
+    "oldName": "cray.gif",
     "newName": "21.gif"
   },
   {
     "n": 22,
-    "oldName": "bye.gif",
+    "oldName": "cray2.gif",
     "newName": "22.gif"
   },
   {
     "n": 23,
-    "oldName": "bye2.gif",
+    "oldName": "crazy.gif",
     "newName": "23.gif"
   },
   {
     "n": 24,
-    "oldName": "clapping.gif",
+    "oldName": "curtsey.gif",
     "newName": "24.gif"
   },
   {
     "n": 25,
-    "oldName": "close_tema.gif",
+    "oldName": "dance.gif",
     "newName": "25.gif"
   },
   {
     "n": 26,
-    "oldName": "congratulate.gif",
+    "oldName": "dance2.gif",
     "newName": "26.gif"
   },
   {
     "n": 27,
-    "oldName": "cool.gif",
+    "oldName": "dance3.gif",
     "newName": "27.gif"
   },
   {
     "n": 28,
-    "oldName": "crazy_pilot.gif",
+    "oldName": "dance4.gif",
     "newName": "28.gif"
   },
   {
     "n": 29,
-    "oldName": "crazy.gif",
+    "oldName": "dash1.gif",
     "newName": "29.gif"
   },
   {
     "n": 30,
-    "oldName": "dance.gif",
+    "oldName": "dash2.gif",
     "newName": "30.gif"
   },
   {
     "n": 31,
-    "oldName": "dash1.gif",
+    "oldName": "dash3.gif",
     "newName": "31.gif"
   },
   {
     "n": 32,
-    "oldName": "dash2.gif",
+    "oldName": "declare.gif",
     "newName": "32.gif"
   },
   {
     "n": 33,
-    "oldName": "dash3.gif",
+    "oldName": "diablo.gif",
     "newName": "33.gif"
   },
   {
     "n": 34,
-    "oldName": "ded_moroz.gif",
+    "oldName": "dirol.gif",
     "newName": "34.gif"
   },
   {
     "n": 35,
-    "oldName": "ded_snegurochka2.gif",
+    "oldName": "don-t_mention.gif",
     "newName": "35.gif"
   },
   {
     "n": 36,
-    "oldName": "diablo.gif",
+    "oldName": "download.gif",
     "newName": "36.gif"
   },
   {
     "n": 37,
-    "oldName": "dinamo.gif",
+    "oldName": "drinks.gif",
     "newName": "37.gif"
   },
   {
     "n": 38,
-    "oldName": "dirol.gif",
+    "oldName": "english_en.gif",
     "newName": "38.gif"
   },
   {
     "n": 39,
-    "oldName": "drag.gif",
+    "oldName": "feminist_en.gif",
     "newName": "39.gif"
   },
   {
     "n": 40,
-    "oldName": "drinks.gif",
+    "oldName": "feminist.gif",
     "newName": "40.gif"
   },
   {
     "n": 41,
-    "oldName": "dwarf.gif",
+    "oldName": "first_move.gif",
     "newName": "41.gif"
   },
   {
     "n": 42,
-    "oldName": "elf.gif",
+    "oldName": "flirt.gif",
     "newName": "42.gif"
   },
   {
     "n": 43,
-    "oldName": "empathy2.gif",
+    "oldName": "focus.gif",
     "newName": "43.gif"
   },
   {
     "n": 44,
-    "oldName": "fan_1.gif",
+    "oldName": "fool.gif",
     "newName": "44.gif"
   },
   {
     "n": 45,
-    "oldName": "fans.gif",
+    "oldName": "friends.gif",
     "newName": "45.gif"
   },
   {
     "n": 46,
-    "oldName": "feminist_en.gif",
+    "oldName": "gamer1.gif",
     "newName": "46.gif"
   },
   {
     "n": 47,
-    "oldName": "flag_of_truce.gif",
+    "oldName": "gamer2.gif",
     "newName": "47.gif"
   },
   {
     "n": 48,
-    "oldName": "focus.gif",
+    "oldName": "gamer3.gif",
     "newName": "48.gif"
   },
   {
     "n": 49,
-    "oldName": "fool.gif",
+    "oldName": "gamer4.gif",
     "newName": "49.gif"
   },
   {
     "n": 50,
-    "oldName": "friends.gif",
+    "oldName": "girl_blum.gif",
     "newName": "50.gif"
   },
   {
     "n": 51,
-    "oldName": "gamer.gif",
+    "oldName": "girl_cray.gif",
     "newName": "51.gif"
   },
   {
     "n": 52,
-    "oldName": "gamer1.gif",
+    "oldName": "girl_cray2.gif",
     "newName": "52.gif"
   },
   {
     "n": 53,
-    "oldName": "gamer2.gif",
+    "oldName": "girl_cray3.gif",
     "newName": "53.gif"
   },
   {
     "n": 54,
-    "oldName": "gamer3.gif",
+    "oldName": "girl_crazy.gif",
     "newName": "54.gif"
   },
   {
     "n": 55,
-    "oldName": "gamer4.gif",
+    "oldName": "girl_dance.gif",
     "newName": "55.gif"
   },
   {
     "n": 56,
-    "oldName": "girl_angel.gif",
+    "oldName": "girl_devil.gif",
     "newName": "56.gif"
   },
   {
     "n": 57,
-    "oldName": "girl_blum.gif",
+    "oldName": "girl_drink1.gif",
     "newName": "57.gif"
   },
   {
     "n": 58,
-    "oldName": "girl_blush.gif",
+    "oldName": "girl_drink3.gif",
     "newName": "58.gif"
   },
   {
     "n": 59,
-    "oldName": "girl_blush2.gif",
+    "oldName": "girl_drink4.gif",
     "newName": "59.gif"
   },
   {
     "n": 60,
-    "oldName": "girl_bye.gif",
+    "oldName": "girl_haha.gif",
     "newName": "60.gif"
   },
   {
     "n": 61,
-    "oldName": "girl_bye2.gif",
+    "oldName": "girl_hide.gif",
     "newName": "61.gif"
   },
   {
     "n": 62,
-    "oldName": "girl_claping.gif",
+    "oldName": "girl_hospital.gif",
     "newName": "62.gif"
   },
   {
     "n": 63,
-    "oldName": "girl_cool.gif",
+    "oldName": "girl_impossible.gif",
     "newName": "63.gif"
   },
   {
     "n": 64,
-    "oldName": "girl_cray.gif",
+    "oldName": "girl_in_love.gif",
     "newName": "64.gif"
   },
   {
     "n": 65,
-    "oldName": "girl_cray2.gif",
+    "oldName": "girl_mad.gif",
     "newName": "65.gif"
   },
   {
     "n": 66,
-    "oldName": "girl_cray3.gif",
+    "oldName": "girl_pinkglassesf.gif",
     "newName": "66.gif"
   },
   {
     "n": 67,
-    "oldName": "girl_crazy — копия.gif",
+    "oldName": "girl_prepare_fish.gif",
     "newName": "67.gif"
   },
   {
     "n": 68,
-    "oldName": "girl_dance.gif",
+    "oldName": "girl_sad.gif",
     "newName": "68.gif"
   },
   {
     "n": 69,
-    "oldName": "girl_devil.gif",
+    "oldName": "girl_sigh.gif",
     "newName": "69.gif"
   },
   {
     "n": 70,
-    "oldName": "girl_emo — копия.gif",
+    "oldName": "girl_smile.gif",
     "newName": "70.gif"
   },
   {
     "n": 71,
-    "oldName": "girl_feminist — копия.gif",
+    "oldName": "girl_to_take_umbrage.gif",
     "newName": "71.gif"
   },
   {
     "n": 72,
-    "oldName": "girl_flag_of_truce.gif",
+    "oldName": "girl_to_take_umbrage2.gif",
     "newName": "72.gif"
   },
   {
     "n": 73,
-    "oldName": "girl_haha.gif",
+    "oldName": "girl_wacko.gif",
     "newName": "73.gif"
   },
   {
     "n": 74,
-    "oldName": "girl_hide.gif",
+    "oldName": "girl_wink.gif",
     "newName": "74.gif"
   },
   {
     "n": 75,
-    "oldName": "girl_hospital.gif",
+    "oldName": "girl_witch.gif",
     "newName": "75.gif"
   },
   {
     "n": 76,
-    "oldName": "girl_hospital2.gif",
+    "oldName": "give_heart.gif",
     "newName": "76.gif"
   },
   {
     "n": 77,
-    "oldName": "girl_hysteric.gif",
+    "oldName": "give_heart2.gif",
     "newName": "77.gif"
   },
   {
     "n": 78,
-    "oldName": "girl_in_dreams.gif",
+    "oldName": "give_rose.gif",
     "newName": "78.gif"
   },
   {
     "n": 79,
-    "oldName": "girl_in_love.gif",
+    "oldName": "good.gif",
     "newName": "79.gif"
   },
   {
     "n": 80,
-    "oldName": "girl_pardon.gif",
+    "oldName": "good2.gif",
     "newName": "80.gif"
   },
   {
     "n": 81,
-    "oldName": "girl_phone1.gif",
+    "oldName": "good3.gif",
     "newName": "81.gif"
   },
   {
     "n": 82,
-    "oldName": "girl_prepare_fish.gif",
+    "oldName": "hang1.gif",
     "newName": "82.gif"
   },
   {
     "n": 83,
-    "oldName": "girl_sad.gif",
+    "oldName": "hang2.gif",
     "newName": "83.gif"
   },
   {
     "n": 84,
-    "oldName": "girl_to_take_umbrage.gif",
+    "oldName": "hang3.gif",
     "newName": "84.gif"
   },
   {
     "n": 85,
-    "oldName": "girl_to_take_umbrage2.gif",
+    "oldName": "heart.gif",
     "newName": "85.gif"
   },
   {
     "n": 86,
-    "oldName": "girl_wacko.gif",
+    "oldName": "heat.gif",
     "newName": "86.gif"
   },
   {
     "n": 87,
-    "oldName": "girl_werewolf.gif",
+    "oldName": "help.gif",
     "newName": "87.gif"
   },
   {
     "n": 88,
-    "oldName": "girl_witch.gif",
+    "oldName": "hi.gif",
     "newName": "88.gif"
   },
   {
     "n": 89,
-    "oldName": "give_heart.gif",
+    "oldName": "hunter.gif",
     "newName": "89.gif"
   },
   {
     "n": 90,
-    "oldName": "give_rose.gif",
+    "oldName": "hysteric.gif",
     "newName": "90.gif"
   },
   {
     "n": 91,
-    "oldName": "good.gif",
+    "oldName": "i-m_so_happy.gif",
     "newName": "91.gif"
   },
   {
     "n": 92,
-    "oldName": "good2.gif",
+    "oldName": "ireful1.gif",
     "newName": "92.gif"
   },
   {
     "n": 93,
-    "oldName": "greeting.gif",
+    "oldName": "ireful2.gif",
     "newName": "93.gif"
   },
   {
     "n": 94,
-    "oldName": "haha.gif",
+    "oldName": "ireful3.gif",
     "newName": "94.gif"
   },
   {
     "n": 95,
-    "oldName": "hang1.gif",
+    "oldName": "king.gif",
     "newName": "95.gif"
   },
   {
     "n": 96,
-    "oldName": "hang2.gif",
+    "oldName": "kiss.gif",
     "newName": "96.gif"
   },
   {
     "n": 97,
-    "oldName": "hang3.gif",
+    "oldName": "kiss2.gif",
     "newName": "97.gif"
   },
   {
     "n": 98,
-    "oldName": "heat.gif",
+    "oldName": "kiss3.gif",
     "newName": "98.gif"
   },
   {
     "n": 99,
-    "oldName": "help.gif",
+    "oldName": "laugh1.gif",
     "newName": "99.gif"
   },
   {
     "n": 100,
-    "oldName": "hi.gif",
+    "oldName": "laugh2.gif",
     "newName": "100.gif"
   },
   {
     "n": 101,
-    "oldName": "hmm.gif",
+    "oldName": "laugh3.gif",
     "newName": "101.gif"
   },
   {
     "n": 102,
-    "oldName": "hunter.gif",
+    "oldName": "laugh4.gif",
     "newName": "102.gif"
   },
   {
     "n": 103,
-    "oldName": "i_am_so_happy.gif",
+    "oldName": "lazy.gif",
     "newName": "103.gif"
   },
   {
     "n": 104,
-    "oldName": "ireful.gif",
+    "oldName": "lol.gif",
     "newName": "104.gif"
   },
   {
     "n": 105,
-    "oldName": "ireful2.gif",
+    "oldName": "lol2.gif",
     "newName": "105.gif"
   },
   {
     "n": 106,
-    "oldName": "jester.gif",
+    "oldName": "mail1.gif",
     "newName": "106.gif"
   },
   {
     "n": 107,
-    "oldName": "king.gif",
+    "oldName": "mamba.gif",
     "newName": "107.gif"
   },
   {
     "n": 108,
-    "oldName": "king2.gif",
+    "oldName": "man_in_love.gif",
     "newName": "108.gif"
   },
   {
     "n": 109,
-    "oldName": "kiss3.gif",
+    "oldName": "mda.gif",
     "newName": "109.gif"
   },
   {
     "n": 110,
-    "oldName": "laugh1.gif",
+    "oldName": "mega_shok.gif",
     "newName": "110.gif"
   },
   {
     "n": 111,
-    "oldName": "lol.gif",
+    "oldName": "moil.gif",
     "newName": "111.gif"
   },
   {
     "n": 112,
-    "oldName": "lol2.gif",
+    "oldName": "mosking.gif",
     "newName": "112.gif"
   },
   {
     "n": 113,
-    "oldName": "mad.gif",
+    "oldName": "music.gif",
     "newName": "113.gif"
   },
   {
     "n": 114,
-    "oldName": "mail1.gif",
+    "oldName": "music2.gif",
     "newName": "114.gif"
   },
   {
     "n": 115,
-    "oldName": "mamba.gif",
+    "oldName": "nea.gif",
     "newName": "115.gif"
   },
   {
     "n": 116,
-    "oldName": "man_in_love.gif",
+    "oldName": "negative.gif",
     "newName": "116.gif"
   },
   {
     "n": 117,
-    "oldName": "meowth.gif",
+    "oldName": "new_russian.gif",
     "newName": "117.gif"
   },
   {
     "n": 118,
-    "oldName": "morning1.gif",
+    "oldName": "ok.gif",
     "newName": "118.gif"
   },
   {
     "n": 119,
-    "oldName": "music.gif",
+    "oldName": "on_the_quiet.gif",
     "newName": "119.gif"
   },
   {
     "n": 120,
-    "oldName": "music2.gif",
+    "oldName": "on_the_quiet2.gif",
     "newName": "120.gif"
   },
   {
     "n": 121,
-    "oldName": "negative.gif",
+    "oldName": "padonak.gif",
     "newName": "121.gif"
   },
   {
     "n": 122,
-    "oldName": "neo.gif",
+    "oldName": "paint2.gif",
     "newName": "122.gif"
   },
   {
     "n": 123,
-    "oldName": "new_russian.gif",
+    "oldName": "paint3.gif",
     "newName": "123.gif"
   },
   {
     "n": 124,
-    "oldName": "nhl_checking.gif",
+    "oldName": "paratrooper_girl.gif",
     "newName": "124.gif"
   },
   {
     "n": 125,
-    "oldName": "nhl_crach.gif",
+    "oldName": "paratrooper.gif",
     "newName": "125.gif"
   },
   {
     "n": 126,
-    "oldName": "nhl_fight.gif",
+    "oldName": "pardon.gif",
     "newName": "126.gif"
   },
   {
     "n": 127,
-    "oldName": "nhl.gif",
+    "oldName": "parting.gif",
     "newName": "127.gif"
   },
   {
     "n": 128,
-    "oldName": "nhl2.gif",
+    "oldName": "party.gif",
     "newName": "128.gif"
   },
   {
     "n": 129,
-    "oldName": "nhl3.gif",
+    "oldName": "party2.gif",
     "newName": "129.gif"
   },
   {
     "n": 130,
-    "oldName": "no.gif",
+    "oldName": "pilot.gif",
     "newName": "130.gif"
   },
   {
     "n": 131,
-    "oldName": "nono.gif",
+    "oldName": "pioneer_smoke.gif",
     "newName": "131.gif"
   },
   {
     "n": 132,
-    "oldName": "nyam.gif",
+    "oldName": "pioneer.gif",
     "newName": "132.gif"
   },
   {
     "n": 133,
-    "oldName": "ok.gif",
+    "oldName": "pleasantry.gif",
     "newName": "133.gif"
   },
   {
     "n": 134,
-    "oldName": "on_the_quiet.gif",
+    "oldName": "popcorm1.gif",
     "newName": "134.gif"
   },
   {
     "n": 135,
-    "oldName": "on_the_quiet2.gif",
+    "oldName": "popcorm2.gif",
     "newName": "135.gif"
   },
   {
     "n": 136,
-    "oldName": "orc.gif",
+    "oldName": "prankster2.gif",
     "newName": "136.gif"
   },
   {
     "n": 137,
-    "oldName": "paint3.gif",
+    "oldName": "preved.gif",
     "newName": "137.gif"
   },
   {
     "n": 138,
-    "oldName": "paladin.gif",
+    "oldName": "punish.gif",
     "newName": "138.gif"
   },
   {
     "n": 139,
-    "oldName": "party.gif",
+    "oldName": "rofl.gif",
     "newName": "139.gif"
   },
   {
     "n": 140,
-    "oldName": "party2.gif",
+    "oldName": "rtfm.gif",
     "newName": "140.gif"
   },
   {
     "n": 141,
-    "oldName": "phi.gif",
+    "oldName": "russian_ru.gif",
     "newName": "141.gif"
   },
   {
     "n": 142,
-    "oldName": "pilot.gif",
+    "oldName": "sad.gif",
     "newName": "142.gif"
   },
   {
     "n": 143,
-    "oldName": "pioneer.gif",
+    "oldName": "sarcastic_blum.gif",
     "newName": "143.gif"
   },
   {
     "n": 144,
-    "oldName": "playboy.gif",
+    "oldName": "sarcastic_hand.gif",
     "newName": "144.gif"
   },
   {
     "n": 145,
-    "oldName": "pooh_door.gif",
+    "oldName": "sarcastic.gif",
     "newName": "145.gif"
   },
   {
     "n": 146,
-    "oldName": "pooh_go.gif",
+    "oldName": "scare.gif",
     "newName": "146.gif"
   },
   {
     "n": 147,
-    "oldName": "pooh_lol.gif",
+    "oldName": "scaut_en.gif",
     "newName": "147.gif"
   },
   {
     "n": 148,
-    "oldName": "pooh_on_ball.gif",
+    "oldName": "scaut.gif",
     "newName": "148.gif"
   },
   {
     "n": 149,
-    "oldName": "pooh.gif",
+    "oldName": "scratch_one-s_head.gif",
     "newName": "149.gif"
   },
   {
     "n": 150,
-    "oldName": "popcorm2.gif",
+    "oldName": "search.gif",
     "newName": "150.gif"
   },
   {
     "n": 151,
-    "oldName": "praising.gif",
+    "oldName": "secret.gif",
     "newName": "151.gif"
   },
   {
     "n": 152,
-    "oldName": "prankster.gif",
+    "oldName": "sensored.gif",
     "newName": "152.gif"
   },
   {
     "n": 153,
-    "oldName": "preved.gif",
+    "oldName": "SHABLON_padonak_01.gif",
     "newName": "153.gif"
   },
   {
     "n": 154,
-    "oldName": "protest.gif",
+    "oldName": "SHABLON_padonak_02.gif",
     "newName": "154.gif"
   },
   {
     "n": 155,
-    "oldName": "punish.gif",
+    "oldName": "SHABLON_padonak_03.gif",
     "newName": "155.gif"
   },
   {
     "n": 156,
-    "oldName": "queen.gif",
+    "oldName": "shok.gif",
     "newName": "156.gif"
   },
   {
     "n": 157,
-    "oldName": "rabbi.gif",
+    "oldName": "shout.gif",
     "newName": "157.gif"
   },
   {
     "n": 158,
-    "oldName": "rap.gif",
+    "oldName": "slow.gif",
     "newName": "158.gif"
   },
   {
     "n": 159,
-    "oldName": "rofl.gif",
+    "oldName": "smile.gif",
     "newName": "159.gif"
   },
   {
     "n": 160,
-    "oldName": "rofl2.gif",
+    "oldName": "smoke.gif",
     "newName": "160.gif"
   },
   {
     "n": 161,
-    "oldName": "rolleyes.gif",
+    "oldName": "soldier_girl.gif",
     "newName": "161.gif"
   },
   {
     "n": 162,
-    "oldName": "rolleyes2.gif",
+    "oldName": "soldier.gif",
     "newName": "162.gif"
   },
   {
     "n": 163,
-    "oldName": "rtfm.gif",
+    "oldName": "sorry.gif",
     "newName": "163.gif"
   },
   {
     "n": 164,
-    "oldName": "russian_ru.gif",
+    "oldName": "sorry2.gif",
     "newName": "164.gif"
   },
   {
     "n": 165,
-    "oldName": "sad.gif",
+    "oldName": "spiteful.gif",
     "newName": "165.gif"
   },
   {
     "n": 166,
-    "oldName": "santa.gif",
+    "oldName": "spruce_up.gif",
     "newName": "166.gif"
   },
   {
     "n": 167,
-    "oldName": "santa2.gif",
+    "oldName": "stinker.gif",
     "newName": "167.gif"
   },
   {
     "n": 168,
-    "oldName": "sarcastic_hand.gif",
+    "oldName": "suicide2.gif",
     "newName": "168.gif"
   },
   {
     "n": 169,
-    "oldName": "sarcastic.gif",
+    "oldName": "sun_bespectacled.gif",
     "newName": "169.gif"
   },
   {
     "n": 170,
-    "oldName": "scare.gif",
+    "oldName": "superstition.gif",
     "newName": "170.gif"
   },
   {
     "n": 171,
-    "oldName": "scare3.gif",
+    "oldName": "swoon.gif",
     "newName": "171.gif"
   },
   {
     "n": 172,
-    "oldName": "scaut_en.gif",
+    "oldName": "tease.gif",
     "newName": "172.gif"
   },
   {
     "n": 173,
-    "oldName": "scenic.gif",
+    "oldName": "tender.gif",
     "newName": "173.gif"
   },
   {
     "n": 174,
-    "oldName": "scratch_one-s_head.gif",
+    "oldName": "thank_you2.gif",
     "newName": "174.gif"
   },
   {
     "n": 175,
-    "oldName": "secret.gif",
+    "oldName": "this.gif",
     "newName": "175.gif"
   },
   {
     "n": 176,
-    "oldName": "shablon_01.gif",
+    "oldName": "to_babruysk.gif",
     "newName": "176.gif"
   },
   {
     "n": 177,
-    "oldName": "shablon_02.gif",
+    "oldName": "to_become_senile.gif",
     "newName": "177.gif"
   },
   {
     "n": 178,
-    "oldName": "shablon_03.gif",
+    "oldName": "to_pick_ones_nose.gif",
     "newName": "178.gif"
   },
   {
     "n": 179,
-    "oldName": "shablon_04.gif",
+    "oldName": "to_pick_ones_nose2.gif",
     "newName": "179.gif"
   },
   {
     "n": 180,
-    "oldName": "SHABLON_padonak_02.gif",
+    "oldName": "to_take_umbrage.gif",
     "newName": "180.gif"
   },
   {
     "n": 181,
-    "oldName": "shok.gif",
+    "oldName": "training1.gif",
     "newName": "181.gif"
   },
   {
     "n": 182,
-    "oldName": "shout.gif",
+    "oldName": "treaten.gif",
     "newName": "182.gif"
   },
   {
     "n": 183,
-    "oldName": "slow_en.gif",
+    "oldName": "umnik2.gif",
     "newName": "183.gif"
   },
   {
     "n": 184,
-    "oldName": "slow.gif",
+    "oldName": "unknw.gif",
     "newName": "184.gif"
   },
   {
     "n": 185,
-    "oldName": "smile.gif",
+    "oldName": "vampire.gif",
     "newName": "185.gif"
   },
   {
     "n": 186,
-    "oldName": "smoke.gif",
+    "oldName": "vava.gif",
     "newName": "186.gif"
   },
   {
     "n": 187,
-    "oldName": "soldier.gif",
+    "oldName": "victory.gif",
     "newName": "187.gif"
   },
   {
     "n": 188,
-    "oldName": "sorry.gif",
+    "oldName": "wacko.gif",
     "newName": "188.gif"
   },
   {
     "n": 189,
-    "oldName": "spartak.gif",
+    "oldName": "wacko2.gif",
     "newName": "189.gif"
   },
   {
     "n": 190,
-    "oldName": "spiteful.gif",
+    "oldName": "whistle3.gif",
     "newName": "190.gif"
   },
   {
     "n": 191,
-    "oldName": "spruce_up.gif",
+    "oldName": "wink.gif",
     "newName": "191.gif"
   },
   {
     "n": 192,
-    "oldName": "stop.gif",
+    "oldName": "wink2.gif",
     "newName": "192.gif"
   },
   {
     "n": 193,
-    "oldName": "suicide_fool-edit.gif",
+    "oldName": "wink3.gif",
     "newName": "193.gif"
   },
   {
     "n": 194,
-    "oldName": "suicide2.gif",
+    "oldName": "wizard.gif",
     "newName": "194.gif"
   },
   {
     "n": 195,
-    "oldName": "sun_bespectacled.gif",
+    "oldName": "yahoo.gif",
     "newName": "195.gif"
   },
   {
     "n": 196,
-    "oldName": "superman.gif",
+    "oldName": "yes.gif",
     "newName": "196.gif"
   },
   {
     "n": 197,
-    "oldName": "tease.gif",
+    "oldName": "yes3.gif",
     "newName": "197.gif"
   },
   {
     "n": 198,
-    "oldName": "timeout.gif",
+    "oldName": "yess.gif",
     "newName": "198.gif"
   },
   {
     "n": 199,
-    "oldName": "to_keep_order.gif",
-    "newName": "199.gif"
-  },
-  {
-    "n": 200,
-    "oldName": "to_pick_ones_nose_eat.gif",
-    "newName": "200.gif"
-  },
-  {
-    "n": 201,
-    "oldName": "to_pick_ones_nose.gif",
-    "newName": "201.gif"
-  },
-  {
-    "n": 202,
-    "oldName": "to_pick_ones_nose2.gif",
-    "newName": "202.gif"
-  },
-  {
-    "n": 203,
-    "oldName": "to_pick_ones_nose3.gif",
-    "newName": "203.gif"
-  },
-  {
-    "n": 204,
-    "oldName": "tomato.gif",
-    "newName": "204.gif"
-  },
-  {
-    "n": 205,
-    "oldName": "tomato2.gif",
-    "newName": "205.gif"
-  },
-  {
-    "n": 206,
-    "oldName": "tommy.gif",
-    "newName": "206.gif"
-  },
-  {
-    "n": 207,
-    "oldName": "training1.gif",
-    "newName": "207.gif"
-  },
-  {
-    "n": 208,
-    "oldName": "triniti.gif",
-    "newName": "208.gif"
-  },
-  {
-    "n": 209,
-    "oldName": "unknown.gif",
-    "newName": "209.gif"
-  },
-  {
-    "n": 210,
-    "oldName": "vampire.gif",
-    "newName": "210.gif"
-  },
-  {
-    "n": 211,
-    "oldName": "vava.gif",
-    "newName": "211.gif"
-  },
-  {
-    "n": 212,
-    "oldName": "vinsent.gif",
-    "newName": "212.gif"
-  },
-  {
-    "n": 213,
-    "oldName": "wacko.gif",
-    "newName": "213.gif"
-  },
-  {
-    "n": 214,
-    "oldName": "wacko1.gif",
-    "newName": "214.gif"
-  },
-  {
-    "n": 215,
-    "oldName": "wacko2.gif",
-    "newName": "215.gif"
-  },
-  {
-    "n": 216,
-    "oldName": "wacko3.gif",
-    "newName": "216.gif"
-  },
-  {
-    "n": 217,
-    "oldName": "warning.gif",
-    "newName": "217.gif"
-  },
-  {
-    "n": 218,
-    "oldName": "warning2.gif",
-    "newName": "218.gif"
-  },
-  {
-    "n": 219,
-    "oldName": "whistle3.gif",
-    "newName": "219.gif"
-  },
-  {
-    "n": 220,
-    "oldName": "wild.gif",
-    "newName": "220.gif"
-  },
-  {
-    "n": 221,
-    "oldName": "wink.gif",
-    "newName": "221.gif"
-  },
-  {
-    "n": 222,
-    "oldName": "wink2.gif",
-    "newName": "222.gif"
-  },
-  {
-    "n": 223,
-    "oldName": "wink3.gif",
-    "newName": "223.gif"
-  },
-  {
-    "n": 224,
-    "oldName": "wizard.gif",
-    "newName": "224.gif"
-  },
-  {
-    "n": 225,
-    "oldName": "yahoo.gif",
-    "newName": "225.gif"
-  },
-  {
-    "n": 226,
-    "oldName": "yes.gif",
-    "newName": "226.gif"
-  },
-  {
-    "n": 227,
-    "oldName": "yess.gif",
-    "newName": "227.gif"
-  },
-  {
-    "n": 228,
     "oldName": "yu.gif",
-    "newName": "228.gif"
+    "newName": "199.gif"
   }
 ]
