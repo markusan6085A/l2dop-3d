@@ -5,7 +5,6 @@ body.l2-app-l2-chrome.l2-page-chat.l2-nav-minimal {
   --l2s-content-edge-pad: 0.25cm;
   --l2s-legacy-inner-pad-x: 0.25cm;
   --l2-chat-smile-side-pad: 1cm;
-  --l2-nick-color: #bfa88a;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-panel {
@@ -208,7 +207,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__ico {
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__nick {
-  color: #bfa88a !important;
+  color: var(--l2-nick-color);
   font-weight: 600;
 }
 
