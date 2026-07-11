@@ -10,6 +10,186 @@
   var deleteInFlight = false;
   var myCharacterId = '';
   var replyTarget = null;
+  var smilesOpen = false;
+  var smilesPage = 0;
+  var SMILE_COLS = 8;
+  var SMILE_ROWS = 3;
+  var SMILE_PAGE_SIZE = SMILE_COLS * SMILE_ROWS;
+  var SMILE_TOKEN_RE = /:([0-9]+|[a-z0-9_]+):/gi;
+
+  function getSmilesCatalog() {
+    return window.L2ChatSmiles && L2ChatSmiles.byCode ? L2ChatSmiles.byCode : {};
+  }
+
+  function insertSmileToken(code) {
+    var input = $('chat-input');
+    if (!input || !code) return;
+    var catalog = getSmilesCatalog();
+    var key = String(code).trim().toLowerCase();
+    if (!catalog[key]) return;
+
+    var token =
+      window.L2ChatSmiles && typeof L2ChatSmiles.tokenFor === 'function'
+        ? L2ChatSmiles.tokenFor(key)
+        : ':' + key + ':';
+
+    var start = input.selectionStart != null ? input.selectionStart : input.value.length;
+    var end = input.selectionEnd != null ? input.selectionEnd : input.value.length;
+    var before = input.value.slice(0, start);
+    var after = input.value.slice(end);
+    var spacerBefore = before && !/\s$/.test(before) ? ' ' : '';
+    var spacerAfter = after && !/^\s/.test(after) ? ' ' : '';
+    input.value = before + spacerBefore + token + spacerAfter + after;
+    var caret = (before + spacerBefore + token + spacerAfter).length;
+    if (input.setSelectionRange) input.setSelectionRange(caret, caret);
+    input.focus();
+
+    var stubEl = $('chat-stub-msg');
+    if (stubEl) stubEl.hidden = true;
+  }
+
+  function appendMessageTextWithSmiles(container, rawText) {
+    var text = String(rawText || '');
+    if (!text) return;
+
+    var catalog = getSmilesCatalog();
+    var lastIndex = 0;
+    var re = new RegExp(SMILE_TOKEN_RE.source, 'gi');
+    var match;
+
+    while ((match = re.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        container.appendChild(
+          document.createTextNode(text.slice(lastIndex, match.index))
+        );
+      }
+      var code = String(match[1] || '').toLowerCase();
+      var smile = catalog[code];
+      if (smile && smile.src) {
+        var tokenText = match[0];
+        var img = document.createElement('img');
+        img.className = 'l2-chat-smile';
+        img.src = smile.src;
+        img.alt = tokenText;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.addEventListener('error', function onSmileError() {
+          img.removeEventListener('error', onSmileError);
+          var fallback = document.createTextNode(tokenText);
+          img.replaceWith(fallback);
+        });
+        container.appendChild(img);
+      } else {
+        container.appendChild(document.createTextNode(match[0]));
+      }
+      lastIndex = re.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      container.appendChild(document.createTextNode(text.slice(lastIndex)));
+    }
+  }
+
+  function getSmilesList() {
+    return window.L2ChatSmiles && Array.isArray(L2ChatSmiles.list)
+      ? L2ChatSmiles.list
+      : [];
+  }
+
+  function renderSmilesPickerPage() {
+    var grid = $('chat-smiles-grid');
+    var pager = $('chat-smiles-pager');
+    var prevBtn = $('chat-smiles-prev');
+    var nextBtn = $('chat-smiles-next');
+    var list = getSmilesList();
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    if (!list.length) {
+      grid.hidden = true;
+      if (pager) pager.hidden = true;
+      return;
+    }
+
+    var totalPages = Math.max(1, Math.ceil(list.length / SMILE_PAGE_SIZE));
+    if (smilesPage >= totalPages) smilesPage = totalPages - 1;
+    if (smilesPage < 0) smilesPage = 0;
+
+    var start = smilesPage * SMILE_PAGE_SIZE;
+    var slice = list.slice(start, start + SMILE_PAGE_SIZE);
+
+    grid.hidden = false;
+    for (var i = 0; i < slice.length; i++) {
+      (function (item) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'l2-chat-smiles__item';
+        btn.setAttribute('role', 'listitem');
+        btn.title = item.title || item.code;
+        btn.setAttribute('aria-label', item.title || item.code);
+
+        var img = document.createElement('img');
+        img.className = 'l2-chat-smiles__img';
+        img.src = item.src;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+
+        btn.appendChild(img);
+        btn.addEventListener('click', function () {
+          insertSmileToken(item.code);
+        });
+        grid.appendChild(btn);
+      })(slice[i]);
+    }
+
+    if (pager) {
+      pager.hidden = totalPages <= 1;
+    }
+    if (prevBtn) prevBtn.disabled = smilesPage <= 0;
+    if (nextBtn) nextBtn.disabled = smilesPage >= totalPages - 1;
+  }
+
+  function wireSmilesPager() {
+    var prevBtn = $('chat-smiles-prev');
+    var nextBtn = $('chat-smiles-next');
+    if (prevBtn && prevBtn.dataset.wired !== '1') {
+      prevBtn.dataset.wired = '1';
+      prevBtn.addEventListener('click', function () {
+        if (smilesPage <= 0) return;
+        smilesPage--;
+        renderSmilesPickerPage();
+      });
+    }
+    if (nextBtn && nextBtn.dataset.wired !== '1') {
+      nextBtn.dataset.wired = '1';
+      nextBtn.addEventListener('click', function () {
+        var list = getSmilesList();
+        var totalPages = Math.max(1, Math.ceil(list.length / SMILE_PAGE_SIZE));
+        if (smilesPage >= totalPages - 1) return;
+        smilesPage++;
+        renderSmilesPickerPage();
+      });
+    }
+  }
+
+  function setSmilesPanelOpen(open) {
+    smilesOpen = !!open;
+    var panel = $('chat-smiles-panel');
+    var btn = $('chat-smiles-btn');
+    if (panel) panel.hidden = !smilesOpen;
+    if (btn) btn.setAttribute('aria-expanded', smilesOpen ? 'true' : 'false');
+    if (smilesOpen) {
+      smilesPage = 0;
+      renderSmilesPickerPage();
+    }
+  }
+
+  function toggleSmilesPanel() {
+    setSmilesPanelOpen(!smilesOpen);
+    var stubEl = $('chat-stub-msg');
+    if (stubEl && smilesOpen) stubEl.hidden = true;
+  }
 
   function $(id) {
     return document.getElementById(id);
@@ -201,7 +381,7 @@
         replyTo.textContent = String(m.replyToCharacterName) + ', ';
         text.appendChild(replyTo);
       }
-      text.appendChild(document.createTextNode(String(m.text || '')));
+      appendMessageTextWithSmiles(text, m.text);
 
       item.appendChild(head);
       item.appendChild(text);
@@ -433,10 +613,11 @@
 
     var smilesBtn = $('chat-smiles-btn');
     if (smilesBtn) {
-      smilesBtn.addEventListener('click', function () {
-        showStub(smilesBtn.getAttribute('data-stub') || 'Смайли');
-      });
+      smilesBtn.addEventListener('click', toggleSmilesPanel);
     }
+
+    renderSmilesPickerPage();
+    wireSmilesPager();
 
     var input = $('chat-input');
     if (input) {

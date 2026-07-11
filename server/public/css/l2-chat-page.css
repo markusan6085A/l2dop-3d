@@ -206,6 +206,117 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
   word-break: break-word;
 }
 
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smile {
+  display: inline-block;
+  vertical-align: middle;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  max-width: 28px !important;
+  max-height: 28px !important;
+  margin: 0 2px;
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles {
+  margin: 0 0 8px;
+  padding: 2px 0.25cm 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles__grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-auto-rows: 32px;
+  gap: 2px 0;
+  width: 100%;
+  min-height: calc(32px * 3 + 4px);
+  max-height: calc(32px * 3 + 4px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles__item {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 32px !important;
+  min-width: 0 !important;
+  max-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles__item:hover,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles__item:focus {
+  outline: none;
+  filter: brightness(1.12);
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles__img {
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles-pager {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1cm;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles-pager__btn {
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles-pager__btn:hover,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles-pager__btn:focus {
+  color: #fff;
+  outline: none;
+  filter: brightness(1.15);
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles-pager__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  filter: none;
+}
+
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-pages {
   display: flex;
   flex-wrap: wrap;

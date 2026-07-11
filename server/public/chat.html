@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
-    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260711nickWarm2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260711nickWarm3" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260711nickTone3" />
-    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260711chatGap2" />
+    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260711chatSmile5" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-chat l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -101,7 +101,27 @@
                 <button type="button" class="l2-chat-send" id="chat-send-btn">Написати</button>
                 <button type="button" class="l2-chat-link" id="chat-refresh-btn">Оновити</button>
                 <span class="l2-chat-actions-sep" aria-hidden="true">|</span>
-                <button type="button" class="l2-chat-link" id="chat-smiles-btn" data-stub="Смайли">Смайли</button>
+                <button
+                  type="button"
+                  class="l2-chat-link"
+                  id="chat-smiles-btn"
+                  aria-expanded="false"
+                  aria-controls="chat-smiles-panel"
+                >
+                  Смайли
+                </button>
+              </div>
+
+              <div class="l2-chat-smiles" id="chat-smiles-panel" hidden>
+                <div class="l2-chat-smiles__grid" id="chat-smiles-grid" role="list"></div>
+                <nav class="l2-chat-smiles-pager" id="chat-smiles-pager" aria-label="Сторінки смайлів" hidden>
+                  <button type="button" class="l2-chat-smiles-pager__btn" id="chat-smiles-prev" aria-label="Попередня сторінка">
+                    &lt;&lt;
+                  </button>
+                  <button type="button" class="l2-chat-smiles-pager__btn" id="chat-smiles-next" aria-label="Наступна сторінка">
+                    &gt;&gt;
+                  </button>
+                </nav>
               </div>
 
               <p class="l2-city-stub-msg" id="chat-stub-msg" hidden></p>
@@ -117,9 +137,10 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260711nickWarm2"></script>
+    <script src="/common.js?v=20260711nickWarm3"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709chat1"></script>
-    <script src="/chat.js?v=20260711chatGap1"></script>
+    <script src="/chatSmiles.js?v=20260711chatSmile4"></script>
+    <script src="/chat.js?v=20260711chatSmile5"></script>
   </body>
 </html>

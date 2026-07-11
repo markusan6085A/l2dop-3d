@@ -1,13 +1,13 @@
 /**
  * l2-hud-panel — панель героя: рівень/клас, HP/MP/CP (city-strip у common.js).
- * v=29: --l2-nick-color — базовий колір ніка (#7a7365).
+ * v=30: --l2-nick-color — базовий колір ніка (#878174, +10% світліше).
  * Порядок: після /styles.css і (за потреби) l2-game-chrome.css.
  * Рамка: /ref/222.png (905×231) — 9-slice, розтягування під ширину/висоту блоку.
  * slice = виріз у PNG; --l2h-frame-w-* = товщина рамки на екрані (окремо, тоншу/толсту).
  * На story: той самий «пергамент», що .l2-story-article (див. styles.css)
  */
 body.l2-app-l2-chrome {
-  --l2-nick-color: #7a7365;
+  --l2-nick-color: #878174;
   --l2-nick-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
 
