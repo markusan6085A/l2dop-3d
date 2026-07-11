@@ -10,6 +10,7 @@ import {
   performBattleAction,
   saveBattleHotbar,
   startBattle,
+  startHuntContinueBattle,
 } from '../services/battleService.js';
 import type { BattleActionId } from '../domain/battle.js';
 import {
@@ -154,6 +155,103 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           });
         }
         await logBattleMutation(request, 'battle_start', er, 'error');
+        throw e;
+      }
+    }
+  );
+
+  app.post(
+    '/battle/hunt-continue',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const body = request.body;
+      if (!body || typeof body !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = body as Record<string, unknown>;
+      const er = b.expectedRevision;
+      const rawLevel = b.targetLevel;
+      const excludeRaw = b.excludeSpawnId;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      if (
+        typeof rawLevel !== 'number' ||
+        !Number.isFinite(rawLevel) ||
+        rawLevel < 1
+      ) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен рівень моба для полювання.',
+        });
+      }
+      const excludeSpawnId =
+        typeof excludeRaw === 'string' && excludeRaw.trim()
+          ? excludeRaw.trim()
+          : undefined;
+      try {
+        const result = await startHuntContinueBattle(
+          userId,
+          er,
+          Math.floor(rawLevel),
+          excludeSpawnId
+        );
+        await logBattleMutation(
+          request,
+          'battle_hunt_continue',
+          er,
+          'ok',
+          result.character.revision,
+          result.character.id
+        );
+        return reply.send(result);
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logBattleMutation(request, 'battle_hunt_continue', er, 'conflict');
+          return sendRevisionConflict(reply);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && e.message === 'battle_hunt_no_targets') {
+          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          return reply.code(404).send({
+            error: e.message,
+            messageUk:
+              'Поруч немає доступних мобів цього рівня. Онови карту або підійди ближче.',
+          });
+        }
+        if (e instanceof Error && e.message === 'battle_spawn_unknown') {
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Невідомий моб на карті.',
+          });
+        }
+        if (e instanceof Error && e.message === 'battle_too_far') {
+          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Підійди ближче до мобів на карті.',
+          });
+        }
+        if (e instanceof Error && e.message === 'mob_on_respawn') {
+          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Моб ще не відродився. Зачекай трохи.',
+          });
+        }
+        await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
         throw e;
       }
     }
