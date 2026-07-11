@@ -1002,6 +1002,17 @@
     var battle = state.battle;
     var battleHotbar = null;
 
+    if (battle && battle.spawnId && battle.spawnId !== spawnId) {
+      spawnId = battle.spawnId;
+      try {
+        var uFix = new URL(window.location.href);
+        uFix.searchParams.set('spawnId', spawnId);
+        window.history.replaceState({}, '', uFix.pathname + uFix.search);
+      } catch (eFix) {
+        /* ignore */
+      }
+    }
+
     async function ensureBattle() {
       if (battle && battle.spawnId === spawnId) {
         return;
@@ -1466,6 +1477,21 @@
           }
         }
         if (!st || st._err) {
+          await new Promise(function (resolve) {
+            setTimeout(resolve, 600);
+          });
+          freshChar = await loadCharacter();
+          if (freshChar && freshChar.character) {
+            character = freshChar.character;
+            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          }
+          st = await startHuntContinueBattle(
+            character.revision,
+            excludeId,
+            preferredId
+          );
+        }
+        if (!st || st._err) {
           huntChainActive = false;
           var failMsg = await parseFetchErrorUk(
             st,
@@ -1479,46 +1505,21 @@
           return;
         }
 
-        hideVictoryScreen();
-        battle = null;
-        if (errEl) errEl.hidden = true;
-
-        character = st.character;
-        battle = st.battle;
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-        if (battle && battle.spawnId) {
-          spawnId = battle.spawnId;
-          try {
-            var u = new URL(window.location.href);
-            u.searchParams.set('spawnId', battle.spawnId);
-            window.history.replaceState({}, '', u.pathname + u.search);
-          } catch (urlErr) {
-            /* ignore */
-          }
-        }
-        if (window.L2 && L2.applyHudFromSnapshot) {
-          L2.applyHudFromSnapshot(character);
-        }
-        if (content) content.hidden = false;
-        refreshUI();
-        if (
-          victory &&
-          typeof victory.huntSameLevelRemaining === 'number' &&
-          victory.huntSameLevelRemaining > 1
-        ) {
-          var pl =
-            character && character.level != null
-              ? Math.floor(Number(character.level))
-              : null;
+        if (!st.battle || !st.battle.spawnId) {
+          huntChainActive = false;
           showBattleToast(
-            tr('battle_hunt_chain', 'Полювання: ще ') +
-              (victory.huntSameLevelRemaining - 1) +
-              tr('battle_hunt_chain_suffix', ' моб(ів) ур. ') +
-              (pl != null ? pl + '±5' : '?') +
-              '.',
+            tr('battle_hunt_abort', 'Полювання перервано — не вдалося продовжити бій.'),
             { long: true }
           );
+          if (victory) showVictoryScreen(victory);
+          return;
         }
+
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(st.character);
+        window.location.replace(
+          '/battle.html?spawnId=' + encodeURIComponent(st.battle.spawnId)
+        );
+        return;
       } finally {
         if (vContBtn) vContBtn.disabled = false;
         if (vHuntBtn) vHuntBtn.disabled = false;
@@ -1590,15 +1591,25 @@
         });
       }
       var vHuntBtn = $('battle-victory-hunt');
+      var vContBtn = $('battle-victory-continue');
+      var canHunt = !!(
+        victory &&
+        (victory.nextHuntSpawnId ||
+          (typeof victory.huntSameLevelRemaining === 'number' &&
+            victory.huntSameLevelRemaining > 0))
+      );
       if (vHuntBtn) {
-        var canHunt = !!(
-          victory &&
-          (victory.nextHuntSpawnId ||
-            (typeof victory.huntSameLevelRemaining === 'number' &&
-              victory.huntSameLevelRemaining > 0))
-        );
         vHuntBtn.hidden = !canHunt;
         vHuntBtn.disabled = !canHunt;
+        vHuntBtn.classList.toggle('l2-battle-victory-link--primary', canHunt);
+        vHuntBtn.classList.toggle('l2-battle-victory-link--muted', !canHunt);
+      }
+      if (vContBtn) {
+        vContBtn.hidden = canHunt;
+        if (!canHunt) {
+          vContBtn.classList.add('l2-battle-victory-link--primary');
+          vContBtn.classList.remove('l2-battle-victory-link--muted');
+        }
       }
     }
 

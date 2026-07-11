@@ -50,6 +50,7 @@ import {
   findNextSameLevelHuntSpawn,
   HUNT_LEVEL_TOLERANCE,
 } from '../domain/battleHuntChain.js';
+import { resolvedWorldPositionFromCharacterRow } from './mapAroundService.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -188,9 +189,10 @@ export async function persistBattleVictoryInTx(
   if (!result.ok) throw new GameConflictError();
   const row = result.character as CharacterRow;
   const mobSpawnHpSerialized = serializeMobSpawnHpState(mobHpAfterVictory);
+  const huntPos = resolvedWorldPositionFromCharacterRow(char as CharacterRow);
   const huntOpts = {
-    worldX: char.worldX,
-    worldY: char.worldY,
+    worldX: huntPos.worldX,
+    worldY: huntPos.worldY,
     targetLevel: newLevel,
     levelTolerance: HUNT_LEVEL_TOLERANCE,
     excludeSpawnId: bj.spawnId,

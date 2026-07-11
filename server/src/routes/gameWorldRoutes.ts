@@ -7,7 +7,7 @@ import {
   performMapMove,
   performTeleport,
 } from '../services/charService.js';
-import { getMapAroundForUser } from '../services/mapAroundService.js';
+import { getMapAroundForUser, resolvedWorldPositionFromCharacterRow } from '../services/mapAroundService.js';
 import { getMapWorldSpawnsNearPlayer } from '../services/mapSpawnsService.js';
 import { getMapSyncForUser } from '../services/charMapStateService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
@@ -83,11 +83,12 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       if (!row) {
         return reply.code(404).send({ error: 'forbidden' });
       }
+      const pos = resolvedWorldPositionFromCharacterRow(row);
       return reply.send({
         spawns: getMapWorldSpawnsNearPlayer(
-          row.worldX,
-          row.worldY,
-          row.mobSpawnHpJson
+          pos.worldX,
+          pos.worldY,
+          pos.mobSpawnHpJson
         ),
       });
     }

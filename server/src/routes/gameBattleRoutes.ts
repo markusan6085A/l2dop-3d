@@ -253,8 +253,8 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         if (e instanceof Error && e.message === 'mob_on_respawn') {
           await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
           return reply.code(400).send({
-            error: e.message,
-            messageUk: 'Моб ще не відродився. Зачекай трохи.',
+            error: 'battle_hunt_no_live_targets',
+            messageUk: 'Усі цілі поруч на респавні. Зачекай кілька секунд.',
           });
         }
         await logBattleMutation(request, 'battle_hunt_continue', er, 'error');

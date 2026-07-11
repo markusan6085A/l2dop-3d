@@ -7,8 +7,25 @@ import {
 } from '../data/mapWorldSpawns.js';
 import { BATTLE_RANGE } from '../domain/battle.js';
 import { filterSpawnsVisibleForPlayer } from '../domain/mobSpawnRespawn.js';
+import { resolveMapMovement } from '../domain/mapMovement.js';
 import { prisma } from '../lib/prisma.js';
+import { applyPassiveHpRegen } from './charPassiveRegen.js';
+import type { CharacterRow } from './charTypes.js';
 import { mobIconUrlForSpawn } from './spawnCatalogService.js';
+
+/** Актуальні worldX/worldY для списку мобів (як у бою / hunt-continue). */
+export function resolvedWorldPositionFromCharacterRow(row: CharacterRow): {
+  worldX: number;
+  worldY: number;
+  mobSpawnHpJson: CharacterRow['mobSpawnHpJson'];
+} {
+  const base = resolveMapMovement(applyPassiveHpRegen(row));
+  return {
+    worldX: base.worldX,
+    worldY: base.worldY,
+    mobSpawnHpJson: base.mobSpawnHpJson,
+  };
+}
 
 /** Найближчі точки мобів з карти; посилання на бій лише якщо inBattleRange (як BATTLE_RANGE у бою). */
 export interface NearbySpawnEntry {
@@ -76,9 +93,14 @@ export function getMapAroundAt(
 export async function getMapAroundForUser(userId: string) {
   const row = await prisma.character.findFirst({
     where: { userId },
-    select: { worldX: true, worldY: true, mobSpawnHpJson: true },
   });
   if (!row) return null;
+  const pos = resolvedWorldPositionFromCharacterRow(row as CharacterRow);
   const nowMs = Date.now();
-  return getMapAroundAt(row.worldX, row.worldY, row.mobSpawnHpJson, nowMs);
+  return getMapAroundAt(
+    pos.worldX,
+    pos.worldY,
+    pos.mobSpawnHpJson,
+    nowMs
+  );
 }
