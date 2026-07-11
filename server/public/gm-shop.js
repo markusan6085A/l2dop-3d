@@ -122,14 +122,26 @@
   var WEAPON_SUB_LABEL_UK = {
     all: 'Усі',
     sword: 'Мечі',
-    dagger: 'Кинжали',
+    dagger: 'Кинж..',
     bow: 'Луки',
     blunt: 'Булави',
     pole: 'Списи',
-    fist: 'Кастети',
+    fist: 'Каст..',
     dual: 'Дуалі',
     magic: 'Магія',
   };
+
+  /** Типи зброї без «Усі» — другий ряд під окремою кнопкою «Усі». */
+  var WEAPON_KIND_KEYS = [
+    'sword',
+    'dagger',
+    'bow',
+    'blunt',
+    'pole',
+    'fist',
+    'dual',
+    'magic',
+  ];
 
   /** Підрозділи броні (ключі збігаються з armorPiece від сервера). */
   var ARMOR_SUB_KEYS = ['all', 'head', 'torso', 'legs', 'gloves', 'feet'];
@@ -964,6 +976,13 @@
     gradeBar.className =
       'l2-drops-shop-tablist l2-drops-shop-tablist--grades';
 
+    var weaponAllBar = document.createElement('div');
+    weaponAllBar.className =
+      'l2-drops-shop-tablist l2-drops-shop-tablist--weapon-all';
+    weaponAllBar.setAttribute('role', 'tablist');
+    weaponAllBar.setAttribute('aria-label', 'Усі типи зброї');
+    weaponAllBar.hidden = true;
+
     var weaponKindBar = document.createElement('div');
     weaponKindBar.className =
       'l2-drops-shop-tablist l2-drops-shop-tablist--weapon-kind';
@@ -1175,10 +1194,12 @@
       gradeBar.setAttribute('role', 'tablist');
       gradeBar.setAttribute('aria-label', 'Грейд');
 
+      weaponAllBar.innerHTML = '';
       weaponKindBar.innerHTML = '';
       armorPieceBar.innerHTML = '';
       jewelryKindBar.innerHTML = '';
       consumableSubBar.innerHTML = '';
+      weaponAllBar.hidden = stateCat !== 'weapon';
       weaponKindBar.hidden = stateCat !== 'weapon';
       armorPieceBar.hidden = stateCat !== 'armor';
       jewelryKindBar.hidden = stateCat !== 'earring';
@@ -1235,8 +1256,19 @@
           items = filterWeaponItems(itemsAll, 'all');
         }
 
-        for (var wi = 0; wi < WEAPON_SUB_KEYS.length; wi++) {
-          var sk = WEAPON_SUB_KEYS[wi];
+        var allWbtn = document.createElement('button');
+        allWbtn.type = 'button';
+        allWbtn.className = 'l2-drops-shop-tab';
+        allWbtn.setAttribute('role', 'tab');
+        allWbtn.setAttribute('data-weaponsub', 'all');
+        allWbtn.textContent = WEAPON_SUB_LABEL_UK.all;
+        var onAllWs = stateWeaponSub === 'all';
+        allWbtn.setAttribute('aria-selected', onAllWs ? 'true' : 'false');
+        if (onAllWs) allWbtn.classList.add('l2-drops-shop-tab--active');
+        weaponAllBar.appendChild(allWbtn);
+
+        for (var wi = 0; wi < WEAPON_KIND_KEYS.length; wi++) {
+          var sk = WEAPON_KIND_KEYS[wi];
           var wbtn = document.createElement('button');
           wbtn.type = 'button';
           wbtn.className = 'l2-drops-shop-tab';
@@ -1249,7 +1281,12 @@
           weaponKindBar.appendChild(wbtn);
         }
 
-        var wbtns = weaponKindBar.querySelectorAll('[data-weaponsub]');
+        var wbtns = weaponAllBar.querySelectorAll('[data-weaponsub]');
+        wbtns = Array.prototype.slice.call(wbtns).concat(
+          Array.prototype.slice.call(
+            weaponKindBar.querySelectorAll('[data-weaponsub]')
+          )
+        );
         for (var wb = 0; wb < wbtns.length; wb++) {
           (function (b) {
             b.addEventListener('click', function () {
@@ -1534,6 +1571,7 @@
 
     mount.appendChild(catBar);
     mount.appendChild(gradeBar);
+    mount.appendChild(weaponAllBar);
     mount.appendChild(weaponKindBar);
     mount.appendChild(armorPieceBar);
     mount.appendChild(jewelryKindBar);
