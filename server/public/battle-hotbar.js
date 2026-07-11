@@ -1238,14 +1238,119 @@
       slotsLoadedRevision = rev;
     }
 
+    var lastRenderKey = '';
+
+    function slotsRenderKey(slots) {
+      var parts = [];
+      for (var i = 0; i < HOTBAR_SLOTS; i++) {
+        var s = slots[i];
+        if (!s) {
+          parts.push('-');
+        } else if (s.k === 'a') {
+          parts.push('a:' + canonicalBattleActionId(s.a));
+        } else if (s.k === 'i') {
+          parts.push('i:' + s.id + ':' + (s.e || 0));
+        } else if (s.k === 'u') {
+          parts.push('u:' + s.id);
+        } else {
+          parts.push('?');
+        }
+      }
+      return parts.join('|');
+    }
+
+    function updateDynamicState(wrap, battle, character, slots) {
+      var allowed = allowedActionsSet(battle);
+      var toggleSkillIds = activeToggleSkillIdSet(battle);
+      var bmU = battle && battle.battleMods;
+      var soulMul =
+        bmU && typeof bmU.fighterSoulshotPatkMul === 'number'
+          ? bmU.fighterSoulshotPatkMul
+          : 1;
+      var soulId =
+        bmU && bmU.fighterSoulshotItemId != null
+          ? Math.floor(Number(bmU.fighterSoulshotItemId))
+          : 0;
+      var blessedMul =
+        bmU && typeof bmU.mysticBlessedSpiritshotMatkMul === 'number'
+          ? bmU.mysticBlessedSpiritshotMatkMul
+          : 1;
+      var blessedId =
+        bmU && bmU.mysticBlessedSpiritshotItemId != null
+          ? Math.floor(Number(bmU.mysticBlessedSpiritshotItemId))
+          : 0;
+      var btns = wrap.querySelectorAll('.l2-battle-hotbar-slot[data-slot-idx]');
+      for (var bi = 0; bi < btns.length; bi++) {
+        var btn = btns[bi];
+        var idx = parseInt(btn.getAttribute('data-slot-idx'), 10);
+        if (!Number.isFinite(idx)) continue;
+        var slot = slots[idx];
+        if (!slot) continue;
+        if (slot.k === 'a') {
+          var actId = canonicalBattleActionId(slot.a);
+          btn.className = 'l2-battle-hotbar-slot';
+          if (!allowed[actId]) btn.className += ' l2-battle-hotbar-slot--warn';
+          var actL2 = l2SkillIdForBattleAction(battle, actId);
+          if (
+            Number.isFinite(actL2) &&
+            actL2 > 0 &&
+            toggleSkillIds[Math.floor(actL2)] === true
+          ) {
+            btn.className += ' l2-battle-hotbar-slot--toggle-on';
+          }
+          var wrapI = btn.querySelector('.l2-battle-hotbar-slot-iconwrap');
+          var metaCd = skillCooldownMeta(battle, slot.a);
+          var cdEl = btn.querySelector('[data-slot-cd]');
+          if (metaCd) {
+            if (!cdEl && wrapI) {
+              cdEl = document.createElement('span');
+              cdEl.className = 'l2-battle-hotbar-slot-cd';
+              cdEl.setAttribute('data-slot-cd', actId);
+              var cdShort = document.createElement('span');
+              cdShort.className = 'l2-battle-hotbar-slot-cd__short';
+              cdShort.setAttribute('aria-hidden', 'true');
+              var cdLong = document.createElement('span');
+              cdLong.className = 'l2-battle-hotbar-slot-cd__long';
+              cdEl.appendChild(cdShort);
+              cdEl.appendChild(cdLong);
+              wrapI.appendChild(cdEl);
+            }
+            if (cdEl) applySkillCdOverlay(cdEl, metaCd, Date.now());
+          } else if (cdEl) {
+            cdEl.remove();
+          }
+        } else if (slot.k === 'u') {
+          btn.className = 'l2-battle-hotbar-slot';
+          var soulOn =
+            soulMul > 1 &&
+            soulId === slot.id &&
+            FIGHTER_SOULSHOT_ITEM_IDS[slot.id] === true;
+          var blessedOn =
+            blessedMul > 1 &&
+            blessedId === slot.id &&
+            MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS[slot.id] === true;
+          if (soulOn || blessedOn) {
+            btn.className += ' l2-battle-hotbar-slot--soulshot-on';
+          }
+          var qtyElU = btn.querySelector('.l2-battle-hotbar-slot-uqty');
+          var qtyU = bagQtyPlain(character, slot.id);
+          if (qtyElU) qtyElU.textContent = String(qtyU);
+        }
+      }
+      startCdTicker(wrap);
+    }
+
     function render() {
       var box = opts.container;
       if (!box) return;
-      clearCdTimer();
       var battle = opts.getBattle();
       var character = opts.getCharacter();
-      box.innerHTML = '';
-      if (!battle || !character) return;
+      if (!battle || !character) {
+        clearCdTimer();
+        box.innerHTML = '';
+        lastRenderKey = '';
+        return;
+      }
 
       ensureSlotsCache(character);
       if (
@@ -1254,12 +1359,27 @@
       ) {
         saveSlots(character.id, slotsCache, character);
       }
-      var allowed = allowedActionsSet(battle);
       slotsCache = sanitizeSlotsAgainstBattle(
         slotsCache,
         character && character.id,
         character
       );
+
+      var key =
+        String(battle.spawnId || '') +
+        '|' +
+        String(character.id || '') +
+        '|' +
+        slotsRenderKey(slotsCache);
+      var existing = box.querySelector('.l2-battle-hotbar');
+      if (existing && key === lastRenderKey) {
+        updateDynamicState(existing, battle, character, slotsCache);
+        return;
+      }
+      lastRenderKey = key;
+      clearCdTimer();
+      box.innerHTML = '';
+      var allowed = allowedActionsSet(battle);
 
       var wrap = document.createElement('div');
       wrap.className = 'l2-battle-hotbar';
@@ -1383,6 +1503,7 @@
       slotsLoadedRevision = null;
       slotsCache = [];
       hotbarSlotsDirty = false;
+      lastRenderKey = '';
       setHotbarPersistCtx(null);
     }
 

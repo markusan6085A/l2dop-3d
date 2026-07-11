@@ -397,11 +397,14 @@
     var showDropIcons = opts.showDropIcons === true;
     var newestFirst = opts.newestFirst === true;
     var dropItems = opts.items || [];
-    container.innerHTML = '';
     var arr = lines || [];
     if (newestFirst) {
       arr = arr.slice().reverse();
     }
+    var logKey = arr.join('\u0001');
+    if (container.dataset.battleLogKey === logKey) return;
+    container.dataset.battleLogKey = logKey;
+    container.innerHTML = '';
     for (var i = 0; i < arr.length; i++) {
       var line = arr[i];
       var lineStr = String(line);
@@ -554,11 +557,28 @@
     }
   }
 
+  function buffIconsSig(icons) {
+    if (!icons || !icons.length) return '';
+    var parts = [];
+    for (var i = 0; i < icons.length; i++) {
+      var b = icons[i];
+      if (!b) continue;
+      parts.push(
+        [
+          b.l2SkillId,
+          b.chargeCount,
+          b.buffExpiresAtMs,
+          b.isToggle === true ? 1 : 0,
+        ].join(':')
+      );
+    }
+    return parts.join('|');
+  }
+
   function renderBuffStrip(battle) {
     var strip = $('battle-buff-strip');
     var sr = $('battle-active-buffs');
     var bufs = battle && battle.battleBuffsUk;
-    clearBattleBuffStripTimer();
     if (sr) {
       if (bufs && bufs.length) {
         sr.hidden = false;
@@ -569,8 +589,14 @@
       }
     }
     if (!strip) return;
-    strip.innerHTML = '';
     var icons = battle && battle.battleBuffIcons;
+    var sig = buffIconsSig(icons);
+    if (strip.dataset.buffSig === sig) {
+      return;
+    }
+    clearBattleBuffStripTimer();
+    strip.dataset.buffSig = sig;
+    strip.innerHTML = '';
     if (!icons || !icons.length) {
       strip.hidden = true;
       return;
@@ -771,27 +797,38 @@
             })();
     }
     if (debuffStripEl) {
-      debuffStripEl.innerHTML = '';
       var debs = battle.mobDebuffIcons;
+      var debSig = '';
       if (debs && debs.length) {
-        debuffStripEl.hidden = false;
-        for (var di = 0; di < debs.length; di++) {
-          var d = debs[di];
-          var img = document.createElement('img');
-          img.className = 'l2-battle-mob-debuff-icon';
-          img.alt = d.labelUk || '';
-          img.title = d.labelUk || '';
-          img.src =
-            window.L2 && typeof L2.resolveSkillIconUrl === 'function'
-              ? L2.resolveSkillIconUrl(d.l2SkillId, null)
-              : '/game/skill-icon/' + d.l2SkillId;
-          img.addEventListener('error', function () {
-            this.src = '/icons/drops/other.svg';
-          });
-          debuffStripEl.appendChild(img);
+        debSig = debs
+          .map(function (d) {
+            return String(d.l2SkillId) + ':' + (d.labelUk || '');
+          })
+          .join('|');
+      }
+      if (debuffStripEl.dataset.debuffSig !== debSig) {
+        debuffStripEl.dataset.debuffSig = debSig;
+        debuffStripEl.innerHTML = '';
+        if (debs && debs.length) {
+          debuffStripEl.hidden = false;
+          for (var di = 0; di < debs.length; di++) {
+            var d = debs[di];
+            var img = document.createElement('img');
+            img.className = 'l2-battle-mob-debuff-icon';
+            img.alt = d.labelUk || '';
+            img.title = d.labelUk || '';
+            img.src =
+              window.L2 && typeof L2.resolveSkillIconUrl === 'function'
+                ? L2.resolveSkillIconUrl(d.l2SkillId, null)
+                : '/game/skill-icon/' + d.l2SkillId;
+            img.addEventListener('error', function () {
+              this.src = '/icons/drops/other.svg';
+            });
+            debuffStripEl.appendChild(img);
+          }
+        } else {
+          debuffStripEl.hidden = true;
         }
-      } else {
-        debuffStripEl.hidden = true;
       }
     }
     var whirlRoot = $('battle-whirlwind-extras');
@@ -992,37 +1029,28 @@
       return;
     }
 
-    var snap = null;
-    var charPromise = loadCharacter();
-    var statePromise = getBattleState();
-    var jChar = await charPromise;
-    if (!jChar || !jChar.character) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent = tr('battle_err_load_char', 'Не вдалося завантажити персонажа.');
-      }
-      return;
-    }
-    snap = jChar.character;
-    if (window.L2 && typeof L2.setLastSnapshot === 'function') {
-      L2.setLastSnapshot(snap);
-    }
-    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-      L2.applyHudFromSnapshot(snap);
-    }
-    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
-      await L2.fetchCatalogHints();
-    } else if (window.L2BattleHotbar && typeof L2BattleHotbar.mergeCharacterCatalog === 'function') {
-      L2BattleHotbar.mergeCharacterCatalog(jChar);
-    }
-
-    var state = await statePromise;
-    if (!state || state._err) {
+    var state = await getBattleState();
+    if (!state || state._err || !state.character) {
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = tr('battle_err_state', 'Не вдалося отримати стан бою.');
       }
       return;
+    }
+
+    if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+      L2.setLastSnapshot(state.character);
+    }
+    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+      L2.applyHudFromSnapshot(state.character);
+    }
+    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+      await L2.fetchCatalogHints();
+    } else if (
+      window.L2BattleHotbar &&
+      typeof L2BattleHotbar.mergeCharacterCatalog === 'function'
+    ) {
+      L2BattleHotbar.mergeCharacterCatalog({ character: state.character });
     }
 
     var character = state.character;
