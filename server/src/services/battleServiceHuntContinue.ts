@@ -14,7 +14,7 @@ export async function startHuntContinueBattle(
   expectedRevision: number,
   targetLevel: number,
   excludeSpawnId?: string,
-  levelTolerance: number = 0
+  levelTolerance: number = 10
 ) {
   const row = await prisma.character.findFirst({
     where: { userId },
@@ -26,7 +26,8 @@ export async function startHuntContinueBattle(
   const nowMs = Date.now();
   const tol = Math.max(0, Math.min(10, Math.floor(levelTolerance)));
   let excluded = excludeSpawnId;
-  for (let i = 0; i < 5; i++) {
+  let lastErr: unknown = null;
+  for (let i = 0; i < 10; i++) {
     const next = findNextSameLevelHuntSpawn({
       worldX: base.worldX,
       worldY: base.worldY,
@@ -42,6 +43,7 @@ export async function startHuntContinueBattle(
     try {
       return await startBattle(userId, next.spawnId, expectedRevision);
     } catch (e) {
+      lastErr = e;
       if (
         e instanceof Error &&
         (e.message === 'mob_on_respawn' ||
@@ -53,6 +55,9 @@ export async function startHuntContinueBattle(
       }
       throw e;
     }
+  }
+  if (lastErr instanceof Error && lastErr.message === 'mob_on_respawn') {
+    throw new Error('battle_hunt_no_live_targets');
   }
   throw new Error('battle_hunt_no_targets');
 }

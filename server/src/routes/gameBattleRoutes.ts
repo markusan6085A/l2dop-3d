@@ -233,8 +233,14 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
           return reply.code(404).send({
             error: e.message,
-            messageUk:
-              'Поруч немає доступних мобів цього рівня. Онови карту або підійди ближче.',
+            messageUk: 'Немає підхожих цілей поруч. Онови карту або підійди ближче.',
+          });
+        }
+        if (e instanceof Error && e.message === 'battle_hunt_no_live_targets') {
+          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Усі цілі поруч на респавні. Зачекай кілька секунд.',
           });
         }
         if (e instanceof Error && e.message === 'battle_spawn_unknown') {
