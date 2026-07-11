@@ -267,6 +267,14 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-row--all-white .l2-charact
 
 body.l2-app-l2-chrome.l2-page-character .l2-city-stub-msg {
   margin: 8px 0.5cm 0;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #fff;
+  text-align: center;
+  font-size: 11px;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-row--exit {
