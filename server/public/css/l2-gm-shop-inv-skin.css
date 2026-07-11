@@ -101,11 +101,20 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--
   padding: 2px 3px !important;
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab,
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab {
   width: auto !important;
   flex: 0 0 auto !important;
   padding: 1px 3px !important;
+  color: var(--l2-gm-shop-weapon-tab) !important;
+  font-weight: 400 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  padding: 0 !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
   color: var(--l2-gm-shop-weapon-tab) !important;
   font-weight: 400 !important;
 }
@@ -127,12 +136,18 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--
   filter: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab + .l2-drops-shop-tab::before,
-body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab + .l2-drops-shop-tab::before {
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--cats .l2-drops-shop-tab + .l2-drops-shop-tab::before {
   content: '|' !important;
   display: inline !important;
   margin: 0 4px !important;
   color: rgba(255, 186, 0, 0.55) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab + .l2-drops-shop-tab::before {
+  content: '|' !important;
+  display: inline !important;
+  margin: 0 1px !important;
+  color: rgba(255, 186, 0, 0.45) !important;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab + .l2-drops-shop-tab::before {
@@ -287,8 +302,18 @@ body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-pager--arrow .l2-gm-shop-pager
   text-decoration: none;
 }
 
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind {
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  padding: 0 2px !important;
+}
+
 @media (min-width: 380px) {
   body.l2-app-l2-chrome.l2-page-gm-shop {
     --l2-gm-shop-tab-font: 12px;
+  }
+
+  body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--weapon-kind .l2-drops-shop-tab {
+    font-size: 11px !important;
   }
 }
