@@ -1444,12 +1444,6 @@
       if (!canHunt) {
         huntChainLevel = null;
         if (victory) showVictoryScreen(victory);
-        showBattleToast(
-          tr('battle_hunt_no_more', 'Порuch nemae mobiv ur. ') +
-            targetLevel +
-            '.',
-          { long: true }
-        );
         return;
       }
 
