@@ -861,15 +861,13 @@
   async function startHuntContinueBattle(
     expectedRevision,
     excludeSpawnId,
-    levelTolerance
+    preferredSpawnId
   ) {
     var body = {
       expectedRevision: expectedRevision,
     };
     if (excludeSpawnId) body.excludeSpawnId = excludeSpawnId;
-    if (typeof levelTolerance === 'number' && Number.isFinite(levelTolerance)) {
-      body.levelTolerance = levelTolerance;
-    }
+    if (preferredSpawnId) body.preferredSpawnId = preferredSpawnId;
     return fetchJson('/game/battle/hunt-continue', {
       method: 'POST',
       headers: {
@@ -1439,72 +1437,91 @@
         return;
       }
 
-      var er = character.revision;
-      var st = await startHuntContinueBattle(
-        er,
-        victory ? victory.spawnId : undefined
-      );
-      if (st && st._err === 409) {
-        var again = await loadCharacter();
-        if (again && again.character) {
-          character = again.character;
+      var vContBtn = $('battle-victory-continue');
+      var vHuntBtn = $('battle-victory-hunt');
+      if (vContBtn) vContBtn.disabled = true;
+      if (vHuntBtn) vHuntBtn.disabled = true;
+
+      try {
+        var freshChar = await loadCharacter();
+        if (freshChar && freshChar.character) {
+          character = freshChar.character;
           if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-          st = await startHuntContinueBattle(
-            character.revision,
-            victory ? victory.spawnId : undefined
+        }
+
+        var excludeId = victory ? victory.spawnId : undefined;
+        var preferredId = victory ? victory.nextHuntSpawnId : undefined;
+        var er = character.revision;
+        var st = await startHuntContinueBattle(er, excludeId, preferredId);
+        if (st && st._err === 409) {
+          var again = await loadCharacter();
+          if (again && again.character) {
+            character = again.character;
+            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+            st = await startHuntContinueBattle(
+              character.revision,
+              excludeId,
+              preferredId
+            );
+          }
+        }
+        if (!st || st._err) {
+          huntChainActive = false;
+          var failMsg = await parseFetchErrorUk(
+            st,
+            tr(
+              'battle_hunt_abort',
+              'Полювання перервано — не вдалося продовжити бій.'
+            )
+          );
+          showBattleToast(failMsg, { long: true });
+          if (victory) showVictoryScreen(victory);
+          return;
+        }
+
+        hideVictoryScreen();
+        battle = null;
+        if (errEl) errEl.hidden = true;
+
+        character = st.character;
+        battle = st.battle;
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        if (battle && battle.spawnId) {
+          spawnId = battle.spawnId;
+          try {
+            var u = new URL(window.location.href);
+            u.searchParams.set('spawnId', battle.spawnId);
+            window.history.replaceState({}, '', u.pathname + u.search);
+          } catch (urlErr) {
+            /* ignore */
+          }
+        }
+        if (window.L2 && L2.applyHudFromSnapshot) {
+          L2.applyHudFromSnapshot(character);
+        }
+        if (content) content.hidden = false;
+        refreshUI();
+        if (
+          victory &&
+          typeof victory.huntSameLevelRemaining === 'number' &&
+          victory.huntSameLevelRemaining > 1
+        ) {
+          var pl =
+            character && character.level != null
+              ? Math.floor(Number(character.level))
+              : null;
+          showBattleToast(
+            tr('battle_hunt_chain', 'Полювання: ще ') +
+              (victory.huntSameLevelRemaining - 1) +
+              tr('battle_hunt_chain_suffix', ' моб(ів) ур. ') +
+              (pl != null ? pl + '±5' : '?') +
+              '.',
+            { long: true }
           );
         }
-      }
-      if (!st || st._err) {
-        huntChainActive = false;
-        var failMsg = await parseFetchErrorUk(
-          st,
-          tr('battle_hunt_abort', 'Полювання перервано — не вдалося продовжити бій.')
-        );
-        showBattleToast(failMsg, { long: true });
-        if (victory) showVictoryScreen(victory);
-        return;
-      }
-
-      hideVictoryScreen();
-      battle = null;
-      if (errEl) errEl.hidden = true;
-
-      character = st.character;
-      battle = st.battle;
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-      if (battle && battle.spawnId) {
-        spawnId = battle.spawnId;
-        try {
-          var u = new URL(window.location.href);
-          u.searchParams.set('spawnId', battle.spawnId);
-          window.history.replaceState({}, '', u.pathname + u.search);
-        } catch (urlErr) {
-          /* ignore */
-        }
-      }
-      if (window.L2 && L2.applyHudFromSnapshot) {
-        L2.applyHudFromSnapshot(character);
-      }
-      if (content) content.hidden = false;
-      refreshUI();
-      if (
-        victory &&
-        typeof victory.huntSameLevelRemaining === 'number' &&
-        victory.huntSameLevelRemaining > 1
-      ) {
-        var pl =
-          character && character.level != null
-            ? Math.floor(Number(character.level))
-            : null;
-        showBattleToast(
-          tr('battle_hunt_chain', 'Полювання: ще ') +
-            (victory.huntSameLevelRemaining - 1) +
-            tr('battle_hunt_chain_suffix', ' моб(ів) ур. ') +
-            (pl != null ? pl + '±5' : '?') +
-            '.',
-          { long: true }
-        );
+      } finally {
+        if (vContBtn) vContBtn.disabled = false;
+        if (vHuntBtn) vHuntBtn.disabled = false;
       }
     }
 
@@ -1723,7 +1740,12 @@
     }
     var vCont = $('battle-victory-continue');
     if (vCont) {
-      vCont.addEventListener('click', goToMap);
+      vCont.addEventListener('click', function () {
+        runWithBattleNavLock(async function () {
+          if (huntChainActive) return;
+          await goToMap();
+        });
+      });
     }
     var vHunt = $('battle-victory-hunt');
     if (vHunt) {

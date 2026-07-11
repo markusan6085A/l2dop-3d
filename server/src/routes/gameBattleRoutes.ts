@@ -179,6 +179,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       const er = b.expectedRevision;
       const rawTol = b.levelTolerance;
       const excludeRaw = b.excludeSpawnId;
+      const preferredRaw = b.preferredSpawnId;
       if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -189,6 +190,10 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         typeof excludeRaw === 'string' && excludeRaw.trim()
           ? excludeRaw.trim()
           : undefined;
+      const preferredSpawnId =
+        typeof preferredRaw === 'string' && preferredRaw.trim()
+          ? preferredRaw.trim()
+          : undefined;
       const levelTolerance =
         typeof rawTol === 'number' && Number.isFinite(rawTol)
           ? Math.max(0, Math.min(10, Math.floor(rawTol)))
@@ -198,7 +203,8 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           userId,
           er,
           excludeSpawnId,
-          levelTolerance
+          levelTolerance,
+          preferredSpawnId
         );
         await logBattleMutation(
           request,

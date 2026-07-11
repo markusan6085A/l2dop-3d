@@ -1,12 +1,10 @@
 import {
   MAP_NEARBY_LIST_RADIUS,
   MAP_WORLD_SPAWNS,
-  stripSpawnDupSuffix,
   type MapWorldSpawn,
 } from '../data/mapWorldSpawns.js';
 import { BATTLE_RANGE } from './battleTypes.js';
 import {
-  filterSpawnsVisibleForPlayer,
   isMobSpawnOnRespawn,
   isRegularMobRespawnKind,
 } from './mobSpawnRespawn.js';
@@ -30,20 +28,31 @@ export interface FindNextHuntSpawnOpts {
   /** Діапазон рівнів, наприклад 5 для ±5 від targetLevel. */
   levelTolerance?: number;
   excludeSpawnId?: string;
+  /** Якщо задано — перевірити цю ціль першою (наприклад з summary перемоги). */
+  preferredSpawnId?: string;
   mobSpawnHpJson?: unknown;
   nowMs?: number;
 }
 
-/** Найближчий доступний моб того ж рівня в радіусі огляду + досяжності бою. */
-function sameLevelHuntCandidates(
+function huntCandidateDistance(
+  sp: MapWorldSpawn,
+  worldX: number,
+  worldY: number
+): number {
+  return Math.hypot(sp.worldX - worldX, sp.worldY - worldY);
+}
+
+/** Усі доступні точки спавну (кожен __dup окремо), відсортовані за відстанню. */
+export function listHuntCandidatesOrdered(
   opts: FindNextHuntSpawnOpts
-): MapWorldSpawn[] {
+): HuntNextSpawnResult[] {
   const {
     worldX,
     worldY,
     targetLevel,
     levelTolerance = HUNT_LEVEL_TOLERANCE,
     excludeSpawnId,
+    preferredSpawnId,
     mobSpawnHpJson,
     nowMs = Date.now(),
   } = opts;
@@ -51,60 +60,54 @@ function sameLevelHuntCandidates(
   const lvl = Math.max(1, Math.floor(targetLevel));
   const tol = Math.max(0, Math.min(10, Math.floor(levelTolerance)));
   const excludeExact = excludeSpawnId ? String(excludeSpawnId).trim() : '';
+  const preferredExact = preferredSpawnId
+    ? String(preferredSpawnId).trim()
+    : '';
 
   const viewR2 = MAP_NEARBY_LIST_RADIUS * MAP_NEARBY_LIST_RADIUS;
   const state = parseMobSpawnHpState(mobSpawnHpJson, nowMs);
-  const bestByBase = new Map<string, { sp: MapWorldSpawn; d: number }>();
+  const hits: HuntNextSpawnResult[] = [];
 
   for (const sp of MAP_WORLD_SPAWNS) {
     if (Math.abs(sp.level - lvl) > tol) continue;
     if (!isRegularMobRespawnKind(sp.kind)) continue;
     if (isMobSpawnOnRespawn(state, sp.id, nowMs)) continue;
-
-    const base = stripSpawnDupSuffix(sp.id);
     if (excludeExact && sp.id === excludeExact) continue;
 
     const dx = sp.worldX - worldX;
     const dy = sp.worldY - worldY;
-    const d2 = dx * dx + dy * dy;
-    if (d2 > viewR2) continue;
+    if (dx * dx + dy * dy > viewR2) continue;
 
-    const d = Math.hypot(dx, dy);
+    const d = huntCandidateDistance(sp, worldX, worldY);
     if (d > BATTLE_RANGE) continue;
 
-    const prev = bestByBase.get(base);
-    if (!prev || d < prev.d) bestByBase.set(base, { sp, d });
+    hits.push({
+      spawnId: sp.id,
+      name: sp.name,
+      level: sp.level,
+      distance: Math.round(d),
+    });
   }
 
-  const merged = [...bestByBase.values()].map((x) => x.sp);
-  return filterSpawnsVisibleForPlayer(merged, state, nowMs);
+  hits.sort((a, b) => a.distance - b.distance);
+  if (!preferredExact) return hits;
+
+  const prefIdx = hits.findIndex((h) => h.spawnId === preferredExact);
+  if (prefIdx <= 0) return hits;
+  const pref = hits[prefIdx];
+  const rest = hits.filter((_, i) => i !== prefIdx);
+  return [pref, ...rest];
 }
 
 export function findNextSameLevelHuntSpawn(
   opts: FindNextHuntSpawnOpts
 ): HuntNextSpawnResult | null {
-  const visible = sameLevelHuntCandidates(opts);
-  if (visible.length === 0) return null;
-
-  const { worldX, worldY } = opts;
-  let best: { sp: MapWorldSpawn; d: number } | null = null;
-  for (const sp of visible) {
-    const d = Math.hypot(sp.worldX - worldX, sp.worldY - worldY);
-    if (!best || d < best.d) best = { sp, d };
-  }
-  if (!best) return null;
-
-  return {
-    spawnId: best.sp.id,
-    name: best.sp.name,
-    level: best.sp.level,
-    distance: Math.round(best.d),
-  };
+  return listHuntCandidatesOrdered(opts)[0] ?? null;
 }
 
-/** Скільки ще мобів цього рівня доступно для полювання поруч (після respawn-фільтра). */
+/** Скільки ще підходящих мобів доступно поруч (після respawn-фільтра). */
 export function countSameLevelHuntSpawnsNearby(
   opts: FindNextHuntSpawnOpts
 ): number {
-  return sameLevelHuntCandidates(opts).length;
+  return listHuntCandidatesOrdered(opts).length;
 }
