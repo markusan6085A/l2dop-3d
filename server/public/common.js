@@ -772,7 +772,7 @@
 
     /** Базовий колір ніка з HUD; пізніше — з snapshot.nickColor після «покраски». */
     applyNickColorFromSnapshot: function (c) {
-      var fallback = '#a29a86';
+      var fallback = '#7a7365';
       var hex = fallback;
       if (c && typeof c.nickColor === 'string') {
         var trimmed = c.nickColor.trim();
