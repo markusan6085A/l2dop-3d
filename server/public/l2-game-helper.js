@@ -282,8 +282,7 @@
     if (isLearn5Done()) return false;
     if (!c || Number(c.level) < FIRST_LEARN_MIN_LEVEL) return false;
     var step = getHelperStep();
-    if (isEarlyTutorialStep(step)) return false;
-    if (step === 'learn5' || step === 'skills-new') return false;
+    if (step !== 'fight' && step !== 'grinding') return false;
     return true;
   }
 
@@ -494,6 +493,19 @@
       if (step === 'skills-new') {
         setHelperStep('skills-watch');
         void acknowledgeCurrentLearnableSkills();
+      } else if (step === 'learn5') {
+        markLearn5Done();
+        finishSkillsHelperVisit();
+      } else {
+        var snap = L2.lastSnapshot ? L2.lastSnapshot() : null;
+        var lvl = snap && snap.level != null ? Number(snap.level) : 1;
+        if (lvl >= FIRST_LEARN_MIN_LEVEL) {
+          markLearn5Done();
+          finishSkillsHelperVisit();
+        } else {
+          setHelperStep(null);
+          clearGrindLevel();
+        }
       }
       hideHelper();
     });
