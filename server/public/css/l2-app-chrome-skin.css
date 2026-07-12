@@ -1446,10 +1446,10 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-p
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-pick-img {
   display: block;
-  width: 34px;
-  height: 34px;
-  max-width: 34px;
-  max-height: 34px;
+  width: 32.3px;
+  height: 32.3px;
+  max-width: 32.3px;
+  max-height: 32.3px;
   object-fit: contain;
   box-sizing: border-box;
   border: none !important;
@@ -1482,8 +1482,8 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:fo
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-iconwrap {
-  width: 34px;
-  height: 34px;
+  width: 32.3px;
+  height: 32.3px;
   margin: 0;
 }
 
@@ -1522,10 +1522,10 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-log-wrap::before {
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-img {
   display: block;
-  width: 34px;
-  height: 34px;
-  max-width: 34px;
-  max-height: 34px;
+  width: 32.3px;
+  height: 32.3px;
+  max-width: 32.3px;
+  max-height: 32.3px;
   margin: 0;
   object-fit: contain;
   box-sizing: border-box;
@@ -1565,10 +1565,10 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--empty {
   box-sizing: border-box;
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  min-height: 34px;
+  width: 32.3px;
+  height: 32.3px;
+  min-width: 32.3px;
+  min-height: 32.3px;
   border: 1px solid #bfa88a !important;
   border-radius: 3px;
   background: transparent !important;
