@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="page_warehouse_title">Склад — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260711cityMiruTone1" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711shopSubTabsRow1" />
+    <style>
+      .l2-warehouse-root {
+        padding: 8px 10px 14px;
+      }
+      .l2-warehouse-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0 0 10px;
+      }
+      .l2-warehouse-banner {
+        display: block;
+        flex: 0 0 auto;
+        width: 93px;
+        max-width: 93px;
+        height: auto;
+        margin: 0;
+        border-radius: 4px;
+      }
+      .l2-warehouse-intro {
+        margin: 0;
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #bfa88a;
+        text-align: left;
+      }
+      .l2-warehouse-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: #bfa88a;
+      }
+      .l2-warehouse-tabs a {
+        color: #bfa88a;
+        text-decoration: underline;
+      }
+      .l2-warehouse-tabs span {
+        color: #bfa88a;
+        font-weight: 600;
+      }
+      .l2-warehouse-cap {
+        margin: 0 0 8px;
+        font-size: 13px;
+        color: #bfa88a;
+        text-align: center;
+      }
+      .l2-warehouse-cap-btn {
+        margin-left: 6px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #bfa88a;
+        font: inherit;
+        font-size: 13px;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .l2-warehouse-list {
+        margin: 0;
+        padding: 0;
+      }
+      .l2-warehouse-row {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 8px;
+        align-items: start;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(100, 80, 52, 0.35);
+      }
+      .l2-warehouse-row:last-child {
+        border-bottom: none;
+      }
+      .l2-warehouse-ico {
+        width: 28px;
+        height: 28px;
+        border-radius: 2px;
+        border: 1px solid rgba(92, 74, 50, 0.7);
+        background: #14110c;
+        object-fit: contain;
+      }
+      .l2-warehouse-mid {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+      .l2-warehouse-name {
+        display: block;
+        color: #e8c86a;
+        font-size: 14px;
+        line-height: 1.35;
+      }
+      .l2-warehouse-stats-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 2px 0 0;
+      }
+      .l2-warehouse-stats {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-size: 10px;
+        line-height: 1.25;
+        color: #fff;
+      }
+      .l2-warehouse-action {
+        flex-shrink: 0;
+        margin: 0 0 0 auto;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #bfa88a;
+        font: inherit;
+        font-size: 11px;
+        line-height: 1.25;
+        text-decoration: underline;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .l2-warehouse-action:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      .l2-warehouse-empty {
+        margin: 12px 0;
+        text-align: center;
+        color: #a89a70;
+        font-size: 13px;
+      }
+      .l2-warehouse-msg {
+        margin: 8px 0 0;
+        text-align: center;
+        font-size: 12px;
+        color: #c9bc8c;
+        min-height: 1.2em;
+      }
+      .l2-warehouse-pager {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin: 12px 0 4px;
+        font-size: 13px;
+      }
+      .l2-warehouse-pager-btn {
+        padding: 0 4px;
+        border: 0;
+        background: transparent;
+        color: #8ec8ff;
+        font: inherit;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .l2-warehouse-pager-btn--active {
+        color: #e8c86a;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: default;
+      }
+      .l2-warehouse-pager-btn:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+    </style>
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-warehouse-root">
+          <div class="l2-chrome-nav-column l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="warehouse-load-err" hidden></p>
+
+            <section id="warehouse-content" hidden>
+              <div class="l2-warehouse-head">
+                <img
+                  class="l2-warehouse-banner"
+                  src="/assets/bank.jpg"
+                  alt=""
+                  width="93"
+                  height="40"
+                  decoding="async"
+                />
+                <p class="l2-warehouse-intro" data-i18n="warehouse_intro">
+                  Вітаю! Тут можна зберігати речі, щоб інвентар не переповнювався.
+                </p>
+              </div>
+
+              <nav class="l2-warehouse-tabs" aria-label="Інвентар і склад">
+                <a href="/char.html" data-i18n="nav_inventory">Інвентар</a>
+                <span aria-hidden="true">|</span>
+                <span data-i18n="city_btn_warehouse">Склад</span>
+              </nav>
+
+              <p class="l2-warehouse-cap">
+                <span id="warehouse-capacity-text">Вмістимість: —/—</span>
+                <button type="button" class="l2-warehouse-cap-btn" id="warehouse-expand-stub" hidden>
+                  Збільшити (+)
+                </button>
+              </p>
+
+              <div id="warehouse-list" class="l2-warehouse-list" aria-label="Предмети на складі"></div>
+              <p class="l2-warehouse-empty" id="warehouse-empty" hidden>Склад порожній.</p>
+              <div id="warehouse-pager" class="l2-warehouse-pager" hidden></div>
+              <p class="l2-warehouse-msg" id="warehouse-msg" aria-live="polite"></p>
+
+              <div id="l2-foot-links"></div>
+            </section>
+
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260712wapBars16"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260709miruNav9"></script>
+    <script src="/warehouse.js"></script>
+  </body>
+</html>

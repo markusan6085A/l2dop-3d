@@ -27,6 +27,10 @@ export { toggleSelfStance } from './toggleSelfStance.js';
 export { applyTownBuffer } from './townBufferService.js';
 export { applyTownRestoreVitals } from './townBufferRestoreService.js';
 export {
+  applyWarehouseDeposit,
+  applyWarehouseWithdraw,
+} from './warehouseService.js';
+export {
   performHunt,
   performMapMove,
   performTeleport,

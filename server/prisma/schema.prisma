@@ -46,6 +46,8 @@ model Character {
   profileStatus String?
   /** Інвентар + екіп: stacks [{ itemId, qty, enchant? }], eq слот: itemId або { itemId, enchant? } — як l2dop eqbonus */
   inventoryJson Json?
+  /** Склад у місті: stacks [{ itemId, qty, enchant? }], maxSlots? */
+  warehouseJson Json?
   /** l2dop map.php: світові координати та рух до цілі */
   worldX      Int      @default(83400)
   worldY      Int      @default(147943)

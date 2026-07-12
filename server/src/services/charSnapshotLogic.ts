@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { parseInventory } from '../data/inventory.js';
+import { parseWarehouse, warehouseToSnapshot } from '../data/warehouse.js';
 import {
   computeCombatStats,
   computeCombatStatsOptionsForCharacter,
@@ -180,6 +181,7 @@ function addCritDisplayForProfile(
 
 export function toSnapshot(row: CharacterRow): CharacterSnapshot {
   const inv = parseInventory(row.inventoryJson);
+  const wh = warehouseToSnapshot(parseWarehouse(row.warehouseJson));
   const nowMs = Date.now();
   const effectiveLevel = levelFromTotalExp(row.exp);
   const expSeg = expSegmentForLevelBar(row.exp);
@@ -334,6 +336,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     revision: row.revision,
     lastUpdate: row.lastUpdate.toISOString(),
     inventory: inv,
+    warehouse: wh,
     pAtk,
     pDef,
     mAtk,

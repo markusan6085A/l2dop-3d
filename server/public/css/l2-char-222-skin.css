@@ -357,6 +357,19 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-title {
   margin-bottom: 6px;
 }
 
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-notice {
+  margin: 6px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #5ec85e;
+  text-align: center;
+}
+
 body.l2-app-l2-chrome.l2-page-char .l2-char-inv-filters {
   box-sizing: border-box !important;
   display: flex !important;
@@ -863,7 +876,14 @@ body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action:focus-visible
   transform: none !important;
 }
 
-/* «Одіти» у списку сумки — лише текст, без рамки 1512125 */
+/* «Одіти» / «[На склад]» у списку сумки — лише текст, без рамки 1512125 */
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip {
   min-width: 0 !important;
   min-height: 0 !important;

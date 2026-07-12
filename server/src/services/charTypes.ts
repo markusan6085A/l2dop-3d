@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import type { InventoryState } from '../data/inventory.js';
+import type { WarehouseSnapshot } from '../data/warehouse.js';
 import type { LearnedSkillSnapshotEntry } from './charLearnedSkillsSnapshot.js';
 import type { CastableSelfBuffEntry } from '../data/castableSelfBuffs.js';
 import type { BattleHotbarSlot } from '../domain/battleHotbar.js';
@@ -33,6 +34,7 @@ export interface CharacterRow {
   userId: string;
   lastUpdate: Date;
   inventoryJson: Prisma.JsonValue | null;
+  warehouseJson: Prisma.JsonValue | null;
   worldX: number;
   worldY: number;
   targetX: number;
@@ -108,6 +110,8 @@ export interface CharacterSnapshot {
   revision: number;
   lastUpdate: string;
   inventory: InventoryState;
+  /** Склад у місті (лише stacks; екіпу немає). */
+  warehouse: WarehouseSnapshot;
   /** l2dop calc_stats.php + rawdata.php + сумарний екіп з ITEM_CATALOG */
   pAtk: number;
   pDef: number;

@@ -376,6 +376,248 @@
       global.L2.appendColoredItemStatPair(p, labelUk, valueUk);
       parent.appendChild(p);
     },
+    /** Тип зброї українською — як у магазині (dropsShopStatsPreviewUk). */
+    weaponKindUk: function (kind) {
+      var map = {
+        sword: 'Меч',
+        blunt: 'Булава',
+        dagger: 'Кинджал',
+        bow: 'Лук',
+        bigsword: 'Дворучний меч',
+        bigblunt: 'Дворучний тупий',
+        dual: 'Подвійні мечі',
+        pole: 'Спис',
+        fist: 'Кастети',
+      };
+      return map[kind] || String(kind || '');
+    },
+    /** Рядки статів предмета — єдина логіка з магазином (labelUk / valueUk). */
+    buildItemStatsPreviewLines: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return [];
+      var st = global.L2.itemStatsById && global.L2.itemStatsById[id];
+      var slot = global.L2.itemSlotById && global.L2.itemSlotById[id];
+      if (!st || typeof st !== 'object') return [];
+      var lines = [];
+      function pctFromMul(mul) {
+        var p = Math.round((Number(mul) - 1) * 100);
+        return (p >= 0 ? '+' : '') + p + '%';
+      }
+      if (slot === 'consumable') {
+        lines.push({ labelUk: 'Тип', valueUk: 'Розхідник' });
+        lines.push({
+          labelUk: 'Примітка',
+          valueUk: 'Не екіпірується; лише сумка.',
+        });
+        return lines;
+      }
+      if (slot === 'rhand') {
+        if (st.pAtk != null) {
+          lines.push({ labelUk: 'Фіз. атака', valueUk: String(st.pAtk) });
+        }
+        if (st.mAtk != null) {
+          lines.push({ labelUk: 'Маг. атака', valueUk: String(st.mAtk) });
+        }
+        if (st.atkSpd != null) {
+          lines.push({ labelUk: 'Швидкість бою', valueUk: String(st.atkSpd) });
+        }
+        var wk =
+          global.L2.itemWeaponTypeById && global.L2.itemWeaponTypeById[id];
+        if (wk) {
+          lines.push({
+            labelUk: 'Тип зброї',
+            valueUk: global.L2.weaponKindUk(wk),
+          });
+        }
+        if (st.wpnCrit != null) {
+          lines.push({ labelUk: 'Крит.', valueUk: String(st.wpnCrit) });
+        }
+        if (st.rCrit != null && Number(st.rCrit) > 0) {
+          lines.push({ labelUk: 'Крит.', valueUk: '+' + String(st.rCrit) });
+        }
+        return lines;
+      }
+      if (
+        slot === 'chest' ||
+        slot === 'legs' ||
+        slot === 'head' ||
+        slot === 'gloves' ||
+        slot === 'feet' ||
+        slot === 'fullarmor' ||
+        slot === 'lhand'
+      ) {
+        if (st.pDef != null) {
+          lines.push({
+            labelUk: 'Фіз. захист (P.Def)',
+            valueUk: String(st.pDef),
+          });
+        }
+        if (slot === 'lhand' || slot === 'shield') {
+          if (st.shieldRatePercent != null) {
+            lines.push({
+              labelUk: 'Блок щитом',
+              valueUk: String(st.shieldRatePercent) + '%',
+            });
+          }
+          if (st.shieldDef != null) {
+            lines.push({
+              labelUk: 'Захист щита',
+              valueUk: String(st.shieldDef),
+            });
+          }
+        }
+        var slotUkMap = {
+          head: 'Голова',
+          chest: 'Нагрудник',
+          legs: 'Низ',
+          gloves: 'Рукавиці',
+          feet: 'Черевики',
+          fullarmor: 'Повний доспех',
+          lhand: 'Ліва рука (щит)',
+        };
+        if (slotUkMap[slot]) {
+          lines.push({ labelUk: 'Слот', valueUk: slotUkMap[slot] });
+        }
+        var armT =
+          global.L2.itemArmorTypeById && global.L2.itemArmorTypeById[id];
+        if (armT) {
+          var armUk =
+            armT === 'heavy'
+              ? 'Тяжка'
+              : armT === 'light'
+                ? 'Легка'
+                : armT === 'magic'
+                  ? 'Мантія'
+                  : String(armT);
+          lines.push({ labelUk: 'Тип броні', valueUk: armUk });
+        }
+        return lines;
+      }
+      if (slot === 'ring' || slot === 'neck' || slot === 'earring') {
+        var mdef =
+          st.jewelMdefFlat != null
+            ? st.jewelMdefFlat
+            : st.jewelryMAtk != null
+              ? st.jewelryMAtk
+              : st.mAtk;
+        if (mdef != null) {
+          lines.push({
+            labelUk: 'Маг. захист (M.Def)',
+            valueUk: String(mdef),
+          });
+        }
+        if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
+          lines.push({ labelUk: 'HP макс.', valueUk: '+' + String(st.jewelMaxHp) });
+        }
+        if (st.jewelMaxMp != null && st.jewelMaxMp > 0) {
+          lines.push({ labelUk: 'MP макс.', valueUk: '+' + String(st.jewelMaxMp) });
+        }
+        if (st.jewelAcc != null && st.jewelAcc > 0) {
+          lines.push({ labelUk: 'Точність', valueUk: '+' + String(st.jewelAcc) });
+        }
+        if (st.jewelEva != null && st.jewelEva > 0) {
+          lines.push({ labelUk: 'Ухилення', valueUk: '+' + String(st.jewelEva) });
+        }
+        if (st.jewelMpRegenMul != null && st.jewelMpRegenMul > 1) {
+          lines.push({
+            labelUk: 'Реген MP',
+            valueUk: pctFromMul(st.jewelMpRegenMul),
+          });
+        }
+        if (st.jewelHoldResistMul != null && st.jewelHoldResistMul > 1) {
+          lines.push({
+            labelUk: 'Стійкість до утримання',
+            valueUk: pctFromMul(st.jewelHoldResistMul),
+          });
+        }
+        if (st.pDef != null && st.pDef > 0) {
+          lines.push({ labelUk: 'Фіз. захист', valueUk: String(st.pDef) });
+        }
+        var accUk =
+          slot === 'neck'
+            ? 'Прикраса шиї'
+            : slot === 'ring'
+              ? 'Персень'
+              : 'Сережка';
+        lines.push({ labelUk: 'Тип аксесуара', valueUk: accUk });
+        return lines;
+      }
+      if (slot) {
+        lines.push({
+          labelUk: 'Примітка',
+          valueUk: 'Слот предмета: ' + String(slot),
+        });
+      }
+      return lines;
+    },
+    /** Компактний рядок статів як у крамниці: P.Atk: 25 | Speed: 379 | Crit: 40 */
+    buildItemStatsCompactLine: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return '';
+      var st = global.L2.itemStatsById && global.L2.itemStatsById[id];
+      var slot = global.L2.itemSlotById && global.L2.itemSlotById[id];
+      if (!st || typeof st !== 'object') return '';
+      function dashOrNum(v) {
+        return v != null ? String(v) : '—';
+      }
+      if (slot === 'rhand') {
+        var pAtk = st.pAtk != null ? st.pAtk : null;
+        var mAtk = st.mAtk != null ? st.mAtk : null;
+        var speedStr = dashOrNum(st.atkSpd);
+        var isMagic = mAtk != null && (pAtk == null || mAtk > pAtk);
+        if (isMagic) {
+          return 'M.Atk: ' + mAtk + ' | Speed: ' + speedStr + ' | Crit: —';
+        }
+        var parts = [];
+        if (pAtk != null) parts.push('P.Atk: ' + pAtk);
+        else if (mAtk != null) parts.push('M.Atk: ' + mAtk);
+        parts.push('Speed: ' + speedStr);
+        parts.push('Crit: ' + (st.wpnCrit != null ? String(st.wpnCrit) : '—'));
+        return parts.join(' | ');
+      }
+      if (
+        slot === 'chest' ||
+        slot === 'legs' ||
+        slot === 'head' ||
+        slot === 'gloves' ||
+        slot === 'feet' ||
+        slot === 'fullarmor' ||
+        slot === 'lhand'
+      ) {
+        if (st.pDef != null) return 'P.Def: ' + st.pDef;
+        return '';
+      }
+      if (slot === 'ring' || slot === 'neck' || slot === 'earring') {
+        var mdef =
+          st.jewelMdefFlat != null
+            ? st.jewelMdefFlat
+            : st.jewelryMAtk != null
+              ? st.jewelryMAtk
+              : st.mAtk;
+        if (mdef != null) return 'M.Def: ' + mdef;
+        return '';
+      }
+      return '';
+    },
+    /** Інлайн-стати в рядку списку (магазин / сумка / склад). */
+    appendItemStatsPreviewInline: function (parent, itemId) {
+      if (!parent) return;
+      var lines = global.L2.buildItemStatsPreviewLines(itemId);
+      if (!lines.length) return;
+      for (var si = 0; si < lines.length; si++) {
+        if (si > 0) {
+          var dotSep = document.createElement('span');
+          dotSep.className = 'l2-item-stat-sep';
+          dotSep.textContent = ' · ';
+          parent.appendChild(dotSep);
+        }
+        global.L2.appendColoredItemStatSegments(
+          parent,
+          lines[si].labelUk,
+          lines[si].valueUk
+        );
+      }
+    },
     resolveSkillIconUrl: function (skillId, iconUrl) {
       if (iconUrl != null && String(iconUrl).charAt(0) === '/') {
         return String(iconUrl);

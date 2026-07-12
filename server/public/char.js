@@ -72,91 +72,12 @@
   }
 
   function itemStatsParts(id) {
-    var st = window.L2 && L2.itemStatsById && L2.itemStatsById[id];
-    if (!st || typeof st !== 'object') return [];
-    var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[id];
-    var hasJewelAuthor =
-      st.jewelMdefFlat != null ||
-      st.jewelMaxHp != null ||
-      st.jewelMaxMp != null ||
-      (st.jewelAcc != null && Number(st.jewelAcc) > 0) ||
-      (st.jewelEva != null && Number(st.jewelEva) > 0) ||
-      (st.jewelMpRegenMul != null && Number(st.jewelMpRegenMul) > 1) ||
-      (st.jewelHoldResistMul != null && Number(st.jewelHoldResistMul) > 1);
-    var isJewel =
-      sl === 'ring' ||
-      sl === 'neck' ||
-      sl === 'earring' ||
-      hasJewelAuthor;
-    var isShield = sl === 'lhand' || sl === 'shield';
-    var isArmor =
-      sl === 'head' ||
-      sl === 'chest' ||
-      sl === 'legs' ||
-      sl === 'gloves' ||
-      sl === 'feet' ||
-      sl === 'fullarmor';
-    var parts = [];
-    if (st.pAtk != null) parts.push({ label: 'P.Atk', value: String(st.pAtk) });
-    if (isShield) {
-      if (st.pDef != null) parts.push({ label: 'P.Def', value: String(st.pDef) });
-      if (st.shieldRatePercent != null) {
-        parts.push({
-          label: 'Блок щитом',
-          value: String(st.shieldRatePercent) + '%',
-        });
-      }
-      if (st.shieldDef != null) {
-        parts.push({ label: 'Захист щита', value: String(st.shieldDef) });
-      }
-    } else if (isJewel) {
-      var mdef =
-        st.jewelMdefFlat != null
-          ? st.jewelMdefFlat
-          : st.jewelryMAtk != null
-            ? st.jewelryMAtk
-            : st.mAtk;
-      if (mdef != null) {
-        parts.push({ label: 'Маг. захист (M.Def)', value: String(mdef) });
-      }
-      if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
-        parts.push({ label: 'HP макс.', value: '+' + String(st.jewelMaxHp) });
-      }
-      if (st.jewelMaxMp != null && st.jewelMaxMp > 0) {
-        parts.push({ label: 'MP макс.', value: '+' + String(st.jewelMaxMp) });
-      }
-      if (st.jewelAcc != null && st.jewelAcc > 0) {
-        parts.push({ label: 'Точність', value: '+' + String(st.jewelAcc) });
-      }
-      if (st.jewelEva != null && st.jewelEva > 0) {
-        parts.push({ label: 'Ухилення', value: '+' + String(st.jewelEva) });
-      }
-      if (st.jewelMpRegenMul != null && st.jewelMpRegenMul > 1) {
-        parts.push({ label: 'Реген MP', value: pctFromMulUk(st.jewelMpRegenMul) });
-      }
-      if (st.jewelHoldResistMul != null && st.jewelHoldResistMul > 1) {
-        parts.push({
-          label: 'Стійкість до утримання',
-          value: pctFromMulUk(st.jewelHoldResistMul),
-        });
-      }
-      if (st.pDef != null && st.pDef > 0) {
-        parts.push({ label: 'Фіз. захист', value: String(st.pDef) });
-      }
-    } else {
-      if (st.mAtk != null) parts.push({ label: 'M.Atk', value: String(st.mAtk) });
-      if (isArmor && st.pDef != null) {
-        parts.push({ label: 'Фіз. захист (P.Def)', value: String(st.pDef) });
-      } else if (st.pDef != null) {
-        parts.push({ label: 'P.Def', value: String(st.pDef) });
-      }
+    if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
+      return L2.buildItemStatsPreviewLines(id).map(function (ln) {
+        return { label: ln.labelUk, value: ln.valueUk };
+      });
     }
-    if (st.atkSpd != null) parts.push({ label: 'Spd.', value: String(st.atkSpd) });
-    if (st.wpnCrit != null) parts.push({ label: 'Crit', value: String(st.wpnCrit) });
-    if (st.rCrit != null && Number(st.rCrit) > 0) {
-      parts.push({ label: 'Crit', value: '+' + String(st.rCrit) });
-    }
-    return parts;
+    return [];
   }
 
   function itemStatsLine(id) {
@@ -244,6 +165,7 @@
 
   var revision = 0;
   var equipRequestInFlight = false;
+  var warehouseDepositInFlight = false;
 
   function expectedRevisionForMutation() {
     var snap =
@@ -1028,15 +950,26 @@
       }
       row.appendChild(ic);
       row.appendChild(mid);
+      var actions = document.createElement('div');
+      actions.className = 'l2-char-bag-actions';
+      var depBtn = document.createElement('button');
+      depBtn.type = 'button';
+      depBtn.className = 'l2-char-bag-equip';
+      depBtn.textContent = '[На склад]';
+      depBtn.setAttribute('data-wh-item-id', String(st.itemId));
+      depBtn.setAttribute('data-wh-enchant', String(en));
+      depBtn.setAttribute('data-wh-qty', String(st.qty));
+      actions.appendChild(depBtn);
       if (canEquipFromBag(st.itemId)) {
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'l2-char-bag-equip l2-char-bag-modal-action';
+        btn.className = 'l2-char-bag-equip';
         btn.textContent = 'Одіти';
         btn.setAttribute('data-item-id', String(st.itemId));
         btn.setAttribute('data-item-enchant', String(en));
-        row.appendChild(btn);
+        actions.appendChild(btn);
       }
+      row.appendChild(actions);
       root.appendChild(row);
     });
   }
@@ -1172,6 +1105,77 @@
       }
     } finally {
       equipRequestInFlight = false;
+    }
+  }
+
+  async function apiWarehouseDeposit(itemId, enchant, qty) {
+    if (warehouseDepositInFlight) return;
+    warehouseDepositInFlight = true;
+    var noticeOk = $('char-bag-notice');
+    if (noticeOk) noticeOk.hidden = true;
+    try {
+      var t = localStorage.getItem('token');
+      var en =
+        enchant != null && Number.isFinite(Number(enchant))
+          ? Math.max(0, Math.min(20, Math.floor(Number(enchant))))
+          : 0;
+      var body = {
+        itemId: itemId,
+        enchant: en,
+        expectedRevision: expectedRevisionForMutation(),
+      };
+      if (qty != null && Number.isFinite(Number(qty))) body.qty = Math.floor(Number(qty));
+      var r = await fetch('/character/warehouse/deposit', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + t,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      if (r.status === 409) {
+        await resyncCharacterFromServer();
+        return;
+      }
+      if (!r.ok) {
+        var msg = 'Не вдалося покласти на склад.';
+        try {
+          var j = await r.json();
+          if (j && j.messageUk) msg = j.messageUk;
+        } catch (e) {
+          /* ignore */
+        }
+        var stub = $('char-stub-msg');
+        if (stub) {
+          stub.hidden = false;
+          stub.textContent = msg;
+        }
+        return;
+      }
+      var out = await r.json();
+      var c = out.character;
+      window.L2.setLastSnapshot(c);
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(c);
+      }
+      renderAll(c);
+      if (noticeOk) {
+        noticeOk.hidden = false;
+        noticeOk.textContent = 'Предмет на складі.';
+      }
+    } catch (_e) {
+      var stubNet = $('char-stub-msg');
+      if (stubNet) {
+        stubNet.hidden = false;
+        stubNet.textContent = 'Збій мережі — спробуй ще раз.';
+      }
+    } finally {
+      warehouseDepositInFlight = false;
     }
   }
 
@@ -1387,7 +1391,17 @@
       }
     }
     root.addEventListener('click', function (e) {
-      var btn = e.target.closest('.l2-char-bag-equip');
+      var depBtn = e.target.closest('[data-wh-item-id]');
+      if (depBtn && depBtn.getAttribute('data-wh-item-id')) {
+        e.stopPropagation();
+        apiWarehouseDeposit(
+          Number(depBtn.getAttribute('data-wh-item-id')),
+          Number(depBtn.getAttribute('data-wh-enchant') || 0),
+          Number(depBtn.getAttribute('data-wh-qty') || 1)
+        );
+        return;
+      }
+      var btn = e.target.closest('.l2-char-bag-equip[data-item-id]');
       if (btn) {
         e.stopPropagation();
         var id = btn.getAttribute('data-item-id');

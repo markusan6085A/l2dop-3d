@@ -563,3 +563,59 @@ export function unequipSlot(inv: InventoryState, slot: string): InventoryState {
   addStack(next.stacks, prev.itemId, 1, prev.enchant);
   return next;
 }
+
+/** Кількість зайнятих слотів сумки (кожен стек = 1 слот). */
+export function bagOccupiedSlots(inv: InventoryState): number {
+  return inv.stacks.length;
+}
+
+/** Чи потрібен новий слот у сумці для itemId+enchant. */
+export function bagNeedsNewSlot(
+  inv: InventoryState,
+  itemId: number,
+  enchant: number
+): boolean {
+  const e = normEnchant(enchant);
+  return !inv.stacks.some(
+    (s) => s.itemId === itemId && normEnchant(s.enchant) === e
+  );
+}
+
+/** Додати стек у сумку (з урахуванням заточки). */
+export function addEnchantedToBag(
+  inv: InventoryState,
+  itemId: number,
+  qty: number,
+  enchant: number = 0
+): InventoryState {
+  if (qty <= 0) {
+    return {
+      ...cloneMeta(inv),
+      stacks: inv.stacks.map((s) => ({ ...s })),
+      eq: { ...inv.eq },
+    };
+  }
+  const next: InventoryState = {
+    ...cloneMeta(inv),
+    stacks: inv.stacks.map((s) => ({ ...s })),
+    eq: { ...inv.eq },
+  };
+  addStack(next.stacks, itemId, qty, enchant);
+  return next;
+}
+
+/** Зняти qty зі стеку сумки (з урахуванням заточки). */
+export function removeEnchantedFromBag(
+  inv: InventoryState,
+  itemId: number,
+  qty: number,
+  enchant: number = 0
+): InventoryState {
+  const next: InventoryState = {
+    ...cloneMeta(inv),
+    stacks: inv.stacks.map((s) => ({ ...s })),
+    eq: { ...inv.eq },
+  };
+  removeStack(next.stacks, itemId, qty, enchant);
+  return next;
+}
