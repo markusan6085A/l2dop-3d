@@ -2,6 +2,10 @@
  * Спільний рендер героя на сцені (char.html + character.html).
  */
 (function (global) {
+  function heroUrl(n) {
+    return '/characters/hero_' + String(n).padStart(2, '0') + '.jpg';
+  }
+
   function normRace(race) {
     if (!race) return 'Human';
     var s = String(race).trim();
@@ -11,288 +15,286 @@
 
   /** Повний шлях до портрета в /characters (legacy fallback). */
   function portraitUrl(c) {
-    if (!c) return '/characters/Human-voin.jpg';
+    if (!c) return heroUrl(2);
     var nm = c.name != null ? String(c.name).trim().toLowerCase() : '';
     if (nm === 'existence') return '/characters/admin.png';
     var race = normRace(c.race);
     var branch = c.classBranch != null ? String(c.classBranch).toLowerCase() : 'fighter';
     var mystic = branch === 'mystic';
-    if (race === 'Human') return mystic ? '/characters/Human-mistsk.jpg' : '/characters/Human-voin.jpg';
-    if (race === 'Elf') return mystic ? '/characters/Elf-mag.jpg' : '/characters/Elf-voin.jpg';
+    if (race === 'Human') return mystic ? heroUrl(12) : heroUrl(2);
+    if (race === 'Elf') return mystic ? heroUrl(42) : heroUrl(28);
     if (race === 'Dark Elf') {
-      return mystic
-        ? '/characters/photo_2026-07-09_21-51-13-removebg-preview.png'
-        : '/characters/Dark_Elf-voinn.jpg';
+      return mystic ? heroUrl(5) : heroUrl(40);
     }
-    if (race === 'Dwarf') return '/characters/Dwarf_voin.jpg';
-    if (race === 'Orc') return mystic ? '/characters/Orc_mag.jpg' : '/characters/Orc_voinn.jpg';
-    return '/characters/Human-voin.jpg';
+    if (race === 'Dwarf') return heroUrl(24);
+    if (race === 'Orc') return mystic ? heroUrl(17) : heroUrl(15);
+    return heroUrl(2);
   }
 
   /** Герой поверх сцени — ключ `l2Profession` або `race|branch|gender`. */
   var SCENE_HERO_OVERLAYS = {
     human_fighter: {
-      url: '/characters/photo_5_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(5),
       skin: 'human-fighter-m',
       blackKey: false,
     },
     human_rogue: {
-      url: '/characters/photo_4_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(4),
       skin: 'human-rogue-m',
       blackKey: false,
     },
     human_warrior: {
-      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(3),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_knight: {
-      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(3),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_dark_avenger: {
-      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(3),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_paladin: {
-      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(3),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_treasure_hunter: {
-      url: '/characters/photo_3_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(3),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_warlord: {
-      url: '/characters/photo_2_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(2),
       skin: 'human-warlord-m',
       blackKey: false,
     },
     human_gladiator: {
-      url: '/characters/photo_1_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(1),
       skin: 'human-gladiator-m',
       blackKey: false,
     },
     'human_fighter|female': {
-      url: '/characters/photo_6_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(6),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_warrior|female': {
-      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(8),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_knight|female': {
-      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(8),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_paladin|female': {
-      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(8),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_dark_avenger|female': {
-      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(8),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_treasure_hunter|female': {
-      url: '/characters/photo_8_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(8),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_warlord|female': {
-      url: '/characters/photo_9_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(9),
       skin: 'human-warlord-f',
       blackKey: false,
     },
     'human_gladiator|female': {
-      url: '/characters/photo_7_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(7),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_hawkeye|female': {
-      url: '/characters/photo_10_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(10),
       skin: 'human-hawkeye-f',
       blackKey: false,
     },
     'human_rogue|female': {
-      url: '/characters/photo_10_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(10),
       skin: 'human-hawkeye-f',
       blackKey: false,
     },
     'human_sagittarius|female': {
-      url: '/characters/photo_10_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(10),
       skin: 'human-hawkeye-f',
       blackKey: false,
     },
     dwarf_fighter: {
-      url: '/characters/photo_24_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(24),
       skin: 'dwarf-fighter-m',
       blackKey: false,
     },
     'dwarf_fighter|female': {
-      url: '/characters/photo_23_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(23),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
     dwarf_scavenger: {
-      url: '/characters/photo_26_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(26),
       skin: 'dwarf-scavenger-m',
       blackKey: false,
     },
     dwarf_artisan: {
-      url: '/characters/photo_26_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(26),
       skin: 'dwarf-scavenger-m',
       blackKey: false,
     },
     'dwarf_scavenger|female': {
-      url: '/characters/photo_25_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(25),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
     'dwarf_artisan|female': {
-      url: '/characters/photo_25_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(25),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
     orc_fighter: {
-      url: '/characters/photo_15_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(15),
       skin: 'orc-fighter-m',
       blackKey: false,
     },
     orc_raider: {
-      url: '/characters/photo_19_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(19),
       skin: 'orc-raider-m',
       blackKey: false,
     },
     orc_monk: {
-      url: '/characters/photo_21_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(21),
       skin: 'orc-monk-m',
       blackKey: false,
     },
     orc_mage: {
-      url: '/characters/photo_17_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(17),
       skin: 'orc-mystic-m',
       blackKey: false,
     },
     'orc_fighter|female': {
-      url: '/characters/photo_16_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(16),
       skin: 'orc-fighter-f',
       blackKey: false,
     },
     'orc_raider|female': {
-      url: '/characters/photo_22_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(22),
       skin: 'orc-raider-f',
       blackKey: false,
     },
     'orc_monk|female': {
-      url: '/characters/photo_20_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(20),
       skin: 'orc-monk-f',
       blackKey: false,
     },
     'orc_mage|female': {
-      url: '/characters/photo_18_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(18),
       skin: 'orc-mystic-f',
       blackKey: false,
     },
     human_mage: {
-      url: '/characters/photo_12_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(12),
       skin: 'human-mage-m',
       blackKey: false,
     },
     human_wizard: {
-      url: '/characters/photo_14_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(14),
       skin: 'human-wizard-m',
       blackKey: false,
     },
     human_cleric: {
-      url: '/characters/photo_14_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(14),
       skin: 'human-wizard-m',
       blackKey: false,
     },
     'human_mage|female': {
-      url: '/characters/photo_11_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(11),
       skin: 'human-mage-f',
       blackKey: false,
     },
     'human_wizard|female': {
-      url: '/characters/photo_13_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(13),
       skin: 'human-wizard-f',
       blackKey: false,
     },
     'human_cleric|female': {
-      url: '/characters/photo_13_2026-07-05_18-17-32-removebg-preview.png',
+      url: heroUrl(13),
       skin: 'human-wizard-f',
       blackKey: false,
     },
     dark_elf_mage: {
-      url: '/characters/photo_2026-07-09_21-51-13-removebg-preview.png',
+      url: heroUrl(5),
       skin: 'dark-elf-mystic-m',
       blackKey: false,
     },
     'dark_elf_mage|female': {
-      url: '/characters/photo_2026-07-09_21-53-58-removebg-preview.png',
+      url: heroUrl(42),
       skin: 'dark-elf-mystic-f',
       blackKey: false,
     },
     dark_elf_dark_wizard: {
-      url: '/characters/photo_2026-07-09_21-53-08-removebg-preview.png',
+      url: heroUrl(41),
       skin: 'dark-elf-mystic-m',
       blackKey: false,
     },
     'dark_elf_dark_wizard|female': {
-      url: '/characters/photo_2026-07-09_21-54-38-removebg-preview.png',
+      url: heroUrl(26),
       skin: 'dark-elf-mystic-f',
       blackKey: false,
     },
     dark_elf_shillien_oracle: {
-      url: '/characters/photo_2026-07-09_21-53-08-removebg-preview.png',
+      url: heroUrl(41),
       skin: 'dark-elf-mystic-m',
       blackKey: false,
     },
     'dark_elf_shillien_oracle|female': {
-      url: '/characters/photo_2026-07-09_21-54-38-removebg-preview.png',
+      url: heroUrl(26),
       skin: 'dark-elf-mystic-f',
       blackKey: false,
     },
     elf_mage: {
-      url: '/characters/Elf-mag.jpg',
+      url: heroUrl(42),
       skin: 'elf-mystic-m',
-      blackKey: true,
+      blackKey: false,
     },
     'elf_mage|female': {
-      url: '/characters/Elf-mag.jpg',
+      url: heroUrl(42),
       skin: 'elf-mystic-m',
-      blackKey: true,
+      blackKey: false,
     },
     dark_elf_fighter: {
-      url: '/characters/Dark_Elf-voinn.jpg',
+      url: heroUrl(40),
       skin: 'dark-elf-fighter-m',
-      blackKey: true,
+      blackKey: false,
     },
     'dark_elf_fighter|female': {
-      url: '/characters/Dark_Elf-voinn.jpg',
+      url: heroUrl(40),
       skin: 'dark-elf-fighter-m',
-      blackKey: true,
+      blackKey: false,
     },
     elf_fighter: {
-      url: '/characters/Elf-voinn.jpg',
+      url: heroUrl(28),
       skin: 'elf-fighter-m',
-      blackKey: true,
+      blackKey: false,
     },
     'elf_fighter|female': {
-      url: '/characters/Elf-voinn.jpg',
+      url: heroUrl(28),
       skin: 'elf-fighter-m',
-      blackKey: true,
+      blackKey: false,
     },
     'dark-elf|mystic|male': {
-      url: '/characters/photo_2026-07-09_21-51-13-removebg-preview.png',
+      url: heroUrl(5),
       skin: 'dark-elf-mystic-m',
       blackKey: false,
     },
