@@ -520,6 +520,8 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-head {
   font-weight: 700;
   line-height: 1.35;
   color: #fff;
+  user-select: text;
+  cursor: text;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-head-ico {
@@ -551,8 +553,14 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-label {
   font-size: 12px;
   line-height: 1.35;
   color: #d8ccb0;
-  cursor: default;
-  user-select: none;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-label span {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport
