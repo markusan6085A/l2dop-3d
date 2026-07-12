@@ -486,9 +486,10 @@
       var p = worldToMapPixel(h.worldX, h.worldY);
       var lx = (p.mx / img.naturalWidth) * 100;
       var ly = (p.my / img.naturalHeight) * 100;
-      var pin = document.createElement('button');
-      pin.type = 'button';
+      var pin = document.createElement('div');
       pin.className = 'l2-map-hero-pin';
+      pin.setAttribute('role', 'button');
+      pin.tabIndex = 0;
       if (Number(h.pk) > 0) pin.className += ' l2-map-hero-pin--pk';
       pin.style.left = lx + '%';
       pin.style.top = ly + '%';

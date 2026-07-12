@@ -447,13 +447,10 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-map-hero-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  display: block;
   margin: 0;
   padding: 6px 10px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.35;
   border-bottom: 1px solid rgba(80, 100, 90, 0.22);
 }
@@ -464,34 +461,51 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-map-hero-item__main {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0;
   min-width: 0;
-}
-
-.l2-map-hero-name-link,
-.l2-map-hero-level {
-  color: #e8ead8;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 1.35;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .l2-map-hero-name-link {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--l2-nick-color, #bfa88a);
+  text-shadow: var(--l2-nick-shadow, 0 1px 2px rgba(0, 0, 0, 0.85));
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.35;
   text-decoration: none;
 }
 
 .l2-map-hero-name-link:hover,
 .l2-map-hero-name-link:focus {
-  color: #f4f6e8;
+  color: var(--l2-nick-color, #bfa88a);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
+.l2-map-hero-level {
+  flex: 0 0 auto;
+  color: var(--l2-nick-color, #bfa88a);
+  text-shadow: var(--l2-nick-shadow, 0 1px 2px rgba(0, 0, 0, 0.85));
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .l2-map-hero-link__pk {
-  border: none;
-  background: transparent;
+  flex: 0 0 auto;
+  border: none !important;
+  outline: none;
+  background: transparent !important;
+  box-shadow: none !important;
   padding: 0;
   margin: 0;
   font: inherit;
@@ -499,12 +513,18 @@ button.l2-map-mob-title--tap-full:focus {
   font-size: 12px;
   line-height: 1.35;
   cursor: pointer;
-  color: #e85840;
+  color: #e85840 !important;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .l2-map-hero-link__pk:hover:not(:disabled),
 .l2-map-hero-link__pk:focus:not(:disabled) {
-  color: #ff6644;
+  color: #ff6644 !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none;
 }
 
 .l2-map-hero-link__pk:disabled {

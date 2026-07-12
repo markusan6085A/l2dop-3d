@@ -1743,6 +1743,45 @@ body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row--exit:focus {
   -webkit-filter: brightness(1.08) !important;
 }
 
+body.l2-app-l2-chrome.l2-page-map button.l2-map-hero-link__pk {
+  border: none !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #e85840 !important;
+  text-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map button.l2-map-hero-link__pk:hover:not(:disabled),
+body.l2-app-l2-chrome.l2-page-map button.l2-map-hero-link__pk:focus:not(:disabled),
+body.l2-app-l2-chrome.l2-page-map button.l2-map-hero-link__pk:focus-visible:not(:disabled) {
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #ff6644 !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-hero-pin {
+  border: none !important;
+  border-image: none !important;
+  background: #0a0a0a !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 0 4px rgba(0, 0, 0, 0.95) !important;
+}
+
 /* map.html: «Моби в околицях», «До карти» — /assets/05d5d21e…png */
 body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full,
 body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn {

@@ -1092,6 +1092,43 @@ export async function performBattleAction(
       return { ...v, battle: null };
     }
 
+    /** PvP: без автоконтратаки моба — ходи лише гравці (окремий flow пізніше). */
+    if (isPvpBattleJson(bj)) {
+      return persistBattleContinueTurnInTx(tx, {
+        userId,
+        expectedRevision,
+        char: char as CharacterRow,
+        bj,
+        spawn,
+        preLevel,
+        learnedBattle,
+        profAct,
+        inv,
+        st,
+        playerHp,
+        mobHp,
+        log,
+        maxMpEff,
+        ...(activeBuffsChanged
+          ? {
+              activeBuffsJson:
+                nextActiveBuffs as unknown as Prisma.InputJsonValue,
+            }
+          : {}),
+        ...(cooldownsChanged
+          ? {
+              skillCooldownsJson:
+                nextCooldowns as unknown as Prisma.InputJsonValue,
+            }
+          : {}),
+        ...(inventoryDirty
+          ? {
+              inventoryJson: inv as unknown as Prisma.InputJsonValue,
+            }
+          : {}),
+      });
+    }
+
     let shouldMobCounterAttack = true;
     const sleepUntilNow = jsonFiniteNum(st.battleMods?.mobSleepUntilMs);
     const mobSleepingNow =

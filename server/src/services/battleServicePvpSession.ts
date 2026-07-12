@@ -33,10 +33,6 @@ import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
-function randomMobRetaliationWindowHitsLocal(): number {
-  return 1 + Math.floor(Math.random() * 3);
-}
-
 function opponentCombatFromRow(row: CharacterRow) {
   const effLv = levelFromTotalExp(row.exp);
   const inv = parseInventory(row.inventoryJson);
@@ -150,7 +146,6 @@ export async function startPvpBattleInTx(
     playerMp: wTick ? wTick.playerMp : maxMp0,
     lastRegenTickMs: nowStartMs,
     lastPlayerAttackAtMs: nowStartMs,
-    mobHitsUntilRetaliation: randomMobRetaliationWindowHitsLocal(),
   };
   if (wTick?.battleMods) st.battleMods = wTick.battleMods;
   if (
