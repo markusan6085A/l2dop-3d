@@ -245,7 +245,7 @@ button.l2-map-mob-title--tap-full:focus {
   margin: 0 0 4px;
   font-size: 14px;
   font-weight: 600;
-  color: #ffcc88;
+  color: #e85840;
 }
 
 .l2-map-mob-modal__sub {
@@ -326,22 +326,21 @@ button.l2-map-mob-title--tap-full:focus {
 .l2-map-mob-modal__battle {
   display: block;
   margin-top: 12px;
-  padding: 8px 10px;
+  padding: 6px 0;
   text-align: center;
   font-size: 12px;
   font-weight: 600;
-  color: #fff4d6;
+  color: #b8b0a4;
   text-decoration: none;
-  border: 1px solid #6b543f;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #2a3820, #141a12);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .l2-map-mob-modal__battle:hover,
 .l2-map-mob-modal__battle:focus {
   outline: none;
-  border-color: #d4af37;
-  color: #fff;
+  color: #ccc4b8;
 }
 
 .l2-map-mob-link {

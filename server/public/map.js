@@ -878,22 +878,8 @@
         }
       }
       if (mobModalNote) {
-        var noteParts = [];
-        if (j.npcId == null) {
-          noteParts.push(
-            'NPC у каталозі l2dop за іменем не знайдено — EXP/SP за рівнем моба.'
-          );
-        } else {
-          if (j.rewardExpSynthetic) {
-            noteParts.push('EXP/SP за формулою рівня (у дампі 0 або немає рядка npc).');
-          }
-        }
-        if (noteParts.length) {
-          mobModalNote.hidden = false;
-          mobModalNote.textContent = noteParts.join(' ');
-        } else {
-          mobModalNote.hidden = true;
-        }
+        mobModalNote.hidden = true;
+        mobModalNote.textContent = '';
       }
       if (mobModalBattle) {
         mobModalBattle.href = '/battle.html?spawnId=' + encodeURIComponent(spawnId);

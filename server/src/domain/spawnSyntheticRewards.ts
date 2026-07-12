@@ -1,11 +1,11 @@
 import type { NpcDropBag } from '../data/npcDropsResolved.js';
 import { L2DOP_NPC_EXP_SP } from '../data/l2dopNpcExpSp.generated.js';
 import type { DropEntry } from '../types/combatDrop.js';
+import { mobAdenaDropRange } from './mobAdenaDropScale.js';
 
-/** Базова адена за рівнем, коли немає табличного дропу предметів. */
+/** Базова адена за рівнем моба (шкала mobAdenaDropScale). */
 export function syntheticAdenaDropEntry(level: number): DropEntry {
-  const min = Math.max(1, Math.floor(20 + level * 12));
-  const max = Math.max(min, Math.floor(45 + level * 38));
+  const { min, max } = mobAdenaDropRange(level);
   return {
     id: 'synthetic_adena',
     kind: 'adena',

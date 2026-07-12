@@ -1721,10 +1721,9 @@ body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row--exit:focus {
   -webkit-filter: brightness(1.08) !important;
 }
 
-/* map.html: «Моби в околицях», «До карти», «У бій» — /assets/05d5d21e…png */
+/* map.html: «Моби в околицях», «До карти» — /assets/05d5d21e…png */
 body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full,
-body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn,
-body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle {
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn {
   box-sizing: border-box !important;
   display: block;
   width: 100%;
@@ -1763,9 +1762,28 @@ body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn,
-body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle {
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn {
   margin-top: 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle {
+  display: block !important;
+  width: 100%;
+  margin-top: 12px;
+  padding: 6px 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #b8b0a4 !important;
+  text-align: center;
+  text-decoration: none !important;
+  cursor: pointer;
 }
 
 body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:hover,
@@ -1773,10 +1791,7 @@ body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:focus,
 body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:focus-visible,
 body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:hover,
 body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:focus,
-body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:focus-visible,
-body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:hover,
-body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:focus,
-body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:focus-visible {
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:focus-visible {
   border: 0 !important;
   border-image: none !important;
   background: url('/assets/05d5d21e-14f3-48fa-ab25-4939e7c64186-removebg-preview.png?v=20260705mapBtn05d5') center / 100% 100%
@@ -1789,32 +1804,47 @@ body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:focus-visible {
 }
 
 body.l2-app-l2-chrome.l2-page-map button.l2-map-mob-title--tap-full:active,
-body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:active,
-body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:active {
+body.l2-app-l2-chrome.l2-page-map button.l2-map-back-btn:active {
   filter: brightness(0.96);
   -webkit-filter: brightness(0.96);
   transform: none !important;
 }
 
-/* map.html: модалка моба — рамка ref/222 + суцільний фон #1d1c1a */
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:hover,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:focus,
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:focus-visible {
+  border: 0 !important;
+  background: transparent !important;
+  color: #ccc4b8 !important;
+  outline: none;
+  text-decoration: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map a.l2-map-mob-modal__battle:active {
+  color: #a8a098 !important;
+}
+
+/* map.html: модалка моба — суцільний фон + легка обводка */
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-modal__panel {
   box-sizing: border-box !important;
-  border-color: transparent !important;
-  border-style: solid !important;
-  border-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
-  border-radius: var(--l2s-paper-radius, 3px) !important;
-  border-image-source: url('/ref/222.png') !important;
-  border-image-slice: var(--l2s-in222-slice-y) var(--l2s-in222-slice-x) var(--l2s-in222-slice-y)
-    var(--l2s-in222-slice-x) !important;
-  border-image-width: calc(1px * var(--l2s-in222-w-y)) calc(1px * var(--l2s-in222-w-x)) !important;
-  border-image-outset: 0 !important;
-  border-image-repeat: stretch !important;
+  border: 1px solid rgba(184, 176, 164, 0.35) !important;
+  border-radius: 4px !important;
+  border-image: none !important;
   background-color: #1d1c1a !important;
   background-image: none !important;
   -webkit-box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.72) !important;
-  padding: calc(12px + 1px * var(--l2s-in222-w-y)) calc(12px + 1px * var(--l2s-in222-w-x))
-    calc(14px + 1px * var(--l2s-in222-w-y)) !important;
+  padding: 14px 14px 16px !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-modal__title {
+  color: #e85840 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-modal__sec-title {
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
 }
 
 /* map.html: список мобів — суцільний фон #1d1c1a */
