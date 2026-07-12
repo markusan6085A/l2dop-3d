@@ -902,7 +902,7 @@ body.l2-app-l2-chrome .l2-char-cat-btn {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
-/* Бій: «Назад на карту» — лише текст #bfa88a, без ref-рамки */
+/* Бій: «Назад на карту» — білий текст, без ref-рамки */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc {
   appearance: none;
@@ -912,7 +912,7 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc {
   border-image: none !important;
   background: transparent !important;
   box-shadow: none !important;
-  color: #bfa88a !important;
+  color: #ffffff !important;
   text-shadow: none !important;
   text-decoration: none;
   padding: 0 !important;
@@ -978,7 +978,7 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:hover,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus {
   border: none !important;
   border-image: none !important;
-  color: #d4c4a8 !important;
+  color: #f0f0f0 !important;
   filter: none !important;
   transform: none !important;
   box-shadow: none !important;
@@ -1199,15 +1199,21 @@ body.l2-app-l2-chrome .l2-battle-victory-link {
 /* Бій: те саме тло колонки, що місто/перс (просвічує radial+void), без важких «коробок» */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-mob-panel,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar {
-  border: 1px solid rgba(200, 160, 70, 0.32) !important;
+  border: none !important;
   background: transparent !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-log {
-  border: 1px solid rgba(130, 100, 55, 0.3);
-  background: rgba(6, 5, 4, 0.22);
+body.l2-app-l2-chrome.l2-page-battle #battle-log.l2-battle-log {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  color: #8a8a8a;
+}
+
+body.l2-app-l2-chrome.l2-page-battle #battle-log.l2-battle-log--colored .log-system {
+  color: #8a8a8a !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify {
@@ -1401,7 +1407,7 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal .l2-battle-hotbar-p
   max-height: 34px;
   object-fit: contain;
   box-sizing: border-box;
-  border: 1px solid rgba(199, 173, 128, 0.55);
+  border: 1px solid #bfa88a;
   border-radius: 3px;
   background: transparent;
 }
@@ -1437,6 +1443,39 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-ic
   margin: 0;
 }
 
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar__rule {
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar__rule--top {
+  display: block !important;
+  height: 1px;
+  margin: 0 auto 10px;
+  max-width: 320px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(199, 173, 128, 0.35) 20%,
+    rgba(199, 173, 128, 0.35) 80%,
+    transparent
+  );
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-log-wrap::before {
+  content: '';
+  display: block;
+  height: 1px;
+  margin: 8px auto 10px;
+  max-width: 320px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(199, 173, 128, 0.35) 20%,
+    rgba(199, 173, 128, 0.35) 80%,
+    transparent
+  );
+}
+
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-img {
   display: block;
   width: 34px;
@@ -1446,7 +1485,7 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-im
   margin: 0;
   object-fit: contain;
   box-sizing: border-box;
-  border: 1px solid rgba(199, 173, 128, 0.55);
+  border: 1px solid #bfa88a;
   border-radius: 3px;
   background: transparent;
 }
@@ -1454,7 +1493,7 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-im
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:hover .l2-battle-hotbar-slot-img,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:focus .l2-battle-hotbar-slot-img,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:focus-visible .l2-battle-hotbar-slot-img {
-  border-color: rgba(232, 200, 120, 0.9);
+  border-color: #d4c4a8;
   filter: brightness(1.08);
   -webkit-filter: brightness(1.08);
 }
@@ -1486,22 +1525,22 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--e
   height: 34px;
   min-width: 34px;
   min-height: 34px;
-  border: 1px solid rgba(199, 173, 128, 0.55) !important;
+  border: 1px solid #bfa88a !important;
   border-radius: 3px;
   background: transparent !important;
   box-shadow: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--empty:hover {
-  border-color: rgba(232, 200, 120, 0.9) !important;
+  border-color: #d4c4a8 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-plus {
-  color: #c5b398;
+  color: #bfa88a;
   opacity: 1;
 }
 
-/* battle: «Убр» — колір тексту як у місті + суцільна золота обводка як у слотів */
+/* battle: «Убр» — рамка з заокругленими кутами */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove {
   box-sizing: border-box !important;
   width: 34px !important;
@@ -1512,10 +1551,10 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove 
   font-weight: 700 !important;
   letter-spacing: 0.02em;
   line-height: 1.1;
-  color: #c5b398 !important;
+  color: #bfa88a !important;
   cursor: pointer;
-  border: 1px solid rgba(199, 173, 128, 0.55) !important;
-  border-radius: 3px !important;
+  border: 1px solid #bfa88a !important;
+  border-radius: 8px !important;
   background: transparent !important;
   box-shadow: none !important;
   -webkit-tap-highlight-color: rgba(201, 164, 58, 0.15);
@@ -1527,16 +1566,16 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:focus-visible {
   outline: none;
-  border-color: rgba(232, 200, 120, 0.9) !important;
+  border-color: #d4c4a8 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:hover {
-  border-color: rgba(232, 200, 120, 0.9) !important;
-  color: #e4d5b7 !important;
+  border-color: #d4c4a8 !important;
+  color: #d4c4a8 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-remove:active {
-  color: #b8a88c !important;
+  color: #9a8870 !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--toggle-on .l2-battle-hotbar-slot-img {
@@ -2448,18 +2487,33 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0;
   color: #d8ccb0;
   font-size: 14px;
   line-height: 1.15;
   margin: 0 0 2px;
   grid-column: 1 / -1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-level {
+  display: inline;
+  flex: 0 0 auto;
   color: #fff;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-name {
+  display: inline;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--l2-nick-color);
   text-shadow: var(--l2-nick-shadow);
 }

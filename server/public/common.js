@@ -778,6 +778,9 @@
       }
       if (!c) {
         global.L2.clearHudPanel();
+        if (typeof global.L2.syncGameHelper === 'function') {
+          global.L2.syncGameHelper(null);
+        }
         return;
       }
       set('l2-hud-nick', c.name);
@@ -849,6 +852,9 @@
           String(c.level != null ? c.level : '—') + ' ' + lvlAbbr
         );
         set('l2-hud-legacy-name', c.name != null ? c.name : '—');
+      }
+      if (typeof global.L2.syncGameHelper === 'function') {
+        global.L2.syncGameHelper(c);
       }
     },
 
@@ -1069,6 +1075,7 @@
 
   var CHAT_REPLY_NOTIFY_VER = '20260709perf1';
   var ONLINE_FOOT_ASSET_VER = '20260709perfLayout1';
+  var GAME_HELPER_ASSET_VER = '20260712helper8';
 
   function bootstrapChatReplyNotify() {
     if (typeof document === 'undefined' || !document.body) return;
@@ -1102,6 +1109,49 @@
     scriptReply.src = '/l2-chat-reply-notify.js?v=' + CHAT_REPLY_NOTIFY_VER;
     scriptReply.onload = runReplyMount;
     (document.head || document.documentElement).appendChild(scriptReply);
+  }
+
+  function bootstrapGameHelper() {
+    if (typeof document === 'undefined' || !document.body) return;
+    if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+    if (document.body.classList.contains('l2-page-auth')) return;
+    if (!getHudPanelForHelperBootstrap()) return;
+
+    if (!document.getElementById('l2-game-helper-css')) {
+      var cssHelper = document.createElement('link');
+      cssHelper.id = 'l2-game-helper-css';
+      cssHelper.rel = 'stylesheet';
+      cssHelper.href = '/css/l2-game-helper.css?v=' + GAME_HELPER_ASSET_VER;
+      (document.head || document.documentElement).appendChild(cssHelper);
+    }
+
+    function runHelperMount() {
+      if (global.L2 && typeof global.L2.mountGameHelper === 'function') {
+        global.L2.mountGameHelper();
+      }
+    }
+
+    if (typeof global.L2.mountGameHelper === 'function') {
+      runHelperMount();
+      return;
+    }
+
+    if (document.getElementById('l2-game-helper-js')) {
+      return;
+    }
+
+    var scriptHelper = document.createElement('script');
+    scriptHelper.id = 'l2-game-helper-js';
+    scriptHelper.src = '/l2-game-helper.js?v=' + GAME_HELPER_ASSET_VER;
+    scriptHelper.onload = runHelperMount;
+    (document.head || document.documentElement).appendChild(scriptHelper);
+  }
+
+  function getHudPanelForHelperBootstrap() {
+    return !!(
+      document.getElementById('l2-hud-panel-mount') ||
+      document.querySelector('.l2-hud-panel')
+    );
   }
 
   function bootstrapOnlineFoot() {
@@ -1144,6 +1194,7 @@
       if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
         global.L2.mountStandardHudPanel();
       }
+      bootstrapGameHelper();
       bootstrapOnlineFoot();
       bootstrapChatReplyNotify();
     }

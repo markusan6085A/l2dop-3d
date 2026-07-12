@@ -1,5 +1,5 @@
 /**
- * Панель швидкого доступу в бою (як text-rpg SkillBar): слоти, модалка, Убр.
+ * Панель швидкого доступу в бою (як text-rpg SkillBar): слоти, модалка.
  * Розкладка зберігається в localStorage (per characterId). Нижнє меню сторінки не чіпаємо.
  */
 (function (global) {
@@ -1588,7 +1588,7 @@
       wrap.className = 'l2-battle-hotbar';
 
       var line = document.createElement('div');
-      line.className = 'l2-battle-hotbar__rule';
+      line.className = 'l2-battle-hotbar__rule l2-battle-hotbar__rule--top';
       wrap.appendChild(line);
 
       var grid = document.createElement('div');
@@ -1611,26 +1611,7 @@
         appendAddSlotButton(grid, fe);
       }
 
-      var ub = document.createElement('button');
-      ub.type = 'button';
-      ub.className = 'l2-battle-hotbar-remove';
-      ub.textContent = 'Убр';
-      ub.title = 'Прибрати з панелі';
-      ub.addEventListener('click', function () {
-        pickerSlot = null;
-        category = 'remove';
-        openModal();
-      });
-      var foot = document.createElement('div');
-      foot.className = 'l2-battle-hotbar__foot';
-      foot.appendChild(ub);
-
       wrap.appendChild(grid);
-
-      var line2 = document.createElement('div');
-      line2.className = 'l2-battle-hotbar__rule';
-      wrap.appendChild(line2);
-      wrap.appendChild(foot);
 
       box.appendChild(wrap);
       if (hotbarHasSkillSlots(wrap)) startCdTicker(wrap);

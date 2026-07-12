@@ -89,6 +89,16 @@
       return;
     }
     localStorage.setItem('token', j.token);
+    if (window.L2 && typeof L2.markHelperBufferTipPending === 'function') {
+      L2.markHelperBufferTipPending();
+    } else {
+      try {
+        localStorage.setItem('l2-helper-step', 'inventory');
+        localStorage.removeItem('l2-helper-buffer-tip');
+      } catch (e) {
+        /* ignore */
+      }
+    }
     window.location.href = '/char.html';
   });
 })();

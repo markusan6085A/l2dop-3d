@@ -117,6 +117,9 @@
 
   async function startBattleFromMap(spawnId) {
     if (!spawnId || battleStartInFlight) return;
+    if (window.L2 && typeof L2.onHelperMobClicked === 'function') {
+      L2.onHelperMobClicked();
+    }
     battleStartInFlight = true;
     try {
       var t = localStorage.getItem('token');
@@ -809,6 +812,9 @@
 
     async function openMobCatalog(spawnId) {
       if (!spawnId) return;
+      if (window.L2 && typeof L2.onHelperMobClicked === 'function') {
+        L2.onHelperMobClicked();
+      }
       var tok = localStorage.getItem('token');
       if (!tok) return;
       var r = await fetch('/game/spawn/' + encodeURIComponent(spawnId) + '/info', {

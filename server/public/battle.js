@@ -775,14 +775,6 @@
         battle.mobLevel +
         (battle.aggressive ? ' · ' + aggL : '');
     }
-    if (mainMobLbl) {
-      mainMobLbl.className = 'l2-battle-bar-lbl l2-battle-mob-hp-name';
-      mainMobLbl.textContent =
-        battle.mobName && String(battle.mobName).length > 14
-          ? String(battle.mobName).slice(0, 12) + '…'
-          : battle.mobName || '—';
-      mainMobLbl.title = battle.mobName || '';
-    }
     renderBuffStrip(battle);
     renderSonicCharges(battle);
     setBar(hpInner, battle.mobHp, battle.mobMaxHp);

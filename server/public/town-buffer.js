@@ -114,6 +114,9 @@
         if (typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(j.character);
         }
+        if (typeof L2.syncGameHelper === 'function') {
+          L2.syncGameHelper(j.character);
+        }
         renderFee(Number(j.character.level || 1));
       }
       var fee = j && j.feeAdena != null ? String(j.feeAdena) : '0';
@@ -220,6 +223,9 @@
       L2.setLastSnapshot(c);
       if (typeof L2.applyHudFromSnapshot === 'function') {
         L2.applyHudFromSnapshot(c);
+      }
+      if (typeof L2.syncGameHelper === 'function') {
+        L2.syncGameHelper(c);
       }
     }
     renderFee(Number(c.level || 1));

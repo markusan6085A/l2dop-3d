@@ -1,0 +1,62 @@
+/* Помічник — підказка під HUD (іконка helper.jpg + текст). */
+.l2-game-helper {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+
+.l2-game-helper[hidden] {
+  display: none !important;
+}
+
+.l2-game-helper__avatar {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.l2-game-helper__text {
+  margin: 0;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #5dbd5d;
+}
+
+.l2-game-helper__label {
+  color: #5dbd5d;
+  font-weight: 600;
+}
+
+.l2-game-helper__link {
+  color: #bfa88a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.l2-game-helper__link:hover,
+.l2-game-helper__link:focus-visible {
+  color: #d4c0a0;
+}
+
+.l2-game-helper__close {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: #d94a4a;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.l2-game-helper__close:hover,
+.l2-game-helper__close:focus-visible {
+  color: #f06a6a;
+}
