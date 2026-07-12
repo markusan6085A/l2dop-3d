@@ -471,47 +471,32 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-map-hero-link {
-  color: #8ec8ff;
+  color: #e8ead8;
   text-decoration: none;
   font-weight: 600;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.l2-map-hero-link__text {
+  color: inherit;
+}
+
+.l2-map-hero-link__pk {
+  color: #e85840;
+  font-weight: 700;
 }
 
 .l2-map-hero-link:hover,
 .l2-map-hero-link:focus {
-  color: #c8e4ff;
+  color: #f4f6e8;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.l2-map-hero-link--pk {
-  color: #ff7070;
-}
-
-.l2-map-hero-link--lvl-deadly { color: #ff4444; }
-.l2-map-hero-link--lvl-hard { color: #ff8844; }
-.l2-map-hero-link--lvl-warn { color: #ffcc44; }
-.l2-map-hero-link--lvl-same { color: #8ec8ff; }
-.l2-map-hero-link--lvl-easy { color: #88ddaa; }
-.l2-map-hero-link--lvl-trivial { color: #aaaaaa; }
-
-.l2-map-hero-online,
-.l2-map-hero-battle {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  padding: 1px 5px;
-  border-radius: 3px;
-}
-
-.l2-map-hero-online {
-  color: #88ffaa;
-  background: rgba(40, 120, 70, 0.25);
-}
-
-.l2-map-hero-battle {
-  color: #ffaa66;
-  background: rgba(120, 70, 20, 0.25);
+.l2-map-hero-link:hover .l2-map-hero-link__pk,
+.l2-map-hero-link:focus .l2-map-hero-link__pk {
+  color: #ff6644;
 }
 
 .l2-map-hero-attack {

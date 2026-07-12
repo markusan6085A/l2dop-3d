@@ -357,27 +357,11 @@
     }
   }
 
-  function heroDisplayLine(h) {
+  function heroNameLevelLine(h) {
     var n = h.name || '—';
     var lv = Number(h.level);
     var lvPart = Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
-    var dist = h.distance != null ? ' · ' + h.distance + ' од.' : '';
-    return n + lvPart + dist;
-  }
-
-  function heroLinkClass(h, playerLevel) {
-    var pl = Number(playerLevel);
-    if (!Number.isFinite(pl)) pl = 1;
-    if (Number(h.pk) > 0) return 'l2-map-hero-link l2-map-hero-link--pk';
-    var lv = num(h.level, 1);
-    var d = lv - pl;
-    var tier = 'l2-map-hero-link--lvl-same';
-    if (d >= 10) tier = 'l2-map-hero-link--lvl-deadly';
-    else if (d >= 5) tier = 'l2-map-hero-link--lvl-hard';
-    else if (d >= 3) tier = 'l2-map-hero-link--lvl-warn';
-    else if (d <= -6) tier = 'l2-map-hero-link--lvl-trivial';
-    else if (d <= -3) tier = 'l2-map-hero-link--lvl-easy';
-    return 'l2-map-hero-link ' + tier;
+    return n + lvPart;
   }
 
   function onHeroAttackClick(e) {
@@ -388,28 +372,23 @@
     }
   }
 
-  function appendHeroRow(listEl, h, playerLevel) {
+  function appendHeroRow(listEl, h) {
     var li = document.createElement('li');
     li.className = 'l2-map-hero-item';
     var main = document.createElement('div');
     main.className = 'l2-map-hero-item__main';
     var a = document.createElement('a');
-    a.className = heroLinkClass(h, playerLevel);
+    a.className = 'l2-map-hero-link';
     a.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-    a.textContent = heroDisplayLine(h);
+    var textSpan = document.createElement('span');
+    textSpan.className = 'l2-map-hero-link__text';
+    textSpan.textContent = heroNameLevelLine(h);
+    var pkSpan = document.createElement('span');
+    pkSpan.className = 'l2-map-hero-link__pk';
+    pkSpan.textContent = ' [pk]';
+    a.appendChild(textSpan);
+    a.appendChild(pkSpan);
     main.appendChild(a);
-    if (h.isOnline) {
-      var onBadge = document.createElement('span');
-      onBadge.className = 'l2-map-hero-online';
-      onBadge.textContent = 'онлайн';
-      main.appendChild(onBadge);
-    }
-    if (h.inBattle) {
-      var battleBadge = document.createElement('span');
-      battleBadge.className = 'l2-map-hero-battle';
-      battleBadge.textContent = 'в бої';
-      main.appendChild(battleBadge);
-    }
     li.appendChild(main);
     if (h.inBattleRange && !h.inBattle) {
       var atk = document.createElement('button');
@@ -423,14 +402,14 @@
     listEl.appendChild(li);
   }
 
-  function renderHeroList(around, listEl, sectionEl, playerLevel) {
+  function renderHeroList(around, listEl, sectionEl) {
     if (!listEl) return;
     listEl.innerHTML = '';
     var heroes = around && around.nearbyHeroes ? around.nearbyHeroes : [];
     if (sectionEl) sectionEl.hidden = !heroes.length;
     if (!heroes.length) return;
     for (var hi = 0; hi < heroes.length; hi++) {
-      appendHeroRow(listEl, heroes[hi], playerLevel);
+      appendHeroRow(listEl, heroes[hi]);
     }
   }
 
@@ -815,7 +794,7 @@
 
     function paintMain(centerOnPlayer) {
       render(c, img, dot, viewRadius, moveTarget, viewport, aroundData, centerOnPlayer);
-      renderHeroList(aroundData, heroList, heroSection, playerLevelNow());
+      renderHeroList(aroundData, heroList, heroSection);
       renderHeroMarkers(img, heroMarkersLayer, aroundData.nearbyHeroes || []);
       renderAround(
         aroundData,
