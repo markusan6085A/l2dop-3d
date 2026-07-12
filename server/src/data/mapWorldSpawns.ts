@@ -276,3 +276,45 @@ export const MAP_WORLD_SPAWNS: MapWorldSpawn[] = expandRegularSpawnsThreefold([
 export function getWorldSpawnById(id: string): MapWorldSpawn | undefined {
   return MAP_WORLD_SPAWNS.find((s) => s.id === id);
 }
+
+const HUNTING_SPAWN_KINDS: ReadonlySet<MapSpawnKind> = new Set([
+  'passive',
+  'aggressive',
+  'neutral',
+  'champion',
+]);
+
+/**
+ * Діапазон рівнів мобів «поруч» з точки світу — той самий радіус і дедуп, що у списку на карті.
+ * Для телепорту: показуємо те, що гравець реально побачить після прибуття.
+ */
+export function getMobLevelRangeFromNearbySpawns(
+  worldX: number,
+  worldY: number,
+  radius: number = MAP_NEARBY_LIST_RADIUS
+): { min: number; max: number } | null {
+  const R2 = radius * radius;
+  const byBase = new Map<string, { s: MapWorldSpawn; d: number }>();
+  for (const s of MAP_WORLD_SPAWNS) {
+    if (!HUNTING_SPAWN_KINDS.has(s.kind)) continue;
+    const dx = s.worldX - worldX;
+    const dy = s.worldY - worldY;
+    if (dx * dx + dy * dy > R2) continue;
+    const d = Math.hypot(dx, dy);
+    const base = stripSpawnDupSuffix(s.id);
+    const prev = byBase.get(base);
+    if (!prev || d < prev.d) {
+      byBase.set(base, { s, d });
+    }
+  }
+  let min = Infinity;
+  let max = -Infinity;
+  for (const row of byBase.values()) {
+    const lv = Math.floor(Number(row.s.level));
+    if (!Number.isFinite(lv) || lv < 1) continue;
+    if (lv < min) min = lv;
+    if (lv > max) max = lv;
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+  return { min, max };
+}

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../lib/auth.js';
-import { MAP_TOWNS, getTeleportAdenaCost, getTeleportMobLevelRange } from '../data/mapLocalities.js';
+import { MAP_TOWNS, getTeleportAdenaCost } from '../data/mapLocalities.js';
+import { getTeleportMobLevelRange } from '../data/teleportMobLevelRanges.js';
 import {
   GameConflictError,
   performHunt,

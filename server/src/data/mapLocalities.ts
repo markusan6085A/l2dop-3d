@@ -1089,26 +1089,6 @@ const MOBS_BY_CITY: Record<string, MapLocalityMob[]> = {
   ],
 };
 
-/** Діапазон рівнів мобів для пункту телепорту (з пулу cityId). */
-export function getTeleportMobLevelRange(
-  teleportId: string
-): { min: number; max: number } | null {
-  const dest = getTeleportDestination(teleportId);
-  if (!dest) return null;
-  const pool = MOBS_BY_CITY[dest.cityId];
-  if (!pool?.length) return null;
-  let min = Infinity;
-  let max = -Infinity;
-  for (const mob of pool) {
-    const lv = Math.floor(Number(mob.level));
-    if (!Number.isFinite(lv) || lv < 1) continue;
-    if (lv < min) min = lv;
-    if (lv > max) max = lv;
-  }
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
-  return { min, max };
-}
-
 /** Пул імен для генерації світових спавнів на карті (mapWorldSpawns). */
 export function mobPoolForCity(cityId: string): MapLocalityMob[] {
   return MOBS_BY_CITY[cityId] ?? MOBS_BY_CITY.l2dop_gludio!;
