@@ -278,8 +278,58 @@
     if (sid) startBattleFromMap(sid);
   }
 
-  /** Кожні 10 с — легкий GET /game/map/sync (не повний /character). */
-  var MAP_POLL_MS = 10000;
+  /** Кожні 15 с — легкий GET /game/map/sync (не повний /character). */
+  var MAP_POLL_MS = 15000;
+
+  function compactSpawnListSig(spawns) {
+    if (!spawns || !spawns.length) return '0';
+    var parts = [];
+    for (var i = 0; i < spawns.length; i++) {
+      var s = spawns[i];
+      parts.push(String(s.id || '') + ':' + String(s.distance != null ? s.distance : ''));
+    }
+    return String(spawns.length) + '|' + parts.join(',');
+  }
+
+  function compactHeroSig(heroes) {
+    if (!heroes || !heroes.length) return '0';
+    var hp = [];
+    for (var j = 0; j < heroes.length; j++) {
+      var h = heroes[j];
+      hp.push(
+        String(h.characterId || '') +
+          ':' +
+          String(h.worldX != null ? h.worldX : '') +
+          ':' +
+          String(h.worldY != null ? h.worldY : '') +
+          ':' +
+          String(h.pvpNickColor || '')
+      );
+    }
+    return String(heroes.length) + '|' + hp.join(',');
+  }
+
+  function compactMarkerSig(spawns) {
+    if (!spawns || !spawns.length) return '0';
+    var mp = [];
+    for (var k = 0; k < spawns.length; k++) {
+      var m = spawns[k];
+      mp.push(String(m.id || '') + ':' + String(m.kind || ''));
+    }
+    return String(spawns.length) + '|' + mp.join(',');
+  }
+
+  function mapPositionSig(snap) {
+    if (!snap) return '';
+    return [
+      snap.revision,
+      snap.worldX,
+      snap.worldY,
+      snap.targetX,
+      snap.targetY,
+      snap.hp,
+    ].join('|');
+  }
 
   async function loadMapSync() {
     var t = localStorage.getItem('token');
@@ -393,8 +443,11 @@
   }
 
   /** На карті лише РБ (фіолет.) і епіки (червон.); без звичайних мобів — інакше «сніг» із крапок. */
-  function renderMobMarkers(img, layer, spawns) {
+  function renderMobMarkers(img, layer, spawns, sig) {
     if (!layer) return;
+    var nextSig = sig != null ? sig : compactMarkerSig(spawns);
+    if (layer.dataset.l2MarkerSig === nextSig) return;
+    layer.dataset.l2MarkerSig = nextSig;
     layer.innerHTML = '';
     if (!img || !img.naturalWidth || !spawns || !spawns.length) return;
     var pins = [];
@@ -498,8 +551,14 @@
 
   function renderHeroList(around, listEl, sectionEl) {
     if (!listEl) return;
-    listEl.innerHTML = '';
     var heroes = around && around.nearbyHeroes ? around.nearbyHeroes : [];
+    var sig = compactHeroSig(heroes);
+    if (listEl.dataset.l2HeroListSig === sig) {
+      if (sectionEl) sectionEl.hidden = !heroes.length;
+      return;
+    }
+    listEl.dataset.l2HeroListSig = sig;
+    listEl.innerHTML = '';
     if (sectionEl) sectionEl.hidden = !heroes.length;
     if (!heroes.length) return;
     for (var hi = 0; hi < heroes.length; hi++) {
@@ -509,6 +568,9 @@
 
   function renderHeroMarkers(img, layer, heroes) {
     if (!layer) return;
+    var sig = compactHeroSig(heroes);
+    if (layer.dataset.l2HeroMarkerSig === sig) return;
+    layer.dataset.l2HeroMarkerSig = sig;
     layer.innerHTML = '';
     if (!img || !img.naturalWidth || !heroes || !heroes.length) return;
     for (var hj = 0; hj < heroes.length; hj++) {
@@ -692,6 +754,13 @@
     setPage(p);
     var start = p * MOBS_PER_PAGE;
     var slice = spawns.slice(start, start + MOBS_PER_PAGE);
+    var aroundSig =
+      compactSpawnListSig(spawns) + '|p' + p + '|lv' + playerLevel;
+    if (listEl.dataset.l2AroundSig === aroundSig) {
+      updateMobPager(pagerEl, prevBtn, nextBtn, indEl, p, pages, total);
+      return;
+    }
+    listEl.dataset.l2AroundSig = aroundSig;
     listEl.innerHTML = '';
     if (slice.length) {
       for (var i = 0; i < slice.length; i++) {
@@ -805,11 +874,11 @@
     }
 
     var snapshotPromise = loadSnapshot();
-    var aroundPromise = loadMapAround();
-    var spawnsPromise = loadMapSpawns();
+    var syncPromise = loadMapSync();
 
     var aroundData = { nearbySpawns: [], nearbyHeroes: [] };
     var worldSpawns = [];
+    var lastMapPaintPosSig = '';
 
     var MAP_SCALE_MIN = 0.45;
     var MAP_SCALE_MAX = 2.75;
@@ -884,6 +953,41 @@
 
     function playerLevelNow() {
       return c && c.level != null ? c.level : 1;
+    }
+
+    function applyMapSyncPayload(sync, opts) {
+      opts = opts || {};
+      if (!sync || !sync.mapState) return false;
+      var ms = sync.mapState;
+      var posSig = mapPositionSig(ms);
+      var spawnSig = compactSpawnListSig(
+        sync.around && sync.around.nearbySpawns ? sync.around.nearbySpawns : []
+      );
+      var heroSig = compactHeroSig(
+        sync.around && sync.around.nearbyHeroes ? sync.around.nearbyHeroes : []
+      );
+      var markerSig = compactMarkerSig(sync.spawns || []);
+      var fullSig = posSig + '||' + spawnSig + '||' + heroSig + '||' + markerSig;
+      if (!opts.force && fullSig === lastMapPaintPosSig) {
+        return false;
+      }
+      lastMapPaintPosSig = fullSig;
+
+      if (window.L2 && typeof L2.mergeMapStateIntoSnapshot === 'function') {
+        L2.mergeMapStateIntoSnapshot(ms);
+      }
+      c = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : ms;
+      if (c) writeCachedMapSnapshot(c);
+      if (c && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(c);
+      }
+      if (sync.around) aroundData = sync.around;
+      worldSpawns = sync.spawns || [];
+      applyPvpIncomingFromSync(sync);
+      if (!opts.skipDefeatRedirect) handlePvpDefeatRedirect(sync);
+      paintMain(!!opts.centerOnPlayer);
+      renderMobMarkers(img, markersLayer, worldSpawns, markerSig);
+      return true;
     }
 
     function paintMain(centerOnPlayer) {
@@ -988,13 +1092,12 @@
       writeCachedMapSnapshot(c);
     }
 
-    aroundData = (await aroundPromise) || { nearbySpawns: [], nearbyHeroes: [] };
-    worldSpawns = (await spawnsPromise) || [];
-    var sync0 = await loadMapSync();
-    if (sync0 && sync0.around) aroundData = sync0.around;
-    applyPvpIncomingFromSync(sync0);
-    handlePvpDefeatRedirect(sync0);
-    if (c) paintMain(false);
+    var sync0 = await syncPromise;
+    if (sync0) {
+      applyMapSyncPayload(sync0, { force: true, skipDefeatRedirect: false });
+    } else if (c) {
+      paintMain(false);
+    }
 
     var mobModal = $('map-mob-modal');
     var mobModalBackdrop = $('map-mob-modal-backdrop');
@@ -1288,21 +1391,25 @@
           c = r.character;
           writeCachedMapSnapshot(c);
           mobListPage = 0;
-          aroundData = await loadMapAround();
-          worldSpawns = await loadMapSpawns();
+          var syncMove = await loadMapSync();
+          if (syncMove) {
+            applyMapSyncPayload(syncMove, { force: true, centerOnPlayer: true });
+          } else {
+            paintMain(true);
+          }
           if (errEl) errEl.hidden = true;
-          paintMain(true);
-          renderMobMarkers(img, markersLayer, worldSpawns);
         } else if (r.err === '409') {
           var fresh = await loadSnapshot();
           if (fresh) {
             c = fresh;
             writeCachedMapSnapshot(c);
             mobListPage = 0;
-            aroundData = await loadMapAround();
-            worldSpawns = await loadMapSpawns();
-            paintMain(true);
-            renderMobMarkers(img, markersLayer, worldSpawns);
+            var sync409 = await loadMapSync();
+            if (sync409) {
+              applyMapSyncPayload(sync409, { force: true, centerOnPlayer: true });
+            } else {
+              paintMain(true);
+            }
           }
           if (errEl) {
             errEl.hidden = false;
@@ -1317,22 +1424,7 @@
 
     var poll = setInterval(async function () {
       var sync = await loadMapSync();
-      if (sync && sync.mapState && img && dot) {
-        if (window.L2 && typeof L2.mergeMapStateIntoSnapshot === 'function') {
-          L2.mergeMapStateIntoSnapshot(sync.mapState);
-        }
-        c = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : sync.mapState;
-        if (c) writeCachedMapSnapshot(c);
-        if (c && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(c);
-        }
-        aroundData = sync.around;
-        worldSpawns = sync.spawns || [];
-        applyPvpIncomingFromSync(sync);
-        handlePvpDefeatRedirect(sync);
-        paintMain(false);
-        renderMobMarkers(img, markersLayer, worldSpawns);
-      }
+      applyMapSyncPayload(sync, { centerOnPlayer: false });
     }, MAP_POLL_MS);
 
     window.addEventListener('beforeunload', function () {

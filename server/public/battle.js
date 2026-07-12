@@ -1153,7 +1153,7 @@
     var battle = state.battle;
     var battleHotbar = null;
     var battleSyncTimer = null;
-    var BATTLE_SYNC_MS = 2500;
+    var BATTLE_SYNC_MS = 5000;
 
     function stopBattleSyncPoll() {
       if (battleSyncTimer != null) {

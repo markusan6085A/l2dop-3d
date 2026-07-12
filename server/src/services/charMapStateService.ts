@@ -1,9 +1,10 @@
 import type { Prisma } from '@prisma/client';
 import { expSegmentForLevelBar, levelFromTotalExp } from '../data/l2dopExpgain.js';
+import { resolveMapLocality } from '../data/mapLocalities.js';
 import { resolveMapMovementPatch } from '../domain/mapMovement.js';
 import { prisma } from '../lib/prisma.js';
-import { getMapAroundAt } from './mapAroundService.js';
-import { getMapWorldSpawnsNearPlayer } from './mapSpawnsService.js';
+import { getNearbyHeroesForMap } from './mapNearbyHeroesService.js';
+import { buildMapNearbySpawnViews } from './mapNearbySpawnsQuery.js';
 import { computePassiveHpRegenPatch } from './charPassiveRegen.js';
 import type { CharacterRow } from './charTypes.js';
 import {
@@ -98,31 +99,30 @@ export async function getCharacterMapStateForUser(
 
 export interface MapSyncPayload {
   mapState: CharacterMapStatePayload;
-  around: Awaited<ReturnType<typeof getMapAroundAt>>;
-  spawns: ReturnType<typeof getMapWorldSpawnsNearPlayer>;
+  around: ReturnType<typeof resolveMapLocality> & {
+    nearbySpawns: ReturnType<typeof buildMapNearbySpawnViews>['listEntries'];
+    nearbyHeroes: Awaited<ReturnType<typeof getNearbyHeroesForMap>>;
+  };
+  spawns: ReturnType<typeof buildMapNearbySpawnViews>['markerEntries'];
   pvpIncoming: PvpIncomingAttack | null;
   pvpDefeat: { killerName: string; killerCharacterId: string } | null;
 }
 
-/** Один poll для map.html: позиція + околиці + маркери. */
+/** Один poll для map.html: позиція + околиці + маркери (один spatial-запит). */
 export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload | null> {
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true },
+    select: { id: true, mobSpawnHpJson: true, pvpPendingDefeatJson: true },
   });
   if (!row) return null;
 
   const mapState = await getCharacterMapStateForUser(userId);
   if (!mapState) return null;
 
-  const hpRow = await prisma.character.findFirst({
-    where: { id: row.id },
-    select: { mobSpawnHpJson: true, pvpPendingDefeatJson: true },
-  });
   const nowMs = Date.now();
-  const mobSpawnHpJson = hpRow?.mobSpawnHpJson;
-  const pendingDefeat = parsePvpPendingDefeat(hpRow?.pvpPendingDefeatJson);
+  const mobSpawnHpJson = row.mobSpawnHpJson;
+  const pendingDefeat = parsePvpPendingDefeat(row.pvpPendingDefeatJson);
   const pvpDefeat = pendingDefeat
     ? {
         killerName: pendingDefeat.killerName,
@@ -130,21 +130,28 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
       }
     : null;
 
+  const { listEntries, markerEntries } = buildMapNearbySpawnViews(
+    mapState.worldX,
+    mapState.worldY,
+    mobSpawnHpJson,
+    nowMs
+  );
+  const locality = resolveMapLocality(mapState.worldX, mapState.worldY);
+  const nearbyHeroes = await getNearbyHeroesForMap(
+    mapState.worldX,
+    mapState.worldY,
+    mapState.id,
+    nowMs
+  );
+
   return {
     mapState,
-    around: await getMapAroundAt(
-      mapState.worldX,
-      mapState.worldY,
-      mobSpawnHpJson,
-      nowMs,
-      mapState.id
-    ),
-    spawns: getMapWorldSpawnsNearPlayer(
-      mapState.worldX,
-      mapState.worldY,
-      mobSpawnHpJson,
-      nowMs
-    ),
+    around: {
+      ...locality,
+      nearbySpawns: listEntries,
+      nearbyHeroes,
+    },
+    spawns: markerEntries,
     pvpIncoming: await findPvpIncomingForCharacter(mapState.id),
     pvpDefeat,
   };
