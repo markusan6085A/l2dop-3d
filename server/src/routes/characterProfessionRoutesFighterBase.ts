@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { sendGameConflict } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import { GameConflictError } from '../services/charService.js';
 import {
@@ -37,10 +38,7 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'profession_wrong_branch') {
@@ -102,10 +100,7 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'profession_wrong_branch') {
@@ -167,10 +162,7 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'profession_wrong_branch') {

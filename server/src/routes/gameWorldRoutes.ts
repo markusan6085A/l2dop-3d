@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { sendGameConflict } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import { MAP_TOWNS, getTeleportAdenaCost } from '../data/mapLocalities.js';
 import { getTeleportMobLevelRange } from '../data/teleportMobLevelRanges.js';
@@ -14,7 +15,6 @@ import { getMapSyncForUser } from '../services/charMapStateService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { prisma } from '../lib/prisma.js';
 import type { CharacterRow } from '../services/charService.js';
-import { sendRevisionConflict } from './revisionConflict.js';
 
 async function logMutationOutcome(
   request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
@@ -198,7 +198,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logMutationOutcome(request, 'teleport', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
@@ -261,7 +261,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logMutationOutcome(request, 'map_move', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
@@ -318,7 +318,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logMutationOutcome(request, 'hunt', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           await logMutationOutcome(request, 'hunt', er, 'error');

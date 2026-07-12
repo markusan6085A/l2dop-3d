@@ -5,6 +5,10 @@
 export type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 export { GameConflictError } from './charErrors.js';
 export {
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
+} from './charConflict.js';
+export {
   combatOptsFromRow,
   toSnapshot,
 } from './charSnapshotLogic.js';

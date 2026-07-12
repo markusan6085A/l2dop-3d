@@ -63,12 +63,10 @@ export async function getCharacterMapStateForUser(
     const cr = row as CharacterRow;
     const nowMs = Date.now();
     const data: Prisma.CharacterUncheckedUpdateInput = {};
-    let bumpRevision = false;
 
     const regenPatch = computePassiveHpRegenPatch(cr, nowMs);
     if (regenPatch.changed) {
       data.hp = regenPatch.nextHp;
-      bumpRevision = true;
     }
 
     const movePatch = resolveMapMovementPatch(cr, nowMs);
@@ -80,14 +78,10 @@ export async function getCharacterMapStateForUser(
       data.moveStartAt = movePatch.data.moveStartAt;
       data.moveFromX = movePatch.data.moveFromX;
       data.moveFromY = movePatch.data.moveFromY;
-      bumpRevision = true;
     }
 
     if (Object.keys(data).length === 0) {
       return mapStateFromRow(cr);
-    }
-    if (bumpRevision) {
-      data.revision = { increment: 1 };
     }
     const next = (await tx.character.update({
       where: { id: cr.id },

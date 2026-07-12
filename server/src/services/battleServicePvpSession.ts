@@ -20,8 +20,8 @@ import { resolveMapMovement } from '../domain/mapMovement.js';
 import { prisma } from '../lib/prisma.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import {
+  gameConflictFromMutation,
   combatOptsFromRow,
-  GameConflictError,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -295,7 +295,7 @@ export async function startPvpBattleInTx(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
 
   const row = result.character as CharacterRow;
   const snap = toSnapshot(row);

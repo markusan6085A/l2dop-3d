@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
+import { gameConflictFromMutation } from './charConflict.js';
 import { parseBattleHotbarSlots } from '../domain/battleHotbar.js';
 import { prisma } from '../lib/prisma.js';
-import { GameConflictError } from './charErrors.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
@@ -43,7 +43,7 @@ export async function saveBattleHotbar(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

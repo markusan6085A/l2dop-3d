@@ -1,4 +1,5 @@
 /**
+import { gameConflictFromMutation } from './charConflict.js';
  * Використання HP/MP зілля з сумки поза боєм (миттєве відновлення).
  */
 import { Prisma } from '@prisma/client';
@@ -24,7 +25,7 @@ import {
   tickWorldCombatState,
   type WorldCombatState,
 } from '../domain/worldCombatState.js';
-import { GameConflictError } from './charErrors.js';
+import { gameConflictFromMutation } from './charConflict.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import {
   combatOptsFromRow,
@@ -189,7 +190,7 @@ export async function applyUsePotionFromBag(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

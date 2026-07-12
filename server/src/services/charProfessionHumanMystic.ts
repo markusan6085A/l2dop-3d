@@ -16,7 +16,8 @@ import {
   isMysticClassBranch,
 } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -58,7 +59,7 @@ async function commitL2Profession(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }
 
@@ -74,7 +75,7 @@ export async function performFirstProfessionHumanWizard(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_mage');
@@ -96,7 +97,7 @@ export async function performFirstProfessionHumanCleric(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_mage');
@@ -120,7 +121,7 @@ export async function performSecondProfessionHumanSorcerer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_wizard');
@@ -142,7 +143,7 @@ export async function performSecondProfessionHumanNecromancer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_wizard');
@@ -170,7 +171,7 @@ export async function performSecondProfessionHumanWarlock(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_wizard');
@@ -194,7 +195,7 @@ export async function performSecondProfessionHumanBishop(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_cleric');
@@ -216,7 +217,7 @@ export async function performSecondProfessionHumanProphet(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_cleric');
@@ -240,7 +241,7 @@ export async function performThirdProfessionHumanArchmage(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_sorcerer');
@@ -262,7 +263,7 @@ export async function performThirdProfessionHumanSoultaker(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_necromancer');
@@ -284,7 +285,7 @@ export async function performThirdProfessionHumanArcanaLord(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_warlock');
@@ -312,7 +313,7 @@ export async function performThirdProfessionHumanCardinal(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_bishop');
@@ -334,7 +335,7 @@ export async function performThirdProfessionHumanHierophant(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertHumanMysticRow(row);
     requireCurrentProf(row, 'human_prophet');

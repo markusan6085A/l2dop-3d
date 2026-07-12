@@ -12,8 +12,8 @@ import {
   L2DOP_LEVEL_MIN_EXP,
   levelFromTotalExp,
 } from '../data/l2dopExpgain.js';
-import { GameConflictError } from './charErrors.js';
 import {
+  gameConflictFromMutation,
   combatOptsFromRow,
   toSnapshot,
   type CharacterRow,
@@ -95,6 +95,6 @@ export async function applyDevSelfBoostForUser(
       },
     }))
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }

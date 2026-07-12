@@ -14,7 +14,8 @@ import {
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { isL2DarkElfRace } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -55,7 +56,7 @@ async function commitProf(
       data: { l2Profession: next },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }
 
@@ -69,7 +70,7 @@ export async function performFirstProfessionDarkElfPalusKnight(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_fighter');
@@ -88,7 +89,7 @@ export async function performFirstProfessionDarkElfAssassin(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_fighter');
@@ -107,7 +108,7 @@ export async function performSecondProfessionDarkElfShillienKnight(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_palus_knight');
@@ -132,7 +133,7 @@ export async function performSecondProfessionDarkElfBladedancer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_palus_knight');
@@ -151,7 +152,7 @@ export async function performSecondProfessionDarkElfAbyssWalker(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_assassin');
@@ -170,7 +171,7 @@ export async function performSecondProfessionDarkElfPhantomRanger(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_assassin');
@@ -195,7 +196,7 @@ export async function performThirdProfessionDarkElfShillienTemplar(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_shillien_knight');
@@ -220,7 +221,7 @@ export async function performThirdProfessionDarkElfSpectralDancer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_bladedancer');
@@ -245,7 +246,7 @@ export async function performThirdProfessionDarkElfGhostHunter(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_abyss_walker');
@@ -264,7 +265,7 @@ export async function performThirdProfessionDarkElfGhostSentinel(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfFighter(row);
     requireProf(row, 'dark_elf_phantom_ranger');

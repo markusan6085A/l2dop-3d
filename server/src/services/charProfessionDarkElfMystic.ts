@@ -16,7 +16,8 @@ import {
   isMysticClassBranch,
 } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -58,7 +59,7 @@ async function commitL2Profession(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }
 
@@ -74,7 +75,7 @@ export async function performFirstProfessionDarkElfDarkWizard(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_mage');
@@ -102,7 +103,7 @@ export async function performFirstProfessionDarkElfShillienOracle(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_mage');
@@ -132,7 +133,7 @@ export async function performSecondProfessionDarkElfPhantomSummoner(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_dark_wizard');
@@ -160,7 +161,7 @@ export async function performSecondProfessionDarkElfSpellhowler(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_dark_wizard');
@@ -190,7 +191,7 @@ export async function performSecondProfessionDarkElfShillienElder(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_shillien_oracle');
@@ -220,7 +221,7 @@ export async function performThirdProfessionDarkElfSpectralMaster(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_phantom_summoner');
@@ -248,7 +249,7 @@ export async function performThirdProfessionDarkElfStormScreamer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_spellhowler');
@@ -276,7 +277,7 @@ export async function performThirdProfessionDarkElfShillienSaint(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDarkElfMysticRow(row);
     requireCurrentProf(row, 'dark_elf_shillien_elder');

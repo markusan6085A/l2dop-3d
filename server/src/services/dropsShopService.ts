@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { gameConflictFromMutation } from './charConflict.js';
 import path from 'node:path';
 
 import { ITEM_CATALOG } from '../data/itemsCatalog.js';
@@ -12,7 +13,6 @@ import { DROPS_SHOP_ARROW_ROWS } from '../data/dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.js';
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
 import { prisma } from '../lib/prisma.js';
-import { GameConflictError } from './charErrors.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { addItemToBag, parseInventory } from '../data/inventory.js';
@@ -551,7 +551,7 @@ export async function applyDropsShopPurchase(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

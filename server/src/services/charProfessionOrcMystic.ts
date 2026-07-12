@@ -16,7 +16,8 @@ import {
   isMysticClassBranch,
 } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -58,7 +59,7 @@ async function commitL2Profession(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }
 
@@ -74,7 +75,7 @@ export async function performFirstProfessionOrcShaman(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcMysticRow(row);
     requireCurrentProf(row, 'orc_mage');
@@ -98,7 +99,7 @@ export async function performSecondProfessionOrcOverlord(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcMysticRow(row);
     requireCurrentProf(row, 'orc_shaman');
@@ -120,7 +121,7 @@ export async function performSecondProfessionOrcWarcryer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcMysticRow(row);
     requireCurrentProf(row, 'orc_shaman');
@@ -144,7 +145,7 @@ export async function performThirdProfessionOrcDominator(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcMysticRow(row);
     requireCurrentProf(row, 'orc_overlord');
@@ -166,7 +167,7 @@ export async function performThirdProfessionOrcDoomcryer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcMysticRow(row);
     requireCurrentProf(row, 'orc_warcryer');

@@ -16,7 +16,8 @@ import {
   isMysticClassBranch,
 } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -58,7 +59,7 @@ async function commitL2Profession(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }
 
@@ -74,7 +75,7 @@ export async function performFirstProfessionElfElvenWizard(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_mage');
@@ -96,7 +97,7 @@ export async function performFirstProfessionElfElvenOracle(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_mage');
@@ -120,7 +121,7 @@ export async function performSecondProfessionElfElementalSummoner(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_elven_wizard');
@@ -148,7 +149,7 @@ export async function performSecondProfessionElfSpellsinger(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_elven_wizard');
@@ -172,7 +173,7 @@ export async function performSecondProfessionElfElvenElder(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_elven_oracle');
@@ -196,7 +197,7 @@ export async function performThirdProfessionElfElementalMaster(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_elemental_summoner');
@@ -224,7 +225,7 @@ export async function performThirdProfessionElfMysticMuse(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_spellsinger');
@@ -246,7 +247,7 @@ export async function performThirdProfessionElfEvasSaint(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertElfMysticRow(row);
     requireCurrentProf(row, 'elf_elven_elder');

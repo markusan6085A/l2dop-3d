@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { sendGameConflict } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   GameConflictError,
@@ -33,7 +34,6 @@ import {
 } from './gameBattleClientNormalize.js';
 import { prisma } from '../lib/prisma.js';
 import { BattleSkillNotAllowedError } from '../domain/battleSkillNotAllowedError.js';
-import { sendRevisionConflict } from './revisionConflict.js';
 import {
   isPvpStartErrorMessage,
   sendPvpStartError,
@@ -134,7 +134,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logBattleMutation(request, 'battle_start', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
@@ -213,7 +213,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logBattleMutation(request, 'battle_pvp_start', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
@@ -292,7 +292,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logBattleMutation(request, 'battle_hunt_continue', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
@@ -471,7 +471,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             er,
             'conflict'
           );
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof BattleSkillNotAllowedError) {
           return reply.code(400).send({
@@ -676,7 +676,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logBattleMutation(request, 'battle_leave', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           await logBattleMutation(request, 'battle_leave', er, 'error');
@@ -731,7 +731,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logBattleMutation(request, 'battle_hotbar', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'hotbar_invalid') {
           await logBattleMutation(request, 'battle_hotbar', er, 'error');
@@ -780,7 +780,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       } catch (e) {
         if (e instanceof GameConflictError) {
           await logBattleMutation(request, 'battle_return_to_town', er, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });

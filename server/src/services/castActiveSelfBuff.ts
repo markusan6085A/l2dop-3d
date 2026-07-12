@@ -42,7 +42,10 @@ import {
   parseWorldCombatState,
 } from '../domain/worldCombatState.js';
 import type { BattleBattleMods } from '../domain/battle.js';
-import { GameConflictError } from './charErrors.js';
+import {
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
+} from './charConflict.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
@@ -170,7 +173,7 @@ export async function castActiveSelfBuff(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character' satisfies CastSelfBuffError);
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
 
@@ -279,7 +282,7 @@ export async function castActiveSelfBuff(
         } as Prisma.CharacterUpdateManyMutationInput,
       })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

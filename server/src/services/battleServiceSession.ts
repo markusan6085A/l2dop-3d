@@ -17,10 +17,11 @@ import {
 } from '../domain/worldCombatState.js';
 import { prisma } from '../lib/prisma.js';
 import {
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   combatOptsFromRow,
   ensureSanitizedSkillsLearnedRow,
   ensureMysticStarterSkillsRow,
-  GameConflictError,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -213,7 +214,7 @@ export async function startBattleInTx(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   const row = result.character as CharacterRow;
   const snap = toSnapshot(row);
   const crSt = base;
@@ -340,7 +341,7 @@ export async function leaveBattle(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const cr = char as CharacterRow;
     const bj = parseBattleJson(cr.battleJson);
@@ -402,7 +403,7 @@ export async function leaveBattle(
         },
       })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

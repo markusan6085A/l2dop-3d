@@ -6,7 +6,8 @@ import {
   isHumanFighter,
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -29,7 +30,7 @@ export async function performFirstProfessionHumanWarrior(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (!isHumanFighter(row.race, row.classBranch)) {
@@ -59,7 +60,7 @@ export async function performFirstProfessionHumanWarrior(
         data: { l2Profession: 'human_warrior' },
       })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -77,7 +78,7 @@ export async function performFirstProfessionHumanKnight(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (!isHumanFighter(row.race, row.classBranch)) {
@@ -107,7 +108,7 @@ export async function performFirstProfessionHumanKnight(
         data: { l2Profession: 'human_knight' },
       })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -125,7 +126,7 @@ export async function performFirstProfessionHumanRogue(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (!isHumanFighter(row.race, row.classBranch)) {
@@ -155,7 +156,7 @@ export async function performFirstProfessionHumanRogue(
         data: { l2Profession: 'human_rogue' },
       })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

@@ -39,8 +39,8 @@ import { resolveMagicBoltHit } from '../data/l2dopHitResolution.js';
 import { compactBattleSkillLogLineUk } from '../domain/battleLogFormat.js';
 import { prisma } from '../lib/prisma.js';
 import {
+  gameConflictFromCharacter,
   combatOptsFromRow,
-  GameConflictError,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
@@ -84,7 +84,7 @@ import type {
   BattleVictorySummary,
   BattleView,
 } from './battleServiceTypes.js';
-import { applyPassiveAndMove } from './battleServiceApplyPassive.js';
+import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import { ensureWhirlwindExtraMobs } from '../domain/battleWhirlwindExtras.js';
 import { FIGHTER_PHYSICAL_SOULSHOT_ITEM_IDS } from '../data/fighterPhysicalSoulshot.js';
@@ -130,20 +130,14 @@ export async function performBattleAction(
   victory?: BattleVictorySummary;
   defeat?: BattleDefeatSummary;
 }> {
-  let pre = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!pre) throw new Error('no_character');
-  pre = (await applyPassiveAndMove(pre as CharacterRow)) as CharacterRow;
-
   return prisma.$transaction(async (tx) => {
-    const char = await tx.character.findFirst({
+    let char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
+    char = await persistPassiveAndMoveInTx(tx, char as CharacterRow);
 
     const bj = parseBattleJson((char as CharacterRow).battleJson);
     if (!bj) throw new Error('battle_none');

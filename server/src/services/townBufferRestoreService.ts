@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { gameConflictFromMutation } from './charConflict.js';
 import {
   computeCombatStats,
   effectiveMaxHpWithJewelFlat,
@@ -14,7 +15,6 @@ import {
 } from '../domain/worldCombatState.js';
 import { prisma } from '../lib/prisma.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
-import { GameConflictError } from './charErrors.js';
 import {
   combatOptsFromRow,
   effectiveMaxHpWithBattleRoar,
@@ -162,7 +162,7 @@ export async function applyTownRestoreVitals(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
 
     const nextRow = result.character as CharacterRow;
     const fee =

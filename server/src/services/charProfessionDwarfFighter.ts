@@ -14,7 +14,8 @@ import {
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { isL2DwarfRace } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -55,7 +56,7 @@ async function commitProf(
       data: { l2Profession: next },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }
 
@@ -69,7 +70,7 @@ export async function performFirstProfessionDwarfScavenger(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDwarfFighter(row);
     requireProf(row, 'dwarf_fighter');
@@ -88,7 +89,7 @@ export async function performFirstProfessionDwarfArtisan(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDwarfFighter(row);
     requireProf(row, 'dwarf_fighter');
@@ -107,7 +108,7 @@ export async function performSecondProfessionDwarfBountyHunter(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDwarfFighter(row);
     requireProf(row, 'dwarf_scavenger');
@@ -132,7 +133,7 @@ export async function performSecondProfessionDwarfWarsmith(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDwarfFighter(row);
     requireProf(row, 'dwarf_artisan');
@@ -151,7 +152,7 @@ export async function performThirdProfessionDwarfFortuneSeeker(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDwarfFighter(row);
     requireProf(row, 'dwarf_bounty_hunter');
@@ -176,7 +177,7 @@ export async function performThirdProfessionDwarfMaestro(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertDwarfFighter(row);
     requireProf(row, 'dwarf_warsmith');

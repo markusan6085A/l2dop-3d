@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma.js';
-import { GameConflictError } from './charErrors.js';
+import { gameConflictFromMutation } from './charConflict.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
@@ -57,7 +57,7 @@ export async function applyProfileStatus(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

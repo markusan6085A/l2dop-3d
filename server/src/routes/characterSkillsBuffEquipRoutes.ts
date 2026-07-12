@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { sendGameConflict } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   applyEquipFromBag,
@@ -79,10 +80,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
       } catch (err) {
         if (err instanceof GameConflictError) {
           await logCharacterMutation(request, 'town_buffer', er, 'conflict');
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — виконай синхронізацію.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'town_buffer_not_enough_adena') {
@@ -143,10 +141,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
       } catch (err) {
         if (err instanceof GameConflictError) {
           await logCharacterMutation(request, 'town_restore_vitals', er, 'conflict');
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — виконай синхронізацію.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'town_restore_not_enough_adena') {
@@ -232,10 +227,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
             er,
             'conflict'
           );
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'skill_unknown' || msg === 'skill_wrong_class') {
@@ -349,10 +341,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
             er,
             'conflict'
           );
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'invalid_heroic_tier') {
@@ -437,10 +426,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
             er,
             'conflict'
           );
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'skill_unknown') {
@@ -549,10 +535,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
             er,
             'conflict'
           );
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'skill_in_battle') {
@@ -669,10 +652,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
       } catch (err) {
         if (err instanceof GameConflictError) {
           await logCharacterMutation(request, 'equip_mutation', rev, 'conflict');
-          return reply.code(409).send({
-            error: 'revision_conflict',
-            messageUk: 'Дані застаріли — онови сторінку.',
-          });
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'not_in_bag' || msg === 'unknown_item') {

@@ -13,8 +13,8 @@ import { serializePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
 import { buildPvpVictimDefeatLog } from '../domain/pvpVictimBattleLog.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
+  gameConflictFromMutation,
   combatOptsFromRow,
-  GameConflictError,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -151,7 +151,7 @@ export async function persistPvpVictoryInTx(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
 
   const snap = toSnapshot(result.character as CharacterRow);
   const victory: BattleVictorySummary = {

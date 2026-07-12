@@ -11,7 +11,9 @@ import {
   ensureMysticRobeStarterPieces,
 } from '../data/inventory.js';
 import { resolveMapMovement, resolveMapMovementPatch } from '../domain/mapMovement.js';
-import { GameConflictError } from './charErrors.js';
+import {
+  gameConflictFromMutation,
+} from './charConflict.js';
 import { applyPassiveHpRegen, computePassiveHpRegenPatch } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
@@ -104,7 +106,7 @@ export async function applyPersistedCombatBuffs(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -205,7 +207,6 @@ export async function getSnapshotForUser(
     const regenPatch = computePassiveHpRegenPatch(shadowRow, nowMs);
     if (regenPatch.changed) {
       data.hp = regenPatch.nextHp;
-      bumpRevision = true;
     }
 
     const movePatch = resolveMapMovementPatch(shadowRow, nowMs);
@@ -217,11 +218,9 @@ export async function getSnapshotForUser(
       data.moveStartAt = movePatch.data.moveStartAt;
       data.moveFromX = movePatch.data.moveFromX;
       data.moveFromY = movePatch.data.moveFromY;
-      bumpRevision = true;
     }
 
-    const hasWrite =
-      Object.keys(data).length > 0;
+    const hasWrite = Object.keys(data).length > 0;
     if (!hasWrite) {
       return toSnapshot(cr);
     }
@@ -277,7 +276,7 @@ export async function applyEquipFromBag(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -322,7 +321,7 @@ export async function applyUnequip(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

@@ -16,8 +16,8 @@ import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
 import { rollKillLoot } from '../domain/killLoot.js';
 import { resolveL2dopNpcIdByMobName } from './spawnCatalogService.js';
 import {
+  gameConflictFromMutation,
   combatOptsFromRow,
-  GameConflictError,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -190,7 +190,7 @@ export async function persistBattleVictoryInTx(
       },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   const row = result.character as CharacterRow;
   const mobSpawnHpSerialized = serializeMobSpawnHpState(mobHpAfterVictory);
   const huntPos = resolvedWorldPositionFromCharacterRow(char as CharacterRow);
@@ -288,7 +288,7 @@ export async function persistBattleDefeatInTx(
       },
     })
   );
-  if (!lost.ok) throw new GameConflictError();
+  if (!lost.ok) throw gameConflictFromMutation(lost);
   const crLost = lost.character as CharacterRow;
   const near = nearestMapTown(crLost.worldX, crLost.worldY);
   const defeat: BattleDefeatSummary = {
@@ -382,7 +382,7 @@ export async function persistBattleContinueTurnInTx(
       },
     })
   );
-  if (!updated.ok) throw new GameConflictError();
+  if (!updated.ok) throw gameConflictFromMutation(updated);
   const row = updated.character as CharacterRow;
   const snap = toSnapshot(row);
   const nowForView = Date.now();

@@ -1,4 +1,5 @@
 /**
+import { gameConflictFromCharacter, gameConflictFromMutation } from './charConflict.js';
  * Перемикач (toggle) бойових стійок **поза боєм**.
  *
  * Дві гілки:
@@ -32,7 +33,10 @@ import {
   type WorldCombatState,
 } from '../domain/worldCombatState.js';
 import type { BattleBattleMods } from '../domain/battle.js';
-import { GameConflictError } from './charErrors.js';
+import {
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
+} from './charConflict.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import { combatOptsFromRow } from './charSnapshotLogic.js';
 import {
@@ -102,7 +106,7 @@ export async function toggleSelfStance(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character' satisfies ToggleSelfStanceError);
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (isCharacterInBattle(row.battleJson)) {
@@ -198,7 +202,7 @@ export async function toggleSelfStance(
         } as Prisma.CharacterUpdateManyMutationInput,
       })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

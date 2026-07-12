@@ -1,11 +1,11 @@
 import type { FastifyInstance } from 'fastify';
+import { sendGameConflict } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import { GameConflictError } from '../services/charService.js';
 import {
   getResourceCraftBook,
   performResourceCraft,
 } from '../services/resourceCraftService.js';
-import { sendRevisionConflict } from './revisionConflict.js';
 
 export function registerGameResourceCraftRoutes(app: FastifyInstance): void {
   app.get(
@@ -63,7 +63,7 @@ export function registerGameResourceCraftRoutes(app: FastifyInstance): void {
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });

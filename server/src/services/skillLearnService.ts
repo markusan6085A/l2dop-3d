@@ -4,7 +4,8 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterSnapshot,
   type CharacterRow,
@@ -536,7 +537,7 @@ export async function learnSkillForUser(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     const hfOk = isFighterClassBranch(row.classBranch);
@@ -685,7 +686,7 @@ export async function learnSkillForUser(
         },
       })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

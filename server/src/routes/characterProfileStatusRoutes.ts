@@ -1,11 +1,11 @@
 import type { FastifyInstance } from 'fastify';
+import { sendGameConflict } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   applyProfileStatus,
   GameConflictError,
 } from '../services/charService.js';
 import { prisma } from '../lib/prisma.js';
-import { sendRevisionConflict } from './revisionConflict.js';
 
 async function logCharacterMutation(
   request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
@@ -71,7 +71,7 @@ export function registerCharacterProfileStatusRoutes(app: FastifyInstance): void
       } catch (err) {
         if (err instanceof GameConflictError) {
           await logCharacterMutation(request, 'profile_status', rev, 'conflict');
-          return sendRevisionConflict(reply);
+          return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'no_character') {

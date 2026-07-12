@@ -14,7 +14,8 @@ import {
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { isL2OrcRace } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -55,7 +56,7 @@ async function commitProf(
       data: { l2Profession: next },
     })
   );
-  if (!result.ok) throw new GameConflictError();
+  if (!result.ok) throw gameConflictFromMutation(result);
   return toSnapshot(result.character as CharacterRow);
 }
 
@@ -69,7 +70,7 @@ export async function performFirstProfessionOrcRaider(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcFighter(row);
     requireProf(row, 'orc_fighter');
@@ -88,7 +89,7 @@ export async function performFirstProfessionOrcMonk(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcFighter(row);
     requireProf(row, 'orc_fighter');
@@ -107,7 +108,7 @@ export async function performSecondProfessionOrcDestroyer(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcFighter(row);
     requireProf(row, 'orc_raider');
@@ -126,7 +127,7 @@ export async function performSecondProfessionOrcTyrant(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcFighter(row);
     requireProf(row, 'orc_monk');
@@ -145,7 +146,7 @@ export async function performThirdProfessionOrcTitan(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcFighter(row);
     requireProf(row, 'orc_destroyer');
@@ -164,7 +165,7 @@ export async function performThirdProfessionOrcGrandKhavatari(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     const row = char as CharacterRow;
     assertOrcFighter(row);
     requireProf(row, 'orc_tyrant');

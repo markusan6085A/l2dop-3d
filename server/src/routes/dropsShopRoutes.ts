@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
+import { sendGameConflict } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   applyDropsShopPurchase,
@@ -52,11 +53,7 @@ export const dropsShopRoutes: FastifyPluginAsync = async (app) => {
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          return reply.code(409).send({
-            error: e.message,
-            messageUk:
-              'Дані персонажа змінилися з іншого вікна або застаріла ревізія — онови екран і спробуй ще раз.',
-          });
+          return sendGameConflict(reply, e);
         }
         if (e instanceof Error) {
           const m = e.message;

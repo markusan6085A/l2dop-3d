@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { gameConflictFromMutation } from './charConflict.js';
 import { prisma } from '../lib/prisma.js';
 import {
   MAX_MAP_MOVE_DISTANCE,
@@ -10,9 +11,8 @@ import {
   nearestMapTown,
 } from '../data/mapLocalities.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
-import { GameConflictError } from './charErrors.js';
-import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
+import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
@@ -89,7 +89,7 @@ export async function performHunt(
       }
     );
     if (!result.ok) {
-      throw new GameConflictError();
+      throw gameConflictFromMutation(result);
     }
     return toSnapshot(result.character as CharacterRow);
   });
@@ -144,7 +144,7 @@ export async function performMapMove(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -228,7 +228,7 @@ export async function performTeleport(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -295,7 +295,7 @@ export async function performReturnToNearestTown(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

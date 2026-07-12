@@ -7,7 +7,8 @@ import {
   isHumanFighter,
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -29,7 +30,7 @@ export async function performSecondProfessionHumanWarlord(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (!isHumanFighter(row.race, row.classBranch)) {
@@ -59,7 +60,7 @@ export async function performSecondProfessionHumanWarlord(
       expectedRevision,
       () => ({ changed: true, data: { l2Profession: 'human_warlord' } })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -77,7 +78,7 @@ export async function performThirdProfessionHumanDreadnought(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (!isHumanFighter(row.race, row.classBranch)) {
@@ -107,7 +108,7 @@ export async function performThirdProfessionHumanDreadnought(
       expectedRevision,
       () => ({ changed: true, data: { l2Profession: 'human_dreadnought' } })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -126,7 +127,7 @@ export async function performSecondProfessionHumanGladiator(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (!isHumanFighter(row.race, row.classBranch)) {
@@ -156,7 +157,7 @@ export async function performSecondProfessionHumanGladiator(
       expectedRevision,
       () => ({ changed: true, data: { l2Profession: 'human_gladiator' } })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }
@@ -174,7 +175,7 @@ export async function performThirdProfessionHumanDuelist(
       orderBy: { lastUpdate: 'desc' },
     });
     if (!char) throw new Error('no_character');
-    if (char.revision !== expectedRevision) throw new GameConflictError();
+    if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 
     const row = char as CharacterRow;
     if (!isHumanFighter(row.race, row.classBranch)) {
@@ -204,7 +205,7 @@ export async function performThirdProfessionHumanDuelist(
       expectedRevision,
       () => ({ changed: true, data: { l2Profession: 'human_duelist' } })
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

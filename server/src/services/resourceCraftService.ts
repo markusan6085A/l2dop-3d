@@ -15,7 +15,8 @@ import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { resolveL2ProfessionForSkillsRow } from '../data/l2dopHumanFighterBattleSkills.js';
 import { RESOURCE_CRAFT_TIERS } from '../data/resourceCraftRecipes.js';
 import {
-  GameConflictError,
+  gameConflictFromCharacter,
+  gameConflictFromMutation,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -106,7 +107,7 @@ export async function performResourceCraft(
     })) as CharacterRow | null;
     if (!char) throw new Error('no_character');
     if (char.revision !== expectedRevision) {
-      throw new GameConflictError();
+      throw gameConflictFromCharacter(char);
     }
     if (!characterCanResourceCraft(char)) {
       throw new Error('craft_profession_required');
@@ -137,7 +138,7 @@ export async function performResourceCraft(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
 }

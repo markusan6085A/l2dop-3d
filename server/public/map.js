@@ -110,6 +110,14 @@
       return { ok: false, err: '401' };
     }
     if (r.status === 409) {
+      try {
+        var j409 = await r.json();
+        if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+          await L2.resyncCharacterAfterConflict(null, j409);
+        }
+      } catch (e409) {
+        /* ignore */
+      }
       return { ok: false, err: '409' };
     }
     if (!r.ok) {

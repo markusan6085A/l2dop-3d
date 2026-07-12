@@ -501,8 +501,16 @@
       }
       return snapshot;
     },
-    resyncCharacterAfterConflict: async function (applyScreenSpecific) {
-      var snap = await global.L2.fetchSnapshot();
+    resyncCharacterAfterConflict: async function (applyScreenSpecific, conflictPayload) {
+      var snap =
+        conflictPayload &&
+        conflictPayload.character &&
+        typeof conflictPayload.character === 'object'
+          ? conflictPayload.character
+          : null;
+      if (!snap) {
+        snap = await global.L2.fetchSnapshot();
+      }
       if (!snap) throw new Error('failed_to_refetch_character');
       return global.L2.applyCharacterSnapshot(snap, applyScreenSpecific);
     },

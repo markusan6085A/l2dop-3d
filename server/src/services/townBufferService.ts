@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { gameConflictFromMutation } from './charConflict.js';
 import { prisma } from '../lib/prisma.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import {
@@ -12,7 +13,6 @@ import {
 import { L2DB_SKILL_LEVELS_BY_ID } from '../data/l2dbSkillLevelsById.generated.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
-import { GameConflictError } from './charErrors.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
@@ -142,7 +142,7 @@ export async function applyTownBuffer(
         };
       }
     );
-    if (!result.ok) throw new GameConflictError();
+    if (!result.ok) throw gameConflictFromMutation(result);
     const nextRow = result.character as CharacterRow;
     const fee =
       levelFromTotalExp(nextRow.exp) <= TOWN_BUFFER_FREE_MAX_LEVEL
