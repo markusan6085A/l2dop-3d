@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import {
   isPvpBattleJson,
@@ -35,7 +34,6 @@ import {
   stripStances,
   tickWorldCombatState,
 } from '../domain/worldCombatState.js';
-import { resolveMagicBoltHit } from '../data/l2dopHitResolution.js';
 import { compactBattleSkillLogLineUk } from '../domain/battleLogFormat.js';
 import { prisma } from '../lib/prisma.js';
 import {
@@ -51,32 +49,24 @@ import {
 } from '../data/l2dopCombatFormulas.js';
 import { parseInventory, countBagQty, removeBagQty } from '../data/inventory.js';
 import { computeVitals } from '../data/l2dopVitals.js';
-import { resolvePlayerBattleTurn } from '../domain/battleSkills/index.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import {
-  equippedWeaponKind,
   isFighterClassBranch,
   resolveL2ProfessionForSkillsRow,
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { isMysticClassBranch } from '../data/l2dopHumanMysticBattleSkills.js';
 import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
 import {
-  battleActionNamedFromL2IfMapped,
   learnedBattleIdsFromEntries,
   normalizeLearnedSkillsJson,
 } from '../data/humanFighterSkillCatalog.js';
 import {
-  persistBattleContinueTurnInTx,
   persistBattleDefeatInTx,
-  persistBattleVictoryInTx,
 } from './battleServiceBattleOutcomeTx.js';
-import { persistPvpVictoryInTx } from './battleServicePvpVictory.js';
 import { applyPvpHitToVictimInTx } from './battleServicePvpDamage.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
-  rollMobPhysicalVsPlayer,
-  rollPlayerPhysicalDmg,
 } from './battleServiceDamageRolls.js';
 import { battleActionAllowed } from './battleServiceBattleUi.js';
 import type {
@@ -89,18 +79,22 @@ import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import { ensureWhirlwindExtraMobs } from '../domain/battleWhirlwindExtras.js';
 import { FIGHTER_PHYSICAL_SOULSHOT_ITEM_IDS } from '../data/fighterPhysicalSoulshot.js';
 import { MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS } from '../data/mysticBlessedSpiritshot.js';
-import { applyFighterSoulshotToggle } from '../domain/battleFighterSoulshotToggle.js';
-import { applyMysticBlessedSpiritshotToggle } from '../domain/battleMysticBlessedSpiritshotToggle.js';
-import {
-  applyBattlePotionHoTTicks,
-  startBattlePotionHoT,
-} from '../domain/battleCombatPotions.js';
-import { stripChargeShotsIfWeaponGradeMismatch } from '../domain/battleChargeGradeSanitize.js';
+import { applyBattlePotionHoTTicks } from '../domain/battleCombatPotions.js';
 import { rollKillLoot } from '../domain/killLoot.js';
+import {
+  applyMobCounterDamage,
+  resolveMobShouldCounterAttack,
+} from './battleServicePerformBattleAction.mobRetaliation.js';
+import {
+  persistBattleContinueFromTurn,
+  resolveMobDeadVictoryInTx,
+  type BattleContinueTurnBase,
+  type BattleTurnPersistSide,
+} from './battleServicePerformBattleAction.outcome.js';
+import { executeBattleTurnResolve } from './battleServicePerformBattleAction.turnResolve.js';
 import {
   BATTLE_REGEN_TICK_SECONDS,
   battleActionSkipsMobHp,
-  randomMobRetaliationWindowHits,
   stripLegacyBattleModsInPlace,
 } from './battleServicePerformBattleAction.helpers.js';
 import {
@@ -388,183 +382,36 @@ export async function performBattleAction(
       st.playerMp = currentMp;
     }
 
-    if (action === 'fighter_soulshot_toggle') {
-      const raw = opts?.fighterSoulshotItemId;
-      const sid =
-        typeof raw === 'number' && Number.isFinite(raw)
-          ? Math.floor(raw)
-          : NaN;
-      if (!Number.isFinite(sid) || sid <= 0) {
-        throw new Error('battle_soulshot_bad_item');
-      }
-      applyFighterSoulshotToggle({
-        st,
-        inv,
-        log,
-        classBranch: char.classBranch,
-        itemId: sid,
-      });
-    }
-
-    if (action === 'mystic_spiritshot_toggle') {
-      const raw = opts?.mysticSpiritshotItemId;
-      const sid =
-        typeof raw === 'number' && Number.isFinite(raw)
-          ? Math.floor(raw)
-          : NaN;
-      if (!Number.isFinite(sid) || sid <= 0) {
-        throw new Error('mystic_spiritshot_bad_item');
-      }
-      applyMysticBlessedSpiritshotToggle({
-        st,
-        inv,
-        log,
-        classBranch: char.classBranch,
-        itemId: sid,
-      });
-    }
-
-    if (action === 'battle_potion_use') {
-      const raw = opts?.battlePotionItemId;
-      const pid =
-        typeof raw === 'number' && Number.isFinite(raw)
-          ? Math.floor(raw)
-          : NaN;
-      if (!Number.isFinite(pid) || pid <= 0) {
-        throw new Error('battle_bad_potion');
-      }
-      inv = startBattlePotionHoT({
-        st,
-        inv,
-        log,
-        itemId: pid,
-        nowMs: nowMsTurn,
-      });
-      /**
-       * Одразу прокручуємо імпульс зілля в тому ж POST /battle/action,
-       * щоб HP/MP бари оновлювалися без перезавантаження сторінки.
-       */
-      {
-        const hoNow = applyBattlePotionHoTTicks({
-          nowMs: nowMsTurn,
-          st,
-          playerHp,
-          maxHpBattle,
-          currentMp,
-          maxMpEff,
-          log,
-        });
-        playerHp = hoNow.playerHp;
-        currentMp = hoNow.currentMp;
-        st.playerMp = currentMp;
-      }
-      inventoryDirty = true;
-    }
-
-    stripChargeShotsIfWeaponGradeMismatch({
-      inv,
-      st,
-      log,
+    const turnResolved = executeBattleTurnResolve({
+      action,
+      preLevel,
+      race: char.race,
       classBranch: char.classBranch,
+      profAct,
+      combat,
+      st,
+      spawnLevel: spawn.level,
+      spawnStunResistPct: spawn.stunResistPct,
+      spawnDebuffResistPct: spawn.debuffResistPct,
+      spawnMobName: spawn.name,
+      playerHp,
+      maxHpBattle,
+      maxMpEff,
+      currentMp,
+      mobEva,
+      inv,
+      learnedSkillLevelByBattleId,
+      activeBuffsPre,
+      modsForPlayerPhysicalRoll,
+      nowMsTurn,
+      log,
+      opts,
     });
-
-    const skipResolveTurn =
-      action === 'fighter_soulshot_toggle' ||
-      action === 'mystic_spiritshot_toggle' ||
-      action === 'battle_potion_use';
-
-    const resolvedTurn =
-      skipResolveTurn
-        ? {
-            mpCost: 0,
-            pDmg: 0,
-            skillLine: '',
-            physOutcome: null,
-            magicOutcome: null,
-          }
-        : resolvePlayerBattleTurn(
-      {
-        action,
-        preLevel,
-        race: char.race,
-        classBranch: char.classBranch,
-        l2Profession: profAct,
-        combat,
-        st,
-        spawnLevel: spawn.level,
-        spawnStunResistPct: spawn.stunResistPct,
-        spawnDebuffResistPct: spawn.debuffResistPct,
-        spawnMobName: spawn.name,
-        playerHpInBattle: playerHp,
-        playerMaxHpInBattle: maxHpBattle,
-        weaponKind: equippedWeaponKind(inv),
-        learnedSkillLevelByBattleId,
-        activeBuffs: activeBuffsPre,
-      },
-      (atk, options) =>
-        rollPlayerPhysicalDmg(
-          atk,
-          combat,
-          st,
-          spawn.level,
-          spawn.name,
-          learnedSkillLevelByBattleId,
-          modsForPlayerPhysicalRoll,
-          {
-            ...(options ?? {}),
-            /**
-             * Вимога геймдизайну: усі скіли воїна повинні влучати гарантовано.
-             * Базова автоатака (`attack`) лишається зі стандартною перевіркою hit/miss.
-             */
-            forceNoMiss:
-              options?.forceNoMiss ??
-              (isFighterClassBranch(char.classBranch) &&
-                battleActionNamedFromL2IfMapped(action) !== 'attack'),
-          }
-        ),
-      () => {
-        const mm =
-          jsonFiniteNum(modsForPlayerPhysicalRoll?.mysticMatkBuffMul) ?? 1;
-        let mAtkEff = Math.max(
-          1,
-          Math.floor(combat.mAtk * (mm > 1 ? mm : 1))
-        );
-        if (isMysticClassBranch(char.classBranch) && st.battleMods) {
-          const bMul = jsonFiniteNum(st.battleMods.mysticBlessedSpiritshotMatkMul);
-          const bRaw = st.battleMods.mysticBlessedSpiritshotItemId;
-          const bId =
-            typeof bRaw === 'number' && Number.isFinite(bRaw)
-              ? Math.floor(bRaw)
-              : undefined;
-          if (
-            bMul !== undefined &&
-            bMul > 1 &&
-            bId !== undefined &&
-            bId > 0 &&
-            MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS.has(bId)
-          ) {
-            mAtkEff = Math.max(1, Math.floor(mAtkEff * bMul));
-          }
-        }
-        const mobMdefMul =
-          jsonFiniteNum(modsForPlayerPhysicalRoll?.mobTargetMDefMul) ?? 1;
-        const mobMDefEff =
-          mobMdefMul > 0 && mobMdefMul < 1
-            ? Math.max(1, Math.floor(st.mobMDef * mobMdefMul))
-            : st.mobMDef;
-        return resolveMagicBoltHit({
-          mAtk: mAtkEff,
-          mobMDef: mobMDefEff,
-          playerInt: combat.int,
-          playerWit: combat.wit,
-          playerMen: combat.men,
-          playerLevel: preLevel,
-          mobEvasion: mobEva,
-          mCritPct: combat.mCritPct,
-          magicCritDmgMul: combat.magicCritDmgMul,
-        });
-      }
-    );
+    inv = turnResolved.inv;
+    inventoryDirty = turnResolved.inventoryDirty || inventoryDirty;
+    playerHp = turnResolved.playerHp;
+    currentMp = turnResolved.currentMp;
+    const resolvedTurn = turnResolved.resolvedTurn;
 
     let {
       mpCost,
@@ -1044,234 +891,71 @@ export async function performBattleAction(
           '.'
       );
     }
+    const continueBase: BattleContinueTurnBase = {
+      userId,
+      expectedRevision,
+      char: char as CharacterRow,
+      bj,
+      spawn,
+      preLevel,
+      learnedBattle,
+      profAct,
+      inv,
+      st,
+      playerHp,
+      mobHp,
+      log,
+      maxMpEff,
+    };
+    const persistSide: BattleTurnPersistSide = {
+      activeBuffsChanged,
+      nextActiveBuffs,
+      cooldownsChanged,
+      nextCooldowns,
+      inventoryDirty,
+      inv,
+    };
+
     if (mobHp <= 0) {
-      if (isPvpBattleJson(bj)) {
-        const v = await persistPvpVictoryInTx(tx, {
-          userId,
-          expectedRevision,
-          char: char as CharacterRow,
-          spawn,
-          preLevel,
-          playerHp,
-          currentMp,
-          st,
-          log,
-          ...(activeBuffsChanged
-            ? {
-                activeBuffsJson:
-                  nextActiveBuffs as unknown as Prisma.InputJsonValue,
-              }
-            : {}),
-          ...(cooldownsChanged
-            ? {
-                skillCooldownsJson:
-                  nextCooldowns as unknown as Prisma.InputJsonValue,
-              }
-            : {}),
-        });
-        return { ...v, battle: null };
-      }
-      const v = await persistBattleVictoryInTx(tx, {
-        userId,
-        expectedRevision,
-        char: char as CharacterRow,
-        bj,
-        spawn,
-        inv,
+      const victory = await resolveMobDeadVictoryInTx(tx, {
+        ...continueBase,
         cr,
-        preLevel,
-        playerHp,
         currentMp,
-        st,
-        log,
-        ...(activeBuffsChanged
-          ? {
-              activeBuffsJson:
-                nextActiveBuffs as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
-        ...(cooldownsChanged
-          ? {
-              skillCooldownsJson:
-                nextCooldowns as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
+        side: persistSide,
       });
-      return { ...v, battle: null };
+      if (victory) return victory;
     }
 
     /** PvP: без автоконтратаки моба — ходи лише гравці (окремий flow пізніше). */
     if (isPvpBattleJson(bj)) {
-      return persistBattleContinueTurnInTx(tx, {
-        userId,
-        expectedRevision,
-        char: char as CharacterRow,
-        bj,
-        spawn,
-        preLevel,
-        learnedBattle,
-        profAct,
-        inv,
-        st,
-        playerHp,
-        mobHp,
-        log,
-        maxMpEff,
-        ...(activeBuffsChanged
-          ? {
-              activeBuffsJson:
-                nextActiveBuffs as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
-        ...(cooldownsChanged
-          ? {
-              skillCooldownsJson:
-                nextCooldowns as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
-        ...(inventoryDirty
-          ? {
-              inventoryJson: inv as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
-      });
+      return persistBattleContinueFromTurn(tx, continueBase, persistSide);
     }
 
-    let shouldMobCounterAttack = true;
-    const sleepUntilNow = jsonFiniteNum(st.battleMods?.mobSleepUntilMs);
-    const mobSleepingNow =
-      sleepUntilNow !== undefined && sleepUntilNow > Date.now();
-    if (mobSleepingNow) {
-      shouldMobCounterAttack = false;
-    }
-    if (skipMobCounterAttackOnce) {
-      shouldMobCounterAttack = false;
-    }
-    if (
-      typeof mobRetaliationDelayHits === 'number' &&
-      Number.isFinite(mobRetaliationDelayHits) &&
-      mobRetaliationDelayHits > 0
-    ) {
-      const delayHits = Math.max(1, Math.floor(mobRetaliationDelayHits));
-      const curHitsUntil =
-        typeof st.mobHitsUntilRetaliation === 'number' &&
-        Number.isFinite(st.mobHitsUntilRetaliation) &&
-        st.mobHitsUntilRetaliation > 0
-          ? Math.floor(st.mobHitsUntilRetaliation)
-          : randomMobRetaliationWindowHits();
-      st.mobHitsUntilRetaliation = Math.max(curHitsUntil, delayHits);
-      shouldMobCounterAttack = false;
-    }
-    if (
-      !mobSleepingNow &&
-      !battleActionSkipsMobHp(action, char.race, char.classBranch)
-    ) {
-      const curHitsUntil =
-        typeof st.mobHitsUntilRetaliation === 'number' &&
-        Number.isFinite(st.mobHitsUntilRetaliation) &&
-        st.mobHitsUntilRetaliation > 0
-          ? Math.floor(st.mobHitsUntilRetaliation)
-          : randomMobRetaliationWindowHits();
-      const nextHitsUntil = curHitsUntil - 1;
-      if (nextHitsUntil <= 0) {
-        shouldMobCounterAttack = true;
-        st.mobHitsUntilRetaliation = randomMobRetaliationWindowHits();
-      } else {
-        shouldMobCounterAttack = false;
-        st.mobHitsUntilRetaliation = nextHitsUntil;
-      }
-    }
-    if (skipMobCounterAttackOnce) {
-      shouldMobCounterAttack = false;
-      const curHitsUntil =
-        typeof st.mobHitsUntilRetaliation === 'number' &&
-        Number.isFinite(st.mobHitsUntilRetaliation) &&
-        st.mobHitsUntilRetaliation > 0
-          ? Math.floor(st.mobHitsUntilRetaliation)
-          : randomMobRetaliationWindowHits();
-      st.mobHitsUntilRetaliation = Math.max(1, curHitsUntil);
-    }
+    const shouldMobCounterAttack = resolveMobShouldCounterAttack({
+      st,
+      action,
+      race: char.race,
+      classBranch: char.classBranch,
+      skipMobCounterAttackOnce,
+      mobRetaliationDelayHits,
+    });
 
     if (!shouldMobCounterAttack) {
-      return persistBattleContinueTurnInTx(tx, {
-        userId,
-        expectedRevision,
-        char: char as CharacterRow,
-        bj,
-        spawn,
-        preLevel,
-        learnedBattle,
-        profAct,
-        inv,
-        st,
-        playerHp,
-        mobHp,
-        log,
-        maxMpEff,
-        ...(activeBuffsChanged
-          ? {
-              activeBuffsJson:
-                nextActiveBuffs as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
-        ...(cooldownsChanged
-          ? {
-              skillCooldownsJson:
-                nextCooldowns as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
-        ...(inventoryDirty
-          ? {
-              inventoryJson: inv as unknown as Prisma.InputJsonValue,
-            }
-          : {}),
-      });
+      return persistBattleContinueFromTurn(tx, continueBase, persistSide);
     }
 
-    const modsForMobCounter = mergeDisplayBattleMods(
+    const countered = applyMobCounterDamage({
       st,
-      wTickForBattleMods?.battleMods,
-      st.battleMods
-    );
-    const mobCounter = rollMobPhysicalVsPlayer(
-      st.mobPAtk,
-      spawn.level,
+      spawn,
       combat,
-      st,
-      modsForMobCounter
-    );
-    const rRefl =
-      jsonFiniteNum(modsForMobCounter?.reflectDamageReturnRatio) ?? 0;
-    const rMir =
-      jsonFiniteNum(modsForMobCounter?.physicalMirrorReflectRatio) ?? 0;
-    const rVen =
-      jsonFiniteNum(modsForMobCounter?.vengeanceReflectRatio) ?? 0;
-    const reflTot = Math.min(0.72, rRefl + rMir + rVen);
-    if (
-      reflTot > 0 &&
-      mobCounter.damage > 0 &&
-      mobCounter.outcome !== 'miss'
-    ) {
-      const refl = Math.floor(mobCounter.damage * reflTot);
-      if (refl > 0) {
-        mobHp = Math.max(0, mobHp - refl);
-        log.push('Відбиття на моба: ' + refl + ' урона.');
-      }
-    }
-    playerHp = Math.max(0, playerHp - mobCounter.damage);
-    playerHp = Math.min(
-      effectiveBattleMaxHp(maxHpEffAfter, st.battleMods),
-      playerHp
-    );
-    if (mobCounter.outcome === 'miss') {
-      log.push(spawn.name + ' промахнувся.');
-    } else if (mobCounter.outcome === 'crit' && mobCounter.damage > 0) {
-      log.push(
-        'Крит! ' + spawn.name + ' завдав ' + mobCounter.damage + ' урона.'
-      );
-    } else {
-      log.push(spawn.name + ' завдав ' + mobCounter.damage + ' урона.');
-    }
+      worldBattleMods: wTickForBattleMods?.battleMods,
+      maxHpEffAfter,
+      playerHp,
+      mobHp,
+      log,
+    });
+    playerHp = countered.playerHp;
+    mobHp = countered.mobHp;
 
     if (playerHp <= 0) {
       const d = await persistBattleDefeatInTx(tx, {
@@ -1288,38 +972,10 @@ export async function performBattleAction(
       return { ...d, battle: null };
     }
 
-    return persistBattleContinueTurnInTx(tx, {
-      userId,
-      expectedRevision,
-      char: char as CharacterRow,
-      bj,
-      spawn,
-      preLevel,
-      learnedBattle,
-      profAct,
-      inv,
-      st,
-      playerHp,
-      mobHp,
-      log,
-      maxMpEff,
-      ...(activeBuffsChanged
-        ? {
-            activeBuffsJson:
-              nextActiveBuffs as unknown as Prisma.InputJsonValue,
-          }
-        : {}),
-      ...(cooldownsChanged
-        ? {
-            skillCooldownsJson:
-              nextCooldowns as unknown as Prisma.InputJsonValue,
-          }
-        : {}),
-      ...(inventoryDirty
-        ? {
-            inventoryJson: inv as unknown as Prisma.InputJsonValue,
-          }
-        : {}),
-    });
+    return persistBattleContinueFromTurn(
+      tx,
+      { ...continueBase, playerHp, mobHp },
+      persistSide
+    );
   });
 }

@@ -12,15 +12,15 @@ import { PVP_KILL_KARMA_GAIN } from '../domain/pvpKarma.js';
 import { serializePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
 import { buildPvpVictimDefeatLog } from '../domain/pvpVictimBattleLog.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
+import { gameConflictFromMutation } from './charConflict.js';
+import type { BattleVictorySummary } from './battleServiceTypes.js';
+import { mutateCharacterWithRevision } from './characterMutation.js';
 import {
-  gameConflictFromMutation,
   combatOptsFromRow,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
-import type { BattleVictorySummary } from './battleServiceTypes.js';
-import { mutateCharacterWithRevision } from './characterMutation.js';
 import type { BattleSpawnMeta } from '../domain/battlePvpContext.js';
 
 type Tx = Prisma.TransactionClient;
@@ -86,19 +86,25 @@ export async function persistPvpVictoryInTx(
       attackerLog: fightLog,
       victimLog,
     });
-    await tx.character.update({
-      where: { id: victimId },
-      data: {
-        hp: 0,
-        battleJson: Prisma.JsonNull,
-        pvpPendingDefeatJson: serializePvpPendingDefeat({
-          killerName: char.name,
-          killerCharacterId: char.id,
-          atMs: Date.now(),
-          fullLog: defeatLog,
-        }),
-      },
-    });
+    const victimResult = await mutateCharacterWithRevision(
+      tx,
+      victimId,
+      null,
+      () => ({
+        changed: true,
+        data: {
+          hp: 0,
+          battleJson: Prisma.JsonNull,
+          pvpPendingDefeatJson: serializePvpPendingDefeat({
+            killerName: char.name,
+            killerCharacterId: char.id,
+            atMs: Date.now(),
+            fullLog: defeatLog,
+          }),
+        },
+      })
+    );
+    if (!victimResult.ok) throw gameConflictFromMutation(victimResult);
   }
 
   const cr = char;

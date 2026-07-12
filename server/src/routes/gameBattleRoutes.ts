@@ -1,5 +1,11 @@
 import type { FastifyInstance } from 'fastify';
-import { sendGameConflict } from './routeHttpHelpers.js';
+import {
+  ensureBodyRecord,
+  ensureUserId,
+  logRouteMutation,
+  parseExpectedRevision,
+  sendGameConflict,
+} from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   GameConflictError,
@@ -32,56 +38,19 @@ import {
   normalizeClientBattleAction,
   raceFighterL2ActionAllowed,
 } from './gameBattleClientNormalize.js';
-import { prisma } from '../lib/prisma.js';
 import { BattleSkillNotAllowedError } from '../domain/battleSkillNotAllowedError.js';
 import {
   isPvpStartErrorMessage,
   sendPvpStartError,
 } from './gameBattlePvpRouteErrors.js';
 
-async function logBattleMutation(
-  request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
-  action: string,
-  expectedRevision: number,
-  result: 'ok' | 'conflict' | 'error',
-  actualRevision?: number,
-  characterId?: string | null
-): Promise<void> {
-  if (!request.userId) return;
-  let characterIdLog = characterId ?? null;
-  let actualRevisionLog = actualRevision ?? null;
-  if (!characterIdLog || actualRevisionLog == null) {
-    const row = await prisma.character.findFirst({
-      where: { userId: request.userId },
-      orderBy: { lastUpdate: 'desc' },
-      select: { id: true, revision: true },
-    });
-    characterIdLog = row?.id ?? null;
-    if (actualRevisionLog == null) {
-      actualRevisionLog = row?.revision ?? null;
-    }
-  }
-  request.log.info(
-    {
-      action,
-      characterId: characterIdLog,
-      expectedRevision,
-      actualRevision: actualRevisionLog,
-      result,
-    },
-    'battle-mutation'
-  );
-}
-
 export function registerGameBattleRoutes(app: FastifyInstance): void {
   app.get(
     '/battle',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
       const data = await getBattleState(userId);
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
@@ -94,26 +63,13 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     '/battle/start',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const spawnId = b.spawnId;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       if (typeof spawnId !== 'string' || !spawnId.length) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -122,18 +78,19 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       }
       try {
         const result = await startBattle(userId, spawnId, er);
-        await logBattleMutation(
+        await logRouteMutation(
           request,
           'battle_start',
           er,
           'ok',
           result.character.revision,
-          result.character.id
+          result.character.id,
+          'battle-mutation'
         );
         return reply.send(result);
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logBattleMutation(request, 'battle_start', er, 'conflict');
+          await logRouteMutation(request, 'battle_start', er, 'conflict', undefined, undefined, 'battle-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
@@ -146,20 +103,20 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           });
         }
         if (e instanceof Error && e.message === 'battle_too_far') {
-          await logBattleMutation(request, 'battle_start', er, 'error');
+          await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Підійди ближче до моба на карті.',
           });
         }
         if (e instanceof Error && e.message === 'mob_on_respawn') {
-          await logBattleMutation(request, 'battle_start', er, 'error');
+          await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Моб ще не відродився. Зачекай трохи.',
           });
         }
-        await logBattleMutation(request, 'battle_start', er, 'error');
+        await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
       }
     }
@@ -169,26 +126,13 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     '/battle/pvp/start',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const targetCharacterId = b.targetCharacterId;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       if (typeof targetCharacterId !== 'string' || !targetCharacterId.trim()) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -201,28 +145,29 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           targetCharacterId.trim(),
           er
         );
-        await logBattleMutation(
+        await logRouteMutation(
           request,
           'battle_pvp_start',
           er,
           'ok',
           result.character.revision,
-          result.character.id
+          result.character.id,
+          'battle-mutation'
         );
         return reply.send(result);
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logBattleMutation(request, 'battle_pvp_start', er, 'conflict');
+          await logRouteMutation(request, 'battle_pvp_start', er, 'conflict', undefined, undefined, 'battle-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
         if (e instanceof Error && isPvpStartErrorMessage(e.message)) {
-          await logBattleMutation(request, 'battle_pvp_start', er, 'error');
+          await logRouteMutation(request, 'battle_pvp_start', er, 'error', undefined, undefined, 'battle-mutation');
           return sendPvpStartError(reply, e.message);
         }
-        await logBattleMutation(request, 'battle_pvp_start', er, 'error');
+        await logRouteMutation(request, 'battle_pvp_start', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
       }
     }
@@ -232,29 +177,16 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     '/battle/hunt-continue',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const rawTol = b.levelTolerance;
       const rawTargetLevel = b.targetLevel;
       const excludeRaw = b.excludeSpawnId;
       const preferredRaw = b.preferredSpawnId;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       const excludeSpawnId =
         typeof excludeRaw === 'string' && excludeRaw.trim()
           ? excludeRaw.trim()
@@ -280,32 +212,33 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           preferredSpawnId,
           targetLevel
         );
-        await logBattleMutation(
+        await logRouteMutation(
           request,
           'battle_hunt_continue',
           er,
           'ok',
           result.character.revision,
-          result.character.id
+          result.character.id,
+          'battle-mutation'
         );
         return reply.send(result);
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logBattleMutation(request, 'battle_hunt_continue', er, 'conflict');
+          await logRouteMutation(request, 'battle_hunt_continue', er, 'conflict', undefined, undefined, 'battle-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
         if (e instanceof Error && e.message === 'battle_hunt_no_targets') {
-          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(404).send({
             error: e.message,
             messageUk: 'Немає підхожих цілей поруч. Онови карту або підійди ближче.',
           });
         }
         if (e instanceof Error && e.message === 'battle_hunt_no_live_targets') {
-          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Усі цілі поруч на респавні. Зачекай кілька секунд.',
@@ -318,20 +251,20 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           });
         }
         if (e instanceof Error && e.message === 'battle_too_far') {
-          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Підійди ближче до мобів на карті.',
           });
         }
         if (e instanceof Error && e.message === 'mob_on_respawn') {
-          await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+          await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: 'battle_hunt_no_live_targets',
             messageUk: 'Усі цілі поруч на респавні. Зачекай кілька секунд.',
           });
         }
-        await logBattleMutation(request, 'battle_hunt_continue', er, 'error');
+        await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
       }
     }
@@ -341,30 +274,13 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     '/battle/action',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const actionNorm = normalizeClientBattleAction(b.action);
-      if (
-        typeof er !== 'number' ||
-        !Number.isInteger(er) ||
-        er < 1
-      ) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
 
       const mysticCastOk =
         typeof actionNorm === 'string' &&
@@ -454,22 +370,26 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             ...battlePotionOpts,
           }
         );
-        await logBattleMutation(
+        await logRouteMutation(
           request,
           'battle_action:' + String(actionNorm),
           er,
           'ok',
           result.character.revision,
-          result.character.id
+          result.character.id,
+          'battle-mutation'
         );
         return reply.send(result);
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logBattleMutation(
+          await logRouteMutation(
             request,
             'battle_action:' + String(actionNorm),
             er,
-            'conflict'
+            'conflict',
+            undefined,
+            undefined,
+            'battle-mutation'
           );
           return sendGameConflict(reply, e);
         }
@@ -630,11 +550,14 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           });
         }
         if (e instanceof Error && e.message === 'battle_sonic_max_charges') {
-          await logBattleMutation(
+          await logRouteMutation(
             request,
             'battle_action:' + String(actionNorm),
             er,
-            'error'
+            'error',
+            undefined,
+            undefined,
+            'battle-mutation'
           );
           return reply.code(400).send({
             error: e.message,
@@ -642,11 +565,14 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
               'Досягнуто максимум Sonic Focus зарядів. Витрать їх sonic-скілом.',
           });
         }
-        await logBattleMutation(
+        await logRouteMutation(
           request,
           'battle_action:' + String(actionNorm),
           er,
-          'error'
+          'error',
+          undefined,
+          undefined,
+          'battle-mutation'
         );
         throw e;
       }
@@ -657,32 +583,26 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     '/battle/leave',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({ error: 'invalid_input' });
-      }
-      const er = (body as Record<string, unknown>).expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({ error: 'invalid_input' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       try {
         const character = await leaveBattle(userId, er);
-        await logBattleMutation(request, 'battle_leave', er, 'ok', character.revision, character.id);
+        await logRouteMutation(request, 'battle_leave', er, 'ok', character.revision, character.id, 'battle-mutation');
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logBattleMutation(request, 'battle_leave', er, 'conflict');
+          await logRouteMutation(request, 'battle_leave', er, 'conflict', undefined, undefined, 'battle-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
-          await logBattleMutation(request, 'battle_leave', er, 'error');
+          await logRouteMutation(request, 'battle_leave', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logBattleMutation(request, 'battle_leave', er, 'error');
+        await logRouteMutation(request, 'battle_leave', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
       }
     }
@@ -692,25 +612,12 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     '/battle/hotbar',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const er = b.expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       if (!('slots' in b)) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -719,32 +626,33 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       }
       try {
         const character = await saveBattleHotbar(userId, er, b.slots);
-        await logBattleMutation(
+        await logRouteMutation(
           request,
           'battle_hotbar',
           er,
           'ok',
           character.revision,
-          character.id
+          character.id,
+          'battle-mutation'
         );
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logBattleMutation(request, 'battle_hotbar', er, 'conflict');
+          await logRouteMutation(request, 'battle_hotbar', er, 'conflict', undefined, undefined, 'battle-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'hotbar_invalid') {
-          await logBattleMutation(request, 'battle_hotbar', er, 'error');
+          await logRouteMutation(request, 'battle_hotbar', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: 'invalid_input',
             messageUk: 'Некоректна розкладка панелі скілів.',
           });
         }
         if (e instanceof Error && e.message === 'no_character') {
-          await logBattleMutation(request, 'battle_hotbar', er, 'error');
+          await logRouteMutation(request, 'battle_hotbar', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logBattleMutation(request, 'battle_hotbar', er, 'error');
+        await logRouteMutation(request, 'battle_hotbar', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
       }
     }
@@ -754,45 +662,40 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     '/battle/return-to-town',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({ error: 'invalid_input' });
-      }
-      const er = (body as Record<string, unknown>).expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({ error: 'invalid_input' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       try {
         const character = await performReturnToNearestTown(userId, er);
-        await logBattleMutation(
+        await logRouteMutation(
           request,
           'battle_return_to_town',
           er,
           'ok',
           character.revision,
-          character.id
+          character.id,
+          'battle-mutation'
         );
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logBattleMutation(request, 'battle_return_to_town', er, 'conflict');
+          await logRouteMutation(request, 'battle_return_to_town', er, 'conflict', undefined, undefined, 'battle-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
         if (e instanceof Error && e.message === 'battle_still_active') {
-          await logBattleMutation(request, 'battle_return_to_town', er, 'error');
+          await logRouteMutation(request, 'battle_return_to_town', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Спочатку заверши бій.',
           });
         }
-        await logBattleMutation(request, 'battle_return_to_town', er, 'error');
+        await logRouteMutation(request, 'battle_return_to_town', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
       }
     }

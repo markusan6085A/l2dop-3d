@@ -1,5 +1,9 @@
 import type { FastifyInstance } from 'fastify';
-import { sendGameConflict } from './routeHttpHelpers.js';
+import {
+  ensureUserId,
+  parseExpectedRevisionLoose,
+  sendGameConflict,
+} from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   GameConflictError,
@@ -9,13 +13,6 @@ import * as ElfF from '../services/charProfessionElfFighter.js';
 import * as DeF from '../services/charProfessionDarkElfFighter.js';
 import * as OrcF from '../services/charProfessionOrcFighter.js';
 import * as DwF from '../services/charProfessionDwarfFighter.js';
-
-function parseEr(body: unknown): number | null {
-  if (!body || typeof body !== 'object') return null;
-  const er = (body as Record<string, unknown>).expectedRevision;
-  if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) return null;
-  return er;
-}
 
 /** Не-людські воїни: ельф / темний ельф / орк / гном (Interlude, 3 профи). */
 export function registerCharacterProfessionRoutesNonHumanFighters(
@@ -97,9 +94,9 @@ export function registerCharacterProfessionRoutesNonHumanFighters(
 
   for (const { path, run } of routes) {
     app.post(path, { preHandler: requireAuth }, async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) return reply.code(401).send({ error: 'Unauthorized' });
-      const er = parseEr(request.body);
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const er = parseExpectedRevisionLoose(request.body);
       if (er == null) {
         return reply.code(400).send({
           error: 'invalid_input',

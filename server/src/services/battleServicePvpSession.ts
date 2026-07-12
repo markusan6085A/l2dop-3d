@@ -34,6 +34,7 @@ import { battleViewFromState, skillCooldownUiContextFromParts } from './battleSe
 import type { BattleView } from './battleServiceTypes.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+import { persistCharacterFieldsInTx } from './charInternalPersist.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function opponentCombatFromRow(row: CharacterRow) {
@@ -122,14 +123,11 @@ async function markAggressorVictimFoughtBackInTx(
   if (!aggressor) return;
   const bj = parseBattleJson(aggressor.battleJson);
   if (!bj || !isPvpBattleJson(bj) || bj.pvpTargetCharacterId !== defenderId) return;
-  await tx.character.update({
-    where: { id: aggressorId },
-    data: {
-      battleJson: serializeBattleJsonForDb({
-        ...bj,
-        pvpVictimFoughtBack: true,
-      }),
-    },
+  await persistCharacterFieldsInTx(tx, aggressorId, {
+    battleJson: serializeBattleJsonForDb({
+      ...bj,
+      pvpVictimFoughtBack: true,
+    }),
   });
 }
 

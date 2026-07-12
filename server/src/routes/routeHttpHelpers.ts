@@ -27,6 +27,13 @@ export function ensureBodyRecord(
   return body as Record<string, unknown>;
 }
 
+export function parseExpectedRevisionLoose(body: unknown): number | null {
+  if (!body || typeof body !== 'object') return null;
+  const er = (body as Record<string, unknown>).expectedRevision;
+  if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) return null;
+  return er;
+}
+
 export function parseExpectedRevision(
   body: Record<string, unknown>,
   reply: FastifyReply,

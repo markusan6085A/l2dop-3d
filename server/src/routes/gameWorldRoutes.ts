@@ -1,5 +1,11 @@
 import type { FastifyInstance } from 'fastify';
-import { sendGameConflict } from './routeHttpHelpers.js';
+import {
+  ensureBodyRecord,
+  ensureUserId,
+  logRouteMutation,
+  parseExpectedRevision,
+  sendGameConflict,
+} from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import { MAP_TOWNS, getTeleportAdenaCost } from '../data/mapLocalities.js';
 import { getTeleportMobLevelRange } from '../data/teleportMobLevelRanges.js';
@@ -16,53 +22,13 @@ import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { prisma } from '../lib/prisma.js';
 import type { CharacterRow } from '../services/charService.js';
 
-async function logMutationOutcome(
-  request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
-  action: string,
-  expectedRevision: number,
-  result: 'ok' | 'conflict' | 'error',
-  actualRevision?: number
-): Promise<void> {
-  if (!request.userId) return;
-  let actual = actualRevision;
-  if (actual == null && result !== 'ok') {
-    const row = await prisma.character.findFirst({
-      where: { userId: request.userId },
-      orderBy: { lastUpdate: 'desc' },
-      select: { id: true, revision: true },
-    });
-    request.log.info({
-      action,
-      characterId: row?.id ?? null,
-      expectedRevision,
-      actualRevision: row?.revision ?? null,
-      result,
-    }, 'game-mutation');
-    return;
-  }
-  const row = await prisma.character.findFirst({
-    where: { userId: request.userId },
-    orderBy: { lastUpdate: 'desc' },
-    select: { id: true },
-  });
-  request.log.info({
-    action,
-    characterId: row?.id ?? null,
-    expectedRevision,
-    actualRevision: actual ?? null,
-    result,
-  }, 'game-mutation');
-}
-
 export function registerGameWorldRoutes(app: FastifyInstance): void {
   app.get(
     '/map/sync',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
       const data = await getMapSyncForUser(userId);
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
@@ -75,11 +41,10 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     '/map/spawns',
     { preHandler: requireAuth },
     async (request, reply) => {
-      if (!request.userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
       const row = (await prisma.character.findFirst({
-        where: { userId: request.userId },
+        where: { userId },
       })) as CharacterRow | null;
       if (!row) {
         return reply.code(404).send({ error: 'forbidden' });
@@ -99,10 +64,8 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     '/map/around',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
       const data = await getMapAroundForUser(userId);
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
@@ -115,12 +78,11 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     '/spawn/:spawnId/info',
     { preHandler: requireAuth },
     async (request, reply) => {
-      if (!request.userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
       const { spawnId } = request.params as { spawnId: string };
       const row = (await prisma.character.findFirst({
-        where: { userId: request.userId },
+        where: { userId },
       })) as CharacterRow | null;
       if (!row) {
         return reply.code(404).send({ error: 'forbidden' });
@@ -161,26 +123,13 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     '/teleport',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const teleportId = b.teleportId;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       if (typeof teleportId !== 'string' || !teleportId.trim()) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -193,31 +142,31 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
           teleportId.trim(),
           er
         );
-        await logMutationOutcome(request, 'teleport', er, 'ok', character.revision);
+        await logRouteMutation(request, 'teleport', er, 'ok', character.revision, undefined, 'game-mutation');
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logMutationOutcome(request, 'teleport', er, 'conflict');
+          await logRouteMutation(request, 'teleport', er, 'conflict', undefined, undefined, 'game-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
         if (e instanceof Error && e.message === 'teleport_unknown') {
-          await logMutationOutcome(request, 'teleport', er, 'error');
+          await logRouteMutation(request, 'teleport', er, 'error', undefined, undefined, 'game-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Невідомий пункт телепорту.',
           });
         }
         if (e instanceof Error && e.message === 'teleport_not_enough_adena') {
-          await logMutationOutcome(request, 'teleport', er, 'error');
+          await logRouteMutation(request, 'teleport', er, 'error', undefined, undefined, 'game-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Недостатньо адени для телепорту.',
           });
         }
-        await logMutationOutcome(request, 'teleport', er, 'error');
+        await logRouteMutation(request, 'teleport', er, 'error', undefined, undefined, 'game-mutation');
         throw e;
       }
     }
@@ -227,27 +176,14 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     '/move',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const tx = b.targetX;
       const ty = b.targetY;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       if (typeof tx !== 'number' || typeof ty !== 'number') {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -256,38 +192,38 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       }
       try {
         const character = await performMapMove(userId, tx, ty, er);
-        await logMutationOutcome(request, 'map_move', er, 'ok', character.revision);
+        await logRouteMutation(request, 'map_move', er, 'ok', character.revision, undefined, 'game-mutation');
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logMutationOutcome(request, 'map_move', er, 'conflict');
+          await logRouteMutation(request, 'map_move', er, 'conflict', undefined, undefined, 'game-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
         if (e instanceof Error && e.message === 'map_target_too_far') {
-          await logMutationOutcome(request, 'map_move', er, 'error');
+          await logRouteMutation(request, 'map_move', er, 'error', undefined, undefined, 'game-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Ціль занадто далеко.',
           });
         }
         if (e instanceof Error && e.message === 'map_target_too_close') {
-          await logMutationOutcome(request, 'map_move', er, 'error');
+          await logRouteMutation(request, 'map_move', er, 'error', undefined, undefined, 'game-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Обери точку далі від поточної позиції.',
           });
         }
         if (e instanceof Error && e.message === 'map_move_invalid') {
-          await logMutationOutcome(request, 'map_move', er, 'error');
+          await logRouteMutation(request, 'map_move', er, 'error', undefined, undefined, 'game-mutation');
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Некоректні координати.',
           });
         }
-        await logMutationOutcome(request, 'map_move', er, 'error');
+        await logRouteMutation(request, 'map_move', er, 'error', undefined, undefined, 'game-mutation');
         throw e;
       }
     }
@@ -297,34 +233,27 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     '/hunt',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({ error: 'invalid_input' });
-      }
-      const er = (body as Record<string, unknown>).expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({ error: 'invalid_input' });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
 
       try {
         const character = await performHunt(userId, er);
-        await logMutationOutcome(request, 'hunt', er, 'ok', character.revision);
+        await logRouteMutation(request, 'hunt', er, 'ok', character.revision, undefined, 'game-mutation');
         return reply.send({ character });
       } catch (e) {
         if (e instanceof GameConflictError) {
-          await logMutationOutcome(request, 'hunt', er, 'conflict');
+          await logRouteMutation(request, 'hunt', er, 'conflict', undefined, undefined, 'game-mutation');
           return sendGameConflict(reply, e);
         }
         if (e instanceof Error && e.message === 'no_character') {
-          await logMutationOutcome(request, 'hunt', er, 'error');
+          await logRouteMutation(request, 'hunt', er, 'error', undefined, undefined, 'game-mutation');
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logMutationOutcome(request, 'hunt', er, 'error');
+        await logRouteMutation(request, 'hunt', er, 'error', undefined, undefined, 'game-mutation');
         throw e;
       }
     }

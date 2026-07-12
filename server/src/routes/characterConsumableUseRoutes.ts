@@ -1,36 +1,16 @@
 import type { FastifyInstance } from 'fastify';
-import { sendGameConflict } from './routeHttpHelpers.js';
+import {
+  ensureBodyRecord,
+  ensureUserId,
+  logRouteMutation,
+  parseExpectedRevision,
+  sendGameConflict,
+} from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   applyUsePotionFromBag,
   GameConflictError,
 } from '../services/charService.js';
-import { prisma } from '../lib/prisma.js';
-
-async function logCharacterMutation(
-  request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
-  action: string,
-  expectedRevision: number,
-  result: 'ok' | 'conflict' | 'error',
-  actualRevision?: number
-): Promise<void> {
-  if (!request.userId) return;
-  const row = await prisma.character.findFirst({
-    where: { userId: request.userId },
-    orderBy: { lastUpdate: 'desc' },
-    select: { id: true, revision: true },
-  });
-  request.log.info(
-    {
-      action,
-      characterId: row?.id ?? null,
-      expectedRevision,
-      actualRevision: actualRevision ?? row?.revision ?? null,
-      result,
-    },
-    'character-mutation'
-  );
-}
 
 /** POST /character/consumable/use — HP/MP зілля з сумки поза боєм. */
 export function registerCharacterConsumableUseRoutes(app: FastifyInstance): void {
@@ -38,25 +18,16 @@ export function registerCharacterConsumableUseRoutes(app: FastifyInstance): void
     '/consumable/use',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body;
-      if (!body || typeof body !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = body as Record<string, unknown>;
-      const rev = b.expectedRevision;
-      if (typeof rev !== 'number' || !Number.isFinite(rev)) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Передай expectedRevision з відповіді /character.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const rev = parseExpectedRevision(
+        b,
+        reply,
+        'Передай expectedRevision з відповіді /character.'
+      );
+      if (rev == null) return;
 
       const itemId = Math.floor(Number(b.itemId));
       const quantity = Math.floor(Number(b.quantity ?? 1));
@@ -80,7 +51,7 @@ export function registerCharacterConsumableUseRoutes(app: FastifyInstance): void
           rev,
           quantity
         );
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'consumable_use:' + String(itemId),
           rev,
@@ -90,7 +61,7 @@ export function registerCharacterConsumableUseRoutes(app: FastifyInstance): void
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(request, 'consumable_use', rev, 'conflict');
+          await logRouteMutation(request, 'consumable_use', rev, 'conflict');
           return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
@@ -115,7 +86,7 @@ export function registerCharacterConsumableUseRoutes(app: FastifyInstance): void
             messageUk: 'Цей предмет не можна використати так.',
           });
         }
-        await logCharacterMutation(request, 'consumable_use', rev, 'error');
+        await logRouteMutation(request, 'consumable_use', rev, 'error');
         request.log.error({ err }, 'POST /character/consumable/use');
         return reply.code(500).send({
           error: 'internal_error',

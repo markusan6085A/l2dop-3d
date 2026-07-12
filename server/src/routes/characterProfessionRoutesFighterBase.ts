@@ -1,5 +1,10 @@
 import type { FastifyInstance } from 'fastify';
-import { sendGameConflict } from './routeHttpHelpers.js';
+import {
+  ensureBodyRecord,
+  ensureUserId,
+  parseExpectedRevision,
+  sendGameConflict,
+} from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import { GameConflictError } from '../services/charService.js';
 import {
@@ -14,25 +19,12 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
     '/profession/human-warrior',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       try {
         const character = await performFirstProfessionHumanWarrior(userId, er);
         return reply.send({ character });
@@ -76,25 +68,12 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
     '/profession/human-knight',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       try {
         const character = await performFirstProfessionHumanKnight(userId, er);
         return reply.send({ character });
@@ -138,25 +117,12 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
     '/profession/human-rogue',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       try {
         const character = await performFirstProfessionHumanRogue(userId, er);
         return reply.send({ character });

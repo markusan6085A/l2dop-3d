@@ -1,10 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
-import {
-  nextPvpAggressorUntilMs,
-} from '../domain/pvpKarma.js';
+import { nextPvpAggressorUntilMs } from '../domain/pvpKarma.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
+import { persistCharacterFieldsInTx } from './charInternalPersist.js';
 
 /** Синхронізує урон PvP із HP жертви в БД (обидва боки взаємного бою). */
 export async function applyPvpHitToVictimInTx(
@@ -43,22 +42,14 @@ export async function applyPvpHitToVictimInTx(
       ...victimBj,
       playerHp: newHp,
     };
-    /** Агресора вдарили у відповідь — карма за вбивство не нараховується. */
     if (victimBj.pvpIsAggressor === true) {
       patch.pvpVictimFoughtBack = true;
     }
     victimData.battleJson = serializeBattleJsonForDb(patch);
   }
 
-  await tx.character.update({
-    where: { id: victimId },
-    data: victimData,
-  });
-
-  await tx.character.update({
-    where: { id: attackerId },
-    data: {
-      pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
-    },
+  await persistCharacterFieldsInTx(tx, victimId, victimData);
+  await persistCharacterFieldsInTx(tx, attackerId, {
+    pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
   });
 }

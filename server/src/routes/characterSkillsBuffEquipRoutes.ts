@@ -1,5 +1,11 @@
 import type { FastifyInstance } from 'fastify';
-import { sendGameConflict } from './routeHttpHelpers.js';
+import {
+  ensureBodyRecord,
+  ensureUserId,
+  logRouteMutation,
+  parseExpectedRevision,
+  sendGameConflict,
+} from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
 import {
   applyEquipFromBag,
@@ -12,32 +18,6 @@ import {
   GameConflictError,
 } from '../services/charService.js';
 import { learnSkillForUser } from '../services/skillLearnService.js';
-import { prisma } from '../lib/prisma.js';
-
-async function logCharacterMutation(
-  request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
-  action: string,
-  expectedRevision: number,
-  result: 'ok' | 'conflict' | 'error',
-  actualRevision?: number
-): Promise<void> {
-  if (!request.userId) return;
-  const row = await prisma.character.findFirst({
-    where: { userId: request.userId },
-    orderBy: { lastUpdate: 'desc' },
-    select: { id: true, revision: true },
-  });
-  request.log.info(
-    {
-      action,
-      characterId: row?.id ?? null,
-      expectedRevision,
-      actualRevision: actualRevision ?? row?.revision ?? null,
-      result,
-    },
-    'character-mutation'
-  );
-}
 
 /** POST skills/learn, persisted-combat-buffs, equip. */
 export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): void {
@@ -45,28 +25,15 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
     '/town/buffer',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       try {
         const res = await applyTownBuffer(userId, er);
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'town_buffer',
           er,
@@ -79,7 +46,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(request, 'town_buffer', er, 'conflict');
+          await logRouteMutation(request, 'town_buffer', er, 'conflict');
           return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
@@ -92,7 +59,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logCharacterMutation(request, 'town_buffer', er, 'error');
+        await logRouteMutation(request, 'town_buffer', er, 'error');
         request.log.error({ err }, 'POST /character/town/buffer');
         return reply.code(500).send({
           error: 'internal_error',
@@ -106,28 +73,15 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
     '/town/restore-vitals',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       try {
         const res = await applyTownRestoreVitals(userId, er);
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'town_restore_vitals',
           er,
@@ -140,7 +94,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(request, 'town_restore_vitals', er, 'conflict');
+          await logRouteMutation(request, 'town_restore_vitals', er, 'conflict');
           return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
@@ -165,7 +119,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logCharacterMutation(request, 'town_restore_vitals', er, 'error');
+        await logRouteMutation(request, 'town_restore_vitals', er, 'error');
         request.log.error({ err }, 'POST /character/town/restore-vitals');
         return reply.code(500).send({
           error: 'internal_error',
@@ -179,26 +133,13 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
     '/skills/learn',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const battleId = b.battleId;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       if (typeof battleId !== 'string' || !battleId.trim()) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -211,7 +152,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
           battleId.trim(),
           er
         );
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'skills_learn:' + battleId.trim(),
           er,
@@ -221,7 +162,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(
+          await logRouteMutation(
             request,
             'skills_learn:' + battleId.trim(),
             er,
@@ -257,7 +198,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'skills_learn:' + battleId.trim(),
           er,
@@ -279,25 +220,12 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
     '/persisted-combat-buffs',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const ht = b.buffHeroicTier;
       const zs = b.buffZealotStacks;
       if (!('buffHeroicTier' in b) || !('buffZealotStacks' in b)) {
@@ -325,7 +253,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
           ht as number | null,
           zs as number | null
         );
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'persisted_combat_buffs',
           er,
@@ -335,7 +263,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(
+          await logRouteMutation(
             request,
             'persisted_combat_buffs',
             er,
@@ -359,7 +287,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'persisted_combat_buffs',
           er,
@@ -382,26 +310,13 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
     '/skills/cast',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const battleId = b.battleId;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       if (typeof battleId !== 'string' || !battleId.trim()) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -410,7 +325,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
       }
       try {
         const character = await castActiveSelfBuff(userId, battleId.trim(), er);
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'skills_cast:' + battleId.trim(),
           er,
@@ -420,7 +335,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(
+          await logRouteMutation(
             request,
             'skills_cast:' + battleId.trim(),
             er,
@@ -468,7 +383,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'skills_cast:' + battleId.trim(),
           er,
@@ -491,26 +406,13 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
     '/skills/toggle',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const raw = request.body;
-      if (!raw || typeof raw !== 'object') {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректні дані.',
-        });
-      }
-      const b = raw as Record<string, unknown>;
-      const er = b.expectedRevision;
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
       const battleId = b.battleId;
-      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Некоректний expectedRevision.',
-        });
-      }
       if (typeof battleId !== 'string' || !battleId.trim()) {
         return reply.code(400).send({
           error: 'invalid_input',
@@ -519,7 +421,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
       }
       try {
         const character = await toggleSelfStance(userId, battleId.trim(), er);
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'skills_toggle:' + battleId.trim(),
           er,
@@ -529,7 +431,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         return reply.send({ character });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(
+          await logRouteMutation(
             request,
             'skills_toggle:' + battleId.trim(),
             er,
@@ -571,7 +473,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         if (msg === 'no_character') {
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logCharacterMutation(
+        await logRouteMutation(
           request,
           'skills_toggle:' + battleId.trim(),
           er,
@@ -591,25 +493,18 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
     '/equip',
     { preHandler: requireAuth },
     async (request, reply) => {
-      const userId = request.userId;
-      if (!userId) {
-        return reply.code(401).send({ error: 'Unauthorized' });
-      }
-      const body = request.body as {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const rev = parseExpectedRevision(b, reply);
+      if (rev == null) return;
+      const body = b as {
         action?: string;
         itemId?: number;
-        /** Заточка стеку в сумці (l2dop eqbonus), 0 за замовчуванням */
         enchant?: number;
         slot?: string;
-        expectedRevision?: number;
       };
-      const rev = body.expectedRevision;
-      if (typeof rev !== 'number' || !Number.isFinite(rev)) {
-        return reply.code(400).send({
-          error: 'invalid_input',
-          messageUk: 'Передай expectedRevision з відповіді /character.',
-        });
-      }
       try {
         if (body.action === 'equip' && body.itemId != null) {
           const itemId = Number(body.itemId);
@@ -625,7 +520,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
               ? Math.max(0, Math.min(20, Math.floor(enRaw)))
               : 0;
           const character = await applyEquipFromBag(userId, itemId, rev, enchant);
-          await logCharacterMutation(
+          await logRouteMutation(
             request,
             'equip:' + String(itemId),
             rev,
@@ -636,7 +531,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         }
         if (body.action === 'unequip' && typeof body.slot === 'string') {
           const character = await applyUnequip(userId, body.slot, rev);
-          await logCharacterMutation(
+          await logRouteMutation(
             request,
             'unequip:' + body.slot,
             rev,
@@ -651,7 +546,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
         });
       } catch (err) {
         if (err instanceof GameConflictError) {
-          await logCharacterMutation(request, 'equip_mutation', rev, 'conflict');
+          await logRouteMutation(request, 'equip_mutation', rev, 'conflict');
           return sendGameConflict(reply, err);
         }
         const msg = err instanceof Error ? err.message : '';
@@ -665,13 +560,13 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
           });
         }
         if (msg === 'slot_empty') {
-          await logCharacterMutation(request, 'equip_mutation', rev, 'error');
+          await logRouteMutation(request, 'equip_mutation', rev, 'error');
           return reply.code(400).send({
             error: 'invalid_input',
             messageUk: 'Слот порожній.',
           });
         }
-        await logCharacterMutation(request, 'equip_mutation', rev, 'error');
+        await logRouteMutation(request, 'equip_mutation', rev, 'error');
         request.log.error({ err }, 'POST /character/equip');
         return reply.code(500).send({
           error: 'internal_error',
