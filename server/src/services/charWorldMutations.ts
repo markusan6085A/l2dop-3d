@@ -6,6 +6,7 @@ import {
 } from '../domain/mapMovement.js';
 import {
   getTeleportDestination,
+  getTeleportAdenaCost,
   nearestMapTown,
 } from '../data/mapLocalities.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
@@ -23,10 +24,10 @@ import {
 } from '../domain/mobSpawnHpState.js';
 
 const TELEPORT_FREE_MAX_LEVEL = 40;
-const TELEPORT_DEFAULT_ADENA_COST = 1n;
 
-function resolveTeleportFee(level: number): bigint {
-  return level <= TELEPORT_FREE_MAX_LEVEL ? 0n : TELEPORT_DEFAULT_ADENA_COST;
+function resolveTeleportFee(level: number, teleportId: string): bigint {
+  if (level <= TELEPORT_FREE_MAX_LEVEL) return 0n;
+  return BigInt(getTeleportAdenaCost(teleportId));
 }
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
@@ -177,7 +178,7 @@ export async function performTeleport(
       (current) => {
         const base = normalizePassiveAndMove(current as CharacterRow);
         const level = levelFromTotalExp(base.exp);
-        const fee = resolveTeleportFee(level);
+        const fee = resolveTeleportFee(level, teleportId);
         if (fee > 0n && base.adena < fee) {
           throw new Error('teleport_not_enough_adena');
         }

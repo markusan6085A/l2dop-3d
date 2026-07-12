@@ -11,6 +11,7 @@
   var TELEPORT_FREE_MAX_LEVEL = 40;
   var activeSurroundingsKey = null;
   var availableTeleportIds = null;
+  var teleportCostById = null;
 
   /** Фіксований порядок міст; окремі блоки «Окресности» — через surroundingsKey. */
   var TELEPORT_CITIES = [
@@ -192,10 +193,21 @@
     });
   }
 
+  function resolveRowAdenaCost(row) {
+    if (!row || !row.teleportId) return TELEPORT_DEFAULT_ADENA_COST;
+    if (row.adenaCost != null) {
+      var rowCost = Number(row.adenaCost);
+      if (Number.isFinite(rowCost) && rowCost >= 0) return Math.floor(rowCost);
+    }
+    if (teleportCostById && teleportCostById[row.teleportId] != null) {
+      var apiCost = Number(teleportCostById[row.teleportId]);
+      if (Number.isFinite(apiCost) && apiCost >= 0) return Math.floor(apiCost);
+    }
+    return TELEPORT_DEFAULT_ADENA_COST;
+  }
+
   function teleportAdenaCost(row) {
-    var n = row && row.adenaCost != null ? Number(row.adenaCost) : TELEPORT_DEFAULT_ADENA_COST;
-    if (!Number.isFinite(n) || n < 0) return String(TELEPORT_DEFAULT_ADENA_COST);
-    return String(Math.floor(n));
+    return String(resolveRowAdenaCost(row)) + ' Adena';
   }
 
   function getSnapshotLevel() {
@@ -446,12 +458,19 @@
       if (!r.ok) return;
       var j = await r.json();
       var map = {};
+      var costs = {};
       var locations = j && j.locations ? j.locations : [];
       for (var i = 0; i < locations.length; i++) {
         var id = locations[i].teleportId;
-        if (id) map[id] = true;
+        if (id) {
+          map[id] = true;
+          if (locations[i].adenaCost != null) {
+            costs[id] = locations[i].adenaCost;
+          }
+        }
       }
       availableTeleportIds = map;
+      teleportCostById = costs;
     } catch (_e) {
       /* ignore */
     }

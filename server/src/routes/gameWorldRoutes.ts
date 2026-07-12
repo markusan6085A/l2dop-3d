@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../lib/auth.js';
-import { MAP_TOWNS } from '../data/mapLocalities.js';
+import { MAP_TOWNS, getTeleportAdenaCost } from '../data/mapLocalities.js';
 import {
   GameConflictError,
   performHunt,
@@ -145,6 +145,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
           teleportId: t.teleportId,
           labelUk: t.labelUk,
           labelEn: t.labelEn,
+          adenaCost: getTeleportAdenaCost(t.teleportId),
         })),
       });
     }
