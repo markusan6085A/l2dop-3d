@@ -6,12 +6,12 @@
   var TELEPORT_SNAPSHOT_CACHE_KEY = 'l2-teleport-snapshot-cache-v1';
   var TP_ICON = '/assets/assets/photo_2026-07-05_12-52-33.jpg';
   var TP_SURROUNDINGS_ICON = '/assets/assets/photo_2026-07-05_12-53-23.jpg';
-  var TP_ADENA_ICON = '/assets/assets/adena.png';
   var TELEPORT_DEFAULT_ADENA_COST = 1;
   var TELEPORT_FREE_MAX_LEVEL = 40;
   var activeSurroundingsKey = null;
   var availableTeleportIds = null;
   var teleportCostById = null;
+  var teleportMobRangeById = null;
 
   /** Фіксований порядок міст; окремі блоки «Окресности» — через surroundingsKey. */
   var TELEPORT_CITIES = [
@@ -183,7 +183,7 @@
 
   function wireMiruIcons(root) {
     if (!root) return;
-    root.querySelectorAll('.l2-town-miru-ico, .l2-teleport-miru-adena-ico').forEach(function (icon) {
+    root.querySelectorAll('.l2-town-miru-ico').forEach(function (icon) {
       if (icon.dataset.fallbackWired === '1') return;
       icon.dataset.fallbackWired = '1';
       icon.addEventListener('error', function onIconError() {
@@ -206,8 +206,59 @@
     return TELEPORT_DEFAULT_ADENA_COST;
   }
 
-  function teleportAdenaCost(row) {
-    return String(resolveRowAdenaCost(row)) + ' Adena';
+  function formatAdenaAmount(amount) {
+    var n = Math.floor(Number(amount) || 0);
+    if (n < 0) n = 0;
+    var raw = String(n);
+    if (raw.length < 4) return raw;
+    return raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function resolveRowMobLevelRange(row) {
+    if (!row || !row.teleportId) return null;
+    if (row.mobLevelMin != null && row.mobLevelMax != null) {
+      var minRow = Math.floor(Number(row.mobLevelMin));
+      var maxRow = Math.floor(Number(row.mobLevelMax));
+      if (Number.isFinite(minRow) && Number.isFinite(maxRow) && minRow >= 1 && maxRow >= minRow) {
+        return { min: minRow, max: maxRow };
+      }
+    }
+    if (teleportMobRangeById && teleportMobRangeById[row.teleportId]) {
+      return teleportMobRangeById[row.teleportId];
+    }
+    return null;
+  }
+
+  function createPriceMeta(row, showMobRange) {
+    var meta = document.createElement('span');
+    meta.className = 'l2-teleport-miru-price-meta';
+
+    var adenaPart = document.createElement('span');
+    adenaPart.className = 'l2-teleport-miru-price-adena';
+    adenaPart.textContent =
+      '(' + formatAdenaAmount(resolveRowAdenaCost(row)) + ' аден';
+    meta.appendChild(adenaPart);
+
+    if (showMobRange) {
+      var mobRange = resolveRowMobLevelRange(row);
+      if (mobRange) {
+        var sep = document.createElement('span');
+        sep.className = 'l2-teleport-miru-price-adena';
+        sep.textContent = ' ';
+        meta.appendChild(sep);
+
+        var mobPart = document.createElement('span');
+        mobPart.className = 'l2-teleport-miru-mob-level';
+        mobPart.textContent = mobRange.min + '-' + mobRange.max;
+        meta.appendChild(mobPart);
+      }
+    }
+
+    var closeParen = document.createElement('span');
+    closeParen.className = 'l2-teleport-miru-price-adena';
+    closeParen.textContent = ')';
+    meta.appendChild(closeParen);
+    return meta;
   }
 
   function getSnapshotLevel() {
@@ -233,20 +284,6 @@
       tpBtn.classList.add('l2-teleport-miru-tp-btn--free');
       tpBtn.textContent = 'Безплатно';
     } else {
-      var adenaIco = document.createElement('img');
-      adenaIco.className = 'l2-teleport-miru-adena-ico';
-      adenaIco.src = TP_ADENA_ICON;
-      adenaIco.alt = '';
-      adenaIco.width = 14;
-      adenaIco.height = 14;
-      adenaIco.decoding = 'async';
-
-      var adenaCost = document.createElement('span');
-      adenaCost.className = 'l2-teleport-miru-adena-cost';
-      adenaCost.textContent = teleportAdenaCost(row);
-
-      pay.appendChild(adenaIco);
-      pay.appendChild(adenaCost);
       tpBtn.textContent = 'Телепорт';
     }
     if (row.teleportId) {
@@ -280,6 +317,8 @@
 
     label.appendChild(img);
     label.appendChild(span);
+    var priceMeta = createPriceMeta(row, true);
+    if (priceMeta) label.appendChild(priceMeta);
 
     wrap.appendChild(label);
     wrap.appendChild(createTeleportPay(row, disabled));
@@ -318,6 +357,8 @@
 
     cityBtn.appendChild(img);
     cityBtn.appendChild(span);
+    var priceMeta = createPriceMeta(row, false);
+    if (priceMeta) cityBtn.appendChild(priceMeta);
 
     wrap.appendChild(cityBtn);
     wrap.appendChild(createTeleportPay(row, disabled));
@@ -459,6 +500,7 @@
       var j = await r.json();
       var map = {};
       var costs = {};
+      var mobRanges = {};
       var locations = j && j.locations ? j.locations : [];
       for (var i = 0; i < locations.length; i++) {
         var id = locations[i].teleportId;
@@ -467,10 +509,17 @@
           if (locations[i].adenaCost != null) {
             costs[id] = locations[i].adenaCost;
           }
+          if (locations[i].mobLevelMin != null && locations[i].mobLevelMax != null) {
+            mobRanges[id] = {
+              min: locations[i].mobLevelMin,
+              max: locations[i].mobLevelMax,
+            };
+          }
         }
       }
       availableTeleportIds = map;
       teleportCostById = costs;
+      teleportMobRangeById = mobRanges;
     } catch (_e) {
       /* ignore */
     }

@@ -394,31 +394,34 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-pay {
   flex: 0 0 auto;
   align-items: center;
   align-self: center;
-  gap: 4px;
+  gap: 0;
   margin: 4px 0 4px 8px;
 }
 
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-adena-ico {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-adena-cost {
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-price-meta {
+  flex: 0 0 auto;
+  margin-left: 4px;
   font-size: 11px;
   font-weight: 700;
-  line-height: 1;
-  color: #fff4d0;
+  line-height: 1.2;
   white-space: nowrap;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-price-adena {
+  color: #b8b0a4;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-mob-level {
+  color: #e85840;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn {
   box-sizing: border-box;
   flex: 0 0 auto;
   margin: 0;
-  padding: 4px 0 4px 2px;
+  padding: 4px 0 4px 6px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -426,7 +429,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn {
   font-size: 11px;
   font-weight: 600;
   line-height: 1.2;
-  color: #bfa88a;
+  color: #b8b0a4;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -434,7 +437,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn {
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn:hover,
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn:focus {
   outline: none;
-  color: #d4c4a8;
+  color: #ccc4b8;
   border: 0;
   background: transparent;
 }

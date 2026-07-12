@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../lib/auth.js';
-import { MAP_TOWNS, getTeleportAdenaCost } from '../data/mapLocalities.js';
+import { MAP_TOWNS, getTeleportAdenaCost, getTeleportMobLevelRange } from '../data/mapLocalities.js';
 import {
   GameConflictError,
   performHunt,
@@ -141,12 +141,17 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     { preHandler: requireAuth },
     async (_request, reply) => {
       return reply.send({
-        locations: MAP_TOWNS.map((t) => ({
-          teleportId: t.teleportId,
-          labelUk: t.labelUk,
-          labelEn: t.labelEn,
-          adenaCost: getTeleportAdenaCost(t.teleportId),
-        })),
+        locations: MAP_TOWNS.map((t) => {
+          const mobLevelRange = getTeleportMobLevelRange(t.teleportId);
+          return {
+            teleportId: t.teleportId,
+            labelUk: t.labelUk,
+            labelEn: t.labelEn,
+            adenaCost: getTeleportAdenaCost(t.teleportId),
+            mobLevelMin: mobLevelRange?.min ?? null,
+            mobLevelMax: mobLevelRange?.max ?? null,
+          };
+        }),
       });
     }
   );
