@@ -1210,6 +1210,8 @@ body.l2-app-l2-chrome.l2-page-battle #battle-log.l2-battle-log {
   background: transparent !important;
   padding: 0 !important;
   color: #8a8a8a;
+  max-height: calc(1.45em * 10);
+  overflow: hidden;
 }
 
 body.l2-app-l2-chrome.l2-page-battle #battle-log.l2-battle-log--colored .log-system {

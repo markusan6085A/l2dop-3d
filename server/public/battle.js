@@ -7,6 +7,43 @@
   var battleActionInFlight = false;
   var battleNavInFlight = false;
   var VICTORY_STORAGE_KEY = 'l2battle_last_victory_v1';
+  var BATTLE_LOG_MAX_VISIBLE = 10;
+  var huntLogPrefix = [];
+  var sessionLogHuntChain = false;
+  var huntLogFreezeKey = '';
+
+  function resetHuntLogChain() {
+    huntLogPrefix = [];
+    sessionLogHuntChain = false;
+    huntLogFreezeKey = '';
+    var logEl = document.getElementById('battle-log');
+    if (logEl) delete logEl.dataset.battleLogKey;
+  }
+
+  function freezeLogForHuntContinue(victory, currentBattle) {
+    var lines =
+      victory && victory.fullLog && victory.fullLog.length
+        ? victory.fullLog.slice()
+        : currentBattle && currentBattle.log
+          ? currentBattle.log.slice()
+          : [];
+    if (!lines.length) return;
+    var key = lines.join('\u0001');
+    if (huntLogFreezeKey === key) return;
+    huntLogFreezeKey = key;
+    huntLogPrefix = huntLogPrefix.concat(lines);
+    sessionLogHuntChain = true;
+  }
+
+  function getActiveBattleLogLines(battle) {
+    if (!battle) return [];
+    var serverLines = battle.log || [];
+    var combined = sessionLogHuntChain
+      ? huntLogPrefix.concat(serverLines)
+      : serverLines;
+    if (combined.length <= BATTLE_LOG_MAX_VISIBLE) return combined;
+    return combined.slice(-BATTLE_LOG_MAX_VISIBLE);
+  }
 
   function saveVictoryToSession(victory) {
     try {
@@ -398,6 +435,10 @@
     var newestFirst = opts.newestFirst === true;
     var dropItems = opts.items || [];
     var arr = lines || [];
+    var maxLines = opts.maxLines;
+    if (typeof maxLines === 'number' && maxLines > 0 && arr.length > maxLines) {
+      arr = arr.slice(-maxLines);
+    }
     if (newestFirst) {
       arr = arr.slice().reverse();
     }
@@ -868,8 +909,11 @@
       }
     }
     if (logEl) {
-      var lines = battle.log || [];
-      renderColoredLog(logEl, lines, { newestFirst: true });
+      var lines = getActiveBattleLogLines(battle);
+      renderColoredLog(logEl, lines, {
+        newestFirst: true,
+        maxLines: BATTLE_LOG_MAX_VISIBLE,
+      });
       // Не показуємо battle-toast з останнім рядком логу — дублікат «Лог бою».
     }
   }
@@ -1153,6 +1197,7 @@
       character = st.character;
       battle = st.battle;
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      resetHuntLogChain();
       return true;
     }
 
@@ -1547,6 +1592,7 @@
           victory && victory.mobLevel != null
             ? Math.floor(Number(victory.mobLevel))
             : undefined;
+        freezeLogForHuntContinue(victory, battle);
         var ok = await tryStartHuntContinue(excludeId, preferredId, huntLevel);
         if (ok) return;
 
@@ -1719,6 +1765,7 @@
 
     async function goToMap() {
       await runWithBattleNavLock(async function () {
+        resetHuntLogChain();
         if (battle && character && character.revision) {
           var resLm = await leaveBattle(character.revision);
           if (resLm && resLm._err === 409) {
