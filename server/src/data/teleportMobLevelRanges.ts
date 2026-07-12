@@ -3,7 +3,7 @@
  * Резервний каталог — якщо біля точки немає звичайних спавнів.
  */
 
-import { getTeleportDestination } from './mapLocalities.js';
+import { MAP_TOWNS, getTeleportDestination } from './mapLocalities.js';
 import { getMobLevelRangeFromNearbySpawns } from './mapWorldSpawns.js';
 
 export type TeleportMobLevelRange = { min: number; max: number };
@@ -150,8 +150,7 @@ export function getTeleportMobLevelRangeFromCatalog(
   return { min, max };
 }
 
-/** Діапазон для UI телепорту: спочатку реальні спавни на карті, потім каталог-резерв. */
-export function getTeleportMobLevelRange(
+function resolveTeleportMobLevelRange(
   teleportId: string
 ): TeleportMobLevelRange | null {
   const dest = getTeleportDestination(teleportId);
@@ -161,4 +160,26 @@ export function getTeleportMobLevelRange(
   if (fromSpawns) return fromSpawns;
 
   return getTeleportMobLevelRangeFromCatalog(teleportId);
+}
+
+/** Кеш діапазонів: один раз при старті, не на кожен GET /teleport/locations. */
+const TELEPORT_MOB_LEVEL_RANGE_CACHE = new Map<string, TeleportMobLevelRange | null>();
+
+for (const town of MAP_TOWNS) {
+  TELEPORT_MOB_LEVEL_RANGE_CACHE.set(
+    town.teleportId,
+    resolveTeleportMobLevelRange(town.teleportId)
+  );
+}
+
+/** Діапазон для UI телепорту: з кешу (спавни на карті, обчислені при старті). */
+export function getTeleportMobLevelRange(
+  teleportId: string
+): TeleportMobLevelRange | null {
+  const id = String(teleportId || '').trim();
+  if (!id) return null;
+  if (TELEPORT_MOB_LEVEL_RANGE_CACHE.has(id)) {
+    return TELEPORT_MOB_LEVEL_RANGE_CACHE.get(id) ?? null;
+  }
+  return resolveTeleportMobLevelRange(id);
 }
