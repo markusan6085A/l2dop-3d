@@ -20,7 +20,12 @@ import type { Prisma } from '@prisma/client';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
-import { dropsGmPurchaseByShopKeyLower } from '../domain/dropsShopGmItemIdByShopKey.js';
+import {
+  dropsGmPurchaseByShopKeyLower,
+  dropsShopRelPathFromGmIcon,
+  type GmShopPurchaseOffer,
+} from '../domain/dropsShopGmItemIdByShopKey.js';
+import embeddedDropsShopOverrides from '../data/dropsShopOverrides.json';
 import { buildDropsShopStatsPreviewUk } from '../domain/dropsShopStatsPreviewUk.js';
 import {
   L2DOP_DROPS_SHIELD_BY_SHOP_KEY_LOWER,
@@ -103,50 +108,61 @@ const CATEGORY_UK: Record<DropsShopCategory, string> = {
 let overridesCache: OverridesMap | undefined;
 let overridesStatMtimeMs = 0;
 
-function overridesPath(): string {
-  return path.join(process.cwd(), 'server', 'src', 'data', 'dropsShopOverrides.json');
+function overridesPathCandidates(): string[] {
+  const cwd = process.cwd();
+  return [
+    path.join(cwd, 'server', 'src', 'data', 'dropsShopOverrides.json'),
+    path.join(cwd, 'src', 'data', 'dropsShopOverrides.json'),
+  ];
+}
+
+function parseOverridesJson(raw: unknown): OverridesMap {
+  if (!raw || typeof raw !== 'object') return {};
+  const out: OverridesMap = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (k.startsWith('_')) continue;
+    if (!v || typeof v !== 'object') continue;
+    const o = v as Record<string, unknown>;
+    const itemId = Number(o.itemId);
+    const priceAdena = Number(o.priceAdena);
+    if (
+      !Number.isFinite(itemId) ||
+      itemId <= 0 ||
+      !Number.isFinite(priceAdena) ||
+      priceAdena < 0
+    ) {
+      continue;
+    }
+    out[k] = {
+      itemId: Math.floor(itemId),
+      priceAdena: Math.floor(priceAdena),
+    };
+  }
+  return out;
+}
+
+function embeddedOverridesMap(): OverridesMap {
+  return parseOverridesJson(embeddedDropsShopOverrides);
 }
 
 export function loadDropsShopOverrides(): OverridesMap {
-  const p = overridesPath();
-  try {
-    const st = fs.statSync(p);
-    if (overridesCache != null && st.mtimeMs === overridesStatMtimeMs) {
-      return overridesCache;
-    }
-    overridesStatMtimeMs = st.mtimeMs;
-    const raw = fs.readFileSync(p, 'utf8');
-    const j = JSON.parse(raw) as unknown;
-    if (!j || typeof j !== 'object') {
-      overridesCache = {};
-      return overridesCache;
-    }
-    const out: OverridesMap = {};
-    for (const [k, v] of Object.entries(j as Record<string, unknown>)) {
-      if (k.startsWith('_')) continue;
-      if (!v || typeof v !== 'object') continue;
-      const o = v as Record<string, unknown>;
-      const itemId = Number(o.itemId);
-      const priceAdena = Number(o.priceAdena);
-      if (
-        !Number.isFinite(itemId) ||
-        itemId <= 0 ||
-        !Number.isFinite(priceAdena) ||
-        priceAdena < 0
-      ) {
-        continue;
+  for (const p of overridesPathCandidates()) {
+    try {
+      const st = fs.statSync(p);
+      if (overridesCache != null && st.mtimeMs === overridesStatMtimeMs) {
+        return overridesCache;
       }
-      out[k] = {
-        itemId: Math.floor(itemId),
-        priceAdena: Math.floor(priceAdena),
-      };
+      overridesStatMtimeMs = st.mtimeMs;
+      const raw = fs.readFileSync(p, 'utf8');
+      overridesCache = parseOverridesJson(JSON.parse(raw) as unknown);
+      return overridesCache;
+    } catch {
+      // try next candidate
     }
-    overridesCache = out;
-  } catch {
-    overridesCache = {};
-    overridesStatMtimeMs = 0;
   }
-  return overridesCache ?? {};
+  overridesStatMtimeMs = 0;
+  overridesCache = embeddedOverridesMap();
+  return overridesCache;
 }
 
 /** Для тестів / форсування перечитування JSON. */
@@ -210,15 +226,32 @@ export interface DropsShopItemResponse {
   consumableSubtype?: DropsShopConsumableSubtype;
 }
 
+function resolveDropsShopPurchaseOffer(
+  row: DropsShopCatalogRow,
+  overrides: OverridesMap
+): GmShopPurchaseOffer | null {
+  const shopKeyNorm = row.shopKey.replace(/\\/g, '/').toLowerCase();
+  const iconRel = dropsShopRelPathFromGmIcon(row.iconUrl);
+  const o =
+    overrides[row.shopKey] ??
+    overrides[shopKeyNorm] ??
+    (iconRel ? overrides[iconRel] : undefined);
+  if (o) return o;
+
+  const gm = dropsGmPurchaseByShopKeyLower();
+  const gmOffer =
+    (iconRel ? gm.get(iconRel) : undefined) ?? gm.get(shopKeyNorm);
+  return gmOffer ?? null;
+}
+
 function rowToClient(
   row: DropsShopCatalogRow,
   overrides: OverridesMap
 ): DropsShopItemResponse {
-  const o = overrides[row.shopKey];
   const keyNorm = row.shopKey.replace(/\\/g, '/').toLowerCase();
-  const gmOffer = dropsGmPurchaseByShopKeyLower().get(keyNorm);
-  const itemId = o?.itemId ?? gmOffer?.itemId ?? null;
-  const priceAdena = o?.priceAdena ?? gmOffer?.priceAdena ?? null;
+  const offer = resolveDropsShopPurchaseOffer(row, overrides);
+  const itemId = offer?.itemId ?? null;
+  const priceAdena = offer?.priceAdena ?? null;
   const previewItemId = itemId ?? null;
   const previewMeta =
     previewItemId != null ? ITEM_CATALOG[previewItemId] : undefined;
@@ -443,20 +476,10 @@ export async function applyDropsShopPurchase(
   if (!row) throw new Error('drops_shop_unknown');
 
   const overrides = loadDropsShopOverrides();
-  const o = overrides[row.shopKey];
-  const keyNorm = normalized.toLowerCase();
-  const gmOffer = dropsGmPurchaseByShopKeyLower().get(keyNorm);
-  let itemId: number;
-  let priceAdena: bigint;
-  if (o) {
-    itemId = o.itemId;
-    priceAdena = BigInt(o.priceAdena);
-  } else if (gmOffer) {
-    itemId = gmOffer.itemId;
-    priceAdena = BigInt(gmOffer.priceAdena);
-  } else {
-    throw new Error('drops_shop_not_configured');
-  }
+  const offer = resolveDropsShopPurchaseOffer(row, overrides);
+  if (!offer) throw new Error('drops_shop_not_configured');
+  const itemId = offer.itemId;
+  const priceAdena = BigInt(offer.priceAdena);
   const meta = ITEM_CATALOG[itemId];
   if (!meta) throw new Error('drops_shop_bad_item');
   if (!dropsShopItemMatchesCategory(itemId, row.category)) {
@@ -495,6 +518,9 @@ export async function applyDropsShopPurchase(
         const inv = parseInventory(base.inventoryJson);
         const nextInv = addItemToBag(inv, itemId, qty);
         const nextAdena = adena - totalPrice;
+        const invChanged =
+          JSON.stringify(nextInv) !==
+          JSON.stringify(parseInventory(current.inventoryJson));
         const changed =
           base.hp !== current.hp ||
           base.worldX !== current.worldX ||
@@ -505,7 +531,8 @@ export async function applyDropsShopPurchase(
             ((current as CharacterRow).moveStartAt?.getTime() ?? 0) ||
           base.moveFromX !== current.moveFromX ||
           base.moveFromY !== current.moveFromY ||
-          nextAdena !== current.adena;
+          nextAdena !== current.adena ||
+          invChanged;
         if (!changed) return { changed: false };
         return {
           changed: true,
