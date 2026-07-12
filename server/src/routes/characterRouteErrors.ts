@@ -5,13 +5,18 @@ export function characterDbErrorPayload(err: unknown): {
   body: Record<string, unknown>;
 } {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    const hint =
+      err.code === 'P2022'
+        ? 'Не вистачає колонок у таблиці Character. На VPS: npm run db:push і перезапуск сервера.'
+        : err.code === 'P2023'
+          ? 'Тип даних у БД не збігається зі схемою (часто pvpAggressorUntilMs). npm run db:push або server/scripts/repair-pvp-schema.sql'
+          : 'База даних недоступна або схема не збігається з проєктом. Перевір, що PostgreSQL запущений, у server/.env правильний DATABASE_URL, потім у корені репозиторію виконай: npm run db:push';
     return {
       code: 503,
       body: {
         error: 'database_error',
         prismaCode: err.code,
-        messageUk:
-          'База даних недоступна або схема не збігається з проєктом. Перевір, що PostgreSQL запущений, у server/.env правильний DATABASE_URL, потім у корені репозиторію виконай: npm run db:push',
+        messageUk: hint,
       },
     };
   }
