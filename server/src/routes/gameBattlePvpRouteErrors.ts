@@ -4,6 +4,7 @@ const PVP_START_ERRORS: Record<string, string> = {
   pvp_target_unknown: 'Гравця не знайдено.',
   pvp_too_far: 'Підійди ближче — гравець поза радіусом атаки.',
   pvp_target_in_battle: 'Цей гравець уже в бою.',
+  pvp_target_busy: 'Гравець б\'ється з іншим суперником.',
   pvp_self: 'Не можна атакувати себе.',
   already_in_battle: 'Спочатку заверши поточний бій.',
 };

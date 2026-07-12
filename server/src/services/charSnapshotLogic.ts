@@ -15,6 +15,7 @@ import {
   resolveL2ProfessionForSkillsRow,
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { mapMoveSpeedFromRunSpeed } from '../domain/mapMovement.js';
+import { nickColorFromKarmaRow } from '../domain/pvpKarma.js';
 import { parseBattleHotbarSlots } from '../domain/battleHotbar.js';
 import { enrichLearnedSkillsForSnapshot } from './charLearnedSkillsSnapshot.js';
 import {
@@ -323,7 +324,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
       row.profileStatus != null && String(row.profileStatus).trim()
         ? String(row.profileStatus).trim()
         : null,
-    karma: 0,
+    karma: Math.max(0, Math.floor(Number(row.karma) || 0)),
     pk: 0,
     recommendations: 0,
     recommendationsLeft: 0,
@@ -412,5 +413,10 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
       nowMs,
     }),
     battleHotbarSlots: parseBattleHotbarSlots(row.battleHotbarJson),
+    nickColor: nickColorFromKarmaRow(
+      Math.max(0, Math.floor(Number(row.karma) || 0)),
+      row.pvpAggressorUntilMs ?? 0,
+      Date.now()
+    ),
   };
 }

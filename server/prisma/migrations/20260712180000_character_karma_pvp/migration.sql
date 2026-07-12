@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Character" ADD COLUMN "karma" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "Character" ADD COLUMN "pvpAggressorUntilMs" BIGINT NOT NULL DEFAULT 0;

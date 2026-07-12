@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
+import { findPvpIncomingForCharacter } from './pvpIncomingService.js';
+import type { PvpIncomingAttack } from './pvpIncomingService.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
   BATTLE_RANGE,
@@ -264,7 +266,11 @@ export async function startBattle(
 
 export async function getBattleState(
   userId: string
-): Promise<{ character: CharacterSnapshot; battle: BattleView | null } | null> {
+): Promise<{
+  character: CharacterSnapshot;
+  battle: BattleView | null;
+  pvpIncoming: PvpIncomingAttack | null;
+} | null> {
   let row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
@@ -278,10 +284,11 @@ export async function getBattleState(
   )) as CharacterRow;
   row = (await applyPassiveAndMove(row as CharacterRow)) as CharacterRow;
   const snap = toSnapshot(row as CharacterRow);
+  const pvpIncoming = await findPvpIncomingForCharacter(snap.id);
   const bj = parseBattleJson((row as CharacterRow).battleJson);
-  if (!bj) return { character: snap, battle: null };
+  if (!bj) return { character: snap, battle: null, pvpIncoming };
   const spawnMeta = resolveBattleSpawnMeta(bj);
-  if (!spawnMeta) return { character: snap, battle: null };
+  if (!spawnMeta) return { character: snap, battle: null, pvpIncoming };
   const cr = row as CharacterRow;
   const prof =
     typeof cr.l2Profession === 'string' && cr.l2Profession.trim()
@@ -320,7 +327,7 @@ export async function getBattleState(
       snap.learnedBattleSkillsDetail
     )
   );
-  return { character: snap, battle: view };
+  return { character: snap, battle: view, pvpIncoming };
 }
 
 export async function leaveBattle(

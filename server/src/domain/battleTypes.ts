@@ -240,10 +240,15 @@ export interface BattleJsonState {
    * Див. `LEGACY_BUFF_STRIP_BY_SKILL_ID` у `battleServicePerformBattleAction`.
    */
   battleModsExpiresAtMsBySkillId?: Record<string, number>;
-  /**
-   * До 2 додаткових мобів у радіусі бою (не головна ціль); HP зменшуються при успішному Вихорі.
+  /** До 2 додаткових мобів у радіусі бою (не головна ціль); HP зменшуються при успішному Вихорі.
    */
   whirlwindExtras?: WhirlwindExtraMobJson[];
+  /**
+   * PvP: жертва вступила в бій / завдала урон — безкармове вбивство неможливе.
+   */
+  pvpVictimFoughtBack?: boolean;
+  /** PvP: цей гравець першим розпочав атаку (для карми). */
+  pvpIsAggressor?: boolean;
   /**
    * Після успішного Вихору: скільки наступних базових автоатак мають cleave по `whirlwindExtras`.
    * Зараз використовуємо 1 (лише наступна автоатака).

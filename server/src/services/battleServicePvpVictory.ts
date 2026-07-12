@@ -1,4 +1,5 @@
-import { Prisma } from '@prisma/client';import {
+import { Prisma } from '@prisma/client';
+import {
   computeCombatStats,
   effectiveMaxMpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
@@ -7,6 +8,7 @@ import { parseInventory } from '../data/inventory.js';
 import type { BattleJsonState } from '../domain/battle.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
+import { PVP_KILL_KARMA_GAIN } from '../domain/pvpKarma.js';
 import {
   combatOptsFromRow,
   GameConflictError,
@@ -20,7 +22,7 @@ import type { BattleSpawnMeta } from '../domain/battlePvpContext.js';
 
 type Tx = Prisma.TransactionClient;
 
-/** PvP-перемога: без луту/EXP, лише завершення бою. */
+/** PvP-перемога: без луту/EXP; карма за PK без відсічі. */
 export async function persistPvpVictoryInTx(
   tx: Tx,
   args: {
@@ -53,6 +55,26 @@ export async function persistPvpVictoryInTx(
   const trimmedLog = log.slice(-MAX_BATTLE_LOG);
   trimmedLog.push('Перемога в PvP над [' + spawn.name + ']!');
 
+  const victimId = st.pvpTargetCharacterId
+    ? String(st.pvpTargetCharacterId).trim()
+    : '';
+  const unfairKill =
+    st.pvpIsAggressor === true && !st.pvpVictimFoughtBack;
+  const karmaGain = unfairKill ? PVP_KILL_KARMA_GAIN : 0;
+  if (karmaGain > 0) {
+    trimmedLog.push('Карма +' + karmaGain + '.');
+  }
+
+  if (victimId) {
+    await tx.character.update({
+      where: { id: victimId },
+      data: {
+        hp: 0,
+        battleJson: Prisma.JsonNull,
+      },
+    });
+  }
+
   const cr = char;
   const inv = parseInventory(cr.inventoryJson);
   const combat = computeCombatStats(
@@ -76,6 +98,11 @@ export async function persistPvpVictoryInTx(
     Date.now()
   );
 
+  const nextKarma = Math.max(
+    0,
+    Math.floor(Number(char.karma) || 0) + karmaGain
+  );
+
   const result = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -84,6 +111,7 @@ export async function persistPvpVictoryInTx(
       changed: true,
       data: {
         hp: Math.max(0, Math.floor(playerHp)),
+        karma: nextKarma,
         battleJson: Prisma.JsonNull,
         worldCombatStateJson: worldLeave
           ? (JSON.parse(JSON.stringify(worldLeave)) as Prisma.InputJsonValue)

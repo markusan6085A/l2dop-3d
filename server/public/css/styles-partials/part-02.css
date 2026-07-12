@@ -1041,19 +1041,26 @@ body.l2-page-map .l2-screen-inner {
 
 .l2-map-hero-pin {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  margin: -5px 0 0 -5px;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
   padding: 0;
   border: none;
   border-radius: 50%;
   background: #0a0a0a;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.28),
-    0 0 4px rgba(0, 0, 0, 0.95);
+    0 0 0 2px rgba(255, 255, 255, 0.35),
+    0 0 6px rgba(0, 0, 0, 0.95);
   pointer-events: auto;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+.l2-map-hero-pin--aggressor {
+  background: #a060d8;
+  box-shadow:
+    0 0 0 2px rgba(200, 160, 255, 0.45),
+    0 0 8px rgba(160, 96, 216, 0.85);
 }
 
 .l2-map-hero-pin--pk {

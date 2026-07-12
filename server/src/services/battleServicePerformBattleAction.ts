@@ -71,6 +71,7 @@ import {
   persistBattleVictoryInTx,
 } from './battleServiceBattleOutcomeTx.js';
 import { persistPvpVictoryInTx } from './battleServicePvpVictory.js';
+import { applyPvpHitToVictimInTx } from './battleServicePvpDamage.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -781,6 +782,19 @@ export async function performBattleAction(
     const landedMagicHit =
       pDmg > 0 && magicOutcome != null && magicOutcome !== 'miss';
     const damagingPlayerHit = landedPhysicalHit || landedMagicHit;
+
+    if (
+      isPvpBattleJson(st) &&
+      damagingPlayerHit &&
+      st.pvpTargetCharacterId
+    ) {
+      await applyPvpHitToVictimInTx(tx, {
+        victimId: st.pvpTargetCharacterId,
+        attackerId: char.id,
+        damage: pDmg,
+        nowMs: Date.now(),
+      });
+    }
 
     if (
       isFighterClassBranch(char.classBranch) &&

@@ -50,6 +50,7 @@ import {
   findNextSameLevelHuntSpawn,
   HUNT_LEVEL_TOLERANCE,
 } from '../domain/battleHuntChain.js';
+import { MOB_KILL_KARMA_WASH } from '../domain/pvpKarma.js';
 import { resolvedWorldPositionFromCharacterRow } from './mapAroundService.js';
 
 type Tx = Prisma.TransactionClient;
@@ -150,6 +151,8 @@ export async function persistBattleVictoryInTx(
 
   void userId;
   const nowVictoryMs = Date.now();
+  const karmaBefore = Math.max(0, Math.floor(Number(char.karma) || 0));
+  const karmaAfter = Math.max(0, karmaBefore - MOB_KILL_KARMA_WASH);
   let mobHpAfterVictory = parseMobSpawnHpState(char.mobSpawnHpJson, nowVictoryMs);
   if (isRegularMobRespawnKind(spawn.kind)) {
     mobHpAfterVictory = setMobSpawnRespawnEntry(
@@ -174,6 +177,7 @@ export async function persistBattleVictoryInTx(
         exp: newExp,
         sp: { increment: loot.spGain },
         mobsKilled: { increment: 1 },
+        karma: karmaAfter,
         inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
         battleJson: Prisma.JsonNull,
         mobSpawnHpJson: serializeMobSpawnHpState(mobHpAfterVictory),

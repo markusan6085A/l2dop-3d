@@ -6,6 +6,10 @@ import { getMapAroundAt } from './mapAroundService.js';
 import { getMapWorldSpawnsNearPlayer } from './mapSpawnsService.js';
 import { computePassiveHpRegenPatch } from './charPassiveRegen.js';
 import type { CharacterRow } from './charTypes.js';
+import {
+  findPvpIncomingForCharacter,
+  type PvpIncomingAttack,
+} from './pvpIncomingService.js';
 
 /** Легкий зріз для карти / HUD (без інвентаря й каталогів). */
 export interface CharacterMapStatePayload {
@@ -95,6 +99,7 @@ export interface MapSyncPayload {
   mapState: CharacterMapStatePayload;
   around: Awaited<ReturnType<typeof getMapAroundAt>>;
   spawns: ReturnType<typeof getMapWorldSpawnsNearPlayer>;
+  pvpIncoming: PvpIncomingAttack | null;
 }
 
 /** Один poll для map.html: позиція + околиці + маркери. */
@@ -131,5 +136,6 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
       mobSpawnHpJson,
       nowMs
     ),
+    pvpIncoming: await findPvpIncomingForCharacter(mapState.id),
   };
 }

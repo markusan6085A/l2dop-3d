@@ -532,6 +532,48 @@ button.l2-map-mob-title--tap-full:focus {
   cursor: default;
 }
 
+.l2-pvp-nick--pk,
+.l2-map-hero-name-link.l2-pvp-nick--pk {
+  color: #e85840 !important;
+}
+
+.l2-pvp-nick--aggressor,
+.l2-map-hero-name-link.l2-pvp-nick--aggressor {
+  color: #a060d8 !important;
+}
+
+.l2-pvp-incoming {
+  margin: 4px 0 0;
+  padding: 2px 4px 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.l2-pvp-incoming__nick {
+  font-weight: 700;
+}
+
+.l2-pvp-incoming__attack {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 700;
+  color: #e85840;
+  cursor: pointer;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-pvp-incoming__attack:hover,
+.l2-pvp-incoming__attack:focus {
+  color: #ff6644;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .l2-map-mob-detail {
   margin: 0 0 10px;
   padding: 10px 8px 12px;

@@ -13,6 +13,7 @@ import {
 import { craftResourceIconHintsForClient } from '../data/resourceCraftIconHints.js';
 import { itemBlocksShieldHintsForClient } from '../data/l2dopTwoHandedWeapon.js';
 import { getSnapshotForUser } from '../services/charService.js';
+import { findPvpIncomingForCharacter } from '../services/pvpIncomingService.js';
 import { getCharacterMapStateForUser } from '../services/charMapStateService.js';
 import { getMagisterDialogForUser } from '../services/skillLearnService.js';
 import { characterDbErrorPayload } from './characterRouteErrors.js';
@@ -50,6 +51,7 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         }
         return reply.send({
           character,
+          pvpIncoming: await findPvpIncomingForCharacter(character.id),
         });
       } catch (err) {
         request.log.error({ err }, 'GET /character');

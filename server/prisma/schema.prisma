@@ -36,6 +36,10 @@ model Character {
   sp         Int      @default(0)
   /** Убито мобів (PvE) — лічильник з бою. */
   mobsKilled Int      @default(0)
+  /** PvP-карма (PK). Змивається мобами (−15 за kill). */
+  karma      Int      @default(0)
+  /** До якого часу (epoch ms) нік агресора фіолетовий після удару в PvP. */
+  pvpAggressorUntilMs BigInt @default(0)
   /** Текст статусу профілю — видимий іншим гравцям на player.html. */
   profileStatus String?
   /** Інвентар + екіп: stacks [{ itemId, qty, enchant? }], eq слот: itemId або { itemId, enchant? } — як l2dop eqbonus */

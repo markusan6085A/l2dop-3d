@@ -5,8 +5,16 @@ import {
   resolveMapMovement,
   type MapMovementFields,
 } from '../domain/mapMovement.js';
+import {
+  isPvpBattleJson,
+} from '../domain/battlePvpContext.js';
+import {
+  resolvePvpNickColor,
+  type PvpNickColor,
+} from '../domain/pvpKarma.js';
 import { prisma } from '../lib/prisma.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
+import { parseBattleJson } from './battleServiceParseBattleJson.js';
 
 /** Герой у радіусі обзору карти (як nearbySpawns для мобів). */
 export interface NearbyHeroEntry {
@@ -16,12 +24,17 @@ export interface NearbyHeroEntry {
   worldX: number;
   worldY: number;
   distance: number;
-  /** У радіусі атаки (BATTLE_RANGE) — для майбутнього PvP/PK. */
+  /** У радіусі атаки (BATTLE_RANGE). */
   inBattleRange: boolean;
   inBattle: boolean;
+  /** Можна натиснути [pk] — не зайнятий чужим PvP. */
+  canPkAttack: boolean;
+  /** Колір ніка: default | aggressor | pk */
+  pvpNickColor: PvpNickColor;
   isOnline: boolean;
   gender: string;
   l2Profession: string;
+  /** Карма > 0 — для маркера PK. */
   pk: number;
 }
 
@@ -44,6 +57,8 @@ const HERO_MAP_SELECT = {
   l2Profession: true,
   gender: true,
   battleJson: true,
+  karma: true,
+  pvpAggressorUntilMs: true,
   activeBuffsJson: true,
   buffHeroicTier: true,
   buffZealotStacks: true,
@@ -58,14 +73,27 @@ type HeroMapRow = MapMovementFields & {
   l2Profession: string;
   gender: string;
   battleJson: unknown;
+  karma: number;
+  pvpAggressorUntilMs: bigint;
 };
+
+function canPkAttackHero(
+  row: HeroMapRow,
+  viewerCharacterId: string
+): boolean {
+  if (!row.battleJson) return true;
+  const bj = parseBattleJson(row.battleJson);
+  if (!bj) return false;
+  if (!isPvpBattleJson(bj)) return true;
+  return bj.pvpTargetCharacterId === viewerCharacterId;
+}
 
 /** Read-only: герої в радіусі MAP_NEARBY_LIST_RADIUS (без мутацій позиції в БД). */
 export async function getNearbyHeroesForMap(
   worldX: number,
   worldY: number,
   excludeCharacterId: string,
-  _nowMs: number = Date.now()
+  nowMs: number = Date.now()
 ): Promise<NearbyHeroEntry[]> {
   const R = MAP_NEARBY_LIST_RADIUS;
   const R2 = R * R;
@@ -92,6 +120,13 @@ export async function getNearbyHeroesForMap(
     const dy = hy - worldY;
     if (dx * dx + dy * dy > R2) continue;
     const d = Math.hypot(dx, dy);
+    const karma = Math.max(0, Math.floor(Number(row.karma) || 0));
+    const pvpNickColor = resolvePvpNickColor(
+      karma,
+      row.pvpAggressorUntilMs,
+      nowMs
+    );
+    const pkAllowed = canPkAttackHero(row, exclude);
     candidates.push({
       characterId: row.id,
       name: row.name,
@@ -101,10 +136,12 @@ export async function getNearbyHeroesForMap(
       distance: Math.round(d),
       inBattleRange: d <= BATTLE_RANGE,
       inBattle: row.battleJson != null,
+      canPkAttack: pkAllowed,
+      pvpNickColor,
       isOnline: isCharacterOnlineNow(row.id),
       gender: row.gender || 'male',
       l2Profession: row.l2Profession || '',
-      pk: 0,
+      pk: karma > 0 ? karma : 0,
     });
   }
 

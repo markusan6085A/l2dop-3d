@@ -22,6 +22,10 @@ export interface CharacterRow {
   exp: bigint;
   sp: number;
   mobsKilled: number;
+  /** PvP-карма (PK). */
+  karma: number;
+  /** До якого часу (epoch ms) нік агресора фіолетовий. */
+  pvpAggressorUntilMs: bigint;
   /** Текст статусу профілю для інших гравців. */
   profileStatus: string | null;
   revision: number;
@@ -178,4 +182,6 @@ export interface CharacterSnapshot {
   castableSelfBuffs: CastableSelfBuffEntry[];
   /** Розкладка панелі скілів у бою (41 слот); `null` — ще не збережено. */
   battleHotbarSlots: (BattleHotbarSlot | null)[] | null;
+  /** Колір ніка для HUD (#rrggbb): карма / агресор / стандарт. */
+  nickColor: string;
 }

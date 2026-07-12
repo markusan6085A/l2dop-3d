@@ -427,6 +427,21 @@
     return Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
   }
 
+  function heroNickClass(h) {
+    var base = 'l2-map-hero-name-link';
+    if (!h) return base;
+    if (h.pvpNickColor === 'pk') return base + ' l2-pvp-nick--pk';
+    if (h.pvpNickColor === 'aggressor') return base + ' l2-pvp-nick--aggressor';
+    return base;
+  }
+
+  function applyPvpIncomingFromSync(sync) {
+    if (!window.L2 || typeof L2.applyPvpIncoming !== 'function') return;
+    L2.applyPvpIncoming(sync && sync.pvpIncoming ? sync.pvpIncoming : null, function (cid) {
+      if (cid) startPvpFromMap(cid);
+    });
+  }
+
   function appendHeroRow(listEl, h) {
     var li = document.createElement('li');
     li.className = 'l2-map-hero-item';
@@ -434,7 +449,7 @@
     main.className = 'l2-map-hero-item__main';
 
     var nameLink = document.createElement('a');
-    nameLink.className = 'l2-map-hero-name-link';
+    nameLink.className = heroNickClass(h);
     nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
     nameLink.textContent = h.name || '—';
 
@@ -447,9 +462,12 @@
     pkBtn.className = 'l2-map-hero-link__pk';
     pkBtn.textContent = ' [pk]';
     pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
-    if (!h.inBattleRange || h.inBattle) {
+    var canPk = h.inBattleRange && h.canPkAttack !== false;
+    if (!canPk) {
       pkBtn.disabled = true;
-      pkBtn.title = h.inBattle ? 'Гравець у бою' : 'Занадто далеко';
+      if (!h.inBattleRange) pkBtn.title = 'Занадто далеко';
+      else if (h.inBattle && !h.canPkAttack) pkBtn.title = 'Гравець у чужому PvP';
+      else pkBtn.title = 'Недоступно';
     } else {
       pkBtn.addEventListener('click', function (e) {
         e.preventDefault();
@@ -488,9 +506,8 @@
       var ly = (p.my / img.naturalHeight) * 100;
       var pin = document.createElement('div');
       pin.className = 'l2-map-hero-pin';
-      pin.setAttribute('role', 'button');
-      pin.tabIndex = 0;
-      if (Number(h.pk) > 0) pin.className += ' l2-map-hero-pin--pk';
+      if (h.pvpNickColor === 'pk') pin.className += ' l2-map-hero-pin--pk';
+      else if (h.pvpNickColor === 'aggressor') pin.className += ' l2-map-hero-pin--aggressor';
       pin.style.left = lx + '%';
       pin.style.top = ly + '%';
       var title = (h.name || '—') + (h.level ? ' · ур. ' + h.level : '');
@@ -961,6 +978,9 @@
 
     aroundData = (await aroundPromise) || { nearbySpawns: [], nearbyHeroes: [] };
     worldSpawns = (await spawnsPromise) || [];
+    var sync0 = await loadMapSync();
+    if (sync0 && sync0.around) aroundData = sync0.around;
+    applyPvpIncomingFromSync(sync0);
     if (c) paintMain(false);
 
     var mobModal = $('map-mob-modal');
@@ -1295,6 +1315,7 @@
         }
         aroundData = sync.around;
         worldSpawns = sync.spawns || [];
+        applyPvpIncomingFromSync(sync);
         paintMain(false);
         renderMobMarkers(img, markersLayer, worldSpawns);
       }

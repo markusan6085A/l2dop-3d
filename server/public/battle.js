@@ -1096,6 +1096,12 @@
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(state.character);
     }
+    if (window.L2 && typeof L2.applyPvpIncoming === 'function') {
+      L2.applyPvpIncoming(state.pvpIncoming || null, function (cid) {
+        if (!cid) return;
+        window.location.href = '/battle.html?pvpTargetId=' + encodeURIComponent(cid);
+      });
+    }
     if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
       await L2.fetchCatalogHints();
     } else if (

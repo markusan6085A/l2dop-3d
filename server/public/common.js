@@ -908,7 +908,8 @@
           '<div class="l2-hud-legacy-line l2-hud-legacy-line--cp"><span class="l2-hud-legacy-key">CP:</span><span class="l2-hud-legacy-val" id="l2-hud-cp-cur">—</span></div>' +
           '<div class="l2-hud-legacy-line l2-hud-legacy-line--exp"><span class="l2-hud-legacy-key">EXP:</span><span class="l2-hud-legacy-val" id="l2-hud-exp-pct">0.00 %</span></div>' +
           '</div>' +
-          '</header>'
+          '</header>' +
+          global.L2.getPvpIncomingMarkup()
         );
       }
       return (
@@ -943,8 +944,41 @@
         '<div class="l2-hud-stat-inner" id="l2-hud-cp-inner" style="width:0%"></div>' +
         '<span class="l2-hud-city-bar-nums"><span id="l2-hud-cp-cur">—</span>/<span id="l2-hud-cp-max">—</span></span>' +
         '</div></div>' +
-        '</div></div></header>'
+        '</div></div></header>' +
+        global.L2.getPvpIncomingMarkup()
       );
+    },
+
+    getPvpIncomingMarkup: function () {
+      return (
+        '<div id="l2-pvp-incoming" class="l2-pvp-incoming" hidden>' +
+        '<span class="l2-pvp-incoming__nick l2-pvp-nick--aggressor" id="l2-pvp-incoming-nick"></span> ' +
+        '<button type="button" class="l2-pvp-incoming__attack" id="l2-pvp-incoming-attack">Атакувати</button>' +
+        '</div>'
+      );
+    },
+
+    applyPvpIncoming: function (incoming, onAttack) {
+      var box = document.getElementById('l2-pvp-incoming');
+      if (!box) return;
+      var nickEl = document.getElementById('l2-pvp-incoming-nick');
+      var atkEl = document.getElementById('l2-pvp-incoming-attack');
+      if (!incoming || !incoming.attackerCharacterId) {
+        box.hidden = true;
+        return;
+      }
+      box.hidden = false;
+      if (nickEl) {
+        nickEl.textContent = incoming.attackerName || '—';
+      }
+      if (atkEl) {
+        atkEl.onclick = function (ev) {
+          ev.preventDefault();
+          if (typeof onAttack === 'function') {
+            onAttack(incoming.attackerCharacterId);
+          }
+        };
+      }
     },
 
     mountStandardHudPanel: function () {
@@ -959,10 +993,17 @@
       var tpl = document.createElement('template');
       /* template розбирає одразу вузол <header> */
       tpl.innerHTML = html;
-      var node = tpl.content.firstElementChild;
+      var node = tpl.content.querySelector('.l2-hud-panel');
+      var incoming = tpl.content.getElementById('l2-pvp-incoming');
       if (!node || !node.classList.contains('l2-hud-panel')) return;
+      function mountAfterHeader(header) {
+        if (incoming && !document.getElementById('l2-pvp-incoming')) {
+          header.insertAdjacentElement('afterend', incoming);
+        }
+      }
       if (m) {
         m.replaceWith(node);
+        mountAfterHeader(node);
         return;
       }
       if (existing) {
@@ -971,6 +1012,7 @@
         var hasStrip = existing.classList.contains('l2-hud-panel--city-strip');
         if ((needLegacy && !hasLegacy) || (!needLegacy && !hasStrip)) {
           existing.replaceWith(node);
+          mountAfterHeader(node);
         }
       }
     },

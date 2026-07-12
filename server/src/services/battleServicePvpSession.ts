@@ -9,6 +9,7 @@ import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { parseInventory } from '../data/inventory.js';
 import { BATTLE_RANGE, type BattleJsonState } from '../domain/battle.js';
 import {
+  isPvpBattleJson,
   pvpSpawnIdForCharacter,
 } from '../domain/battlePvpContext.js';
 import {
@@ -27,6 +28,7 @@ import {
 } from './charService.js';
 import { parseSkillsLearnedJson } from './skillLearnService.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
+import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { battleViewFromState, skillCooldownUiContextFromParts } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
@@ -65,6 +67,71 @@ function opponentCombatFromRow(row: CharacterRow) {
   };
 }
 
+function buildPvpBattleView(
+  attackerRow: CharacterRow,
+  st: BattleJsonState,
+  opp: ReturnType<typeof opponentCombatFromRow>,
+  snap: CharacterSnapshot
+): BattleView {
+  const effLv0 = levelFromTotalExp(attackerRow.exp);
+  const prof0 =
+    typeof attackerRow.l2Profession === 'string' && attackerRow.l2Profession.trim()
+      ? attackerRow.l2Profession.trim()
+      : 'human_fighter';
+  const learned0 = parseSkillsLearnedJson(
+    attackerRow.skillsLearnedJson,
+    prof0,
+    attackerRow.race,
+    attackerRow.classBranch
+  );
+  return battleViewFromState(
+    st.spawnId,
+    st,
+    {
+      name: opp.name,
+      level: opp.effLv,
+      aggressive: true,
+      kind: 'aggressive',
+    },
+    effLv0,
+    attackerRow.race,
+    attackerRow.classBranch,
+    learned0,
+    prof0,
+    parseInventory(attackerRow.inventoryJson),
+    persistableActiveBuffsFromJson(attackerRow.activeBuffsJson, Date.now()),
+    parseSkillCooldowns(attackerRow.skillCooldownsJson, Date.now()),
+    skillCooldownUiContextFromParts(
+      attackerRow.classBranch,
+      snap.castSpd,
+      snap.pAtkSpd,
+      snap.learnedBattleSkillsDetail
+    )
+  );
+}
+
+async function markAggressorVictimFoughtBackInTx(
+  tx: Prisma.TransactionClient,
+  aggressorId: string,
+  defenderId: string
+): Promise<void> {
+  const aggressor = await tx.character.findFirst({
+    where: { id: aggressorId },
+  });
+  if (!aggressor) return;
+  const bj = parseBattleJson(aggressor.battleJson);
+  if (!bj || !isPvpBattleJson(bj) || bj.pvpTargetCharacterId !== defenderId) return;
+  await tx.character.update({
+    where: { id: aggressorId },
+    data: {
+      battleJson: serializeBattleJsonForDb({
+        ...bj,
+        pvpVictimFoughtBack: true,
+      }),
+    },
+  });
+}
+
 export async function startPvpBattleInTx(
   tx: Prisma.TransactionClient,
   userId: string,
@@ -80,13 +147,52 @@ export async function startPvpBattleInTx(
   });
   if (!attackerRow) throw new Error('no_character');
   if (attackerRow.id === targetId) throw new Error('pvp_self');
+
+  const existingBj = parseBattleJson(attackerRow.battleJson);
+  if (existingBj && isPvpBattleJson(existingBj)) {
+    if (existingBj.pvpTargetCharacterId === targetId) {
+      const atkBase = resolveMapMovement(
+        applyPassiveHpRegen(attackerRow as CharacterRow)
+      );
+      const targetRow = await tx.character.findFirst({
+        where: { id: targetId },
+      });
+      if (!targetRow) throw new Error('pvp_target_unknown');
+      const opp = opponentCombatFromRow(targetRow as CharacterRow);
+      const snap = toSnapshot(atkBase as CharacterRow);
+      const st = {
+        ...existingBj,
+        mobHp: Math.max(0, Math.min(opp.maxHp, targetRow.hp)),
+        mobMaxHp: opp.maxHp,
+      };
+      return {
+        character: snap,
+        battle: buildPvpBattleView(atkBase as CharacterRow, st, opp, snap),
+      };
+    }
+    throw new Error('already_in_battle');
+  }
   if (attackerRow.battleJson != null) throw new Error('already_in_battle');
 
   const targetRow = await tx.character.findFirst({
     where: { id: targetId },
   });
   if (!targetRow) throw new Error('pvp_target_unknown');
-  if (targetRow.battleJson != null) throw new Error('pvp_target_in_battle');
+
+  const tgtBj = parseBattleJson(targetRow.battleJson);
+  let defenderCounter = false;
+  if (tgtBj && isPvpBattleJson(tgtBj)) {
+    if (tgtBj.pvpTargetCharacterId === attackerRow.id) {
+      defenderCounter = true;
+      await markAggressorVictimFoughtBackInTx(
+        tx,
+        targetId,
+        attackerRow.id
+      );
+    } else {
+      throw new Error('pvp_target_busy');
+    }
+  }
 
   const atkBase = resolveMapMovement(applyPassiveHpRegen(attackerRow as CharacterRow));
   const tgtBase = resolveMapMovement(applyPassiveHpRegen(targetRow as CharacterRow));
@@ -100,7 +206,9 @@ export async function startPvpBattleInTx(
 
   const opp = opponentCombatFromRow(tgtBase as CharacterRow);
   const startLog = [
-    'PvP-бій розпочато: [' + opp.name + '] (ур. ' + opp.effLv + ').',
+    defenderCounter
+      ? 'Відсіч у PvP: [' + opp.name + '] (ур. ' + opp.effLv + ').'
+      : 'PvP-бій розпочато: [' + opp.name + '] (ур. ' + opp.effLv + ').',
   ];
 
   const inv0 = parseInventory(atkBase.inventoryJson);
@@ -135,6 +243,7 @@ export async function startPvpBattleInTx(
     pvpTargetCharacterId: targetId,
     pvpTargetName: opp.name,
     pvpTargetLevel: opp.effLv,
+    pvpIsAggressor: !defenderCounter,
     mobHp: opp.hp,
     mobMaxHp: opp.maxHp,
     mobPAtk: opp.pAtk,
@@ -183,40 +292,7 @@ export async function startPvpBattleInTx(
 
   const row = result.character as CharacterRow;
   const snap = toSnapshot(row);
-  const prof0 =
-    typeof atkBase.l2Profession === 'string' && atkBase.l2Profession.trim()
-      ? atkBase.l2Profession.trim()
-      : 'human_fighter';
-  const learned0 = parseSkillsLearnedJson(
-    atkBase.skillsLearnedJson,
-    prof0,
-    atkBase.race,
-    atkBase.classBranch
-  );
-  const view = battleViewFromState(
-    spawnId,
-    st,
-    {
-      name: opp.name,
-      level: opp.effLv,
-      aggressive: true,
-      kind: 'aggressive',
-    },
-    effLv0,
-    atkBase.race,
-    atkBase.classBranch,
-    learned0,
-    prof0,
-    parseInventory(atkBase.inventoryJson),
-    persistableActiveBuffsFromJson(row.activeBuffsJson, Date.now()),
-    parseSkillCooldowns(row.skillCooldownsJson, Date.now()),
-    skillCooldownUiContextFromParts(
-      atkBase.classBranch,
-      snap.castSpd,
-      snap.pAtkSpd,
-      snap.learnedBattleSkillsDetail
-    )
-  );
+  const view = buildPvpBattleView(row, st, opp, snap);
   return { character: snap, battle: view };
 }
 
