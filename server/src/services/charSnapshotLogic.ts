@@ -425,6 +425,9 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
       return {
         killerName: pending.killerName,
         killerCharacterId: pending.killerCharacterId,
+        ...(pending.fullLog && pending.fullLog.length > 0
+          ? { fullLog: pending.fullLog }
+          : {}),
       };
     })(),
   };

@@ -105,7 +105,11 @@ export interface MapSyncPayload {
   };
   spawns: ReturnType<typeof buildMapNearbySpawnViews>['markerEntries'];
   pvpIncoming: PvpIncomingAttack | null;
-  pvpDefeat: { killerName: string; killerCharacterId: string } | null;
+  pvpDefeat: {
+    killerName: string;
+    killerCharacterId: string;
+    fullLog?: string[];
+  } | null;
 }
 
 /** Один poll для map.html: позиція + околиці + маркери (один spatial-запит). */
@@ -127,6 +131,9 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
     ? {
         killerName: pendingDefeat.killerName,
         killerCharacterId: pendingDefeat.killerCharacterId,
+        ...(pendingDefeat.fullLog && pendingDefeat.fullLog.length > 0
+          ? { fullLog: pendingDefeat.fullLog }
+          : {}),
       }
     : null;
 

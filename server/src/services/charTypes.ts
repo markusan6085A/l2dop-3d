@@ -189,5 +189,6 @@ export interface CharacterSnapshot {
   pvpDefeat: {
     killerName: string;
     killerCharacterId: string;
+    fullLog?: string[];
   } | null;
 }

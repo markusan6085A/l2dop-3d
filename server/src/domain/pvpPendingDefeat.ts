@@ -4,6 +4,7 @@ export interface PvpPendingDefeat {
   killerName: string;
   killerCharacterId: string;
   atMs: number;
+  fullLog?: string[];
 }
 
 export function parsePvpPendingDefeat(
@@ -19,10 +20,14 @@ export function parsePvpPendingDefeat(
       : '';
   const atMs = Number(r.atMs);
   if (!killerName || !killerCharacterId || !Number.isFinite(atMs)) return null;
+  const fullLog = Array.isArray(r.fullLog)
+    ? r.fullLog.map((x) => String(x)).filter((x) => x.length > 0)
+    : undefined;
   return {
     killerName,
     killerCharacterId,
     atMs: Math.floor(atMs),
+    ...(fullLog && fullLog.length > 0 ? { fullLog } : {}),
   };
 }
 

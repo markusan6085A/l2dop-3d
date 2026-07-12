@@ -723,9 +723,13 @@
       ].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el) return;
-        if (id === 'l2-hud-exp-pct' && el.classList.contains('l2-hud-legacy-val')) {
-          el.textContent = global.L2.formatLegacyExpPctText(0);
-          return;
+        if (id === 'l2-hud-exp-pct') {
+          var legacyHud =
+            document.body && document.body.classList.contains('l2-nav-minimal');
+          if (legacyHud) {
+            el.textContent = global.L2.formatLegacyExpPctText(0);
+            return;
+          }
         }
         el.textContent = '—';
       });
@@ -903,10 +907,31 @@
           ' - ' +
           '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
           '</div>' +
-          '<div class="l2-hud-legacy-line l2-hud-legacy-line--hp"><span class="l2-hud-legacy-key">HP:</span><span class="l2-hud-legacy-val" id="l2-hud-hp-cur">—</span></div>' +
-          '<div class="l2-hud-legacy-line l2-hud-legacy-line--mp"><span class="l2-hud-legacy-key">MP:</span><span class="l2-hud-legacy-val" id="l2-hud-mp-cur">—</span></div>' +
-          '<div class="l2-hud-legacy-line l2-hud-legacy-line--cp"><span class="l2-hud-legacy-key">CP:</span><span class="l2-hud-legacy-val" id="l2-hud-cp-cur">—</span></div>' +
-          '<div class="l2-hud-legacy-line l2-hud-legacy-line--exp"><span class="l2-hud-legacy-key">EXP:</span><span class="l2-hud-legacy-val" id="l2-hud-exp-pct">0.00 %</span></div>' +
+          '<div class="l2-hud-legacy-bars" role="group" aria-label="HP, MP, CP, досвід">' +
+          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--hp">' +
+          '<div class="l2-hud-legacy-bar-outer">' +
+          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-hp-inner" style="width:0%"></div>' +
+          '<span class="l2-hud-legacy-bar-lbl">HP</span>' +
+          '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></span>' +
+          '</div></div>' +
+          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--mp">' +
+          '<div class="l2-hud-legacy-bar-outer">' +
+          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-mp-inner" style="width:0%"></div>' +
+          '<span class="l2-hud-legacy-bar-lbl">MP</span>' +
+          '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></span>' +
+          '</div></div>' +
+          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--cp">' +
+          '<div class="l2-hud-legacy-bar-outer">' +
+          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-cp-inner" style="width:0%"></div>' +
+          '<span class="l2-hud-legacy-bar-lbl">CP</span>' +
+          '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-cp-cur">—</span>/<span id="l2-hud-cp-max">—</span></span>' +
+          '</div></div>' +
+          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--exp">' +
+          '<div class="l2-hud-legacy-bar-outer">' +
+          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-exp-fill" style="width:0%"></div>' +
+          '<span class="l2-hud-legacy-bar-val" id="l2-hud-exp-pct">0.00 %</span>' +
+          '</div></div>' +
+          '</div>' +
           '</div>' +
           '</header>' +
           global.L2.getPvpIncomingMarkup()

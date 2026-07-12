@@ -128,6 +128,15 @@
   function getL2dopBattleLogStyle(line) {
     var t = String(line || '').trim();
     var lower = t.toLowerCase();
+    if (/^\[[^\]]+\]\s*—\s*крит!\s*−\d+\s*HP\.?$/i.test(t)) {
+      return { className: 'log-crit' };
+    }
+    if (/^\[[^\]]+\]\s*−\d+\s*HP\.?$/i.test(t)) {
+      return { className: 'log-enemy-damage' };
+    }
+    if (/^відсіч\s*—/i.test(t)) return { className: 'log-player-damage' };
+    if (/^на вас напали:/i.test(t)) return { className: 'log-system' };
+    if (lower.indexOf('вас вбив гравець') !== -1) return { className: 'log-system' };
     if (/^крит!\s*ти\s*завдав\s+\d+\s*(?:шкоди|урона)/i.test(t)) {
       return { className: 'log-crit' };
     }
@@ -1737,7 +1746,17 @@
           'Натисни «Повернутися в місто» або «Город» — опинишся у найближчому селищі.';
       }
       var dlog = $('battle-defeat-log');
-      if (dlog) dlog.innerHTML = '';
+      if (dlog) {
+        if (pvpDefeat && pvpDefeat.fullLog && pvpDefeat.fullLog.length) {
+          var pvpTail = defeatLogTail(pvpDefeat.fullLog, DEFEAT_LOG_MAX);
+          pvpTail = pvpTail.filter(function (line) {
+            return String(line).indexOf('Вас вбив гравець') === -1;
+          });
+          renderColoredLog(dlog, pvpTail, { newestFirst: false });
+        } else {
+          dlog.innerHTML = '';
+        }
+      }
       hideBackNavForPvpDefeat();
       trapPvpDefeatBack();
     }
@@ -1898,11 +1917,15 @@
       }
     }
 
-    /** Останні рядки логу навколо «Ти знепритомнів…». */
+    /** Останні рядки логу навколо фінального повідомлення поразки. */
     function defeatLogTail(fullLog, maxLines) {
       var arr = fullLog || [];
       for (var di = 0; di < arr.length; di++) {
-        if (String(arr[di]).indexOf('Ти знепритомнів') !== -1) {
+        var line = String(arr[di]);
+        if (
+          line.indexOf('Ти знепритомнів') !== -1 ||
+          line.indexOf('Вас вбив гравець') !== -1
+        ) {
           var start = Math.max(0, di - maxLines + 1);
           return arr.slice(start, di + 1);
         }

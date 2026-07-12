@@ -2595,14 +2595,10 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
   border-top: 0 !important;
   border-bottom: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
   background: transparent !important;
-  display: grid;
+  display: block;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  grid-template-columns: 2.75em minmax(7ch, 1fr);
-  column-gap: 4px;
-  row-gap: 0;
-  align-items: center;
   font-size: 12.6px;
   line-height: 1.12;
   color: #f0eee8;
@@ -2616,12 +2612,147 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
   color: #d8ccb0;
   font-size: 14px;
   line-height: 1.15;
-  margin: 0 0 2px;
-  grid-column: 1 / -1;
+  margin: 0 0 4px;
   width: 100%;
   max-width: 100%;
   white-space: nowrap;
   overflow: visible;
+}
+
+/* Wap LineAge — бари: лише колір заливки + темний трек, без рамок */
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 3cm;
+  max-width: 3cm;
+  box-sizing: border-box;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar-outer {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--hp .l2-hud-legacy-bar-outer {
+  background: #4a1010;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--mp .l2-hud-legacy-bar-outer {
+  background: #101c4a;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--cp .l2-hud-legacy-bar-outer {
+  background: #4a3810;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--exp .l2-hud-legacy-bar-outer {
+  background: #5e5170;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 0;
+  border: none;
+  border-radius: 2px 0 0 2px;
+  transition: width 0.2s ease;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--hp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #8b1016 0%,
+    #c80f2c 25%,
+    #df7592 50%,
+    #d32649 70%,
+    #bf3952 100%
+  );
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--mp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #04459b 0%,
+    #0068d8 25%,
+    #4b91d6 50%,
+    #0e7ed8 70%,
+    #2d95c8 100%
+  );
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--cp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #6e5511 0%,
+    #8a6a16 25%,
+    #bf9630 50%,
+    #9f791c 75%,
+    #785b12 100%
+  );
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar--exp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #747795 0%,
+    #a69ac0 25%,
+    #cdc4d7 50%,
+    #b7a9ca 70%,
+    #a698bb 100%
+  );
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar-lbl {
+  position: absolute;
+  left: 3px;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-bar-val {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-level {
@@ -2642,58 +2773,7 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-top-strip-vitals {
   display: none !important;
 }
 
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp {
-  display: contents;
-}
-
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-key {
-  font-weight: 700;
-  font-size: 0.8em;
-  justify-self: start;
-  text-align: left;
-}
-
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line .l2-hud-legacy-val,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-hp-cur,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-mp-cur,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-cp-cur,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line #l2-hud-exp-pct {
-  margin: 0;
-  justify-self: start;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 1em;
-  line-height: 1.12;
-  text-align: left;
-  white-space: nowrap;
-}
-
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-key,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp .l2-hud-legacy-val,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--hp #l2-hud-hp-cur {
-  color: #c12828;
-}
-
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-key,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp .l2-hud-legacy-val,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--mp #l2-hud-mp-cur {
-  color: #2436cc;
-}
-
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp .l2-hud-legacy-key,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp .l2-hud-legacy-val,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--cp #l2-hud-cp-cur {
-  color: #aa8019;
-}
-
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp .l2-hud-legacy-key,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp .l2-hud-legacy-val,
-body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-line--exp #l2-hud-exp-pct {
-  color: #a8a4a0;
-}
+/* legacy text-only рядки — замінено на .l2-hud-legacy-bars */
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-hud-panel-mount {
   display: none !important;

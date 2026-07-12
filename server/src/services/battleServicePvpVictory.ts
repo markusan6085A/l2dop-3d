@@ -10,6 +10,8 @@ import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
 import { PVP_KILL_KARMA_GAIN } from '../domain/pvpKarma.js';
 import { serializePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
+import { buildPvpVictimDefeatLog } from '../domain/pvpVictimBattleLog.js';
+import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   combatOptsFromRow,
   GameConflictError,
@@ -53,7 +55,8 @@ export async function persistPvpVictoryInTx(
     skillCooldownsJson,
   } = args;
 
-  const trimmedLog = log.slice(-MAX_BATTLE_LOG);
+  const fightLog = log.slice(-MAX_BATTLE_LOG);
+  const trimmedLog = fightLog.slice();
   trimmedLog.push('Ви перемогли гравця [' + spawn.name + ']!');
 
   const victimId = st.pvpTargetCharacterId
@@ -67,6 +70,22 @@ export async function persistPvpVictoryInTx(
   }
 
   if (victimId) {
+    const victimRow = await tx.character.findFirst({
+      where: { id: victimId },
+      select: { battleJson: true },
+    });
+    const victimBj = victimRow
+      ? parseBattleJson(victimRow.battleJson)
+      : null;
+    const victimLog =
+      victimBj && Array.isArray(victimBj.log)
+        ? victimBj.log.map((x) => String(x))
+        : [];
+    const defeatLog = buildPvpVictimDefeatLog({
+      attackerName: char.name,
+      attackerLog: fightLog,
+      victimLog,
+    });
     await tx.character.update({
       where: { id: victimId },
       data: {
@@ -76,6 +95,7 @@ export async function persistPvpVictoryInTx(
           killerName: char.name,
           killerCharacterId: char.id,
           atMs: Date.now(),
+          fullLog: defeatLog,
         }),
       },
     });
