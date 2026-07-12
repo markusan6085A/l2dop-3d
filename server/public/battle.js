@@ -7,6 +7,7 @@
   var battleActionInFlight = false;
   var battleNavInFlight = false;
   var VICTORY_STORAGE_KEY = 'l2battle_last_victory_v1';
+  var DEFEAT_STORAGE_KEY = 'l2battle_pending_defeat_v1';
   var BATTLE_LOG_MAX_VISIBLE = 10;
   var huntLogPrefix = [];
   var sessionLogHuntChain = false;
@@ -65,6 +66,32 @@
     } catch (e2) {
       return null;
     }
+  }
+
+  function saveDefeatToSession(defeat) {
+    try {
+      if (defeat) {
+        sessionStorage.setItem(DEFEAT_STORAGE_KEY, JSON.stringify(defeat));
+      } else {
+        sessionStorage.removeItem(DEFEAT_STORAGE_KEY);
+      }
+    } catch (eDefSave) {
+      /* ignore */
+    }
+  }
+
+  function loadDefeatFromSession() {
+    try {
+      var raw = sessionStorage.getItem(DEFEAT_STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (eDefLoad) {
+      return null;
+    }
+  }
+
+  function clearDefeatFromSession() {
+    saveDefeatToSession(null);
   }
 
   function clearBattleBuffStripTimer() {
@@ -576,6 +603,15 @@
     if (errBody.messageUk) return errBody.messageUk;
     if (errBody.error) return String(errBody.error);
     return fallback;
+  }
+
+  function isNotInBattleErrorBody(errBody) {
+    return !!(
+      errBody &&
+      (errBody.reason === 'not_in_battle' ||
+        errBody.error === 'battle_none' ||
+        errBody.messageUk === 'Немає активного бою.')
+    );
   }
 
   async function runWithBattleActionLock(fn) {
@@ -1116,6 +1152,145 @@
     var character = state.character;
     var battle = state.battle;
     var battleHotbar = null;
+    var battleSyncTimer = null;
+    var BATTLE_SYNC_MS = 2500;
+
+    function stopBattleSyncPoll() {
+      if (battleSyncTimer != null) {
+        clearInterval(battleSyncTimer);
+        battleSyncTimer = null;
+      }
+    }
+
+    async function tryRecoverFromBattleEnded() {
+      var st = await getBattleState();
+      if (!st || st._err || !st.character) return false;
+      character = st.character;
+      battle = st.battle;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+      if (checkPvpDefeatFromCharacter(character)) {
+        stopBattleSyncPoll();
+        return true;
+      }
+      if (!battle) {
+        var savedDef = loadDefeatFromSession();
+        if (savedDef) {
+          renderPlayerBars(character);
+          showDefeatScreen(savedDef);
+          stopBattleSyncPoll();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    async function after409ResyncBattleState() {
+      var st = await getBattleState();
+      if (!st || st._err || !st.character) return false;
+      character = st.character;
+      battle = st.battle;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+      if (checkPvpDefeatFromCharacter(character)) {
+        stopBattleSyncPoll();
+        return true;
+      }
+      if (!battle) {
+        var savedDef = loadDefeatFromSession();
+        if (savedDef) {
+          renderPlayerBars(character);
+          showDefeatScreen(savedDef);
+          stopBattleSyncPoll();
+          return true;
+        }
+        return true;
+      }
+      return false;
+    }
+
+    function applyBattleMutationResult(res) {
+      character = res.character;
+      battle = res.battle;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (checkPvpDefeatFromCharacter(character)) {
+        stopBattleSyncPoll();
+        return 'pvp_defeat';
+      }
+      if (res.victory) return 'victory';
+      if (res.defeat) return 'defeat';
+      return 'continue';
+    }
+
+    async function parseActionErrorBodySafe(res) {
+      if (!res || !res.raw) return null;
+      try {
+        return await res.raw.json();
+      } catch (eBody) {
+        return null;
+      }
+    }
+
+    async function finalizeBattleActionResponse(res) {
+      var outcome = applyBattleMutationResult(res);
+      if (outcome === 'pvp_defeat') return;
+      if (outcome === 'victory') {
+        await handleVictoryOutcome(res.victory);
+        return;
+      }
+      if (outcome === 'defeat') {
+        renderPlayerBars(character);
+        showDefeatScreen(res.defeat);
+        return;
+      }
+      refreshUI();
+      if (!battle) {
+        var logElFin = $('battle-log');
+        if (logElFin) renderColoredLog(logElFin, [tr('battle_log_done', 'Бій завершено.')]);
+        showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
+        stopBattleSyncPoll();
+      }
+    }
+
+    function startBattleSyncPoll() {
+      stopBattleSyncPoll();
+      battleSyncTimer = setInterval(function () {
+        if (isDefeatScreenActive()) {
+          stopBattleSyncPoll();
+          return;
+        }
+        var vicRootPoll = $('battle-victory-root');
+        if (vicRootPoll && !vicRootPoll.hidden) {
+          stopBattleSyncPoll();
+          return;
+        }
+        if (battleActionInFlight || battleNavInFlight) return;
+        tryRecoverFromBattleEnded().then(function (recovered) {
+          if (recovered) return;
+          if (!battle) stopBattleSyncPoll();
+        });
+      }, BATTLE_SYNC_MS);
+    }
+
+    async function handleBattleActionError(res, parsedErrBody) {
+      if (isNotInBattleErrorBody(parsedErrBody)) {
+        battle = null;
+        if (await tryRecoverFromBattleEnded()) return true;
+      }
+      if (res && res._err) {
+        showBattleToast(
+          battleErrorMessageUk(
+            parsedErrBody,
+            tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
+              res._err +
+              ').'
+          )
+        );
+      } else {
+        showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
+      }
+      return false;
+    }
 
     if (battle && battle.spawnId) {
       try {
@@ -1141,6 +1316,7 @@
 
     function applyPvpStartResult(st) {
       saveVictoryToSession(null);
+      clearDefeatFromSession();
       lastVictorySummary = null;
       character = st.character;
       battle = st.battle;
@@ -1188,6 +1364,7 @@
 
     function applyHuntContinueResult(st) {
       saveVictoryToSession(null);
+      clearDefeatFromSession();
       lastVictorySummary = null;
       character = st.character;
       battle = st.battle;
@@ -1292,10 +1469,13 @@
         var defRoot = $('battle-defeat-root');
         if (
           !action ||
-          !battle ||
           (vicRoot && !vicRoot.hidden) ||
           (defRoot && !defRoot.hidden)
         ) {
+          return;
+        }
+        if (!battle) {
+          if (await tryRecoverFromBattleEnded()) return;
           return;
         }
         var act = action;
@@ -1316,16 +1496,12 @@
           return;
         }
         if (res && res._err === 409) {
-          var ag = await loadCharacter();
-          if (ag && ag.character) {
-            character = ag.character;
-            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-            try {
-              res = await battleAction(act, character.revision);
-            } catch (e2) {
-              showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-              return;
-            }
+          if (await after409ResyncBattleState()) return;
+          try {
+            res = await battleAction(act, character.revision);
+          } catch (e2) {
+            showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+            return;
           }
         }
         if (!res || res._err) {
@@ -1366,16 +1542,12 @@
               return;
             }
             if (res && res._err === 409) {
-              var agRetry = await loadCharacter();
-              if (agRetry && agRetry.character) {
-                character = agRetry.character;
-                if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-                try {
-                  res = await battleAction(act, character.revision);
-                } catch (eRetry2) {
-                  showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-                  return;
-                }
+              if (await after409ResyncBattleState()) return;
+              try {
+                res = await battleAction(act, character.revision);
+              } catch (eRetry2) {
+                showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+                return;
               }
             }
             parsedErrBody = await parseErrorBodySafe(res);
@@ -1385,29 +1557,20 @@
             return;
           }
           if (res._err) {
-            showBattleToast(
-              battleErrorMessageUk(
-                parsedErrBody,
-                tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
-                  res._err +
-                  ').'
-              )
-            );
+            if (await handleBattleActionError(res, parsedErrBody)) return;
             return;
           }
         }
-        character = res.character;
-        battle = res.battle;
+        var outcome = applyBattleMutationResult(res);
         if (battleHotbar && typeof battleHotbar.notifySkillUsed === 'function') {
           battleHotbar.notifySkillUsed(act, battle);
         }
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-        if (checkPvpDefeatFromCharacter(character)) return;
-        if (res.victory) {
+        if (outcome === 'pvp_defeat') return;
+        if (outcome === 'victory') {
           await handleVictoryOutcome(res.victory);
           return;
         }
-        if (res.defeat) {
+        if (outcome === 'defeat') {
           renderPlayerBars(character);
           showDefeatScreen(res.defeat);
           return;
@@ -1417,13 +1580,18 @@
           var logElDone = $('battle-log');
           if (logElDone) renderColoredLog(logElDone, [tr('battle_log_done', 'Бій завершено.')]);
           showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
+          stopBattleSyncPoll();
         }
       });
     }
 
     async function runFighterSoulshotToggle(itemId) {
       await runWithBattleActionLock(async function () {
-      if (!battle || typeof itemId !== 'number' || itemId <= 0) return;
+      if (typeof itemId !== 'number' || itemId <= 0) return;
+      if (!battle) {
+        if (await tryRecoverFromBattleEnded()) return;
+        return;
+      }
       var act = 'fighter_soulshot_toggle';
       var extra = { itemId: Math.floor(itemId) };
       var res;
@@ -1434,66 +1602,30 @@
         return;
       }
       if (res && res._err === 409) {
-        var ag2 = await loadCharacter();
-        if (ag2 && ag2.character) {
-          character = ag2.character;
-          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-          try {
-            res = await battleAction(act, character.revision, extra);
-          } catch (e3) {
-            showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-            return;
-          }
+        if (await after409ResyncBattleState()) return;
+        try {
+          res = await battleAction(act, character.revision, extra);
+        } catch (e3) {
+          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+          return;
         }
       }
       if (!res || res._err) {
-        if (res && res.raw) {
-          try {
-            var ej2 = await res.raw.json();
-            showBattleToast(
-              battleErrorMessageUk(
-                ej2,
-                tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
-                  res._err +
-                  ').'
-              )
-            );
-          } catch (parseErr2) {
-            showBattleToast(
-              tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
-                res._err +
-                ').'
-            );
-          }
-        } else {
-          showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
-        }
+        var ej2 = await parseActionErrorBodySafe(res);
+        if (await handleBattleActionError(res, ej2)) return;
         return;
       }
-      character = res.character;
-      battle = res.battle;
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-      if (res.victory) {
-        await handleVictoryOutcome(res.victory);
-        return;
-      }
-      if (res.defeat) {
-        renderPlayerBars(character);
-        showDefeatScreen(res.defeat);
-        return;
-      }
-      refreshUI();
-      if (!battle) {
-        var logElSs = $('battle-log');
-        if (logElSs) renderColoredLog(logElSs, [tr('battle_log_done', 'Бій завершено.')]);
-        showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
-      }
+      await finalizeBattleActionResponse(res);
       });
     }
 
     async function runMysticSpiritshotToggle(itemId) {
       await runWithBattleActionLock(async function () {
-      if (!battle || typeof itemId !== 'number' || itemId <= 0) return;
+      if (typeof itemId !== 'number' || itemId <= 0) return;
+      if (!battle) {
+        if (await tryRecoverFromBattleEnded()) return;
+        return;
+      }
       var act = 'mystic_spiritshot_toggle';
       var extra = { itemId: Math.floor(itemId) };
       var res;
@@ -1504,66 +1636,30 @@
         return;
       }
       if (res && res._err === 409) {
-        var ag2m = await loadCharacter();
-        if (ag2m && ag2m.character) {
-          character = ag2m.character;
-          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-          try {
-            res = await battleAction(act, character.revision, extra);
-          } catch (e3) {
-            showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-            return;
-          }
+        if (await after409ResyncBattleState()) return;
+        try {
+          res = await battleAction(act, character.revision, extra);
+        } catch (e3) {
+          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+          return;
         }
       }
       if (!res || res._err) {
-        if (res && res.raw) {
-          try {
-            var ej2m = await res.raw.json();
-            showBattleToast(
-              battleErrorMessageUk(
-                ej2m,
-                tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
-                  res._err +
-                  ').'
-              )
-            );
-          } catch (parseErr2) {
-            showBattleToast(
-              tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
-                res._err +
-                ').'
-            );
-          }
-        } else {
-          showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
-        }
+        var ej2m = await parseActionErrorBodySafe(res);
+        if (await handleBattleActionError(res, ej2m)) return;
         return;
       }
-      character = res.character;
-      battle = res.battle;
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-      if (res.victory) {
-        await handleVictoryOutcome(res.victory);
-        return;
-      }
-      if (res.defeat) {
-        renderPlayerBars(character);
-        showDefeatScreen(res.defeat);
-        return;
-      }
-      refreshUI();
-      if (!battle) {
-        var logElMs = $('battle-log');
-        if (logElMs) renderColoredLog(logElMs, [tr('battle_log_done', 'Бій завершено.')]);
-        showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
-      }
+      await finalizeBattleActionResponse(res);
       });
     }
 
     async function runBattlePotionUse(itemId) {
       await runWithBattleActionLock(async function () {
-      if (!battle || typeof itemId !== 'number' || itemId <= 0) return;
+      if (typeof itemId !== 'number' || itemId <= 0) return;
+      if (!battle) {
+        if (await tryRecoverFromBattleEnded()) return;
+        return;
+      }
       var act = 'battle_potion_use';
       var extra = { itemId: Math.floor(itemId) };
       var res;
@@ -1574,60 +1670,20 @@
         return;
       }
       if (res && res._err === 409) {
-        var agP = await loadCharacter();
-        if (agP && agP.character) {
-          character = agP.character;
-          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-          try {
-            res = await battleAction(act, character.revision, extra);
-          } catch (e4) {
-            showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-            return;
-          }
+        if (await after409ResyncBattleState()) return;
+        try {
+          res = await battleAction(act, character.revision, extra);
+        } catch (e4) {
+          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+          return;
         }
       }
       if (!res || res._err) {
-        if (res && res.raw) {
-          try {
-            var ejP = await res.raw.json();
-            showBattleToast(
-              battleErrorMessageUk(
-                ejP,
-                tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
-                  res._err +
-                  ').'
-              )
-            );
-          } catch (parseErrP) {
-            showBattleToast(
-              tr('battle_toast_action_fail', 'Дія не виконалася (код ') +
-                res._err +
-                ').'
-            );
-          }
-        } else {
-          showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
-        }
+        var ejP = await parseActionErrorBodySafe(res);
+        if (await handleBattleActionError(res, ejP)) return;
         return;
       }
-      character = res.character;
-      battle = res.battle;
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-      if (res.victory) {
-        await handleVictoryOutcome(res.victory);
-        return;
-      }
-      if (res.defeat) {
-        renderPlayerBars(character);
-        showDefeatScreen(res.defeat);
-        return;
-      }
-      refreshUI();
-      if (!battle) {
-        var logElPot = $('battle-log');
-        if (logElPot) renderColoredLog(logElPot, [tr('battle_log_done', 'Бій завершено.')]);
-        showBattleToast(tr('battle_log_done_toast', 'Бій завершено.'));
-      }
+      await finalizeBattleActionResponse(res);
       });
     }
 
@@ -1659,6 +1715,7 @@
     }
 
     function showPvpDefeatScreen(pvpDefeat) {
+      stopBattleSyncPoll();
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
@@ -1676,7 +1733,8 @@
       }
       var hint = $('battle-defeat-town-hint');
       if (hint) {
-        hint.textContent = 'Натисни «В місто» — відновишся у найближчому селищі.';
+        hint.textContent =
+          'Натисни «Повернутися в місто» або «Город» — опинишся у найближчому селищі.';
       }
       var dlog = $('battle-defeat-log');
       if (dlog) dlog.innerHTML = '';
@@ -1756,6 +1814,7 @@
     }
 
     async function handleVictoryOutcome(victory) {
+      clearDefeatFromSession();
       renderPlayerBars(character);
       showVictoryScreen(victory);
     }
@@ -1871,6 +1930,8 @@
     }
 
     function showDefeatScreen(defeat) {
+      saveDefeatToSession(defeat);
+      stopBattleSyncPoll();
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
@@ -2034,42 +2095,69 @@
       });
     }
 
-    var defTown = $('battle-defeat-tocity');
-    if (defTown) {
-      defTown.addEventListener('click', async function () {
-        await runWithBattleNavLock(async function () {
-          var resT = await returnToNearestTown(character.revision);
-          if (resT && resT._err === 409) {
-            var agT = await loadCharacter();
-            if (agT && agT.character) {
-              character = agT.character;
-              if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-              resT = await returnToNearestTown(character.revision);
-            }
+    async function returnToTownAndGoCity() {
+      await runWithBattleNavLock(async function () {
+        var resT = await returnToNearestTown(character.revision);
+        if (resT && resT._err === 409) {
+          var agT = await loadCharacter();
+          if (agT && agT.character) {
+            character = agT.character;
+            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+            resT = await returnToNearestTown(character.revision);
           }
-          if (!resT || resT._err) {
-            if (resT && resT.raw) {
-              try {
-                var ejT = await resT.raw.json();
-                if (ejT && ejT.messageUk) {
-                  showBattleToast(ejT.messageUk);
-                } else {
-                  showBattleToast('Не вдалося перенести в місто.');
-                }
-              } catch (eT) {
+        }
+        if (!resT || resT._err) {
+          if (resT && resT.raw) {
+            try {
+              var ejT = await resT.raw.json();
+              if (ejT && ejT.messageUk) {
+                showBattleToast(ejT.messageUk);
+              } else {
                 showBattleToast('Не вдалося перенести в місто.');
               }
-            } else {
+            } catch (eT) {
               showBattleToast('Не вдалося перенести в місто.');
             }
-            return;
+          } else {
+            showBattleToast('Не вдалося перенести в місто.');
           }
+          return;
+        }
           character = resT.character;
           if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          clearDefeatFromSession();
           window.location.replace('/city.html');
-        });
       });
     }
+
+    function isDefeatScreenActive() {
+      var defRoot = $('battle-defeat-root');
+      return !!(defRoot && !defRoot.hidden);
+    }
+
+    function wireDefeatTownNavLink() {
+      var nav =
+        document.getElementById('wap-bottom') ||
+        document.getElementById('l2-nav-bottom');
+      if (!nav) return;
+      var cityLink = nav.querySelector('a[href="/city.html"]');
+      if (!cityLink || cityLink.dataset.l2DefeatTownWired === '1') return;
+      cityLink.dataset.l2DefeatTownWired = '1';
+      cityLink.addEventListener('click', function (e) {
+        if (!isDefeatScreenActive()) return;
+        e.preventDefault();
+        returnToTownAndGoCity();
+      });
+    }
+
+    var defTown = $('battle-defeat-tocity');
+    if (defTown) {
+      defTown.addEventListener('click', function () {
+        returnToTownAndGoCity();
+      });
+    }
+
+    wireDefeatTownNavLink();
 
     if (pvpDeathMode || (character && character.pvpDefeat)) {
       if (character && character.pvpDefeat) {
@@ -2092,7 +2180,16 @@
       if (content) content.hidden = false;
       if (errEl) errEl.hidden = true;
       refreshUI();
+      startBattleSyncPoll();
     } else {
+      var pendingDefeat = loadDefeatFromSession();
+      if (pendingDefeat && !(character && character.pvpDefeat)) {
+        if (content) content.hidden = false;
+        if (errEl) errEl.hidden = true;
+        renderPlayerBars(character);
+        showDefeatScreen(pendingDefeat);
+        return;
+      }
       var savedVictory =
         loadVictoryFromSession() || (spawnId ? { spawnId: spawnId } : null);
       if (savedVictory) {
