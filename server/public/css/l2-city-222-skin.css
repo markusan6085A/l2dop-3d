@@ -357,6 +357,93 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-list {
   padding: 0;
 }
 
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-block {
+  width: 100%;
+  margin: 0;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.88);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-block:first-of-type {
+  border-top: 1px dotted rgba(80, 80, 80, 0.75);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-block--last {
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  border-bottom: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-bottom: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-label {
+  min-width: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-pay {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  align-self: center;
+  gap: 4px;
+  margin: 4px 0 4px 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-adena-ico {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-adena-cost {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff4d0;
+  white-space: nowrap;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 4px 0 4px 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #bfa88a;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn:hover,
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn:focus {
+  outline: none;
+  color: #d4c4a8;
+  border: 0;
+  background: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-tp-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item {
   box-sizing: border-box;
   display: flex;
@@ -391,7 +478,7 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item:hover,
 body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item:focus {
   outline: none;
   color: var(--l2s-city-miru-text-hover, #d4c4a8);
-  background: rgba(56, 56, 56, 0.35);
+  background: transparent;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item:disabled {
@@ -414,17 +501,22 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru > .l2-city-stub-msg {
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings {
   margin: 0;
-  padding: 8px 0 4px;
-  border-top: 1px solid rgba(80, 80, 80, 0.85);
+  padding: 0 0 6px;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings--inline {
+  padding: 0 0 8px 18px;
+  border-top: 0;
+  background: transparent;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-head {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0 0 6px;
+  margin: 6px 0 4px;
   padding: 0;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
   color: #fff;
@@ -438,20 +530,38 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-head-ico {
   pointer-events: none;
 }
 
-body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-list .l2-town-miru-item {
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border-bottom: 1px solid rgba(56, 56, 56, 0.75);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-row--last {
+  border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-surroundings-label {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 5px 0;
+  font-size: 12px;
+  line-height: 1.35;
   color: #d8ccb0;
+  cursor: default;
+  user-select: none;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport
   .l2-teleport-miru-surroundings-list
-  .l2-town-miru-item:hover,
-body.l2-app-l2-chrome.l2-page-teleport
-  .l2-teleport-miru-surroundings-list
-  .l2-town-miru-item:focus {
-  color: #f5ecd0;
+  .l2-teleport-miru-tp-pay {
+  margin: 3px 0 3px 8px;
 }
 
-body.l2-app-l2-chrome.l2-page-teleport .l2-town-miru-item--surroundings-active {
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-btn--surroundings-active {
   color: #f5ecd0;
-  background: rgba(56, 56, 56, 0.35);
+  background: transparent;
 }

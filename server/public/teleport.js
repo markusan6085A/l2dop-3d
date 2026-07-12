@@ -5,36 +5,141 @@
   var teleportInFlight = false;
   var TELEPORT_SNAPSHOT_CACHE_KEY = 'l2-teleport-snapshot-cache-v1';
   var TP_ICON = '/assets/assets/photo_2026-07-05_12-52-33.jpg';
+  var TP_SURROUNDINGS_ICON = '/assets/assets/photo_2026-07-05_12-53-23.jpg';
+  var TP_ADENA_ICON = '/assets/assets/adena.png';
+  var TELEPORT_DEFAULT_ADENA_COST = 1;
+  var TELEPORT_FREE_MAX_LEVEL = 40;
   var activeSurroundingsKey = null;
   var availableTeleportIds = null;
 
   /** Фіксований порядок міст; окремі блоки «Окресности» — через surroundingsKey. */
   var TELEPORT_CITIES = [
-    { label: 'Talking Island Village', teleportId: 'talking_island' },
-    { label: 'Elven Village', teleportId: 'elf_village' },
-    { label: 'Dark Elven Village', teleportId: 'dark_elf_village' },
-    { label: 'Orc Village', teleportId: 'orc_village' },
-    { label: 'Dwarven Village', teleportId: 'dwarf_village' },
-    { label: 'Gludin Village', teleportId: 'gludin' },
-    { label: 'Town of Gludio', teleportId: 'gludio' },
-    { label: 'Town of Dion', teleportId: 'dion' },
-    { label: 'Giran Castle Town', teleportId: 'giran' },
-    { label: 'Town of Oren', teleportId: 'oren' },
-    { label: 'Town of Aden', teleportId: 'aden' },
-    { label: 'Town of Goddard', teleportId: 'goddard' },
-    { label: 'Rune Township', teleportId: 'rune' },
-    { label: 'Town of Schuttgart', teleportId: 'schuttgart' },
-    { label: 'Heine', teleportId: 'heine' },
-    { label: 'Hunters Village', teleportId: 'hunters' },
-    { label: "Hardin's Academy", surroundingsKey: 'hardin' },
+    { label: 'Talking Island Village', teleportId: 'talking_island', surroundingsKey: 'talking_island' },
+    { label: 'Elven Village', teleportId: 'elf_village', surroundingsKey: 'elf_village' },
+    { label: 'Dark Elven Village', teleportId: 'dark_elf_village', surroundingsKey: 'dark_elf_village' },
+    { label: 'Orc Village', teleportId: 'orc_village', surroundingsKey: 'orc_village' },
+    { label: 'Dwarven Village', teleportId: 'dwarf_village', surroundingsKey: 'dwarf_village' },
+    { label: 'Gludin Village', teleportId: 'gludin', surroundingsKey: 'gludin' },
+    { label: 'Town of Gludio', teleportId: 'gludio', surroundingsKey: 'gludio' },
+    { label: 'Town of Dion', teleportId: 'dion', surroundingsKey: 'dion' },
+    { label: 'Giran Castle Town', teleportId: 'giran', surroundingsKey: 'giran' },
+    { label: 'Town of Oren', teleportId: 'oren', surroundingsKey: 'oren' },
+    { label: 'Town of Aden', teleportId: 'aden', surroundingsKey: 'aden' },
+    { label: 'Town of Goddard', teleportId: 'goddard', surroundingsKey: 'goddard' },
+    { label: 'Rune Township', teleportId: 'rune', surroundingsKey: 'rune' },
+    { label: 'Town of Schuttgart', teleportId: 'schuttgart', surroundingsKey: 'schuttgart' },
+    { label: 'Heine', teleportId: 'heine', surroundingsKey: 'heine' },
+    { label: 'Hunters Village', teleportId: 'hunters', surroundingsKey: 'hunters' },
   ];
 
   var TELEPORT_SURROUNDINGS = {
-    hardin: [
-      { label: "Hardin's Academy", teleportId: 'hardins_academy' },
-      { label: 'Necropolis of Martyrdom', teleportId: 'necropolis_of_martyrdom' },
-      { label: 'Catacomb of the Witch', teleportId: 'catacomb_of_the_witch' },
+    talking_island: [
+      { label: 'Elven Ruins', teleportId: 'elven_ruins' },
+      { label: 'Talking Island Harbor', teleportId: 'talking_island_harbor' },
+      { label: "Cedric's Training Hall", teleportId: 'cedrics_training_hall' },
+    ],
+    elf_village: [
+      { label: 'Elven Forest', teleportId: 'elven_forest' },
+      { label: 'Neutral Zone', teleportId: 'neutral_zone' },
+      { label: 'Elven Fortress', teleportId: 'elven_fortress' },
+    ],
+    dark_elf_village: [
+      { label: 'Dark Elven Forest', teleportId: 'dark_elven_forest' },
+      { label: 'Swampland', teleportId: 'swampland' },
+      { label: 'Spider Nest', teleportId: 'spider_nest' },
+      { label: 'Neutral Zone', teleportId: 'neutral_zone' },
+      { label: 'School of Dark Arts', teleportId: 'school_of_dark_arts' },
+    ],
+    orc_village: [
+      { label: 'Immortal Plateau, Southern Region', teleportId: 'immortal_plateau_southern' },
+      { label: 'The Immortal Plateau', teleportId: 'immortal_plateau' },
+      { label: 'Cave of Trials', teleportId: 'cave_of_trials' },
+      { label: 'Frozen Waterfall', teleportId: 'frozen_waterfall' },
+    ],
+    dwarf_village: [
+      { label: 'Mithril Mines', teleportId: 'mithril_mines' },
+      { label: 'Abandoned Coal Mines', teleportId: 'abandoned_coal_mines' },
+      { label: 'Eastern Mining Zone', teleportId: 'eastern_mining_zone' },
+    ],
+    gludin: [
+      { label: 'Langk Lizardman Dwelling', teleportId: 'langk_lizardman_dwelling' },
+      { label: 'Windmill Hill', teleportId: 'windmill_hill' },
+      { label: 'Fellmere Hunting Grounds', teleportId: 'fellmere_hunting_grounds' },
+      { label: 'Forgotten Temple', teleportId: 'forgotten_temple' },
+      { label: 'Orc Barracks', teleportId: 'orc_barracks' },
+      { label: 'Windy Hill', teleportId: 'windy_hill' },
+      { label: 'Abandon Camp', teleportId: 'abandoned_camp' },
+      { label: 'Wastelands', teleportId: 'wastelands' },
+    ],
+    gludio: [
+      { label: 'Ruins of Agony', teleportId: 'ruins_of_agony' },
+      { label: 'Ruins of Despair', teleportId: 'ruins_of_despair' },
+      { label: 'The Ant Nest', teleportId: 'ant_nest' },
+      { label: 'Windawood Manor', teleportId: 'windawood_manor' },
+    ],
+    dion: [
+      { label: 'Cruma Marshlands', teleportId: 'cruma_marshlands' },
+      { label: 'Cruma Tower', teleportId: 'cruma_tower' },
+      { label: 'Fortress of Resistance', teleportId: 'fortress_of_resistance' },
+      { label: 'Plains of Dion', teleportId: 'plains_of_dion' },
+      { label: 'Bee Hive', teleportId: 'bee_hive' },
+      { label: 'Tanor Canyon', teleportId: 'tanor_canyon' },
+    ],
+    giran: [
+      { label: 'Giran Harbor', teleportId: 'giran_harbor' },
+      { label: 'Dragon Valley', teleportId: 'dragon_valley' },
+      { label: "Antharas' Lair", teleportId: 'antharas_lair' },
+      { label: "Devil's Isle", teleportId: 'devils_isle' },
+      { label: "Breka's Stronghold", teleportId: 'brekas_stronghold' },
+    ],
+    oren: [
+      { label: 'Ivory Tower', teleportId: 'ivory_tower' },
+      { label: 'Skyshadow Meadow', teleportId: 'skyshadow_meadow' },
+      { label: 'Plains of the Lizardman', teleportId: 'plains_of_the_lizardman' },
+      { label: 'Outlaw Forest', teleportId: 'outlaw_forest' },
       { label: 'Sea of Spores', teleportId: 'sea_of_spores' },
+    ],
+    aden: [
+      { label: 'Coliseum', teleportId: 'coliseum' },
+      { label: 'Forsaken Plains', teleportId: 'forsaken_plains' },
+      { label: 'Forest of Mirrors', teleportId: 'forest_of_mirrors' },
+      { label: 'Blazing Swamp', teleportId: 'blazing_swamp' },
+      { label: 'Fields of Massacre', teleportId: 'fields_of_massacre' },
+      { label: 'Ancient Battleground', teleportId: 'ancient_battleground' },
+      { label: 'Silent Valley', teleportId: 'silent_valley' },
+      { label: 'Tower of Insolence', teleportId: 'tower_of_insolence' },
+    ],
+    goddard: [
+      { label: 'Varka Silenos Stronghold', teleportId: 'varka_silenos_stronghold' },
+      { label: 'Ketra Orc Outpost', teleportId: 'ketra_orc_outpost' },
+      { label: 'Hot Springs', teleportId: 'hot_springs' },
+      { label: 'Wall of Argos', teleportId: 'wall_of_argos' },
+      { label: 'Monastery of Silence', teleportId: 'monastery_of_silence' },
+    ],
+    rune: [
+      { label: 'Wild Beast Pastures', teleportId: 'wild_beast_pastures' },
+      { label: 'Valley of Saints', teleportId: 'valley_of_saints' },
+      { label: 'Forest of the Dead', teleportId: 'forest_of_the_dead' },
+      { label: 'Swamp of Screams', teleportId: 'swamp_of_screams' },
+      { label: 'Monastery of Silence', teleportId: 'monastery_of_silence' },
+    ],
+    schuttgart: [
+      { label: 'Den of Evil', teleportId: 'den_of_evil' },
+      { label: 'Plunderous Plains', teleportId: 'plunderous_plains' },
+      { label: 'Frozen Labyrinth', teleportId: 'frozen_labyrinth' },
+      { label: 'Crypts of Disgrace', teleportId: 'crypts_of_disgrace' },
+      { label: 'Pavel Ruins', teleportId: 'pavel_ruins' },
+    ],
+    heine: [
+      { label: 'Field of Silence', teleportId: 'field_of_silence' },
+      { label: 'Field of Whispers', teleportId: 'field_of_whispers' },
+      { label: 'Alligator Island', teleportId: 'alligator_island' },
+      { label: 'Garden of Eva', teleportId: 'garden_of_eva' },
+    ],
+    hunters: [
+      { label: 'Enchanted Valley - Southern Region', teleportId: 'enchanted_valley_south' },
+      { label: 'Enchanted Valley - Northern Region', teleportId: 'enchanted_valley_north' },
+      { label: 'Forest of Mirrors', teleportId: 'forest_of_mirrors' },
     ],
   };
 
@@ -77,7 +182,7 @@
 
   function wireMiruIcons(root) {
     if (!root) return;
-    root.querySelectorAll('.l2-town-miru-ico').forEach(function (icon) {
+    root.querySelectorAll('.l2-town-miru-ico, .l2-teleport-miru-adena-ico').forEach(function (icon) {
       if (icon.dataset.fallbackWired === '1') return;
       icon.dataset.fallbackWired = '1';
       icon.addEventListener('error', function onIconError() {
@@ -87,18 +192,105 @@
     });
   }
 
-  function createMiruItem(row, disabled) {
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'l2-town-miru-item';
-    if (row.surroundingsKey) {
-      btn.setAttribute('data-surroundings-key', row.surroundingsKey);
-    } else if (row.teleportId) {
-      btn.setAttribute('data-teleport-id', row.teleportId);
+  function teleportAdenaCost(row) {
+    var n = row && row.adenaCost != null ? Number(row.adenaCost) : TELEPORT_DEFAULT_ADENA_COST;
+    if (!Number.isFinite(n) || n < 0) return String(TELEPORT_DEFAULT_ADENA_COST);
+    return String(Math.floor(n));
+  }
+
+  function getSnapshotLevel() {
+    if (!window.L2 || typeof L2.lastSnapshot !== 'function') return 1;
+    var snap = L2.lastSnapshot();
+    var lv = snap && snap.level != null ? Number(snap.level) : 1;
+    return Number.isFinite(lv) && lv >= 1 ? Math.floor(lv) : 1;
+  }
+
+  function isTeleportFreeForPlayer() {
+    return getSnapshotLevel() <= TELEPORT_FREE_MAX_LEVEL;
+  }
+
+  function createTeleportPay(row, disabled) {
+    var pay = document.createElement('div');
+    pay.className = 'l2-teleport-miru-tp-pay';
+    var isFree = isTeleportFreeForPlayer();
+
+    var tpBtn = document.createElement('button');
+    tpBtn.type = 'button';
+    tpBtn.className = 'l2-teleport-miru-tp-btn';
+    if (isFree) {
+      tpBtn.classList.add('l2-teleport-miru-tp-btn--free');
+      tpBtn.textContent = 'Безплатно';
     } else {
-      btn.setAttribute('data-teleport-stub', row.label || '');
+      var adenaIco = document.createElement('img');
+      adenaIco.className = 'l2-teleport-miru-adena-ico';
+      adenaIco.src = TP_ADENA_ICON;
+      adenaIco.alt = '';
+      adenaIco.width = 14;
+      adenaIco.height = 14;
+      adenaIco.decoding = 'async';
+
+      var adenaCost = document.createElement('span');
+      adenaCost.className = 'l2-teleport-miru-adena-cost';
+      adenaCost.textContent = teleportAdenaCost(row);
+
+      pay.appendChild(adenaIco);
+      pay.appendChild(adenaCost);
+      tpBtn.textContent = 'Телепорт';
     }
-    if (disabled) btn.disabled = true;
+    if (row.teleportId) {
+      tpBtn.setAttribute('data-teleport-id', row.teleportId);
+    }
+    if (disabled || !isTeleportIdAvailable(row.teleportId)) {
+      tpBtn.disabled = true;
+    }
+
+    pay.appendChild(tpBtn);
+    return pay;
+  }
+
+  function createSurroundingsRow(row, disabled) {
+    var wrap = document.createElement('div');
+    wrap.className = 'l2-teleport-miru-surroundings-row';
+
+    var label = document.createElement('div');
+    label.className = 'l2-teleport-miru-surroundings-label';
+
+    var img = document.createElement('img');
+    img.className = 'l2-town-miru-ico';
+    img.src = TP_SURROUNDINGS_ICON;
+    img.alt = '';
+    img.width = 14;
+    img.height = 14;
+    img.decoding = 'async';
+
+    var span = document.createElement('span');
+    span.textContent = row.label || '—';
+
+    label.appendChild(img);
+    label.appendChild(span);
+
+    wrap.appendChild(label);
+    wrap.appendChild(createTeleportPay(row, disabled));
+    return wrap;
+  }
+
+  function isTeleportIdAvailable(teleportId) {
+    if (!teleportId) return false;
+    if (!availableTeleportIds) return true;
+    return !!availableTeleportIds[teleportId];
+  }
+
+  function createCityRow(row, disabled) {
+    var wrap = document.createElement('div');
+    wrap.className = 'l2-teleport-miru-city-row';
+
+    var cityBtn = document.createElement('button');
+    cityBtn.type = 'button';
+    cityBtn.className = 'l2-town-miru-item l2-teleport-miru-city-btn';
+    if (row.surroundingsKey) {
+      cityBtn.setAttribute('data-surroundings-key', row.surroundingsKey);
+    }
+    if (disabled) cityBtn.disabled = true;
 
     var img = document.createElement('img');
     img.className = 'l2-town-miru-ico';
@@ -109,18 +301,66 @@
     img.decoding = 'async';
 
     var span = document.createElement('span');
+    span.className = 'l2-teleport-miru-city-label';
     span.textContent = row.label || '—';
 
-    btn.appendChild(img);
-    btn.appendChild(span);
-    return btn;
+    cityBtn.appendChild(img);
+    cityBtn.appendChild(span);
+
+    wrap.appendChild(cityBtn);
+    wrap.appendChild(createTeleportPay(row, disabled));
+    return wrap;
+  }
+
+  function createInlineSurroundingsPanel() {
+    var panel = document.createElement('div');
+    panel.className = 'l2-teleport-miru-surroundings l2-teleport-miru-surroundings--inline';
+    panel.hidden = true;
+
+    var head = document.createElement('h2');
+    head.className = 'l2-teleport-miru-surroundings-head';
+
+    var headIco = document.createElement('img');
+    headIco.className = 'l2-teleport-miru-surroundings-head-ico';
+    headIco.src = TP_SURROUNDINGS_ICON;
+    headIco.alt = '';
+    headIco.width = 14;
+    headIco.height = 14;
+    headIco.decoding = 'async';
+
+    var headLbl = document.createElement('span');
+    headLbl.textContent = 'Окресности:';
+
+    head.appendChild(headIco);
+    head.appendChild(headLbl);
+
+    var surroundList = document.createElement('nav');
+    surroundList.className = 'l2-town-miru-list l2-teleport-miru-surroundings-list';
+    surroundList.setAttribute('aria-label', 'Окресности');
+
+    panel.appendChild(head);
+    panel.appendChild(surroundList);
+    return panel;
+  }
+
+  function createCityBlock(row, disabled) {
+    var block = document.createElement('div');
+    block.className = 'l2-teleport-miru-city-block';
+    if (row.surroundingsKey) {
+      block.setAttribute('data-surroundings-key', row.surroundingsKey);
+    }
+    block.appendChild(createCityRow(row, disabled));
+    if (row.surroundingsKey) {
+      block.appendChild(createInlineSurroundingsPanel());
+    }
+    return block;
   }
 
   function renderSkeletonList(listEl) {
     if (!listEl) return;
     listEl.innerHTML = '';
     for (var i = 0; i < 6; i++) {
-      listEl.appendChild(createMiruItem({ label: 'Завантаження…' }, true));
+      listEl.appendChild(createCityBlock({ label: 'Завантаження…' }, true));
     }
     wireMiruIcons(listEl);
   }
@@ -130,9 +370,9 @@
     listEl.innerHTML = '';
     for (var i = 0; i < TELEPORT_CITIES.length; i++) {
       var row = TELEPORT_CITIES[i];
-      var item = createMiruItem(row, false);
+      var item = createCityBlock(row, false);
       if (i === TELEPORT_CITIES.length - 1) {
-        item.classList.add('l2-town-miru-item--last');
+        item.classList.add('l2-teleport-miru-city-block--last');
       }
       listEl.appendChild(item);
     }
@@ -141,18 +381,26 @@
 
   function clearSurroundingsActive(listEl) {
     if (!listEl) return;
-    listEl.querySelectorAll('.l2-town-miru-item--surroundings-active').forEach(function (el) {
-      el.classList.remove('l2-town-miru-item--surroundings-active');
+    listEl.querySelectorAll('.l2-teleport-miru-city-btn--surroundings-active').forEach(function (el) {
+      el.classList.remove('l2-teleport-miru-city-btn--surroundings-active');
     });
   }
 
   function hideSurroundings(listEl) {
-    var panel = $('tp-surroundings');
-    var surroundList = $('tp-surroundings-list');
     activeSurroundingsKey = null;
     clearSurroundingsActive(listEl);
-    if (panel) panel.hidden = true;
-    if (surroundList) surroundList.innerHTML = '';
+    if (!listEl) return;
+    listEl.querySelectorAll('.l2-teleport-miru-surroundings--inline').forEach(function (panel) {
+      panel.hidden = true;
+    });
+    listEl.querySelectorAll('.l2-teleport-miru-surroundings-list').forEach(function (surroundList) {
+      surroundList.innerHTML = '';
+    });
+  }
+
+  function findCityBlock(listEl, key) {
+    if (!listEl || !key) return null;
+    return listEl.querySelector('.l2-teleport-miru-city-block[data-surroundings-key="' + key + '"]');
   }
 
   function filterAvailableSurroundRows(rows) {
@@ -163,28 +411,30 @@
     });
   }
 
-  function renderSurroundingsList(key) {
+  function renderSurroundingsList(key, listEl) {
     var rows = filterAvailableSurroundRows(TELEPORT_SURROUNDINGS[key]);
-    var surroundList = $('tp-surroundings-list');
-    var panel = $('tp-surroundings');
-    if (!rows || !surroundList) return false;
+    var block = findCityBlock(listEl, key);
+    if (!block) return false;
+    var panel = block.querySelector('.l2-teleport-miru-surroundings--inline');
+    var surroundList = block.querySelector('.l2-teleport-miru-surroundings-list');
+    if (!panel || !surroundList) return false;
+
     surroundList.innerHTML = '';
+    if (!rows.length) {
+      panel.hidden = true;
+      return false;
+    }
+
     for (var i = 0; i < rows.length; i++) {
-      var item = createMiruItem(rows[i], false);
-      item.classList.add('l2-teleport-miru-surroundings-item');
+      var item = createSurroundingsRow(rows[i], false);
       if (i === rows.length - 1) {
-        item.classList.add('l2-town-miru-item--last');
+        item.classList.add('l2-teleport-miru-surroundings-row--last');
       }
       surroundList.appendChild(item);
     }
 
-    if (!rows.length) {
-      if (panel) panel.hidden = true;
-      activeSurroundingsKey = null;
-      return false;
-    }
-
     wireMiruIcons(surroundList);
+    panel.hidden = false;
     return true;
   }
 
@@ -208,8 +458,7 @@
   }
 
   function toggleSurroundings(key, listEl, tpOk) {
-    var panel = $('tp-surroundings');
-    if (!panel) return;
+    if (!listEl) return;
     if (tpOk) {
       tpOk.hidden = true;
       tpOk.textContent = '';
@@ -218,24 +467,20 @@
       hideSurroundings(listEl);
       return;
     }
+    hideSurroundings(listEl);
     activeSurroundingsKey = key;
-    clearSurroundingsActive(listEl);
-    if (listEl) {
-      var trigger = listEl.querySelector(
-        '.l2-town-miru-item[data-surroundings-key="' + key + '"]'
-      );
-      if (trigger) trigger.classList.add('l2-town-miru-item--surroundings-active');
-    }
-    if (!renderSurroundingsList(key)) {
+    var trigger = listEl.querySelector(
+      '.l2-teleport-miru-city-btn[data-surroundings-key="' + key + '"]'
+    );
+    if (trigger) trigger.classList.add('l2-teleport-miru-city-btn--surroundings-active');
+    if (!renderSurroundingsList(key, listEl)) {
       activeSurroundingsKey = null;
       clearSurroundingsActive(listEl);
       if (tpOk) {
         tpOk.hidden = false;
         tpOk.textContent = 'Немає доступних точок телепорту для цього розділу.';
       }
-      return;
     }
-    panel.hidden = false;
   }
 
   async function resyncCharacter(errEl) {
@@ -451,33 +696,26 @@
     renderCityList(listEl);
     if (errEl) errEl.hidden = true;
 
-    var surroundListEl = $('tp-surroundings-list');
-    if (surroundListEl) {
-      surroundListEl.addEventListener('click', function (e) {
-        var btn = e.target && e.target.closest ? e.target.closest('.l2-town-miru-item') : null;
-        if (!btn || btn.disabled) return;
-        var id = btn.getAttribute('data-teleport-id');
-        if (id) doTeleport(id, tpErr, tpOk);
-      });
-    }
-
     if (listEl) {
       listEl.addEventListener('click', function (e) {
-        var btn = e.target && e.target.closest ? e.target.closest('.l2-town-miru-item') : null;
-        if (!btn || btn.disabled) return;
-        var sk = btn.getAttribute('data-surroundings-key');
+        var tpBtn = e.target && e.target.closest ? e.target.closest('.l2-teleport-miru-tp-btn') : null;
+        if (tpBtn && !tpBtn.disabled) {
+          var inSurroundings = tpBtn.closest('.l2-teleport-miru-surroundings-list');
+          if (!inSurroundings) hideSurroundings(listEl);
+          var tpId = tpBtn.getAttribute('data-teleport-id');
+          if (tpId) doTeleport(tpId, tpErr, tpOk);
+          return;
+        }
+
+        var cityBtn =
+          e.target && e.target.closest ? e.target.closest('.l2-teleport-miru-city-btn') : null;
+        if (!cityBtn || cityBtn.disabled) return;
+        var sk = cityBtn.getAttribute('data-surroundings-key');
         if (sk) {
           toggleSurroundings(sk, listEl, tpOk);
           return;
         }
         hideSurroundings(listEl);
-        var id = btn.getAttribute('data-teleport-id');
-        if (id) {
-          doTeleport(id, tpErr, tpOk);
-          return;
-        }
-        var stub = btn.getAttribute('data-teleport-stub');
-        if (stub) showStub(stub, tpOk);
       });
     }
   }

@@ -8,6 +8,7 @@ import {
   getTeleportDestination,
   nearestMapTown,
 } from '../data/mapLocalities.js';
+import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { GameConflictError } from './charErrors.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
@@ -20,6 +21,13 @@ import {
   parseMobSpawnHpState,
   serializeMobSpawnHpState,
 } from '../domain/mobSpawnHpState.js';
+
+const TELEPORT_FREE_MAX_LEVEL = 40;
+const TELEPORT_DEFAULT_ADENA_COST = 1n;
+
+function resolveTeleportFee(level: number): bigint {
+  return level <= TELEPORT_FREE_MAX_LEVEL ? 0n : TELEPORT_DEFAULT_ADENA_COST;
+}
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
   return resolveMapMovement(applyPassiveHpRegen(row));
@@ -168,6 +176,11 @@ export async function performTeleport(
       expectedRevision,
       (current) => {
         const base = normalizePassiveAndMove(current as CharacterRow);
+        const level = levelFromTotalExp(base.exp);
+        const fee = resolveTeleportFee(level);
+        if (fee > 0n && base.adena < fee) {
+          throw new Error('teleport_not_enough_adena');
+        }
         const changed =
           base.hp !== current.hp ||
           movementFieldsChanged(current as CharacterRow, base) ||
@@ -179,7 +192,8 @@ export async function performTeleport(
           base.moveFromX !== wx ||
           base.moveFromY !== wy ||
           base.cityId !== dest.cityId ||
-          base.battleJson != null;
+          base.battleJson != null ||
+          fee > 0n;
         if (!changed) return { changed: false };
         const bj = parseBattleJson(base.battleJson);
         const hpSnap = mobSpawnHpFromBattleJson(bj);
@@ -208,6 +222,7 @@ export async function performTeleport(
             cityId: dest.cityId,
             battleJson: Prisma.JsonNull,
             mobSpawnHpJson: nextMobSpawnHpJson,
+            ...(fee > 0n ? { adena: { decrement: fee } } : {}),
           } as Prisma.CharacterUpdateManyMutationInput,
         };
       }

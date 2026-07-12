@@ -203,6 +203,13 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
             messageUk: 'Невідомий пункт телепорту.',
           });
         }
+        if (e instanceof Error && e.message === 'teleport_not_enough_adena') {
+          await logMutationOutcome(request, 'teleport', er, 'error');
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Недостатньо адени для телепорту.',
+          });
+        }
         await logMutationOutcome(request, 'teleport', er, 'error');
         throw e;
       }
