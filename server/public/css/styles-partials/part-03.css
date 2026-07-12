@@ -534,12 +534,12 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-pvp-nick--pk,
 .l2-map-hero-name-link.l2-pvp-nick--pk {
-  color: #e85840 !important;
+  color: var(--l2-nick-color, #e85840) !important;
 }
 
 .l2-pvp-nick--aggressor,
 .l2-map-hero-name-link.l2-pvp-nick--aggressor {
-  color: #a060d8 !important;
+  color: var(--l2-nick-color, #a060d8) !important;
 }
 
 .l2-pvp-incoming {

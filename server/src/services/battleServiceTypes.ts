@@ -106,6 +106,8 @@ export interface BattleVictorySummary {
   nextHuntSpawnId?: string | null;
   /** Скільки підходящих мобів ще доступно поруч (включно з nextHuntSpawnId). */
   huntSameLevelRemaining?: number;
+  /** PvP-перемога над гравцем. */
+  isPvp?: boolean;
 }
 
 /** Поразка в бою — екран поразки + підказка найближчого міста для кнопки «в місто». */
@@ -117,4 +119,7 @@ export interface BattleDefeatSummary {
   fullLog: string[];
   nearestTownLabelUk: string;
   nearestTeleportId: string;
+  /** PvP: вбивця — гравець. */
+  isPvp?: boolean;
+  killerName?: string;
 }

@@ -43,7 +43,8 @@ export async function applyPvpHitToVictimInTx(
       ...victimBj,
       playerHp: newHp,
     };
-    if (victimBj.pvpIsAggressor) {
+    /** Агресора вдарили у відповідь — карма за вбивство не нараховується. */
+    if (victimBj.pvpIsAggressor === true) {
       patch.pvpVictimFoughtBack = true;
     }
     victimData.battleJson = serializeBattleJsonForDb(patch);

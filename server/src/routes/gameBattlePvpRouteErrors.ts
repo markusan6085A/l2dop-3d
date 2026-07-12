@@ -6,6 +6,8 @@ const PVP_START_ERRORS: Record<string, string> = {
   pvp_target_in_battle: 'Цей гравець уже в бою.',
   pvp_target_busy: 'Гравець б\'ється з іншим суперником.',
   pvp_self: 'Не можна атакувати себе.',
+  pvp_target_safe: 'У місті та селищах PvP заборонено.',
+  pvp_attacker_safe: 'З безпечної зони не можна атакувати.',
   already_in_battle: 'Спочатку заверши поточний бій.',
 };
 

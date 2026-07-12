@@ -10,6 +10,7 @@ import {
   findPvpIncomingForCharacter,
   type PvpIncomingAttack,
 } from './pvpIncomingService.js';
+import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
 
 /** Легкий зріз для карти / HUD (без інвентаря й каталогів). */
 export interface CharacterMapStatePayload {
@@ -100,6 +101,7 @@ export interface MapSyncPayload {
   around: Awaited<ReturnType<typeof getMapAroundAt>>;
   spawns: ReturnType<typeof getMapWorldSpawnsNearPlayer>;
   pvpIncoming: PvpIncomingAttack | null;
+  pvpDefeat: { killerName: string; killerCharacterId: string } | null;
 }
 
 /** Один poll для map.html: позиція + околиці + маркери. */
@@ -116,10 +118,17 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
 
   const hpRow = await prisma.character.findFirst({
     where: { id: row.id },
-    select: { mobSpawnHpJson: true },
+    select: { mobSpawnHpJson: true, pvpPendingDefeatJson: true },
   });
   const nowMs = Date.now();
   const mobSpawnHpJson = hpRow?.mobSpawnHpJson;
+  const pendingDefeat = parsePvpPendingDefeat(hpRow?.pvpPendingDefeatJson);
+  const pvpDefeat = pendingDefeat
+    ? {
+        killerName: pendingDefeat.killerName,
+        killerCharacterId: pendingDefeat.killerCharacterId,
+      }
+    : null;
 
   return {
     mapState,
@@ -137,5 +146,6 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
       nowMs
     ),
     pvpIncoming: await findPvpIncomingForCharacter(mapState.id),
+    pvpDefeat,
   };
 }

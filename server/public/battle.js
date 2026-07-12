@@ -1057,11 +1057,13 @@
     var params = new URLSearchParams(window.location.search);
     var spawnId = params.get('spawnId');
     var pvpTargetId = params.get('pvpTargetId');
+    var pvpDeathMode =
+      params.get('pvpDeath') === '1' || params.get('pvpDeath') === 'true';
     var isPvpMode = !!pvpTargetId;
     var errEl = $('battle-load-err');
     var content = $('battle-content');
 
-    if (!spawnId && !pvpTargetId) {
+    if (!spawnId && !pvpTargetId && !pvpDeathMode) {
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = tr(
@@ -1400,6 +1402,7 @@
           battleHotbar.notifySkillUsed(act, battle);
         }
         if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        if (checkPvpDefeatFromCharacter(character)) return;
         if (res.victory) {
           await handleVictoryOutcome(res.victory);
           return;
@@ -1629,6 +1632,65 @@
     }
 
     var DEFEAT_LOG_MAX = 12;
+    var pvpDefeatTrapInstalled = false;
+
+    function trapPvpDefeatBack() {
+      if (pvpDefeatTrapInstalled) return;
+      pvpDefeatTrapInstalled = true;
+      try {
+        history.pushState({ l2PvpDefeatTrap: 1 }, '', location.href);
+      } catch (eTrap) {
+        /* ignore */
+      }
+      window.addEventListener('popstate', function () {
+        try {
+          history.pushState({ l2PvpDefeatTrap: 1 }, '', location.href);
+        } catch (eTrap2) {
+          /* ignore */
+        }
+      });
+    }
+
+    function hideBackNavForPvpDefeat() {
+      var back = $('battle-back-map');
+      var vMap = $('battle-victory-map');
+      if (back) back.hidden = true;
+      if (vMap) vMap.hidden = true;
+    }
+
+    function showPvpDefeatScreen(pvpDefeat) {
+      var active = $('battle-active-root');
+      var vicRoot = $('battle-victory-root');
+      var defRoot = $('battle-defeat-root');
+      if (active) active.hidden = true;
+      if (vicRoot) vicRoot.hidden = true;
+      if (defRoot) defRoot.hidden = false;
+      var mobHead = $('battle-defeat-mobhead');
+      if (mobHead) mobHead.textContent = '';
+      var shout = defRoot
+        ? defRoot.querySelector('.l2-battle-defeat-notify__shout')
+        : null;
+      if (shout) {
+        shout.textContent =
+          'Вас вбив гравець [' + (pvpDefeat.killerName || '—') + ']!';
+      }
+      var hint = $('battle-defeat-town-hint');
+      if (hint) {
+        hint.textContent = 'Натисни «В місто» — відновишся у найближчому селищі.';
+      }
+      var dlog = $('battle-defeat-log');
+      if (dlog) dlog.innerHTML = '';
+      hideBackNavForPvpDefeat();
+      trapPvpDefeatBack();
+    }
+
+    function checkPvpDefeatFromCharacter(c) {
+      if (c && c.pvpDefeat) {
+        showPvpDefeatScreen(c.pvpDefeat);
+        return true;
+      }
+      return false;
+    }
 
     function fillVictoryMobHead(el, v) {
       if (!el || !v) return;
@@ -1707,7 +1769,23 @@
       if (active) active.hidden = true;
       if (defRoot) defRoot.hidden = true;
       if (vicRoot) vicRoot.hidden = false;
-      fillVictoryMobHead($('battle-victory-mobhead'), victory);
+      var isPvpVic =
+        victory &&
+        (victory.isPvp ||
+          (victory.spawnId && String(victory.spawnId).indexOf('pvp:') === 0));
+      var shoutEl = vicRoot
+        ? vicRoot.querySelector('.l2-battle-victory-notify__shout')
+        : null;
+      if (shoutEl && isPvpVic) {
+        shoutEl.textContent =
+          'Ви перемогли гравця [' + (victory.mobName || '—') + ']!';
+      } else if (shoutEl) {
+        shoutEl.textContent = tr(
+          'battle_victory_shout',
+          'ВИ ПЕРЕМОГЛИ МОНСТРА!'
+        );
+      }
+      fillVictoryMobHead($('battle-victory-mobhead'), isPvpVic ? null : victory);
       var lu = $('battle-victory-levelup');
       if (lu) {
         if (victory && victory.levelUp) {
@@ -1736,14 +1814,28 @@
       if (vContBtn) {
         vContBtn.hidden = false;
         vContBtn.disabled = false;
+        vContBtn.textContent = isPvpVic
+          ? tr('battle_back_map', 'До карти')
+          : tr('battle_continue', 'Продовжити');
         vContBtn.classList.add('l2-battle-victory-link--primary');
         vContBtn.classList.remove('l2-battle-victory-link--muted');
       }
       if (vHuntBtn) {
-        vHuntBtn.hidden = false;
-        vHuntBtn.disabled = false;
-        vHuntBtn.classList.remove('l2-battle-victory-link--primary');
-        vHuntBtn.classList.add('l2-battle-victory-link--muted');
+        vHuntBtn.hidden = !!isPvpVic;
+        if (!isPvpVic) {
+          vHuntBtn.disabled = false;
+          vHuntBtn.classList.remove('l2-battle-victory-link--primary');
+          vHuntBtn.classList.add('l2-battle-victory-link--muted');
+        }
+      }
+      if (isPvpVic) {
+        var luPvp = $('battle-victory-levelup');
+        if (luPvp) {
+          luPvp.hidden = true;
+          luPvp.textContent = '';
+        }
+        var lootPvp = $('battle-victory-lootline');
+        if (lootPvp) lootPvp.textContent = '';
       }
     }
 
@@ -1785,7 +1877,22 @@
       if (active) active.hidden = true;
       if (vicRoot) vicRoot.hidden = true;
       if (defRoot) defRoot.hidden = false;
-      fillDefeatMobHead($('battle-defeat-mobhead'), defeat);
+      var isPvpDef = defeat && defeat.isPvp && defeat.killerName;
+      if (isPvpDef) {
+        var mobHead = $('battle-defeat-mobhead');
+        if (mobHead) mobHead.textContent = '';
+        var shout = defRoot
+          ? defRoot.querySelector('.l2-battle-defeat-notify__shout')
+          : null;
+        if (shout) {
+          shout.textContent =
+            'Вас вбив гравець [' + defeat.killerName + ']!';
+        }
+        hideBackNavForPvpDefeat();
+        trapPvpDefeatBack();
+      } else {
+        fillDefeatMobHead($('battle-defeat-mobhead'), defeat);
+      }
       var hint = $('battle-defeat-town-hint');
       if (hint && defeat) {
         hint.textContent =
@@ -1959,9 +2066,25 @@
           }
           character = resT.character;
           if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-          window.location.href = '/city.html';
+          window.location.replace('/city.html');
         });
       });
+    }
+
+    if (pvpDeathMode || (character && character.pvpDefeat)) {
+      if (character && character.pvpDefeat) {
+        if (content) content.hidden = false;
+        if (errEl) errEl.hidden = true;
+        showPvpDefeatScreen(character.pvpDefeat);
+        return;
+      }
+      if (pvpDeathMode) {
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent = 'Немає даних PvP-поразки.';
+        }
+        return;
+      }
     }
 
     var battleReady = await ensureBattle();

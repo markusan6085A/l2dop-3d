@@ -26,6 +26,7 @@ export interface CharacterRow {
   karma: number;
   /** До якого часу (epoch ms) нік агресора фіолетовий. */
   pvpAggressorUntilMs: bigint;
+  pvpPendingDefeatJson: Prisma.JsonValue | null;
   /** Текст статусу профілю для інших гравців. */
   profileStatus: string | null;
   revision: number;
@@ -184,4 +185,9 @@ export interface CharacterSnapshot {
   battleHotbarSlots: (BattleHotbarSlot | null)[] | null;
   /** Колір ніка для HUD (#rrggbb): карма / агресор / стандарт. */
   nickColor: string;
+  /** PvP-поразка, що чекає кнопки «В місто». */
+  pvpDefeat: {
+    killerName: string;
+    killerCharacterId: string;
+  } | null;
 }

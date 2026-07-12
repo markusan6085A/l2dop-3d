@@ -14,6 +14,7 @@ import {
 } from '../domain/pvpKarma.js';
 import { prisma } from '../lib/prisma.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
+import { isInPvpSafeZone } from '../domain/pvpSafeZones.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 
 /** Герой у радіусі обзору карти (як nearbySpawns для мобів). */
@@ -119,6 +120,8 @@ export async function getNearbyHeroesForMap(
     const dx = hx - worldX;
     const dy = hy - worldY;
     if (dx * dx + dy * dy > R2) continue;
+    if (isInPvpSafeZone(hx, hy)) continue;
+    if (!isCharacterOnlineNow(row.id)) continue;
     const d = Math.hypot(dx, dy);
     const karma = Math.max(0, Math.floor(Number(row.karma) || 0));
     const pvpNickColor = resolvePvpNickColor(

@@ -261,8 +261,13 @@ export async function performReturnToNearestTown(
         if (!dest) throw new Error('teleport_unknown');
         const wx = Math.floor(dest.worldX);
         const wy = Math.floor(dest.worldY);
+        const recoverHp =
+          base.hp <= 0
+            ? Math.max(1, Math.floor(base.maxHp * 0.15))
+            : base.hp;
         const changed =
-          base.hp !== current.hp ||
+          base.hp !== recoverHp ||
+          base.pvpPendingDefeatJson != null ||
           movementFieldsChanged(current as CharacterRow, base) ||
           base.worldX !== wx ||
           base.worldY !== wy ||
@@ -276,7 +281,8 @@ export async function performReturnToNearestTown(
         return {
           changed: true,
           data: {
-            hp: base.hp,
+            hp: recoverHp,
+            pvpPendingDefeatJson: Prisma.JsonNull,
             worldX: wx,
             worldY: wy,
             targetX: 0,

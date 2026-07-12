@@ -627,5 +627,10 @@ export function parseBattleJson(
     Number.isFinite(o.pvpTargetLevel)
       ? { pvpTargetLevel: Math.max(1, Math.floor(o.pvpTargetLevel)) }
       : {}),
+    ...(o.pvpIsAggressor === true ? { pvpIsAggressor: true as const } : {}),
+    ...(o.pvpIsAggressor === false ? { pvpIsAggressor: false as const } : {}),
+    ...(o.pvpVictimFoughtBack === true
+      ? { pvpVictimFoughtBack: true as const }
+      : {}),
   };
 }

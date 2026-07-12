@@ -28,6 +28,7 @@ import {
 } from './charService.js';
 import { parseSkillsLearnedJson } from './skillLearnService.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
+import { isInPvpSafeZone } from '../domain/pvpSafeZones.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { battleViewFromState, skillCooldownUiContextFromParts } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
@@ -202,6 +203,12 @@ export async function startPvpBattleInTx(
   );
   if (distAtCommit > BATTLE_RANGE) {
     throw new Error('pvp_too_far');
+  }
+  if (isInPvpSafeZone(tgtBase.worldX, tgtBase.worldY)) {
+    throw new Error('pvp_target_safe');
+  }
+  if (isInPvpSafeZone(atkBase.worldX, atkBase.worldY)) {
+    throw new Error('pvp_attacker_safe');
   }
 
   const opp = opponentCombatFromRow(tgtBase as CharacterRow);

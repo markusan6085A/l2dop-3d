@@ -40,6 +40,8 @@ model Character {
   karma      Int      @default(0)
   /** До якого часу (epoch ms) нік агресора фіолетовий після удару в PvP. */
   pvpAggressorUntilMs BigInt @default(0)
+  /** Очікувана поразка в PvP (жертва ще не натиснула «В місто»). */
+  pvpPendingDefeatJson Json?
   /** Текст статусу профілю — видимий іншим гравцям на player.html. */
   profileStatus String?
   /** Інвентар + екіп: stacks [{ itemId, qty, enchant? }], eq слот: itemId або { itemId, enchant? } — як l2dop eqbonus */

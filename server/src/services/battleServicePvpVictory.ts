@@ -9,6 +9,7 @@ import type { BattleJsonState } from '../domain/battle.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
 import { PVP_KILL_KARMA_GAIN } from '../domain/pvpKarma.js';
+import { serializePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
 import {
   combatOptsFromRow,
   GameConflictError,
@@ -53,13 +54,13 @@ export async function persistPvpVictoryInTx(
   } = args;
 
   const trimmedLog = log.slice(-MAX_BATTLE_LOG);
-  trimmedLog.push('Перемога в PvP над [' + spawn.name + ']!');
+  trimmedLog.push('Ви перемогли гравця [' + spawn.name + ']!');
 
   const victimId = st.pvpTargetCharacterId
     ? String(st.pvpTargetCharacterId).trim()
     : '';
   const unfairKill =
-    st.pvpIsAggressor === true && !st.pvpVictimFoughtBack;
+    st.pvpIsAggressor !== false && st.pvpVictimFoughtBack !== true;
   const karmaGain = unfairKill ? PVP_KILL_KARMA_GAIN : 0;
   if (karmaGain > 0) {
     trimmedLog.push('Карма +' + karmaGain + '.');
@@ -71,6 +72,11 @@ export async function persistPvpVictoryInTx(
       data: {
         hp: 0,
         battleJson: Prisma.JsonNull,
+        pvpPendingDefeatJson: serializePvpPendingDefeat({
+          killerName: char.name,
+          killerCharacterId: char.id,
+          atMs: Date.now(),
+        }),
       },
     });
   }
@@ -133,6 +139,7 @@ export async function persistPvpVictoryInTx(
     mobName: spawn.name,
     mobLevel: spawn.level,
     aggressive: spawn.aggressive,
+    isPvp: true,
     fullLog: trimmedLog,
     adenaGain: '0',
     expGain: '0',

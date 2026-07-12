@@ -427,12 +427,23 @@
     return Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
   }
 
-  function heroNickClass(h) {
-    var base = 'l2-map-hero-name-link';
-    if (!h) return base;
-    if (h.pvpNickColor === 'pk') return base + ' l2-pvp-nick--pk';
-    if (h.pvpNickColor === 'aggressor') return base + ' l2-pvp-nick--aggressor';
-    return base;
+  function heroNickHex(h) {
+    if (!h) return null;
+    if (h.pvpNickColor === 'pk') return '#e85840';
+    if (h.pvpNickColor === 'aggressor') return '#a060d8';
+    return null;
+  }
+
+  function applyHeroRowNickColor(mainEl, h) {
+    if (!mainEl) return;
+    var hex = heroNickHex(h);
+    if (hex) mainEl.style.setProperty('--l2-nick-color', hex);
+    else mainEl.style.removeProperty('--l2-nick-color');
+  }
+
+  function handlePvpDefeatRedirect(sync) {
+    if (!sync || !sync.pvpDefeat) return;
+    window.location.replace('/battle.html?pvpDeath=1');
   }
 
   function applyPvpIncomingFromSync(sync) {
@@ -447,9 +458,10 @@
     li.className = 'l2-map-hero-item';
     var main = document.createElement('div');
     main.className = 'l2-map-hero-item__main';
+    applyHeroRowNickColor(main, h);
 
     var nameLink = document.createElement('a');
-    nameLink.className = heroNickClass(h);
+    nameLink.className = 'l2-map-hero-name-link';
     nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
     nameLink.textContent = h.name || '—';
 
@@ -981,6 +993,7 @@
     var sync0 = await loadMapSync();
     if (sync0 && sync0.around) aroundData = sync0.around;
     applyPvpIncomingFromSync(sync0);
+    handlePvpDefeatRedirect(sync0);
     if (c) paintMain(false);
 
     var mobModal = $('map-mob-modal');
@@ -1316,6 +1329,7 @@
         aroundData = sync.around;
         worldSpawns = sync.spawns || [];
         applyPvpIncomingFromSync(sync);
+        handlePvpDefeatRedirect(sync);
         paintMain(false);
         renderMobMarkers(img, markersLayer, worldSpawns);
       }
