@@ -2,7 +2,7 @@
  * Склад у місті — перегляд і забрати предмети в інвентар.
  */
 (function () {
-  var PAGE_SIZE = 10;
+  var PAGE_SIZE = 15;
   var currentPage = 0;
   var withdrawInFlight = false;
 
@@ -78,11 +78,13 @@
     }
     pager.hidden = false;
     var totalPages = Math.ceil(totalItems / PAGE_SIZE);
+    if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
 
     var prev = document.createElement('button');
     prev.type = 'button';
     prev.className = 'l2-warehouse-pager-btn';
-    prev.textContent = '<<<';
+    prev.textContent = '<';
+    prev.setAttribute('aria-label', 'Попередня сторінка');
     prev.disabled = currentPage <= 0;
     prev.addEventListener('click', function () {
       if (currentPage > 0) {
@@ -92,28 +94,11 @@
     });
     pager.appendChild(prev);
 
-    for (var p = 0; p < totalPages; p++) {
-      (function (pageIdx) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className =
-          'l2-warehouse-pager-btn' +
-          (pageIdx === currentPage ? ' l2-warehouse-pager-btn--active' : '');
-        btn.textContent = String(pageIdx + 1);
-        if (pageIdx !== currentPage) {
-          btn.addEventListener('click', function () {
-            currentPage = pageIdx;
-            renderList(window.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null);
-          });
-        }
-        pager.appendChild(btn);
-      })(p);
-    }
-
     var next = document.createElement('button');
     next.type = 'button';
     next.className = 'l2-warehouse-pager-btn';
-    next.textContent = '>>>';
+    next.textContent = '>';
+    next.setAttribute('aria-label', 'Наступна сторінка');
     next.disabled = currentPage >= totalPages - 1;
     next.addEventListener('click', function () {
       if (currentPage < totalPages - 1) {
