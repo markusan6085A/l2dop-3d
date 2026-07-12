@@ -1020,6 +1020,7 @@
           var b = document.createElement('button');
           b.type = 'button';
           b.className = 'l2-battle-hotbar-tab' + (active ? ' l2-battle-hotbar-tab--on' : '');
+          b.dataset.tabKey = key;
           b.textContent = label;
           b.addEventListener('click', function () {
             setCategory(key);
