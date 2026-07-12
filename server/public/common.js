@@ -724,9 +724,7 @@
         var el = document.getElementById(id);
         if (!el) return;
         if (id === 'l2-hud-exp-pct') {
-          var legacyHud =
-            document.body && document.body.classList.contains('l2-nav-minimal');
-          if (legacyHud) {
+          if (document.querySelector('.l2-hud-legacy-bars')) {
             el.textContent = global.L2.formatLegacyExpPctText(0);
             return;
           }
@@ -755,10 +753,9 @@
       if (typeof global.L2.applyNickColorFromSnapshot === 'function') {
         global.L2.applyNickColorFromSnapshot(c);
       }
-      var isLegacyMinimal =
+      var hasWapBars =
         typeof document !== 'undefined' &&
-        document.body &&
-        document.body.classList.contains('l2-nav-minimal');
+        !!document.querySelector('.l2-hud-legacy-bars');
       function set(id, txt) {
         var el = document.getElementById(id);
         if (el) el.textContent = txt != null ? String(txt) : '—';
@@ -800,7 +797,7 @@
       set('l2-hud-exp-max', c.expBarMax != null ? c.expBarMax : '—');
       var expPct = c.expBarPct != null ? Number(c.expBarPct) : 0;
       setExpFillPct(expPct);
-      if (isLegacyMinimal) {
+      if (hasWapBars) {
         set(
           'l2-hud-exp-pct',
           global.L2.formatLegacyExpPctText(expPct)
@@ -848,7 +845,7 @@
       set('l2-hud-cp-cur', global.L2.hudStatInt(c.cp));
       set('l2-hud-cp-max', c.maxCp != null ? Math.round(Number(c.maxCp)) : '—');
       setWidthPct('l2-hud-cp-inner', cpPct);
-      if (isLegacyMinimal) {
+      if (hasWapBars) {
         var lvlAbbr =
           global.L2 && global.L2.tr ? global.L2.tr('abbr_level') : 'ур.';
         set(
@@ -884,92 +881,62 @@
      */
     ensureNavMinimalChrome: function () {
       if (typeof document === 'undefined' || !document.body) return;
-      if (document.getElementById('l2-nav-bottom')) {
+      if (
+        document.getElementById('l2-nav-bottom') ||
+        document.body.classList.contains('l2-app-l2-chrome') ||
+        document.body.classList.contains('l2-page-has-fixed-nav')
+      ) {
         document.body.classList.add('l2-nav-minimal');
       }
+    },
+
+    /** Єдині Wap-бари HP/MP/CP/EXP для всіх сторінок. */
+    getHudWapBarsMarkup: function () {
+      return (
+        '<div class="l2-hud-legacy-bars" role="group" aria-label="HP, MP, CP, досвід">' +
+        '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--hp">' +
+        '<div class="l2-hud-legacy-bar-outer">' +
+        '<div class="l2-hud-legacy-bar-inner" id="l2-hud-hp-inner" style="width:0%"></div>' +
+        '<span class="l2-hud-legacy-bar-lbl">HP</span>' +
+        '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></span>' +
+        '</div></div>' +
+        '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--mp">' +
+        '<div class="l2-hud-legacy-bar-outer">' +
+        '<div class="l2-hud-legacy-bar-inner" id="l2-hud-mp-inner" style="width:0%"></div>' +
+        '<span class="l2-hud-legacy-bar-lbl">MP</span>' +
+        '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></span>' +
+        '</div></div>' +
+        '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--cp">' +
+        '<div class="l2-hud-legacy-bar-outer">' +
+        '<div class="l2-hud-legacy-bar-inner" id="l2-hud-cp-inner" style="width:0%"></div>' +
+        '<span class="l2-hud-legacy-bar-lbl">CP</span>' +
+        '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-cp-cur">—</span>/<span id="l2-hud-cp-max">—</span></span>' +
+        '</div></div>' +
+        '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--exp">' +
+        '<div class="l2-hud-legacy-bar-outer">' +
+        '<div class="l2-hud-legacy-bar-inner" id="l2-hud-exp-fill" style="width:0%"></div>' +
+        '<span class="l2-hud-legacy-bar-val" id="l2-hud-exp-pct">0.00 %</span>' +
+        '</div></div>' +
+        '</div>'
+      );
     },
 
     getHudPanelMarkup: function () {
       if (global.L2.ensureNavMinimalChrome) {
         global.L2.ensureNavMinimalChrome();
       }
-      var isLegacyMinimal =
-        typeof document !== 'undefined' &&
-        document.body &&
-        document.body.classList.contains('l2-nav-minimal');
-      if (isLegacyMinimal) {
-        return (
-          '<header class="l2-hud-panel l2-hud-panel--legacy-minimal" aria-label="Персонаж">' +
-          '<div class="l2-hud-legacy-title-inline">L2WAP</div>' +
-          '<div class="l2-hud-legacy-body">' +
-          '<div class="l2-hud-legacy-headline">' +
-          '<span class="l2-hud-legacy-level" id="l2-hud-legacy-lvl">—</span>' +
-          ' - ' +
-          '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
-          '</div>' +
-          '<div class="l2-hud-legacy-bars" role="group" aria-label="HP, MP, CP, досвід">' +
-          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--hp">' +
-          '<div class="l2-hud-legacy-bar-outer">' +
-          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-hp-inner" style="width:0%"></div>' +
-          '<span class="l2-hud-legacy-bar-lbl">HP</span>' +
-          '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></span>' +
-          '</div></div>' +
-          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--mp">' +
-          '<div class="l2-hud-legacy-bar-outer">' +
-          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-mp-inner" style="width:0%"></div>' +
-          '<span class="l2-hud-legacy-bar-lbl">MP</span>' +
-          '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></span>' +
-          '</div></div>' +
-          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--cp">' +
-          '<div class="l2-hud-legacy-bar-outer">' +
-          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-cp-inner" style="width:0%"></div>' +
-          '<span class="l2-hud-legacy-bar-lbl">CP</span>' +
-          '<span class="l2-hud-legacy-bar-val"><span id="l2-hud-cp-cur">—</span>/<span id="l2-hud-cp-max">—</span></span>' +
-          '</div></div>' +
-          '<div class="l2-hud-legacy-bar l2-hud-legacy-bar--exp">' +
-          '<div class="l2-hud-legacy-bar-outer">' +
-          '<div class="l2-hud-legacy-bar-inner" id="l2-hud-exp-fill" style="width:0%"></div>' +
-          '<span class="l2-hud-legacy-bar-val" id="l2-hud-exp-pct">0.00 %</span>' +
-          '</div></div>' +
-          '</div>' +
-          '</div>' +
-          '</header>' +
-          global.L2.getPvpIncomingMarkup()
-        );
-      }
       return (
-        '<header class="l2-hud-panel l2-hud-panel--city-strip" aria-label="Персонаж">' +
-        '<div class="l2-hud-top l2-hud-top--city">' +
-        '<div class="l2-hud-identity">' +
-        '<div class="l2-hud-identity-text">' +
-        '<div class="l2-hud-nick" id="l2-hud-nick">—</div>' +
-        '<p class="l2-hud-meta">' +
-        '<img class="l2-hud-meta-ic" src="/ref/sheld.png" width="20" height="20" alt="" decoding="async" />' +
-        '<span class="l2-hud-meta-txt">Lv. <span id="l2-hud-lvl">—</span> · ' +
-        '<span class="l2-hud-class">Клас: <span id="l2-hud-class-val">—</span></span></span>' +
-        '</p>' +
-        '<p class="l2-hud-prof-line"><span class="l2-hud-prof-label">Професія:</span> <span id="l2-hud-prof-val">—</span></p>' +
-        '<div class="l2-hud-exp-inline">' +
-        '<div class="l2-hud-exp-bar l2-hud-exp-bar--inline" id="l2-hud-exp-bar" role="progressbar" aria-label="Досвід" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
-        '<span class="l2-hud-exp-fill" id="l2-hud-exp-fill" style="width:0%;height:100%"></span>' +
+        '<header class="l2-hud-panel l2-hud-panel--legacy-minimal" aria-label="Персонаж">' +
+        '<div class="l2-hud-legacy-title-inline">L2WAP</div>' +
+        '<div class="l2-hud-legacy-body">' +
+        '<div class="l2-hud-legacy-headline">' +
+        '<span class="l2-hud-legacy-level" id="l2-hud-legacy-lvl">—</span>' +
+        ' - ' +
+        '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
         '</div>' +
-        '<span class="l2-hud-exp-inline-pct" id="l2-hud-exp-pct">0.0%</span>' +
+        global.L2.getHudWapBarsMarkup() +
         '</div>' +
-        '</div></div>' +
-        '<div class="l2-hud-city-bars" role="group" aria-label="Життя, мана, CP">' +
-        '<div class="l2-hud-stat l2-hud-stat--hp l2-hud-city-bar"><div class="l2-hud-stat-bar">' +
-        '<div class="l2-hud-stat-inner" id="l2-hud-hp-inner" style="width:0%"></div>' +
-        '<span class="l2-hud-city-bar-nums"><span id="l2-hud-hp-cur">—</span>/<span id="l2-hud-hp-max">—</span></span>' +
-        '</div></div>' +
-        '<div class="l2-hud-stat l2-hud-stat--mp l2-hud-city-bar"><div class="l2-hud-stat-bar">' +
-        '<div class="l2-hud-stat-inner" id="l2-hud-mp-inner" style="width:0%"></div>' +
-        '<span class="l2-hud-city-bar-nums"><span id="l2-hud-mp-cur">—</span>/<span id="l2-hud-mp-max">—</span></span>' +
-        '</div></div>' +
-        '<div class="l2-hud-stat l2-hud-stat--cp l2-hud-city-bar"><div class="l2-hud-stat-bar">' +
-        '<div class="l2-hud-stat-inner" id="l2-hud-cp-inner" style="width:0%"></div>' +
-        '<span class="l2-hud-city-bar-nums"><span id="l2-hud-cp-cur">—</span>/<span id="l2-hud-cp-max">—</span></span>' +
-        '</div></div>' +
-        '</div></div></header>' +
+        '</header>' +
         global.L2.getPvpIncomingMarkup()
       );
     },
@@ -1032,10 +999,8 @@
         return;
       }
       if (existing) {
-        var needLegacy = document.body.classList.contains('l2-nav-minimal');
         var hasLegacy = existing.classList.contains('l2-hud-panel--legacy-minimal');
-        var hasStrip = existing.classList.contains('l2-hud-panel--city-strip');
-        if ((needLegacy && !hasLegacy) || (!needLegacy && !hasStrip)) {
+        if (!hasLegacy) {
           existing.replaceWith(node);
           mountAfterHeader(node);
         }

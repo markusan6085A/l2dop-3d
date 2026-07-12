@@ -1,6 +1,6 @@
 /**
  * l2-hud-panel — панель героя: рівень/клас, HP/MP/CP (city-strip у common.js).
- * v=31: --l2-nick-color — базовий колір ніка (#bfa88a, miru tan).
+ * v=32: Wap-бари HP/MP/CP/EXP — єдиний стиль у l2-hud-panel.css для всіх сторінок.
  * Порядок: після /styles.css і (за потреби) l2-game-chrome.css.
  * Рамка: /ref/222.png (905×231) — 9-slice, розтягування під ширину/висоту блоку.
  * slice = виріз у PNG; --l2h-frame-w-* = товщина рамки на екрані (окремо, тоншу/толсту).
@@ -515,4 +515,140 @@ body.l2-page-story .l2-hud-panel--city-strip .l2-hud-stat-bar {
   border: 1px solid rgba(35, 32, 28, 0.95) !important;
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85) !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85) !important;
+}
+
+/* === Wap HUD бари (єдиний стиль на всіх сторінках) === */
+.l2-hud-legacy-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 3cm;
+  max-width: 3cm;
+  box-sizing: border-box;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.l2-hud-legacy-bar {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.l2-hud-legacy-bar-outer {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+.l2-hud-legacy-bar--hp .l2-hud-legacy-bar-outer {
+  background: #4a1010;
+}
+
+.l2-hud-legacy-bar--mp .l2-hud-legacy-bar-outer {
+  background: #101c4a;
+}
+
+.l2-hud-legacy-bar--cp .l2-hud-legacy-bar-outer {
+  background: #4a3810;
+}
+
+.l2-hud-legacy-bar--exp .l2-hud-legacy-bar-outer {
+  background: #5e5170;
+}
+
+.l2-hud-legacy-bar-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 0;
+  border: none;
+  border-radius: 2px 0 0 2px;
+  transition: width 0.2s ease;
+}
+
+.l2-hud-legacy-bar--hp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #8b1016 0%,
+    #c80f2c 25%,
+    #df7592 50%,
+    #d32649 70%,
+    #bf3952 100%
+  );
+}
+
+.l2-hud-legacy-bar--mp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #04459b 0%,
+    #0068d8 25%,
+    #4b91d6 50%,
+    #0e7ed8 70%,
+    #2d95c8 100%
+  );
+}
+
+.l2-hud-legacy-bar--cp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #6e5511 0%,
+    #8a6a16 25%,
+    #bf9630 50%,
+    #9f791c 75%,
+    #785b12 100%
+  );
+}
+
+.l2-hud-legacy-bar--exp .l2-hud-legacy-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    #747795 0%,
+    #a69ac0 25%,
+    #cdc4d7 50%,
+    #b7a9ca 70%,
+    #a698bb 100%
+  );
+}
+
+.l2-hud-legacy-bar-lbl {
+  position: absolute;
+  left: 3px;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+}
+
+.l2-hud-legacy-bar-val {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  pointer-events: none;
+  white-space: nowrap;
 }
