@@ -133,6 +133,71 @@
   }
 
   var battleStartInFlight = false;
+  var pvpStartInFlight = false;
+
+  async function startPvpFromMap(targetCharacterId) {
+    if (!targetCharacterId || pvpStartInFlight) return;
+    pvpStartInFlight = true;
+    try {
+      var t = localStorage.getItem('token');
+      var snap =
+        window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+      if (!t || !snap) {
+        window.location.href = '/';
+        return;
+      }
+      async function postStart(revision) {
+        return fetch('/game/battle/pvp/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + t,
+          },
+          body: JSON.stringify({
+            targetCharacterId: targetCharacterId,
+            expectedRevision: revision,
+          }),
+        });
+      }
+      var r = await postStart(snap.revision);
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      if (r.status === 409) {
+        var fresh = await loadSnapshot();
+        if (!fresh) return;
+        r = await postStart(fresh.revision);
+      }
+      if (!r.ok) {
+        var errMsg = 'Не вдалося розпочати PvP-бій.';
+        try {
+          var ej = await r.json();
+          if (ej && ej.messageUk) errMsg = ej.messageUk;
+        } catch (eErr) {
+          /* ignore */
+        }
+        if (window.L2 && typeof L2.showToast === 'function') {
+          L2.showToast(errMsg);
+        } else {
+          alert(errMsg);
+        }
+        return;
+      }
+      var j = await r.json();
+      if (j.character && window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(j.character);
+      }
+      if (j.character && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(j.character);
+      }
+      window.location.href =
+        '/battle.html?pvpTargetId=' + encodeURIComponent(targetCharacterId);
+    } finally {
+      pvpStartInFlight = false;
+    }
+  }
 
   async function startBattleFromMap(spawnId) {
     if (!spawnId || battleStartInFlight) return;
@@ -357,19 +422,9 @@
     }
   }
 
-  function heroNameLevelLine(h) {
-    var n = h.name || '—';
+  function heroLevelPart(h) {
     var lv = Number(h.level);
-    var lvPart = Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
-    return n + lvPart;
-  }
-
-  function onHeroAttackClick(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (window.L2 && typeof L2.showToast === 'function') {
-      L2.showToast('PvP-бій скоро — радіус обзору вже враховано.');
-    }
+    return Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
   }
 
   function appendHeroRow(listEl, h) {
@@ -377,28 +432,37 @@
     li.className = 'l2-map-hero-item';
     var main = document.createElement('div');
     main.className = 'l2-map-hero-item__main';
-    var a = document.createElement('a');
-    a.className = 'l2-map-hero-link';
-    a.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-    var textSpan = document.createElement('span');
-    textSpan.className = 'l2-map-hero-link__text';
-    textSpan.textContent = heroNameLevelLine(h);
-    var pkSpan = document.createElement('span');
-    pkSpan.className = 'l2-map-hero-link__pk';
-    pkSpan.textContent = ' [pk]';
-    a.appendChild(textSpan);
-    a.appendChild(pkSpan);
-    main.appendChild(a);
-    li.appendChild(main);
-    if (h.inBattleRange && !h.inBattle) {
-      var atk = document.createElement('button');
-      atk.type = 'button';
-      atk.className = 'l2-map-hero-attack';
-      atk.textContent = 'Атакувати';
-      atk.dataset.characterId = h.characterId || '';
-      atk.addEventListener('click', onHeroAttackClick);
-      li.appendChild(atk);
+
+    var nameLink = document.createElement('a');
+    nameLink.className = 'l2-map-hero-name-link';
+    nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+    nameLink.textContent = h.name || '—';
+
+    var levelSpan = document.createElement('span');
+    levelSpan.className = 'l2-map-hero-level';
+    levelSpan.textContent = heroLevelPart(h);
+
+    var pkBtn = document.createElement('button');
+    pkBtn.type = 'button';
+    pkBtn.className = 'l2-map-hero-link__pk';
+    pkBtn.textContent = ' [pk]';
+    pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
+    if (!h.inBattleRange || h.inBattle) {
+      pkBtn.disabled = true;
+      pkBtn.title = h.inBattle ? 'Гравець у бою' : 'Занадто далеко';
+    } else {
+      pkBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var cid = h.characterId || '';
+        if (cid) startPvpFromMap(cid);
+      });
     }
+
+    main.appendChild(nameLink);
+    main.appendChild(levelSpan);
+    main.appendChild(pkBtn);
+    li.appendChild(main);
     listEl.appendChild(li);
   }
 

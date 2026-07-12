@@ -1,6 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import {
+  isPvpBattleJson,
+  resolveBattleSpawnMeta,
+} from '../domain/battlePvpContext.js';
+import {
   applyBattleModsPatch,
   effectiveBattleMaxHp,
   jsonFiniteNum,
@@ -66,6 +70,7 @@ import {
   persistBattleDefeatInTx,
   persistBattleVictoryInTx,
 } from './battleServiceBattleOutcomeTx.js';
+import { persistPvpVictoryInTx } from './battleServicePvpVictory.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -142,7 +147,7 @@ export async function performBattleAction(
     const bj = parseBattleJson((char as CharacterRow).battleJson);
     if (!bj) throw new Error('battle_none');
 
-    const spawn = getWorldSpawnById(bj.spawnId);
+    const spawn = resolveBattleSpawnMeta(bj);
     if (!spawn) throw new Error('battle_spawn_gone');
 
     let inv = parseInventory((char as CharacterRow).inventoryJson);
@@ -1032,6 +1037,32 @@ export async function performBattleAction(
       );
     }
     if (mobHp <= 0) {
+      if (isPvpBattleJson(bj)) {
+        const v = await persistPvpVictoryInTx(tx, {
+          userId,
+          expectedRevision,
+          char: char as CharacterRow,
+          spawn,
+          preLevel,
+          playerHp,
+          currentMp,
+          st,
+          log,
+          ...(activeBuffsChanged
+            ? {
+                activeBuffsJson:
+                  nextActiveBuffs as unknown as Prisma.InputJsonValue,
+              }
+            : {}),
+          ...(cooldownsChanged
+            ? {
+                skillCooldownsJson:
+                  nextCooldowns as unknown as Prisma.InputJsonValue,
+              }
+            : {}),
+        });
+        return { ...v, battle: null };
+      }
       const v = await persistBattleVictoryInTx(tx, {
         userId,
         expectedRevision,

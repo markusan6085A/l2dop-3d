@@ -943,6 +943,20 @@
     });
   }
 
+  async function startPvpBattle(targetCharacterId, expectedRevision) {
+    return fetchJson('/game/battle/pvp/start', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + localStorage.getItem('token'),
+      },
+      body: JSON.stringify({
+        targetCharacterId: targetCharacterId,
+        expectedRevision: expectedRevision,
+      }),
+    });
+  }
+
   async function startBattle(spawnId, expectedRevision) {
     return fetchJson('/game/battle/start', {
       method: 'POST',
@@ -1042,15 +1056,17 @@
 
     var params = new URLSearchParams(window.location.search);
     var spawnId = params.get('spawnId');
+    var pvpTargetId = params.get('pvpTargetId');
+    var isPvpMode = !!pvpTargetId;
     var errEl = $('battle-load-err');
     var content = $('battle-content');
 
-    if (!spawnId) {
+    if (!spawnId && !pvpTargetId) {
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = tr(
-          'battle_err_no_mob',
-          'Не вказано моба. Перейди через місто і телепорт.'
+          'battle_err_no_target',
+          'Не вказано ціль бою. Перейди через карту.'
         );
       }
       return;
@@ -1093,15 +1109,73 @@
     var battle = state.battle;
     var battleHotbar = null;
 
-    if (battle && battle.spawnId && battle.spawnId !== spawnId) {
-      spawnId = battle.spawnId;
+    if (battle && battle.spawnId) {
       try {
-        var uFix = new URL(window.location.href);
-        uFix.searchParams.set('spawnId', spawnId);
-        window.history.replaceState({}, '', uFix.pathname + uFix.search);
-      } catch (eFix) {
+        var uFix0 = new URL(window.location.href);
+        if (battle.spawnId.indexOf('pvp:') === 0) {
+          var tid = battle.spawnId.slice('pvp:'.length);
+          isPvpMode = true;
+          pvpTargetId = tid;
+          uFix0.searchParams.delete('spawnId');
+          uFix0.searchParams.set('pvpTargetId', tid);
+          window.history.replaceState({}, '', uFix0.pathname + uFix0.search);
+        } else if (battle.spawnId !== spawnId) {
+          spawnId = battle.spawnId;
+          isPvpMode = false;
+          uFix0.searchParams.delete('pvpTargetId');
+          uFix0.searchParams.set('spawnId', spawnId);
+          window.history.replaceState({}, '', uFix0.pathname + uFix0.search);
+        }
+      } catch (eFix0) {
         /* ignore */
       }
+    }
+
+    function applyPvpStartResult(st) {
+      saveVictoryToSession(null);
+      lastVictorySummary = null;
+      character = st.character;
+      battle = st.battle;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+      if (content) content.hidden = false;
+      if (errEl) errEl.hidden = true;
+      hideVictoryScreen();
+      refreshUI();
+    }
+
+    async function ensurePvpBattle() {
+      if (battle && battle.spawnId && battle.spawnId.indexOf('pvp:') === 0) {
+        return true;
+      }
+      var er = character.revision;
+      var st = await startPvpBattle(pvpTargetId, er);
+      if (st && st._err === 409) {
+        var again = await loadCharacter();
+        if (again && again.character) {
+          character = again.character;
+          L2.setLastSnapshot(character);
+          st = await startPvpBattle(pvpTargetId, character.revision);
+        }
+      }
+      if (!st || st._err) {
+        var pvpMsg = tr('battle_err_pvp_start', 'Не вдалося розпочати PvP-бій.');
+        if (st && st.raw) {
+          try {
+            var pej = await st.raw.json();
+            if (pej && pej.messageUk) pvpMsg = pej.messageUk;
+          } catch (ePvp) {
+            /* ignore */
+          }
+        }
+        if (errEl) {
+          errEl.hidden = false;
+          errEl.textContent = pvpMsg;
+        }
+        return false;
+      }
+      applyPvpStartResult(st);
+      return true;
     }
 
     function applyHuntContinueResult(st) {
@@ -1157,6 +1231,9 @@
     }
 
     async function ensureBattle() {
+      if (isPvpMode) {
+        return ensurePvpBattle();
+      }
       if (battle && battle.spawnId === spawnId) {
         return true;
       }

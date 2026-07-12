@@ -615,5 +615,17 @@ export function parseBattleJson(
       : {}),
     ...(battlePotionHpHoT !== undefined ? { battlePotionHpHoT } : {}),
     ...(battlePotionMpHoT !== undefined ? { battlePotionMpHoT } : {}),
+    ...(o.battleMode === 'pvp' ? { battleMode: 'pvp' as const } : {}),
+    ...(typeof o.pvpTargetCharacterId === 'string' &&
+    o.pvpTargetCharacterId.trim()
+      ? { pvpTargetCharacterId: o.pvpTargetCharacterId.trim() }
+      : {}),
+    ...(typeof o.pvpTargetName === 'string' && o.pvpTargetName.trim()
+      ? { pvpTargetName: o.pvpTargetName.trim() }
+      : {}),
+    ...(typeof o.pvpTargetLevel === 'number' &&
+    Number.isFinite(o.pvpTargetLevel)
+      ? { pvpTargetLevel: Math.max(1, Math.floor(o.pvpTargetLevel)) }
+      : {}),
   };
 }

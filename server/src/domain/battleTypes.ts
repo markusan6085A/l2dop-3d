@@ -194,6 +194,12 @@ export interface WhirlwindExtraMobJson {
 
 export interface BattleJsonState {
   spawnId: string;
+  /** PvE за замовчуванням; `pvp` — бій з іншим гравцем на карті. */
+  battleMode?: 'pve' | 'pvp';
+  /** Ціль PvP (character.id опонента). */
+  pvpTargetCharacterId?: string;
+  pvpTargetName?: string;
+  pvpTargetLevel?: number;
   mobHp: number;
   mobMaxHp: number;
   /** У PvE — «CP моба» для ефектів на кшталт Гніву (Wrath); max зазвичай від max HP. */

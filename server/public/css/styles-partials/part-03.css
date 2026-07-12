@@ -470,55 +470,46 @@ button.l2-map-mob-title--tap-full:focus {
   min-width: 0;
 }
 
-.l2-map-hero-link {
+.l2-map-hero-name-link,
+.l2-map-hero-level {
   color: #e8ead8;
-  text-decoration: none;
   font-weight: 600;
   font-size: 12px;
   line-height: 1.35;
 }
 
-.l2-map-hero-link__text {
-  color: inherit;
+.l2-map-hero-name-link {
+  text-decoration: none;
 }
 
-.l2-map-hero-link__pk {
-  color: #e85840;
-  font-weight: 700;
-}
-
-.l2-map-hero-link:hover,
-.l2-map-hero-link:focus {
+.l2-map-hero-name-link:hover,
+.l2-map-hero-name-link:focus {
   color: #f4f6e8;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.l2-map-hero-link:hover .l2-map-hero-link__pk,
-.l2-map-hero-link:focus .l2-map-hero-link__pk {
+.l2-map-hero-link__pk {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: pointer;
+  color: #e85840;
+}
+
+.l2-map-hero-link__pk:hover:not(:disabled),
+.l2-map-hero-link__pk:focus:not(:disabled) {
   color: #ff6644;
 }
 
-.l2-map-hero-attack {
-  flex: 0 0 auto;
-  margin: 0;
-  padding: 3px 8px;
-  font-family: var(--l2-font-display, Georgia, serif);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #ffe0c0;
-  cursor: pointer;
-  border: 1px solid rgba(200, 80, 60, 0.55);
-  border-radius: 4px;
-  background: linear-gradient(180deg, #4a2018 0%, #1a0c08 100%);
-}
-
-.l2-map-hero-attack:hover,
-.l2-map-hero-attack:focus {
-  color: #fff4e8;
-  border-color: rgba(255, 120, 80, 0.75);
-  background: linear-gradient(180deg, #5a2820 0%, #241410 100%);
+.l2-map-hero-link__pk:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .l2-map-mob-detail {

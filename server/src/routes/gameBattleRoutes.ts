@@ -11,6 +11,7 @@ import {
   saveBattleHotbar,
   startBattle,
   startHuntContinueBattle,
+  startPvpBattle,
 } from '../services/battleService.js';
 import type { BattleActionId } from '../domain/battle.js';
 import {
@@ -33,6 +34,10 @@ import {
 import { prisma } from '../lib/prisma.js';
 import { BattleSkillNotAllowedError } from '../domain/battleSkillNotAllowedError.js';
 import { sendRevisionConflict } from './revisionConflict.js';
+import {
+  isPvpStartErrorMessage,
+  sendPvpStartError,
+} from './gameBattlePvpRouteErrors.js';
 
 async function logBattleMutation(
   request: { log: { info: (obj: unknown, msg?: string) => void }; userId?: string },
@@ -155,6 +160,69 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           });
         }
         await logBattleMutation(request, 'battle_start', er, 'error');
+        throw e;
+      }
+    }
+  );
+
+  app.post(
+    '/battle/pvp/start',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const body = request.body;
+      if (!body || typeof body !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+      const b = body as Record<string, unknown>;
+      const er = b.expectedRevision;
+      const targetCharacterId = b.targetCharacterId;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректний expectedRevision.',
+        });
+      }
+      if (typeof targetCharacterId !== 'string' || !targetCharacterId.trim()) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен targetCharacterId гравця.',
+        });
+      }
+      try {
+        const result = await startPvpBattle(
+          userId,
+          targetCharacterId.trim(),
+          er
+        );
+        await logBattleMutation(
+          request,
+          'battle_pvp_start',
+          er,
+          'ok',
+          result.character.revision,
+          result.character.id
+        );
+        return reply.send(result);
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logBattleMutation(request, 'battle_pvp_start', er, 'conflict');
+          return sendRevisionConflict(reply);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && isPvpStartErrorMessage(e.message)) {
+          await logBattleMutation(request, 'battle_pvp_start', er, 'error');
+          return sendPvpStartError(reply, e.message);
+        }
+        await logBattleMutation(request, 'battle_pvp_start', er, 'error');
         throw e;
       }
     }

@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
+import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
   BATTLE_RANGE,
@@ -279,8 +280,8 @@ export async function getBattleState(
   const snap = toSnapshot(row as CharacterRow);
   const bj = parseBattleJson((row as CharacterRow).battleJson);
   if (!bj) return { character: snap, battle: null };
-  const spawn = getWorldSpawnById(bj.spawnId);
-  if (!spawn) return { character: snap, battle: null };
+  const spawnMeta = resolveBattleSpawnMeta(bj);
+  if (!spawnMeta) return { character: snap, battle: null };
   const cr = row as CharacterRow;
   const prof =
     typeof cr.l2Profession === 'string' && cr.l2Profession.trim()
@@ -296,10 +297,10 @@ export async function getBattleState(
     bj.spawnId,
     bj,
     {
-      name: spawn.name,
-      level: spawn.level,
-      aggressive: spawn.aggressive,
-      kind: spawn.kind,
+      name: spawnMeta.name,
+      level: spawnMeta.level,
+      aggressive: spawnMeta.aggressive,
+      kind: spawnMeta.kind,
     },
     snap.level,
     row.race,
