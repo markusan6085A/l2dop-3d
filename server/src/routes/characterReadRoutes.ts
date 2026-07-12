@@ -10,6 +10,7 @@ import {
   itemStatsHintsForClient,
   listGearCatalogForClient,
 } from '../data/itemsCatalog.js';
+import { itemNamesEnForClient } from '../data/itemNamesEnForClient.js';
 import { craftResourceIconHintsForClient } from '../data/resourceCraftIconHints.js';
 import { itemBlocksShieldHintsForClient } from '../data/l2dopTwoHandedWeapon.js';
 import { getSnapshotForUser } from '../services/charService.js';
@@ -21,7 +22,9 @@ import { characterDbErrorPayload } from './characterRouteErrors.js';
 function buildCharacterCatalogHints() {
   return {
     gearCatalog: listGearCatalogForClient(),
-    /** Підписи для дропу / сумки / ресурсів: lineage + каталог + ручні UA. */
+    /** Підписи предметів англійською (зброя, броня, дроп, ресурси). */
+    itemNamesEn: itemNamesEnForClient(),
+    /** Legacy UA — лишається для сумісності, UI бере itemNamesEn. */
     itemNamesUk: itemNamesUkForClient(),
     itemSlotHints: itemSlotHintsForClient(),
     itemInventoryTabHints: itemInventoryTabHintsForClient(),

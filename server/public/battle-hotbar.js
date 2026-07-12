@@ -276,7 +276,11 @@
     if (L2.mergeCraftResourceIconHints) {
       L2.mergeCraftResourceIconHints(j);
     }
-    if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && L2.itemNameById) {
+    if (j.itemNamesEn && typeof j.itemNamesEn === 'object' && L2.itemNameById) {
+      Object.keys(j.itemNamesEn).forEach(function (k) {
+        L2.itemNameById[k] = j.itemNamesEn[k];
+      });
+    } else if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && L2.itemNameById) {
       Object.keys(j.itemNamesUk).forEach(function (k) {
         L2.itemNameById[k] = j.itemNamesUk[k];
       });

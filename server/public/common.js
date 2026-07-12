@@ -73,6 +73,7 @@
     if (!j || typeof j !== 'object') return false;
     return !!(
       j.gearCatalog ||
+      j.itemNamesEn ||
       j.itemNamesUk ||
       j.itemSlotHints ||
       j.itemInventoryTabHints ||
@@ -92,7 +93,11 @@
     if (global.L2.mergeCraftResourceIconHints) {
       global.L2.mergeCraftResourceIconHints(j);
     }
-    if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && global.L2.itemNameById) {
+    if (j.itemNamesEn && typeof j.itemNamesEn === 'object' && global.L2.itemNameById) {
+      Object.keys(j.itemNamesEn).forEach(function (k) {
+        global.L2.itemNameById[k] = j.itemNamesEn[k];
+      });
+    } else if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && global.L2.itemNameById) {
       Object.keys(j.itemNamesUk).forEach(function (k) {
         global.L2.itemNameById[k] = j.itemNamesUk[k];
       });
@@ -250,7 +255,6 @@
         if (x.itemId == null) return;
         var id = x.itemId;
         if (x.iconUrl) icons[id] = x.iconUrl;
-        if (x.nameUk) names[id] = x.nameUk;
         if (x.stats && typeof x.stats === 'object') stats[id] = x.stats;
         if (x.slot) slots[id] = x.slot;
         if (x.grade != null && String(x.grade).trim() !== '') {
