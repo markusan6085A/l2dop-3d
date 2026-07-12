@@ -11,7 +11,13 @@ import { resolveMapMovement } from '../domain/mapMovement.js';
 import { prisma } from '../lib/prisma.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import type { CharacterRow } from './charTypes.js';
+import {
+  getNearbyHeroesForMap,
+  type NearbyHeroEntry,
+} from './mapNearbyHeroesService.js';
 import { mobIconUrlForSpawn } from './spawnCatalogService.js';
+
+export type { NearbyHeroEntry };
 
 /** Актуальні worldX/worldY для списку мобів (як у бою / hunt-continue). */
 export function resolvedWorldPositionFromCharacterRow(row: CharacterRow): {
@@ -77,16 +83,21 @@ function nearbySpawnsForPlayer(
   return filterSpawnsVisibleForPlayer(out.slice(0, 400), mobSpawnHpJson, nowMs);
 }
 
-export function getMapAroundAt(
+export async function getMapAroundAt(
   worldX: number,
   worldY: number,
   mobSpawnHpJson?: unknown,
-  nowMs: number = Date.now()
+  nowMs: number = Date.now(),
+  excludeCharacterId?: string
 ) {
   const base = resolveMapLocality(worldX, worldY);
+  const nearbyHeroes = excludeCharacterId
+    ? await getNearbyHeroesForMap(worldX, worldY, excludeCharacterId, nowMs)
+    : [];
   return {
     ...base,
     nearbySpawns: nearbySpawnsForPlayer(worldX, worldY, mobSpawnHpJson, nowMs),
+    nearbyHeroes,
   };
 }
 
@@ -101,6 +112,7 @@ export async function getMapAroundForUser(userId: string) {
     pos.worldX,
     pos.worldY,
     pos.mobSpawnHpJson,
-    nowMs
+    nowMs,
+    row.id
   );
 }

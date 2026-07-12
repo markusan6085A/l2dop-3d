@@ -93,7 +93,7 @@ export async function getCharacterMapStateForUser(
 
 export interface MapSyncPayload {
   mapState: CharacterMapStatePayload;
-  around: ReturnType<typeof getMapAroundAt>;
+  around: Awaited<ReturnType<typeof getMapAroundAt>>;
   spawns: ReturnType<typeof getMapWorldSpawnsNearPlayer>;
 }
 
@@ -118,7 +118,13 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
 
   return {
     mapState,
-    around: getMapAroundAt(mapState.worldX, mapState.worldY, mobSpawnHpJson, nowMs),
+    around: await getMapAroundAt(
+      mapState.worldX,
+      mapState.worldY,
+      mobSpawnHpJson,
+      nowMs,
+      mapState.id
+    ),
     spawns: getMapWorldSpawnsNearPlayer(
       mapState.worldX,
       mapState.worldY,

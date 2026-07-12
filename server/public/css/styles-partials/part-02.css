@@ -1015,7 +1015,51 @@ body.l2-page-map .l2-screen-inner {
   vertical-align: top;
 }
 
+/* Радіус обзору (список мобів поруч) — навколо позиції гравця */
+.l2-map-view-radius {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  box-sizing: border-box;
+  border: 1px dashed rgba(255, 200, 120, 0.5);
+  background: rgba(255, 200, 120, 0.05);
+  box-shadow: 0 0 10px rgba(220, 160, 60, 0.15);
+}
+
 /* Точки мобів на карті (як ..O,tx,ty у mapcreate.php) */
+.l2-map-hero-markers {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.l2-map-hero-pin {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  padding: 0;
+  border: 1px solid #1a5080;
+  border-radius: 50%;
+  background: #5ab4ff;
+  box-shadow: 0 0 6px rgba(90, 180, 255, 0.75);
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-map-hero-pin--pk {
+  background: #ff5555;
+  border-color: #801a1a;
+  box-shadow: 0 0 6px rgba(255, 80, 80, 0.85);
+}
+
 .l2-map-mob-markers {
   position: absolute;
   left: 0;

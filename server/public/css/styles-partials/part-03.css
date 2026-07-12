@@ -428,6 +428,114 @@ button.l2-map-mob-title--tap-full:focus {
   color: #d8dcc8;
 }
 
+/* Герої поруч — між картою і пейджером мобів */
+.l2-map-hero-section {
+  margin: 0 0 4px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.l2-map-hero-section[hidden] {
+  display: none !important;
+}
+
+.l2-map-hero-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid rgba(80, 100, 90, 0.35);
+}
+
+.l2-map-hero-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 11px;
+  line-height: 1.35;
+  border-bottom: 1px solid rgba(80, 100, 90, 0.22);
+}
+
+.l2-map-hero-item:last-child {
+  border-bottom: none;
+}
+
+.l2-map-hero-item__main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.l2-map-hero-link {
+  color: #8ec8ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.l2-map-hero-link:hover,
+.l2-map-hero-link:focus {
+  color: #c8e4ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.l2-map-hero-link--pk {
+  color: #ff7070;
+}
+
+.l2-map-hero-link--lvl-deadly { color: #ff4444; }
+.l2-map-hero-link--lvl-hard { color: #ff8844; }
+.l2-map-hero-link--lvl-warn { color: #ffcc44; }
+.l2-map-hero-link--lvl-same { color: #8ec8ff; }
+.l2-map-hero-link--lvl-easy { color: #88ddaa; }
+.l2-map-hero-link--lvl-trivial { color: #aaaaaa; }
+
+.l2-map-hero-online,
+.l2-map-hero-battle {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.l2-map-hero-online {
+  color: #88ffaa;
+  background: rgba(40, 120, 70, 0.25);
+}
+
+.l2-map-hero-battle {
+  color: #ffaa66;
+  background: rgba(120, 70, 20, 0.25);
+}
+
+.l2-map-hero-attack {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 3px 8px;
+  font-family: var(--l2-font-display, Georgia, serif);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffe0c0;
+  cursor: pointer;
+  border: 1px solid rgba(200, 80, 60, 0.55);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #4a2018 0%, #1a0c08 100%);
+}
+
+.l2-map-hero-attack:hover,
+.l2-map-hero-attack:focus {
+  color: #fff4e8;
+  border-color: rgba(255, 120, 80, 0.75);
+  background: linear-gradient(180deg, #5a2820 0%, #241410 100%);
+}
+
 .l2-map-mob-detail {
   margin: 0 0 10px;
   padding: 10px 8px 12px;

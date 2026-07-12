@@ -625,7 +625,6 @@ body.l2-app-l2-chrome .btn-cta,
 body.l2-app-l2-chrome a.l2-town-btn,
 body.l2-app-l2-chrome button.l2-town-btn,
 body.l2-app-l2-chrome .l2-city-tp-item,
-body.l2-app-l2-chrome .l2-map-mob-page-btn,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow,
 body.l2-app-l2-chrome .l2-gm-modal-buy,
@@ -876,8 +875,34 @@ body.l2-app-l2-chrome .l2-city-tp-item {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
+/* Карта: <> без ref-рамок — лише текст */
 body.l2-app-l2-chrome .l2-map-mob-page-btn {
-  border-radius: var(--l2s-paper-radius, 3px) !important;
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #c9a860 !important;
+  text-shadow: none !important;
+  min-width: 36px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 0 !important;
+}
+
+body.l2-app-l2-chrome .l2-map-mob-page-btn:hover:not(:disabled),
+body.l2-app-l2-chrome .l2-map-mob-page-btn:focus:not(:disabled) {
+  color: #fff4d0 !important;
+  filter: none !important;
+  transform: none !important;
+  background: rgba(201, 168, 96, 0.12) !important;
+  border: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
+}
+
+body.l2-app-l2-chrome .l2-map-mob-page-btn:active:not(:disabled) {
+  transform: scale(0.95) !important;
+  filter: none !important;
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar__label {
@@ -951,8 +976,6 @@ body.l2-app-l2-chrome button.l2-town-btn:hover,
 body.l2-app-l2-chrome button.l2-town-btn:focus,
 body.l2-app-l2-chrome .l2-city-tp-item:hover,
 body.l2-app-l2-chrome .l2-city-tp-item:focus,
-body.l2-app-l2-chrome .l2-map-mob-page-btn:hover:not(:disabled),
-body.l2-app-l2-chrome .l2-map-mob-page-btn:focus:not(:disabled),
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:hover,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:focus,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow:hover,
@@ -1101,7 +1124,6 @@ body.l2-app-l2-chrome .btn-cta:active,
 body.l2-app-l2-chrome a.l2-town-btn:active,
 body.l2-app-l2-chrome button.l2-town-btn:active,
 body.l2-app-l2-chrome .l2-city-tp-item:active,
-body.l2-app-l2-chrome .l2-map-mob-page-btn:active:not(:disabled),
 body.l2-app-l2-chrome .l2-foot-linkbar__btn:active,
 body.l2-app-l2-chrome .l2-foot-linkbar__btn--subrow:active,
 body.l2-app-l2-chrome .l2-gm-modal-buy:active,

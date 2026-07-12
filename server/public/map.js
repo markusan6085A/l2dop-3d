@@ -5,6 +5,8 @@
 (function () {
   /** Як BATTLE_RANGE у server/src/domain/battle.ts. */
   var MAP_BATTLE_RANGE_UNITS = 28000;
+  /** Як MAP_NEARBY_LIST_RADIUS у server/src/data/mapWorldSpawns.ts — список «моби поруч». */
+  var MAP_NEARBY_LIST_RADIUS = 26000;
   var MOBS_PER_PAGE = 15;
   var mobListPage = 0;
   var mobDetailPage = 0;
@@ -67,6 +69,23 @@
     var ly = (p.my / img.naturalHeight) * 100;
     dot.style.left = lx + '%';
     dot.style.top = ly + '%';
+  }
+
+  function placeViewRadius(img, el, worldX, worldY, radiusWorld) {
+    if (!img || !el || !img.naturalWidth || !radiusWorld) return;
+    var center = worldToMapPixel(worldX, worldY);
+    var east = worldToMapPixel(worldX + radiusWorld, worldY);
+    var north = worldToMapPixel(worldX, worldY + radiusWorld);
+    var rx = Math.abs(east.mx - center.mx);
+    var ry = Math.abs(north.my - center.my);
+    var lx = (center.mx / img.naturalWidth) * 100;
+    var ly = (center.my / img.naturalHeight) * 100;
+    var wPct = ((rx * 2) / img.naturalWidth) * 100;
+    var hPct = ((ry * 2) / img.naturalHeight) * 100;
+    el.style.left = lx + '%';
+    el.style.top = ly + '%';
+    el.style.width = wPct + '%';
+    el.style.height = hPct + '%';
   }
 
   async function postMove(targetX, targetY) {
@@ -338,6 +357,107 @@
     }
   }
 
+  function heroDisplayLine(h) {
+    var n = h.name || '—';
+    var lv = Number(h.level);
+    var lvPart = Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
+    var dist = h.distance != null ? ' · ' + h.distance + ' од.' : '';
+    return n + lvPart + dist;
+  }
+
+  function heroLinkClass(h, playerLevel) {
+    var pl = Number(playerLevel);
+    if (!Number.isFinite(pl)) pl = 1;
+    if (Number(h.pk) > 0) return 'l2-map-hero-link l2-map-hero-link--pk';
+    var lv = num(h.level, 1);
+    var d = lv - pl;
+    var tier = 'l2-map-hero-link--lvl-same';
+    if (d >= 10) tier = 'l2-map-hero-link--lvl-deadly';
+    else if (d >= 5) tier = 'l2-map-hero-link--lvl-hard';
+    else if (d >= 3) tier = 'l2-map-hero-link--lvl-warn';
+    else if (d <= -6) tier = 'l2-map-hero-link--lvl-trivial';
+    else if (d <= -3) tier = 'l2-map-hero-link--lvl-easy';
+    return 'l2-map-hero-link ' + tier;
+  }
+
+  function onHeroAttackClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.L2 && typeof L2.showToast === 'function') {
+      L2.showToast('PvP-бій скоро — радіус обзору вже враховано.');
+    }
+  }
+
+  function appendHeroRow(listEl, h, playerLevel) {
+    var li = document.createElement('li');
+    li.className = 'l2-map-hero-item';
+    var main = document.createElement('div');
+    main.className = 'l2-map-hero-item__main';
+    var a = document.createElement('a');
+    a.className = heroLinkClass(h, playerLevel);
+    a.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+    a.textContent = heroDisplayLine(h);
+    main.appendChild(a);
+    if (h.isOnline) {
+      var onBadge = document.createElement('span');
+      onBadge.className = 'l2-map-hero-online';
+      onBadge.textContent = 'онлайн';
+      main.appendChild(onBadge);
+    }
+    if (h.inBattle) {
+      var battleBadge = document.createElement('span');
+      battleBadge.className = 'l2-map-hero-battle';
+      battleBadge.textContent = 'в бої';
+      main.appendChild(battleBadge);
+    }
+    li.appendChild(main);
+    if (h.inBattleRange && !h.inBattle) {
+      var atk = document.createElement('button');
+      atk.type = 'button';
+      atk.className = 'l2-map-hero-attack';
+      atk.textContent = 'Атакувати';
+      atk.dataset.characterId = h.characterId || '';
+      atk.addEventListener('click', onHeroAttackClick);
+      li.appendChild(atk);
+    }
+    listEl.appendChild(li);
+  }
+
+  function renderHeroList(around, listEl, sectionEl, playerLevel) {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    var heroes = around && around.nearbyHeroes ? around.nearbyHeroes : [];
+    if (sectionEl) sectionEl.hidden = !heroes.length;
+    if (!heroes.length) return;
+    for (var hi = 0; hi < heroes.length; hi++) {
+      appendHeroRow(listEl, heroes[hi], playerLevel);
+    }
+  }
+
+  function renderHeroMarkers(img, layer, heroes) {
+    if (!layer) return;
+    layer.innerHTML = '';
+    if (!img || !img.naturalWidth || !heroes || !heroes.length) return;
+    for (var hj = 0; hj < heroes.length; hj++) {
+      var h = heroes[hj];
+      var p = worldToMapPixel(h.worldX, h.worldY);
+      var lx = (p.mx / img.naturalWidth) * 100;
+      var ly = (p.my / img.naturalHeight) * 100;
+      var pin = document.createElement('button');
+      pin.type = 'button';
+      pin.className = 'l2-map-hero-pin';
+      if (Number(h.pk) > 0) pin.className += ' l2-map-hero-pin--pk';
+      pin.style.left = lx + '%';
+      pin.style.top = ly + '%';
+      var title = (h.name || '—') + (h.level ? ' · ур. ' + h.level : '');
+      pin.setAttribute('aria-label', title);
+      pin.title = title;
+      pin.dataset.characterId = h.characterId || '';
+      pin.dataset.heroName = h.name || '';
+      layer.appendChild(pin);
+    }
+  }
+
   function num(v, d) {
     var n = Number(v);
     return Number.isFinite(n) ? n : d;
@@ -540,11 +660,12 @@
     updateMobPager(pagerEl, prevBtn, nextBtn, indEl, p, pages, total);
   }
 
-  function render(c, img, dot, moveTargetEl, viewport, around, centerOnPlayer) {
+  function render(c, img, dot, viewRadiusEl, moveTargetEl, viewport, around, centerOnPlayer) {
     if (!c) return;
     var wx = num(c.worldX, 83400);
     var wy = num(c.worldY, 147943);
     placeDot(img, dot, wx, wy);
+    placeViewRadius(img, viewRadiusEl, wx, wy, MAP_NEARBY_LIST_RADIUS);
     var tgx = c.targetX != null ? Number(c.targetX) : 0;
     var tgy = c.targetY != null ? Number(c.targetY) : 0;
     var hasTarget = Number.isFinite(tgx) && Number.isFinite(tgy) && (tgx !== 0 || tgy !== 0);
@@ -582,6 +703,10 @@
     var viewport = $('map-viewport');
     var img = $('map-img');
     var dot = $('map-dot');
+    var viewRadius = $('map-view-radius');
+    var heroMarkersLayer = $('map-hero-markers');
+    var heroSection = $('map-hero-section');
+    var heroList = $('map-hero-list');
     var moveTarget = $('map-move-target');
     var markersLayer = $('map-mob-markers');
 
@@ -610,7 +735,7 @@
     var aroundPromise = loadMapAround();
     var spawnsPromise = loadMapSpawns();
 
-    var aroundData = { nearbySpawns: [] };
+    var aroundData = { nearbySpawns: [], nearbyHeroes: [] };
     var worldSpawns = [];
 
     var MAP_SCALE_MIN = 0.45;
@@ -689,7 +814,9 @@
     }
 
     function paintMain(centerOnPlayer) {
-      render(c, img, dot, moveTarget, viewport, aroundData, centerOnPlayer);
+      render(c, img, dot, viewRadius, moveTarget, viewport, aroundData, centerOnPlayer);
+      renderHeroList(aroundData, heroList, heroSection, playerLevelNow());
+      renderHeroMarkers(img, heroMarkersLayer, aroundData.nearbyHeroes || []);
       renderAround(
         aroundData,
         $('map-mob-list'),
@@ -788,7 +915,7 @@
       writeCachedMapSnapshot(c);
     }
 
-    aroundData = (await aroundPromise) || { nearbySpawns: [] };
+    aroundData = (await aroundPromise) || { nearbySpawns: [], nearbyHeroes: [] };
     worldSpawns = (await spawnsPromise) || [];
     if (c) paintMain(false);
 
@@ -933,6 +1060,19 @@
       });
     }
 
+    if (heroMarkersLayer) {
+      heroMarkersLayer.addEventListener('click', function (e) {
+        var pin = e.target && e.target.closest ? e.target.closest('.l2-map-hero-pin') : null;
+        if (!pin) return;
+        e.stopPropagation();
+        e.preventDefault();
+        var name = pin.dataset.heroName;
+        if (name) {
+          window.location.href = '/player.html?name=' + encodeURIComponent(name);
+        }
+      });
+    }
+
     /** Щипок двома пальцями (масштаб як у mapcreate). */
     var pinchStartDist = 0;
     var pinchBaseScale = 1;
@@ -1060,6 +1200,7 @@
       img.addEventListener('click', async function (e) {
         if (mapMode !== 'map') return;
         if (e.target && e.target.closest && e.target.closest('.l2-map-mob-pin')) return;
+        if (e.target && e.target.closest && e.target.closest('.l2-map-hero-pin')) return;
         if (Date.now() - lastPinchEnd < 380) return;
         var snap = window.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null;
         if (!snap) return;
