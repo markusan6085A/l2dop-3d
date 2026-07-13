@@ -108,15 +108,27 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-equip-hero-overlay--black-key {
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay {
-  height: 91%;
-  max-width: 96%;
-  transform: translateY(2%) scale(1.05);
+  height: 76.7%;
+  max-width: 80.9%;
+  transform: translateY(2%) scale(0.88);
+  filter: none;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay {
-  height: 91%;
-  max-width: 96%;
-  transform: translateY(-5%) scale(1.05);
+  height: 76.7%;
+  max-width: 80.9%;
+  transform: translateY(-5%) scale(0.88);
+  filter: none;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-stage::before,
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-stage::before {
+  bottom: -0.75%;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-stage::after,
+body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-stage::after {
+  bottom: 0;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay {

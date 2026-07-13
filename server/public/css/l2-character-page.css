@@ -175,13 +175,71 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-hero-panel .l2-char-photo-
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  max-width: 320px;
+  width: 100%;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-char-equip-frame--hero-only {
   margin: 0 auto;
-  width: 100%;
-  max-width: 300px;
+  width: 300px;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-stage::before,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-stage::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.75%;
+  z-index: 0;
+  width: 58%;
+  height: 14%;
+  transform: translateX(-50%) skewX(-10deg) scaleY(0.9);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.62) 32%,
+    rgba(0, 0, 0, 0.28) 52%,
+    rgba(0, 0, 0, 0.08) 68%,
+    transparent 82%
+  );
+  filter: blur(2.5px);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-stage::after,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-stage::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 0;
+  width: 34%;
+  height: 6%;
+  transform: translateX(-50%) skewX(-8deg);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 78%);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  height: 76.7%;
+  max-width: 80.9%;
+  object-fit: contain;
+  object-position: center bottom;
+  transform-origin: center bottom;
+  filter: none;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay {
+  transform: translateY(2%) scale(0.88);
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay {
+  transform: translateY(-5%) scale(0.88);
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-stats,
@@ -374,4 +432,11 @@ body.l2-app-l2-chrome.l2-page-character .l2-character-social-table__gap {
   width: 1cm;
   min-width: 1cm;
   padding: 0;
+}
+
+/* ПК: портрет героя як у інвентарі (char.html) */
+@media (min-width: 520px) {
+  body.l2-app-l2-chrome.l2-page-character .l2-char-equip-frame--hero-only {
+    width: min(100%, 390px);
+  }
 }

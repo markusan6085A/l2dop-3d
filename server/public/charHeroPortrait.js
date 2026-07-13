@@ -34,7 +34,7 @@
   /** Герой поверх сцени — ключ `l2Profession` або `race|branch|gender`. */
   var SCENE_HERO_OVERLAYS = {
     human_fighter: {
-      url: heroUrl(5),
+      url: '/characters/photo_2_2026-07-13_10-22-46-removebg-preview.png',
       skin: 'human-fighter-m',
       blackKey: false,
     },
@@ -79,7 +79,7 @@
       blackKey: false,
     },
     'human_fighter|female': {
-      url: heroUrl(6),
+      url: '/characters/photo_1_2026-07-13_10-22-46-removebg-preview.png',
       skin: 'human-fighter-f',
       blackKey: false,
     },
