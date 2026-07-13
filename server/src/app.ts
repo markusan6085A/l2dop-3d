@@ -8,6 +8,7 @@ import { characterRoutes } from './routes/character.js';
 import { clientConfigRoutes } from './routes/clientConfigRoutes.js';
 import { gameRoutes } from './routes/game.js';
 import { dropsShopRoutes } from './routes/dropsShopRoutes.js';
+import { shopSellRoutes } from './routes/shopSellRoutes.js';
 import { isDevSelfBoostEnabled } from './services/devSelfBoostService.js';
 
 /** `server/public` з кореня репо або `public`, якщо cwd = `server/`. */
@@ -53,6 +54,7 @@ export async function buildApp() {
   await app.register(clientConfigRoutes, { prefix: '/game' });
   await app.register(gameRoutes, { prefix: '/game' });
   await app.register(dropsShopRoutes, { prefix: '/game' });
+  await app.register(shopSellRoutes, { prefix: '/game' });
 
   if (!isDevSelfBoostEnabled()) {
     app.get('/dev-boost.html', async (_request, reply) => {
