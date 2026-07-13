@@ -171,11 +171,28 @@
       var left = document.createElement('button');
       left.type = 'button';
       left.className = 'l2-rb-row__name';
-      left.textContent = b.name + ' · рів. ' + b.level;
       left.setAttribute('data-spawn-id', b.spawnId);
       left.addEventListener('click', function () {
         openModal(this.getAttribute('data-spawn-id'));
       });
+
+      var ico = document.createElement('img');
+      ico.className = 'l2-rb-row__ico';
+      ico.src = b.icon || '/mobs/1.png';
+      ico.alt = '';
+      ico.width = 24;
+      ico.height = 24;
+      ico.decoding = 'async';
+      ico.onerror = function () {
+        ico.src = '/mobs/1.png';
+      };
+
+      var label = document.createElement('span');
+      label.className = 'l2-rb-row__label';
+      label.textContent = b.name + ' · рів. ' + b.level;
+
+      left.appendChild(ico);
+      left.appendChild(label);
 
       var right = document.createElement('div');
       right.className = 'l2-rb-row__actions';

@@ -13,14 +13,20 @@ body.l2-page-menu .l2-menu-rb-link {
   gap: 5px;
   margin: 0 0 0.55rem 3mm;
   padding: 0;
-  border: 0;
-  background: transparent;
+  border: 0 !important;
+  background: transparent !important;
   color: #e04545 !important;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-align: left;
   text-decoration: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-image: none !important;
+  filter: none !important;
+  transform: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body.l2-page-menu .l2-menu-rb-link__ico {
@@ -31,9 +37,24 @@ body.l2-page-menu .l2-menu-rb-link__ico {
 }
 
 body.l2-page-menu .l2-menu-rb-link:hover,
-body.l2-page-menu .l2-menu-rb-link:focus {
+body.l2-page-menu .l2-menu-rb-link:focus,
+body.l2-page-menu .l2-menu-rb-link:focus-visible,
+body.l2-page-menu .l2-menu-rb-link:active {
   color: #ff6a6a !important;
   text-decoration: underline !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body.l2-page-menu .l2-menu-craft-wrap {
