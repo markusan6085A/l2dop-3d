@@ -121,6 +121,30 @@
     innerEl.style.width = pct + '%';
   }
 
+  function mobKindUsesNumericHpBar(kind) {
+    var k = kind != null ? String(kind) : '';
+    return k === 'raid' || k === 'epic' || k === 'epic_guard';
+  }
+
+  function mobHpBarLabelText(kind, cur, max) {
+    if (mobKindUsesNumericHpBar(kind)) {
+      if (window.L2 && typeof L2.formatBarPair === 'function') {
+        return L2.formatBarPair(cur, max);
+      }
+      var m = max > 0 ? Number(max) : 1;
+      var x = Number(cur);
+      if (!Number.isFinite(x)) x = 0;
+      x = Math.max(0, Math.min(x, m));
+      return Math.round(x) + ' / ' + Math.round(m);
+    }
+    if (window.L2 && typeof L2.formatBarPct === 'function') {
+      return L2.formatBarPct(cur, max);
+    }
+    var m2 = max > 0 ? max : 1;
+    var x2 = Math.max(0, Math.min(Number(cur), m2));
+    return ((x2 / m2) * 100).toFixed(1) + '%';
+  }
+
   /**
    * Клас стилю рядка логу — кольори в `styles.css` (`.l2-battle-log--colored .log-*`).
    * @returns {{ className: string }}
@@ -329,7 +353,29 @@
       '.';
   }
 
-  function appendLogRowWithIcon(container, line, iconSrc, onImgErr) {
+  function parseBattleSkillLogLine(lineStr) {
+    var s = String(lineStr || '');
+    if (!s) return null;
+    var skillHit = false;
+    if (s.charCodeAt(0) === 0x2060) {
+      skillHit = true;
+      s = s.slice(1);
+    }
+    var sep = '\u200B';
+    var sepIdx = s.indexOf(sep);
+    if (sepIdx > 0) {
+      var id = parseInt(s.slice(0, sepIdx), 10);
+      if (Number.isFinite(id) && id > 0) {
+        return { skillHit: skillHit, skillId: id, text: s.slice(sepIdx + 1) };
+      }
+    }
+    if (skillHit) {
+      return { skillHit: true, skillId: 0, text: s };
+    }
+    return null;
+  }
+
+  function appendLogRowWithIcon(container, line, iconSrc, onImgErr, textClass) {
     var row = document.createElement('div');
     row.className = 'l2-battle-log-line l2-battle-log-line--drop';
     var img = document.createElement('img');
@@ -341,7 +387,8 @@
     });
     var span = document.createElement('span');
     var stDrop = getL2dopBattleLogStyle(line);
-    span.className = 'l2-battle-log-line__text ' + stDrop.className;
+    span.className =
+      'l2-battle-log-line__text ' + (textClass || stDrop.className);
     span.textContent = line;
     row.appendChild(img);
     row.appendChild(span);
@@ -532,12 +579,31 @@
         );
         done = true;
       }
-      if (!done && lineStr.length && lineStr.charCodeAt(0) === 0x2060) {
-        var skRow = document.createElement('div');
-        skRow.className = 'l2-battle-log-line log-skill-hit';
-        skRow.textContent = lineStr.slice(1);
-        container.appendChild(skRow);
-        done = true;
+      if (!done) {
+        var skillLog = parseBattleSkillLogLine(lineStr);
+        if (skillLog && (skillLog.skillId > 0 || skillLog.skillHit)) {
+          var skillText = skillLog.text;
+          var stSkill = skillLog.skillHit ? 'log-skill-hit' : 'log-skill';
+          if (skillLog.skillId > 0) {
+            var skillIcon =
+              window.L2 && typeof L2.resolveSkillIconUrl === 'function'
+                ? L2.resolveSkillIconUrl(skillLog.skillId, null)
+                : '/game/skill-icon/' + skillLog.skillId;
+            appendLogRowWithIcon(
+              container,
+              skillText,
+              skillIcon,
+              '/icons/drops/other.svg',
+              stSkill
+            );
+          } else {
+            var skRow = document.createElement('div');
+            skRow.className = 'l2-battle-log-line ' + stSkill;
+            skRow.textContent = skillText;
+            container.appendChild(skRow);
+          }
+          done = true;
+        }
       }
       if (!done) {
         var reward = parseRewardSummaryLine(lineStr);
@@ -865,14 +931,13 @@
     renderSonicCharges(battle);
     setBar(hpInner, battle.mobHp, battle.mobMaxHp);
     if (hpVal) {
-      hpVal.textContent =
-        window.L2 && typeof L2.formatBarPct === 'function'
-          ? L2.formatBarPct(battle.mobHp, battle.mobMaxHp)
-          : (function () {
-              var m = battle.mobMaxHp > 0 ? battle.mobMaxHp : 1;
-              var x = Math.max(0, Math.min(Number(battle.mobHp), m));
-              return ((x / m) * 100).toFixed(1) + '%';
-            })();
+      var numericMobHp = mobKindUsesNumericHpBar(battle.kind);
+      hpVal.textContent = mobHpBarLabelText(
+        battle.kind,
+        battle.mobHp,
+        battle.mobMaxHp
+      );
+      hpVal.classList.toggle('l2-battle-bar-innertext--pair', numericMobHp);
     }
     if (debuffStripEl) {
       var debs = battle.mobDebuffIcons;

@@ -9,3 +9,21 @@ export function compactBattleSkillLogLineUk(line: string): string {
   s = s.replace(/\s+/g, ' ').replace(/\s+\./g, '.').trim();
   return s;
 }
+
+const SKILL_LOG_HIT_MARK = '\u2060';
+const SKILL_LOG_ID_SEP = '\u200B';
+
+/** Рядок скіла в лог: [⁠][skillId][ZWSP]текст — для іконки в UI. */
+export function formatBattleSkillLogLineForClient(
+  compact: string,
+  l2SkillId: number,
+  skillHit: boolean
+): string {
+  let line = skillHit ? SKILL_LOG_HIT_MARK : '';
+  const id = Math.floor(l2SkillId);
+  if (id > 0) {
+    line += String(id) + SKILL_LOG_ID_SEP;
+  }
+  line += compact;
+  return line;
+}

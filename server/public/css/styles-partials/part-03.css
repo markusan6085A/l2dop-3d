@@ -895,6 +895,13 @@ button.l2-map-mob-title--tap-full:focus {
   z-index: 1;
 }
 
+.l2-battle-mob-hp-outer .l2-battle-bar-innertext--pair {
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
 .l2-battle-mob-panel {
   box-sizing: border-box;
   width: 100%;

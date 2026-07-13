@@ -34,7 +34,11 @@ import {
   stripStances,
   tickWorldCombatState,
 } from '../domain/worldCombatState.js';
-import { compactBattleSkillLogLineUk } from '../domain/battleLogFormat.js';
+import {
+  compactBattleSkillLogLineUk,
+  formatBattleSkillLogLineForClient,
+} from '../domain/battleLogFormat.js';
+import { l2SkillIdForBattleActionIcon } from '../data/humanFighterSkillCatalog.js';
 import { prisma } from '../lib/prisma.js';
 import {
   gameConflictFromCharacter,
@@ -834,7 +838,8 @@ export async function performBattleAction(
       const skillHit =
         pDmg > 0 ||
         (playerDamageLogLines != null && playerDamageLogLines.length > 0);
-      log.push((skillHit ? '\u2060' : '') + compact);
+      const l2Id = l2SkillIdForBattleActionIcon(action);
+      log.push(formatBattleSkillLogLineForClient(compact, l2Id, skillHit));
     }
     if (weaknessLogLineUk) log.push(weaknessLogLineUk);
     if (playerDamageLogLines && playerDamageLogLines.length > 0) {

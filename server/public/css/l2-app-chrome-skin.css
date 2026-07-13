@@ -1278,12 +1278,19 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar {
   box-shadow: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-battle #battle-log.l2-battle-log {
+body.l2-app-l2-chrome.l2-page-battle #battle-log.l2-battle-log,
+body.l2-app-l2-chrome.l2-page-battle #battle-victory-log.l2-battle-log,
+body.l2-app-l2-chrome.l2-page-battle #battle-defeat-log.l2-battle-log {
   border: none !important;
   background: transparent !important;
   padding: 0 !important;
   color: #8a8a8a;
-  max-height: calc(1.45em * 10);
+  font-size: calc(11px * 1.03) !important;
+  line-height: 1.18 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle #battle-log.l2-battle-log {
+  max-height: calc(1.18em * 10);
   overflow: hidden;
 }
 
