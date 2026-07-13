@@ -183,12 +183,22 @@ body.l2-app-l2-chrome.l2-page-character .l2-char-equip-frame--hero-only {
   width: 300px;
 }
 
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-stage::before,
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-stage::before {
+body.l2-app-l2-chrome.l2-page-character {
+  --l2-hero-starter-h: 76.7%;
+  --l2-hero-starter-w: 80.9%;
+  --l2-hero-starter-scale: 0.88;
+  --l2-hero-prof-h: 65.2%;
+  --l2-hero-prof-w: 68.8%;
+  --l2-hero-prof-scale: 0.748;
+  --l2-hero-shadow-before-bottom: -0.75%;
+  --l2-hero-shadow-after-bottom: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-stage::before {
   content: '';
   position: absolute;
   left: 50%;
-  bottom: -0.75%;
+  bottom: var(--l2-hero-shadow-before-bottom);
   z-index: 0;
   width: 58%;
   height: 14%;
@@ -206,12 +216,11 @@ body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f 
   pointer-events: none;
 }
 
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-stage::after,
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-stage::after {
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-stage::after {
   content: '';
   position: absolute;
   left: 50%;
-  bottom: 0;
+  bottom: var(--l2-hero-shadow-after-bottom);
   z-index: 0;
   width: 34%;
   height: 6%;
@@ -221,25 +230,45 @@ body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f 
   pointer-events: none;
 }
 
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay {
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-overlay {
   position: relative;
   z-index: 1;
   width: auto;
-  height: 76.7%;
-  max-width: 80.9%;
+  height: var(--l2-hero-starter-h);
+  max-width: var(--l2-hero-starter-w);
   object-fit: contain;
   object-position: center bottom;
+  transform: translateY(2%) scale(var(--l2-hero-starter-scale));
   transform-origin: center bottom;
   filter: none;
 }
 
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay {
-  transform: translateY(2%) scale(0.88);
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-mage-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-mage-f .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-dwarf-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-dwarf-fighter-f .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-orc-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-orc-fighter-f .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-elf-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-elf-mystic-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-dark-elf-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-dark-elf-mystic-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-dark-elf-mystic-f .l2-char-equip-hero-overlay {
+  height: var(--l2-hero-starter-h);
+  max-width: var(--l2-hero-starter-w);
+  filter: none;
 }
 
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay {
-  transform: translateY(-5%) scale(0.88);
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-mage-m .l2-char-equip-hero-overlay {
+  transform: translateY(2%) scale(var(--l2-hero-starter-scale));
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-mage-f .l2-char-equip-hero-overlay {
+  transform: translateY(-5%) scale(var(--l2-hero-starter-scale));
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-stats,

@@ -39,17 +39,17 @@
       blackKey: false,
     },
     human_rogue: {
-      url: heroUrl(4),
+      url: '/characters/photo_8_2026-07-13_10-22-46-removebg-preview.png',
       skin: 'human-rogue-m',
       blackKey: false,
     },
     human_warrior: {
-      url: heroUrl(3),
+      url: '/characters/photo_7_2026-07-13_10-22-46-removebg-preview.png',
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_knight: {
-      url: heroUrl(3),
+      url: '/characters/photo_7_2026-07-13_10-22-46-removebg-preview.png',
       skin: 'human-warrior-m',
       blackKey: false,
     },
@@ -204,7 +204,7 @@
       blackKey: false,
     },
     human_mage: {
-      url: heroUrl(12),
+      url: '/characters/photo_4_2026-07-13_10-22-46-removebg-preview.png',
       skin: 'human-mage-m',
       blackKey: false,
     },
@@ -219,7 +219,7 @@
       blackKey: false,
     },
     'human_mage|female': {
-      url: heroUrl(11),
+      url: '/characters/photo_3_2026-07-13_10-22-46-removebg-preview.png',
       skin: 'human-mage-f',
       blackKey: false,
     },
