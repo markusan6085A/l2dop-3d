@@ -1007,45 +1007,53 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus {
   box-shadow: none !important;
 }
 
-/* Перемога: «Продовжити» / «Полювати далі» — лише текст, без ref-рамки */
+/* Перемога: «Продовжити» / «Полювати далі» — лише текст, без рамки */
+body.l2-app-l2-chrome .l2-battle-victory-link,
 body.l2-app-l2-chrome .l2-battle-victory-link--primary,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted {
+  appearance: none;
+  -webkit-appearance: none;
   border: none !important;
+  border-width: 0 !important;
   border-image: none !important;
+  border-image-source: none !important;
   background: transparent !important;
   box-shadow: none !important;
-  text-shadow: none !important;
+  outline: none !important;
   filter: none !important;
   transform: none !important;
   padding: 4px 0 !important;
 }
 
-body.l2-app-l2-chrome .l2-battle-victory-link--primary {
-  color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55) !important;
-}
-
+body.l2-app-l2-chrome .l2-battle-victory-link--primary,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted {
-  color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55) !important;
+  color: #d8d8d8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--primary:hover,
-body.l2-app-l2-chrome .l2-battle-victory-link--primary:focus {
-  color: #f0f0f0 !important;
-  outline: none;
-}
-
+body.l2-app-l2-chrome .l2-battle-victory-link--primary:focus,
+body.l2-app-l2-chrome .l2-battle-victory-link--primary:focus-visible,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted:hover,
-body.l2-app-l2-chrome .l2-battle-victory-link--muted:focus {
-  color: #f0f0f0 !important;
-  outline: none;
+body.l2-app-l2-chrome .l2-battle-victory-link--muted:focus,
+body.l2-app-l2-chrome .l2-battle-victory-link--muted:focus-visible {
+  color: #ececec !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+  outline: none !important;
+  border: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--primary:active,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted:active {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55) !important;
   transform: none !important;
   filter: none !important;
+  border: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta:hover,
@@ -1289,6 +1297,7 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__loot {
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__links {
   justify-content: flex-start !important;
   gap: 6px !important;
+  border-top: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-logbox {
