@@ -228,10 +228,15 @@ async function applyWorldBossAutoAttackInTx(
   session.lastMobAutoAttackAtMs = nowMs;
 
   if (playerHp <= 0) {
+    bj.log = log.slice(-MAX_BATTLE_LOG);
+    const freshTarget = await tx.character.findUnique({
+      where: { id: targetCharacterId },
+    });
+    if (!freshTarget) return { targetDefeated: false };
     await persistBattleDefeatInTx(tx, {
-      userId: target.userId,
-      expectedRevision: target.revision,
-      char: cr,
+      userId: freshTarget.userId,
+      expectedRevision: null,
+      char: freshTarget as CharacterRow,
       bj,
       spawn,
       maxHpEff,

@@ -60,6 +60,7 @@ import {
   isSharedWorldBossKind,
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
+import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
@@ -87,6 +88,9 @@ export async function startBattleInTx(
     orderBy: { lastUpdate: 'desc' },
   });
   if (!char) throw new Error('no_character');
+  if (parsePvePendingDefeat((char as CharacterRow).pvePendingDefeatJson)) {
+    throw new Error('pve_defeat_pending');
+  }
   const cr0 = char as CharacterRow;
   const base = resolveMapMovement(applyPassiveHpRegen(cr0));
   const distAtCommit = Math.hypot(

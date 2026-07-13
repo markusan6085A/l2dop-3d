@@ -116,6 +116,13 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             messageUk: 'Моб ще не відродився. Зачекай трохи.',
           });
         }
+        if (e instanceof Error && e.message === 'pve_defeat_pending') {
+          await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Ти знепритомнів. Спочатку натисни «В місто».',
+          });
+        }
         await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
       }

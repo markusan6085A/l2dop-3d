@@ -28,6 +28,7 @@ export interface CharacterRow {
   /** До якого часу (epoch ms) нік агресора фіолетовий. */
   pvpAggressorUntilMs: bigint;
   pvpPendingDefeatJson: Prisma.JsonValue | null;
+  pvePendingDefeatJson: Prisma.JsonValue | null;
   /** Текст статусу профілю для інших гравців. */
   profileStatus: string | null;
   revision: number;
@@ -194,5 +195,15 @@ export interface CharacterSnapshot {
     killerName: string;
     killerCharacterId: string;
     fullLog?: string[];
+  } | null;
+  /** PvE-поразка — обов'язкова кнопка «В місто». */
+  pveDefeat: {
+    spawnId: string;
+    mobName: string;
+    mobLevel: number;
+    aggressive: boolean;
+    fullLog: string[];
+    nearestTownLabelUk: string;
+    nearestTeleportId: string;
   } | null;
 }

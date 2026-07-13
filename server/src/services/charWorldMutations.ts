@@ -354,6 +354,7 @@ export async function performReturnToNearestTown(
         const changed =
           base.hp !== recoverHp ||
           base.pvpPendingDefeatJson != null ||
+          base.pvePendingDefeatJson != null ||
           movementFieldsChanged(current as CharacterRow, base) ||
           base.worldX !== wx ||
           base.worldY !== wy ||
@@ -369,6 +370,7 @@ export async function performReturnToNearestTown(
           data: {
             hp: recoverHp,
             pvpPendingDefeatJson: Prisma.JsonNull,
+            pvePendingDefeatJson: Prisma.JsonNull,
             worldX: wx,
             worldY: wy,
             targetX: 0,

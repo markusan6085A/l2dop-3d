@@ -18,6 +18,10 @@ import {
 import { mapMoveSpeedFromRunSpeed } from '../domain/mapMovement.js';
 import { nickColorFromKarmaRow } from '../domain/pvpKarma.js';
 import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
+import {
+  parsePvePendingDefeat,
+  pvePendingDefeatToSummary,
+} from '../domain/pvePendingDefeat.js';
 import { parseBattleHotbarSlots } from '../domain/battleHotbar.js';
 import { enrichLearnedSkillsForSnapshot } from './charLearnedSkillsSnapshot.js';
 import {
@@ -432,6 +436,11 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
           ? { fullLog: pending.fullLog }
           : {}),
       };
+    })(),
+    pveDefeat: (() => {
+      const pending = parsePvePendingDefeat(row.pvePendingDefeatJson);
+      if (!pending) return null;
+      return pvePendingDefeatToSummary(pending);
     })(),
   };
 }

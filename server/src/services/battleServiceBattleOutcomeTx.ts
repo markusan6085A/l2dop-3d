@@ -23,6 +23,9 @@ import {
   type CharacterSnapshot,
 } from './charService.js';
 import { nearestMapTown } from '../data/mapLocalities.js';
+import {
+  serializePvePendingDefeat,
+} from '../domain/pvePendingDefeat.js';
 import type {
   BattleDefeatSummary,
   BattleVictorySummary,
@@ -234,7 +237,7 @@ export async function persistBattleDefeatInTx(
   tx: Tx,
   args: {
     userId: string;
-    expectedRevision: number;
+    expectedRevision: number | null;
     char: CharacterRow;
     bj: { spawnId: string };
     spawn: { name: string; level: number; aggressive: boolean; kind: MapSpawnKind };
@@ -252,15 +255,6 @@ export async function persistBattleDefeatInTx(
   log.push('Всі бафи злетіли від смерті.');
   st.log = log.slice(-MAX_BATTLE_LOG);
 
-  /**
-   * L2 Interlude: при смерті всі активні бафи злітають (Noblesse / Bless of Soul
-   * збережемо пізніше через окрему мітку). Clear `battleMods` (через stripBattleMods),
-   * `activeBuffsJson` (ставимо порожній список → Prisma.JsonNull), а також очистимо
-   * legacy-експірації через `worldCombatStateFromBattleJson` (stripBattleMods = true).
-   *
-   * Passive-скіли не в `activeBuffsJson`, тож вони залишаються (правильна L2-поведінка).
-   * `skillCooldownsJson` лишаємо — у L2 CD не скидаються при смерті.
-   */
   const worldDefeat = worldCombatStateFromBattleJson(
     st,
     maxMpEff,
@@ -277,6 +271,18 @@ export async function persistBattleDefeatInTx(
         st.mobHp,
         st.mobMaxHp
       );
+  const near = nearestMapTown(char.worldX, char.worldY);
+  const defeatLog = log.map((x) => String(x));
+  const pvePending = serializePvePendingDefeat({
+    spawnId: bj.spawnId,
+    mobName: spawn.name,
+    mobLevel: spawn.level,
+    aggressive: spawn.aggressive,
+    atMs: Date.now(),
+    fullLog: defeatLog,
+    nearestTownLabelUk: near.labelUk,
+    nearestTeleportId: near.teleportId,
+  });
   const lost = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -286,6 +292,7 @@ export async function persistBattleDefeatInTx(
       data: {
         hp: recoverHp,
         battleJson: Prisma.JsonNull,
+        pvePendingDefeatJson: pvePending,
         mobSpawnHpJson: serializeMobSpawnHpState(mobHpAfterDefeat),
         worldCombatStateJson:
           worldDefeat != null
@@ -297,13 +304,12 @@ export async function persistBattleDefeatInTx(
   );
   if (!lost.ok) throw gameConflictFromMutation(lost);
   const crLost = lost.character as CharacterRow;
-  const near = nearestMapTown(crLost.worldX, crLost.worldY);
   const defeat: BattleDefeatSummary = {
     spawnId: bj.spawnId,
     mobName: spawn.name,
     mobLevel: spawn.level,
     aggressive: spawn.aggressive,
-    fullLog: log.map((x) => String(x)),
+    fullLog: defeatLog,
     nearestTownLabelUk: near.labelUk,
     nearestTeleportId: near.teleportId,
   };

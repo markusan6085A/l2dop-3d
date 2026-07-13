@@ -1259,6 +1259,10 @@
         stopBattleSyncPoll();
         return true;
       }
+      if (checkPveDefeatFromCharacter(character)) {
+        stopBattleSyncPoll();
+        return true;
+      }
       if (!battle) {
         var savedDef = loadDefeatFromSession();
         if (savedDef) {
@@ -1302,6 +1306,10 @@
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
       if (checkPvpDefeatFromCharacter(character)) {
+        stopBattleSyncPoll();
+        return 'abort';
+      }
+      if (checkPveDefeatFromCharacter(character)) {
         stopBattleSyncPoll();
         return 'abort';
       }
@@ -1359,6 +1367,10 @@
       if (checkPvpDefeatFromCharacter(character)) {
         stopBattleSyncPoll();
         return 'pvp_defeat';
+      }
+      if (checkPveDefeatFromCharacter(character)) {
+        stopBattleSyncPoll();
+        return 'defeat';
       }
       if (res.victory) return 'victory';
       if (res.defeat) return 'defeat';
@@ -1574,6 +1586,10 @@
     async function ensureBattle() {
       if (isPvpMode) {
         return ensurePvpBattle();
+      }
+      if (character && character.pveDefeat) {
+        showDefeatScreen(character.pveDefeat);
+        return false;
       }
       if (battle && battle.spawnId === spawnId) {
         return true;
@@ -1887,6 +1903,14 @@
       return false;
     }
 
+    function checkPveDefeatFromCharacter(c) {
+      if (c && c.pveDefeat) {
+        showDefeatScreen(c.pveDefeat);
+        return true;
+      }
+      return false;
+    }
+
     function fillVictoryMobHead(el, v) {
       if (!el || !v) return;
       el.textContent = '';
@@ -2073,6 +2097,7 @@
     function showDefeatScreen(defeat) {
       saveDefeatToSession(defeat);
       stopBattleSyncPoll();
+      battle = null;
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
@@ -2094,6 +2119,10 @@
         trapPvpDefeatBack();
       } else {
         fillDefeatMobHead($('battle-defeat-mobhead'), defeat);
+        var backMap = $('battle-back-map');
+        if (backMap) backMap.hidden = true;
+        var vMapBtn = $('battle-victory-map');
+        if (vMapBtn) vMapBtn.hidden = true;
       }
       var hint = $('battle-defeat-town-hint');
       if (hint && defeat) {
@@ -2333,6 +2362,14 @@
         }
         return;
       }
+    }
+
+    if (character && character.pveDefeat) {
+      if (content) content.hidden = false;
+      if (errEl) errEl.hidden = true;
+      renderPlayerBars(character);
+      showDefeatScreen(character.pveDefeat);
+      return;
     }
 
     var battleReady = await ensureBattle();

@@ -131,7 +131,7 @@ export function applyMobCounterDamage(args: MobCounterDamageArgs): {
     const refl = Math.floor(mobCounter.damage * reflTot);
     if (refl > 0) {
       mobHp = Math.max(0, mobHp - refl);
-      log.push('Відбиття на моба: ' + refl + ' урона.');
+      log.push('Відбиття на моба: −' + refl + ' HP.');
     }
   }
   playerHp = Math.max(0, playerHp - mobCounter.damage);
@@ -140,11 +140,11 @@ export function applyMobCounterDamage(args: MobCounterDamageArgs): {
     playerHp
   );
   if (mobCounter.outcome === 'miss') {
-    log.push(spawn.name + ' промахнувся.');
+    log.push('[' + spawn.name + '] промахнувся.');
   } else if (mobCounter.outcome === 'crit' && mobCounter.damage > 0) {
-    log.push('Крит! ' + spawn.name + ' завдав ' + mobCounter.damage + ' урона.');
-  } else {
-    log.push(spawn.name + ' завдав ' + mobCounter.damage + ' урона.');
+    log.push('[' + spawn.name + '] — крит! −' + mobCounter.damage + ' HP.');
+  } else if (mobCounter.damage > 0) {
+    log.push('[' + spawn.name + '] −' + mobCounter.damage + ' HP.');
   }
   return { playerHp, mobHp };
 }
