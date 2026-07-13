@@ -1118,27 +1118,27 @@
   },
   "consumable/blessed_spiritshot_ng": {
     "itemId": 3947,
-    "priceAdena": 2400
+    "priceAdena": 25
   },
   "consumable/blessed_spiritshot_d": {
     "itemId": 3948,
-    "priceAdena": 3800
+    "priceAdena": 38
   },
   "consumable/blessed_spiritshot_c": {
     "itemId": 3949,
-    "priceAdena": 6600
+    "priceAdena": 65
   },
   "consumable/blessed_spiritshot_b": {
     "itemId": 3950,
-    "priceAdena": 16500
+    "priceAdena": 160
   },
   "consumable/blessed_spiritshot_a": {
     "itemId": 3951,
-    "priceAdena": 42000
+    "priceAdena": 360
   },
   "consumable/blessed_spiritshot_s": {
     "itemId": 3952,
-    "priceAdena": 105000
+    "priceAdena": 560
   },
   "consumable/arrow_ng": {
     "itemId": 17,
@@ -1166,26 +1166,26 @@
   },
   "consumable/fighter_soulshot_ng": {
     "itemId": 1835,
-    "priceAdena": 2000
+    "priceAdena": 25
   },
   "consumable/fighter_soulshot_d": {
     "itemId": 1463,
-    "priceAdena": 3200
+    "priceAdena": 38
   },
   "consumable/fighter_soulshot_c": {
     "itemId": 1464,
-    "priceAdena": 5500
+    "priceAdena": 65
   },
   "consumable/fighter_soulshot_b": {
     "itemId": 1465,
-    "priceAdena": 14000
+    "priceAdena": 160
   },
   "consumable/fighter_soulshot_a": {
     "itemId": 1466,
-    "priceAdena": 36000
+    "priceAdena": 360
   },
   "consumable/fighter_soulshot_s": {
     "itemId": 1467,
-    "priceAdena": 88000
+    "priceAdena": 560
   }
 }

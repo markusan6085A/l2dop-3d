@@ -120,7 +120,7 @@ const RAW: Array<[string, DWeaponDropsPatch]> = [
   [
     'weapon_d/war_hammer.jpg',
     {
-      nameUk: 'War Hammer — булава',
+      nameUk: 'War Hammer',
       mode: 'phys',
       pAtk: 132,
       speed: 325,

@@ -58,6 +58,32 @@
     el.textContent = text;
   }
 
+  function fmtAdena(s) {
+    if (s == null || s === '') return '—';
+    try {
+      return BigInt(String(s))
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+    } catch (_) {
+      return String(s);
+    }
+  }
+
+  function syncAdenaHeader(character) {
+    var wrap = $('sell-items-adena');
+    var amountEl = $('sell-items-adena-amount');
+    if (!wrap || !amountEl) return;
+    var adena =
+      character && character.adena != null ? String(character.adena) : '';
+    if (!adena) {
+      wrap.hidden = true;
+      amountEl.textContent = '';
+      return;
+    }
+    amountEl.textContent = fmtAdena(adena);
+    wrap.hidden = false;
+  }
+
   function itemDisplayName(id) {
     var map = window.L2 && L2.itemNameById;
     if (!map) return '#' + id;
@@ -775,6 +801,7 @@
   function applySnapshotFromServer(character) {
     if (!character) return;
     snap = character;
+    syncAdenaHeader(character);
     if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
       L2.applyCharacterSnapshot(character);
       return;

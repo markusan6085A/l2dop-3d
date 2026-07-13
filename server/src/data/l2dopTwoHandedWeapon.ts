@@ -30,9 +30,9 @@ export function weaponKindBlocksShieldSlot(kind: WeaponKindForEnchant): boolean 
 
 /**
  * Предмети з «дворучним» weaponType у дампі, але за правилами автора — з щитом.
- * 231 Dragon Grinder (A); 257 «Ікло гадюки» NG (fist у items3, не в переліку дворучок NG).
+ * 231 Dragon Grinder (A).
  */
-const ONE_HAND_WITH_SHIELD_ITEM_IDS = new Set<number>([231, 257]);
+const ONE_HAND_WITH_SHIELD_ITEM_IDS = new Set<number>([231]);
 
 export function itemBlocksShieldSlot(
   itemId: number,

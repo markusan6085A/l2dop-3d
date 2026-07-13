@@ -1262,14 +1262,6 @@
           stateWeaponSub = 'all';
         }
         items = filterWeaponItems(itemsAll, stateWeaponSub);
-        if (
-          itemsAll.length &&
-          items.length === 0 &&
-          stateWeaponSub !== 'all'
-        ) {
-          stateWeaponSub = 'all';
-          items = filterWeaponItems(itemsAll, 'all');
-        }
 
         var allWbtn = document.createElement('button');
         allWbtn.type = 'button';

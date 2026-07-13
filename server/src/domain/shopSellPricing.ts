@@ -1,9 +1,6 @@
-/** Ціна в магазині для сосків/спірітшотів — за пачку 1000 шт. */
-export const SHOP_SELL_CHARGE_BUNDLE_SIZE = 1000;
-
 export const SHOP_SELL_BUY_RATIO = 0.5;
 
-/** Fighter soulshot + blessed spiritshot (усі грейди). */
+/** Fighter soulshot + blessed spiritshot (усі грейди) — ціна продажу 50% від покупки за штуку. */
 export const SHOP_SELL_CHARGE_ITEM_IDS = new Set<number>([
   1835, 1463, 1464, 1465, 1466, 1467,
   3947, 3948, 3949, 3950, 3951, 3952,
@@ -19,12 +16,6 @@ export function shopSellUnitAdenaFromBuyPrice(
 ): number {
   const buy = Math.max(0, Math.floor(buyPriceAdena));
   if (buy <= 0) return 0;
-  if (isChargeShotItemId(itemId)) {
-    return Math.max(
-      1,
-      Math.floor((buy * SHOP_SELL_BUY_RATIO) / SHOP_SELL_CHARGE_BUNDLE_SIZE)
-    );
-  }
   return Math.max(1, Math.floor(buy * SHOP_SELL_BUY_RATIO));
 }
 
@@ -34,15 +25,7 @@ export function shopSellTotalAdena(
   qty: number
 ): number {
   const q = Math.max(1, Math.floor(qty));
-  const buy = Math.max(0, Math.floor(buyPriceAdena));
-  if (buy <= 0) return 0;
-  if (isChargeShotItemId(itemId)) {
-    return Math.max(
-      1,
-      Math.floor((buy * SHOP_SELL_BUY_RATIO * q) / SHOP_SELL_CHARGE_BUNDLE_SIZE)
-    );
-  }
-  return shopSellUnitAdenaFromBuyPrice(itemId, buy) * q;
+  return shopSellUnitAdenaFromBuyPrice(itemId, buyPriceAdena) * q;
 }
 
 const RESOURCE_GRADE_BAND: Record<string, [number, number]> = {
