@@ -1259,7 +1259,19 @@
       return false;
     }
 
-    async function after409ResyncBattleState() {
+    async function after409ResyncBattleState(conflictRes) {
+      var conflictBody = conflictRes
+        ? await parseActionErrorBodySafe(conflictRes)
+        : null;
+      if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+        try {
+          await L2.resyncCharacterAfterConflict(function (snap) {
+            character = snap;
+          }, conflictBody);
+        } catch (eResync) {
+          /* fallback нижче */
+        }
+      }
       var st = await getBattleState();
       if (!st || st._err || !st.character) return false;
       character = st.character;
@@ -1278,8 +1290,10 @@
           stopBattleSyncPoll();
           return true;
         }
+        refreshUI();
         return true;
       }
+      refreshUI();
       return false;
     }
 
@@ -1499,12 +1513,28 @@
       var er = character.revision;
       var st = await startBattle(spawnId, er);
       if (st && st._err === 409) {
-        var again = await loadCharacter();
-        if (again && again.character) {
-          character = again.character;
-          L2.setLastSnapshot(character);
-          st = await startBattle(spawnId, character.revision);
+        var startConflict = await parseActionErrorBodySafe(st);
+        if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+          try {
+            await L2.resyncCharacterAfterConflict(function (snap) {
+              character = snap;
+            }, startConflict);
+          } catch (eStartResync) {
+            /* ignore */
+          }
         }
+        var synced = await getBattleState();
+        if (synced && synced.character) {
+          character = synced.character;
+          battle = synced.battle;
+          if (L2.setLastSnapshot) L2.setLastSnapshot(character);
+        }
+        if (battle && battle.spawnId === spawnId) {
+          resetHuntLogChain();
+          refreshUI();
+          return true;
+        }
+        st = await startBattle(spawnId, character.revision);
       }
       if (!st || st._err) {
         var msg = tr('battle_err_start', 'Не вдалося розпочати бій.');
@@ -1570,7 +1600,7 @@
           return;
         }
         if (res && res._err === 409) {
-          if (await after409ResyncBattleState()) return;
+          if (await after409ResyncBattleState(res)) return;
           try {
             res = await battleAction(act, character.revision);
           } catch (e2) {
@@ -1616,7 +1646,7 @@
               return;
             }
             if (res && res._err === 409) {
-              if (await after409ResyncBattleState()) return;
+              if (await after409ResyncBattleState(res)) return;
               try {
                 res = await battleAction(act, character.revision);
               } catch (eRetry2) {
@@ -1676,7 +1706,7 @@
         return;
       }
       if (res && res._err === 409) {
-        if (await after409ResyncBattleState()) return;
+        if (await after409ResyncBattleState(res)) return;
         try {
           res = await battleAction(act, character.revision, extra);
         } catch (e3) {
@@ -1710,7 +1740,7 @@
         return;
       }
       if (res && res._err === 409) {
-        if (await after409ResyncBattleState()) return;
+        if (await after409ResyncBattleState(res)) return;
         try {
           res = await battleAction(act, character.revision, extra);
         } catch (e3) {
@@ -1744,7 +1774,7 @@
         return;
       }
       if (res && res._err === 409) {
-        if (await after409ResyncBattleState()) return;
+        if (await after409ResyncBattleState(res)) return;
         try {
           res = await battleAction(act, character.revision, extra);
         } catch (e4) {
