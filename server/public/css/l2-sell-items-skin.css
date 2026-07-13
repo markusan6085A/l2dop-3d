@@ -117,10 +117,10 @@ body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-row {
   grid-template-columns: 36px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  padding: 8px 10px;
-  border: 1px solid rgba(100, 80, 52, 0.28);
-  border-radius: 6px;
-  background: rgba(8, 6, 5, 0.35);
+  padding: 6px 4px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
 
 body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-row__icon {
@@ -157,11 +157,23 @@ body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-row__sell {
   box-shadow: none;
   color: #e04040;
   font-family: var(--l2-font-display);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
+}
+
+body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-modal-sell-btn:not(:disabled) {
+  border-color: rgba(200, 70, 70, 0.65);
+  background: linear-gradient(180deg, #7a2828 0%, #521818 55%, #3a1010 100%);
+  color: #ffe0e0;
+}
+
+body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-modal-sell-btn:hover:not(:disabled),
+body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-modal-sell-btn:focus:not(:disabled) {
+  filter: brightness(1.1);
+  color: #fff4f4;
 }
 
 body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-row__sell:hover:not(:disabled),
@@ -184,6 +196,24 @@ body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-empty {
   text-align: center;
   font-size: 12px;
   color: #8a8a8a;
+}
+
+/* Модалки продажу: фон #1d1c1a, легка обводка, білий текст ціни/суми */
+body.l2-app-l2-chrome.l2-page-sell-items .l2-drops-stats-modal__panel {
+  border: 1px solid rgba(120, 100, 72, 0.42) !important;
+  border-width: 1px !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  border-radius: 4px;
+  background: #1d1c1a !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+
+body.l2-app-l2-chrome.l2-page-sell-items #l2-sell-items-qty-modal .l2-drops-stats-modal__hint,
+body.l2-app-l2-chrome.l2-page-sell-items #l2-sell-items-confirm-modal .l2-drops-stats-modal__hint {
+  color: #ffffff !important;
 }
 
 /* gm-shop: червона кнопка «Продати речі» під стрілками */

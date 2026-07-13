@@ -17,18 +17,24 @@ import { DROPS_SHOP_CATALOG } from '../data/dropsShopCatalog.generated.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.js';
 import { DROPS_SHOP_ARROW_ROWS } from '../data/dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
-import {
-  dropsShopRelPathFromGmIcon,
-} from '../domain/dropsShopGmItemIdByShopKey.js';
+import { dropsShopRelPathFromGmIcon } from '../domain/dropsShopGmItemIdByShopKey.js';
 import type { DropsShopCatalogRow } from '../data/dropsShopCatalog.generated.js';
 import type { DropsShopOverrideEntry } from './dropsShopService.js';
+import {
+  itemGradeHintsForClient,
+  itemInventoryTabHintsForClient,
+} from '../data/itemsCatalog.js';
+import { RESOURCE_CRAFT_ITEM_NAMES_UK } from '../data/resourceCraftItemNamesUk.js';
+import {
+  resourceSellPriceAdena,
+  shopSellTotalAdena,
+  shopSellUnitAdenaFromBuyPrice,
+} from '../domain/shopSellPricing.js';
 
 type OverridesMap = Record<string, DropsShopOverrideEntry>;
 
-/** Частка від ціни покупки в магазині. */
-const SELL_BUY_RATIO = 0.5;
-
 let buyPriceByItemId: Map<number, number> | undefined;
+let resourceSellByItemId: Map<number, number> | undefined;
 
 function resolveBuyOfferForRow(
   row: DropsShopCatalogRow,
@@ -82,24 +88,74 @@ function buildBuyPriceByItemId(): Map<number, number> {
   return m;
 }
 
+function itemGradeKey(itemId: number): string {
+  const hints = itemGradeHintsForClient();
+  const g = hints[itemId];
+  if (g != null && String(g).trim() !== '') {
+    return String(g).trim().toLowerCase();
+  }
+  return '';
+}
+
+function buildResourceSellByItemId(): Map<number, number> {
+  const m = new Map<number, number>();
+  const tabs = itemInventoryTabHintsForClient();
+  for (const idStr of Object.keys(tabs)) {
+    const id = Number(idStr);
+    if (!Number.isFinite(id) || id <= 0) continue;
+    if (tabs[id] !== 'resource') continue;
+    m.set(id, resourceSellPriceAdena(id, itemGradeKey(id)));
+  }
+  for (const idStr of Object.keys(RESOURCE_CRAFT_ITEM_NAMES_UK)) {
+    const id = Number(idStr);
+    if (!Number.isFinite(id) || id <= 0 || m.has(id)) continue;
+    m.set(id, resourceSellPriceAdena(id, itemGradeKey(id)));
+  }
+  return m;
+}
+
 function buyPriceIndex(): ReadonlyMap<number, number> {
   if (!buyPriceByItemId) buyPriceByItemId = buildBuyPriceByItemId();
   return buyPriceByItemId;
+}
+
+function resourceSellIndex(): ReadonlyMap<number, number> {
+  if (!resourceSellByItemId) resourceSellByItemId = buildResourceSellByItemId();
+  return resourceSellByItemId;
 }
 
 export function resolveSellPriceAdena(itemId: number): number | null {
   const id = Math.floor(itemId);
   if (!Number.isFinite(id) || id <= 0) return null;
   const buy = buyPriceIndex().get(id);
-  if (buy == null || buy <= 0) return null;
-  return Math.max(1, Math.floor(buy * SELL_BUY_RATIO));
+  if (buy != null && buy > 0) {
+    return shopSellUnitAdenaFromBuyPrice(id, buy);
+  }
+  const res = resourceSellIndex().get(id);
+  if (res != null && res > 0) return res;
+  return null;
+}
+
+export function resolveSellTotalAdena(itemId: number, qty: number): number | null {
+  const id = Math.floor(itemId);
+  if (!Number.isFinite(id) || id <= 0) return null;
+  const q = Math.max(1, Math.floor(qty));
+  const buy = buyPriceIndex().get(id);
+  if (buy != null && buy > 0) {
+    return shopSellTotalAdena(id, buy, q);
+  }
+  const unit = resourceSellIndex().get(id);
+  if (unit != null && unit > 0) return unit * q;
+  return null;
 }
 
 export function buildShopSellPricesForClient(): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [id, buy] of buyPriceIndex()) {
-    const sell = Math.max(1, Math.floor(buy * SELL_BUY_RATIO));
-    out[String(id)] = sell;
+    out[String(id)] = shopSellUnitAdenaFromBuyPrice(id, buy);
+  }
+  for (const [id, price] of resourceSellIndex()) {
+    if (out[String(id)] == null) out[String(id)] = price;
   }
   return out;
 }
@@ -119,8 +175,6 @@ export async function applyShopSell(
   const itemId = Math.floor(itemIdRaw);
   if (!Number.isFinite(itemId) || itemId <= 0) throw new Error('shop_sell_bad_item');
   const enchant = normEnchant(enchantRaw);
-  const sellUnit = resolveSellPriceAdena(itemId);
-  if (sellUnit == null) throw new Error('shop_sell_not_sellable');
 
   let qty = 1;
   if (qtyRaw != null) {
@@ -134,7 +188,8 @@ export async function applyShopSell(
     qty = q;
   }
 
-  const totalSell = BigInt(sellUnit) * BigInt(qty);
+  const totalSell = resolveSellTotalAdena(itemId, qty);
+  if (totalSell == null || totalSell <= 0) throw new Error('shop_sell_not_sellable');
 
   return prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
@@ -156,7 +211,7 @@ export async function applyShopSell(
         if (!src || src.qty < qty) throw new Error('shop_sell_not_in_bag');
 
         const nextInv = removeEnchantedFromBag(inv, itemId, qty, enchant);
-        const nextAdena = BigInt(base.adena) + totalSell;
+        const nextAdena = BigInt(base.adena) + BigInt(totalSell);
         const invChanged =
           JSON.stringify(nextInv) !== JSON.stringify(parseInventory(current.inventoryJson));
         const changed =

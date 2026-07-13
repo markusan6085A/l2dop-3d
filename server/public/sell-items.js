@@ -38,6 +38,10 @@
   var sellPrices = {};
   var sellInFlight = false;
 
+  var SELL_CONFIRM_MODAL_ID = 'l2-sell-items-confirm-modal';
+  var SELL_QTY_MODAL_ID = 'l2-sell-items-qty-modal';
+  var sellModalKeybound = false;
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -190,6 +194,354 @@
     return typeof p === 'number' && p > 0 ? p : null;
   }
 
+  function sellTotalFor(itemId, qty) {
+    var unit = sellPriceFor(itemId);
+    if (unit == null) return null;
+    var q = Math.max(1, Math.floor(qty || 1));
+    return unit * q;
+  }
+
+  function closeSellModals() {
+    var a = $(SELL_CONFIRM_MODAL_ID);
+    var b = $(SELL_QTY_MODAL_ID);
+    if (a) a.hidden = true;
+    if (b) b.hidden = true;
+    try {
+      document.body.style.overflow = '';
+    } catch (_) {}
+    if (sellModalKeybound) {
+      document.removeEventListener('keydown', sellModalEsc);
+      sellModalKeybound = false;
+    }
+  }
+
+  function sellModalEsc(e) {
+    if (e.key === 'Escape') closeSellModals();
+  }
+
+  function bindSellModalEsc() {
+    if (sellModalKeybound) return;
+    document.addEventListener('keydown', sellModalEsc);
+    sellModalKeybound = true;
+  }
+
+  function ensureSellConfirmModalDom() {
+    var el = $(SELL_CONFIRM_MODAL_ID);
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = SELL_CONFIRM_MODAL_ID;
+    el.className = 'l2-drops-stats-modal';
+    el.hidden = true;
+    var bd = document.createElement('button');
+    bd.type = 'button';
+    bd.className = 'l2-drops-stats-modal__backdrop';
+    bd.setAttribute('aria-label', 'Закрити');
+    bd.addEventListener('click', closeSellModals);
+    var pan = document.createElement('div');
+    pan.className = 'l2-drops-stats-modal__panel';
+    pan.setAttribute('role', 'dialog');
+    pan.setAttribute('aria-modal', 'true');
+    pan.setAttribute('aria-labelledby', 'l2-sell-confirm-title');
+    var clo = document.createElement('button');
+    clo.type = 'button';
+    clo.className = 'l2-drops-stats-modal__close';
+    clo.setAttribute('aria-label', 'Закрити');
+    clo.appendChild(document.createTextNode('\u00D7'));
+    clo.addEventListener('click', closeSellModals);
+    var head = document.createElement('div');
+    head.className = 'l2-drops-stats-modal__head';
+    var tit = document.createElement('div');
+    tit.className = 'l2-drops-stats-modal__title';
+    tit.id = 'l2-sell-confirm-title';
+    tit.setAttribute('data-sell-confirm-title', '');
+    head.appendChild(tit);
+    var msg = document.createElement('p');
+    msg.className = 'l2-drops-stats-modal__hint';
+    msg.setAttribute('data-sell-confirm-msg', '');
+    var row = document.createElement('div');
+    row.className = 'l2-drops-buy-qty-actions';
+    var cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'l2-drops-buy-qty-btn l2-drops-buy-qty-btn--muted';
+    cancel.textContent = 'Скасувати';
+    cancel.addEventListener('click', closeSellModals);
+    var ok = document.createElement('button');
+    ok.type = 'button';
+    ok.className =
+      'l2-drops-buy-qty-btn l2-drops-buy-qty-btn--primary l2-sell-items-modal-sell-btn';
+    ok.textContent = 'Продати';
+    ok.setAttribute('data-sell-confirm-ok', '');
+    row.appendChild(cancel);
+    row.appendChild(ok);
+    pan.appendChild(clo);
+    pan.appendChild(head);
+    pan.appendChild(msg);
+    pan.appendChild(row);
+    el.appendChild(bd);
+    el.appendChild(pan);
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function ensureSellQtyModalDom() {
+    var el = $(SELL_QTY_MODAL_ID);
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = SELL_QTY_MODAL_ID;
+    el.className = 'l2-drops-stats-modal';
+    el.hidden = true;
+    var bd = document.createElement('button');
+    bd.type = 'button';
+    bd.className = 'l2-drops-stats-modal__backdrop';
+    bd.setAttribute('aria-label', 'Закрити');
+    bd.addEventListener('click', closeSellModals);
+    var pan = document.createElement('div');
+    pan.className = 'l2-drops-stats-modal__panel';
+    pan.setAttribute('role', 'dialog');
+    pan.setAttribute('aria-modal', 'true');
+    pan.setAttribute('aria-labelledby', 'l2-sell-qty-title');
+    var clo = document.createElement('button');
+    clo.type = 'button';
+    clo.className = 'l2-drops-stats-modal__close';
+    clo.setAttribute('aria-label', 'Закрити');
+    clo.appendChild(document.createTextNode('\u00D7'));
+    clo.addEventListener('click', closeSellModals);
+    var head = document.createElement('div');
+    head.className = 'l2-drops-stats-modal__head';
+    var tit = document.createElement('div');
+    tit.className = 'l2-drops-stats-modal__title';
+    tit.id = 'l2-sell-qty-title';
+    tit.setAttribute('data-sell-qty-title', '');
+    head.appendChild(tit);
+    var unit = document.createElement('p');
+    unit.className = 'l2-drops-stats-modal__hint';
+    unit.setAttribute('data-sell-qty-unit', '');
+    unit.style.marginTop = '6px';
+    var lab = document.createElement('label');
+    lab.className = 'l2-drops-buy-qty-label';
+    lab.setAttribute('for', 'l2-sell-qty-input');
+    lab.textContent = 'Кількість';
+    var inp = document.createElement('input');
+    inp.type = 'number';
+    inp.id = 'l2-sell-qty-input';
+    inp.className = 'l2-drops-buy-qty-input';
+    inp.min = '1';
+    inp.max = '9999';
+    inp.step = '1';
+    inp.value = '1';
+    inp.setAttribute('data-sell-qty-input', '');
+    var total = document.createElement('p');
+    total.className = 'l2-drops-stats-modal__hint';
+    total.setAttribute('data-sell-qty-total', '');
+    total.style.marginTop = '4px';
+    var row = document.createElement('div');
+    row.className = 'l2-drops-buy-qty-actions';
+    var cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'l2-drops-buy-qty-btn l2-drops-buy-qty-btn--muted';
+    cancel.textContent = 'Скасувати';
+    cancel.addEventListener('click', closeSellModals);
+    var ok = document.createElement('button');
+    ok.type = 'button';
+    ok.className =
+      'l2-drops-buy-qty-btn l2-drops-buy-qty-btn--primary l2-sell-items-modal-sell-btn';
+    ok.textContent = 'Продати';
+    ok.setAttribute('data-sell-qty-confirm', '');
+    row.appendChild(cancel);
+    row.appendChild(ok);
+    pan.appendChild(clo);
+    pan.appendChild(head);
+    pan.appendChild(unit);
+    pan.appendChild(lab);
+    pan.appendChild(inp);
+    pan.appendChild(total);
+    pan.appendChild(row);
+    el.appendChild(bd);
+    el.appendChild(pan);
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function performSellRequest(stack, qty, onDone) {
+    if (sellInFlight || !snap) return;
+    var itemId = stack.itemId;
+    var enchant = stack.enchant || 0;
+    var total = sellTotalFor(itemId, qty);
+    if (total == null) {
+      setMsg('Цей предмет не продається.');
+      return;
+    }
+
+    var token = localStorage.getItem('token');
+    if (!token) {
+      setMsg('Потрібен вхід.');
+      return;
+    }
+    var rev = snap.revision;
+    if (!rev) {
+      setMsg('Немає revision — онови сторінку.');
+      return;
+    }
+
+    sellInFlight = true;
+    setMsg('');
+    fetch('/game/shop/sell', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemId: itemId,
+        enchant: enchant,
+        qty: qty,
+        expectedRevision: rev,
+      }),
+    })
+      .then(function (r) {
+        if (r.status === 409) {
+          return window.L2 &&
+            typeof L2.resyncCharacterAfterConflict === 'function'
+            ? L2.resyncCharacterAfterConflict().then(function () {
+                var s = L2.lastSnapshot && L2.lastSnapshot();
+                if (s) snap = s;
+                paint();
+                setMsg('Стан оновлено — спробуй ще раз.');
+              })
+            : r.json().then(function () {
+                setMsg('Конфлікт ревізії — онови сторінку.');
+              });
+        }
+        return r.json().then(function (j) {
+          if (!r.ok) {
+            setMsg((j && j.messageUk) || 'Не вдалося продати.');
+            return;
+          }
+          if (j && j.character) {
+            applySnapshotFromServer(j.character);
+            paint();
+            setMsg('Продано: +' + formatAdena(total) + ' адени.');
+            closeSellModals();
+          }
+        });
+      })
+      .catch(function () {
+        setMsg('Помилка мережі.');
+      })
+      .finally(function () {
+        sellInFlight = false;
+        if (typeof onDone === 'function') onDone();
+      });
+  }
+
+  function openSellConfirmModal(stack) {
+    var maxQty = stack.qty || 1;
+    var unit = sellPriceFor(stack.itemId);
+    if (unit == null) {
+      setMsg('Цей предмет не продається.');
+      return;
+    }
+    var el = ensureSellConfirmModalDom();
+    closeSellModals();
+    var tit = el.querySelector('[data-sell-confirm-title]');
+    var msg = el.querySelector('[data-sell-confirm-msg]');
+    var ok = el.querySelector('[data-sell-confirm-ok]');
+    var name = itemDisplayName(stack.itemId);
+    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    var total = sellTotalFor(stack.itemId, maxQty);
+    if (tit) tit.textContent = 'Продаж';
+    if (msg) {
+      msg.textContent =
+        'Продати «' +
+        name +
+        '» за ' +
+        formatAdena(total) +
+        ' адени?';
+    }
+    if (ok) {
+      ok.disabled = sellInFlight;
+      ok.onclick = function () {
+        if (sellInFlight) return;
+        ok.disabled = true;
+        performSellRequest(stack, maxQty, function () {
+          ok.disabled = false;
+        });
+      };
+    }
+    el.hidden = false;
+    try {
+      document.body.style.overflow = 'hidden';
+    } catch (_) {}
+    bindSellModalEsc();
+  }
+
+  function openSellQtyModal(stack) {
+    var maxQty = Math.max(1, Math.floor(stack.qty || 1));
+    var unit = sellPriceFor(stack.itemId);
+    if (unit == null) {
+      setMsg('Цей предмет не продається.');
+      return;
+    }
+    var el = ensureSellQtyModalDom();
+    closeSellModals();
+    var tit = el.querySelector('[data-sell-qty-title]');
+    var unitEl = el.querySelector('[data-sell-qty-unit]');
+    var inp = el.querySelector('[data-sell-qty-input]');
+    var totalEl = el.querySelector('[data-sell-qty-total]');
+    var ok = el.querySelector('[data-sell-qty-confirm]');
+    var name = itemDisplayName(stack.itemId);
+    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    if (tit) tit.textContent = 'Продаж: ' + name;
+    if (unitEl) {
+      unitEl.textContent =
+        'Ціна за шт.: ' + formatAdena(unit) + ' адена (у сумці: ' + maxQty + ')';
+    }
+    if (inp) {
+      inp.max = String(maxQty);
+      inp.value = String(maxQty);
+    }
+    function refreshTotal() {
+      if (!inp || !totalEl) return;
+      var q = parseInt(String(inp.value), 10);
+      if (!Number.isFinite(q) || q < 1) q = 1;
+      if (q > maxQty) q = maxQty;
+      var t = sellTotalFor(stack.itemId, q);
+      totalEl.textContent =
+        'Сума: ' + formatAdena(t != null ? t : 0) + ' адена';
+    }
+    if (inp) {
+      inp.oninput = refreshTotal;
+      inp.onchange = refreshTotal;
+    }
+    refreshTotal();
+    if (ok) {
+      ok.disabled = sellInFlight;
+      ok.onclick = function () {
+        if (sellInFlight || !inp) return;
+        var q = parseInt(String(inp.value), 10);
+        if (!Number.isFinite(q) || q < 1 || q > maxQty) {
+          setMsg('Вкажи кількість від 1 до ' + maxQty + '.');
+          return;
+        }
+        ok.disabled = true;
+        performSellRequest(stack, q, function () {
+          ok.disabled = false;
+        });
+      };
+    }
+    el.hidden = false;
+    try {
+      document.body.style.overflow = 'hidden';
+    } catch (_) {}
+    bindSellModalEsc();
+    if (inp) {
+      try {
+        inp.focus();
+        inp.select();
+      } catch (_) {}
+    }
+  }
+
   function filteredStacks() {
     var inv = (snap && snap.inventory) || { stacks: [] };
     var stacks = inv.stacks || [];
@@ -271,85 +623,16 @@
 
   function sellStack(stack) {
     if (sellInFlight || !snap) return;
-    var itemId = stack.itemId;
-    var enchant = stack.enchant || 0;
-    var qty = stack.qty || 1;
-    var unit = sellPriceFor(itemId);
-    if (unit == null) {
+    if (sellPriceFor(stack.itemId) == null) {
       setMsg('Цей предмет не продається.');
       return;
     }
-    var total = unit * qty;
-    var name = itemDisplayName(itemId);
-    var ok = window.confirm(
-      'Продати «' +
-        name +
-        '»' +
-        (qty > 1 ? ' ×' + qty : '') +
-        ' за ' +
-        formatAdena(total) +
-        ' адени?'
-    );
-    if (!ok) return;
-
-    var token = localStorage.getItem('token');
-    if (!token) {
-      setMsg('Потрібен вхід.');
+    var qty = stack.qty || 1;
+    if (qty > 1) {
+      openSellQtyModal(stack);
       return;
     }
-    var rev = snap.revision;
-    if (!rev) {
-      setMsg('Немає revision — онови сторінку.');
-      return;
-    }
-
-    sellInFlight = true;
-    setMsg('');
-    fetch('/game/shop/sell', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        itemId: itemId,
-        enchant: enchant,
-        qty: qty,
-        expectedRevision: rev,
-      }),
-    })
-      .then(function (r) {
-        if (r.status === 409) {
-          return window.L2 &&
-            typeof L2.resyncCharacterAfterConflict === 'function'
-            ? L2.resyncCharacterAfterConflict().then(function () {
-                var s = L2.lastSnapshot && L2.lastSnapshot();
-                if (s) snap = s;
-                paint();
-                setMsg('Стан оновлено — спробуй ще раз.');
-              })
-            : r.json().then(function () {
-                setMsg('Конфлікт ревізії — онови сторінку.');
-              });
-        }
-        return r.json().then(function (j) {
-          if (!r.ok) {
-            setMsg((j && j.messageUk) || 'Не вдалося продати.');
-            return;
-          }
-          if (j && j.character) {
-            applySnapshotFromServer(j.character);
-            paint();
-            setMsg('Продано: +' + formatAdena(total) + ' адени.');
-          }
-        });
-      })
-      .catch(function () {
-        setMsg('Помилка мережі.');
-      })
-      .finally(function () {
-        sellInFlight = false;
-      });
+    openSellConfirmModal(stack);
   }
 
   function buildItemRow(stack) {
@@ -386,10 +669,10 @@
 
     var price = document.createElement('div');
     price.className = 'l2-sell-items-row__price';
-    var unit = sellPriceFor(stack.itemId);
-    var total = unit != null ? unit * (stack.qty || 1) : null;
+    var total = sellTotalFor(stack.itemId, stack.qty || 1);
+    var canSell = total != null;
     price.textContent =
-      total != null ? formatAdena(total) + ' адена' : 'Не продається';
+      canSell ? formatAdena(total) + ' адена' : 'Не продається';
 
     body.appendChild(name);
     body.appendChild(price);
@@ -398,7 +681,7 @@
     sellBtn.type = 'button';
     sellBtn.className = 'l2-sell-items-row__sell';
     sellBtn.textContent = 'Продати';
-    sellBtn.disabled = sellInFlight || unit == null;
+    sellBtn.disabled = sellInFlight || !canSell;
     sellBtn.addEventListener('click', function () {
       sellStack(stack);
     });
