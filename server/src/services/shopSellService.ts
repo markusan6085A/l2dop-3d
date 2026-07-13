@@ -33,9 +33,6 @@ import {
 
 type OverridesMap = Record<string, DropsShopOverrideEntry>;
 
-let buyPriceByItemId: Map<number, number> | undefined;
-let resourceSellByItemId: Map<number, number> | undefined;
-
 function resolveBuyOfferForRow(
   row: DropsShopCatalogRow,
   overrides: OverridesMap
@@ -115,13 +112,11 @@ function buildResourceSellByItemId(): Map<number, number> {
 }
 
 function buyPriceIndex(): ReadonlyMap<number, number> {
-  if (!buyPriceByItemId) buyPriceByItemId = buildBuyPriceByItemId();
-  return buyPriceByItemId;
+  return buildBuyPriceByItemId();
 }
 
 function resourceSellIndex(): ReadonlyMap<number, number> {
-  if (!resourceSellByItemId) resourceSellByItemId = buildResourceSellByItemId();
-  return resourceSellByItemId;
+  return buildResourceSellByItemId();
 }
 
 export function resolveSellPriceAdena(itemId: number): number | null {
