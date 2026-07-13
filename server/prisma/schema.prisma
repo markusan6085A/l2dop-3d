@@ -114,3 +114,10 @@ model ChatMessage {
   @@index([channel, createdAt(sort: Desc)])
   @@index([replyToCharacterId, createdAt(sort: Desc)])
 }
+
+/** Спільний стан world РБ/епіка: HP, aggro-ціль, учасники. */
+model WorldBossSession {
+  spawnId   String   @id
+  stateJson Json
+  updatedAt DateTime @updatedAt
+}

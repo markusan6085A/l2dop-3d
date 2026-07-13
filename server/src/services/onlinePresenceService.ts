@@ -118,6 +118,20 @@ export function getOnlinePresenceSnapshot(
   };
 }
 
+/** Час останньої активності userId/characterId у presence-map (epoch ms). */
+export function getCharacterLastSeenMs(characterId: string): number | null {
+  const id = String(characterId || '').trim();
+  if (!id) return null;
+  const now = Date.now();
+  pruneExpired(now);
+  for (const entry of byUserId.values()) {
+    if (entry.characterId === id) {
+      return entry.lastSeenMs;
+    }
+  }
+  return null;
+}
+
 /** Чи персонаж зараз у списку онлайн (TTL 10 хв). */
 export function isCharacterOnlineNow(characterId: string): boolean {
   const id = String(characterId || '').trim();

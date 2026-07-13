@@ -55,6 +55,11 @@ import {
   isMobSpawnOnRespawn,
   isRegularMobRespawnKind,
 } from '../domain/mobSpawnRespawn.js';
+import {
+  ensureWorldBossSessionInTx,
+  isSharedWorldBossKind,
+  recordWorldBossBattlePresenceInTx,
+} from './worldBossSessionService.js';
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
@@ -125,11 +130,27 @@ export async function startBattleInTx(
   ) {
     throw new Error('mob_on_respawn');
   }
-  const mobHpStart = resolveMobHpAtSpawnStart(
+  const mobHpStartRaw = resolveMobHpAtSpawnStart(
     spawnHpState,
     spawnId,
     mc.maxHp
   );
+  let mobHpStart = mobHpStartRaw;
+  if (isSharedWorldBossKind(spawn.kind)) {
+    const session = await ensureWorldBossSessionInTx(
+      tx,
+      spawn,
+      mobHpStartRaw,
+      nowStartMs
+    );
+    mobHpStart = session.mobHp;
+    await recordWorldBossBattlePresenceInTx(
+      tx,
+      spawn.id,
+      base.id,
+      nowStartMs
+    );
+  }
   if (mobHpStart < mc.maxHp) {
     startLog.push(
       'Моб ще поранений: HP ' + mobHpStart + ' / ' + mc.maxHp + '.'

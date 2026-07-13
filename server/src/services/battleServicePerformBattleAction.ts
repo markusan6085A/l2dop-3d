@@ -98,6 +98,13 @@ import {
 } from './battleServicePerformBattleAction.outcome.js';
 import { executeBattleTurnResolve } from './battleServicePerformBattleAction.turnResolve.js';
 import {
+  isSharedWorldBossKind,
+  loadWorldBossSessionMobHp,
+  recordWorldBossBattlePresenceInTx,
+  recordWorldBossDamagingHitInTx,
+  runWorldBossCombatTickInTx,
+} from './worldBossSessionService.js';
+import {
   BATTLE_REGEN_TICK_SECONDS,
   battleActionSkipsMobHp,
   stripLegacyBattleModsInPlace,
@@ -193,6 +200,20 @@ export async function performBattleAction(
     }
 
     let st = { ...bj };
+    const worldBossBattle = isSharedWorldBossKind(spawn.kind);
+    if (worldBossBattle) {
+      const presenceMs = Date.now();
+      await recordWorldBossBattlePresenceInTx(
+        tx,
+        spawn.spawnId,
+        cr.id,
+        presenceMs
+      );
+      const sharedHp = await loadWorldBossSessionMobHp(tx, spawn.spawnId);
+      if (sharedHp != null) {
+        st.mobHp = sharedHp;
+      }
+    }
     const log = [...st.log];
     const pushExtraMobLootLog = (
       mobName: string,
@@ -642,6 +663,30 @@ export async function performBattleAction(
       });
     }
 
+    if (worldBossBattle && damagingPlayerHit) {
+      const ws = await recordWorldBossDamagingHitInTx(
+        tx,
+        spawn.spawnId,
+        cr.id,
+        mobHp,
+        Date.now()
+      );
+      if (ws) {
+        mobHp = ws.mobHp;
+        st.mobHp = ws.mobHp;
+      }
+      const refreshedAfterHit = await tx.character.findUnique({
+        where: { id: char.id },
+      });
+      if (refreshedAfterHit) {
+        char = refreshedAfterHit;
+        playerHp = Math.min(
+          effectiveBattleMaxHp(maxHpEff, st.battleMods),
+          Math.max(0, refreshedAfterHit.hp)
+        );
+      }
+    }
+
     if (landedPhysicalHit && magicOutcome == null) {
       const arrowUse = consumeBowArrowsOnHit(
         inv,
@@ -948,6 +993,47 @@ export async function performBattleAction(
     /** PvP: без автоконтратаки моба — ходи лише гравці (окремий flow пізніше). */
     if (isPvpBattleJson(bj)) {
       return persistBattleContinueFromTurn(tx, continueBase, persistSide);
+    }
+
+    if (worldBossBattle) {
+      if (!damagingPlayerHit) {
+        const ws = await runWorldBossCombatTickInTx(
+          tx,
+          spawn.spawnId,
+          Date.now()
+        );
+        if (ws) {
+          mobHp = ws.mobHp;
+          st.mobHp = ws.mobHp;
+        }
+      }
+      const refreshed = await tx.character.findUnique({ where: { id: char.id } });
+      if (refreshed) {
+        char = refreshed;
+        playerHp = Math.min(
+          effectiveBattleMaxHp(maxHpEffAfter, st.battleMods),
+          Math.max(0, refreshed.hp)
+        );
+      }
+      if (playerHp <= 0) {
+        const d = await persistBattleDefeatInTx(tx, {
+          userId,
+          expectedRevision: char.revision,
+          char: char as CharacterRow,
+          bj,
+          spawn,
+          maxHpEff: maxHpEffAfter,
+          maxMpEff,
+          st,
+          log,
+        });
+        return { ...d, battle: null };
+      }
+      return persistBattleContinueFromTurn(
+        tx,
+        { ...continueBase, char: char as CharacterRow, playerHp, mobHp, st },
+        persistSide
+      );
     }
 
     const shouldMobCounterAttack = resolveMobShouldCounterAttack({

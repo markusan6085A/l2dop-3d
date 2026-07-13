@@ -45,6 +45,8 @@ import {
   REGULAR_MOB_RESPAWN_MS,
   setMobSpawnRespawnEntry,
 } from '../domain/mobSpawnRespawn.js';
+import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
+import { deleteWorldBossSession } from './worldBossSessionService.js';
 import {
   countSameLevelHuntSpawnsNearby,
   findNextSameLevelHuntSpawn,
@@ -160,8 +162,11 @@ export async function persistBattleVictoryInTx(
       bj.spawnId,
       nowVictoryMs + REGULAR_MOB_RESPAWN_MS
     );
-  } else {
+  } else if (!isSharedWorldBossKind(spawn.kind)) {
     mobHpAfterVictory = clearMobSpawnHpEntry(mobHpAfterVictory, bj.spawnId);
+  }
+  if (isSharedWorldBossKind(spawn.kind)) {
+    await deleteWorldBossSession(tx, bj.spawnId);
   }
   const result = await mutateCharacterWithRevision(
     tx,
@@ -264,12 +269,14 @@ export async function persistBattleDefeatInTx(
   );
 
   void userId;
-  const mobHpAfterDefeat = mergeMobSpawnHpEntry(
-    parseMobSpawnHpState(char.mobSpawnHpJson),
-    bj.spawnId,
-    st.mobHp,
-    st.mobMaxHp
-  );
+  const mobHpAfterDefeat = isSharedWorldBossKind(spawn.kind)
+    ? parseMobSpawnHpState(char.mobSpawnHpJson)
+    : mergeMobSpawnHpEntry(
+        parseMobSpawnHpState(char.mobSpawnHpJson),
+        bj.spawnId,
+        st.mobHp,
+        st.mobMaxHp
+      );
   const lost = await mutateCharacterWithRevision(
     tx,
     char.id,
