@@ -25,6 +25,7 @@ import {
   parseWorldCombatState,
   tickWorldCombatState,
 } from '../domain/worldCombatState.js';
+import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 import { prisma } from '../lib/prisma.js';
 import { applyMobCounterDamage } from './battleServicePerformBattleAction.mobRetaliation.js';
 import { persistBattleDefeatInTx } from './battleServiceBattleOutcomeTx.js';
@@ -187,6 +188,7 @@ export async function flushWorldBossPendingMobHitsForCharacterInTx(
 ): Promise<CharacterRow> {
   const bj = parseBattleJson(char.battleJson);
   if (!bj) return char;
+  if (parsePvePendingDefeat(char.pvePendingDefeatJson)) return char;
   const spawn = resolveBattleSpawnMeta(bj);
   if (!spawn || !isSharedWorldBossKind(spawn.kind)) return char;
 

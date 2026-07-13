@@ -62,6 +62,7 @@ import {
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
 import { refreshPvpOpponentHpForCharacterInTx } from './battleServicePvpSession.js';
+import { sanitizeDefeatOrphanBattleInTx } from './battleServiceDefeatSanitize.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 
 function randomMobRetaliationWindowHits(): number {
@@ -304,6 +305,7 @@ export async function getBattleState(
     let r = await flushWorldBossPendingMobHitsForUserInTx(tx, userId, nowMs);
     if (r) {
       r = await refreshPvpOpponentHpForCharacterInTx(tx, r as CharacterRow);
+      r = await sanitizeDefeatOrphanBattleInTx(tx, r as CharacterRow);
     }
     return r;
   });
@@ -323,6 +325,9 @@ export async function getBattleState(
   row = (await applyPassiveAndMove(row as CharacterRow)) as CharacterRow;
   const snap = toSnapshot(row as CharacterRow);
   const pvpIncoming = await findPvpIncomingForCharacter(snap.id);
+  if (snap.pveDefeat || snap.pvpDefeat) {
+    return { character: snap, battle: null, pvpIncoming };
+  }
   const bj = parseBattleJson((row as CharacterRow).battleJson);
   if (!bj) return { character: snap, battle: null, pvpIncoming };
   const spawnMeta = resolveBattleSpawnMeta(bj);

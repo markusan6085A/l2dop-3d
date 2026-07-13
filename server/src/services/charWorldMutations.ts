@@ -23,6 +23,10 @@ import {
   serializeMobSpawnHpState,
 } from '../domain/mobSpawnHpState.js';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
+import {
+  prepareCharacterAfterDefeatInTx,
+  isBattleBlockingReturnToTown,
+} from './battleServiceDefeatSanitize.js';
 import { RB_TELEPORT_ADENA_COST } from './raidBossListService.js';
 
 const TELEPORT_FREE_MAX_LEVEL = 40;
@@ -328,18 +332,25 @@ export async function performReturnToNearestTown(
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
   return prisma.$transaction(async (tx) => {
-    const char = (await tx.character.findFirst({
+    let char = (await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
     })) as CharacterRow | null;
     if (!char) throw new Error('no_character');
+
+    char = await prepareCharacterAfterDefeatInTx(
+      tx,
+      char,
+      Date.now()
+    );
+
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,
       expectedRevision,
       (current) => {
         const base = normalizePassiveAndMove(current as CharacterRow);
-        if (base.battleJson != null) {
+        if (isBattleBlockingReturnToTown(base)) {
           throw new Error('battle_still_active');
         }
         const near = nearestMapTown(base.worldX, base.worldY);
@@ -351,7 +362,9 @@ export async function performReturnToNearestTown(
           base.hp <= 0
             ? Math.max(1, Math.floor(base.maxHp * 0.15))
             : base.hp;
+        const mustClearBattle = base.battleJson != null;
         const changed =
+          mustClearBattle ||
           base.hp !== recoverHp ||
           base.pvpPendingDefeatJson != null ||
           base.pvePendingDefeatJson != null ||
@@ -369,6 +382,7 @@ export async function performReturnToNearestTown(
           changed: true,
           data: {
             hp: recoverHp,
+            ...(mustClearBattle ? { battleJson: Prisma.JsonNull } : {}),
             pvpPendingDefeatJson: Prisma.JsonNull,
             pvePendingDefeatJson: Prisma.JsonNull,
             worldX: wx,

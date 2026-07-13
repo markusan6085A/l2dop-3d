@@ -1944,8 +1944,6 @@
       }
       return false;
     }
-
-    function fillVictoryMobHead(el, v) {
       if (!el || !v) return;
       el.textContent = '';
       var nameSpan = document.createElement('span');
@@ -2313,7 +2311,10 @@
 
     async function returnToTownAndGoCity() {
       await runWithBattleNavLock(async function () {
-        var resT = await returnToNearestTown(latestCharacterRevision());
+        async function tryReturnOnce() {
+          return returnToNearestTown(latestCharacterRevision());
+        }
+        var resT = await tryReturnOnce();
         if (resT && resT._err === 409) {
           var townConflict = await parseActionErrorBodySafe(resT);
           if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
@@ -2327,7 +2328,26 @@
               if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
             }
           }
-          resT = await returnToNearestTown(latestCharacterRevision());
+          resT = await tryReturnOnce();
+        }
+        if (resT && resT._err && resT.raw) {
+          try {
+            var ejBlock = await resT.raw.json();
+            if (
+              ejBlock &&
+              (ejBlock.error === 'battle_still_active' ||
+                (ejBlock.messageUk &&
+                  String(ejBlock.messageUk).indexOf('заверши бій') !== -1))
+            ) {
+              await syncBattleFromServer();
+              if (character && character.pveDefeat) {
+                checkPveDefeatFromCharacter(character);
+              }
+              resT = await tryReturnOnce();
+            }
+          } catch (eBlock) {
+            /* ignore */
+          }
         }
         if (!resT || resT._err) {
           if (resT && resT.raw) {
@@ -2346,10 +2366,12 @@
           }
           return;
         }
-          character = resT.character;
-          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-          clearDefeatFromSession();
-          window.location.replace('/city.html');
+        character = resT.character;
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        clearDefeatFromSession();
+        battle = null;
+        stopBattleSyncPoll();
+        window.location.replace('/city.html');
       });
     }
 
