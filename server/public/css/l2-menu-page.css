@@ -1,6 +1,41 @@
 /**
- * Меню: «Крафт» — 1512125; «Тест», «Назад до міста» — 1512125.
+ * Меню: «Крафт» — 1512125; «Raid Bosses» — текст зліва під заголовком.
  */
+body.l2-page-menu .l2-pers-h1 {
+  color: #fff;
+  text-align: center;
+  margin-left: 0;
+}
+
+body.l2-page-menu .l2-menu-rb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 0.55rem 3mm;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #e04545 !important;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-decoration: none !important;
+}
+
+body.l2-page-menu .l2-menu-rb-link__ico {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+body.l2-page-menu .l2-menu-rb-link:hover,
+body.l2-page-menu .l2-menu-rb-link:focus {
+  color: #ff6a6a !important;
+  text-decoration: underline !important;
+}
+
 body.l2-page-menu .l2-menu-craft-wrap {
   text-align: center;
   margin: 0.35rem 0 0.25rem;

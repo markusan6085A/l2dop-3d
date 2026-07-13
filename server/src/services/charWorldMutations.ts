@@ -22,6 +22,8 @@ import {
   parseMobSpawnHpState,
   serializeMobSpawnHpState,
 } from '../domain/mobSpawnHpState.js';
+import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
+import { RB_TELEPORT_ADENA_COST } from './raidBossListService.js';
 
 const TELEPORT_FREE_MAX_LEVEL = 40;
 
@@ -221,6 +223,90 @@ export async function performTeleport(
             moveFromX: wx,
             moveFromY: wy,
             cityId: dest.cityId,
+            battleJson: Prisma.JsonNull,
+            mobSpawnHpJson: nextMobSpawnHpJson,
+            ...(fee > 0n ? { adena: { decrement: fee } } : {}),
+          } as Prisma.CharacterUpdateManyMutationInput,
+        };
+      }
+    );
+    if (!result.ok) throw gameConflictFromMutation(result);
+    return toSnapshot(result.character as CharacterRow);
+  });
+}
+
+/**
+ * Телепорт до рейд-боса з меню «РБ-боси» (фіксована ціна в аденах).
+ */
+export async function performRaidBossTeleport(
+  userId: string,
+  spawnId: string,
+  expectedRevision: number
+): Promise<CharacterSnapshot> {
+  const id = String(spawnId || '').trim();
+  const spawn = getWorldSpawnById(id);
+  if (!spawn || spawn.kind !== 'raid') {
+    throw new Error('raid_boss_unknown');
+  }
+  const wx = Math.floor(spawn.worldX);
+  const wy = Math.floor(spawn.worldY);
+  const fee = BigInt(RB_TELEPORT_ADENA_COST);
+
+  return prisma.$transaction(async (trx) => {
+    const char = (await trx.character.findFirst({
+      where: { userId },
+      orderBy: { lastUpdate: 'desc' },
+    })) as CharacterRow | null;
+    if (!char) throw new Error('no_character');
+    const result = await mutateCharacterWithRevision(
+      trx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        if (fee > 0n && base.adena < fee) {
+          throw new Error('raid_boss_teleport_not_enough_adena');
+        }
+        const near = nearestMapTown(wx, wy);
+        const changed =
+          base.hp !== current.hp ||
+          movementFieldsChanged(current as CharacterRow, base) ||
+          base.worldX !== wx ||
+          base.worldY !== wy ||
+          base.targetX !== 0 ||
+          base.targetY !== 0 ||
+          base.moveStartAt != null ||
+          base.moveFromX !== wx ||
+          base.moveFromY !== wy ||
+          base.cityId !== near.cityId ||
+          base.battleJson != null ||
+          fee > 0n;
+        if (!changed) return { changed: false };
+        const bj = parseBattleJson(base.battleJson);
+        const hpSnap = mobSpawnHpFromBattleJson(bj);
+        let nextMobSpawnHpJson: Prisma.InputJsonValue | typeof Prisma.JsonNull =
+          serializeMobSpawnHpState(parseMobSpawnHpState(base.mobSpawnHpJson));
+        if (hpSnap) {
+          const merged = mergeMobSpawnHpEntry(
+            parseMobSpawnHpState(base.mobSpawnHpJson),
+            hpSnap.spawnId,
+            hpSnap.mobHp,
+            hpSnap.mobMaxHp
+          );
+          nextMobSpawnHpJson = serializeMobSpawnHpState(merged);
+        }
+        return {
+          changed: true,
+          data: {
+            hp: base.hp,
+            worldX: wx,
+            worldY: wy,
+            targetX: 0,
+            targetY: 0,
+            moveStartAt: null,
+            moveFromX: wx,
+            moveFromY: wy,
+            cityId: near.cityId,
             battleJson: Prisma.JsonNull,
             mobSpawnHpJson: nextMobSpawnHpJson,
             ...(fee > 0n ? { adena: { decrement: fee } } : {}),

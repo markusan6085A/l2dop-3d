@@ -14,11 +14,13 @@ import {
   performHunt,
   performMapMove,
   performTeleport,
+  performRaidBossTeleport,
 } from '../services/charService.js';
 import { getMapAroundForUser, resolvedWorldPositionFromCharacterRow } from '../services/mapAroundService.js';
 import { getMapWorldSpawnsNearPlayer } from '../services/mapSpawnsService.js';
 import { getMapSyncForUser } from '../services/charMapStateService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
+import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { prisma } from '../lib/prisma.js';
 import type { CharacterRow } from '../services/charService.js';
 
@@ -96,6 +98,114 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
         return reply.code(404).send({ error: 'not_found' });
       }
       return reply.send(info);
+    }
+  );
+
+  app.get(
+    '/raid-bosses',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const q = request.query as { page?: string };
+      const page = q.page != null ? Number(q.page) : 1;
+      return reply.send(listRaidBossesPage(page));
+    }
+  );
+
+  app.post(
+    '/raid-boss/teleport',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      const spawnId = b.spawnId;
+      if (typeof spawnId !== 'string' || !spawnId.trim()) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Обери рейд-боса.',
+        });
+      }
+      try {
+        const character = await performRaidBossTeleport(
+          userId,
+          spawnId.trim(),
+          er
+        );
+        await logRouteMutation(
+          request,
+          'raid_boss_teleport',
+          er,
+          'ok',
+          character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            'raid_boss_teleport',
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && e.message === 'raid_boss_unknown') {
+          await logRouteMutation(
+            request,
+            'raid_boss_teleport',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Невідомий рейд-бос.',
+          });
+        }
+        if (
+          e instanceof Error &&
+          e.message === 'raid_boss_teleport_not_enough_adena'
+        ) {
+          await logRouteMutation(
+            request,
+            'raid_boss_teleport',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Недостатньо адени для телепорту.',
+          });
+        }
+        await logRouteMutation(
+          request,
+          'raid_boss_teleport',
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
     }
   );
 
