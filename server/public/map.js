@@ -184,6 +184,7 @@
         var errMsg = 'Не вдалося розпочати PvP-бій.';
         try {
           var ej = await r.json();
+          if (tryRedirectPveDefeatFromError(ej)) return;
           if (ej && ej.messageUk) errMsg = ej.messageUk;
         } catch (eErr) {
           /* ignore */
@@ -251,6 +252,7 @@
         var errMsg = 'Не вдалося розпочати бій.';
         try {
           var ej = await r.json();
+          if (tryRedirectPveDefeatFromError(ej)) return;
           if (ej && ej.messageUk) errMsg = ej.messageUk;
         } catch (eErr) {
           /* ignore */
@@ -509,6 +511,28 @@
   function handlePvpDefeatRedirect(sync) {
     if (!sync || !sync.pvpDefeat) return;
     window.location.replace('/battle.html?pvpDeath=1');
+  }
+
+  function handlePveDefeatRedirect(sync, snapshot) {
+    if (window.L2 && typeof L2.redirectToPveDefeatScreen === 'function') {
+      if (sync && sync.pveDefeat && L2.redirectToPveDefeatScreen({ pveDefeat: sync.pveDefeat })) {
+        return true;
+      }
+      if (snapshot && L2.redirectToPveDefeatScreen(snapshot)) return true;
+    }
+    return false;
+  }
+
+  function isPveDefeatPendingErrorBody(ej) {
+    return !!(ej && ej.error === 'pve_defeat_pending');
+  }
+
+  function tryRedirectPveDefeatFromError(ej) {
+    if (!isPveDefeatPendingErrorBody(ej)) return false;
+    if (window.L2 && typeof L2.redirectToPveDefeatScreen === 'function') {
+      return L2.redirectToPveDefeatScreen();
+    }
+    return false;
   }
 
   function applyPvpIncomingFromSync(sync) {
@@ -1001,7 +1025,10 @@
       if (sync.around) aroundData = sync.around;
       worldSpawns = sync.spawns || [];
       applyPvpIncomingFromSync(sync);
-      if (!opts.skipDefeatRedirect) handlePvpDefeatRedirect(sync);
+      if (!opts.skipDefeatRedirect) {
+        handlePvpDefeatRedirect(sync);
+        if (handlePveDefeatRedirect(sync, c)) return true;
+      }
       paintMain(!!opts.centerOnPlayer);
       renderMobMarkers(img, markersLayer, worldSpawns, markerSig);
       return true;
@@ -1107,11 +1134,17 @@
     if (freshSnapshot) {
       c = freshSnapshot;
       writeCachedMapSnapshot(c);
+      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(c);
+      }
+      if (handlePveDefeatRedirect(null, c)) return;
     }
 
     var sync0 = await syncPromise;
     if (sync0) {
-      applyMapSyncPayload(sync0, { force: true, skipDefeatRedirect: false });
+      if (applyMapSyncPayload(sync0, { force: true, skipDefeatRedirect: false })) {
+        return;
+      }
     } else if (c) {
       paintMain(false);
     }

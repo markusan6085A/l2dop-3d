@@ -209,6 +209,15 @@
     setLastSnapshot: function (s) {
       lastSnapshot = s;
     },
+    /** Екран PvE-поразки (РБ/моб) — battle.html з кнопкою «Повернутися в місто». */
+    redirectToPveDefeatScreen: function (snapshot) {
+      var snap = snapshot || lastSnapshot;
+      if (!snap || !snap.pveDefeat || !snap.pveDefeat.spawnId) return false;
+      window.location.replace(
+        '/battle.html?spawnId=' + encodeURIComponent(String(snap.pveDefeat.spawnId))
+      );
+      return true;
+    },
     /** Оновити лише поля карти/HUD у глобальному snapshot (poll map-state). */
     mergeMapStateIntoSnapshot: function (partial) {
       if (!partial || typeof partial !== 'object') return lastSnapshot;

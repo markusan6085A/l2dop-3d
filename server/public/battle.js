@@ -2130,6 +2130,10 @@
       saveDefeatToSession(defeat);
       stopBattleSyncPoll();
       battle = null;
+      var contentEl = $('battle-content');
+      var errLoad = $('battle-load-err');
+      if (contentEl) contentEl.hidden = false;
+      if (errLoad) errLoad.hidden = true;
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
@@ -2159,9 +2163,9 @@
       var hint = $('battle-defeat-town-hint');
       if (hint && defeat) {
         hint.textContent =
-          tr('battle_defeat_hint_prefix', 'Найближче безпечне місце: ') +
+          tr('battle_defeat_hint_prefix', 'Тебе віднесли до ') +
           defeat.nearestTownLabelUk +
-          tr('battle_defeat_hint_suffix', '. Натисни кнопку — опинишся там.');
+          tr('battle_defeat_hint_suffix', '. Натисни «Повернутися в місто».');
       }
       var dlog = $('battle-defeat-log');
       if (dlog && defeat && defeat.fullLog) {

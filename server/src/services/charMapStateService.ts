@@ -12,6 +12,10 @@ import {
   type PvpIncomingAttack,
 } from './pvpIncomingService.js';
 import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
+import {
+  parsePvePendingDefeat,
+  pvePendingDefeatToSummary,
+} from '../domain/pvePendingDefeat.js';
 
 /** Легкий зріз для карти / HUD (без інвентаря й каталогів). */
 export interface CharacterMapStatePayload {
@@ -104,15 +108,26 @@ export interface MapSyncPayload {
     killerCharacterId: string;
     fullLog?: string[];
   } | null;
+  pveDefeat: ReturnType<typeof pvePendingDefeatToSummary> | null;
 }
 
 /** Один poll для map.html: позиція + околиці + маркери (один spatial-запит). */
 export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload | null> {
-  const row = await prisma.character.findFirst({
+  const row = (await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true, mobSpawnHpJson: true, pvpPendingDefeatJson: true },
-  });
+    select: {
+      id: true,
+      mobSpawnHpJson: true,
+      pvpPendingDefeatJson: true,
+      pvePendingDefeatJson: true,
+    } as Prisma.CharacterSelect,
+  })) as {
+    id: string;
+    mobSpawnHpJson: unknown;
+    pvpPendingDefeatJson: unknown;
+    pvePendingDefeatJson: unknown;
+  } | null;
   if (!row) return null;
 
   const mapState = await getCharacterMapStateForUser(userId);
@@ -129,6 +144,11 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
           ? { fullLog: pendingDefeat.fullLog }
           : {}),
       }
+    : null;
+
+  const pendingPveDefeat = parsePvePendingDefeat(row.pvePendingDefeatJson);
+  const pveDefeat = pendingPveDefeat
+    ? pvePendingDefeatToSummary(pendingPveDefeat)
     : null;
 
   const { listEntries, markerEntries } = buildMapNearbySpawnViews(
@@ -155,5 +175,6 @@ export async function getMapSyncForUser(userId: string): Promise<MapSyncPayload 
     spawns: markerEntries,
     pvpIncoming: await findPvpIncomingForCharacter(mapState.id),
     pvpDefeat,
+    pveDefeat,
   };
 }
