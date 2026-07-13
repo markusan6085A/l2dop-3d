@@ -103,6 +103,7 @@ import {
   loadWorldBossSessionMobHp,
   recordWorldBossBattlePresenceInTx,
   recordWorldBossDamagingHitInTx,
+  isWorldBossAutoAttackDueInTx,
   runWorldBossCombatTickInTx,
   flushWorldBossPendingMobHitsForCharacterInTx,
 } from './worldBossSessionService.js';
@@ -1019,14 +1020,17 @@ export async function performBattleAction(
 
     if (worldBossBattle) {
       if (!damagingPlayerHit) {
-        const ws = await runWorldBossCombatTickInTx(
-          tx,
-          spawn.spawnId,
-          Date.now()
-        );
-        if (ws) {
-          mobHp = ws.mobHp;
-          st.mobHp = ws.mobHp;
+        const tickNowMs = Date.now();
+        if (await isWorldBossAutoAttackDueInTx(tx, spawn.spawnId, tickNowMs)) {
+          const ws = await runWorldBossCombatTickInTx(
+            tx,
+            spawn.spawnId,
+            tickNowMs
+          );
+          if (ws) {
+            mobHp = ws.mobHp;
+            st.mobHp = ws.mobHp;
+          }
         }
       }
       const refreshed = await tx.character.findUnique({ where: { id: char.id } });

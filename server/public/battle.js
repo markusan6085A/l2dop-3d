@@ -1241,6 +1241,38 @@
     var battleHotbar = null;
     var battleSyncTimer = null;
     var BATTLE_SYNC_MS = 5000;
+    var lastBattleVisualSig = '';
+
+    function battleVisualSig(c, b) {
+      if (!c || !b) return '';
+      var lines = getActiveBattleLogLines(b);
+      var tail0 = lines.length > 0 ? String(lines[lines.length - 1]) : '';
+      var tail1 = lines.length > 1 ? String(lines[lines.length - 2]) : '';
+      return [
+        String(c.revision != null ? c.revision : ''),
+        String(c.hp != null ? c.hp : ''),
+        String(c.maxHp != null ? c.maxHp : ''),
+        String(b.mobHp != null ? b.mobHp : ''),
+        String(b.mobMaxHp != null ? b.mobMaxHp : ''),
+        String(lines.length),
+        tail0,
+        tail1,
+      ].join('\u001f');
+    }
+
+    function refreshBattleUI(force) {
+      if (!force) {
+        var sig = battleVisualSig(character, battle);
+        if (sig === lastBattleVisualSig) {
+          renderPlayerBars(character);
+          return;
+        }
+        lastBattleVisualSig = sig;
+      } else {
+        lastBattleVisualSig = battleVisualSig(character, battle);
+      }
+      refreshUI();
+    }
 
     function stopBattleSyncPoll() {
       if (battleSyncTimer != null) {
@@ -1289,7 +1321,7 @@
         }
         return false;
       }
-      refreshUI();
+      refreshBattleUI(false);
       return false;
     }
 

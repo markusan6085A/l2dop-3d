@@ -47,6 +47,33 @@ function serializeSession(state: WorldBossSessionState): Prisma.InputJsonValue {
   return state as unknown as Prisma.InputJsonValue;
 }
 
+async function readSessionRow(
+  tx: Tx,
+  spawnId: string
+): Promise<WorldBossSessionState | null> {
+  const row = await tx.worldBossSession.findUnique({ where: { spawnId } });
+  if (!row) return null;
+  return parseWorldBossSessionState(row.stateJson);
+}
+
+/** Read-path: чи настав час автоатаки (без FOR UPDATE). */
+export async function isWorldBossAutoAttackDueInTx(
+  tx: Tx,
+  spawnId: string,
+  nowMs: number
+): Promise<boolean> {
+  const session = await readSessionRow(tx, spawnId);
+  if (!session) return false;
+  return shouldWorldBossAutoAttack(session, nowMs);
+}
+
+const presenceWriteAtMs = new Map<string, number>();
+const PRESENCE_WRITE_MIN_MS = 5_000;
+
+function presenceWriteKey(spawnId: string, characterId: string): string {
+  return spawnId + ':' + characterId;
+}
+
 async function lockSessionRow(tx: Tx, spawnId: string): Promise<WorldBossSessionState | null> {
   const rows = await tx.$queryRaw<Array<{ stateJson: unknown }>>`
     SELECT "stateJson" FROM "WorldBossSession" WHERE "spawnId" = ${spawnId} FOR UPDATE
@@ -191,6 +218,14 @@ export async function flushWorldBossPendingMobHitsForCharacterInTx(
   if (parsePvePendingDefeat(char.pvePendingDefeatJson)) return char;
   const spawn = resolveBattleSpawnMeta(bj);
   if (!spawn || !isSharedWorldBossKind(spawn.kind)) return char;
+
+  const peek = await readSessionRow(tx, spawn.spawnId);
+  if (!peek) return char;
+  const peekParticipant = peek.participants[char.id];
+  const peekPending = peekParticipant?.pendingMobHits ?? [];
+  const mobHpDirtyPeek =
+    bj.mobHp !== peek.mobHp || bj.mobMaxHp !== peek.mobMaxHp;
+  if (peekPending.length === 0 && !mobHpDirtyPeek) return char;
 
   const session = await lockSessionRow(tx, spawn.spawnId);
   if (!session) return char;
@@ -354,6 +389,7 @@ export async function runWorldBossCombatTickInTx(
 ): Promise<WorldBossSessionState | null> {
   const session = await lockSessionRow(tx, spawnId);
   if (!session || session.mobHp <= 0) return session;
+  if (!shouldWorldBossAutoAttack(session, nowMs)) return session;
 
   const contexts = await loadParticipantContexts(tx, session);
   for (const ctx of contexts) {
@@ -369,7 +405,7 @@ export async function runWorldBossCombatTickInTx(
   const validIds = listValidWorldBossParticipantIds(session, contexts, nowMs);
   reconcileWorldBossTarget(session, validIds, nowMs);
 
-  if (shouldWorldBossAutoAttack(session, nowMs) && session.currentTargetCharacterId) {
+  if (session.currentTargetCharacterId) {
     const targetId = session.currentTargetCharacterId;
     const defeated = await applyWorldBossAutoAttackInTx(
       tx,
@@ -399,13 +435,19 @@ export async function recordWorldBossBattlePresenceInTx(
   characterId: string,
   nowMs: number
 ): Promise<void> {
+  const id = String(characterId || '').trim();
+  if (!id) return;
+  const key = presenceWriteKey(spawnId, id);
+  const lastWrite = presenceWriteAtMs.get(key) ?? 0;
+  if (nowMs - lastWrite < PRESENCE_WRITE_MIN_MS) return;
+
   const session = await lockSessionRow(tx, spawnId);
   if (!session) return;
-  const id = String(characterId || '').trim();
   const existing = session.participants[id];
   if (existing) {
     existing.lastPresenceAtMs = nowMs;
     await saveSession(tx, session);
+    presenceWriteAtMs.set(key, nowMs);
   }
 }
 
@@ -422,14 +464,18 @@ export async function recordWorldBossDamagingHitInTx(
   session.mobHp = Math.max(0, Math.min(session.mobMaxHp, mobHp));
   registerWorldBossDamagingHit(session, characterId, damageDealt, nowMs);
   await saveSession(tx, session);
-  return runWorldBossCombatTickInTx(tx, spawnId, nowMs);
+  presenceWriteAtMs.set(presenceWriteKey(spawnId, characterId), nowMs);
+  return session;
 }
 
 export async function runAllWorldBossCombatTicks(nowMs: number): Promise<void> {
   const rows = await prisma.worldBossSession.findMany({
-    select: { spawnId: true },
+    select: { spawnId: true, stateJson: true },
   });
   for (const row of rows) {
+    const session = parseWorldBossSessionState(row.stateJson);
+    if (!session || session.mobHp <= 0) continue;
+    if (!shouldWorldBossAutoAttack(session, nowMs)) continue;
     try {
       await prisma.$transaction(async (tx) => {
         await runWorldBossCombatTickInTx(tx, row.spawnId, nowMs);
