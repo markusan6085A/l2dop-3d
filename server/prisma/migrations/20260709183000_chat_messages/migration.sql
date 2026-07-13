@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "ChatMessage" (
+CREATE TABLE IF NOT EXISTS "ChatMessage" (
     "id" TEXT NOT NULL,
     "channel" TEXT NOT NULL DEFAULT 'all',
     "characterId" TEXT NOT NULL,
@@ -10,7 +10,11 @@ CREATE TABLE "ChatMessage" (
 );
 
 -- CreateIndex
-CREATE INDEX "ChatMessage_channel_createdAt_idx" ON "ChatMessage"("channel", "createdAt" DESC);
+CREATE INDEX IF NOT EXISTS "ChatMessage_channel_createdAt_idx" ON "ChatMessage"("channel", "createdAt" DESC);
 
 -- AddForeignKey
-ALTER TABLE "ChatMessage" ADD CONSTRAINT "ChatMessage_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "ChatMessage" ADD CONSTRAINT "ChatMessage_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;

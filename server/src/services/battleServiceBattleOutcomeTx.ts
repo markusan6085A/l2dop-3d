@@ -61,7 +61,7 @@ export async function persistBattleVictoryInTx(
   tx: Tx,
   args: {
     userId: string;
-    expectedRevision: number;
+    expectedRevision: number | null;
     char: CharacterRow;
     bj: { spawnId: string };
     spawn: { name: string; level: number; aggressive: boolean; kind: MapSpawnKind };

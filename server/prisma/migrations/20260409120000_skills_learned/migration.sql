@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "Character" ADD COLUMN "skillsLearnedJson" JSONB;
+ALTER TABLE "Character" ADD COLUMN IF NOT EXISTS "skillsLearnedJson" JSONB;

@@ -18,7 +18,6 @@ import {
   reconcileWorldBossTarget,
   registerWorldBossDamagingHit,
   shouldWorldBossAutoAttack,
-  touchWorldBossParticipant,
   type WorldBossParticipantContext,
   type WorldBossSessionState,
 } from '../domain/worldBossSession.js';
@@ -53,6 +52,13 @@ async function lockSessionRow(tx: Tx, spawnId: string): Promise<WorldBossSession
   `;
   if (!rows.length) return null;
   return parseWorldBossSessionState(rows[0]!.stateJson);
+}
+
+export async function lockWorldBossSessionInTx(
+  tx: Tx,
+  spawnId: string
+): Promise<WorldBossSessionState | null> {
+  return lockSessionRow(tx, spawnId);
 }
 
 async function saveSession(tx: Tx, state: WorldBossSessionState): Promise<void> {
@@ -316,12 +322,13 @@ export async function recordWorldBossDamagingHitInTx(
   spawnId: string,
   characterId: string,
   mobHp: number,
+  damageDealt: number,
   nowMs: number
 ): Promise<WorldBossSessionState | null> {
   let session = await lockSessionRow(tx, spawnId);
   if (!session) return null;
   session.mobHp = Math.max(0, Math.min(session.mobMaxHp, mobHp));
-  registerWorldBossDamagingHit(session, characterId, nowMs);
+  registerWorldBossDamagingHit(session, characterId, damageDealt, nowMs);
   await saveSession(tx, session);
   return runWorldBossCombatTickInTx(tx, spawnId, nowMs);
 }

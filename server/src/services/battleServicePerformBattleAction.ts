@@ -669,6 +669,7 @@ export async function performBattleAction(
         spawn.spawnId,
         cr.id,
         mobHp,
+        pDmg,
         Date.now()
       );
       if (ws) {

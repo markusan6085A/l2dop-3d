@@ -5,10 +5,12 @@ import type { SkillCooldownEntry } from '../data/skillCooldowns.js';
 import type { BattleJsonState } from '../domain/battle.js';
 import type { BattleSpawnMeta } from '../domain/battlePvpContext.js';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
+import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import {
   persistBattleContinueTurnInTx,
   persistBattleVictoryInTx,
 } from './battleServiceBattleOutcomeTx.js';
+import { resolveWorldBossVictoryInTx } from './battleServiceWorldBossVictory.js';
 import { persistPvpVictoryInTx } from './battleServicePvpVictory.js';
 import type { CharacterRow, CharacterSnapshot } from './charService.js';
 import type {
@@ -92,7 +94,7 @@ export async function resolveMobDeadVictoryInTx(
   }
 ): Promise<{
   character: CharacterSnapshot;
-  victory: BattleVictorySummary;
+  victory?: BattleVictorySummary;
   battle: null;
 } | null> {
   if (args.mobHp > 0) return null;
@@ -111,6 +113,9 @@ export async function resolveMobDeadVictoryInTx(
       ...extras,
     });
     return { ...v, battle: null };
+  }
+  if (isSharedWorldBossKind(args.spawn.kind)) {
+    return resolveWorldBossVictoryInTx(tx, args);
   }
   const v = await persistBattleVictoryInTx(tx, {
     userId: args.userId,

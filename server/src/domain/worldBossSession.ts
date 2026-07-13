@@ -16,6 +16,10 @@ export interface WorldBossParticipant {
   characterId: string;
   lastDamageAtMs: number;
   lastPresenceAtMs: number;
+  /** Сумарний урон по босу за поточний бій (для розподілу луту). */
+  totalDamageDealt: number;
+  /** Час першого урону — tie-break при рівному totalDamageDealt. */
+  firstDamageAtMs: number;
 }
 
 export interface WorldBossSessionState {
@@ -104,6 +108,8 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
         characterId,
         lastDamageAtMs: Number(p.lastDamageAtMs) || 0,
         lastPresenceAtMs: Number(p.lastPresenceAtMs) || 0,
+        totalDamageDealt: Math.max(0, Math.floor(Number(p.totalDamageDealt) || 0)),
+        firstDamageAtMs: Number(p.firstDamageAtMs) || 0,
       };
     }
   }
@@ -190,18 +196,63 @@ export function touchWorldBossParticipant(
     characterId: id,
     lastPresenceAtMs: nowMs,
     lastDamageAtMs: opts?.damagingHit ? nowMs : (prev?.lastDamageAtMs ?? 0),
+    totalDamageDealt: prev?.totalDamageDealt ?? 0,
+    firstDamageAtMs: prev?.firstDamageAtMs ?? 0,
   };
 }
 
 export function registerWorldBossDamagingHit(
   session: WorldBossSessionState,
   characterId: string,
+  damage: number,
   nowMs: number
 ): void {
-  touchWorldBossParticipant(session, characterId, nowMs, { damagingHit: true });
-  if (!session.currentTargetCharacterId) {
-    session.currentTargetCharacterId = characterId;
+  const id = String(characterId || '').trim();
+  if (!id) return;
+  const dmg = Math.max(0, Math.floor(Number(damage) || 0));
+  const prev = session.participants[id];
+  if (prev) {
+    prev.lastPresenceAtMs = nowMs;
+    if (dmg > 0) {
+      prev.lastDamageAtMs = nowMs;
+      prev.totalDamageDealt += dmg;
+      if (!prev.firstDamageAtMs) prev.firstDamageAtMs = nowMs;
+    }
+  } else {
+    session.participants[id] = {
+      characterId: id,
+      lastPresenceAtMs: nowMs,
+      lastDamageAtMs: dmg > 0 ? nowMs : 0,
+      totalDamageDealt: dmg,
+      firstDamageAtMs: dmg > 0 ? nowMs : 0,
+    };
   }
+  if (!session.currentTargetCharacterId && dmg > 0) {
+    session.currentTargetCharacterId = id;
+  }
+}
+
+/** Хто наніс найбільше урону — отримує дроп/EXP/SP/adena. */
+export function pickWorldBossTopDamageDealer(
+  session: WorldBossSessionState
+): string | null {
+  let bestId: string | null = null;
+  let bestDmg = 0;
+  let bestFirst = Number.POSITIVE_INFINITY;
+  for (const participant of Object.values(session.participants)) {
+    const dmg = participant.totalDamageDealt ?? 0;
+    if (dmg <= 0) continue;
+    const first = participant.firstDamageAtMs || 0;
+    if (
+      dmg > bestDmg ||
+      (dmg === bestDmg && first > 0 && first < bestFirst)
+    ) {
+      bestDmg = dmg;
+      bestFirst = first;
+      bestId = participant.characterId;
+    }
+  }
+  return bestId;
 }
 
 export function pickRandomWorldBossTarget(
