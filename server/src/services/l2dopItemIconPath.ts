@@ -1,5 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  craftResourceIconFileName,
+  craftResourceIconRelUrl,
+} from '../data/resourceCraftIconFileNames.js';
 
 function publicDirCandidates(relParts: string[]): string[] {
   const cwd = process.cwd();
@@ -16,15 +20,11 @@ function firstExistingPath(candidates: string[]): string | null {
   return null;
 }
 
-export function craftResourceIconRelUrl(itemId: number): string {
-  return `/icons/drops/resours/l2dop-by-itemid/${itemId}.jpg`;
-}
-
 /**
  * Реальні іконки предметів:
  * 1) L2DOP_ITEM_ICONS_DIR / `{id}.jpg`
  * 2) зовнішній l2dop `img/items/{id}.jpg`
- * 3) статика репо `icons/drops/resours/l2dop-by-itemid/{id}.jpg`
+ * 3) статика репо `icons/drops/resours/l2dop-by-itemid/` (`{id}.jpg` або іменний файл)
  * 4) adena `assets/l2dop/etc_adena_i00.png`
  */
 export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
@@ -37,6 +37,19 @@ export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
     const p = path.join(baseEnv, file);
     if (fs.existsSync(p)) return p;
   }
+
+  const craftFile = craftResourceIconFileName(itemId);
+  if (craftFile) {
+    const craft = firstExistingPath(
+      publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', craftFile]),
+    );
+    if (craft) return craft;
+    const craftRoot = firstExistingPath(
+      publicDirCandidates(['icons', 'drops', 'resours', craftFile]),
+    );
+    if (craftRoot) return craftRoot;
+  }
+
   const cwd = process.cwd();
   const legacyCandidates = [
     path.join(cwd, '..', 'l2dop', 'img', 'items', file),
@@ -45,11 +58,6 @@ export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
   ];
   const legacy = firstExistingPath(legacyCandidates);
   if (legacy) return legacy;
-
-  const craft = firstExistingPath(
-    publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', file]),
-  );
-  if (craft) return craft;
 
   if (itemId === 57) {
     return firstExistingPath(
@@ -70,10 +78,21 @@ export function resolveItemIconPublicUrl(itemId: number): string {
     );
     if (adena) return '/assets/l2dop/etc_adena_i00.png';
   }
-  const craftFile = `${itemId}.jpg`;
-  const craft = firstExistingPath(
-    publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', craftFile]),
-  );
-  if (craft) return craftResourceIconRelUrl(itemId);
+  const craftUrl = craftResourceIconRelUrl(itemId);
+  if (craftUrl) {
+    const craftFile = craftResourceIconFileName(itemId);
+    if (craftFile) {
+      const craft = firstExistingPath(
+        publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', craftFile]),
+      );
+      if (craft) return craftUrl;
+      const craftRoot = firstExistingPath(
+        publicDirCandidates(['icons', 'drops', 'resours', craftFile]),
+      );
+      if (craftRoot) {
+        return `/icons/drops/resours/${craftFile}`;
+      }
+    }
+  }
   return `/game/item-icon/${itemId}`;
 }

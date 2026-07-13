@@ -3,6 +3,14 @@ import { L2DOP_NPC_EXP_SP } from '../data/l2dopNpcExpSp.generated.js';
 import type { DropEntry } from '../types/combatDrop.js';
 import { mobAdenaDropRange } from './mobAdenaDropScale.js';
 
+/** Множник SP за вбивство моба (база з npc/формули × цей коефіцієнт). */
+const MOB_KILL_SP_MULTIPLIER = 2;
+
+function scaleMobKillSp(sp: number): number {
+  if (!Number.isFinite(sp) || sp <= 0) return 0;
+  return Math.max(1, Math.floor(sp * MOB_KILL_SP_MULTIPLIER));
+}
+
 /** Базова адена за рівнем моба (шкала mobAdenaDropScale). */
 export function syntheticAdenaDropEntry(level: number): DropEntry {
   const { min, max } = mobAdenaDropRange(level);
@@ -36,11 +44,11 @@ export function rewardExpSpForSpawn(
   if (npcId != null) {
     const rw = L2DOP_NPC_EXP_SP[npcId];
     if (rw !== undefined && (rw.exp > 0 || rw.sp > 0)) {
-      return { exp: rw.exp, sp: rw.sp, synthetic: false };
+      return { exp: rw.exp, sp: scaleMobKillSp(rw.sp), synthetic: false };
     }
   }
   const d = defaultExpSpFromLevel(spawnLevel);
-  return { exp: d.exp, sp: d.sp, synthetic: true };
+  return { exp: d.exp, sp: scaleMobKillSp(d.sp), synthetic: true };
 }
 
 /**

@@ -10,6 +10,10 @@
     return '/characters/photo_' + n + '_2026-07-13_10-22-46-removebg-preview.png';
   }
 
+  function charPngWarlord(n) {
+    return '/characters/photo_' + n + '_2026-07-13_13-06-13-removebg-preview.png';
+  }
+
   function snapshotLevel(c) {
     var n = c && c.level != null ? Number(c.level) : 1;
     return isFinite(n) && n > 0 ? Math.floor(n) : 1;
@@ -73,27 +77,53 @@
       blackKey: false,
     },
     human_dark_avenger: {
-      url: '/characters/photo_14_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(14),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_paladin: {
-      url: '/characters/photo_14_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(14),
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_hell_knight: {
+      url: charPng(36),
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_phoenix_knight: {
+      url: charPng(36),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_treasure_hunter: {
-      url: '/characters/photo_46_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(46),
+      skin: 'human-warrior-m',
+      blackKey: false,
+    },
+    human_adventurer: {
+      url: charPng(52),
       skin: 'human-warrior-m',
       blackKey: false,
     },
     human_warlord: {
-      url: heroUrl(2),
+      url: charPngWarlord(1),
       skin: 'human-warlord-m',
       blackKey: false,
     },
+    human_dreadnought: {
+      url: charPngWarlord(7),
+      skin: 'human-warlord-m',
+      blackKey: false,
+      portraitRaise: true,
+    },
     human_gladiator: {
-      url: '/characters/photo_13_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(13),
+      skin: 'human-gladiator-m',
+      blackKey: false,
+    },
+    human_duelist: {
+      url: charPng(35),
       skin: 'human-gladiator-m',
       blackKey: false,
     },
@@ -103,7 +133,7 @@
       blackKey: false,
     },
     'human_warrior|female': {
-      url: '/characters/photo_10_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPngWarlord(2),
       skin: 'human-fighter-f',
       blackKey: false,
     },
@@ -113,27 +143,53 @@
       blackKey: false,
     },
     'human_paladin|female': {
-      url: '/characters/photo_17_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(17),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_dark_avenger|female': {
-      url: '/characters/photo_17_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(17),
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_hell_knight|female': {
+      url: charPng(39),
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_phoenix_knight|female': {
+      url: charPng(39),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_treasure_hunter|female': {
-      url: '/characters/photo_45_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(45),
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_adventurer|female': {
+      url: charPng(51),
       skin: 'human-fighter-f',
       blackKey: false,
     },
     'human_warlord|female': {
-      url: heroUrl(9),
+      url: charPngWarlord(2),
       skin: 'human-warlord-f',
       blackKey: false,
     },
+    'human_dreadnought|female': {
+      url: charPngWarlord(8),
+      skin: 'human-warlord-f',
+      blackKey: false,
+      portraitRaise: true,
+    },
     'human_gladiator|female': {
-      url: '/characters/photo_16_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(16),
+      skin: 'human-fighter-f',
+      blackKey: false,
+    },
+    'human_duelist|female': {
+      url: charPng(37),
       skin: 'human-fighter-f',
       blackKey: false,
     },
@@ -253,52 +309,102 @@
       blackKey: false,
     },
     human_sorcerer: {
-      url: '/characters/photo_11_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(11),
       skin: 'human-wizard-m',
       blackKey: false,
     },
     human_necromancer: {
-      url: '/characters/photo_11_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(11),
       skin: 'human-wizard-m',
       blackKey: false,
     },
     human_warlock: {
-      url: '/characters/photo_11_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(11),
       skin: 'human-wizard-m',
       blackKey: false,
     },
     human_bishop: {
-      url: '/characters/photo_11_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(11),
       skin: 'human-wizard-m',
       blackKey: false,
     },
     human_prophet: {
-      url: '/characters/photo_11_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(11),
+      skin: 'human-wizard-m',
+      blackKey: false,
+    },
+    human_archmage: {
+      url: charPng(41),
+      skin: 'human-wizard-m',
+      blackKey: false,
+    },
+    human_soultaker: {
+      url: charPng(41),
+      skin: 'human-wizard-m',
+      blackKey: false,
+    },
+    human_arcana_lord: {
+      url: charPng(41),
+      skin: 'human-wizard-m',
+      blackKey: false,
+    },
+    human_cardinal: {
+      url: charPng(41),
+      skin: 'human-wizard-m',
+      blackKey: false,
+    },
+    human_hierophant: {
+      url: charPng(41),
       skin: 'human-wizard-m',
       blackKey: false,
     },
     'human_sorcerer|female': {
-      url: '/characters/photo_12_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(12),
       skin: 'human-wizard-f',
       blackKey: false,
     },
     'human_necromancer|female': {
-      url: '/characters/photo_12_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(12),
       skin: 'human-wizard-f',
       blackKey: false,
     },
     'human_warlock|female': {
-      url: '/characters/photo_12_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(12),
       skin: 'human-wizard-f',
       blackKey: false,
     },
     'human_bishop|female': {
-      url: '/characters/photo_12_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(12),
       skin: 'human-wizard-f',
       blackKey: false,
     },
     'human_prophet|female': {
-      url: '/characters/photo_12_2026-07-13_10-22-46-removebg-preview.png',
+      url: charPng(12),
+      skin: 'human-wizard-f',
+      blackKey: false,
+    },
+    'human_archmage|female': {
+      url: charPng(42),
+      skin: 'human-wizard-f',
+      blackKey: false,
+    },
+    'human_soultaker|female': {
+      url: charPng(42),
+      skin: 'human-wizard-f',
+      blackKey: false,
+    },
+    'human_arcana_lord|female': {
+      url: charPng(42),
+      skin: 'human-wizard-f',
+      blackKey: false,
+    },
+    'human_cardinal|female': {
+      url: charPng(42),
+      skin: 'human-wizard-f',
+      blackKey: false,
+    },
+    'human_hierophant|female': {
+      url: charPng(42),
       skin: 'human-wizard-f',
       blackKey: false,
     },
@@ -369,6 +475,24 @@
     },
   };
 
+  var HUMAN_WARLORD_BRANCH_FEMALE_LEVELS = {
+    female: [
+      { minLevel: 62, url: charPngWarlord(6) },
+      { minLevel: 52, url: charPngWarlord(3) },
+    ],
+  };
+
+  var HUMAN_MYSTIC_SECOND_PROF_LEVELS = {
+    male: [
+      { minLevel: 62, url: charPng(43) },
+      { minLevel: 52, url: charPng(25) },
+    ],
+    female: [
+      { minLevel: 62, url: charPng(44) },
+      { minLevel: 52, url: charPng(26) },
+    ],
+  };
+
   /**
    * Портрет за рівнем (вищий minLevel перевіряється першим).
    * Ключ — точний l2Profession зі snapshot.
@@ -384,25 +508,65 @@
         { minLevel: 52, url: charPng(24) },
       ],
     },
+    human_treasure_hunter: {
+      male: [
+        { minLevel: 62, url: charPng(50) },
+        { minLevel: 52, url: charPng(47) },
+      ],
+      female: [
+        { minLevel: 62, url: charPng(49) },
+        { minLevel: 52, url: charPng(48) },
+      ],
+    },
+    human_gladiator: {
+      male: [
+        { minLevel: 62, url: charPng(28) },
+        { minLevel: 52, url: charPng(20) },
+      ],
+      female: [
+        { minLevel: 62, url: charPng(32) },
+        { minLevel: 52, url: charPng(22) },
+      ],
+    },
+    human_paladin: {
+      male: [
+        { minLevel: 62, url: charPng(29) },
+        { minLevel: 52, url: charPng(21) },
+      ],
+      female: [
+        { minLevel: 62, url: charPng(31) },
+        { minLevel: 52, url: charPng(23) },
+      ],
+    },
+    human_dark_avenger: {
+      male: [
+        { minLevel: 62, url: charPng(29) },
+        { minLevel: 52, url: charPng(21) },
+      ],
+      female: [
+        { minLevel: 62, url: charPng(31) },
+        { minLevel: 52, url: charPng(23) },
+      ],
+    },
+    human_sorcerer: HUMAN_MYSTIC_SECOND_PROF_LEVELS,
+    human_necromancer: HUMAN_MYSTIC_SECOND_PROF_LEVELS,
+    human_warlock: HUMAN_MYSTIC_SECOND_PROF_LEVELS,
+    human_bishop: HUMAN_MYSTIC_SECOND_PROF_LEVELS,
+    human_prophet: HUMAN_MYSTIC_SECOND_PROF_LEVELS,
+    human_warlord: {
+      male: [
+        { minLevel: 62, url: charPngWarlord(5) },
+        { minLevel: 52, url: charPngWarlord(4) },
+      ],
+      female: HUMAN_WARLORD_BRANCH_FEMALE_LEVELS.female,
+    },
+    human_warrior: {
+      female: HUMAN_WARLORD_BRANCH_FEMALE_LEVELS.female,
+    },
   };
 
   /** 2–3 профа гілки — та сама картинка, що на базовій 2-й (або 1-й для rogue/luk). */
   var SCENE_HERO_PROF_ALIAS = {
-    human_dreadnought: 'human_warlord',
-    human_duelist: 'human_gladiator',
-    human_adventurer: 'human_treasure_hunter',
-    human_hell_knight: 'human_dark_avenger',
-    human_phoenix_knight: 'human_paladin',
-    human_sorcerer: 'human_wizard',
-    human_necromancer: 'human_wizard',
-    human_warlock: 'human_wizard',
-    human_archmage: 'human_wizard',
-    human_soultaker: 'human_wizard',
-    human_arcana_lord: 'human_wizard',
-    human_bishop: 'human_cleric',
-    human_prophet: 'human_cleric',
-    human_cardinal: 'human_cleric',
-    human_hierophant: 'human_cleric',
     dwarf_bounty_hunter: 'dwarf_scavenger',
     dwarf_fortune_seeker: 'dwarf_scavenger',
     dwarf_warsmith: 'dwarf_artisan',
@@ -486,9 +650,11 @@
     if (!tiers || !tiers.length) return overlay;
     var level = snapshotLevel(c);
     var url = overlay.url;
+    var portraitTier = null;
     for (var i = 0; i < tiers.length; i++) {
       if (level >= tiers[i].minLevel) {
         url = tiers[i].url;
+        portraitTier = String(tiers[i].minLevel);
         break;
       }
     }
@@ -496,6 +662,8 @@
       url: url,
       skin: overlay.skin,
       blackKey: overlay.blackKey,
+      portraitTier: portraitTier,
+      portraitRaise: overlay.portraitRaise,
     };
   }
 
@@ -545,6 +713,8 @@
       img.removeAttribute('src');
       img.onerror = null;
       img.alt = '';
+      img.removeAttribute('data-hero-portrait-tier');
+      img.removeAttribute('data-hero-portrait-raised');
       if (stage) stage.hidden = true;
       return;
     }
@@ -566,6 +736,10 @@
     img.src = overlay.url;
     img.hidden = false;
     img.alt = 'Герой';
+    if (overlay.portraitTier) img.dataset.heroPortraitTier = overlay.portraitTier;
+    else img.removeAttribute('data-hero-portrait-tier');
+    if (overlay.portraitRaise) img.dataset.heroPortraitRaised = '1';
+    else img.removeAttribute('data-hero-portrait-raised');
     if (overlay.blackKey) img.classList.add('l2-char-equip-hero-overlay--black-key');
     if (stage) stage.hidden = false;
     if (bg) {

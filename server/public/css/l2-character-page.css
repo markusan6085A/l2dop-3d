@@ -192,6 +192,8 @@ body.l2-app-l2-chrome.l2-page-character {
   --l2-hero-prof-scale: 0.748;
   --l2-hero-shadow-before-bottom: -0.75%;
   --l2-hero-shadow-after-bottom: 0;
+  --l2-hero-male-y: 5%;
+  --l2-hero-female-y: 2%;
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-stage::before {
@@ -238,7 +240,7 @@ body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-on-stairs .l2-ch
   max-width: var(--l2-hero-starter-w);
   object-fit: contain;
   object-position: center bottom;
-  transform: translateY(2%) scale(var(--l2-hero-starter-scale));
+  transform: translateY(var(--l2-hero-male-y)) scale(var(--l2-hero-starter-scale));
   transform-origin: center bottom;
   filter: none;
 }
@@ -263,12 +265,28 @@ body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-dark-elf-mystic-
 
 body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay,
 body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-mage-m .l2-char-equip-hero-overlay {
-  transform: translateY(2%) scale(var(--l2-hero-starter-scale));
+  transform: translateY(var(--l2-hero-male-y)) scale(var(--l2-hero-starter-scale));
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-mage-f .l2-char-equip-hero-overlay {
-  transform: translateY(-5%) scale(var(--l2-hero-starter-scale));
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-mage-f .l2-char-equip-hero-overlay,
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay {
+  transform: translateY(var(--l2-hero-female-y)) scale(var(--l2-hero-starter-scale));
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-m .l2-char-equip-hero-overlay {
+  transform: translateY(var(--l2-hero-male-y)) scale(var(--l2-hero-starter-scale));
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='52'],
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='62'],
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay[data-hero-portrait-raised='1'],
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='52'],
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='62'],
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-m .l2-char-equip-hero-overlay[data-hero-portrait-tier='52'],
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-m .l2-char-equip-hero-overlay[data-hero-portrait-tier='62'],
+body.l2-app-l2-chrome.l2-page-character .l2-char-equip-bg--hero-human-warlord-m .l2-char-equip-hero-overlay[data-hero-portrait-raised='1'] {
+  transform: translateY(-1%) scale(var(--l2-hero-starter-scale));
 }
 
 body.l2-app-l2-chrome.l2-page-character .l2-character-stats,
