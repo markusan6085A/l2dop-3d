@@ -73,6 +73,10 @@ export interface MapWorldSpawn {
   /** Портрет для списку/картки (наприклад `/epic-npcs/29028.png`). */
   icon?: string;
   dropsPreview?: string[];
+  /** World РБ/epic: інтервал автоатаки (ms), min 2200. */
+  autoAttackIntervalMs?: number;
+  /** World РБ/epic: перший удар після aggro (ms). */
+  firstAggroDelayMs?: number;
 }
 
 function rng(seed: string, i: number): number {

@@ -5,11 +5,87 @@ import { BATTLE_RANGE } from './battleTypes.js';
 export const WORLD_BOSS_DAMAGE_TTL_MS = 30_000;
 /** Offline / без battle-presence — grace 30 с. */
 export const WORLD_BOSS_PRESENCE_GRACE_MS = 30_000;
-/** Інтервал автоатаки РБ/епіка (серверний tick). */
-export const WORLD_BOSS_AUTO_ATTACK_MS = 2_800;
+
+/** Фоновий tick: лише перевірка due-сесій (без lock усіх босів). */
+export const WORLD_BOSS_TICK_MS = 1_000;
+
+/** Звичайний РБ — базовий інтервал автоатаки. */
+export const RAID_BOSS_AUTO_ATTACK_MS = 3_000;
+/** Epic — трохи швидше (MVP без окремих скілів). */
+export const EPIC_BOSS_AUTO_ATTACK_MS = 2_800;
+/** Мінімально допустимий інтервал (нижче — спам у текстовій грі). */
+export const MIN_BOSS_AUTO_ATTACK_MS = 2_200;
+
+/** Перший удар після aggro — raid. */
+export const RAID_BOSS_FIRST_AGGRO_DELAY_MS = 1_500;
+/** Перший удар після aggro — epic. */
+export const EPIC_BOSS_FIRST_AGGRO_DELAY_MS = 1_500;
+
+/** @deprecated Використовуй RAID/EPIC_BOSS_AUTO_ATTACK_MS */
+export const WORLD_BOSS_AUTO_ATTACK_MS = RAID_BOSS_AUTO_ATTACK_MS;
+
+/** Немає цілі — не потрапляє в due-фільтр SQL. */
+export const WORLD_BOSS_NO_ATTACK_SCHEDULED = 9_007_199_254_740_991;
 
 export function isSharedWorldBossKind(kind: MapSpawnKind): boolean {
   return kind === 'raid' || kind === 'epic';
+}
+
+export function resolveWorldBossAttackTiming(input: {
+  kind: MapSpawnKind;
+  autoAttackIntervalMs?: number;
+  firstAggroDelayMs?: number;
+}): { autoAttackIntervalMs: number; firstAggroDelayMs: number } {
+  const defaultInterval =
+    input.kind === 'epic' ? EPIC_BOSS_AUTO_ATTACK_MS : RAID_BOSS_AUTO_ATTACK_MS;
+  const defaultFirst =
+    input.kind === 'epic'
+      ? EPIC_BOSS_FIRST_AGGRO_DELAY_MS
+      : RAID_BOSS_FIRST_AGGRO_DELAY_MS;
+  let interval = Number(input.autoAttackIntervalMs);
+  if (!Number.isFinite(interval) || interval < MIN_BOSS_AUTO_ATTACK_MS) {
+    interval = defaultInterval;
+  } else {
+    interval = Math.floor(interval);
+  }
+  let first = Number(input.firstAggroDelayMs);
+  if (!Number.isFinite(first) || first <= 0) {
+    first = defaultFirst;
+  } else {
+    first = Math.floor(first);
+  }
+  return { autoAttackIntervalMs: interval, firstAggroDelayMs: first };
+}
+
+export function scheduleFirstAggroWorldBossAttack(
+  session: WorldBossSessionState,
+  nowMs: number
+): void {
+  session.nextMobAutoAttackAtMs = nowMs + session.firstAggroDelayMs;
+}
+
+export function scheduleNextWorldBossAutoAttack(
+  session: WorldBossSessionState,
+  nowMs: number
+): void {
+  session.nextMobAutoAttackAtMs = nowMs + session.autoAttackIntervalMs;
+}
+
+export function isWorldBossAutoAttackDue(
+  session: WorldBossSessionState,
+  nowMs: number
+): boolean {
+  if (session.mobHp <= 0) return false;
+  if (!session.currentTargetCharacterId) return false;
+  return nowMs >= session.nextMobAutoAttackAtMs;
+}
+
+/** @deprecated Використовуй isWorldBossAutoAttackDue */
+export function shouldWorldBossAutoAttack(
+  session: WorldBossSessionState,
+  nowMs: number
+): boolean {
+  return isWorldBossAutoAttackDue(session, nowMs);
 }
 
 export interface WorldBossPendingMobHit {
@@ -45,7 +121,10 @@ export interface WorldBossSessionState {
   spawnKind: MapSpawnKind;
   currentTargetCharacterId: string | null;
   participants: Record<string, WorldBossParticipant>;
-  lastMobAutoAttackAtMs: number;
+  autoAttackIntervalMs: number;
+  firstAggroDelayMs: number;
+  /** Час наступної автоатаки (nowMs >= next → due). */
+  nextMobAutoAttackAtMs: number;
 }
 
 export interface WorldBossParticipantContext {
@@ -72,7 +151,14 @@ export function createWorldBossSessionState(args: {
   spawnLevel: number;
   spawnKind: MapSpawnKind;
   nowMs: number;
+  autoAttackIntervalMs?: number;
+  firstAggroDelayMs?: number;
 }): WorldBossSessionState {
+  const timing = resolveWorldBossAttackTiming({
+    kind: args.spawnKind,
+    autoAttackIntervalMs: args.autoAttackIntervalMs,
+    firstAggroDelayMs: args.firstAggroDelayMs,
+  });
   return {
     spawnId: args.spawnId,
     mobHp: args.mobHp,
@@ -89,7 +175,9 @@ export function createWorldBossSessionState(args: {
     spawnKind: args.spawnKind,
     currentTargetCharacterId: null,
     participants: {},
-    lastMobAutoAttackAtMs: args.nowMs,
+    autoAttackIntervalMs: timing.autoAttackIntervalMs,
+    firstAggroDelayMs: timing.firstAggroDelayMs,
+    nextMobAutoAttackAtMs: WORLD_BOSS_NO_ATTACK_SCHEDULED,
   };
 }
 
@@ -136,6 +224,29 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
     }
   }
   const spawnKind = String(o.spawnKind ?? 'raid') as MapSpawnKind;
+  const timing = resolveWorldBossAttackTiming({
+    kind: spawnKind,
+    autoAttackIntervalMs:
+      o.autoAttackIntervalMs != null ? Number(o.autoAttackIntervalMs) : undefined,
+    firstAggroDelayMs:
+      o.firstAggroDelayMs != null ? Number(o.firstAggroDelayMs) : undefined,
+  });
+  let nextMobAutoAttackAtMs = Number(o.nextMobAutoAttackAtMs);
+  if (!Number.isFinite(nextMobAutoAttackAtMs) || nextMobAutoAttackAtMs <= 0) {
+    const legacyLast = Number(o.lastMobAutoAttackAtMs) || 0;
+    if (legacyLast > 0) {
+      nextMobAutoAttackAtMs = legacyLast + timing.autoAttackIntervalMs;
+    } else {
+      nextMobAutoAttackAtMs = WORLD_BOSS_NO_ATTACK_SCHEDULED;
+    }
+  }
+  const currentTargetCharacterId =
+    o.currentTargetCharacterId != null
+      ? String(o.currentTargetCharacterId).trim() || null
+      : null;
+  if (!currentTargetCharacterId) {
+    nextMobAutoAttackAtMs = WORLD_BOSS_NO_ATTACK_SCHEDULED;
+  }
   return {
     spawnId,
     mobHp: Math.max(0, Math.floor(mobHp)),
@@ -150,12 +261,11 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
     spawnName: String(o.spawnName ?? 'Boss'),
     spawnLevel: Math.max(1, Math.floor(Number(o.spawnLevel) || 1)),
     spawnKind,
-    currentTargetCharacterId:
-      o.currentTargetCharacterId != null
-        ? String(o.currentTargetCharacterId).trim() || null
-        : null,
+    currentTargetCharacterId,
     participants,
-    lastMobAutoAttackAtMs: Number(o.lastMobAutoAttackAtMs) || 0,
+    autoAttackIntervalMs: timing.autoAttackIntervalMs,
+    firstAggroDelayMs: timing.firstAggroDelayMs,
+    nextMobAutoAttackAtMs,
   };
 }
 
@@ -252,6 +362,7 @@ export function registerWorldBossDamagingHit(
   }
   if (!session.currentTargetCharacterId && dmg > 0) {
     session.currentTargetCharacterId = id;
+    scheduleFirstAggroWorldBossAttack(session, nowMs);
   }
 }
 
@@ -300,16 +411,9 @@ export function reconcileWorldBossTarget(
   const next = pickRandomWorldBossTarget(validIds, cur);
   session.currentTargetCharacterId = next;
   if (next && next !== cur) {
-    session.lastMobAutoAttackAtMs = nowMs;
+    scheduleFirstAggroWorldBossAttack(session, nowMs);
+  } else if (!next) {
+    session.nextMobAutoAttackAtMs = WORLD_BOSS_NO_ATTACK_SCHEDULED;
   }
   return next !== cur;
-}
-
-export function shouldWorldBossAutoAttack(
-  session: WorldBossSessionState,
-  nowMs: number
-): boolean {
-  if (session.mobHp <= 0) return false;
-  if (!session.currentTargetCharacterId) return false;
-  return nowMs - session.lastMobAutoAttackAtMs >= WORLD_BOSS_AUTO_ATTACK_MS;
 }

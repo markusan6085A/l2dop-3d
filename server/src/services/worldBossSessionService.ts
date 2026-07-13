@@ -17,7 +17,10 @@ import {
   parseWorldBossSessionState,
   reconcileWorldBossTarget,
   registerWorldBossDamagingHit,
-  shouldWorldBossAutoAttack,
+  isWorldBossAutoAttackDue,
+  scheduleNextWorldBossAutoAttack,
+  RAID_BOSS_AUTO_ATTACK_MS,
+  EPIC_BOSS_AUTO_ATTACK_MS,
   type WorldBossParticipantContext,
   type WorldBossSessionState,
 } from '../domain/worldBossSession.js';
@@ -64,7 +67,27 @@ export async function isWorldBossAutoAttackDueInTx(
 ): Promise<boolean> {
   const session = await readSessionRow(tx, spawnId);
   if (!session) return false;
-  return shouldWorldBossAutoAttack(session, nowMs);
+  return isWorldBossAutoAttackDue(session, nowMs);
+}
+
+/** SQL: лише spawnId сесій, у яких настав час автоатаки (без lock / parse повного state). */
+export async function listDueWorldBossSpawnIds(nowMs: number): Promise<string[]> {
+  const rows = await prisma.$queryRaw<Array<{ spawnId: string }>>`
+    SELECT "spawnId" FROM "WorldBossSession"
+    WHERE COALESCE(("stateJson"->>'mobHp')::numeric, 0) > 0
+      AND COALESCE(NULLIF("stateJson"->>'currentTargetCharacterId', ''), '') <> ''
+      AND (
+        COALESCE(("stateJson"->>'nextMobAutoAttackAtMs')::bigint, 9223372036854775807) <= ${nowMs}
+        OR (
+          "stateJson"->>'nextMobAutoAttackAtMs' IS NULL
+          AND COALESCE(("stateJson"->>'lastMobAutoAttackAtMs')::bigint, 0) > 0
+          AND COALESCE(("stateJson"->>'lastMobAutoAttackAtMs')::bigint, 0) + (
+            CASE WHEN "stateJson"->>'spawnKind' = 'epic' THEN ${EPIC_BOSS_AUTO_ATTACK_MS} ELSE ${RAID_BOSS_AUTO_ATTACK_MS} END
+          ) <= ${nowMs}
+        )
+      )
+  `;
+  return rows.map((r) => r.spawnId);
 }
 
 const presenceWriteAtMs = new Map<string, number>();
@@ -133,6 +156,8 @@ export async function ensureWorldBossSessionInTx(
       spawnLevel: spawn.level,
       spawnKind: spawn.kind,
       nowMs,
+      autoAttackIntervalMs: spawn.autoAttackIntervalMs,
+      firstAggroDelayMs: spawn.firstAggroDelayMs,
     });
     await saveSession(tx, session);
     return session;
@@ -362,7 +387,7 @@ async function applyWorldBossAutoAttackInTx(
   playerHp = countered.playerHp;
   mobHp = countered.mobHp;
   session.mobHp = mobHp;
-  session.lastMobAutoAttackAtMs = nowMs;
+  scheduleNextWorldBossAutoAttack(session, nowMs);
 
   const participant = ensureParticipant(session, targetCharacterId);
   if (participant && logLine) {
@@ -389,7 +414,7 @@ export async function runWorldBossCombatTickInTx(
 ): Promise<WorldBossSessionState | null> {
   const session = await lockSessionRow(tx, spawnId);
   if (!session || session.mobHp <= 0) return session;
-  if (!shouldWorldBossAutoAttack(session, nowMs)) return session;
+  if (!isWorldBossAutoAttackDue(session, nowMs)) return session;
 
   const contexts = await loadParticipantContexts(tx, session);
   for (const ctx of contexts) {
@@ -405,7 +430,10 @@ export async function runWorldBossCombatTickInTx(
   const validIds = listValidWorldBossParticipantIds(session, contexts, nowMs);
   reconcileWorldBossTarget(session, validIds, nowMs);
 
-  if (session.currentTargetCharacterId) {
+  if (
+    session.currentTargetCharacterId &&
+    isWorldBossAutoAttackDue(session, nowMs)
+  ) {
     const targetId = session.currentTargetCharacterId;
     const defeated = await applyWorldBossAutoAttackInTx(
       tx,
@@ -469,16 +497,11 @@ export async function recordWorldBossDamagingHitInTx(
 }
 
 export async function runAllWorldBossCombatTicks(nowMs: number): Promise<void> {
-  const rows = await prisma.worldBossSession.findMany({
-    select: { spawnId: true, stateJson: true },
-  });
-  for (const row of rows) {
-    const session = parseWorldBossSessionState(row.stateJson);
-    if (!session || session.mobHp <= 0) continue;
-    if (!shouldWorldBossAutoAttack(session, nowMs)) continue;
+  const spawnIds = await listDueWorldBossSpawnIds(nowMs);
+  for (const spawnId of spawnIds) {
     try {
       await prisma.$transaction(async (tx) => {
-        await runWorldBossCombatTickInTx(tx, row.spawnId, nowMs);
+        await runWorldBossCombatTickInTx(tx, spawnId, nowMs);
       });
     } catch {
       /* ignore tick errors per spawn */
