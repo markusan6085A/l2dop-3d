@@ -212,10 +212,15 @@
     /** Екран PvE-поразки (РБ/моб) — battle.html з кнопкою «Повернутися в місто». */
     redirectToPveDefeatScreen: function (snapshot) {
       var snap = snapshot || lastSnapshot;
-      if (!snap || !snap.pveDefeat || !snap.pveDefeat.spawnId) return false;
-      window.location.replace(
-        '/battle.html?spawnId=' + encodeURIComponent(String(snap.pveDefeat.spawnId))
-      );
+      if (!snap || !snap.pveDefeat) return false;
+      var sid = snap.pveDefeat.spawnId;
+      if (sid) {
+        window.location.replace(
+          '/battle.html?spawnId=' + encodeURIComponent(String(sid))
+        );
+        return true;
+      }
+      window.location.replace('/battle.html?pveDeath=1');
       return true;
     },
     /** Оновити лише поля карти/HUD у глобальному snapshot (poll map-state). */

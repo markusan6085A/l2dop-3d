@@ -1180,11 +1180,13 @@
     var pvpTargetId = params.get('pvpTargetId');
     var pvpDeathMode =
       params.get('pvpDeath') === '1' || params.get('pvpDeath') === 'true';
+    var pveDeathMode =
+      params.get('pveDeath') === '1' || params.get('pveDeath') === 'true';
     var isPvpMode = !!pvpTargetId;
     var errEl = $('battle-load-err');
     var content = $('battle-content');
 
-    if (!spawnId && !pvpTargetId && !pvpDeathMode) {
+    if (!spawnId && !pvpTargetId && !pvpDeathMode && !pveDeathMode) {
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = tr(
@@ -1944,6 +1946,8 @@
       }
       return false;
     }
+
+    function fillVictoryMobHead(el, v) {
       if (!el || !v) return;
       el.textContent = '';
       var nameSpan = document.createElement('span');
@@ -2429,6 +2433,15 @@
       if (errEl) errEl.hidden = true;
       renderPlayerBars(character);
       showDefeatScreen(character.pveDefeat);
+      return;
+    }
+
+    if (pveDeathMode && character && !character.pveDefeat) {
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent =
+          'Немає даних PvE-поразки. Спробуй оновити сторінку (F5).';
+      }
       return;
     }
 
