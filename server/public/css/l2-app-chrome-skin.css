@@ -1013,16 +1013,29 @@ body.l2-app-l2-chrome .l2-battle-victory-link--primary,
 body.l2-app-l2-chrome .l2-battle-victory-link--muted {
   appearance: none;
   -webkit-appearance: none;
+  display: inline !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
   border: none !important;
   border-width: 0 !important;
   border-image: none !important;
   border-image-source: none !important;
   background: transparent !important;
+  background-image: none !important;
   box-shadow: none !important;
   outline: none !important;
   filter: none !important;
   transform: none !important;
-  padding: 4px 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  vertical-align: baseline;
+}
+
+body.l2-app-l2-chrome button.l2-battle-victory-link::before,
+body.l2-app-l2-chrome button.l2-battle-victory-link::after {
+  content: none !important;
+  display: none !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--primary,
@@ -1251,7 +1264,7 @@ body.l2-app-l2-chrome .l2-battle-defeat-tocity {
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link {
-  padding: 4px 0 !important;
+  padding: 0 !important;
   font-size: 13px !important;
   line-height: 1.35 !important;
 }
@@ -1325,7 +1338,8 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__loot {
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-notify__links {
-  justify-content: flex-start !important;
+  align-items: center !important;
+  justify-content: center !important;
   gap: 6px !important;
   border-top: none !important;
 }

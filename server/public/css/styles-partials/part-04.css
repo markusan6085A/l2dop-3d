@@ -446,11 +446,11 @@
 
 .l2-battle-victory-link {
   box-sizing: border-box;
-  display: block;
-  width: 100%;
-  max-width: 280px;
+  display: inline;
+  width: auto;
+  max-width: none;
   margin: 0;
-  padding: 4px 0;
+  padding: 0;
   text-align: center;
   font-family: var(--l2-font-display);
   font-size: 13px;
