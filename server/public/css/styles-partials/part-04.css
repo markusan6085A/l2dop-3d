@@ -140,6 +140,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   font-size: calc(11px * 1.03);
+  font-weight: 600;
   line-height: 1.18;
   color: #d4ccc0;
   white-space: pre-wrap;
@@ -159,6 +160,7 @@
   margin: 0;
   padding: 0;
   line-height: 1.18;
+  font-weight: 600;
 }
 
 /* Маленька іконка дропу / скіла + повний рядок тексту */
@@ -186,11 +188,12 @@
   min-width: 0;
   white-space: pre-wrap;
   word-break: break-word;
+  font-weight: 600;
 }
 
-/* Лог бою — plain text, семантичні кольори (без glow/bold/italic) */
+/* Лог бою — plain text, семантичні кольори (без glow/italic) */
 .l2-battle-log--colored [class*='log-'] {
-  font-weight: normal !important;
+  font-weight: 600 !important;
   font-style: normal !important;
   text-shadow: none !important;
   filter: none !important;

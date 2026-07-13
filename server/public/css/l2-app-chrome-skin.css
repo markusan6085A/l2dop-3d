@@ -1286,6 +1286,7 @@ body.l2-app-l2-chrome.l2-page-battle #battle-defeat-log.l2-battle-log {
   padding: 0 !important;
   color: #8a8a8a;
   font-size: calc(11px * 1.03) !important;
+  font-weight: 600 !important;
   line-height: 1.18 !important;
 }
 
