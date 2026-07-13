@@ -1,4 +1,7 @@
-import type { NpcDropBag } from '../data/npcDropsResolved.js';
+import {
+  resolveNpcDropBag,
+  type NpcDropBag,
+} from '../data/npcDropsResolved.js';
 import { L2DOP_NPC_EXP_SP } from '../data/l2dopNpcExpSp.generated.js';
 import type { DropEntry } from '../types/combatDrop.js';
 import { mobAdenaDropRange } from './mobAdenaDropScale.js';
@@ -55,11 +58,11 @@ export function rewardExpSpForSpawn(
  * Предметів/спойлу з таблиць немає — базова адена за рівнем спавну (як раніше fallback).
  */
 export function ensureMobDropBag(
-  _npcId: number | null,
+  npcId: number | null,
   spawnLevel: number
 ): NpcDropBag {
-  return {
+  return resolveNpcDropBag(npcId, spawnLevel, () => ({
     drops: [syntheticAdenaDropEntry(spawnLevel)],
     spoil: [],
-  };
+  }));
 }

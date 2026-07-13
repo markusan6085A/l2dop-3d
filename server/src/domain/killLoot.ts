@@ -1,5 +1,7 @@
 import { addItemToBag, type InventoryState } from '../data/inventory.js';
 import type { DropEntry } from '../types/combatDrop.js';
+import { rollRaidBossKillReward } from '../data/l2dopRaidBossRewardPatches.js';
+import { hasCustomNpcDropBag } from '../data/npcDropsResolved.js';
 import {
   ensureMobDropBag,
   rewardExpSpForSpawn,
@@ -67,6 +69,7 @@ export function rollKillLoot(
     viewerMaySeeSpoilLoot(charCtx.race, charCtx.l2Profession, charCtx.skillsLearnedJson ?? null);
 
   const bag = ensureMobDropBag(npcId, spawnLevel);
+  const customDropOnly = hasCustomNpcDropBag(npcId);
   for (const d of bag.drops) {
     const qty = rollDropLine(d);
     if (qty <= 0) continue;
@@ -81,21 +84,23 @@ export function rollKillLoot(
     }
   }
 
-  for (const line of rollProceduralResourceLoot(spawnLevel, {
-    allowSpoil: allowKillSpoil,
-  })) {
-    next = addItemToBag(next, line.l2ItemId, line.qty);
-    const prefix = line.spoil ? '(спойл) ' : '';
-    itemLog.push(`${prefix}+${line.qty}× ${line.label}`);
-    items.push({
-      l2ItemId: line.l2ItemId,
-      qty: line.qty,
-      spoil: line.spoil,
-      label: line.label,
-    });
+  if (!customDropOnly) {
+    for (const line of rollProceduralResourceLoot(spawnLevel, {
+      allowSpoil: allowKillSpoil,
+    })) {
+      next = addItemToBag(next, line.l2ItemId, line.qty);
+      const prefix = line.spoil ? '(спойл) ' : '';
+      itemLog.push(`${prefix}+${line.qty}× ${line.label}`);
+      items.push({
+        l2ItemId: line.l2ItemId,
+        qty: line.qty,
+        spoil: line.spoil,
+        label: line.label,
+      });
+    }
   }
 
-  if (allowKillSpoil) {
+  if (allowKillSpoil && !customDropOnly) {
     for (const d of bag.spoil) {
       const qty = rollDropLine(d);
       if (qty <= 0) continue;
@@ -112,7 +117,7 @@ export function rollKillLoot(
   }
 
   /** Якщо з рядків адени не випало — ще раз базова адена за рівнем (як у старій логіці). */
-  if (adena === BigInt(0)) {
+  if (adena === BigInt(0) && !customDropOnly) {
     const syn = syntheticAdenaDropEntry(spawnLevel);
     const qty = rollDropLine(syn);
     if (qty > 0) {
@@ -121,9 +126,17 @@ export function rollKillLoot(
     }
   }
 
-  const rw = rewardExpSpForSpawn(npcId, spawnLevel);
-  let expGain = BigInt(rw.exp);
-  let spGain = rw.sp;
+  let expGain: bigint;
+  let spGain: number;
+  const rbKillReward = npcId != null ? rollRaidBossKillReward(npcId) : undefined;
+  if (rbKillReward) {
+    expGain = BigInt(rbKillReward.exp);
+    spGain = rbKillReward.sp;
+  } else {
+    const rw = rewardExpSpForSpawn(npcId, spawnLevel);
+    expGain = BigInt(rw.exp);
+    spGain = rw.sp;
+  }
 
   const expSpLog: string[] = [];
   if (expGain > BigInt(0)) {

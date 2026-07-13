@@ -6,6 +6,8 @@ import {
 import { resourceDropsForSpawnCatalog } from '../domain/mobResourceLoot.js';
 import { mobCombatFromSpawn } from '../domain/battle.js';
 import type { DropEntry } from '../types/combatDrop.js';
+import { raidBossRewardPreviewForNpcId } from '../data/l2dopRaidBossRewardPatches.js';
+import { hasCustomNpcDropBag } from '../data/npcDropsResolved.js';
 import { resolveL2dopNpcIdByMobName } from '../data/l2dopNpcResolve.js';
 import {
   getLineageEpicGrandBossIconUrl,
@@ -43,6 +45,7 @@ export function mobIconUrlForSpawn(s: MapWorldSpawn): string {
 
 /** Статика репо або GET /game/item-icon/:id для canonical l2dop. */
 function dropRowIconUrl(d: DropEntry): string {
+  if (d.iconUrl) return d.iconUrl;
   if (d.l2ItemId != null && d.l2ItemId > 0) {
     return resolveItemIconPublicUrl(d.l2ItemId);
   }
@@ -90,9 +93,9 @@ export interface SpawnCatalogInfo {
   spoil: ReturnType<typeof serializeDrop>[];
   /** Чи показувати блок «Спойл» цьому персонажу (гном-Spoiler). */
   viewerMaySeeSpoil: boolean;
-  /** EXP/SP для картки моба (завжди заповнено: дамп або формула рівня). */
-  rewardExp: number;
-  rewardSp: number;
+  /** EXP/SP для картки моба (число або діапазон «150 000–180 000» для кастомних РБ). */
+  rewardExp: number | string;
+  rewardSp: number | string;
   /** EXP/SP за формулою рівня (у дампі 0/0 або немає npc). */
   rewardExpSynthetic: boolean;
   /** Застаріле поле API; табличного XML-дропу немає, прев’ю — процедурне (ресурси + адена). */
@@ -112,18 +115,24 @@ export function getSpawnCatalogInfo(
   const icon = mobIconUrlForSpawn(spawn);
   const c = mobCombatFromSpawn(spawn);
   const bag = ensureMobDropBag(npcId, spawn.level);
-  const resPreview = resourceDropsForSpawnCatalog(spawn.level, spawn.id);
+  const customDropOnly = hasCustomNpcDropBag(npcId);
+  const resPreview = customDropOnly
+    ? { drops: [], spoil: [] }
+    : resourceDropsForSpawnCatalog(spawn.level, spawn.id);
   const showSpoil =
+    !customDropOnly &&
     viewer != null &&
     viewerMaySeeSpoilLoot(viewer.race, viewer.l2Profession, viewer.skillsLearnedJson ?? null);
   const drops = [...bag.drops, ...resPreview.drops].map(serializeDrop);
   const spoil = showSpoil
     ? [...bag.spoil, ...resPreview.spoil].map(serializeDrop)
     : [];
+  const rbPreview =
+    npcId != null ? raidBossRewardPreviewForNpcId(npcId) : undefined;
   const rw = rewardExpSpForSpawn(npcId, spawn.level);
-  const rewardExp = rw.exp;
-  const rewardSp = rw.sp;
-  const rewardExpSynthetic = rw.synthetic;
+  const rewardExp = rbPreview?.expLabel ?? rw.exp;
+  const rewardSp = rbPreview?.spLabel ?? rw.sp;
+  const rewardExpSynthetic = rbPreview != null ? false : rw.synthetic;
   return {
     spawnId: spawn.id,
     name: spawn.name,
@@ -146,6 +155,6 @@ export function getSpawnCatalogInfo(
     rewardExp,
     rewardSp,
     rewardExpSynthetic,
-    dropsSynthetic: false,
+    dropsSynthetic: customDropOnly,
   };
 }

@@ -1,5 +1,7 @@
 import type { MapWorldSpawn } from '../data/mapWorldSpawns.js';
 import { l2dopPhysicalBaseDamage } from '../data/l2dopDamageFormulas.js';
+import { raidBossCombatOverrideForNpcId } from '../data/l2dopRaidBossCombatPatches.js';
+import { l2dopNpcIdFromMobId } from '../utils/mobPublicIcon.js';
 
 /** Пул HP / «бак» для РБ і епіків; окремо від загрози (atk), щоб не було 25× і до HP, і до урону в картці. */
 const RAID_HP_MULT = 66;
@@ -69,6 +71,23 @@ export function mobCombatFromSpawn(spawn: MapWorldSpawn): {
   ) {
     maxHp = Math.max(1, Math.floor(canonHp));
   }
+
+  const npcId =
+    l2dopNpcIdFromMobId(spawn.templateId) ?? l2dopNpcIdFromMobId(spawn.id);
+  const rbOvr = npcId != null ? raidBossCombatOverrideForNpcId(npcId) : undefined;
+  if (rbOvr) {
+    if (rbOvr.maxHp != null) maxHp = Math.max(1, Math.floor(rbOvr.maxHp));
+    return {
+      maxHp,
+      pAtk:
+        rbOvr.pAtk != null ? Math.max(1, Math.floor(rbOvr.pAtk)) : pAtk,
+      pDef: rbOvr.pDef != null ? Math.max(0, Math.floor(rbOvr.pDef)) : pDef,
+      mAtk: rbOvr.mAtk != null ? Math.max(0, Math.floor(rbOvr.mAtk)) : mAtk,
+      mDef: rbOvr.mDef != null ? Math.max(0, Math.floor(rbOvr.mDef)) : mDef,
+      evasion,
+    };
+  }
+
   return { maxHp, pAtk, pDef, mAtk, mDef, evasion };
 }
 

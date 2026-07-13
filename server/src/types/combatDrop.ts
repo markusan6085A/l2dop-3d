@@ -10,4 +10,6 @@ export interface DropEntry {
   chancePerMillion?: number;
   l2ItemId?: number;
   displayName?: string;
+  /** Як у магазині D-grade (`/icons/drops/…`), якщо item-icon не підходить. */
+  iconUrl?: string;
 }
