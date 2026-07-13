@@ -503,9 +503,7 @@
 
   function applyHeroRowNickColor(mainEl, h) {
     if (!mainEl) return;
-    var hex = heroNickHex(h);
-    if (hex) mainEl.style.setProperty('--l2-nick-color', hex);
-    else mainEl.style.removeProperty('--l2-nick-color');
+    mainEl.style.setProperty('--l2-map-hero-nick-color', heroNickHex(h) || '#bfa88a');
   }
 
   function handlePvpDefeatRedirect(sync) {
@@ -551,12 +549,14 @@
 
     var nameLink = document.createElement('a');
     nameLink.className = 'l2-map-hero-name-link';
+    if (h.pvpNickColor === 'pk') nameLink.classList.add('l2-pvp-nick--pk');
+    else if (h.pvpNickColor === 'aggressor') nameLink.classList.add('l2-pvp-nick--aggressor');
     nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
     nameLink.textContent = h.name || '—';
 
     var levelSpan = document.createElement('span');
     levelSpan.className = 'l2-map-hero-level';
-    levelSpan.textContent = heroLevelPart(h) + (h.distance != null ? ' · ~' + h.distance : '');
+    levelSpan.textContent = heroLevelPart(h);
 
     var pkBtn = document.createElement('button');
     pkBtn.type = 'button';
@@ -620,10 +620,7 @@
       else if (h.pvpNickColor === 'aggressor') pin.className += ' l2-map-hero-pin--aggressor';
       pin.style.left = lx + '%';
       pin.style.top = ly + '%';
-      var title =
-        (h.name || '—') +
-        (h.level ? ' · ур. ' + h.level : '') +
-        (h.distance != null ? ' · ~' + h.distance : '');
+      var title = (h.name || '—') + (h.level ? ' · ур. ' + h.level : '');
       pin.setAttribute('aria-label', title);
       pin.title = title;
       pin.dataset.characterId = h.characterId || '';

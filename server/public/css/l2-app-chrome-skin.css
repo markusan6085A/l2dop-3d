@@ -1827,6 +1827,19 @@ body.l2-app-l2-chrome.l2-page-map button.l2-map-hero-link__pk:focus-visible:not(
   transform: none !important;
 }
 
+body.l2-app-l2-chrome.l2-page-map .l2-map-hero-name-link,
+body.l2-app-l2-chrome.l2-page-map .l2-map-hero-level {
+  color: var(--l2-map-hero-nick-color, #bfa88a) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-hero-name-link.l2-pvp-nick--pk {
+  color: var(--l2-map-hero-nick-color, #e85840) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-hero-name-link.l2-pvp-nick--aggressor {
+  color: var(--l2-map-hero-nick-color, #a060d8) !important;
+}
+
 body.l2-app-l2-chrome.l2-page-map .l2-map-hero-pin {
   border: 2px solid #0a0a0a !important;
   border-image: none !important;
