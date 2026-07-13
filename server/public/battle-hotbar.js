@@ -480,7 +480,15 @@
     try {
       var r = await postOnce(c.revision);
       if (r.status === 409 && window.L2 && L2.resyncCharacterAfterConflict) {
-        await L2.resyncCharacterAfterConflict();
+        var j409 = null;
+        try {
+          j409 = await r.json();
+        } catch (e409) {
+          j409 = null;
+        }
+        await L2.resyncCharacterAfterConflict(function (snap) {
+          if (ctx.setCharacter) ctx.setCharacter(snap);
+        }, j409);
         c = ctx.getCharacter ? ctx.getCharacter() : null;
         if (!c || !c.revision) return;
         r = await postOnce(c.revision);

@@ -668,7 +668,8 @@
     if (!errBody || typeof errBody !== 'object') return fallback;
     if (
       errBody.code === 'revision_conflict' ||
-      errBody.error === 'revision_conflict'
+      errBody.error === 'revision_conflict' ||
+      errBody.error === 'revision conflict'
     ) {
       return tr(
         'battle_toast_revision_conflict',
@@ -1236,7 +1237,18 @@
       }
     }
 
-    async function tryRecoverFromBattleEnded() {
+    function latestCharacterRevision() {
+      var ls = window.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null;
+      if (ls && ls.revision != null) return ls.revision;
+      return character && character.revision != null ? character.revision : null;
+    }
+
+    function battleSyncIntervalMs() {
+      if (battle && mobKindUsesNumericHpBar(battle.kind)) return 2000;
+      return BATTLE_SYNC_MS;
+    }
+
+    async function syncBattleFromServer() {
       var st = await getBattleState();
       if (!st || st._err || !st.character) return false;
       character = st.character;
@@ -1255,14 +1267,13 @@
           stopBattleSyncPoll();
           return true;
         }
+        return false;
       }
+      refreshUI();
       return false;
     }
 
-    async function after409ResyncBattleState(conflictRes) {
-      var conflictBody = conflictRes
-        ? await parseActionErrorBodySafe(conflictRes)
-        : null;
+    async function resyncBattleAfterConflict(conflictBody) {
       if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
         try {
           await L2.resyncCharacterAfterConflict(function (snap) {
@@ -1271,16 +1282,28 @@
         } catch (eResync) {
           /* fallback нижче */
         }
+      } else if (conflictBody && conflictBody.character) {
+        character = conflictBody.character;
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      } else if (
+        conflictBody &&
+        typeof conflictBody.serverRevision === 'number' &&
+        character
+      ) {
+        character = Object.assign({}, character, {
+          revision: conflictBody.serverRevision,
+        });
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       }
       var st = await getBattleState();
-      if (!st || st._err || !st.character) return false;
+      if (!st || st._err || !st.character) return 'retry';
       character = st.character;
       battle = st.battle;
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
       if (checkPvpDefeatFromCharacter(character)) {
         stopBattleSyncPoll();
-        return true;
+        return 'abort';
       }
       if (!battle) {
         var savedDef = loadDefeatFromSession();
@@ -1288,13 +1311,45 @@
           renderPlayerBars(character);
           showDefeatScreen(savedDef);
           stopBattleSyncPoll();
-          return true;
+          return 'abort';
         }
         refreshUI();
-        return true;
+        return 'abort';
       }
       refreshUI();
-      return false;
+      return 'retry';
+    }
+
+    async function performBattleActionWithResync(action, extraBody) {
+      var MAX = 4;
+      var lastRes = null;
+      for (var attempt = 0; attempt < MAX; attempt++) {
+        var rev = latestCharacterRevision();
+        if (!rev) return { _err: 'no_revision' };
+        try {
+          lastRes = await battleAction(action, rev, extraBody);
+        } catch (eNet) {
+          return { _err: 'network' };
+        }
+        if (!lastRes || lastRes._err !== 409) return lastRes;
+        var conflictBody = await parseActionErrorBodySafe(lastRes);
+        var syncOutcome = await resyncBattleAfterConflict(conflictBody);
+        if (syncOutcome === 'abort') return lastRes;
+        if (attempt < MAX - 1) {
+          await new Promise(function (resolve) {
+            setTimeout(resolve, 80);
+          });
+        }
+      }
+      return lastRes;
+    }
+
+    async function after409ResyncBattleState(conflictRes) {
+      var conflictBody = conflictRes
+        ? await parseActionErrorBodySafe(conflictRes)
+        : null;
+      var syncOutcome = await resyncBattleAfterConflict(conflictBody);
+      return syncOutcome === 'abort';
     }
 
     function applyBattleMutationResult(res) {
@@ -1342,7 +1397,7 @@
 
     function startBattleSyncPoll() {
       stopBattleSyncPoll();
-      battleSyncTimer = setInterval(function () {
+      function pollTick() {
         if (isDefeatScreenActive()) {
           stopBattleSyncPoll();
           return;
@@ -1353,17 +1408,19 @@
           return;
         }
         if (battleActionInFlight || battleNavInFlight) return;
-        tryRecoverFromBattleEnded().then(function (recovered) {
+        syncBattleFromServer().then(function (recovered) {
           if (recovered) return;
           if (!battle) stopBattleSyncPoll();
         });
-      }, BATTLE_SYNC_MS);
+      }
+      pollTick();
+      battleSyncTimer = setInterval(pollTick, battleSyncIntervalMs());
     }
 
     async function handleBattleActionError(res, parsedErrBody) {
       if (isNotInBattleErrorBody(parsedErrBody)) {
         battle = null;
-        if (await tryRecoverFromBattleEnded()) return true;
+        if (await syncBattleFromServer()) return true;
       }
       if (res && res._err) {
         showBattleToast(
@@ -1420,14 +1477,14 @@
       if (battle && battle.spawnId && battle.spawnId.indexOf('pvp:') === 0) {
         return true;
       }
-      var er = character.revision;
+      var er = latestCharacterRevision();
       var st = await startPvpBattle(pvpTargetId, er);
       if (st && st._err === 409) {
         var again = await loadCharacter();
         if (again && again.character) {
           character = again.character;
           L2.setLastSnapshot(character);
-          st = await startPvpBattle(pvpTargetId, character.revision);
+          st = await startPvpBattle(pvpTargetId, latestCharacterRevision());
         }
       }
       if (!st || st._err) {
@@ -1478,23 +1535,34 @@
 
     async function tryStartHuntContinue(excludeSpawnId, preferredSpawnId, targetLevel) {
       var st = await startHuntContinueBattle(
-        character.revision,
+        latestCharacterRevision(),
         excludeSpawnId,
         preferredSpawnId,
         targetLevel
       );
       if (st && st._err === 409) {
-        var again = await loadCharacter();
-        if (again && again.character) {
-          character = again.character;
-          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-          st = await startHuntContinueBattle(
-            character.revision,
-            excludeSpawnId,
-            preferredSpawnId,
-            targetLevel
-          );
+        var huntConflict = await parseActionErrorBodySafe(st);
+        if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+          try {
+            await L2.resyncCharacterAfterConflict(function (snap) {
+              character = snap;
+            }, huntConflict);
+          } catch (eHc) {
+            /* ignore */
+          }
+        } else {
+          var again = await loadCharacter();
+          if (again && again.character) {
+            character = again.character;
+            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          }
         }
+        st = await startHuntContinueBattle(
+          latestCharacterRevision(),
+          excludeSpawnId,
+          preferredSpawnId,
+          targetLevel
+        );
       }
       if (st && !st._err && st.battle && st.battle.spawnId) {
         applyHuntContinueResult(st);
@@ -1510,7 +1578,7 @@
       if (battle && battle.spawnId === spawnId) {
         return true;
       }
-      var er = character.revision;
+      var er = latestCharacterRevision();
       var st = await startBattle(spawnId, er);
       if (st && st._err === 409) {
         var startConflict = await parseActionErrorBodySafe(st);
@@ -1534,7 +1602,7 @@
           refreshUI();
           return true;
         }
-        st = await startBattle(spawnId, character.revision);
+        st = await startBattle(spawnId, latestCharacterRevision());
       }
       if (!st || st._err) {
         var msg = tr('battle_err_start', 'Не вдалося розпочати бій.');
@@ -1579,7 +1647,7 @@
           return;
         }
         if (!battle) {
-          if (await tryRecoverFromBattleEnded()) return;
+          if (await syncBattleFromServer()) return;
           return;
         }
         var act = action;
@@ -1594,19 +1662,10 @@
         }
         var res;
         try {
-          res = await battleAction(act, character.revision);
+          res = await performBattleActionWithResync(act);
         } catch (e) {
           showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
           return;
-        }
-        if (res && res._err === 409) {
-          if (await after409ResyncBattleState(res)) return;
-          try {
-            res = await battleAction(act, character.revision);
-          } catch (e2) {
-            showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-            return;
-          }
         }
         if (!res || res._err) {
           async function parseErrorBodySafe(resp) {
@@ -1640,19 +1699,10 @@
               });
             }
             try {
-              res = await battleAction(act, character.revision);
+              res = await performBattleActionWithResync(act);
             } catch (eRetry) {
               showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
               return;
-            }
-            if (res && res._err === 409) {
-              if (await after409ResyncBattleState(res)) return;
-              try {
-                res = await battleAction(act, character.revision);
-              } catch (eRetry2) {
-                showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-                return;
-              }
             }
             parsedErrBody = await parseErrorBodySafe(res);
           }
@@ -1693,26 +1743,17 @@
       await runWithBattleActionLock(async function () {
       if (typeof itemId !== 'number' || itemId <= 0) return;
       if (!battle) {
-        if (await tryRecoverFromBattleEnded()) return;
+        if (await syncBattleFromServer()) return;
         return;
       }
       var act = 'fighter_soulshot_toggle';
       var extra = { itemId: Math.floor(itemId) };
       var res;
       try {
-        res = await battleAction(act, character.revision, extra);
+        res = await performBattleActionWithResync(act, extra);
       } catch (e) {
         showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
         return;
-      }
-      if (res && res._err === 409) {
-        if (await after409ResyncBattleState(res)) return;
-        try {
-          res = await battleAction(act, character.revision, extra);
-        } catch (e3) {
-          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-          return;
-        }
       }
       if (!res || res._err) {
         var ej2 = await parseActionErrorBodySafe(res);
@@ -1727,26 +1768,17 @@
       await runWithBattleActionLock(async function () {
       if (typeof itemId !== 'number' || itemId <= 0) return;
       if (!battle) {
-        if (await tryRecoverFromBattleEnded()) return;
+        if (await syncBattleFromServer()) return;
         return;
       }
       var act = 'mystic_spiritshot_toggle';
       var extra = { itemId: Math.floor(itemId) };
       var res;
       try {
-        res = await battleAction(act, character.revision, extra);
+        res = await performBattleActionWithResync(act, extra);
       } catch (e) {
         showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
         return;
-      }
-      if (res && res._err === 409) {
-        if (await after409ResyncBattleState(res)) return;
-        try {
-          res = await battleAction(act, character.revision, extra);
-        } catch (e3) {
-          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-          return;
-        }
       }
       if (!res || res._err) {
         var ej2m = await parseActionErrorBodySafe(res);
@@ -1761,26 +1793,17 @@
       await runWithBattleActionLock(async function () {
       if (typeof itemId !== 'number' || itemId <= 0) return;
       if (!battle) {
-        if (await tryRecoverFromBattleEnded()) return;
+        if (await syncBattleFromServer()) return;
         return;
       }
       var act = 'battle_potion_use';
       var extra = { itemId: Math.floor(itemId) };
       var res;
       try {
-        res = await battleAction(act, character.revision, extra);
+        res = await performBattleActionWithResync(act, extra);
       } catch (e) {
         showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
         return;
-      }
-      if (res && res._err === 409) {
-        if (await after409ResyncBattleState(res)) return;
-        try {
-          res = await battleAction(act, character.revision, extra);
-        } catch (e4) {
-          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-          return;
-        }
       }
       if (!res || res._err) {
         var ejP = await parseActionErrorBodySafe(res);
@@ -2135,15 +2158,22 @@
     async function goToMap() {
       await runWithBattleNavLock(async function () {
         resetHuntLogChain();
-        if (battle && character && character.revision) {
-          var resLm = await leaveBattle(character.revision);
+        if (battle && latestCharacterRevision()) {
+          var resLm = await leaveBattle(latestCharacterRevision());
           if (resLm && resLm._err === 409) {
-            var agLm = await loadCharacter();
-            if (agLm && agLm.character) {
-              character = agLm.character;
-              if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-              resLm = await leaveBattle(character.revision);
+            var leaveConflict = await parseActionErrorBodySafe(resLm);
+            if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+              await L2.resyncCharacterAfterConflict(function (snap) {
+                character = snap;
+              }, leaveConflict);
+            } else {
+              var agLm = await loadCharacter();
+              if (agLm && agLm.character) {
+                character = agLm.character;
+                if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+              }
             }
+            resLm = await leaveBattle(latestCharacterRevision());
           }
           if (resLm && resLm.character && window.L2 && L2.setLastSnapshot) {
             L2.setLastSnapshot(resLm.character);
@@ -2158,13 +2188,18 @@
 
     async function leaveToCity() {
       await runWithBattleNavLock(async function () {
-        var resLm = await leaveBattle(character.revision);
+        var resLm = await leaveBattle(latestCharacterRevision());
         if (resLm && resLm._err === 409) {
-          var agLm = await loadCharacter();
-          if (agLm && agLm.character) {
-            character = agLm.character;
-            resLm = await leaveBattle(character.revision);
+          var leaveConflict2 = await parseActionErrorBodySafe(resLm);
+          if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+            await L2.resyncCharacterAfterConflict(function (snap) {
+              character = snap;
+            }, leaveConflict2);
+          } else {
+            var agLm = await loadCharacter();
+            if (agLm && agLm.character) character = agLm.character;
           }
+          resLm = await leaveBattle(latestCharacterRevision());
         }
         if (resLm && resLm.character && L2.setLastSnapshot) {
           L2.setLastSnapshot(resLm.character);
@@ -2215,14 +2250,21 @@
 
     async function returnToTownAndGoCity() {
       await runWithBattleNavLock(async function () {
-        var resT = await returnToNearestTown(character.revision);
+        var resT = await returnToNearestTown(latestCharacterRevision());
         if (resT && resT._err === 409) {
-          var agT = await loadCharacter();
-          if (agT && agT.character) {
-            character = agT.character;
-            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-            resT = await returnToNearestTown(character.revision);
+          var townConflict = await parseActionErrorBodySafe(resT);
+          if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+            await L2.resyncCharacterAfterConflict(function (snap) {
+              character = snap;
+            }, townConflict);
+          } else {
+            var agT = await loadCharacter();
+            if (agT && agT.character) {
+              character = agT.character;
+              if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+            }
           }
+          resT = await returnToNearestTown(latestCharacterRevision());
         }
         if (!resT || resT._err) {
           if (resT && resT.raw) {

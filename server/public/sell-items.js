@@ -46,16 +46,44 @@
     return document.getElementById(id);
   }
 
-  function setMsg(text) {
+  function setMsg(text, ok) {
     var el = $('sell-items-msg');
     if (!el) return;
     if (!text) {
       el.hidden = true;
       el.textContent = '';
+      el.classList.remove('l2-drops-shop-purchase-ok');
+      el.classList.add('err');
       return;
     }
     el.hidden = false;
     el.textContent = text;
+    if (ok) {
+      el.classList.remove('err');
+      el.classList.add('l2-drops-shop-purchase-ok');
+    } else {
+      el.classList.remove('l2-drops-shop-purchase-ok');
+      el.classList.add('err');
+    }
+  }
+
+  function buildSellCongratsMsg(stack, qty, totalAdena) {
+    var name = itemDisplayName(stack.itemId);
+    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    var q = Math.max(1, Math.floor(Number(qty) || 1));
+    var adenaStr = formatAdena(totalAdena);
+    if (q > 1) {
+      return (
+        'Вітаємо! Ви продали «' +
+        name +
+        '» × ' +
+        q +
+        ' — +' +
+        adenaStr +
+        ' адени.'
+      );
+    }
+    return 'Вітаємо! Ви продали «' + name + '» — +' + adenaStr + ' адени.';
   }
 
   function fmtAdena(s) {
@@ -446,7 +474,7 @@
           if (j && j.character) {
             applySnapshotFromServer(j.character);
             paint();
-            setMsg('Продано: +' + formatAdena(total) + ' адени.');
+            setMsg(buildSellCongratsMsg(stack, qty, total), true);
             closeSellModals();
           }
         });

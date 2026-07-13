@@ -93,18 +93,34 @@
     return out;
   }
 
-  function setPurchaseCongrats(nameUk, qty) {
+  function shopBuyTotalAdena(it, qty) {
+    if (!it || it.priceAdena == null) return null;
+    try {
+      return BigInt(String(it.priceAdena)) * BigInt(Math.max(1, Math.floor(Number(qty) || 1)));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function setPurchaseCongrats(nameUk, qty, totalAdena) {
     var name = String(nameUk || 'предмет').trim();
     var q = Math.max(1, Math.floor(Number(qty) || 1));
-    if (q > 1) {
-      lastPurchaseMsg = 'Вітаємо! Ви придбали «' + name + '» × ' + q;
+    var msg =
+      q > 1
+        ? 'Вітаємо! Ви придбали «' + name + '» × ' + q
+        : 'Вітаємо! Ви придбали «' + name + '»';
+    if (totalAdena != null) {
+      msg += ' за ' + fmtAdena(String(totalAdena)) + ' адени.';
     } else {
-      lastPurchaseMsg = 'Вітаємо! Ви придбали «' + name + '»';
+      msg += '.';
     }
+    lastPurchaseMsg = msg;
+    setOkMsg($('drops-shop-msg'), msg);
   }
 
   function clearPurchaseCongrats() {
     lastPurchaseMsg = null;
+    setOkMsg($('drops-shop-msg'), '');
   }
 
   /** Порядок кнопок підкатегорій у UI (ключі як у API). */
@@ -451,26 +467,18 @@
         setLocked(false);
         if (!pair) return;
         if (pair.r.status === 409) {
-          return fetch('/character', {
-            headers: { Authorization: 'Bearer ' + tok },
-          })
-            .then(function (rx) {
-              return rx.ok ? rx.json() : null;
-            })
-            .then(function (jch) {
-              if (jch && jch.character && window.L2) {
-                if (window.L2.setLastSnapshot)
-                  window.L2.setLastSnapshot(jch.character);
-                if (typeof window.L2.applyHudFromSnapshot === 'function')
-                  window.L2.applyHudFromSnapshot(jch.character);
-              }
-              alert(
-                pair.j.messageUk ||
-                  'Конфлікт ревізії — дані оновлено, спробуй ще раз.'
-              );
-              if (jch && jch.character)
-                rerender(metaEl, mount, shopData, jch.character);
-            });
+          return window.L2 &&
+            typeof L2.resyncCharacterAfterConflict === 'function'
+            ? L2.resyncCharacterAfterConflict().then(function () {
+                var s = L2.lastSnapshot && L2.lastSnapshot();
+                setMsg(
+                  $('drops-shop-msg'),
+                  (pair.j && pair.j.messageUk) ||
+                    'Стан оновлено — спробуй ще раз.'
+                );
+                if (s) rerender(metaEl, mount, shopData, s);
+              })
+            : Promise.resolve();
         }
         if (!pair.r.ok) {
           var msgUk =
@@ -482,7 +490,11 @@
         }
         if (closeModalOnSuccess) closeBuyQtyModal();
         var nc = pair.j.character;
-        setPurchaseCongrats(it.nameUk || it.shopKey, qty);
+        setPurchaseCongrats(
+          it.nameUk || it.shopKey,
+          qty,
+          shopBuyTotalAdena(it, qty)
+        );
         if (
           window.L2 &&
           typeof window.L2.rememberItemIconHint === 'function' &&
@@ -492,13 +504,17 @@
         ) {
           window.L2.rememberItemIconHint(it.itemId, it.iconUrl);
         }
-        if (window.L2 && window.L2.setLastSnapshot)
-          window.L2.setLastSnapshot(nc);
-        if (
-          window.L2 &&
-          typeof window.L2.applyHudFromSnapshot === 'function'
-        )
-          window.L2.applyHudFromSnapshot(nc);
+        if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+          L2.applyCharacterSnapshot(nc);
+        } else {
+          if (window.L2 && window.L2.setLastSnapshot)
+            window.L2.setLastSnapshot(nc);
+          if (
+            window.L2 &&
+            typeof window.L2.applyHudFromSnapshot === 'function'
+          )
+            window.L2.applyHudFromSnapshot(nc);
+        }
         rerender(metaEl, mount, shopData, nc);
         cloFocus(focusAfterBtn);
       })
@@ -679,15 +695,34 @@
     cloFocus(modal.querySelector('.l2-drops-stats-modal__close'));
   }
 
+  function setOkMsg(el, text) {
+    if (!el) return;
+    if (!text) {
+      el.hidden = true;
+      el.textContent = '';
+      el.classList.remove('l2-drops-shop-purchase-ok');
+      el.classList.add('err');
+      return;
+    }
+    el.hidden = false;
+    el.textContent = text;
+    el.classList.remove('err');
+    el.classList.add('l2-drops-shop-purchase-ok');
+  }
+
   function setMsg(el, text) {
     if (!el) return;
     if (!text) {
       el.hidden = true;
       el.textContent = '';
+      el.classList.remove('l2-drops-shop-purchase-ok');
+      el.classList.add('err');
       return;
     }
     el.hidden = false;
     el.textContent = text;
+    el.classList.remove('l2-drops-shop-purchase-ok');
+    el.classList.add('err');
   }
 
   function sortGrades(grList) {
