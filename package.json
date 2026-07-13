@@ -16,6 +16,7 @@
     "db:repair-pvp": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
+    "migrate:exp-div3": "tsx server/scripts/migrate-character-exp-div3.ts",
     "db:studio": "prisma studio",
     "grant:level-adena": "tsx server/scripts/grant-level-adena.ts",
     "grant:sp": "tsx server/scripts/grant-sp.ts",
