@@ -3,8 +3,8 @@ import { L2DOP_NPC_EXP_SP } from '../data/l2dopNpcExpSp.generated.js';
 import type { DropEntry } from '../types/combatDrop.js';
 import { mobAdenaDropRange } from './mobAdenaDropScale.js';
 
-/** Множник SP за вбивство моба (база з npc/формули × цей коефіцієнт). */
-const MOB_KILL_SP_MULTIPLIER = 2;
+/** Множник SP за вбивство моба: база з npc/формули ×2 (EXP — без множника, таблиця рівнів ÷3). */
+export const MOB_KILL_SP_MULTIPLIER = 2;
 
 function scaleMobKillSp(sp: number): number {
   if (!Number.isFinite(sp) || sp <= 0) return 0;
