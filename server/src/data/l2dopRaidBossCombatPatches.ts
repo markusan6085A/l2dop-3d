@@ -8,12 +8,12 @@ export interface RaidBossCombatOverride {
 }
 
 const RAID_BOSS_COMBAT_BY_NPC_ID: Readonly<Record<number, RaidBossCombatOverride>> = {
-  /** Отверженный Стражник — 20 lvl */
-  25372: { pAtk: 1655, mAtk: 480 },
-  /** Лорд Зомби Фаракелсус — 20 lvl */
-  25375: { pAtk: 1650, mAtk: 375 },
-  /** Зверь Безумия — 20 lvl */
-  25378: { pAtk: 2144, mAtk: 245 },
+  /** Отверженный Стражник — 20 lvl (−30% урон) */
+  25372: { pAtk: 1159, mAtk: 336 },
+  /** Лорд Зомби Фаракелсус — 20 lvl (−30% урон) */
+  25375: { pAtk: 1155, mAtk: 263 },
+  /** Зверь Безумия — 20 lvl (−30% урон) */
+  25378: { pAtk: 1501, mAtk: 172 },
 };
 
 export function raidBossCombatOverrideForNpcId(
