@@ -46,6 +46,25 @@
     return document.getElementById(id);
   }
 
+  function setSellCongrats(stack, qty, totalAdena) {
+    var el = $('sell-items-msg');
+    if (!el) return;
+    var name = itemDisplayName(stack.itemId);
+    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    el.hidden = false;
+    el.classList.remove('err');
+    el.classList.add('l2-drops-shop-purchase-ok');
+    if (window.L2 && typeof L2.renderShopCongratsMessage === 'function') {
+      L2.renderShopCongratsMessage(el, 'sell', {
+        itemName: name,
+        qty: Math.max(1, Math.floor(Number(qty) || 1)),
+        adenaLabel: formatAdena(totalAdena),
+      });
+      return;
+    }
+    setMsg(buildSellCongratsMsg(stack, qty, totalAdena), true);
+  }
+
   function setMsg(text, ok) {
     var el = $('sell-items-msg');
     if (!el) return;
@@ -454,17 +473,19 @@
     })
       .then(function (r) {
         if (r.status === 409) {
-          return window.L2 &&
-            typeof L2.resyncCharacterAfterConflict === 'function'
-            ? L2.resyncCharacterAfterConflict().then(function () {
-                var s = L2.lastSnapshot && L2.lastSnapshot();
-                if (s) snap = s;
-                paint();
-                setMsg('Стан оновлено — спробуй ще раз.');
-              })
-            : r.json().then(function () {
-                setMsg('Конфлікт ревізії — онови сторінку.');
-              });
+          return r.json().then(function (j409) {
+            return window.L2 &&
+              typeof L2.resyncCharacterAfterConflict === 'function'
+              ? L2.resyncCharacterAfterConflict(function (s) {
+                  snap = s;
+                }, j409).then(function () {
+                  paint();
+                  setMsg('Стан оновлено — спробуй ще раз.');
+                })
+              : Promise.resolve().then(function () {
+                  setMsg('Конфлікт ревізії — онови сторінку.');
+                });
+          });
         }
         return r.json().then(function (j) {
           if (!r.ok) {
@@ -474,7 +495,7 @@
           if (j && j.character) {
             applySnapshotFromServer(j.character);
             paint();
-            setMsg(buildSellCongratsMsg(stack, qty, total), true);
+            setSellCongrats(stack, qty, total);
             closeSellModals();
           }
         });

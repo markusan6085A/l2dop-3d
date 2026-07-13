@@ -7,7 +7,7 @@
 (function () {
   var SS_UI = 'drops-shop-ui';
   /** Повідомлення після успішної покупки (під заголовком грейду). */
-  var lastPurchaseMsg = null;
+  var lastPurchaseCongrats = null;
   var SHOP_PAGE_SIZE = 10;
   var EPIC_SKIP = new Set([
     'necklace of frintessa i00',
@@ -103,24 +103,16 @@
   }
 
   function setPurchaseCongrats(nameUk, qty, totalAdena) {
-    var name = String(nameUk || 'предмет').trim();
-    var q = Math.max(1, Math.floor(Number(qty) || 1));
-    var msg =
-      q > 1
-        ? 'Вітаємо! Ви придбали «' + name + '» × ' + q
-        : 'Вітаємо! Ви придбали «' + name + '»';
-    if (totalAdena != null) {
-      msg += ' за ' + fmtAdena(String(totalAdena)) + ' адени.';
-    } else {
-      msg += '.';
-    }
-    lastPurchaseMsg = msg;
-    setOkMsg($('drops-shop-msg'), msg);
+    lastPurchaseCongrats = {
+      itemName: String(nameUk || 'предмет').trim(),
+      qty: Math.max(1, Math.floor(Number(qty) || 1)),
+      adenaLabel:
+        totalAdena != null ? fmtAdena(String(totalAdena)) : null,
+    };
   }
 
   function clearPurchaseCongrats() {
-    lastPurchaseMsg = null;
-    setOkMsg($('drops-shop-msg'), '');
+    lastPurchaseCongrats = null;
   }
 
   /** Порядок кнопок підкатегорій у UI (ключі як у API). */
@@ -693,21 +685,6 @@
       dropsStatsKeybound = true;
     }
     cloFocus(modal.querySelector('.l2-drops-stats-modal__close'));
-  }
-
-  function setOkMsg(el, text) {
-    if (!el) return;
-    if (!text) {
-      el.hidden = true;
-      el.textContent = '';
-      el.classList.remove('l2-drops-shop-purchase-ok');
-      el.classList.add('err');
-      return;
-    }
-    el.hidden = false;
-    el.textContent = text;
-    el.classList.remove('err');
-    el.classList.add('l2-drops-shop-purchase-ok');
   }
 
   function setMsg(el, text) {
@@ -1489,10 +1466,12 @@
       ht.className = 'l2-drops-grade__title';
       ht.textContent = 'Грейд ' + stateGrade;
       titles.appendChild(ht);
-      if (lastPurchaseMsg) {
+      if (lastPurchaseCongrats) {
         var okMsg = document.createElement('div');
         okMsg.className = 'l2-drops-shop-purchase-ok';
-        okMsg.textContent = lastPurchaseMsg;
+        if (window.L2 && typeof L2.renderShopCongratsMessage === 'function') {
+          L2.renderShopCongratsMessage(okMsg, 'buy', lastPurchaseCongrats);
+        }
         titles.appendChild(okMsg);
       }
       var sub = document.createElement('div');

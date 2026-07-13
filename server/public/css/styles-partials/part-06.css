@@ -47,8 +47,17 @@
   font-size: 12px;
   line-height: 1.4;
   font-weight: 600;
+  color: inherit;
+}
+
+.l2-shop-congrats-lead {
   color: #5cdc7a;
   text-shadow: 0 0 8px rgba(70, 200, 110, 0.25);
+}
+
+.l2-shop-congrats-detail {
+  color: #f0ece4;
+  text-shadow: none;
 }
 
 .l2-gm-shop-rev {

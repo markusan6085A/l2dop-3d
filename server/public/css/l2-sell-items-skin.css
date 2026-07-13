@@ -13,8 +13,7 @@ body.l2-app-l2-chrome.l2-page-sell-items #sell-items-msg.l2-drops-shop-purchase-
   font-size: 12px;
   line-height: 1.4;
   font-weight: 600;
-  color: #5cdc7a;
-  text-shadow: 0 0 8px rgba(70, 200, 110, 0.25);
+  color: inherit;
 }
 
 body.l2-app-l2-chrome.l2-page-sell-items .l2-sell-items-head {

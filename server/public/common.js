@@ -761,6 +761,33 @@
       return global.L2.applyCharacterSnapshot(snap, applyScreenSpecific);
     },
 
+    /** Повідомлення купівлі/продажу: зелений префікс + білий текст деталей. */
+    renderShopCongratsMessage: function (el, kind, opts) {
+      if (!el) return;
+      opts = opts || {};
+      el.textContent = '';
+      var lead = document.createElement('span');
+      lead.className = 'l2-shop-congrats-lead';
+      lead.textContent =
+        kind === 'sell' ? 'Вітаємо! Ви продали ' : 'Вітаємо! Ви придбали ';
+      el.appendChild(lead);
+      var detail = document.createElement('span');
+      detail.className = 'l2-shop-congrats-detail';
+      var name = String(opts.itemName || 'предмет').trim();
+      var q = Math.max(1, Math.floor(Number(opts.qty) || 1));
+      var text = '«' + name + '»';
+      if (q > 1) text += ' × ' + q;
+      if (kind === 'buy') {
+        text += opts.adenaLabel
+          ? ' за ' + String(opts.adenaLabel) + ' адени.'
+          : '.';
+      } else {
+        text += ' — +' + String(opts.adenaLabel || '0') + ' адени.';
+      }
+      detail.textContent = text;
+      el.appendChild(detail);
+    },
+
     renderStats: function (ids, c) {
       if (global.L2._applySnapshot) {
         global.L2._applySnapshot(c);

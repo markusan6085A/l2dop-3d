@@ -34,7 +34,7 @@ import {
   combatOptsFromRow,
   type CharacterRow,
 } from './charService.js';
-import { mutateCharacterWithRevision } from './characterMutation.js';
+import { persistCharacterFieldsInTx } from './charInternalPersist.js';
 import { getCharacterLastSeenMs } from './onlinePresenceService.js';
 import { mobCombatFromSpawn } from '../domain/battleMobSpawn.js';
 
@@ -167,12 +167,9 @@ async function syncParticipantMobHpInTx(
     if (bj.mobHp === session.mobHp && bj.mobMaxHp === session.mobMaxHp) continue;
     bj.mobHp = session.mobHp;
     bj.mobMaxHp = session.mobMaxHp;
-    await mutateCharacterWithRevision(tx, row.id, null, () => ({
-      changed: true,
-      data: {
-        battleJson: serializeBattleJsonForDb(bj),
-      },
-    }));
+    await persistCharacterFieldsInTx(tx, row.id, {
+      battleJson: serializeBattleJsonForDb(bj),
+    });
   }
 }
 
@@ -245,13 +242,10 @@ async function applyWorldBossAutoAttackInTx(
     return { targetDefeated: true };
   }
 
-  await mutateCharacterWithRevision(tx, target.id, null, () => ({
-    changed: true,
-    data: {
-      hp: playerHp,
-      battleJson: serializeBattleJsonForDb(bj),
-    },
-  }));
+  await persistCharacterFieldsInTx(tx, target.id, {
+    hp: playerHp,
+    battleJson: serializeBattleJsonForDb(bj),
+  });
   return { targetDefeated: false };
 }
 

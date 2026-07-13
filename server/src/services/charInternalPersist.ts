@@ -2,8 +2,10 @@ import type { Prisma } from '@prisma/client';
 
 /**
  * Внутрішній server-side write без revision++.
- * Для дзеркалення PvP (HP жертви, battleJson flags) під час активного бою атакуючого.
- * Не для видимих дій гравця — перемога/поразка жертви йде через mutateCharacterWithRevision.
+ * Для дзеркалення PvP (HP жертви, battleJson flags) під час активного бою атакуючого
+ * і для фонових tick world РБ/епіків (HP гравця, mobHp у battleJson) — клієнт
+ * підхоплює через GET /game/battle, а revision++ лише на дії гравця.
+ * Не для видимих дій гравця — перемога/поразка йде через mutateCharacterWithRevision.
  */
 export async function persistCharacterFieldsInTx(
   tx: Prisma.TransactionClient,
