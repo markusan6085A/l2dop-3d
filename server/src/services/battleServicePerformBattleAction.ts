@@ -80,6 +80,7 @@ import { ensureWhirlwindExtraMobs } from '../domain/battleWhirlwindExtras.js';
 import { FIGHTER_PHYSICAL_SOULSHOT_ITEM_IDS } from '../data/fighterPhysicalSoulshot.js';
 import { MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS } from '../data/mysticBlessedSpiritshot.js';
 import { applyBattlePotionHoTTicks } from '../domain/battleCombatPotions.js';
+import { consumeBowArrowsOnHit } from '../domain/battleBowArrowConsumption.js';
 import { rollKillLoot } from '../domain/killLoot.js';
 import {
   applyMobCounterDamage,
@@ -635,6 +636,19 @@ export async function performBattleAction(
         damage: pDmg,
         nowMs: Date.now(),
       });
+    }
+
+    if (landedPhysicalHit && magicOutcome == null) {
+      const arrowUse = consumeBowArrowsOnHit(
+        inv,
+        action,
+        char.race,
+        char.classBranch,
+      );
+      if (arrowUse.consumed > 0) {
+        inv = arrowUse.inv;
+        inventoryDirty = true;
+      }
     }
 
     if (

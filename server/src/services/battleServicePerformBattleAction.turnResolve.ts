@@ -24,6 +24,7 @@ import {
 import { applyFighterSoulshotToggle } from '../domain/battleFighterSoulshotToggle.js';
 import { applyMysticBlessedSpiritshotToggle } from '../domain/battleMysticBlessedSpiritshotToggle.js';
 import { stripChargeShotsIfWeaponGradeMismatch } from '../domain/battleChargeGradeSanitize.js';
+import { assertBowArrowsForBattleAction } from '../domain/battleBowArrowConsumption.js';
 import { rollPlayerPhysicalDmg } from './battleServiceDamageRolls.js';
 
 export type BattleTurnResolveInput = {
@@ -167,6 +168,10 @@ export function executeBattleTurnResolve(
     action === 'fighter_soulshot_toggle' ||
     action === 'mystic_spiritshot_toggle' ||
     action === 'battle_potion_use';
+
+  if (!skipResolveTurn) {
+    assertBowArrowsForBattleAction(action, inv, race, classBranch);
+  }
 
   const resolvedTurn: BattleSkillTurnResult = skipResolveTurn
     ? {

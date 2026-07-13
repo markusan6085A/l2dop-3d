@@ -499,6 +499,23 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             messageUk: 'Немає таких предметів у сумці.',
           });
         }
+        if (e instanceof Error && e.message === 'battle_no_arrows') {
+          return reply.code(400).send({
+            error: e.message,
+            messageUk:
+              'У сумці немає стріл потрібного грейду для лука (NG–S має збігатися з грейдом зброї).',
+          });
+        }
+        if (
+          e instanceof Error &&
+          e.message === 'battle_bow_no_weapon_grade'
+        ) {
+          return reply.code(400).send({
+            error: e.message,
+            messageUk:
+              'Потрібен лук з відомим грейдом (NG–S), щоб стріляти стрілами.',
+          });
+        }
         if (e instanceof Error && e.message === 'battle_bad_potion') {
           return reply.code(400).send({
             error: e.message,
