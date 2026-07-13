@@ -1046,14 +1046,23 @@ body.l2-app-l2-chrome .l2-battle-victory-link--muted:focus-visible {
 }
 
 body.l2-app-l2-chrome .l2-battle-victory-link--primary:active,
-body.l2-app-l2-chrome .l2-battle-victory-link--muted:active {
+body.l2-app-l2-chrome .l2-battle-victory-link--muted:active,
+body.l2-app-l2-chrome button.l2-battle-victory-link:active {
   color: #ffffff !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55) !important;
   transform: none !important;
   filter: none !important;
+  outline: none !important;
+  outline-offset: 0 !important;
   border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
   border-image: none !important;
+  border-image-source: none !important;
+  background: transparent !important;
   box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body.l2-app-l2-chrome.l2-page-auth a.btn-cta.l2-auth-cta:hover,
@@ -1153,6 +1162,27 @@ body.l2-app-l2-chrome button.l2-town-btn::after {
 body.l2-app-l2-chrome :focus-visible {
   outline: 2px solid rgba(201, 164, 58, 0.65);
   outline-offset: 1px;
+}
+
+body.l2-app-l2-chrome button.l2-battle-victory-link:focus,
+body.l2-app-l2-chrome button.l2-battle-victory-link:focus-visible,
+body.l2-app-l2-chrome button.l2-battle-victory-link:active {
+  outline: none !important;
+  outline-offset: 0 !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-image: none !important;
+  border-image-source: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome button.l2-battle-victory-link::-moz-focus-inner {
+  border: 0;
+  padding: 0;
 }
 
 body.l2-app-l2-chrome .l2-foot-linkbar {
