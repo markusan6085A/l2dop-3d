@@ -1027,7 +1027,7 @@
       applyPvpIncomingFromSync(sync);
       if (!opts.skipDefeatRedirect) {
         handlePvpDefeatRedirect(sync);
-        if (handlePveDefeatRedirect(sync, c)) return true;
+        if (handlePveDefeatRedirect(sync, c)) return 'redirect';
       }
       paintMain(!!opts.centerOnPlayer);
       renderMobMarkers(img, markersLayer, worldSpawns, markerSig);
@@ -1142,7 +1142,7 @@
 
     var sync0 = await syncPromise;
     if (sync0) {
-      if (applyMapSyncPayload(sync0, { force: true, skipDefeatRedirect: false })) {
+      if (applyMapSyncPayload(sync0, { force: true, skipDefeatRedirect: false }) === 'redirect') {
         return;
       }
     } else if (c) {
