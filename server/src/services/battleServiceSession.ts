@@ -57,9 +57,11 @@ import {
 } from '../domain/mobSpawnRespawn.js';
 import {
   ensureWorldBossSessionInTx,
+  flushWorldBossPendingMobHitsForUserInTx,
   isSharedWorldBossKind,
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
+import { refreshPvpOpponentHpForCharacterInTx } from './battleServicePvpSession.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 
 function randomMobRetaliationWindowHits(): number {
@@ -297,10 +299,20 @@ export async function getBattleState(
   battle: BattleView | null;
   pvpIncoming: PvpIncomingAttack | null;
 } | null> {
-  let row = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
+  const nowMs = Date.now();
+  let row = await prisma.$transaction(async (tx) => {
+    let r = await flushWorldBossPendingMobHitsForUserInTx(tx, userId, nowMs);
+    if (r) {
+      r = await refreshPvpOpponentHpForCharacterInTx(tx, r as CharacterRow);
+    }
+    return r;
   });
+  if (!row) {
+    row = (await prisma.character.findFirst({
+      where: { userId },
+      orderBy: { lastUpdate: 'desc' },
+    })) as CharacterRow | null;
+  }
   if (!row) return null;
   row = (await ensureSanitizedSkillsLearnedRow(
     row as CharacterRow

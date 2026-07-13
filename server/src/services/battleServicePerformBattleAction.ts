@@ -43,6 +43,7 @@ import { prisma } from '../lib/prisma.js';
 import {
   gameConflictFromCharacter,
   combatOptsFromRow,
+  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
@@ -103,7 +104,9 @@ import {
   recordWorldBossBattlePresenceInTx,
   recordWorldBossDamagingHitInTx,
   runWorldBossCombatTickInTx,
+  flushWorldBossPendingMobHitsForCharacterInTx,
 } from './worldBossSessionService.js';
+import { refreshPvpOpponentHpForCharacterInTx } from './battleServicePvpSession.js';
 import {
   BATTLE_REGEN_TICK_SECONDS,
   battleActionSkipsMobHp,
@@ -145,8 +148,26 @@ export async function performBattleAction(
     if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
     char = await persistPassiveAndMoveInTx(tx, char as CharacterRow);
 
+    char = await flushWorldBossPendingMobHitsForCharacterInTx(
+      tx,
+      char as CharacterRow,
+      Date.now()
+    );
+
+    char = await refreshPvpOpponentHpForCharacterInTx(tx, char as CharacterRow);
+
     const bj = parseBattleJson((char as CharacterRow).battleJson);
-    if (!bj) throw new Error('battle_none');
+    if (!bj) {
+      const snapAfterFlush = toSnapshot(char as CharacterRow);
+      if (snapAfterFlush.pveDefeat) {
+        return {
+          character: snapAfterFlush,
+          battle: null,
+          defeat: snapAfterFlush.pveDefeat,
+        };
+      }
+      throw new Error('battle_none');
+    }
 
     const spawn = resolveBattleSpawnMeta(bj);
     if (!spawn) throw new Error('battle_spawn_gone');

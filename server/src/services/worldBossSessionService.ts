@@ -156,21 +156,119 @@ async function syncParticipantMobHpInTx(
   tx: Tx,
   session: WorldBossSessionState
 ): Promise<void> {
-  const ids = Object.keys(session.participants);
-  if (ids.length === 0) return;
-  const rows = await tx.character.findMany({
-    where: { id: { in: ids } },
-  });
-  for (const row of rows) {
-    const bj = parseBattleJson(row.battleJson);
-    if (!bj || bj.spawnId !== session.spawnId) continue;
-    if (bj.mobHp === session.mobHp && bj.mobMaxHp === session.mobMaxHp) continue;
-    bj.mobHp = session.mobHp;
-    bj.mobMaxHp = session.mobMaxHp;
-    await persistCharacterFieldsInTx(tx, row.id, {
-      battleJson: serializeBattleJsonForDb(bj),
-    });
+  /* mobHp у battleJson оновлюється під час flush pending hits */
+  void tx;
+  void session;
+}
+
+function ensureParticipant(session: WorldBossSessionState, characterId: string) {
+  const id = String(characterId || '').trim();
+  if (!id) return null;
+  if (!session.participants[id]) {
+    session.participants[id] = {
+      characterId: id,
+      lastDamageAtMs: 0,
+      lastPresenceAtMs: 0,
+      totalDamageDealt: 0,
+      firstDamageAtMs: 0,
+      pendingMobHits: [],
+    };
   }
+  const p = session.participants[id]!;
+  if (!p.pendingMobHits) p.pendingMobHits = [];
+  return p;
+}
+
+/** Застосувати накопичені удари РБ до персонажа (GET /battle, POST /action, смертельний flush). */
+export async function flushWorldBossPendingMobHitsForCharacterInTx(
+  tx: Tx,
+  char: CharacterRow,
+  _nowMs: number
+): Promise<CharacterRow> {
+  const bj = parseBattleJson(char.battleJson);
+  if (!bj) return char;
+  const spawn = resolveBattleSpawnMeta(bj);
+  if (!spawn || !isSharedWorldBossKind(spawn.kind)) return char;
+
+  const session = await lockSessionRow(tx, spawn.spawnId);
+  if (!session) return char;
+  const participant = session.participants[char.id];
+  const pending = participant?.pendingMobHits ?? [];
+  const mobHpDirty =
+    bj.mobHp !== session.mobHp || bj.mobMaxHp !== session.mobMaxHp;
+  if (pending.length === 0 && !mobHpDirty) return char;
+
+  const inv = parseInventory(char.inventoryJson);
+  const effLv = levelFromTotalExp(char.exp);
+  const combat = computeCombatStats(
+    effLv,
+    char.race,
+    char.classBranch,
+    inv,
+    combatOptsFromRow(char)
+  );
+  const vit = computeVitals(effLv, char.race, char.classBranch, combat.con, combat.men);
+  const maxMp = effectiveMaxMpWithJewelFlat(vit.maxMp, combat);
+  const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
+
+  const log = [...(bj.log ?? [])];
+  let playerHp = Math.max(0, Math.min(maxHpEff, char.hp));
+  if (pending.length > 0 && participant) {
+    participant.pendingMobHits = [];
+    for (const hit of pending) {
+      if (hit.logLine) log.push(hit.logLine);
+      if (hit.damage > 0) {
+        playerHp = Math.max(0, playerHp - hit.damage);
+      }
+    }
+  }
+
+  bj.log = log.slice(-MAX_BATTLE_LOG);
+  bj.mobHp = session.mobHp;
+  bj.mobMaxHp = session.mobMaxHp;
+  await saveSession(tx, session);
+
+  if (playerHp <= 0) {
+    await persistBattleDefeatInTx(tx, {
+      userId: char.userId,
+      expectedRevision: null,
+      char,
+      bj,
+      spawn,
+      maxHpEff,
+      maxMpEff: maxMp,
+      st: bj,
+      log,
+    });
+    const fresh = await tx.character.findUnique({ where: { id: char.id } });
+    return (fresh as CharacterRow) ?? char;
+  }
+
+  if (pending.length === 0 && !mobHpDirty) return char;
+
+  await persistCharacterFieldsInTx(tx, char.id, {
+    hp: playerHp,
+    battleJson: serializeBattleJsonForDb(bj),
+  });
+  const fresh = await tx.character.findUnique({ where: { id: char.id } });
+  return (fresh as CharacterRow) ?? char;
+}
+
+export async function flushWorldBossPendingMobHitsForUserInTx(
+  tx: Tx,
+  userId: string,
+  nowMs: number
+): Promise<CharacterRow | null> {
+  const char = await tx.character.findFirst({
+    where: { userId },
+    orderBy: { lastUpdate: 'desc' },
+  });
+  if (!char) return null;
+  return flushWorldBossPendingMobHitsForCharacterInTx(
+    tx,
+    char as CharacterRow,
+    nowMs
+  );
 }
 
 async function applyWorldBossAutoAttackInTx(
@@ -209,7 +307,8 @@ async function applyWorldBossAutoAttackInTx(
 
   let playerHp = Math.max(0, Math.min(maxHpEff, cr.hp));
   let mobHp = session.mobHp;
-  const log = [...(bj.log ?? [])];
+  const log: string[] = [];
+  const logBefore = 0;
   const countered = applyMobCounterDamage({
     st: bj,
     spawn,
@@ -220,37 +319,29 @@ async function applyWorldBossAutoAttackInTx(
     mobHp,
     log,
   });
+  const hitLines = log.slice(logBefore);
+  const logLine = hitLines.length ? hitLines[hitLines.length - 1]! : '';
+  const hitDamage = Math.max(0, playerHp - countered.playerHp);
   playerHp = countered.playerHp;
   mobHp = countered.mobHp;
-  bj.log = log.slice(-MAX_BATTLE_LOG);
-  bj.mobHp = mobHp;
   session.mobHp = mobHp;
   session.lastMobAutoAttackAtMs = nowMs;
 
-  if (playerHp <= 0) {
-    bj.log = log.slice(-MAX_BATTLE_LOG);
-    const freshTarget = await tx.character.findUnique({
-      where: { id: targetCharacterId },
-    });
-    if (!freshTarget) return { targetDefeated: false };
-    await persistBattleDefeatInTx(tx, {
-      userId: freshTarget.userId,
-      expectedRevision: null,
-      char: freshTarget as CharacterRow,
-      bj,
-      spawn,
-      maxHpEff,
-      maxMpEff: maxMp,
-      st: bj,
-      log,
-    });
+  const participant = ensureParticipant(session, targetCharacterId);
+  if (participant && logLine) {
+    participant.pendingMobHits!.push({ damage: hitDamage, logLine });
+  }
+
+  const pendingTotal =
+    (participant?.pendingMobHits ?? []).reduce(
+      (sum, hit) => sum + Math.max(0, hit.damage),
+      0
+    ) ?? 0;
+  if (cr.hp - pendingTotal <= 0) {
+    await flushWorldBossPendingMobHitsForCharacterInTx(tx, cr, nowMs);
     return { targetDefeated: true };
   }
 
-  await persistCharacterFieldsInTx(tx, target.id, {
-    hp: playerHp,
-    battleJson: serializeBattleJsonForDb(bj),
-  });
   return { targetDefeated: false };
 }
 

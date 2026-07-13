@@ -126,8 +126,17 @@
     return k === 'raid' || k === 'epic' || k === 'epic_guard';
   }
 
-  function mobHpBarLabelText(kind, cur, max) {
-    if (mobKindUsesNumericHpBar(kind)) {
+  function battleUsesNumericMobHp(battle) {
+    if (!battle) return false;
+    if (battle.spawnId && String(battle.spawnId).indexOf('pvp:') === 0) return true;
+    return mobKindUsesNumericHpBar(battle.kind);
+  }
+
+  function mobHpBarLabelText(kind, cur, max, spawnId) {
+    if (
+      (spawnId && String(spawnId).indexOf('pvp:') === 0) ||
+      mobKindUsesNumericHpBar(kind)
+    ) {
       if (window.L2 && typeof L2.formatBarPair === 'function') {
         return L2.formatBarPair(cur, max);
       }
@@ -932,11 +941,12 @@
     renderSonicCharges(battle);
     setBar(hpInner, battle.mobHp, battle.mobMaxHp);
     if (hpVal) {
-      var numericMobHp = mobKindUsesNumericHpBar(battle.kind);
+      var numericMobHp = battleUsesNumericMobHp(battle);
       hpVal.textContent = mobHpBarLabelText(
         battle.kind,
         battle.mobHp,
-        battle.mobMaxHp
+        battle.mobMaxHp,
+        battle.spawnId
       );
       hpVal.classList.toggle('l2-battle-bar-innertext--pair', numericMobHp);
     }
@@ -1244,7 +1254,10 @@
     }
 
     function battleSyncIntervalMs() {
-      if (battle && mobKindUsesNumericHpBar(battle.kind)) return 2000;
+      if (battle && battle.spawnId && String(battle.spawnId).indexOf('pvp:') === 0) {
+        return 5000;
+      }
+      if (battle && mobKindUsesNumericHpBar(battle.kind)) return 10000;
       return BATTLE_SYNC_MS;
     }
 
@@ -1260,6 +1273,7 @@
         return true;
       }
       if (checkPveDefeatFromCharacter(character)) {
+        renderPlayerBars(character);
         stopBattleSyncPoll();
         return true;
       }
@@ -1486,7 +1500,13 @@
     }
 
     async function ensurePvpBattle() {
-      if (battle && battle.spawnId && battle.spawnId.indexOf('pvp:') === 0) {
+      var expectedPvpSpawn =
+        pvpTargetId ? 'pvp:' + String(pvpTargetId) : '';
+      if (
+        battle &&
+        expectedPvpSpawn &&
+        battle.spawnId === expectedPvpSpawn
+      ) {
         return true;
       }
       var er = latestCharacterRevision();
@@ -1630,6 +1650,19 @@
             if (ej && ej.error) errCode = String(ej.error);
           } catch (e) {
             /* ignore */
+          }
+        }
+        if (errCode === 'pve_defeat_pending') {
+          var syncedDef = await getBattleState();
+          if (syncedDef && syncedDef.character) {
+            character = syncedDef.character;
+            if (L2.setLastSnapshot) L2.setLastSnapshot(character);
+            if (L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+            if (character.pveDefeat) {
+              renderPlayerBars(character);
+              showDefeatScreen(character.pveDefeat);
+              return false;
+            }
           }
         }
         if (errCode === 'mob_on_respawn') {
@@ -1905,6 +1938,7 @@
 
     function checkPveDefeatFromCharacter(c) {
       if (c && c.pveDefeat) {
+        renderPlayerBars(c);
         showDefeatScreen(c.pveDefeat);
         return true;
       }

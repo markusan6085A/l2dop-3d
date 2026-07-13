@@ -12,6 +12,11 @@ export function isSharedWorldBossKind(kind: MapSpawnKind): boolean {
   return kind === 'raid' || kind === 'epic';
 }
 
+export interface WorldBossPendingMobHit {
+  damage: number;
+  logLine: string;
+}
+
 export interface WorldBossParticipant {
   characterId: string;
   lastDamageAtMs: number;
@@ -20,6 +25,8 @@ export interface WorldBossParticipant {
   totalDamageDealt: number;
   /** Час першого урону — tie-break при рівному totalDamageDealt. */
   firstDamageAtMs: number;
+  /** Накопичені удари боса — застосовуються при GET /battle/action (не пишемо Character кожен tick). */
+  pendingMobHits?: WorldBossPendingMobHit[];
 }
 
 export interface WorldBossSessionState {
@@ -104,12 +111,27 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
       const p = val as Record<string, unknown>;
       const characterId = String(p.characterId ?? key).trim();
       if (!characterId) continue;
+      const pendingRaw = p.pendingMobHits;
+      const pendingMobHits: WorldBossPendingMobHit[] = [];
+      if (Array.isArray(pendingRaw)) {
+        for (const hit of pendingRaw) {
+          if (hit == null || typeof hit !== 'object' || Array.isArray(hit)) continue;
+          const h = hit as Record<string, unknown>;
+          const logLine = typeof h.logLine === 'string' ? h.logLine.trim() : '';
+          if (!logLine) continue;
+          pendingMobHits.push({
+            damage: Math.max(0, Math.floor(Number(h.damage) || 0)),
+            logLine,
+          });
+        }
+      }
       participants[characterId] = {
         characterId,
         lastDamageAtMs: Number(p.lastDamageAtMs) || 0,
         lastPresenceAtMs: Number(p.lastPresenceAtMs) || 0,
         totalDamageDealt: Math.max(0, Math.floor(Number(p.totalDamageDealt) || 0)),
         firstDamageAtMs: Number(p.firstDamageAtMs) || 0,
+        ...(pendingMobHits.length > 0 ? { pendingMobHits } : {}),
       };
     }
   }
@@ -198,6 +220,7 @@ export function touchWorldBossParticipant(
     lastDamageAtMs: opts?.damagingHit ? nowMs : (prev?.lastDamageAtMs ?? 0),
     totalDamageDealt: prev?.totalDamageDealt ?? 0,
     firstDamageAtMs: prev?.firstDamageAtMs ?? 0,
+    pendingMobHits: prev?.pendingMobHits,
   };
 }
 

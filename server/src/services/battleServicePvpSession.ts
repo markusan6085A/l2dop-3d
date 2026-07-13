@@ -18,7 +18,7 @@ import {
 } from '../domain/worldCombatState.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 import { prisma } from '../lib/prisma.js';
-import { applyPassiveHpRegen } from './charPassiveRegen.js';
+import { applyPassiveHpRegen, applyPassiveHpRegenPure } from './charPassiveRegen.js';
 import {
   gameConflictFromMutation,
   combatOptsFromRow,
@@ -67,6 +67,53 @@ function opponentCombatFromRow(row: CharacterRow) {
     evasion: combat.evasion,
     name: row.name,
   };
+}
+
+/** Актуальні HP/макс цілі PvP з рядка персонажа (з урахуванням пасивного регену, без write). */
+export function resolvePvpTargetCombatFromRow(row: CharacterRow) {
+  const regen = applyPassiveHpRegenPure(row);
+  return opponentCombatFromRow({
+    ...row,
+    hp: regen.nextHp,
+  });
+}
+
+/** Підтягнути HP суперника з БД у battleJson атакуючого (без revision++). */
+export async function refreshPvpOpponentHpForCharacterInTx(
+  tx: Prisma.TransactionClient,
+  char: CharacterRow
+): Promise<CharacterRow> {
+  const bj = parseBattleJson(char.battleJson);
+  if (!bj || !isPvpBattleJson(bj) || !bj.pvpTargetCharacterId) {
+    return char;
+  }
+  const targetRow = await tx.character.findFirst({
+    where: { id: bj.pvpTargetCharacterId },
+  });
+  if (!targetRow) return char;
+
+  const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow);
+  if (bj.mobHp === opp.hp && bj.mobMaxHp === opp.maxHp) {
+    return char;
+  }
+
+  const nextBj: BattleJsonState = {
+    ...bj,
+    mobHp: opp.hp,
+    mobMaxHp: opp.maxHp,
+    mobPAtk: opp.pAtk,
+    mobPDef: opp.pDef,
+    mobMAtk: opp.mAtk,
+    mobMDef: opp.mDef,
+    mobEvasion: opp.evasion,
+    pvpTargetName: opp.name,
+    pvpTargetLevel: opp.effLv,
+  };
+  await persistCharacterFieldsInTx(tx, char.id, {
+    battleJson: serializeBattleJsonForDb(nextBj),
+  });
+  const fresh = await tx.character.findUnique({ where: { id: char.id } });
+  return (fresh as CharacterRow) ?? char;
 }
 
 function buildPvpBattleView(
@@ -153,20 +200,21 @@ export async function startPvpBattleInTx(
       const atkBase = resolveMapMovement(
         applyPassiveHpRegen(attackerRow as CharacterRow)
       );
+      const refreshed = await refreshPvpOpponentHpForCharacterInTx(
+        tx,
+        atkBase as CharacterRow
+      );
+      const st = parseBattleJson(refreshed.battleJson);
+      if (!st) throw new Error('battle_none');
       const targetRow = await tx.character.findFirst({
         where: { id: targetId },
       });
       if (!targetRow) throw new Error('pvp_target_unknown');
-      const opp = opponentCombatFromRow(targetRow as CharacterRow);
-      const snap = toSnapshot(atkBase as CharacterRow);
-      const st = {
-        ...existingBj,
-        mobHp: Math.max(0, Math.min(opp.maxHp, targetRow.hp)),
-        mobMaxHp: opp.maxHp,
-      };
+      const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow);
+      const snap = toSnapshot(refreshed);
       return {
         character: snap,
-        battle: buildPvpBattleView(atkBase as CharacterRow, st, opp, snap),
+        battle: buildPvpBattleView(refreshed, st, opp, snap),
       };
     }
     throw new Error('already_in_battle');
@@ -209,7 +257,7 @@ export async function startPvpBattleInTx(
     throw new Error('pvp_attacker_safe');
   }
 
-  const opp = opponentCombatFromRow(tgtBase as CharacterRow);
+  const opp = resolvePvpTargetCombatFromRow(tgtBase as CharacterRow);
   const startLog = [
     defenderCounter
       ? 'Відсіч у PvP: [' + opp.name + '] (ур. ' + opp.effLv + ').'
