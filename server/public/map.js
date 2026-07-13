@@ -7,6 +7,8 @@
   var MAP_BATTLE_RANGE_UNITS = 28000;
   /** Як MAP_NEARBY_LIST_RADIUS у server/src/data/mapWorldSpawns.ts — список «моби поруч». */
   var MAP_NEARBY_LIST_RADIUS = 26000;
+  /** Як MAP_NEARBY_HERO_RADIUS — інші гравці на карті (менший радіус). */
+  var MAP_NEARBY_HERO_RADIUS = 12000;
   var MOBS_PER_PAGE = 15;
   var mobListPage = 0;
   var mobDetailPage = 0;
@@ -311,6 +313,8 @@
           ':' +
           String(h.worldY != null ? h.worldY : '') +
           ':' +
+          String(h.distance != null ? h.distance : '') +
+          ':' +
           String(h.pvpNickColor || '')
       );
     }
@@ -528,7 +532,7 @@
 
     var levelSpan = document.createElement('span');
     levelSpan.className = 'l2-map-hero-level';
-    levelSpan.textContent = heroLevelPart(h);
+    levelSpan.textContent = heroLevelPart(h) + (h.distance != null ? ' · ~' + h.distance : '');
 
     var pkBtn = document.createElement('button');
     pkBtn.type = 'button';
@@ -592,7 +596,10 @@
       else if (h.pvpNickColor === 'aggressor') pin.className += ' l2-map-hero-pin--aggressor';
       pin.style.left = lx + '%';
       pin.style.top = ly + '%';
-      var title = (h.name || '—') + (h.level ? ' · ур. ' + h.level : '');
+      var title =
+        (h.name || '—') +
+        (h.level ? ' · ур. ' + h.level : '') +
+        (h.distance != null ? ' · ~' + h.distance : '');
       pin.setAttribute('aria-label', title);
       pin.title = title;
       pin.dataset.characterId = h.characterId || '';
@@ -810,12 +817,13 @@
     updateMobPager(pagerEl, prevBtn, nextBtn, indEl, p, pages, total);
   }
 
-  function render(c, img, dot, viewRadiusEl, moveTargetEl, viewport, around, centerOnPlayer) {
+  function render(c, img, dot, viewRadiusEl, heroViewRadiusEl, moveTargetEl, viewport, around, centerOnPlayer) {
     if (!c) return;
     var wx = num(c.worldX, 83400);
     var wy = num(c.worldY, 147943);
     placeDot(img, dot, wx, wy);
     placeViewRadius(img, viewRadiusEl, wx, wy, MAP_NEARBY_LIST_RADIUS);
+    placeViewRadius(img, heroViewRadiusEl, wx, wy, MAP_NEARBY_HERO_RADIUS);
     var tgx = c.targetX != null ? Number(c.targetX) : 0;
     var tgy = c.targetY != null ? Number(c.targetY) : 0;
     var hasTarget = Number.isFinite(tgx) && Number.isFinite(tgy) && (tgx !== 0 || tgy !== 0);
@@ -854,6 +862,7 @@
     var img = $('map-img');
     var dot = $('map-dot');
     var viewRadius = $('map-view-radius');
+    var heroViewRadius = $('map-hero-view-radius');
     var heroMarkersLayer = $('map-hero-markers');
     var heroSection = $('map-hero-section');
     var heroList = $('map-hero-list');
@@ -999,7 +1008,7 @@
     }
 
     function paintMain(centerOnPlayer) {
-      render(c, img, dot, viewRadius, moveTarget, viewport, aroundData, centerOnPlayer);
+      render(c, img, dot, viewRadius, heroViewRadius, moveTarget, viewport, aroundData, centerOnPlayer);
       renderHeroList(aroundData, heroList, heroSection);
       renderHeroMarkers(img, heroMarkersLayer, aroundData.nearbyHeroes || []);
       renderAround(

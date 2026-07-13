@@ -31,6 +31,9 @@ export type MapSpawnKind =
  */
 export const MAP_NEARBY_LIST_RADIUS = 26_000;
 
+/** Радіус «поруч» для інших гравців на карті (менший за мобів). */
+export const MAP_NEARBY_HERO_RADIUS = 12_000;
+
 /** Злиття ×3 дає id виду `dense_12__dup1` — для списку лишаємо одну точку на базовий спавн. */
 export function stripSpawnDupSuffix(spawnId: string): string {
   return spawnId.replace(/__dup\d+$/, '');

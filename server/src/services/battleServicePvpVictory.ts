@@ -1,10 +1,13 @@
 import { Prisma } from '@prisma/client';
 import {
   computeCombatStats,
+  effectiveMaxHpWithJewelFlat,
   effectiveMaxMpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
 import { computeVitals } from '../data/l2dopVitals.js';
+import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { parseInventory } from '../data/inventory.js';
+import { resolveNearestTownTeleport } from '../data/mapLocalities.js';
 import type { BattleJsonState } from '../domain/battle.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
@@ -72,7 +75,6 @@ export async function persistPvpVictoryInTx(
   if (victimId) {
     const victimRow = await tx.character.findFirst({
       where: { id: victimId },
-      select: { battleJson: true },
     });
     const victimBj = victimRow
       ? parseBattleJson(victimRow.battleJson)
@@ -86,6 +88,33 @@ export async function persistPvpVictoryInTx(
       attackerLog: fightLog,
       victimLog,
     });
+    const vCr = victimRow as CharacterRow | null;
+    const town =
+      vCr != null
+        ? resolveNearestTownTeleport(vCr.worldX, vCr.worldY)
+        : null;
+    if (!town) throw new Error('teleport_unknown');
+    let recoverHp = 1;
+    if (vCr) {
+      const vLv = levelFromTotalExp(vCr.exp);
+      const vInv = parseInventory(vCr.inventoryJson);
+      const vCombat = computeCombatStats(
+        vLv,
+        vCr.race,
+        vCr.classBranch,
+        vInv,
+        combatOptsFromRow(vCr)
+      );
+      const vVit = computeVitals(
+        vLv,
+        vCr.race,
+        vCr.classBranch,
+        vCombat.con,
+        vCombat.men
+      );
+      const vMaxHp = effectiveMaxHpWithJewelFlat(vVit.maxHp, vCombat);
+      recoverHp = Math.max(1, Math.floor(vMaxHp * 0.15));
+    }
     const victimResult = await mutateCharacterWithRevision(
       tx,
       victimId,
@@ -93,7 +122,7 @@ export async function persistPvpVictoryInTx(
       () => ({
         changed: true,
         data: {
-          hp: 0,
+          hp: recoverHp,
           battleJson: Prisma.JsonNull,
           pvpPendingDefeatJson: serializePvpPendingDefeat({
             killerName: char.name,
@@ -101,6 +130,14 @@ export async function persistPvpVictoryInTx(
             atMs: Date.now(),
             fullLog: defeatLog,
           }),
+          worldX: town.worldX,
+          worldY: town.worldY,
+          targetX: 0,
+          targetY: 0,
+          moveStartAt: null,
+          moveFromX: town.worldX,
+          moveFromY: town.worldY,
+          cityId: town.cityId,
         },
       })
     );

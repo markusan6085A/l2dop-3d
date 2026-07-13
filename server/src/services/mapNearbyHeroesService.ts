@@ -1,4 +1,4 @@
-import { MAP_NEARBY_LIST_RADIUS } from '../data/mapWorldSpawns.js';
+import { MAP_NEARBY_HERO_RADIUS } from '../data/mapWorldSpawns.js';
 import { BATTLE_RANGE } from '../domain/battleTypes.js';
 import { getEffectiveCharacterLevel } from '../domain/effectiveCharacterLevel.js';
 import {
@@ -16,6 +16,8 @@ import { prisma } from '../lib/prisma.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
 import { isInPvpSafeZone } from '../domain/pvpSafeZones.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
+import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
+import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
 
 /** Герой у радіусі обзору карти (як nearbySpawns для мобів). */
 export interface NearbyHeroEntry {
@@ -60,6 +62,9 @@ const HERO_MAP_SELECT = {
   battleJson: true,
   karma: true,
   pvpAggressorUntilMs: true,
+  hp: true,
+  pvpPendingDefeatJson: true,
+  pvePendingDefeatJson: true,
   activeBuffsJson: true,
   buffHeroicTier: true,
   buffZealotStacks: true,
@@ -76,6 +81,9 @@ type HeroMapRow = MapMovementFields & {
   battleJson: unknown;
   karma: number;
   pvpAggressorUntilMs: bigint;
+  hp: number;
+  pvpPendingDefeatJson: unknown;
+  pvePendingDefeatJson: unknown;
 };
 
 function canPkAttackHero(
@@ -89,14 +97,14 @@ function canPkAttackHero(
   return bj.pvpTargetCharacterId === viewerCharacterId;
 }
 
-/** Read-only: герої в радіусі MAP_NEARBY_LIST_RADIUS (без мутацій позиції в БД). */
+/** Read-only: герої в радіусі MAP_NEARBY_HERO_RADIUS (без мутацій позиції в БД). */
 export async function getNearbyHeroesForMap(
   worldX: number,
   worldY: number,
   excludeCharacterId: string,
   nowMs: number = Date.now()
 ): Promise<NearbyHeroEntry[]> {
-  const R = MAP_NEARBY_LIST_RADIUS;
+  const R = MAP_NEARBY_HERO_RADIUS;
   const R2 = R * R;
   const exclude = String(excludeCharacterId || '').trim();
   if (!exclude) return [];
@@ -113,7 +121,7 @@ export async function getNearbyHeroesForMap(
 
   const candidates: NearbyHeroEntry[] = [];
   for (const raw of rows) {
-    const row = raw as HeroMapRow;
+    const row = raw as unknown as HeroMapRow;
     const moved = resolveMapMovement(row);
     const hx = moved.worldX;
     const hy = moved.worldY;
@@ -122,6 +130,9 @@ export async function getNearbyHeroesForMap(
     if (dx * dx + dy * dy > R2) continue;
     if (isInPvpSafeZone(hx, hy)) continue;
     if (!isCharacterOnlineNow(row.id)) continue;
+    if (Math.max(0, Math.floor(Number(row.hp) || 0)) <= 0) continue;
+    if (parsePvpPendingDefeat(row.pvpPendingDefeatJson)) continue;
+    if (parsePvePendingDefeat(row.pvePendingDefeatJson)) continue;
     const d = Math.hypot(dx, dy);
     const karma = Math.max(0, Math.floor(Number(row.karma) || 0));
     const pvpNickColor = resolvePvpNickColor(

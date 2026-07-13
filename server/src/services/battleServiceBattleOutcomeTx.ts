@@ -22,7 +22,7 @@ import {
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
-import { nearestMapTown } from '../data/mapLocalities.js';
+import { nearestMapTown, resolveNearestTownTeleport } from '../data/mapLocalities.js';
 import {
   serializePvePendingDefeat,
 } from '../domain/pvePendingDefeat.js';
@@ -251,8 +251,12 @@ export async function persistBattleDefeatInTx(
     args;
 
   const recoverHp = Math.max(1, Math.floor(maxHpEff * 0.15));
+  const near = nearestMapTown(char.worldX, char.worldY);
+  const town = resolveNearestTownTeleport(char.worldX, char.worldY);
+  if (!town) throw new Error('teleport_unknown');
   log.push('Ти знепритомнів… Бій завершено.');
   log.push('Всі бафи злетіли від смерті.');
+  log.push('Тебе віднесли до ' + near.labelUk + '.');
   st.log = log.slice(-MAX_BATTLE_LOG);
 
   const worldDefeat = worldCombatStateFromBattleJson(
@@ -271,7 +275,6 @@ export async function persistBattleDefeatInTx(
         st.mobHp,
         st.mobMaxHp
       );
-  const near = nearestMapTown(char.worldX, char.worldY);
   const defeatLog = log.map((x) => String(x));
   const pvePending = serializePvePendingDefeat({
     spawnId: bj.spawnId,
@@ -294,6 +297,14 @@ export async function persistBattleDefeatInTx(
         battleJson: Prisma.JsonNull,
         pvePendingDefeatJson: pvePending,
         mobSpawnHpJson: serializeMobSpawnHpState(mobHpAfterDefeat),
+        worldX: town.worldX,
+        worldY: town.worldY,
+        targetX: 0,
+        targetY: 0,
+        moveStartAt: null,
+        moveFromX: town.worldX,
+        moveFromY: town.worldY,
+        cityId: town.cityId,
         worldCombatStateJson:
           worldDefeat != null
             ? (JSON.parse(JSON.stringify(worldDefeat)) as Prisma.InputJsonValue)

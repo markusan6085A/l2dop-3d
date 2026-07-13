@@ -873,6 +873,29 @@ export function nearestMapTown(worldX: number, worldY: number): MapTownRef {
   return best;
 }
 
+/** Телепорт у найближче місто/селище від координат смерті або «В місто». */
+export function resolveNearestTownTeleport(
+  worldX: number,
+  worldY: number
+): {
+  labelUk: string;
+  teleportId: string;
+  worldX: number;
+  worldY: number;
+  cityId: string;
+} | null {
+  const near = nearestMapTown(worldX, worldY);
+  const dest = getTeleportDestination(near.teleportId);
+  if (!dest) return null;
+  return {
+    labelUk: near.labelUk,
+    teleportId: near.teleportId,
+    worldX: Math.floor(dest.worldX),
+    worldY: Math.floor(dest.worldY),
+    cityId: dest.cityId,
+  };
+}
+
 /**
  * Представники пулів XML/text-rpg (імена як у грі; рівні орієнтовні).
  * Не дублюємо сотні спавнів — лише «хто водиться в околицях» для списку як у around.php.
