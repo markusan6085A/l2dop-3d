@@ -5,6 +5,7 @@ import {
 } from '../domain/spawnSyntheticRewards.js';
 import { resourceDropsForSpawnCatalog } from '../domain/mobResourceLoot.js';
 import { mobCombatFromSpawn } from '../domain/battle.js';
+import { mobKillRewardMult } from '../domain/championMobRules.js';
 import type { DropEntry } from '../types/combatDrop.js';
 import { raidBossRewardPreviewForNpcId } from '../data/l2dopRaidBossRewardPatches.js';
 import { hasCustomNpcDropBag } from '../data/npcDropsResolved.js';
@@ -53,6 +54,15 @@ function dropRowIconUrl(d: DropEntry): string {
   return '/icons/drops/other.svg';
 }
 
+function serializeDropScaled(d: DropEntry, rewardMult: number) {
+  if (rewardMult !== 1 && d.kind === 'adena') {
+    const min = Math.max(0, Math.floor(d.min * rewardMult));
+    const max = Math.max(min, Math.floor(d.max * rewardMult));
+    return serializeDrop({ ...d, min, max });
+  }
+  return serializeDrop(d);
+}
+
 function serializeDrop(d: DropEntry) {
   return {
     id: d.id,
@@ -65,6 +75,11 @@ function serializeDrop(d: DropEntry) {
     l2ItemId: d.l2ItemId,
     iconUrl: dropRowIconUrl(d),
   };
+}
+
+function scaleRewardNumber(value: number, rewardMult: number): number {
+  if (!Number.isFinite(value) || rewardMult === 1) return value;
+  return Math.max(0, Math.floor(value * rewardMult));
 }
 
 export interface SpawnCatalogViewerContext {
@@ -123,15 +138,26 @@ export function getSpawnCatalogInfo(
     !customDropOnly &&
     viewer != null &&
     viewerMaySeeSpoilLoot(viewer.race, viewer.l2Profession, viewer.skillsLearnedJson ?? null);
-  const drops = [...bag.drops, ...resPreview.drops].map(serializeDrop);
-  const spoil = showSpoil
-    ? [...bag.spoil, ...resPreview.spoil].map(serializeDrop)
-    : [];
   const rbPreview =
     npcId != null ? raidBossRewardPreviewForNpcId(npcId) : undefined;
+  const rewardMult = rbPreview
+    ? 1
+    : mobKillRewardMult({ spawnKind: spawn.kind, mobName: spawn.name });
+  const drops = [...bag.drops, ...resPreview.drops].map((d) =>
+    serializeDropScaled(d, rewardMult)
+  );
+  const spoil = showSpoil
+    ? [...bag.spoil, ...resPreview.spoil].map((d) =>
+        serializeDropScaled(d, rewardMult)
+      )
+    : [];
   const rw = rewardExpSpForSpawn(npcId, spawn.level);
-  const rewardExp = rbPreview?.expLabel ?? rw.exp;
-  const rewardSp = rbPreview?.spLabel ?? rw.sp;
+  const rewardExp =
+    rbPreview?.expLabel ??
+    scaleRewardNumber(rw.exp, rewardMult);
+  const rewardSp =
+    rbPreview?.spLabel ??
+    scaleRewardNumber(rw.sp, rewardMult);
   const rewardExpSynthetic = rbPreview != null ? false : rw.synthetic;
   return {
     spawnId: spawn.id,

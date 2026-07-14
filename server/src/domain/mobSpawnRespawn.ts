@@ -4,8 +4,18 @@
 import type { MapSpawnKind } from '../data/mapWorldSpawns.js';
 import type { MobSpawnHpState } from './mobSpawnHpState.js';
 import { parseMobSpawnHpState } from './mobSpawnHpState.js';
+import {
+  CHAMPION_MOB_RESPAWN_MS,
+  isChampionSpawnKind,
+} from './championMobRules.js';
 
 export const REGULAR_MOB_RESPAWN_MS = 30_000;
+
+/** Тривалість респавну після кілу (per character) за типом спавна. */
+export function mobRespawnMsForKind(kind: MapSpawnKind): number {
+  if (isChampionSpawnKind(kind)) return CHAMPION_MOB_RESPAWN_MS;
+  return REGULAR_MOB_RESPAWN_MS;
+}
 
 export function isRegularMobRespawnKind(kind: MapSpawnKind): boolean {
   return (

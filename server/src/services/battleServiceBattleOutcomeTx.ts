@@ -48,7 +48,7 @@ import {
 import type { MapSpawnKind } from '../data/mapWorldSpawns.js';
 import {
   isRegularMobRespawnKind,
-  REGULAR_MOB_RESPAWN_MS,
+  mobRespawnMsForKind,
   setMobSpawnRespawnEntry,
 } from '../domain/mobSpawnRespawn.js';
 import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
@@ -106,7 +106,7 @@ export async function persistBattleVictoryInTx(
     race: char.race,
     l2Profession: char.l2Profession,
     skillsLearnedJson: char.skillsLearnedJson,
-  });
+  }, { spawnKind: spawn.kind, mobName: spawn.name });
   log.push('Перемога!');
   for (const line of loot.logLines) {
     log.push(line);
@@ -166,7 +166,7 @@ export async function persistBattleVictoryInTx(
     mobHpAfterVictory = setMobSpawnRespawnEntry(
       clearMobSpawnHpEntry(mobHpAfterVictory, bj.spawnId),
       bj.spawnId,
-      nowVictoryMs + REGULAR_MOB_RESPAWN_MS
+      nowVictoryMs + mobRespawnMsForKind(spawn.kind)
     );
   } else if (!isSharedWorldBossKind(spawn.kind)) {
     mobHpAfterVictory = clearMobSpawnHpEntry(mobHpAfterVictory, bj.spawnId);

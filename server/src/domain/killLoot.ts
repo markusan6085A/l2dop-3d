@@ -11,6 +11,10 @@ import { rollProceduralResourceLoot } from './mobResourceLoot.js';
 import { dropDisplayNameShort } from '../utils/dropDisplayName.js';
 import { viewerMaySeeSpoilLoot } from './dwarfSpoilerLootGate.js';
 import type { Prisma } from '@prisma/client';
+import type { MapSpawnKind } from '../data/mapWorldSpawns.js';
+import {
+  mobKillRewardMult,
+} from './championMobRules.js';
 
 function rollInt(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1));
@@ -49,6 +53,13 @@ export interface KillLootResult {
   items: KillLootItemLine[];
 }
 
+export interface KillLootOptions {
+  /** Тип спавна (чемпіон → ×10 EXP/SP/адена). */
+  spawnKind?: MapSpawnKind;
+  /** Ім'я моба зі спавна (бонус за таблицею mobNameRewardBonus). */
+  mobName?: string;
+}
+
 /**
  * Нагорода за кілл: базова адена за рівнем (+ колишній fallback), EXP/SP з npc або формула.
  */
@@ -56,7 +67,8 @@ export function rollKillLoot(
   npcId: number | null,
   spawnLevel: number,
   inv: InventoryState,
-  charCtx?: KillLootCharacterContext | null
+  charCtx?: KillLootCharacterContext | null,
+  opts?: KillLootOptions | null
 ): KillLootResult {
   let adena = BigInt(0);
   let next = inv;
@@ -68,14 +80,19 @@ export function rollKillLoot(
     charCtx != null &&
     viewerMaySeeSpoilLoot(charCtx.race, charCtx.l2Profession, charCtx.skillsLearnedJson ?? null);
 
+  const rewardMult = mobKillRewardMult({
+    spawnKind: opts?.spawnKind,
+    mobName: opts?.mobName,
+  });
+
   const bag = ensureMobDropBag(npcId, spawnLevel);
   const customDropOnly = hasCustomNpcDropBag(npcId);
   for (const d of bag.drops) {
     const qty = rollDropLine(d);
     if (qty <= 0) continue;
     if (d.kind === 'adena') {
-      adena += BigInt(qty);
-      adenaLog.push(`+${qty} аден`);
+      adena += BigInt(qty * rewardMult);
+      adenaLog.push(`+${qty * rewardMult} аден`);
     } else if (d.l2ItemId) {
       next = addItemToBag(next, d.l2ItemId, qty);
       const label = dropDisplayNameShort(d.displayName ?? d.id, d.l2ItemId);
@@ -105,8 +122,8 @@ export function rollKillLoot(
       const qty = rollDropLine(d);
       if (qty <= 0) continue;
       if (d.kind === 'adena') {
-        adena += BigInt(qty);
-        adenaLog.push(`(спойл) +${qty} аден`);
+        adena += BigInt(qty * rewardMult);
+        adenaLog.push(`(спойл) +${qty * rewardMult} аден`);
       } else if (d.l2ItemId) {
         next = addItemToBag(next, d.l2ItemId, qty);
         const label = dropDisplayNameShort(d.displayName ?? d.id, d.l2ItemId);
@@ -121,8 +138,9 @@ export function rollKillLoot(
     const syn = syntheticAdenaDropEntry(spawnLevel);
     const qty = rollDropLine(syn);
     if (qty > 0) {
-      adena += BigInt(qty);
-      adenaLog.push(`+${qty} аден`);
+      const scaled = qty * rewardMult;
+      adena += BigInt(scaled);
+      adenaLog.push(`+${scaled} аден`);
     }
   }
 
@@ -134,8 +152,8 @@ export function rollKillLoot(
     spGain = rbKillReward.sp;
   } else {
     const rw = rewardExpSpForSpawn(npcId, spawnLevel);
-    expGain = BigInt(rw.exp);
-    spGain = rw.sp;
+    expGain = BigInt(rw.exp * rewardMult);
+    spGain = rw.sp * rewardMult;
   }
 
   const expSpLog: string[] = [];

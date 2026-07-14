@@ -2,6 +2,7 @@ import type { MapWorldSpawn } from '../data/mapWorldSpawns.js';
 import { l2dopPhysicalBaseDamage } from '../data/l2dopDamageFormulas.js';
 import { raidBossCombatOverrideForNpcId } from '../data/l2dopRaidBossCombatPatches.js';
 import { l2dopNpcIdFromMobId } from '../utils/mobPublicIcon.js';
+import { CHAMPION_COMBAT_STAT_MULT } from './championMobRules.js';
 
 /** Пул HP / «бак» для РБ і епіків; окремо від загрози (atk), щоб не було 25× і до HP, і до урону в картці. */
 const RAID_HP_MULT = 66;
@@ -50,8 +51,9 @@ export function mobCombatFromSpawn(spawn: MapWorldSpawn): {
     hpMult = 2.78;
     offMult = 3;
   } else if (spawn.kind === 'champion') {
-    hpMult = 1.45;
-    offMult = 1.45;
+    hpMult = CHAMPION_COMBAT_STAT_MULT;
+    offMult = CHAMPION_COMBAT_STAT_MULT;
+    defMult = CHAMPION_COMBAT_STAT_MULT;
   }
 
   let maxHp = Math.floor(baseHp * hpMult);

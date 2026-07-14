@@ -17,8 +17,12 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            set -euo pipefail
             cd ~/l2dop-3d
-            git pull origin main
-            npm install
+            git fetch origin main
+            # VPS = дзеркало git; dirty-файли (напр. ручний sed) не блокують деплой.
+            git reset --hard origin/main
+            npm ci
             npm run build
-            pm2 restart all
+            pm2 restart l2dop-3d
+            echo "deployed $(git log -1 --oneline)"
