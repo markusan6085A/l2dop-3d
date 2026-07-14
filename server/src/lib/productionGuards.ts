@@ -1,5 +1,6 @@
 const WEAK_JWT_SECRETS = new Set([
   'my-super-secret-l2-key-2026',
+  'replace-with-long-random-string-min-32-chars',
   'secret',
   'changeme',
   'jwt-secret',

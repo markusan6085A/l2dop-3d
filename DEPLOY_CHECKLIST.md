@@ -100,8 +100,25 @@ pm2 logs l2dop-3d --lines 100
 3. `npm ci && npm run db:migrate:deploy && npm run build && pm2 restart l2dop-3d`
 4. Перевір `/health`
 
+## JWT і секрети (production)
+
+**`JWT_SECRET`** (у `server/.env` на VPS):
+
+- Не комітити в GitHub — файл лише на сервері (`server/.env` у `.gitignore`).
+- Не показувати на стрімах, скрінах, форумах, Discord.
+- Не надсилати іншим людям.
+- Генерація: `openssl rand -base64 48`
+- У репо лишається тільки `server/.env.example` з плейсхолдером.
+
+**Токен гравця** (після `/auth/login` у `localStorage`):
+
+- Це сесійний ключ акаунта — теж не світити на стрімі (DevTools → Application → Local Storage).
+- Якщо токен засвітився — зміни `JWT_SECRET` на VPS і перезапусти сервер (усі сесії скинуться).
+
+Перевірка перед деплоєм: `npm run check:secrets`
+
 ## Важливо
 
 - Не робити hotfix прямо на VPS без commit у репо.
-- Не логувати token/cookie/повний body під час дебагу.
-- Слабкий `JWT_SECRET` блокує старт у `NODE_ENV=production`.
+- Не логувати token/cookie/повний body під час дебагу (сервер redact-ить `Authorization` у логах).
+- Слабкий або placeholder `JWT_SECRET` блокує старт у `NODE_ENV=production`.

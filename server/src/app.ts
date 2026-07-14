@@ -32,7 +32,20 @@ function isNoStoreApiPath(pathname: string): boolean {
 }
 
 export async function buildApp() {
-  const app = Fastify({ logger: true, trustProxy: true });
+  const app = Fastify({
+    logger: {
+      level: process.env.LOG_LEVEL ?? 'info',
+      redact: [
+        'req.headers.authorization',
+        'headers.authorization',
+        'req.body.password',
+        'req.body.password2',
+        'body.password',
+        'body.password2',
+      ],
+    },
+    trustProxy: true,
+  });
 
   await app.register(fastifyCompress, {
     global: true,
