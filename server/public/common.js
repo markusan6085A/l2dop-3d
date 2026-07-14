@@ -1201,6 +1201,8 @@
      */
     ensureNavMinimalChrome: function () {
       if (typeof document === 'undefined' || !document.body) return;
+      /* Головна/реєстрація — без HUD і нижньої сітки; nav-minimal обнуляє pad-top рамки. */
+      if (document.body.classList.contains('l2-page-auth')) return;
       if (
         document.getElementById('l2-nav-bottom') ||
         document.body.classList.contains('l2-app-l2-chrome') ||

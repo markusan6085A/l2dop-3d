@@ -2901,6 +2901,14 @@ body.l2-app-l2-chrome.l2-page-auth div.main {
   box-shadow: none !important;
 }
 
+/* Auth: без HUD — зберегти відступ під верхньою рамкою (не nav-minimal pad-top: 0). */
+html body.l2-app-l2-chrome.l2-page-auth .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
+  padding-top: var(--l2-frame-pad-top) !important;
+  padding-left: var(--l2-frame-pad-x) !important;
+  padding-right: var(--l2-frame-pad-x) !important;
+  padding-bottom: calc(var(--l2-frame-pad-bottom) + env(safe-area-inset-bottom, 0px)) !important;
+}
+
 /* Авторизація: головна — панель входу #1d1c1a */
 body.l2-app-l2-chrome.l2-page-auth main.l2-auth-home {
   box-sizing: border-box;
