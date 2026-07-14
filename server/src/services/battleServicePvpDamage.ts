@@ -22,15 +22,19 @@ export async function applyPvpHitToVictimInTx(
   const attackerId = String(args.attackerId || '').trim();
   if (!victimId || !attackerId || victimId === attackerId) return;
 
-  const victim = await tx.character.findFirst({
-    where: { id: victimId },
-  });
+  const rows = await tx.$queryRaw<
+    Array<{ hp: number; battleJson: Prisma.JsonValue | null }>
+  >`
+    UPDATE "Character"
+    SET hp = GREATEST(0, hp - ${dmg})
+    WHERE id = ${victimId}
+    RETURNING hp, "battleJson"
+  `;
+  const victim = rows[0];
   if (!victim) return;
 
-  const newHp = Math.max(0, victim.hp - dmg);
-  const victimData: Prisma.CharacterUncheckedUpdateInput = {
-    hp: newHp,
-  };
+  const newHp = Math.max(0, Math.floor(Number(victim.hp) || 0));
+  const victimData: Prisma.CharacterUncheckedUpdateInput = {};
 
   const victimBj = parseBattleJson(victim.battleJson);
   if (
@@ -48,7 +52,10 @@ export async function applyPvpHitToVictimInTx(
     victimData.battleJson = serializeBattleJsonForDb(patch);
   }
 
-  await persistCharacterFieldsInTx(tx, victimId, victimData);
+  if (Object.keys(victimData).length > 0) {
+    await persistCharacterFieldsInTx(tx, victimId, victimData);
+  }
+
   await persistCharacterFieldsInTx(tx, attackerId, {
     pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
   });

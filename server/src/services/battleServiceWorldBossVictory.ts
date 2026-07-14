@@ -9,7 +9,10 @@ import { computeVitals } from '../data/l2dopVitals.js';
 import { parseInventory } from '../data/inventory.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
-import { pickWorldBossTopDamageDealer } from '../domain/worldBossSession.js';
+import {
+  isWorldBossLootIssued,
+  pickWorldBossTopDamageDealer,
+} from '../domain/worldBossSession.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
 import { persistBattleVictoryInTx } from './battleServiceBattleOutcomeTx.js';
 import {
@@ -27,9 +30,18 @@ import {
 } from './charService.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import type { BattleVictorySummary } from './battleServiceTypes.js';
-import { lockWorldBossSessionInTx } from './worldBossSessionService.js';
+import {
+  lockWorldBossSessionInTx,
+  tryClaimWorldBossLootInTx,
+} from './worldBossSessionService.js';
 
 type Tx = Prisma.TransactionClient;
+
+type WorldBossVictoryArgs = BattleContinueTurnBase & {
+  cr: CharacterRow;
+  currentMp: number;
+  side: BattleTurnPersistSide;
+};
 
 async function persistWorldBossBattleEndInTx(
   tx: Tx,
@@ -102,6 +114,18 @@ async function persistWorldBossBattleEndInTx(
   return toSnapshot(result.character as CharacterRow);
 }
 
+async function resolveLootRecipientNameInTx(
+  tx: Tx,
+  recipientId: string | null | undefined
+): Promise<string | null> {
+  if (!recipientId) return null;
+  const row = await tx.character.findUnique({
+    where: { id: recipientId },
+    select: { name: true },
+  });
+  return row?.name ?? null;
+}
+
 async function endWorldBossParticipantWithoutLootInTx(
   tx: Tx,
   characterId: string,
@@ -120,7 +144,7 @@ async function endWorldBossParticipantWithoutLootInTx(
   ];
   await persistWorldBossBattleEndInTx(tx, {
     char: row as CharacterRow,
-    expectedRevision: null,
+    expectedRevision: row.revision,
     st: bj,
     playerHp: row.hp,
     currentMp: bj.playerMp ?? 0,
@@ -128,27 +152,83 @@ async function endWorldBossParticipantWithoutLootInTx(
   });
 }
 
+/** Повторний kill / concurrent replay: бій завершується без EXP/луту/adena/mobsKilled. */
+async function finishWorldBossVictoryIdempotentInTx(
+  tx: Tx,
+  args: WorldBossVictoryArgs,
+  lootRecipientName: string | null
+): Promise<{
+  character: CharacterSnapshot;
+  battle: null;
+}> {
+  const msg = lootRecipientName
+    ? 'Бос уже переможений! Нагороду отримав: ' + lootRecipientName + '.'
+    : 'Бос уже переможений.';
+  const log = [...args.log, msg];
+  const snap = await persistWorldBossBattleEndInTx(tx, {
+    char: args.char,
+    expectedRevision: args.expectedRevision,
+    st: args.st,
+    playerHp: args.playerHp,
+    currentMp: args.currentMp,
+    log,
+    side: args.side,
+  });
+  return { character: snap, battle: null };
+}
+
 /** РБ/епік: лут/EXP/SP/adena — гравцю з max totalDamageDealt, не killing blow. */
 export async function resolveWorldBossVictoryInTx(
   tx: Tx,
-  args: BattleContinueTurnBase & {
-    cr: CharacterRow;
-    currentMp: number;
-    side: BattleTurnPersistSide;
-  }
+  args: WorldBossVictoryArgs
 ): Promise<{
   character: CharacterSnapshot;
   victory?: BattleVictorySummary;
   battle: null;
 }> {
+  const nowMs = Date.now();
   const session = await lockWorldBossSessionInTx(tx, args.bj.spawnId);
-  const topDealerId =
-    (session ? pickWorldBossTopDamageDealer(session) : null) ?? args.char.id;
-  const participantIds = session
-    ? Object.keys(session.participants)
-    : [args.char.id];
 
-  if (topDealerId === args.char.id) {
+  if (!session || isWorldBossLootIssued(session)) {
+    const recipientName = await resolveLootRecipientNameInTx(
+      tx,
+      session?.lootRecipientCharacterId
+    );
+    return finishWorldBossVictoryIdempotentInTx(tx, args, recipientName);
+  }
+
+  if (session.mobHp > 0) {
+    return finishWorldBossVictoryIdempotentInTx(tx, args, null);
+  }
+
+  const topDealerId =
+    pickWorldBossTopDamageDealer(session) ?? args.char.id;
+  const topDealerRow = await tx.character.findUnique({
+    where: { id: topDealerId },
+  });
+  const lootRecipientId = topDealerRow ? topDealerId : args.char.id;
+
+  const claimed = await tryClaimWorldBossLootInTx(
+    tx,
+    session,
+    lootRecipientId,
+    nowMs
+  );
+  if (!claimed) {
+    const recipientName = await resolveLootRecipientNameInTx(
+      tx,
+      session.lootRecipientCharacterId
+    );
+    return finishWorldBossVictoryIdempotentInTx(tx, args, recipientName);
+  }
+
+  const participantIds = Object.keys(session.participants);
+  const recipientName =
+    (lootRecipientId === topDealerId && topDealerRow
+      ? topDealerRow.name
+      : args.char.name) ?? args.char.name;
+
+  if (lootRecipientId === args.char.id) {
     const extras = battleTurnJsonExtras(args.side);
     const v = await persistBattleVictoryInTx(tx, {
       userId: args.userId,
@@ -177,9 +257,6 @@ export async function resolveWorldBossVictoryInTx(
     return { ...v, battle: null };
   }
 
-  const topDealerRow = await tx.character.findUnique({
-    where: { id: topDealerId },
-  });
   if (!topDealerRow) {
     const extras = battleTurnJsonExtras(args.side);
     const v = await persistBattleVictoryInTx(tx, {
@@ -200,10 +277,9 @@ export async function resolveWorldBossVictoryInTx(
     return { ...v, battle: null };
   }
 
-  const topDealerName = topDealerRow.name;
   args.log.push(
     'Бос переможений! Найбільше урону: ' +
-      topDealerName +
+      topDealerRow.name +
       ' — нагорода йому.'
   );
 
@@ -214,7 +290,7 @@ export async function resolveWorldBossVictoryInTx(
 
   await persistBattleVictoryInTx(tx, {
     userId: topDealerRow.userId,
-    expectedRevision: null,
+    expectedRevision: topDealerRow.revision,
     char: topDealerRow as CharacterRow,
     bj: { spawnId: args.bj.spawnId },
     spawn: args.spawn,
@@ -238,12 +314,12 @@ export async function resolveWorldBossVictoryInTx(
   });
 
   for (const pid of participantIds) {
-    if (pid === topDealerId || pid === args.char.id) continue;
+    if (pid === lootRecipientId || pid === args.char.id) continue;
     await endWorldBossParticipantWithoutLootInTx(
       tx,
       pid,
       args.bj.spawnId,
-      topDealerName
+      recipientName
     );
   }
 

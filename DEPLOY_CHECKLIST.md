@@ -102,6 +102,15 @@ pm2 logs l2dop-3d --lines 100
 
 ## JWT і секрети (production)
 
+### Дві різні речі
+
+| | `JWT_SECRET` | Bearer-токен гравця |
+|---|---|---|
+| Що це | Ключ підпису всіх токенів (`server/.env`) | Access token одного акаунта після `/auth/login` |
+| Де живе | Лише на VPS, не в git | `localStorage` у браузері (поточна схема) |
+| Витік | **Критичний** — можна підробляти будь-які токени | Доступ лише до **одного** акаунта до expiry |
+| Дія при витоку | Негайна ротація секрету → **усі** сесії скидаються | Відкликати сесію цього акаунта (коли буде refresh/revocation); ротація `JWT_SECRET` — крайній захід |
+
 **`JWT_SECRET`** (у `server/.env` на VPS):
 
 - Не комітити в GitHub — файл лише на сервері (`server/.env` у `.gitignore`).
@@ -110,15 +119,25 @@ pm2 logs l2dop-3d --lines 100
 - Генерація: `openssl rand -base64 48`
 - У репо лишається тільки `server/.env.example` з плейсхолдером.
 
-**Токен гравця** (після `/auth/login` у `localStorage`):
+**Токен гравця** (після `/auth/login`):
 
-- Це сесійний ключ акаунта — теж не світити на стрімі (DevTools → Application → Local Storage).
-- Якщо токен засвітився — зміни `JWT_SECRET` на VPS і перезапусти сервер (усі сесії скинуться).
+- Не світити на стрімі (DevTools → Application → Local Storage).
+- Засвічений токен **тестового** акаунта не вимагає зміни глобального `JWT_SECRET`, якщо є відкликання сесії.
+- **Поточний стан:** access token 7 днів у `localStorage` — прийнятно для dev/закритого тесту; для публічного production це слабке місце (XSS може прочитати `localStorage`).
 
-Перевірка перед деплоєм: `npm run check:secrets`
+**Наступний крок безпеки (не grep, а auth-схема):**
+
+- короткоживучий access token (10–30 хв);
+- refresh token у `HttpOnly` + `Secure` + `SameSite` cookie;
+- refresh у БД у хешованому вигляді + ротація при кожному refresh;
+- «завершити всі сесії» для акаунта;
+- rate limit на `login` і `refresh`.
+
+Перевірка перед деплоєм: `npm run check:secrets`  
+Перевірка redact логів: `npm run test:logger-redact`
 
 ## Важливо
 
 - Не робити hotfix прямо на VPS без commit у репо.
-- Не логувати token/cookie/повний body під час дебагу (сервер redact-ить `Authorization` у логах).
+- Не логувати token/cookie/query з токенами (сервер redact-ить `Authorization`, `Cookie`, `?token=`).
 - Слабкий або placeholder `JWT_SECRET` блокує старт у `NODE_ENV=production`.

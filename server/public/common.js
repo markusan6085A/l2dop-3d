@@ -309,10 +309,33 @@
         fallbackUrl != null && String(fallbackUrl).trim() !== ''
           ? String(fallbackUrl)
           : '/icons/drops/other.svg';
-      if (id <= 0) return fb;
+      var safeFb = global.L2.sanitizeClientIconUrl
+        ? global.L2.sanitizeClientIconUrl(fb)
+        : fb;
+      if (id <= 0) return safeFb;
       var u = global.L2.itemIconById && global.L2.itemIconById[id];
-      if (u != null && String(u).trim() !== '') return String(u);
+      if (u != null && String(u).trim() !== '') {
+        return global.L2.sanitizeClientIconUrl
+          ? global.L2.sanitizeClientIconUrl(String(u))
+          : String(u);
+      }
       return '/game/item-icon/' + id;
+    },
+    /** Лише відносні шляхи /assets, /icons, /game — без javascript:/data:. */
+    sanitizeClientIconUrl: function (url) {
+      var raw = url != null ? String(url).trim() : '';
+      if (!raw) return '/icons/drops/other.svg';
+      if (
+        raw.charAt(0) === '/' &&
+        (raw.indexOf('/assets/') === 0 ||
+          raw.indexOf('/icons/') === 0 ||
+          raw.indexOf('/game/') === 0 ||
+          raw.indexOf('/skills/') === 0 ||
+          raw.indexOf('/ref/') === 0)
+      ) {
+        return raw;
+      }
+      return '/icons/drops/other.svg';
     },
     /** Тон підпису стата (магазин / сумка / модалка). */
     itemStatLineTone: function (labelUk) {
@@ -638,7 +661,9 @@
     },
     resolveSkillIconUrl: function (skillId, iconUrl) {
       if (iconUrl != null && String(iconUrl).charAt(0) === '/') {
-        return String(iconUrl);
+        return global.L2.sanitizeClientIconUrl
+          ? global.L2.sanitizeClientIconUrl(String(iconUrl))
+          : String(iconUrl);
       }
       var id = normalizePositiveInt(skillId);
       if (id > 0) return '/game/skill-icon/' + id;

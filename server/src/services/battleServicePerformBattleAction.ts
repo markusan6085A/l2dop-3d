@@ -1,4 +1,3 @@
-import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import {
   isPvpBattleJson,
   resolveBattleSpawnMeta,
@@ -81,7 +80,6 @@ import { FIGHTER_PHYSICAL_SOULSHOT_ITEM_IDS } from '../data/fighterPhysicalSouls
 import { MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS } from '../data/mysticBlessedSpiritshot.js';
 import { applyBattlePotionHoTTicks } from '../domain/battleCombatPotions.js';
 import { consumeBowArrowsOnHit } from '../domain/battleBowArrowConsumption.js';
-import { rollKillLoot } from '../domain/killLoot.js';
 import {
   applyMobCounterDamage,
   resolveMobShouldCounterAttack,
@@ -228,23 +226,8 @@ export async function performBattleAction(
     }
     const log = [...st.log];
     const initialLogLen = log.length;
-    const pushExtraMobLootLog = (
-      mobName: string,
-      exLoot: ReturnType<typeof rollKillLoot>
-    ) => {
+    const pushExtraMobKillLog = (mobName: string) => {
       log.push('Додаткова ціль повалена: ' + mobName + '.');
-      log.push(
-        'Здобуто: +' +
-          exLoot.adena.toString() +
-          ' адени, +' +
-          Number(exLoot.spGain) +
-          ' SP, +' +
-          exLoot.expGain.toString() +
-          ' EXP.'
-      );
-      for (const it of exLoot.items) {
-        log.push('Отримано: ' + it.label + ' ×' + it.qty + '.');
-      }
     };
     let playerHp = Math.min(
       Math.max(0, char.hp),
@@ -832,14 +815,7 @@ export async function performBattleAction(
           const before = ex.mobHp;
           ex.mobHp = Math.max(0, ex.mobHp - pDmg);
           if (before > 0 && ex.mobHp <= 0) {
-            const exSpawn = getWorldSpawnById(ex.spawnId);
-            const exLevel = exSpawn?.level ?? spawn.level;
-            const exLoot = rollKillLoot(null, exLevel, inv, {
-              race: char.race,
-              l2Profession: profAct,
-              skillsLearnedJson: char.skillsLearnedJson,
-            });
-            pushExtraMobLootLog(ex.name, exLoot);
+            pushExtraMobKillLog(ex.name);
           }
         }
       }
@@ -871,14 +847,7 @@ export async function performBattleAction(
         const before = ex.mobHp;
         ex.mobHp = Math.max(0, ex.mobHp - pDmg);
         if (before > 0 && ex.mobHp <= 0) {
-          const exSpawn = getWorldSpawnById(ex.spawnId);
-          const exLevel = exSpawn?.level ?? spawn.level;
-          const exLoot = rollKillLoot(null, exLevel, inv, {
-            race: char.race,
-            l2Profession: profAct,
-            skillsLearnedJson: char.skillsLearnedJson,
-          });
-          pushExtraMobLootLog(ex.name, exLoot);
+          pushExtraMobKillLog(ex.name);
         }
       }
       log.push(

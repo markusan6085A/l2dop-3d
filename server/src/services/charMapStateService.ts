@@ -1,7 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { expSegmentForLevelBar, levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { resolveMapLocality } from '../data/mapLocalities.js';
-import { resolveMapMovementPatch } from '../domain/mapMovement.js';
 import {
   MAP_CATALOG_VERSION,
   mapSyncHasChanges,
@@ -10,7 +9,7 @@ import {
 import { prisma } from '../lib/prisma.js';
 import { getNearbyHeroesForMap } from './mapNearbyHeroesService.js';
 import { buildMapNearbySpawnViews } from './mapNearbySpawnsQuery.js';
-import { computePassiveHpRegenPatch } from './charPassiveRegen.js';
+import { applyCharacterReadView } from './charReadView.js';
 import type { CharacterRow } from './charTypes.js';
 import {
   findPvpIncomingForCharacter,
@@ -58,46 +57,16 @@ function mapStateFromRow(row: CharacterRow): CharacterMapStatePayload {
   };
 }
 
-/** Read-path: regen HP + рух по карті; без gearCatalog / інвентарних міграцій. */
+/** Read-path: regen HP + рух по карті в пам’яті; без write у БД. */
 export async function getCharacterMapStateForUser(
   userId: string
 ): Promise<CharacterMapStatePayload | null> {
-  return prisma.$transaction(async (tx) => {
-    const row = await tx.character.findFirst({
-      where: { userId },
-      orderBy: { lastUpdate: 'desc' },
-    });
-    if (!row) return null;
-
-    const cr = row as CharacterRow;
-    const nowMs = Date.now();
-    const data: Prisma.CharacterUncheckedUpdateInput = {};
-
-    const regenPatch = computePassiveHpRegenPatch(cr, nowMs);
-    if (regenPatch.changed) {
-      data.hp = regenPatch.nextHp;
-    }
-
-    const movePatch = resolveMapMovementPatch(cr, nowMs);
-    if (movePatch.changed) {
-      data.worldX = movePatch.data.worldX;
-      data.worldY = movePatch.data.worldY;
-      data.targetX = movePatch.data.targetX;
-      data.targetY = movePatch.data.targetY;
-      data.moveStartAt = movePatch.data.moveStartAt;
-      data.moveFromX = movePatch.data.moveFromX;
-      data.moveFromY = movePatch.data.moveFromY;
-    }
-
-    if (Object.keys(data).length === 0) {
-      return mapStateFromRow(cr);
-    }
-    const next = (await tx.character.update({
-      where: { id: cr.id },
-      data,
-    })) as CharacterRow;
-    return mapStateFromRow(next);
+  const row = await prisma.character.findFirst({
+    where: { userId },
+    orderBy: { lastUpdate: 'desc' },
   });
+  if (!row) return null;
+  return mapStateFromRow(applyCharacterReadView(row as CharacterRow));
 }
 
 export interface MapSyncPayload {

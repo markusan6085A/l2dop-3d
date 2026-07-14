@@ -125,6 +125,10 @@ export interface WorldBossSessionState {
   firstAggroDelayMs: number;
   /** Час наступної автоатаки (nowMs >= next → due). */
   nextMobAutoAttackAtMs: number;
+  /** Нагорода top dealer вже видана — захист від double-loot при concurrent kill. */
+  lootIssued?: boolean;
+  lootIssuedAt?: number;
+  lootRecipientCharacterId?: string | null;
 }
 
 export interface WorldBossParticipantContext {
@@ -247,6 +251,15 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
   if (!currentTargetCharacterId) {
     nextMobAutoAttackAtMs = WORLD_BOSS_NO_ATTACK_SCHEDULED;
   }
+  const lootIssued = o.lootIssued === true;
+  const lootIssuedAt =
+    o.lootIssuedAt != null && Number.isFinite(Number(o.lootIssuedAt))
+      ? Math.floor(Number(o.lootIssuedAt))
+      : undefined;
+  const lootRecipientCharacterId =
+    o.lootRecipientCharacterId != null
+      ? String(o.lootRecipientCharacterId).trim() || null
+      : null;
   return {
     spawnId,
     mobHp: Math.max(0, Math.floor(mobHp)),
@@ -266,7 +279,14 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
     autoAttackIntervalMs: timing.autoAttackIntervalMs,
     firstAggroDelayMs: timing.firstAggroDelayMs,
     nextMobAutoAttackAtMs,
+    ...(lootIssued ? { lootIssued: true } : {}),
+    ...(lootIssuedAt != null ? { lootIssuedAt } : {}),
+    ...(lootRecipientCharacterId ? { lootRecipientCharacterId } : {}),
   };
+}
+
+export function isWorldBossLootIssued(session: WorldBossSessionState): boolean {
+  return session.lootIssued === true;
 }
 
 function participantPresenceMs(

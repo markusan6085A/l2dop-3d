@@ -44,6 +44,8 @@
     "gen:drops-shop-catalog": "node server/scripts/gen-drops-shop-catalog.mjs",
     "gen:gm-shop-from-text-rpg": "tsx server/scripts/gen-l2dop-gm-shop-from-text-rpg.ts",
     "check:secrets": "tsx server/scripts/check-tracked-secrets.ts",
+    "test:logger-redact": "tsx server/scripts/logger-redact-smoke.ts",
+    "test:world-boss-loot-idempotency": "tsx server/scripts/world-boss-loot-idempotency-smoke.ts",
     "test:integration:stability": "tsx server/scripts/integration-stability-smoke.ts",
     "test:stress:rapid": "tsx server/scripts/stress-rapid-actions.ts",
     "sim:adena-farm": "tsx server/scripts/simulate-adena-farm.ts",

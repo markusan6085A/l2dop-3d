@@ -327,6 +327,19 @@
     }
   }
 
+  function appendHotbarPickImg(button, src) {
+    var safe =
+      global.L2 && typeof L2.sanitizeClientIconUrl === 'function'
+        ? L2.sanitizeClientIconUrl(src)
+        : src;
+    var img = document.createElement('img');
+    img.src = safe;
+    img.alt = '';
+    img.className = 'l2-battle-hotbar-pick-img';
+    img.loading = 'lazy';
+    button.appendChild(img);
+  }
+
   function skillIconUrl(actionId, l2SkillId) {
     /* Файл з пакета: public/skills/attack.jpg (не обов’язково той самий арт, що 0001.jpg). */
     if (actionId === 'attack') {
@@ -1064,10 +1077,7 @@
               b.type = 'button';
               b.className = 'l2-battle-hotbar-pick';
               b.title = sk.labelUk || sk.id;
-              b.innerHTML =
-                '<img src="' +
-                skillIconUrl(sk.id, sk.l2SkillId) +
-                '" alt="" class="l2-battle-hotbar-pick-img" loading="lazy"/>';
+              appendHotbarPickImg(b, skillIconUrl(sk.id, sk.l2SkillId));
               b.addEventListener('click', function () {
                 if (pickerSlot == null) return;
                 slotsCache[pickerSlot] = { k: 'a', a: canonicalBattleActionId(sk.id) };
@@ -1097,10 +1107,7 @@
               bc.type = 'button';
               bc.className = 'l2-battle-hotbar-pick';
               bc.title = itemNameUk(row.itemId) + ' ×' + row.qty;
-              bc.innerHTML =
-                '<img src="' +
-                itemIconUrlForBattleItem(row.itemId) +
-                '" alt="" class="l2-battle-hotbar-pick-img" loading="lazy"/>';
+              appendHotbarPickImg(bc, itemIconUrlForBattleItem(row.itemId));
               bc.addEventListener('click', function () {
                 if (pickerSlot == null) return;
                 slotsCache[pickerSlot] = { k: 'u', id: row.itemId };
@@ -1129,10 +1136,7 @@
               b2.type = 'button';
               b2.className = 'l2-battle-hotbar-pick';
               b2.title = itemNameUk(row.itemId);
-              b2.innerHTML =
-                '<img src="' +
-                itemIconUrlForBattleItem(row.itemId) +
-                '" alt="" class="l2-battle-hotbar-pick-img" loading="lazy"/>';
+              appendHotbarPickImg(b2, itemIconUrlForBattleItem(row.itemId));
               b2.addEventListener('click', function () {
                 if (pickerSlot == null) return;
                 slotsCache[pickerSlot] = { k: 'i', id: row.itemId, e: row.enchant };
@@ -1175,7 +1179,7 @@
                 tit = itemNameUk(s.id);
               }
               b3.title = tit;
-              b3.innerHTML = '<img src="' + src + '" alt="" class="l2-battle-hotbar-pick-img"/>';
+              appendHotbarPickImg(b3, src);
               b3.addEventListener('click', function () {
                 slotsCache[ent.idx] = null;
                 saveSlots(character.id, slotsCache, character);

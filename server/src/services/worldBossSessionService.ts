@@ -115,6 +115,23 @@ export async function lockWorldBossSessionInTx(
   return lockSessionRow(tx, spawnId);
 }
 
+/** Сесія вже під FOR UPDATE. Повертає false, якщо lootIssued вже true. */
+export async function tryClaimWorldBossLootInTx(
+  tx: Tx,
+  session: WorldBossSessionState,
+  recipientCharacterId: string,
+  nowMs: number
+): Promise<boolean> {
+  if (session.lootIssued) return false;
+  const recipient = String(recipientCharacterId || '').trim();
+  if (!recipient) return false;
+  session.lootIssued = true;
+  session.lootIssuedAt = nowMs;
+  session.lootRecipientCharacterId = recipient;
+  await saveSession(tx, session);
+  return true;
+}
+
 async function saveSession(tx: Tx, state: WorldBossSessionState): Promise<void> {
   await tx.worldBossSession.upsert({
     where: { spawnId: state.spawnId },

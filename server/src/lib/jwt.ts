@@ -11,6 +11,7 @@ function secret(): string {
 }
 
 export function signAccessToken(userId: string): string {
+  // TODO(prod-auth): скоротити до 10–30 хв після впровадження HttpOnly refresh cookie.
   return jwt.sign({ sub: userId }, secret(), {
     expiresIn: '7d',
     issuer: ISS,

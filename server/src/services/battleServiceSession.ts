@@ -20,8 +20,6 @@ import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
   combatOptsFromRow,
-  ensureSanitizedSkillsLearnedRow,
-  ensureMysticStarterSkillsRow,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -38,7 +36,7 @@ import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { battleViewFromState, skillCooldownUiContextFromParts } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
-import { applyPassiveAndMove } from './battleServiceApplyPassive.js';
+import { applyCharacterReadView } from './charReadView.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
@@ -300,22 +298,14 @@ export async function getBattleState(
   pvpIncoming: PvpIncomingAttack | null;
 } | null> {
   /**
-   * Read-only resync (F5 / 409): без flush RB, PvP refresh, sanitize.
-   * Pending RB damage застосовує лише background tick.
-   * Техборг: `ensureSanitizedSkillsLearnedRow` / `applyPassiveAndMove` ще можуть писати в БД.
+   * Read-only resync (F5 / 409): без flush RB, PvP refresh, без write у БД.
    */
   let row = (await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
   })) as CharacterRow | null;
   if (!row) return null;
-  row = (await ensureSanitizedSkillsLearnedRow(
-    row as CharacterRow
-  )) as CharacterRow;
-  row = (await ensureMysticStarterSkillsRow(
-    row as CharacterRow
-  )) as CharacterRow;
-  row = (await applyPassiveAndMove(row as CharacterRow)) as CharacterRow;
+  row = applyCharacterReadView(row);
   const snap = toSnapshot(row as CharacterRow);
   const pvpIncoming = await findPvpIncomingForCharacter(snap.id);
   if (snap.pveDefeat || snap.pvpDefeat) {

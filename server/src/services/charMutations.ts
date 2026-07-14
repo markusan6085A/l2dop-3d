@@ -2,29 +2,18 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import {
   parseInventory,
-  parseInventoryRaw,
-  stripEquippedFromStacks,
-  needsStarterKitMigration,
-  migrateInventoryToSk2,
   equipFromBag,
   unequipSlot,
-  ensureMysticRobeStarterPieces,
 } from '../data/inventory.js';
-import { resolveMapMovement, resolveMapMovementPatch } from '../domain/mapMovement.js';
+import { resolveMapMovement } from '../domain/mapMovement.js';
 import {
   gameConflictFromMutation,
 } from './charConflict.js';
-import { applyPassiveHpRegen, computePassiveHpRegenPatch } from './charPassiveRegen.js';
+import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
-import { normalizeLearnedSkillsJson } from '../data/humanFighterSkillCatalog.js';
-import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
-import { resolveL2ProfessionForSkillsRow } from '../data/l2dopHumanFighterBattleSkills.js';
-import {
-  isMysticClassBranch,
-  MYSTIC_STARTER_LEARNED_SKILLS,
-} from '../data/l2dopHumanMysticBattleSkills.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { applyCharacterReadView } from './charReadView.js';
 
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
@@ -114,125 +103,12 @@ export async function applyPersistedCombatBuffs(
 export async function getSnapshotForUser(
   userId: string
 ): Promise<CharacterSnapshot | null> {
-  return prisma.$transaction(async (tx) => {
-    const row = await tx.character.findFirst({
-      where: { userId },
-      orderBy: { lastUpdate: 'desc' },
-    });
-    if (!row) return null;
-
-    const cr = row as CharacterRow;
-    const nowMs = Date.now();
-    const data: Prisma.CharacterUncheckedUpdateInput = {};
-    let bumpRevision = false;
-
-    let invJsonForShadow = cr.inventoryJson;
-    const invRaw = parseInventoryRaw(cr.inventoryJson);
-    const invStripped = stripEquippedFromStacks(invRaw);
-    if (
-      JSON.stringify(invRaw.stacks) !== JSON.stringify(invStripped.stacks)
-    ) {
-      invJsonForShadow = invStripped as unknown as Prisma.JsonValue;
-      data.inventoryJson = invStripped as unknown as Prisma.InputJsonValue;
-      bumpRevision = true;
-    }
-    let inv = invStripped;
-    if (needsStarterKitMigration(inv)) {
-      const migrated = migrateInventoryToSk2(inv);
-      inv = migrated;
-      invJsonForShadow = migrated as unknown as Prisma.JsonValue;
-      data.inventoryJson = migrated as unknown as Prisma.InputJsonValue;
-      bumpRevision = true;
-    }
-    const robePatch = ensureMysticRobeStarterPieces(inv, cr.classBranch);
-    if (robePatch.changed) {
-      inv = robePatch.inv;
-      invJsonForShadow = robePatch.inv as unknown as Prisma.JsonValue;
-      data.inventoryJson = robePatch.inv as unknown as Prisma.InputJsonValue;
-      bumpRevision = true;
-    }
-
-    const prof = resolveL2ProfessionForSkillsRow(cr);
-    const currentEntries = normalizeLearnedSkillsJson(cr.skillsLearnedJson);
-    let nextEntries = filterLearnedSkillEntriesForCharacter(
-      currentEntries,
-      cr.race,
-      cr.classBranch,
-      prof
-    );
-    const sa = JSON.stringify(
-      [...currentEntries].sort((x, y) => x.battleId.localeCompare(y.battleId))
-    );
-    const sbFiltered = JSON.stringify(
-      [...nextEntries].sort((x, y) => x.battleId.localeCompare(y.battleId))
-    );
-    if (sa !== sbFiltered) {
-      bumpRevision = true;
-    }
-    if (isMysticClassBranch(cr.classBranch)) {
-      const have = new Set(
-        nextEntries.filter((e) => e.level >= 1).map((e) => e.battleId)
-      );
-      const missingStarters = MYSTIC_STARTER_LEARNED_SKILLS.filter(
-        (s) => !have.has(s.battleId)
-      );
-      if (missingStarters.length > 0) {
-        nextEntries = normalizeLearnedSkillsJson([
-          ...nextEntries,
-          ...missingStarters,
-        ]);
-        bumpRevision = true;
-      }
-    }
-    const sb = JSON.stringify(
-      [...nextEntries].sort((x, y) => x.battleId.localeCompare(y.battleId))
-    );
-    const oldSkillsSorted = JSON.stringify(
-      [...normalizeLearnedSkillsJson(cr.skillsLearnedJson)].sort((x, y) =>
-        x.battleId.localeCompare(y.battleId)
-      )
-    );
-    let skillsJsonForShadow = cr.skillsLearnedJson;
-    if (sb !== oldSkillsSorted) {
-      skillsJsonForShadow = nextEntries as unknown as Prisma.JsonValue;
-      data.skillsLearnedJson = nextEntries as unknown as Prisma.InputJsonValue;
-    }
-
-    const shadowRow = {
-      ...cr,
-      inventoryJson: invJsonForShadow,
-      skillsLearnedJson: skillsJsonForShadow,
-    } as CharacterRow;
-
-    const regenPatch = computePassiveHpRegenPatch(shadowRow, nowMs);
-    if (regenPatch.changed) {
-      data.hp = regenPatch.nextHp;
-    }
-
-    const movePatch = resolveMapMovementPatch(shadowRow, nowMs);
-    if (movePatch.changed) {
-      data.worldX = movePatch.data.worldX;
-      data.worldY = movePatch.data.worldY;
-      data.targetX = movePatch.data.targetX;
-      data.targetY = movePatch.data.targetY;
-      data.moveStartAt = movePatch.data.moveStartAt;
-      data.moveFromX = movePatch.data.moveFromX;
-      data.moveFromY = movePatch.data.moveFromY;
-    }
-
-    const hasWrite = Object.keys(data).length > 0;
-    if (!hasWrite) {
-      return toSnapshot(cr);
-    }
-    if (bumpRevision) {
-      data.revision = { increment: 1 };
-    }
-    const next = await tx.character.update({
-      where: { id: cr.id },
-      data,
-    });
-    return toSnapshot(next as CharacterRow);
+  const row = await prisma.character.findFirst({
+    where: { userId },
+    orderBy: { lastUpdate: 'desc' },
   });
+  if (!row) return null;
+  return toSnapshot(applyCharacterReadView(row as CharacterRow));
 }
 
 export async function applyEquipFromBag(
