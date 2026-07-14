@@ -1,5 +1,9 @@
 import type { BattleActionId, BattleJsonState } from '../domain/battle.js';
 import { ZEALOT_EFFECT_DURATION_MS } from '../domain/battleTypes.js';
+import {
+  battleLogSeqFromState,
+  battleVersionFromState,
+} from '../domain/battleVersion.js';
 import type { InventoryState } from '../data/inventory.js';
 import {
   HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ,
@@ -432,6 +436,8 @@ export function battleViewFromState(
     ...(typeof st.maxSonicCharges === 'number' && st.maxSonicCharges > 0
       ? { sonicMaxCharges: Math.floor(st.maxSonicCharges) }
       : {}),
+    battleVersion: battleVersionFromState(st),
+    logSeq: battleLogSeqFromState(st),
   };
 }
 

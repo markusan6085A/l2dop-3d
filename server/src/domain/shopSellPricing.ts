@@ -11,7 +11,7 @@ export function isChargeShotItemId(itemId: number): boolean {
 }
 
 export function shopSellUnitAdenaFromBuyPrice(
-  itemId: number,
+  _itemId: number,
   buyPriceAdena: number
 ): number {
   const buy = Math.max(0, Math.floor(buyPriceAdena));

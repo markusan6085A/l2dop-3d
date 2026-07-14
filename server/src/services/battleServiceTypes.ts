@@ -80,6 +80,9 @@ export interface BattleView {
    */
   sonicCharges?: number;
   sonicMaxCharges?: number;
+  /** Для легкого poll `/game/battle/sync`. */
+  battleVersion?: number;
+  logSeq?: number;
 }
 
 /** Відповідь на останній удар, коли моб переможений — екран перемоги в клієнті. */

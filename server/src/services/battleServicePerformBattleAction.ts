@@ -45,7 +45,6 @@ import {
   combatOptsFromRow,
   toSnapshot,
   type CharacterRow,
-  type CharacterSnapshot,
 } from './charService.js';
 import {
   computeCombatStats,
@@ -74,11 +73,7 @@ import {
   mobEvasionForBattle,
 } from './battleServiceDamageRolls.js';
 import { battleActionAllowed } from './battleServiceBattleUi.js';
-import type {
-  BattleDefeatSummary,
-  BattleVictorySummary,
-  BattleView,
-} from './battleServiceTypes.js';
+import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import { ensureWhirlwindExtraMobs } from '../domain/battleWhirlwindExtras.js';
@@ -94,6 +89,7 @@ import {
 import {
   persistBattleContinueFromTurn,
   resolveMobDeadVictoryInTx,
+  wrapBattleDefeatAsDelta,
   type BattleContinueTurnBase,
   type BattleTurnPersistSide,
 } from './battleServicePerformBattleAction.outcome.js';
@@ -134,12 +130,7 @@ export async function performBattleAction(
     mysticSpiritshotItemId?: number;
     battlePotionItemId?: number;
   }
-): Promise<{
-  character: CharacterSnapshot;
-  battle: BattleView | null;
-  victory?: BattleVictorySummary;
-  defeat?: BattleDefeatSummary;
-}> {
+): Promise<BattleActionResponse> {
   return prisma.$transaction(async (tx) => {
     let char = await tx.character.findFirst({
       where: { userId },
@@ -161,11 +152,10 @@ export async function performBattleAction(
     if (!bj) {
       const snapAfterFlush = toSnapshot(char as CharacterRow);
       if (snapAfterFlush.pveDefeat) {
-        return {
+        return wrapBattleDefeatAsDelta({
           character: snapAfterFlush,
-          battle: null,
           defeat: snapAfterFlush.pveDefeat,
-        };
+        });
       }
       throw new Error('battle_none');
     }
@@ -237,6 +227,7 @@ export async function performBattleAction(
       }
     }
     const log = [...st.log];
+    const initialLogLen = log.length;
     const pushExtraMobLootLog = (
       mobName: string,
       exLoot: ReturnType<typeof rollKillLoot>
@@ -266,6 +257,7 @@ export async function performBattleAction(
         ? st.playerMp
         : maxMpEff;
     currentMp = Math.min(maxMpEff, Math.max(0, Math.floor(currentMp)));
+    const initialMp = currentMp;
 
     const mobEva = mobEvasionForBattle(st, spawn.level);
     const maxHpBattle = effectiveBattleMaxHp(maxHpEff, st.battleMods);
@@ -1001,7 +993,14 @@ export async function performBattleAction(
       nextCooldowns,
       inventoryDirty,
       inv,
+      hotbarStale:
+        activeBuffsChanged ||
+        cooldownsChanged ||
+        !!inventoryDirty ||
+        Math.floor(currentMp) !== Math.floor(initialMp),
     };
+
+    const logLinesAdded = Math.max(0, log.length - initialLogLen);
 
     if (mobHp <= 0) {
       const victory = await resolveMobDeadVictoryInTx(tx, {
@@ -1015,7 +1014,12 @@ export async function performBattleAction(
 
     /** PvP: без автоконтратаки моба — ходи лише гравці (окремий flow пізніше). */
     if (isPvpBattleJson(bj)) {
-      return persistBattleContinueFromTurn(tx, continueBase, persistSide);
+      return persistBattleContinueFromTurn(
+        tx,
+        continueBase,
+        persistSide,
+        logLinesAdded
+      );
     }
 
     if (worldBossBattle) {
@@ -1053,12 +1057,13 @@ export async function performBattleAction(
           st,
           log,
         });
-        return { ...d, battle: null };
+        return wrapBattleDefeatAsDelta(d);
       }
       return persistBattleContinueFromTurn(
         tx,
         { ...continueBase, char: char as CharacterRow, playerHp, mobHp, st },
-        persistSide
+        persistSide,
+        logLinesAdded
       );
     }
 
@@ -1072,7 +1077,12 @@ export async function performBattleAction(
     });
 
     if (!shouldMobCounterAttack) {
-      return persistBattleContinueFromTurn(tx, continueBase, persistSide);
+      return persistBattleContinueFromTurn(
+        tx,
+        continueBase,
+        persistSide,
+        logLinesAdded
+      );
     }
 
     const countered = applyMobCounterDamage({
@@ -1100,13 +1110,14 @@ export async function performBattleAction(
         st,
         log,
       });
-      return { ...d, battle: null };
+      return wrapBattleDefeatAsDelta(d);
     }
 
     return persistBattleContinueFromTurn(
       tx,
       { ...continueBase, playerHp, mobHp },
-      persistSide
+      persistSide,
+      logLinesAdded
     );
   });
 }

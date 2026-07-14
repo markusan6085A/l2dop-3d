@@ -1064,6 +1064,23 @@
     });
   }
 
+  async function getBattleSync(query) {
+    var qs = '';
+    if (query && typeof query === 'object') {
+      if (query.battleVersion != null) {
+        qs += 'battleVersion=' + encodeURIComponent(String(query.battleVersion));
+      }
+      if (query.lastLogSeq != null) {
+        if (qs) qs += '&';
+        qs += 'lastLogSeq=' + encodeURIComponent(String(query.lastLogSeq));
+      }
+    }
+    var path = '/game/battle/sync' + (qs ? '?' + qs : '');
+    return fetchJson(path, {
+      headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
+    });
+  }
+
   async function startPvpBattle(targetCharacterId, expectedRevision) {
     return fetchJson('/game/battle/pvp/start', {
       method: 'POST',
@@ -1238,10 +1255,107 @@
 
     var character = state.character;
     var battle = state.battle;
+    syncBattleTrackFromView(battle);
     var battleHotbar = null;
     var battleSyncTimer = null;
+    var battleSyncInFlight = false;
     var BATTLE_SYNC_MS = 5000;
     var lastBattleVisualSig = '';
+    var lastBattleVersion = 0;
+    var lastBattleLogSeq = 0;
+
+    function syncBattleTrackFromView(b) {
+      if (!b) return;
+      if (typeof b.battleVersion === 'number' && Number.isFinite(b.battleVersion)) {
+        lastBattleVersion = Math.floor(b.battleVersion);
+      }
+      if (typeof b.logSeq === 'number' && Number.isFinite(b.logSeq)) {
+        lastBattleLogSeq = Math.floor(b.logSeq);
+      } else if (b.log && b.log.length) {
+        lastBattleLogSeq = b.log.length;
+      }
+    }
+
+    function applyBattleDelta(delta) {
+      if (!delta) return false;
+      if (!delta.changed) {
+        if (typeof delta.battleVersion === 'number') {
+          lastBattleVersion = Math.floor(delta.battleVersion);
+        }
+        if (typeof delta.logSeq === 'number') {
+          lastBattleLogSeq = Math.floor(delta.logSeq);
+        }
+        if (delta.revision != null && character) {
+          character.revision = delta.revision;
+          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        }
+        return false;
+      }
+      if (character) {
+        if (delta.revision != null) character.revision = delta.revision;
+        if (delta.characterHp != null) character.hp = delta.characterHp;
+        if (delta.characterMp != null) character.mp = delta.characterMp;
+        if (delta.characterMaxHp != null) character.maxHp = delta.characterMaxHp;
+        if (delta.characterMaxMp != null) character.maxMp = delta.characterMaxMp;
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+      }
+      if (delta.battleEnded || delta.outcome === 'DEFEAT') {
+        battle = null;
+        lastBattleVersion = 0;
+      } else if (battle) {
+        if (delta.mobHp != null) battle.mobHp = delta.mobHp;
+        if (delta.mobMaxHp != null) battle.mobMaxHp = delta.mobMaxHp;
+        if (delta.logTail && delta.logTail.length) {
+          var curLog = battle.log ? battle.log.slice() : [];
+          for (var li = 0; li < delta.logTail.length; li++) {
+            curLog.push(delta.logTail[li]);
+          }
+          battle.log = curLog;
+        }
+        if (delta.mysticSkillCdUntil) {
+          battle.mysticSkillCdUntil = delta.mysticSkillCdUntil;
+        }
+      }
+      if (typeof delta.battleVersion === 'number') {
+        lastBattleVersion = Math.floor(delta.battleVersion);
+      }
+      if (typeof delta.logSeq === 'number') {
+        lastBattleLogSeq = Math.floor(delta.logSeq);
+      }
+      return true;
+    }
+
+    async function syncBattleFromServerFull() {
+      var st = await getBattleState();
+      if (!st || st._err || !st.character) return false;
+      character = st.character;
+      battle = st.battle;
+      syncBattleTrackFromView(battle);
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+      if (checkPvpDefeatFromCharacter(character)) {
+        stopBattleSyncPoll();
+        return true;
+      }
+      if (checkPveDefeatFromCharacter(character)) {
+        renderPlayerBars(character);
+        stopBattleSyncPoll();
+        return true;
+      }
+      if (!battle) {
+        var savedDefFull = loadDefeatFromSession();
+        if (savedDefFull) {
+          renderPlayerBars(character);
+          showDefeatScreen(savedDefFull);
+          stopBattleSyncPoll();
+          return true;
+        }
+        return false;
+      }
+      refreshBattleUI(false);
+      return false;
+    }
 
     function battleVisualSig(c, b) {
       if (!c || !b) return '';
@@ -1291,38 +1405,66 @@
       if (battle && battle.spawnId && String(battle.spawnId).indexOf('pvp:') === 0) {
         return 5000;
       }
-      if (battle && mobKindUsesNumericHpBar(battle.kind)) return 10000;
-      return BATTLE_SYNC_MS;
+      if (battle && mobKindUsesNumericHpBar(battle.kind)) return 2500;
+      return 0;
     }
 
     async function syncBattleFromServer() {
-      var st = await getBattleState();
-      if (!st || st._err || !st.character) return false;
-      character = st.character;
-      battle = st.battle;
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-      if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
-      if (checkPvpDefeatFromCharacter(character)) {
-        stopBattleSyncPoll();
-        return true;
-      }
-      if (checkPveDefeatFromCharacter(character)) {
-        renderPlayerBars(character);
-        stopBattleSyncPoll();
-        return true;
-      }
-      if (!battle) {
-        var savedDef = loadDefeatFromSession();
-        if (savedDef) {
-          renderPlayerBars(character);
-          showDefeatScreen(savedDef);
+      if (battleSyncInFlight) return false;
+      if (!battle) return syncBattleFromServerFull();
+      battleSyncInFlight = true;
+      try {
+        var st = await getBattleSync({
+          battleVersion: lastBattleVersion,
+          lastLogSeq: lastBattleLogSeq,
+        });
+        if (!st || st._err) {
+          return syncBattleFromServerFull();
+        }
+        if (st.hotbarStale) {
+          return syncBattleFromServerFull();
+        }
+        if (!st.changed) {
+          if (st.revision != null && character) {
+            character.revision = st.revision;
+            if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          }
+          if (typeof st.battleVersion === 'number') {
+            lastBattleVersion = Math.floor(st.battleVersion);
+          }
+          if (typeof st.logSeq === 'number') {
+            lastBattleLogSeq = Math.floor(st.logSeq);
+          }
+          return false;
+        }
+        if (st.outcome === 'DEFEAT' || st.battleEnded) {
+          return syncBattleFromServerFull();
+        }
+        applyBattleDelta(st);
+        if (checkPvpDefeatFromCharacter(character)) {
           stopBattleSyncPoll();
           return true;
         }
+        if (checkPveDefeatFromCharacter(character)) {
+          renderPlayerBars(character);
+          stopBattleSyncPoll();
+          return true;
+        }
+        if (!battle) {
+          var savedDef = loadDefeatFromSession();
+          if (savedDef) {
+            renderPlayerBars(character);
+            showDefeatScreen(savedDef);
+            stopBattleSyncPoll();
+            return true;
+          }
+          return false;
+        }
+        refreshBattleUI(false);
         return false;
+      } finally {
+        battleSyncInFlight = false;
       }
-      refreshBattleUI(false);
-      return false;
     }
 
     async function resyncBattleAfterConflict(conflictBody) {
@@ -1351,6 +1493,7 @@
       if (!st || st._err || !st.character) return 'retry';
       character = st.character;
       battle = st.battle;
+      syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
       if (checkPvpDefeatFromCharacter(character)) {
@@ -1409,8 +1552,26 @@
     }
 
     function applyBattleMutationResult(res) {
+      if (res && res.kind === 'delta') {
+        if (res.delta && res.delta.hotbarStale) {
+          return 'hotbar_resync';
+        }
+        applyBattleDelta(res.delta);
+        if (res.defeat) return 'defeat';
+        if (checkPvpDefeatFromCharacter(character)) {
+          stopBattleSyncPoll();
+          return 'pvp_defeat';
+        }
+        if (checkPveDefeatFromCharacter(character)) {
+          stopBattleSyncPoll();
+          return 'defeat';
+        }
+        if (res.victory) return 'victory';
+        return 'continue';
+      }
       character = res.character;
       battle = res.battle;
+      syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (checkPvpDefeatFromCharacter(character)) {
         stopBattleSyncPoll();
@@ -1436,6 +1597,11 @@
 
     async function finalizeBattleActionResponse(res) {
       var outcome = applyBattleMutationResult(res);
+      if (outcome === 'hotbar_resync') {
+        await syncBattleFromServerFull();
+        refreshUI();
+        return;
+      }
       if (outcome === 'pvp_defeat') return;
       if (outcome === 'victory') {
         await handleVictoryOutcome(res.victory);
@@ -1443,7 +1609,7 @@
       }
       if (outcome === 'defeat') {
         renderPlayerBars(character);
-        showDefeatScreen(res.defeat);
+        showDefeatScreen(res.defeat || (character && character.pveDefeat));
         return;
       }
       refreshUI();
@@ -1457,6 +1623,8 @@
 
     function startBattleSyncPoll() {
       stopBattleSyncPoll();
+      var intervalMs = battleSyncIntervalMs();
+      if (!intervalMs || intervalMs <= 0) return;
       function pollTick() {
         if (isDefeatScreenActive()) {
           stopBattleSyncPoll();
@@ -1474,7 +1642,7 @@
         });
       }
       pollTick();
-      battleSyncTimer = setInterval(pollTick, battleSyncIntervalMs());
+      battleSyncTimer = setInterval(pollTick, intervalMs);
     }
 
     async function handleBattleActionError(res, parsedErrBody) {
@@ -1525,6 +1693,7 @@
       lastVictorySummary = null;
       character = st.character;
       battle = st.battle;
+      syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
       if (content) content.hidden = false;
@@ -1579,6 +1748,7 @@
       lastVictorySummary = null;
       character = st.character;
       battle = st.battle;
+      syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
       if (st.battle && st.battle.spawnId) {
@@ -1713,6 +1883,7 @@
       }
       character = st.character;
       battle = st.battle;
+      syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       resetHuntLogChain();
       return true;
@@ -1802,6 +1973,11 @@
         if (battleHotbar && typeof battleHotbar.notifySkillUsed === 'function') {
           battleHotbar.notifySkillUsed(act, battle);
         }
+        if (outcome === 'hotbar_resync') {
+          await syncBattleFromServerFull();
+          refreshUI();
+          return;
+        }
         if (outcome === 'pvp_defeat') return;
         if (outcome === 'victory') {
           await handleVictoryOutcome(res.victory);
@@ -1809,7 +1985,7 @@
         }
         if (outcome === 'defeat') {
           renderPlayerBars(character);
-          showDefeatScreen(res.defeat);
+          showDefeatScreen(res.defeat || (character && character.pveDefeat));
           return;
         }
         refreshUI();

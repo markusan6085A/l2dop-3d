@@ -57,12 +57,9 @@ import {
 } from '../domain/mobSpawnRespawn.js';
 import {
   ensureWorldBossSessionInTx,
-  flushWorldBossPendingMobHitsForUserInTx,
   isSharedWorldBossKind,
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
-import { refreshPvpOpponentHpForCharacterInTx } from './battleServicePvpSession.js';
-import { sanitizeDefeatOrphanBattleInTx } from './battleServiceDefeatSanitize.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 
 function randomMobRetaliationWindowHits(): number {
@@ -185,6 +182,8 @@ export async function startBattleInTx(
     mobMDef: mc.mDef,
     mobEvasion: mc.evasion,
     log: startLog,
+    battleVersion: 1,
+    lastLogSeq: startLog.length,
     playerMp: wTick ? wTick.playerMp : maxMp0,
     lastRegenTickMs: nowStartMs,
     lastPlayerAttackAtMs: nowStartMs,
@@ -300,21 +299,15 @@ export async function getBattleState(
   battle: BattleView | null;
   pvpIncoming: PvpIncomingAttack | null;
 } | null> {
-  const nowMs = Date.now();
-  let row = await prisma.$transaction(async (tx) => {
-    let r = await flushWorldBossPendingMobHitsForUserInTx(tx, userId, nowMs);
-    if (r) {
-      r = await refreshPvpOpponentHpForCharacterInTx(tx, r as CharacterRow);
-      r = await sanitizeDefeatOrphanBattleInTx(tx, r as CharacterRow);
-    }
-    return r;
-  });
-  if (!row) {
-    row = (await prisma.character.findFirst({
-      where: { userId },
-      orderBy: { lastUpdate: 'desc' },
-    })) as CharacterRow | null;
-  }
+  /**
+   * Read-only resync (F5 / 409): без flush RB, PvP refresh, sanitize.
+   * Pending RB damage застосовує лише background tick.
+   * Техборг: `ensureSanitizedSkillsLearnedRow` / `applyPassiveAndMove` ще можуть писати в БД.
+   */
+  let row = (await prisma.character.findFirst({
+    where: { userId },
+    orderBy: { lastUpdate: 'desc' },
+  })) as CharacterRow | null;
   if (!row) return null;
   row = (await ensureSanitizedSkillsLearnedRow(
     row as CharacterRow

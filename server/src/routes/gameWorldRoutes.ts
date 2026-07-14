@@ -31,7 +31,28 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     async (request, reply) => {
       const userId = ensureUserId(request, reply);
       if (!userId) return;
-      const data = await getMapSyncForUser(userId);
+      const q = request.query as Record<string, unknown>;
+      const rawCat = q.mapCatalogVersion;
+      const rawRev = q.revision;
+      const personalMapSig =
+        typeof q.personalMapSig === 'string' ? q.personalMapSig : undefined;
+      const mapCatalogVersion =
+        typeof rawCat === 'string' && /^\d+$/.test(rawCat)
+          ? parseInt(rawCat, 10)
+          : typeof rawCat === 'number' && Number.isFinite(rawCat)
+            ? Math.floor(rawCat)
+            : undefined;
+      const revision =
+        typeof rawRev === 'string' && /^\d+$/.test(rawRev)
+          ? parseInt(rawRev, 10)
+          : typeof rawRev === 'number' && Number.isFinite(rawRev)
+            ? Math.floor(rawRev)
+            : undefined;
+      const data = await getMapSyncForUser(userId, {
+        mapCatalogVersion,
+        personalMapSig,
+        revision,
+      });
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
       }

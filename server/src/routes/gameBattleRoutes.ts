@@ -13,6 +13,7 @@ import {
 } from '../services/charService.js';
 import {
   getBattleState,
+  getBattleSyncForUser,
   leaveBattle,
   performBattleAction,
   saveBattleHotbar,
@@ -52,6 +53,38 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       const userId = ensureUserId(request, reply);
       if (!userId) return;
       const data = await getBattleState(userId);
+      if (!data) {
+        return reply.code(404).send({ error: 'forbidden' });
+      }
+      return reply.send(data);
+    }
+  );
+
+  app.get(
+    '/battle/sync',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const q = request.query as Record<string, unknown>;
+      const rawBv = q.battleVersion;
+      const rawLs = q.lastLogSeq;
+      const battleVersion =
+        typeof rawBv === 'string' && /^\d+$/.test(rawBv)
+          ? parseInt(rawBv, 10)
+          : typeof rawBv === 'number' && Number.isFinite(rawBv)
+            ? Math.floor(rawBv)
+            : undefined;
+      const lastLogSeq =
+        typeof rawLs === 'string' && /^\d+$/.test(rawLs)
+          ? parseInt(rawLs, 10)
+          : typeof rawLs === 'number' && Number.isFinite(rawLs)
+            ? Math.floor(rawLs)
+            : undefined;
+      const data = await getBattleSyncForUser(userId, {
+        battleVersion,
+        lastLogSeq,
+      });
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
       }
@@ -377,13 +410,17 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             ...battlePotionOpts,
           }
         );
+        const resultRevision =
+          result.kind === 'delta' ? result.revision : result.character.revision;
+        const resultCharId =
+          result.kind === 'delta' ? result.characterId : result.character.id;
         await logRouteMutation(
           request,
           'battle_action:' + String(actionNorm),
           er,
           'ok',
-          result.character.revision,
-          result.character.id,
+          resultRevision,
+          resultCharId,
           'battle-mutation'
         );
         return reply.send(result);

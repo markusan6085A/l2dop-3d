@@ -10,8 +10,13 @@ import {
 } from '../data/l2dopCombatFormulas.js';
 import { computeVitals } from '../data/l2dopVitals.js';
 import type { InventoryState } from '../data/inventory.js';
+import { parseInventory } from '../data/inventory.js';
 import type { BattleJsonState } from '../domain/battle.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
+import {
+  applyBattleLogWriteInPlace,
+  bumpBattleVersionInPlace,
+} from '../domain/battleVersion.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
 import { rollKillLoot } from '../domain/killLoot.js';
 import { resolveL2dopNpcIdByMobName } from './spawnCatalogService.js';
@@ -29,12 +34,10 @@ import {
 import type {
   BattleDefeatSummary,
   BattleVictorySummary,
-  BattleView,
 } from './battleServiceTypes.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
-import { battleViewFromState, skillCooldownUiContextFromParts } from './battleServiceBattleUi.js';
-import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
-import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+import { buildBattleDeltaPayload } from './battleServiceDelta.js';
+import type { BattleActionDeltaResponse } from './battleServiceDeltaTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import {
   clearMobSpawnHpEntry,
@@ -354,8 +357,11 @@ export async function persistBattleContinueTurnInTx(
     skillCooldownsJson?: Prisma.InputJsonValue;
     /** Якщо ход списав предмети з сумки (заряд душі тощо). */
     inventoryJson?: Prisma.InputJsonValue;
+    /** Скільки рядків додано до логу в цьому ході (для logTail у delta). */
+    logLinesAdded: number;
+    hotbarStale?: boolean;
   }
-): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
+): Promise<BattleActionDeltaResponse> {
   const {
     userId,
     expectedRevision,
@@ -374,10 +380,21 @@ export async function persistBattleContinueTurnInTx(
     activeBuffsJson,
     skillCooldownsJson,
     inventoryJson,
+    logLinesAdded,
+    hotbarStale,
   } = args;
 
+  void userId;
+  void bj;
+  void spawn;
+  void preLevel;
+  void learnedBattle;
+  void profAct;
+  void inv;
+
   st.mobHp = mobHp;
-  st.log = log.slice(-MAX_BATTLE_LOG);
+  applyBattleLogWriteInPlace(st, log, logLinesAdded);
+  bumpBattleVersionInPlace(st);
 
   /** Дзеркалимо battleMods у worldCombatStateJson — інакше після виходу в місто GET /character губить бафи. */
   const worldMirrorMid = worldCombatStateFromBattleJson(
@@ -386,7 +403,6 @@ export async function persistBattleContinueTurnInTx(
     Date.now()
   );
 
-  void userId;
   const updated = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -408,34 +424,49 @@ export async function persistBattleContinueTurnInTx(
   );
   if (!updated.ok) throw gameConflictFromMutation(updated);
   const row = updated.character as CharacterRow;
-  const snap = toSnapshot(row);
-  const nowForView = Date.now();
-  const view = battleViewFromState(
-    bj.spawnId,
-    st,
-    {
-      name: spawn.name,
-      level: spawn.level,
-      aggressive: spawn.aggressive,
-      kind: spawn.kind,
-    },
-    preLevel,
-    char.race,
-    char.classBranch,
-    learnedBattle,
-    profAct,
-    inv,
-    persistableActiveBuffsFromJson(
-      row.activeBuffsJson,
-      nowForView
-    ),
-    parseSkillCooldowns(row.skillCooldownsJson, nowForView),
-    skillCooldownUiContextFromParts(
-      char.classBranch,
-      snap.castSpd,
-      snap.pAtkSpd,
-      snap.learnedBattleSkillsDetail
-    )
+  const effLv = levelFromTotalExp(row.exp);
+  const invRow = parseInventory(row.inventoryJson);
+  const combat = computeCombatStats(
+    effLv,
+    row.race,
+    row.classBranch,
+    invRow,
+    combatOptsFromRow(row)
   );
-  return { character: snap, battle: view };
+  const vit = computeVitals(
+    effLv,
+    row.race,
+    row.classBranch,
+    combat.con,
+    combat.men
+  );
+  const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
+  const maxMpRow = effectiveMaxMpWithJewelFlat(vit.maxMp, combat);
+  const playerMp =
+    typeof st.playerMp === 'number' && Number.isFinite(st.playerMp)
+      ? Math.max(0, Math.min(maxMpRow, Math.floor(st.playerMp)))
+      : maxMpRow;
+
+  const hotbarStaleFlag =
+    hotbarStale === true ||
+    activeBuffsJson !== undefined ||
+    skillCooldownsJson !== undefined ||
+    inventoryJson !== undefined;
+
+  const delta = buildBattleDeltaPayload({
+    row,
+    st,
+    maxHpEff,
+    maxMpEff: maxMpRow,
+    playerMp,
+    logLinesAdded,
+    hotbarStale: hotbarStaleFlag,
+  });
+
+  return {
+    kind: 'delta',
+    revision: row.revision,
+    characterId: row.id,
+    delta,
+  };
 }

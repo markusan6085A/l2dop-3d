@@ -283,6 +283,15 @@ export interface BattleJsonState {
    * L2 Interlude — 7, але за бажанням гравця тримаємо 10 для комфорту.
    */
   maxSonicCharges?: number;
+  /**
+   * Монотонний лічильник змін бойового стану (включно з RB tick/flush).
+   * Не збігається з `character.revision` — revision++ лише на видимих мутаціях гравця.
+   */
+  battleVersion?: number;
+  /**
+   * Монотонний лічильник рядків логу (виживає обрізання `log` до MAX_BATTLE_LOG).
+   */
+  lastLogSeq?: number;
 }
 
 /** Касти мага: канонічний `l2_<skillId>` з каталогу Human Mystic. */

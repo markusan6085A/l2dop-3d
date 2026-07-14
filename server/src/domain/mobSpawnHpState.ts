@@ -24,6 +24,7 @@ export function parseMobSpawnHpState(
   const out: MobSpawnHpState = {};
   for (const [spawnId, ent] of Object.entries(raw as Record<string, unknown>)) {
     if (typeof spawnId !== 'string' || !spawnId.trim()) continue;
+    if (spawnId.startsWith('_')) continue;
     if (ent == null || typeof ent !== 'object' || Array.isArray(ent)) continue;
     const o = ent as Record<string, unknown>;
 

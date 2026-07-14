@@ -305,6 +305,8 @@ export async function startPvpBattleInTx(
     mobMDef: opp.mDef,
     mobEvasion: opp.evasion,
     log: startLog,
+    battleVersion: 1,
+    lastLogSeq: startLog.length,
     playerMp: wTick ? wTick.playerMp : maxMp0,
     lastRegenTickMs: nowStartMs,
     lastPlayerAttackAtMs: nowStartMs,

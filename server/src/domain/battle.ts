@@ -27,3 +27,4 @@ export * from './battleEffectiveDisplay.js';
 export * from './battleMobSpawn.js';
 export * from './combatDisplayContext.js';
 export * from './effectiveCharacterLevel.js';
+export * from './battleVersion.js';

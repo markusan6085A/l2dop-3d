@@ -16,8 +16,13 @@ import type { CharacterRow, CharacterSnapshot } from './charService.js';
 import type {
   BattleDefeatSummary,
   BattleVictorySummary,
-  BattleView,
 } from './battleServiceTypes.js';
+import type {
+  BattleActionDeltaResponse,
+  BattleActionFullResponse,
+  BattleActionResponse,
+} from './battleServiceDeltaTypes.js';
+import { MAX_BATTLE_LOG } from '../domain/battle.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -28,6 +33,8 @@ export type BattleTurnPersistSide = {
   nextCooldowns: SkillCooldownEntry[];
   inventoryDirty?: boolean;
   inv?: InventoryState;
+  /** true — клієнт має зробити повний GET /battle (хотбар/бафи поза delta). */
+  hotbarStale?: boolean;
 };
 
 export function battleTurnJsonExtras(
@@ -76,11 +83,14 @@ export type BattleContinueTurnBase = {
 export async function persistBattleContinueFromTurn(
   tx: Tx,
   base: BattleContinueTurnBase,
-  side: BattleTurnPersistSide
-): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
+  side: BattleTurnPersistSide,
+  logLinesAdded: number
+): Promise<BattleActionDeltaResponse> {
   return persistBattleContinueTurnInTx(tx, {
     ...base,
     ...battleTurnJsonExtras(side),
+    logLinesAdded,
+    hotbarStale: side.hotbarStale,
   });
 }
 
@@ -92,11 +102,7 @@ export async function resolveMobDeadVictoryInTx(
     currentMp: number;
     side: BattleTurnPersistSide;
   }
-): Promise<{
-  character: CharacterSnapshot;
-  victory?: BattleVictorySummary;
-  battle: null;
-} | null> {
+): Promise<BattleActionFullResponse | null> {
   if (args.mobHp > 0) return null;
   const extras = battleTurnJsonExtras(args.side);
   if (isPvpBattleJson(args.st)) {
@@ -112,10 +118,11 @@ export async function resolveMobDeadVictoryInTx(
       log: args.log,
       ...extras,
     });
-    return { ...v, battle: null };
+    return wrapVictoryAsFull({ ...v, battle: null });
   }
   if (isSharedWorldBossKind(args.spawn.kind)) {
-    return resolveWorldBossVictoryInTx(tx, args);
+    const wb = await resolveWorldBossVictoryInTx(tx, args);
+    return wb ? wrapVictoryAsFull(wb) : null;
   }
   const v = await persistBattleVictoryInTx(tx, {
     userId: args.userId,
@@ -132,12 +139,47 @@ export async function resolveMobDeadVictoryInTx(
     log: args.log,
     ...extras,
   });
-  return { ...v, battle: null };
+  return wrapVictoryAsFull({ ...v, battle: null });
 }
 
-export type BattleTurnEndResult = {
+export function wrapVictoryAsFull(v: {
   character: CharacterSnapshot;
-  battle: BattleView | null;
   victory?: BattleVictorySummary;
-  defeat?: BattleDefeatSummary;
-};
+  battle: null;
+}): BattleActionFullResponse {
+  return {
+    kind: 'full',
+    character: v.character,
+    battle: null,
+    victory: v.victory,
+  };
+}
+
+export function wrapBattleDefeatAsDelta(d: {
+  character: CharacterSnapshot;
+  defeat: BattleDefeatSummary;
+}): BattleActionDeltaResponse {
+  const c = d.character;
+  const fullLog = d.defeat.fullLog ?? [];
+  return {
+    kind: 'delta',
+    revision: c.revision,
+    characterId: c.id,
+    delta: {
+      changed: true,
+      revision: c.revision,
+      battleVersion: 0,
+      characterHp: c.hp,
+      characterMp: c.mp,
+      characterMaxHp: c.maxHp,
+      characterMaxMp: c.maxMp,
+      outcome: 'DEFEAT',
+      battleEnded: true,
+      logTail: fullLog.slice(-MAX_BATTLE_LOG),
+      logSeq: fullLog.length,
+    },
+    defeat: d.defeat,
+  };
+}
+
+export type BattleTurnEndResult = BattleActionResponse;

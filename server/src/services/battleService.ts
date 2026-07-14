@@ -10,6 +10,12 @@ export { startPvpBattle } from './battleServicePvpSession.js';
 export { startHuntContinueBattle } from './battleServiceHuntContinue.js';
 export { saveBattleHotbar } from './battleServiceHotbar.js';
 export { performBattleAction } from './battleServicePerformBattleAction.js';
+export { getBattleSyncForUser } from './battleServiceSync.js';
+export type {
+  BattleActionResponse,
+  BattleDeltaPayload,
+  BattleSyncResponse,
+} from './battleServiceDeltaTypes.js';
 export type {
   BattleBuffIcon,
   BattleDefeatSummary,

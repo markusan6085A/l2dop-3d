@@ -8,7 +8,10 @@ import {
 import { computeVitals } from '../data/l2dopVitals.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { parseInventory } from '../data/inventory.js';
-import { MAX_BATTLE_LOG } from '../domain/battle.js';
+import {
+  applyBattleLogWriteInPlace,
+  bumpBattleVersionInPlace,
+} from '../domain/battleVersion.js';
 import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
 import {
   createWorldBossSessionState,
@@ -274,6 +277,7 @@ export async function flushWorldBossPendingMobHitsForCharacterInTx(
   const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
 
   const log = [...(bj.log ?? [])];
+  const logBeforeLen = log.length;
   let playerHp = Math.max(0, Math.min(maxHpEff, char.hp));
   if (pending.length > 0 && participant) {
     participant.pendingMobHits = [];
@@ -285,9 +289,13 @@ export async function flushWorldBossPendingMobHitsForCharacterInTx(
     }
   }
 
-  bj.log = log.slice(-MAX_BATTLE_LOG);
+  const linesAdded = Math.max(0, log.length - logBeforeLen);
+  applyBattleLogWriteInPlace(bj, log, linesAdded);
   bj.mobHp = session.mobHp;
   bj.mobMaxHp = session.mobMaxHp;
+  if (linesAdded > 0 || mobHpDirty || pending.length > 0) {
+    bumpBattleVersionInPlace(bj);
+  }
   await saveSession(tx, session);
 
   if (playerHp <= 0) {

@@ -292,6 +292,10 @@
 
   /** Кожні 15 с — легкий GET /game/map/sync (не повний /character). */
   var MAP_POLL_MS = 15000;
+  var lastMapCatalogVersion = null;
+  var lastPersonalMapSig = null;
+  var lastMapSyncRevision = null;
+  var mapSyncInFlight = false;
 
   function compactSpawnListSig(spawns) {
     if (!spawns || !spawns.length) return '0';
@@ -348,7 +352,20 @@
   async function loadMapSync() {
     var t = localStorage.getItem('token');
     if (!t) return null;
-    var r = await fetch('/game/map/sync', {
+    var qs = '';
+    if (lastMapCatalogVersion != null) {
+      qs += 'mapCatalogVersion=' + encodeURIComponent(String(lastMapCatalogVersion));
+    }
+    if (lastPersonalMapSig != null) {
+      if (qs) qs += '&';
+      qs += 'personalMapSig=' + encodeURIComponent(String(lastPersonalMapSig));
+    }
+    if (lastMapSyncRevision != null) {
+      if (qs) qs += '&';
+      qs += 'revision=' + encodeURIComponent(String(lastMapSyncRevision));
+    }
+    var path = '/game/map/sync' + (qs ? '?' + qs : '');
+    var r = await fetch(path, {
       headers: { Authorization: 'Bearer ' + t },
     });
     if (r.status === 401) {
@@ -996,6 +1013,39 @@
     function applyMapSyncPayload(sync, opts) {
       opts = opts || {};
       if (!sync || !sync.mapState) return false;
+
+      if (typeof sync.mapCatalogVersion === 'number') {
+        lastMapCatalogVersion = Math.floor(sync.mapCatalogVersion);
+      }
+      if (typeof sync.personalMapSig === 'string') {
+        lastPersonalMapSig = sync.personalMapSig;
+      }
+      if (typeof sync.revision === 'number') {
+        lastMapSyncRevision = Math.floor(sync.revision);
+      }
+
+      if (sync.changed === false) {
+        var msLite = sync.mapState;
+        if (window.L2 && typeof L2.mergeMapStateIntoSnapshot === 'function') {
+          L2.mergeMapStateIntoSnapshot(msLite);
+        }
+        c = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : msLite;
+        if (c) writeCachedMapSnapshot(c);
+        if (sync.around) {
+          aroundData = Object.assign({}, aroundData || {}, {
+            nearbyHeroes: sync.around.nearbyHeroes || [],
+          });
+        }
+        applyPvpIncomingFromSync(sync);
+        if (!opts.skipDefeatRedirect) {
+          handlePvpDefeatRedirect(sync);
+          if (handlePveDefeatRedirect(sync, c)) return 'redirect';
+        }
+        renderHeroList(aroundData, heroList, heroSection);
+        renderHeroMarkers(img, heroMarkersLayer, (aroundData && aroundData.nearbyHeroes) || []);
+        return false;
+      }
+
       var ms = sync.mapState;
       var posSig = mapPositionSig(ms);
       var spawnSig = compactSpawnListSig(
@@ -1470,8 +1520,14 @@
     }
 
     var poll = setInterval(async function () {
-      var sync = await loadMapSync();
-      applyMapSyncPayload(sync, { centerOnPlayer: false });
+      if (mapSyncInFlight) return;
+      mapSyncInFlight = true;
+      try {
+        var sync = await loadMapSync();
+        applyMapSyncPayload(sync, { centerOnPlayer: false });
+      } finally {
+        mapSyncInFlight = false;
+      }
     }, MAP_POLL_MS);
 
     window.addEventListener('beforeunload', function () {
