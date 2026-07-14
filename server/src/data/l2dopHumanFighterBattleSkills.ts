@@ -65,7 +65,8 @@ export const HUMAN_FIGHTER_PRO_WARRIOR_LEVEL = 20;
  * Тимчасово для тестів: не вимагати мін. рівень для воїнських скілів, скилбару та зміни профи Fighter→Warrior.
  * Перед продом — встановити `false`.
  */
-export const HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ = true;
+/** false на prod (guard у productionGuards.ts). true лише для локального/закритого тесту скілів. */
+export const HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ = false;
 /** Друга професія (Warlord на гілці алебарди) — мін. рівень як у IL (~40). */
 export const HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL = 40;
 /** 3-тя профа гілок воїна (Dreadnought, Duelist, Phoenix/Hell, Adventurer, Sagittarius) — мін. 76 р. */
