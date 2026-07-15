@@ -4056,7 +4056,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 11000,
     nameUk: "Майстерність важкої броні (Heavy Armor Mastery)",
-    hintUk: "Пасив: підвищує P. Def у важкій броні.",
+    hintUk: "Пасив: підвищує P. Def (%) у важкій броні (1 р. — +1.9%, 50 р. — +79.3%).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [

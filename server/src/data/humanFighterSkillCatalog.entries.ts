@@ -153,7 +153,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 1900,
     nameUk: 'Майстерність важкої броні (Heavy Armor Mastery)',
     hintUk:
-      'Пасив: підвищує P. Def у важкій броні.',
+      'Пасив: підвищує P. Def (%) у важкій броні (1 р. — +1.9%, 50 р. — +79.3%).',
     kind: 'passive',
     professionReq: 'human_warrior',
   },

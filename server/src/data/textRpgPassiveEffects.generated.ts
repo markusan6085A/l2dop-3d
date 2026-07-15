@@ -283,7 +283,7 @@ export const TEXT_RPG_HF_PASSIVE_EFFECTS: readonly TextRpgHfPassiveRow[] = [
     effectPairs: [{"stat":"pDef","mode":"percent"}] as const,
     stat: "pDef",
     mode: "percent",
-    requiresArmor: null,
+    requiresArmor: "heavy",
     requiresWeapon: null,
     maxRank: 50,
     powerByRank: [0,1.9,3.3,4.8,6.4,8.1,8.9,9.8,11.7,12.7,13.7,15.8,16.9,18,20.4,21.6,22.8,24.1,25.4,26.7,28,29.4,30.8,32.2,33.7,35.2,36.7,38.2,39.8,41.4,43,44.6,46.3,48,49.7,51.4,53.2,55,56.7,58.6,60.4,62.2,64.1,66,67.8,69.7,71.6,73.6,75.5,77.4,79.3] as const,

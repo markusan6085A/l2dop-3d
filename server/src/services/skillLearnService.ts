@@ -26,7 +26,6 @@ import {
   catalogEntryOfferedAtGludioMagister,
   catalogEntryVisibleForProfession,
   humanFighterCatalogEntry,
-  maxSkillRankForBattleId,
   maxSkillRankForCatalogEntry,
   minCharLevelForSkillRank,
   normalizeLearnedSkillsJson,
@@ -56,6 +55,10 @@ import {
 import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
 import { mysticDebuffProfileNoteUk } from '../data/l2dopMysticDebuffProfiles.js';
 import { boostHpStatsNoteUk } from '../data/boostHpTables.js';
+import {
+  HEAVY_ARMOR_MASTERY_HINT_UK,
+  heavyArmorMasteryStatsNoteUk,
+} from '../data/heavyArmorMasteryTables.js';
 import { TEXT_RPG_HF_PASSIVE_EFFECTS } from '../data/textRpgPassiveEffects.generated.js';
 import { magisterBattleStatsPreview } from './skillLearnMagisterBattleStatsPreview.js';
 import {
@@ -475,6 +478,8 @@ export async function getMagisterDialogForUser(
     }
     if (o.l2SkillId === 211) {
       st.statsNoteUk = boostHpStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 231 && !mysticLike) {
+      st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 142 && !mysticLike) {
       st.statsNoteUk = weaponMasteryFighterStatsNoteUk(rankPreview);
     } else if (
@@ -515,7 +520,9 @@ export async function getMagisterDialogForUser(
       o.kind === 'passive'
         ? st.statsNoteUk && st.statsNoteUk.trim()
           ? st.statsNoteUk.trim()
-          : o.l2SkillId === 142 && !mysticLike
+          : o.l2SkillId === 231 && !mysticLike
+            ? HEAVY_ARMOR_MASTERY_HINT_UK
+            : o.l2SkillId === 142 && !mysticLike
             ? WEAPON_MASTERY_FIGHTER_HINT_UK
             : mysticLike &&
                 (o.l2SkillId === 142 ||

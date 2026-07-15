@@ -38,7 +38,7 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
     case 'l2_227':
       return 'Пасив: захист у легкій броні. MP у бою не витрачається.';
     case 'l2_231':
-      return 'Пасив: захист у важкій броні. MP у бою не витрачається.';
+      return 'Пасив: +P. Def (%) у важкій броні. MP у бою не витрачається.';
     case 'l2_256':
       return 'Toggle: точність; MP знімається в такті. У картці — як пасив для зручності.';
     case 'l2_257':
