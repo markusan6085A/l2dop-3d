@@ -140,13 +140,24 @@ export type BattleSkillCooldownResolveInput = {
  * Єдина точка розрахунку CD у бою / UI.
  * - magic_attack: 4–7 с @ cast 600, далі стискається до 0.3 с
  * - mystic інші: fixed base × cast scale
- * - fighter: fixed base × (1 − 0..60% від pAtkSpd)
+ * - fighter: фіксований reboot з l2db/XML (без aspd)
  */
 export function resolveBattleSkillCooldownSec(
   input: BattleSkillCooldownResolveInput
 ): number {
   const kind = String(input.kind ?? '').trim();
-  if (kind === 'toggle') return 1;
+  /** Toggle: лише фіксований CD з XML/каталогу (0 = миттєве перемикання), без cast/aspd. */
+  if (kind === 'toggle') {
+    const rawBase = input.baseCdSec;
+    if (
+      typeof rawBase === 'number' &&
+      Number.isFinite(rawBase) &&
+      rawBase > 0
+    ) {
+      return rawBase;
+    }
+    return 0;
+  }
 
   const category = String(input.category ?? '').trim();
   const isMystic = isMysticClassBranch(input.classBranch);
@@ -180,8 +191,8 @@ export function resolveBattleSkillCooldownSec(
     cd = scaleMysticCooldownByCastSpeed(base, input.castSpd);
   } else {
     if (!hasFixedBase) return 0;
-    cd = scaleFighterCooldownByAttackSpeed(rawBase!, input.pAtkSpd);
-    minFloor = FIGHTER_CD_FLOOR_SEC;
+    /** Воїн: фіксований reboot з l2db/XML, без cast/aspd (як на сайті). */
+    return roundSkillCdSec(rawBase!, 0);
   }
 
   return applyCooldownReductionMul(

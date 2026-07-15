@@ -27,6 +27,7 @@ import {
   viciousStanceRankFromLearnedMap,
 } from '../data/l2dopFocusAttack.js';
 import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
+import { resolveViciousStanceEffectRank } from '../data/viciousStanceTables.js';
 
 /**
  * Анти-оверкіл для ранніх рівнів: synthetic `mobPAtk` з карти проходить через
@@ -154,7 +155,10 @@ export function rollPlayerPhysicalDmg(
     critDmgMul *= focusAttackCritDmgMultiplier(fr);
   }
   if (isStanceViciousActive(mods)) {
-    const rk = viciousStanceRankFromLearnedMap(learnedSkillLevelByBattleId);
+    const rk = resolveViciousStanceEffectRank(
+      viciousStanceRankFromLearnedMap(learnedSkillLevelByBattleId),
+      mods
+    );
     const d312 = textRpgHfToggleStanceDelta(312, rk);
     if (d312?.addCritDmg) addCritDmg += d312.addCritDmg;
     if (d312?.addCrit) {

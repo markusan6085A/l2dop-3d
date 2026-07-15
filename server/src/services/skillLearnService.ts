@@ -59,6 +59,23 @@ import {
   HEAVY_ARMOR_MASTERY_HINT_UK,
   heavyArmorMasteryStatsNoteUk,
 } from '../data/heavyArmorMasteryTables.js';
+import {
+  LIGHT_ARMOR_MASTERY_HINT_UK,
+  lightArmorMasteryStatsNoteUk,
+} from '../data/lightArmorMasteryTables.js';
+import {
+  POLEARM_MASTERY_HINT_UK,
+  polearmMasteryStatsNoteUk,
+} from '../data/polearmMasteryTables.js';
+import {
+  powerSmashStatsNoteUk,
+} from '../data/powerSmashTables.js';
+import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
+import { viciousStanceStatsNoteUk } from '../data/viciousStanceTables.js';
+import {
+  SWORD_BLUNT_MASTERY_HINT_UK,
+  swordBluntMasteryStatsNoteUk,
+} from '../data/swordBluntMasteryTables.js';
 import { TEXT_RPG_HF_PASSIVE_EFFECTS } from '../data/textRpgPassiveEffects.generated.js';
 import { magisterBattleStatsPreview } from './skillLearnMagisterBattleStatsPreview.js';
 import {
@@ -161,28 +178,6 @@ function compactSkillHintUk(args: {
   if (core) parts.push(core.replace(/\.$/, ''));
 
   return parts.join(' · ');
-}
-
-function swordBluntMasteryStatsNoteUk(maxRankRaw: number): string {
-  const row = PASSIVE_ROW_BY_BATTLE_ID.get('l2_257');
-  const maxRank = Math.max(1, Math.floor(maxRankRaw));
-  if (!row) {
-    return 'Пасив: працює лише з мечем або булавою; кожен ранг підвищує P.Atk.';
-  }
-  const rankParts: string[] = [];
-  for (let r = 1; r <= maxRank; r++) {
-    const p = row.powerByRank[r];
-    if (typeof p !== 'number' || !Number.isFinite(p)) continue;
-    rankParts.push(String(r) + ': +' + p.toFixed(1) + '%');
-  }
-  if (rankParts.length === 0) {
-    return 'Пасив: працює лише з мечем або булавою; кожен ранг підвищує P.Atk.';
-  }
-  return (
-    'Пасив: лише з мечем або булавою. Бонус P.Atk за рангами — ' +
-    rankParts.join(', ') +
-    '.'
-  );
 }
 
 function passiveRankPercentsNoteUk(
@@ -473,13 +468,25 @@ export async function getMagisterDialogForUser(
     if (canonBattleId === 'l2_290') {
       st.statsNoteUk = finalFrenzyStatsNoteUk(rankPreview, Math.max(1, snap.pAtk));
     }
-    if (canonBattleId === 'l2_257') {
-      st.statsNoteUk = swordBluntMasteryStatsNoteUk(maxSkillLevel);
+    if (canonBattleId === 'l2_255' && !mysticLike) {
+      st.statsNoteUk = powerSmashStatsNoteUk(rankPreview);
+    }
+    if (canonBattleId === 'l2_100' && !mysticLike) {
+      st.statsNoteUk = stunAttackStatsNoteUk(rankPreview);
+    }
+    if (o.l2SkillId === 312 && !mysticLike) {
+      st.statsNoteUk = viciousStanceStatsNoteUk(rankPreview);
     }
     if (o.l2SkillId === 211) {
       st.statsNoteUk = boostHpStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 231 && !mysticLike) {
       st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 227 && !mysticLike) {
+      st.statsNoteUk = lightArmorMasteryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 216 && !mysticLike) {
+      st.statsNoteUk = polearmMasteryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 257 && !mysticLike) {
+      st.statsNoteUk = swordBluntMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 142 && !mysticLike) {
       st.statsNoteUk = weaponMasteryFighterStatsNoteUk(rankPreview);
     } else if (
@@ -522,6 +529,12 @@ export async function getMagisterDialogForUser(
           ? st.statsNoteUk.trim()
           : o.l2SkillId === 231 && !mysticLike
             ? HEAVY_ARMOR_MASTERY_HINT_UK
+            : o.l2SkillId === 227 && !mysticLike
+              ? LIGHT_ARMOR_MASTERY_HINT_UK
+            : o.l2SkillId === 216 && !mysticLike
+              ? POLEARM_MASTERY_HINT_UK
+            : o.l2SkillId === 257 && !mysticLike
+              ? SWORD_BLUNT_MASTERY_HINT_UK
             : o.l2SkillId === 142 && !mysticLike
             ? WEAPON_MASTERY_FIGHTER_HINT_UK
             : mysticLike &&

@@ -719,6 +719,69 @@
     }
   }
 
+  var BATTLE_TOGGLE_STANCE_ICONS = [
+    {
+      key: 'stance_accuracy',
+      mod: 'stanceAccuracy',
+      l2SkillId: 256,
+      labelUk: 'Стійка точності',
+    },
+    {
+      key: 'stance_vicious',
+      mod: 'stanceVicious',
+      l2SkillId: 312,
+      labelUk: 'Жорстка стійка',
+    },
+    {
+      key: 'stance_parry',
+      mod: 'stanceParry',
+      l2SkillId: 339,
+      labelUk: 'Стійка парування',
+    },
+    {
+      key: 'aegis_stance',
+      mod: 'aegisStanceActive',
+      l2SkillId: 318,
+      labelUk: 'Стійка егіда',
+    },
+  ];
+
+  function battleModTruthy(v) {
+    return v === true || v === 1 || v === '1';
+  }
+
+  /** Після delta `battleMods` — оновити toggle-іконки смуги бафів без F5. */
+  function patchBattleToggleBuffIcons(battle) {
+    if (!battle) return;
+    var bm = battle.battleMods || {};
+    var managedKeys = {};
+    for (var mk = 0; mk < BATTLE_TOGGLE_STANCE_ICONS.length; mk++) {
+      managedKeys[BATTLE_TOGGLE_STANCE_ICONS[mk].key] = true;
+    }
+    var icons = Array.isArray(battle.battleBuffIcons)
+      ? battle.battleBuffIcons.slice()
+      : [];
+    icons = icons.filter(function (b) {
+      return !b || !managedKeys[b.key];
+    });
+    for (var ti = 0; ti < BATTLE_TOGGLE_STANCE_ICONS.length; ti++) {
+      var row = BATTLE_TOGGLE_STANCE_ICONS[ti];
+      if (battleModTruthy(bm[row.mod])) {
+        icons.push({
+          key: row.key,
+          l2SkillId: row.l2SkillId,
+          labelUk: row.labelUk,
+          isToggle: true,
+        });
+      }
+    }
+    if (icons.length > 0) {
+      battle.battleBuffIcons = icons;
+    } else {
+      delete battle.battleBuffIcons;
+    }
+  }
+
   function buffIconsSig(icons) {
     if (!icons || !icons.length) return '';
     var parts = [];
@@ -1326,6 +1389,7 @@
           } else {
             delete battle.battleMods;
           }
+          patchBattleToggleBuffIcons(battle);
         }
       }
       if (typeof delta.battleVersion === 'number') {
@@ -1390,6 +1454,14 @@
                 : ''
             )
           : '';
+      var stanceSig = bmSig
+        ? [
+            bmSig.stanceAccuracy ? '1' : '0',
+            bmSig.stanceVicious ? '1' : '0',
+            bmSig.stanceParry ? '1' : '0',
+            bmSig.aegisStanceActive ? '1' : '0',
+          ].join('')
+        : '';
       return [
         String(c.revision != null ? c.revision : ''),
         String(c.hp != null ? c.hp : ''),
@@ -1401,6 +1473,7 @@
         tail1,
         ssSig,
         spSig,
+        stanceSig,
       ].join('\u001f');
     }
 
@@ -1941,9 +2014,6 @@
         ) {
           act = L2BattleHotbar.canonicalBattleActionId(action);
         }
-        if (battleHotbar && typeof battleHotbar.primeSkillCd === 'function') {
-          battleHotbar.primeSkillCd(act);
-        }
         var res;
         try {
           res = await performBattleActionWithResync(act);
@@ -1961,41 +2031,22 @@
             }
           }
           var parsedErrBody = await parseErrorBodySafe(res);
-          var canAutoRetryCd =
-            typeof act === 'string' &&
-            /^l2_\d+$/.test(act) &&
-            res &&
-            res._err === 400 &&
-            parsedErrBody &&
-            parsedErrBody.code === 'battle_skill_not_allowed' &&
-            parsedErrBody.reason === 'cooldown' &&
-            typeof parsedErrBody.remainingCooldownMs === 'number' &&
-            Number.isFinite(parsedErrBody.remainingCooldownMs) &&
-            parsedErrBody.remainingCooldownMs >= 0;
-          if (canAutoRetryCd) {
-            var waitMs = Math.min(
-              2200,
-              Math.max(0, Math.floor(parsedErrBody.remainingCooldownMs)) + 30
-            );
-            if (waitMs > 0) {
-              await new Promise(function (resolve) {
-                setTimeout(resolve, waitMs);
-              });
-            }
-            try {
-              res = await performBattleActionWithResync(act);
-            } catch (eRetry) {
-              showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-              return;
-            }
-            parsedErrBody = await parseErrorBodySafe(res);
-          }
           if (!res) {
             showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
             return;
           }
           if (res._err) {
             if (await handleBattleActionError(res, parsedErrBody)) return;
+            if (
+              parsedErrBody &&
+              parsedErrBody.reason === 'cooldown' &&
+              battleHotbar &&
+              typeof battleHotbar.notifySkillUsed === 'function'
+            ) {
+              await syncBattleFromServerFull();
+              battleHotbar.notifySkillUsed(act, battle);
+              refreshUI();
+            }
             return;
           }
         }

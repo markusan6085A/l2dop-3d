@@ -428,6 +428,9 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (!warriorProfOkForSkill(ctx)) {
       throw new Error('battle_skill_not_allowed');
     }
+    if (ctx.weaponKind !== 'blunt' && ctx.weaponKind !== 'bigblunt') {
+      throw new Error('battle_skill_not_allowed');
+    }
     const sa =
       l2dopXmlMpPower(100, rank) ?? stunAttackMpAndPower(preLevel, rank);
     if (!sa) throw new Error('battle_skill_not_allowed');

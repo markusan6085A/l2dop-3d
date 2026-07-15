@@ -17,6 +17,8 @@ import {
   wildSweepMpAndPower,
   whirlwindMpAndPower,
 } from '../data/l2dopHumanFighterBattleSkills.js';
+import { powerSmashStatsNoteUk } from '../data/powerSmashTables.js';
+import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
 import { applyL2dopXmlMagisterOverlay } from '../data/l2dopXmlMagisterOverlay.js';
 import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
@@ -34,19 +36,19 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
     case 'l2_212':
       return 'Пасив: швидше відновлення HP. MP у бою не витрачається.';
     case 'l2_216':
-      return 'Пасив: вища P. Atk з древковою зброєю. MP у бою не витрачається.';
+      return 'Пасив: +P. Atk (flat) зі списом або алебардою. MP у бою не витрачається.';
     case 'l2_227':
-      return 'Пасив: захист у легкій броні. MP у бою не витрачається.';
+      return 'Пасив: +P. Def (%) і ухилення в легкій броні. MP у бою не витрачається.';
     case 'l2_231':
       return 'Пасив: +P. Def (%) у важкій броні. MP у бою не витрачається.';
     case 'l2_256':
       return 'Toggle: точність; MP знімається в такті. У картці — як пасив для зручності.';
     case 'l2_257':
-      return 'Пасив: вища P. Atk з мечем або булавою. MP у бою не витрачається.';
+      return 'Пасив: +P. Atk (flat) з мечем або булавою. MP у бою не витрачається.';
     case 'l2_290':
       return 'Пасив: бонус при низькому HP. MP у бою не витрачається.';
     case 'l2_312':
-      return 'Toggle: сильніший крит; MP знімається, поки ввімкнено.';
+      return 'Toggle: крит / сила криту; MP ~0.4/с, поки увімкнено (не аура).';
     case 'l2_328':
       return 'Пасив: стійкість до утримання, сну та ментальних ефектів. MP у бою не витрачається.';
     case 'l2_329':
@@ -134,7 +136,11 @@ function magisterBattleStatsPreviewCore(
             'З ' + HUMAN_FIGHTER_STUN_ATTACK_MIN_LEVEL + ' р., гілка воїна.',
         };
       }
-      break;
+      return {
+        mp: row.mp,
+        power: row.power,
+        statsNoteUk: stunAttackStatsNoteUk(skillRank),
+      };
     case 'l2_245':
       row = wildSweepMpAndPower(
         Math.max(lv, HUMAN_FIGHTER_PRO_WARRIOR_LEVEL),
@@ -160,7 +166,11 @@ function magisterBattleStatsPreviewCore(
           statsNoteUk: 'Після профи воїн; у бою — меч або булава.',
         };
       }
-      break;
+      return {
+        mp: row.mp,
+        power: row.power,
+        statsNoteUk: powerSmashStatsNoteUk(skillRank),
+      };
     case 'l2_36': {
       const wlv = Math.max(lv, HUMAN_FIGHTER_WHIRLWIND_MIN_LEVEL);
       row = whirlwindMpAndPower(wlv, skillRank);

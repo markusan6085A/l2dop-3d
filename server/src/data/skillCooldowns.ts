@@ -8,6 +8,7 @@
  */
 
 import { HUMAN_FIGHTER_L2_COOLDOWN_SEC } from './humanFighterSkillCooldowns.generated.js';
+import { L2DB_INTERLUDE_SKILL_COOLDOWN_SEC } from './l2dbSkillCooldowns.generated.js';
 
 export type SkillCooldownEntry = {
   skillId: number;
@@ -100,11 +101,13 @@ export function markSkillCast(
 }
 
 /**
- * Довідник cooldown (сек) за `l2SkillId`; поки Human Fighter. Для інших класів — розширити
- * (`gen:race-fighter-skills` / майбутні `gen:*-cooldowns`).
+ * Довідник cooldown (сек) за `l2SkillId`.
+ * Пріоритет: l2db.ru (Interlude), далі legacy text-rpg Human Fighter.
  */
 export function cooldownSecForSkillId(skillId: number): number | undefined {
-  const v = HUMAN_FIGHTER_L2_COOLDOWN_SEC[skillId];
-  if (typeof v !== 'number' || v < 0) return undefined;
-  return v;
+  const l2db = L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[skillId];
+  if (typeof l2db === 'number' && l2db >= 0) return l2db;
+  const legacy = HUMAN_FIGHTER_L2_COOLDOWN_SEC[skillId];
+  if (typeof legacy !== 'number' || legacy < 0) return undefined;
+  return legacy;
 }

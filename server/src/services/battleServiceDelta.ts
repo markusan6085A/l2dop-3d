@@ -189,9 +189,16 @@ export function battleCooldownsForSync(
   st: BattleJsonState,
   nowMs: number
 ): Record<string, number> | undefined {
+  const merged: Record<string, number> = {};
   const mystic = st.mysticSkillCdUntil;
+  if (mystic) {
+    for (const [key, readyAt] of Object.entries(mystic)) {
+      if (typeof readyAt === 'number' && Number.isFinite(readyAt) && readyAt > nowMs) {
+        merged[key] = readyAt;
+      }
+    }
+  }
   const rows = parseSkillCooldowns(row.skillCooldownsJson, nowMs);
-  const merged: Record<string, number> = mystic ? { ...mystic } : {};
   for (const cd of rows) {
     if (cd.readyAt > nowMs) {
       merged['l2_' + String(cd.skillId)] = cd.readyAt;

@@ -20,6 +20,11 @@ import {
   weaponMasteryPatkAtRank,
 } from './weaponMasteryTables.js';
 import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import {
+  lightArmorMasteryEvasionFlatAtRank,
+  lightArmorMasteryPdefPercentAtRank,
+} from './lightArmorMasteryTables.js';
+import { isSwordOrBluntWeaponKind } from './swordBluntMasteryTables.js';
 import type { TextRpgHfPassiveRow } from './textRpgPassiveEffects.generated.js';
 import type { TextRpgEffectMode } from './textRpgSkillEffectTypes.js';
 
@@ -61,11 +66,7 @@ export function textRpgPassiveDeltaForSkill(
   if (p <= 0) return undefined;
 
   const wk = equippedWeaponKind(inv) ?? '';
-  const swordBlunt =
-    wk === 'sword' ||
-    wk === 'blunt' ||
-    wk === 'bigsword' ||
-    wk === 'bigblunt';
+  const swordBlunt = isSwordOrBluntWeaponKind(wk);
   const pole = wk === 'pole';
   const armorKind = equippedArmorKindForPassives(inv);
 
@@ -76,11 +77,30 @@ export function textRpgPassiveDeltaForSkill(
 
   if (id === 227 && armorKind !== 'light') return undefined;
   if (id === 231 && armorKind !== 'heavy') return undefined;
+
+  if (id === 227) {
+    const pdefPct = lightArmorMasteryPdefPercentAtRank(rank);
+    const eva = lightArmorMasteryEvasionFlatAtRank(rank);
+    if (pdefPct <= 0 && eva <= 0) return undefined;
+    let acc = neutralCombatBuffs();
+    if (pdefPct > 0) {
+      const pdefDelta = l2dopBuffDeltaFromTextRpgEffect('pDef', 'percent', pdefPct);
+      if (pdefDelta) acc = applyBuffDelta(acc, pdefDelta);
+    }
+    if (eva > 0) {
+      const evaDelta = l2dopBuffDeltaFromTextRpgEffect('evasion', 'flat', eva);
+      if (evaDelta) acc = applyBuffDelta(acc, evaDelta);
+    }
+    return partialCombatBuffDeltaFromNeutral(acc);
+  }
+
   if (id === 216 && !pole) return undefined;
   if (id === 257 && !swordBlunt) return undefined;
   /** Bow / Dagger Mastery — бонус лише з відповідною зброєю в руці (l1). */
   if (id === 208 && wk !== 'bow') return undefined;
   if (id === 209 && wk !== 'dagger') return undefined;
+  if (row.requiresWeapon === 'pole' && wk !== 'pole') return undefined;
+  if (row.requiresWeapon === 'sword_blunt' && !swordBlunt) return undefined;
   if (row.requiresWeapon === 'bow' && wk !== 'bow') return undefined;
   if (row.requiresWeapon === 'dagger' && wk !== 'dagger') return undefined;
 

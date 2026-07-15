@@ -1336,7 +1336,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 14000,
     nameUk: "Майстерність древка (Polearm Mastery)",
-    hintUk: "Пасив: підвищує P. Atk зі списом і алебардами.",
+    hintUk: "Пасив: +P. Atk (flat) зі списом або алебардою (1 р. — +4.5, 43 р. — +122.1).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -1629,7 +1629,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 14000,
     nameUk: "Майстерність легкої броні (Light Armor Mastery)",
-    hintUk: "Пасив: підвищує P. Def і ухилення в легкій броні.",
+    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [

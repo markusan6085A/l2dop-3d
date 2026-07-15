@@ -378,9 +378,18 @@ export function battleViewFromState(
    * кулдаун War Cry/Battle Roar/Thrill Fight навіть після F5 або при вході в бій
    * після out-of-battle касту. Вибираємо `max(readyAt)` як фактичну межу.
    */
-  const mergedCd: Record<string, number> = { ...(st.mysticSkillCdUntil ?? {}) };
+  const mergedCd: Record<string, number> = {};
+  const nowMs = Date.now();
+  if (st.mysticSkillCdUntil) {
+    for (const [key, readyAt] of Object.entries(st.mysticSkillCdUntil)) {
+      if (typeof readyAt === 'number' && Number.isFinite(readyAt) && readyAt > nowMs) {
+        mergedCd[key] = readyAt;
+      }
+    }
+  }
   for (const cd of skillCooldowns) {
     const key = 'l2_' + cd.skillId;
+    if (cd.readyAt <= nowMs) continue;
     const prev = mergedCd[key];
     if (typeof prev !== 'number' || cd.readyAt > prev) {
       mergedCd[key] = cd.readyAt;

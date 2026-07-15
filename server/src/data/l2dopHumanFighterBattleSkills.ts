@@ -704,6 +704,8 @@ export function humanFighterBattleSkillBar(
     weaponKind === 'blunt' ||
     weaponKind === 'bigsword' ||
     weaponKind === 'bigblunt';
+  const bluntWeapon =
+    weaponKind === 'blunt' || weaponKind === 'bigblunt';
   if (
     lvOk(HUMAN_FIGHTER_POWER_STRIKE_MIN_LEVEL) &&
     learned.has('l2_3')
@@ -752,9 +754,13 @@ export function humanFighterBattleSkillBar(
     warriorBar &&
     warSk &&
     lvOk(HUMAN_FIGHTER_STUN_ATTACK_MIN_LEVEL) &&
-    learned.has('l2_100')
+    learned.has('l2_100') &&
+    bluntWeapon
   ) {
-    bar.push({ id: 'stun_attack', labelUk: 'Приголомшувальний удар · 100' });
+    bar.push({
+      id: 'stun_attack',
+      labelUk: 'Приголомшувальний удар · 100 (тупа)',
+    });
   }
   if (
     warriorBar &&

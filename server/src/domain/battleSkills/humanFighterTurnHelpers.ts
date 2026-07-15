@@ -342,8 +342,7 @@ export function legacyBuffCdAndExpirePatches(
   } = {};
   const nowMs = Date.now();
   const entry = humanFighterCatalogEntry('l2_' + skillId);
-  const rawCd =
-    entry?.kind === 'toggle' ? 1 : cooldownSecForSkillId(skillId);
+  const rawCd = cooldownSecForSkillId(skillId);
   const cdSec = scaledSkillCooldownSec(ctx, rawCd, entry);
   if (cdSec > 0) {
     out.mysticSkillCdUntilPatch = {
@@ -523,6 +522,8 @@ export function applyStandardFighterCooldown(
   result: BattleSkillTurnResult
 ): BattleSkillTurnResult {
   if (result.skipStandardCooldown) return result;
+  /** War Cry / Battle Roar / Thrill Fight — CD лише через `activeBuffPatch` у performBattleAction. */
+  if (result.activeBuffPatch) return result;
   const battleId = battleIdForCooldownAction(ctx.action);
   if (!battleId) return result;
 
@@ -532,25 +533,6 @@ export function applyStandardFighterCooldown(
   const ent =
     humanFighterCatalogEntry(battleId) ??
     fighterCatalogEntryForRace(ctx.race, ctx.classBranch, battleId);
-  if (ent?.kind === 'toggle') {
-    const cdSec = 1;
-    const until = jsonFiniteNum(ctx.st.mysticSkillCdUntil?.[battleId]);
-    const toggleAlreadyOn =
-      (battleId === 'l2_256' && isStanceAccuracyActive(ctx.st.battleMods)) ||
-      (battleId === 'l2_312' && isStanceViciousActive(ctx.st.battleMods)) ||
-      (battleId === 'l2_339' && isStanceParryActive(ctx.st.battleMods)) ||
-      (battleId === 'l2_318' && ctx.st.battleMods?.aegisStanceActive === true);
-    if (isCooldownBlocked(until) && !toggleAlreadyOn) {
-      assertSkillCooldownReady(until);
-    }
-    return {
-      ...result,
-      mysticSkillCdUntilPatch: {
-        ...(result.mysticSkillCdUntilPatch ?? {}),
-        [battleId]: Date.now() + cdSec * 1000,
-      },
-    };
-  }
   const entryCd =
     typeof ent?.cooldownSec === 'number' && ent.cooldownSec > 0
       ? ent.cooldownSec
@@ -575,7 +557,12 @@ export function applyStandardFighterCooldown(
       }
     }
   }
-  const cdSec = scaledSkillCooldownSec(ctx, rawCdSec, ent);
+  const cdSec =
+    ent?.kind === 'toggle'
+      ? typeof rawCdSec === 'number' && rawCdSec > 0
+        ? rawCdSec
+        : 0
+      : scaledSkillCooldownSec(ctx, rawCdSec, ent);
   if (cdSec <= 0) return result;
 
   const until = jsonFiniteNum(ctx.st.mysticSkillCdUntil?.[battleId]);

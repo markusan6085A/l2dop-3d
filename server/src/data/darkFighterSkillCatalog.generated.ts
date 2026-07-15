@@ -5130,7 +5130,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 40,
     spCost: 11000,
     nameUk: "Майстерність легкої броні (Light Armor Mastery)",
-    hintUk: "Пасив: підвищує P. Def і ухилення в легкій броні.",
+    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [

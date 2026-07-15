@@ -56,6 +56,7 @@ import {
   viciousStanceRankFromLearnedEntries,
 } from '../data/l2dopFocusAttack.js';
 import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
+import { resolveViciousStanceEffectRank } from '../data/viciousStanceTables.js';
 import {
   canonicalBattleSkillId,
   learnedBattleIdsFromEntries,
@@ -172,7 +173,10 @@ function addCritDisplayForProfile(
   if (isStanceViciousActive(displayMods)) {
     const d = textRpgHfToggleStanceDelta(
       312,
-      viciousStanceRankFromLearnedEntries(learned)
+      resolveViciousStanceEffectRank(
+        viciousStanceRankFromLearnedEntries(learned),
+        displayMods
+      )
     );
     if (d?.addCritDmg) flat += d.addCritDmg;
     if (d?.critDmgMul != null && d.critDmgMul > 0 && Number.isFinite(d.critDmgMul)) {
@@ -262,11 +266,15 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     parryStanceRank,
     equippedWeaponKind(inv)
   );
+  const viciousRankDisplay = resolveViciousStanceEffectRank(
+    viciousStanceRankFromLearnedEntries(learnedDetail),
+    worldTicked?.battleMods
+  );
   const critRate = effectiveBattleCritRateDisplay(
     combat.critRate,
     row.battleJson,
     worldTicked?.battleMods,
-    viciousStanceRankFromLearnedEntries(learnedDetail)
+    viciousRankDisplay
   );
   const displayMods = mergeDisplayBattleMods(
     row.battleJson,

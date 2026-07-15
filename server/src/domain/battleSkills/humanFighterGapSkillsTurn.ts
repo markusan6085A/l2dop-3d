@@ -77,8 +77,7 @@ function cooldownPatchForSkill(
   ctx: BattleSkillResolveContext
 ): Record<string, number> | undefined {
   const catalogEntry = humanFighterCatalogEntry('l2_' + skillId);
-  const rawCd =
-    catalogEntry?.kind === 'toggle' ? 1 : cooldownSecForSkillId(skillId);
+  const rawCd = cooldownSecForSkillId(skillId);
   const cdSec = scaledSkillCooldownSec(ctx, rawCd, catalogEntry);
   if (cdSec <= 0) return undefined;
   return { ['l2_' + skillId]: Date.now() + Math.floor(cdSec * 1000) };

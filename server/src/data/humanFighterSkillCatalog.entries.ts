@@ -89,7 +89,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 1200,
     nameUk: 'Приголомшувальний удар (Stun Attack)',
     hintUk:
-      'Сильний удар: оглушує ціль і завдає шкоди. Поки діє попередній ефект — повторно не накладається. Тільки з булавами. Можливий надудар.',
+      'Актив: урон + оглушення по одній цілі. Лише булава (1 р. — MP 20 / power 36, 15 р. — MP 34 / power 131). Повторне оглушення не накладається, поки діє ефект. Можливий надудар.',
     kind: 'battle',
     professionReq: 'human_warrior',
   },
@@ -131,7 +131,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 3700,
     nameUk: 'Майстерність древка (Polearm Mastery)',
     hintUk:
-      'Пасив: підвищує P. Atk зі списом і алебардами.',
+      'Пасив: +P. Atk (flat) зі списом або алебардою (1 р. — +4.5, 43 р. — +122.1).',
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -142,7 +142,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 1900,
     nameUk: 'Майстерність легкої броні (Light Armor Mastery)',
     hintUk:
-      'Пасив: підвищує P. Def і ухилення в легкій броні.',
+      'Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).',
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -175,7 +175,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 1200,
     nameUk: 'Розгром (Power Smash)',
     hintUk:
-      'Потужний удар, що влучає в одну ціль. Лише з булавою або мечем. Можливий надудар.',
+      'Актив: потужний удар по одній цілі. Лише меч або булава (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Можливий надудар.',
     kind: 'battle',
     professionReq: 'human_warrior',
   },
@@ -197,7 +197,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 3700,
     nameUk: 'Майстерність меча й булави (Sword / Blunt Mastery)',
     hintUk:
-      'Пасив: підвищує P. Atk з мечем або булавою.',
+      'Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +4.5, 43 р. — +122.1).',
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -219,7 +219,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 3700,
     nameUk: 'Жорстка стійка (Vicious Stance)',
     hintUk:
-      'Підвищує силу критичного удару. Постійно витрачає MP, поки активна.',
+      'Toggle (не аура): крит / сила криту, поки увімкнено. MP ~0.4/с. 1 р. — +12 крит, +35% сила криту; 6 р. — +139 flat; 20 р. — +609 flat.',
     kind: 'toggle',
     professionReq: 'human_warrior_or_rogue_track',
   },
