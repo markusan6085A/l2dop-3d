@@ -40,7 +40,6 @@ import {
 } from './battleServiceBattleBuffs.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { cooldownSecForSkillId, type SkillCooldownEntry } from '../data/skillCooldowns.js';
-import { L2DB_INTERLUDE_SKILL_COOLDOWN_SEC } from '../data/l2dbSkillCooldowns.generated.js';
 
 /** Та сама нормалізація профи, що й у `parseSkillsLearnedJson` — інакше зникають бафи/гілкові скіли з `battle.skills`. */
 function effectiveBattleProfession(
@@ -147,8 +146,8 @@ function mysticCooldownSecForBattleAction(
           const m = /^l2_(\d+)$/.exec(battleId);
           if (!m) return null;
           const sid = parseInt(m[1]!, 10);
-          const l2dbCd = L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[sid];
-          return typeof l2dbCd === 'number' && l2dbCd > 0 ? l2dbCd : null;
+          const reuseCd = cooldownSecForSkillId(sid);
+          return typeof reuseCd === 'number' && reuseCd > 0 ? reuseCd : null;
         })();
   return resolveUiSkillCooldownSec(
     {

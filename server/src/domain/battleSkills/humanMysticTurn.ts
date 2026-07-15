@@ -35,7 +35,7 @@ import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.j
 import {
   effectiveCastSpdForCooldown,
 } from './humanFighterTurnHelpers.js';
-import { L2DB_INTERLUDE_SKILL_COOLDOWN_SEC } from '../../data/l2dbSkillCooldowns.generated.js';
+import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
 import {
   assertSkillCooldownReady,
   isCooldownBlocked,
@@ -653,10 +653,10 @@ export function resolveHumanMysticTurn(
   const fixedCdRaw =
     typeof entry.cooldownSec === 'number' && entry.cooldownSec > 0
       ? entry.cooldownSec
-      : typeof L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] === 'number' &&
-          (L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] as number) > 0
-        ? (L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[entry.l2SkillId] as number)
-        : null;
+      : (() => {
+          const reuseCd = cooldownSecForSkillId(entry.l2SkillId);
+          return typeof reuseCd === 'number' && reuseCd > 0 ? reuseCd : null;
+        })();
   const cdSec = resolveBattleSkillCooldownSec({
     classBranch: ctx.classBranch,
     category: entry.category,

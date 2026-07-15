@@ -1,5 +1,7 @@
 /**
- * Автоген з l2db skill info:
+ * @deprecated Не використовувати для бойового КД.
+ * Автоген з l2db skillInfo — поле «Время перезарядки» там збігається з cast/hit time, не з «Откат».
+ * Для reuse delay див. `l2dopSkillReuseDelaySec.ts`.
  * https://l2db.ru/skillEnchant/skillInfo/<id>/1
  * Не правити вручну.
  */

@@ -8,7 +8,7 @@
  */
 
 import { HUMAN_FIGHTER_L2_COOLDOWN_SEC } from './humanFighterSkillCooldowns.generated.js';
-import { L2DB_INTERLUDE_SKILL_COOLDOWN_SEC } from './l2dbSkillCooldowns.generated.js';
+import { L2DOP_SKILL_REUSE_DELAY_SEC } from './l2dopSkillReuseDelaySec.js';
 
 export type SkillCooldownEntry = {
   skillId: number;
@@ -101,12 +101,12 @@ export function markSkillCast(
 }
 
 /**
- * Довідник cooldown (сек) за `l2SkillId`.
- * Пріоритет: l2db.ru (Interlude), далі legacy text-rpg Human Fighter.
+ * Довідник reuse delay (сек) за `l2SkillId` — саме «відкат», не cast time.
+ * Пріоритет: перевірені Interlude reuse (`l2dopSkillReuseDelaySec`), далі legacy HF text-rpg.
  */
 export function cooldownSecForSkillId(skillId: number): number | undefined {
-  const l2db = L2DB_INTERLUDE_SKILL_COOLDOWN_SEC[skillId];
-  if (typeof l2db === 'number' && l2db >= 0) return l2db;
+  const reuse = L2DOP_SKILL_REUSE_DELAY_SEC[skillId];
+  if (typeof reuse === 'number' && reuse >= 0) return reuse;
   const legacy = HUMAN_FIGHTER_L2_COOLDOWN_SEC[skillId];
   if (typeof legacy !== 'number' || legacy < 0) return undefined;
   return legacy;

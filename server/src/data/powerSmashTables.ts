@@ -20,7 +20,7 @@ export function powerSmashMpPowerAtRank(rank: number): {
 }
 
 export const POWER_SMASH_HINT_UK =
-  'Актив: потужний удар по одній цілі. Лише меч або булава (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Можливий надудар.';
+  'Актив: потужний удар по одній цілі. Лише меч або булава (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Відкат: 13 с. Можливий надудар.';
 
 /** Текст для магістра / UI на конкретному рівні скіла. */
 export function powerSmashStatsNoteUk(rank: number): string {
@@ -36,6 +36,6 @@ export function powerSmashStatsNoteUk(rank: number): string {
     row.power +
     ' на р. ' +
     lv +
-    ' скіла. Лише меч/булавою; можливий надудар.'
+    ' скіла. Відкат: 13 с. Лише меч/булавою; можливий надудар.'
   );
 }

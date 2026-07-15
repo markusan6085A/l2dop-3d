@@ -78,7 +78,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 20,
     spCost: 3700,
     nameUk: 'Бойовий клич (War Cry)',
-    hintUk: 'Миттєво підвищує фізичну атаку.',
+    hintUk: 'Миттєво підвищує фізичну атаку. Відкат: 180 с.',
     kind: 'battle',
     professionReq: 'human_warrior',
   },
@@ -89,7 +89,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 1200,
     nameUk: 'Приголомшувальний удар (Stun Attack)',
     hintUk:
-      'Актив: урон + оглушення по одній цілі. Лише булава (1 р. — MP 20 / power 36, 15 р. — MP 34 / power 131). Повторне оглушення не накладається, поки діє ефект. Можливий надудар.',
+      'Актив: урон + оглушення по одній цілі. Лише булава (1 р. — MP 20 / power 36, 15 р. — MP 34 / power 131). Відкат: 13 с. Повторне оглушення не накладається, поки діє ефект. Можливий надудар.',
     kind: 'battle',
     professionReq: 'human_warrior',
   },
@@ -175,7 +175,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 1200,
     nameUk: 'Розгром (Power Smash)',
     hintUk:
-      'Актив: потужний удар по одній цілі. Лише меч або булава (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Можливий надудар.',
+      'Актив: потужний удар по одній цілі. Лише меч або булава (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Відкат: 13 с. Можливий надудар.',
     kind: 'battle',
     professionReq: 'human_warrior',
   },

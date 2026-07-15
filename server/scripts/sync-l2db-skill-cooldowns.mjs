@@ -4,8 +4,9 @@
  *
  * Алгоритм:
  * 1) Зчитує всі `l2SkillId` з generated каталогів.
- * 2) Тягне "Время перезарядки" з l2db (Interlude skill info).
- * 3) Пише карту в `server/src/data/l2dbSkillCooldowns.generated.ts`.
+ * 2) Тягне «Время перезарядки» з l2db skillInfo (УВАГА: це cast/hit time, не «Откат» reuse delay).
+ * 3) Пише карту в `server/src/data/l2dbSkillCooldowns.generated.ts` (deprecated для КД).
+ *    Перевірені reuse delay — у `l2dopSkillReuseDelaySec.ts`.
  * 4) Оновлює `cooldownSec` у кожному каталозі лише для skillId, які знайдено в l2db.
  *
  * Запуск:
