@@ -5,6 +5,8 @@ import {
   l2dopMagicSkillDamage,
   l2dopPhysicalBaseDamage,
   l2dopPhysicalCritDamage,
+  l2dopWorldBossPhysicalCritDamage,
+  l2dopWorldBossPhysicalDamage,
 } from './l2dopDamageFormulas.js';
 import { clampMagicCritDmgMulForDamage } from './l2dopPrimaryStatPipeline.js';
 
@@ -29,6 +31,8 @@ export function physicalCritChance(critRateStat: number): number {
   return Math.min(0.72, Math.max(0.05, capped / 1000));
 }
 
+export type PhysicalDamageMode = 'standard' | 'worldBoss';
+
 export interface ResolvePhysicalHitParams {
   attackerAtk: number;
   targetPDef: number;
@@ -41,6 +45,8 @@ export interface ResolvePhysicalHitParams {
   allowCrit?: boolean;
   /** Для CC-скілів: якщо false, стадія промаху вимикається (урон гарантовано проходить). */
   allowMiss?: boolean;
+  /** РБ/епік: atk−def ±2% замість (70×atk)/def. */
+  damageMode?: PhysicalDamageMode;
 }
 
 export type PhysicalHitOutcome = 'miss' | 'hit' | 'crit';
@@ -59,18 +65,27 @@ export function resolvePhysicalHit(
   ) {
     return { outcome: 'miss', damage: 0 };
   }
-  const base = l2dopPhysicalBaseDamage(p.attackerAtk, p.targetPDef);
+  const worldBoss = p.damageMode === 'worldBoss';
+  const base = worldBoss
+    ? l2dopWorldBossPhysicalDamage(p.attackerAtk, p.targetPDef)
+    : l2dopPhysicalBaseDamage(p.attackerAtk, p.targetPDef);
   const allowCrit = p.allowCrit !== false;
   if (
     allowCrit &&
     Math.random() < physicalCritChance(p.critRateStat)
   ) {
-    const dmg = l2dopPhysicalCritDamage(
-      p.attackerAtk,
-      p.targetPDef,
-      p.critDmgMul,
-      p.addCritDmg
-    );
+    const dmg = worldBoss
+      ? l2dopWorldBossPhysicalCritDamage(
+          p.attackerAtk,
+          p.targetPDef,
+          p.critDmgMul
+        )
+      : l2dopPhysicalCritDamage(
+          p.attackerAtk,
+          p.targetPDef,
+          p.critDmgMul,
+          p.addCritDmg
+        );
     return { outcome: 'crit', damage: dmg };
   }
   return { outcome: 'hit', damage: base };

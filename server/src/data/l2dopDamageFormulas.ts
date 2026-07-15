@@ -14,6 +14,9 @@ export function l2dopUniformRandom(low: number, high: number): number {
 /** Розкид фіз. урону після формули l2dop (~±10%, як просили для бою з мобами). */
 export const L2DOP_PHYSICAL_DAMAGE_VARIANCE = 0.1;
 
+/** Розкид урону РБ/епіка: P.Atk мінус P.Def гравця, ±2%. */
+export const L2DOP_WORLD_BOSS_DAMAGE_VARIANCE = 0.02;
+
 function physicalDamageAfterVariance(rawBeforeFloor: number): number {
   const raw = Number.isFinite(rawBeforeFloor) ? rawBeforeFloor : 1;
   const low = raw * (1 - L2DOP_PHYSICAL_DAMAGE_VARIANCE);
@@ -34,6 +37,41 @@ export function l2dopPhysicalBaseDamage(
   const atk = Math.max(1, Math.floor(attackerAtk));
   const raw = (70 * atk) / def;
   return physicalDamageAfterVariance(raw);
+}
+
+function worldBossDamageAfterVariance(rawBeforeFloor: number): number {
+  const raw = Number.isFinite(rawBeforeFloor) ? rawBeforeFloor : 1;
+  const v = L2DOP_WORLD_BOSS_DAMAGE_VARIANCE;
+  const low = raw * (1 - v);
+  const high = raw * (1 + v);
+  return Math.max(1, Math.floor(l2dopUniformRandom(low, high)));
+}
+
+/**
+ * Урон РБ по гравцю: показаний P.Atk мінус ефективний P.Def (без коеф. 70/def).
+ * Приклад: 1500 atk − 500 def ≈ 1000 HP (±2%).
+ */
+export function l2dopWorldBossPhysicalDamage(
+  mobPAtk: number,
+  targetPDef: number
+): number {
+  const atk = Math.max(1, Math.floor(mobPAtk));
+  const def = Math.max(0, Math.floor(targetPDef));
+  const base = Math.max(1, atk - def);
+  return worldBossDamageAfterVariance(base);
+}
+
+/** Крит РБ: той самий atk−def, потім ×critDmgMul і ±2%. */
+export function l2dopWorldBossPhysicalCritDamage(
+  mobPAtk: number,
+  targetPDef: number,
+  critDmgMul: number
+): number {
+  const atk = Math.max(1, Math.floor(mobPAtk));
+  const def = Math.max(0, Math.floor(targetPDef));
+  const base = Math.max(1, atk - def);
+  const raw = base * Math.max(1, critDmgMul);
+  return worldBossDamageAfterVariance(raw);
 }
 
 /**

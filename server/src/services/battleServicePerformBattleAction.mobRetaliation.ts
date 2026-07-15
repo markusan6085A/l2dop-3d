@@ -7,6 +7,7 @@ import {
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
 import type { BattleSpawnMeta } from '../domain/battlePvpContext.js';
+import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import type { CombatStatsSnapshot } from '../data/l2dopCombatFormulas.js';
 import {
   battleActionSkipsMobHp,
@@ -121,7 +122,8 @@ export function applyMobCounterDamage(args: MobCounterDamageArgs): {
     spawn.level,
     combat,
     st,
-    modsForMobCounter
+    modsForMobCounter,
+    { worldBossMode: isSharedWorldBossKind(spawn.kind) }
   );
   const rRefl = jsonFiniteNum(modsForMobCounter?.reflectDamageReturnRatio) ?? 0;
   const rMir = jsonFiniteNum(modsForMobCounter?.physicalMirrorReflectRatio) ?? 0;

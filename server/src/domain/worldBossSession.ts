@@ -9,7 +9,13 @@ export const WORLD_BOSS_PRESENCE_GRACE_MS = 30_000;
 /** Фоновий tick: лише перевірка due-сесій (без lock усіх босів). */
 export const WORLD_BOSS_TICK_MS = 1_000;
 
-/** Звичайний РБ — базовий інтервал автоатаки. */
+/** 3 випадкові удари за це вікно. */
+export const WORLD_BOSS_BURST_WINDOW_MS = 10_000;
+export const WORLD_BOSS_BURST_HIT_COUNT = 3;
+/** Мін. зсув першого удару в серії (щоб не бити миттєво). */
+export const WORLD_BOSS_BURST_MIN_OFFSET_MS = 400;
+
+/** @deprecated РБ тепер б'є серіями (3 удари / 10 с). Лишено для legacy SQL fallback. */
 export const RAID_BOSS_AUTO_ATTACK_MS = 3_000;
 /** Epic — трохи швидше (MVP без окремих скілів). */
 export const EPIC_BOSS_AUTO_ATTACK_MS = 2_800;
@@ -57,18 +63,55 @@ export function resolveWorldBossAttackTiming(input: {
   return { autoAttackIntervalMs: interval, firstAggroDelayMs: first };
 }
 
+export function scheduleWorldBossBurst(
+  session: WorldBossSessionState,
+  nowMs: number,
+  minOffsetMs?: number
+): void {
+  const minOff = Math.max(
+    WORLD_BOSS_BURST_MIN_OFFSET_MS,
+    Math.floor(minOffsetMs ?? WORLD_BOSS_BURST_MIN_OFFSET_MS)
+  );
+  const window = WORLD_BOSS_BURST_WINDOW_MS;
+  const count = WORLD_BOSS_BURST_HIT_COUNT;
+  const span = Math.max(minOff + 1, window);
+  const offsets: number[] = [];
+  for (let i = 0; i < count; i++) {
+    offsets.push(minOff + Math.floor(Math.random() * (span - minOff)));
+  }
+  offsets.sort((a, b) => a - b);
+  session.pendingBurstHitAtMs = offsets.map((o) => nowMs + o);
+  session.nextMobAutoAttackAtMs =
+    session.pendingBurstHitAtMs[0] ?? WORLD_BOSS_NO_ATTACK_SCHEDULED;
+}
+
+export function afterWorldBossHitConsumed(
+  session: WorldBossSessionState,
+  nowMs: number
+): void {
+  const pending = session.pendingBurstHitAtMs ?? [];
+  const remaining = pending.filter((t) => t > nowMs);
+  if (remaining.length === 0) {
+    scheduleWorldBossBurst(session, nowMs);
+    return;
+  }
+  session.pendingBurstHitAtMs = remaining;
+  session.nextMobAutoAttackAtMs = remaining[0]!;
+}
+
 export function scheduleFirstAggroWorldBossAttack(
   session: WorldBossSessionState,
   nowMs: number
 ): void {
-  session.nextMobAutoAttackAtMs = nowMs + session.firstAggroDelayMs;
+  scheduleWorldBossBurst(session, nowMs, session.firstAggroDelayMs);
 }
 
+/** @deprecated Використовуй afterWorldBossHitConsumed */
 export function scheduleNextWorldBossAutoAttack(
   session: WorldBossSessionState,
   nowMs: number
 ): void {
-  session.nextMobAutoAttackAtMs = nowMs + session.autoAttackIntervalMs;
+  afterWorldBossHitConsumed(session, nowMs);
 }
 
 export function isWorldBossAutoAttackDue(
@@ -125,6 +168,8 @@ export interface WorldBossSessionState {
   firstAggroDelayMs: number;
   /** Час наступної автоатаки (nowMs >= next → due). */
   nextMobAutoAttackAtMs: number;
+  /** Черга timestamp ударів поточної серії (3 рандомні удари за burst window). */
+  pendingBurstHitAtMs?: number[];
   /** Нагорода top dealer вже видана — захист від double-loot при concurrent kill. */
   lootIssued?: boolean;
   lootIssuedAt?: number;
@@ -260,6 +305,15 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
     o.lootRecipientCharacterId != null
       ? String(o.lootRecipientCharacterId).trim() || null
       : null;
+  const pendingBurstRaw = o.pendingBurstHitAtMs;
+  const pendingBurstHitAtMs: number[] = [];
+  if (Array.isArray(pendingBurstRaw)) {
+    for (const t of pendingBurstRaw) {
+      const n = Number(t);
+      if (Number.isFinite(n) && n > 0) pendingBurstHitAtMs.push(Math.floor(n));
+    }
+    pendingBurstHitAtMs.sort((a, b) => a - b);
+  }
   return {
     spawnId,
     mobHp: Math.max(0, Math.floor(mobHp)),
@@ -279,6 +333,7 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
     autoAttackIntervalMs: timing.autoAttackIntervalMs,
     firstAggroDelayMs: timing.firstAggroDelayMs,
     nextMobAutoAttackAtMs,
+    ...(pendingBurstHitAtMs.length > 0 ? { pendingBurstHitAtMs } : {}),
     ...(lootIssued ? { lootIssued: true } : {}),
     ...(lootIssuedAt != null ? { lootIssuedAt } : {}),
     ...(lootRecipientCharacterId ? { lootRecipientCharacterId } : {}),
@@ -434,6 +489,7 @@ export function reconcileWorldBossTarget(
     scheduleFirstAggroWorldBossAttack(session, nowMs);
   } else if (!next) {
     session.nextMobAutoAttackAtMs = WORLD_BOSS_NO_ATTACK_SCHEDULED;
+    session.pendingBurstHitAtMs = [];
   }
   return next !== cur;
 }

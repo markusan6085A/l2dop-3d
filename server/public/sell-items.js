@@ -466,52 +466,68 @@
   }
 
   function finishSellUi(stack, qty, total) {
+    closeSellModals();
     clampSellListPage();
     paint();
     setSellCongrats(stack, qty, total);
-    closeSellModals();
   }
 
-  function onSellSnapshot(character, stack, qty, total) {
+  function resolveCharacterAfterSell(responseCharacter) {
+    return refetchSellCharacter().then(function (fresh) {
+      return fresh || responseCharacter || null;
+    });
+  }
+
+  function refreshPageAfterSell(character, stack, qty, total) {
     if (!character) {
-      return refetchSellCharacter().then(function (fresh) {
-        if (!fresh) {
-          setMsg('Продано, але не вдалося оновити список — онови сторінку.');
-          closeSellModals();
-          return;
-        }
-        applySnapshotFromServer(fresh);
-        finishSellUi(stack, qty, total);
-      });
+      setMsg('Продано, але не вдалося оновити список — онови сторінку.');
+      closeSellModals();
+      return;
     }
     applySnapshotFromServer(character);
     finishSellUi(stack, qty, total);
   }
 
-  function performSellRequest(stack, qty, onDone) {
-    if (sellInFlight || !snap) return;
+  function setModalSellBusy(okBtn, busy) {
+    if (!okBtn) return;
+    if (busy) {
+      if (!okBtn.dataset.sellLabel) {
+        okBtn.dataset.sellLabel = okBtn.textContent || 'Продати';
+      }
+      okBtn.disabled = true;
+      okBtn.textContent = '…';
+      return;
+    }
+    okBtn.disabled = sellInFlight;
+    okBtn.textContent = okBtn.dataset.sellLabel || 'Продати';
+  }
+
+  function performSellFromModal(stack, qty, okBtn) {
+    if (sellInFlight || !snap) return Promise.resolve();
     var itemId = stack.itemId;
     var enchant = stack.enchant || 0;
     var total = sellTotalFor(itemId, qty);
     if (total == null) {
       setMsg('Цей предмет не продається.');
-      return;
+      return Promise.resolve();
     }
 
     var token = localStorage.getItem('token');
     if (!token) {
       setMsg('Потрібен вхід.');
-      return;
+      return Promise.resolve();
     }
     var rev = snap.revision;
     if (!rev) {
       setMsg('Немає revision — онови сторінку.');
-      return;
+      return Promise.resolve();
     }
 
     sellInFlight = true;
+    setModalSellBusy(okBtn, true);
     setMsg('');
-    fetch('/game/shop/sell', {
+
+    return fetch('/game/shop/sell', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + token,
@@ -525,6 +541,11 @@
       }),
     })
       .then(function (r) {
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return null;
+        }
         if (r.status === 409) {
           return r.json().then(function (j409) {
             return window.L2 &&
@@ -543,9 +564,13 @@
         return r.json().then(function (j) {
           if (!r.ok) {
             setMsg((j && j.messageUk) || 'Не вдалося продати.');
-            return;
+            return null;
           }
-          onSellSnapshot(j && j.character ? j.character : null, stack, qty, total);
+          return resolveCharacterAfterSell(j && j.character ? j.character : null).then(
+            function (fresh) {
+              refreshPageAfterSell(fresh, stack, qty, total);
+            }
+          );
         });
       })
       .catch(function () {
@@ -553,7 +578,7 @@
       })
       .finally(function () {
         sellInFlight = false;
-        if (typeof onDone === 'function') onDone();
+        setModalSellBusy(okBtn, false);
       });
   }
 
@@ -585,10 +610,7 @@
       ok.disabled = sellInFlight;
       ok.onclick = function () {
         if (sellInFlight) return;
-        ok.disabled = true;
-        performSellRequest(stack, maxQty, function () {
-          ok.disabled = false;
-        });
+        performSellFromModal(stack, maxQty, ok);
       };
     }
     el.hidden = false;
@@ -646,10 +668,7 @@
           setMsg('Вкажи кількість від 1 до ' + maxQty + '.');
           return;
         }
-        ok.disabled = true;
-        performSellRequest(stack, q, function () {
-          ok.disabled = false;
-        });
+        performSellFromModal(stack, q, ok);
       };
     }
     el.hidden = false;

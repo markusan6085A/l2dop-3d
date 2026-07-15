@@ -234,9 +234,11 @@ export function rollMobPhysicalVsPlayer(
   spawnLevel: number,
   combat: ReturnType<typeof computeCombatStats>,
   st: BattleJsonState,
-  effectiveBattleMods?: BattleBattleMods
+  effectiveBattleMods?: BattleBattleMods,
+  options?: { worldBossMode?: boolean }
 ): { damage: number; outcome: 'miss' | 'hit' | 'crit' } {
   const mods = effectiveBattleMods ?? st.battleMods;
+  const worldBossMode = options?.worldBossMode === true;
   if (jsonBoolLike(mods?.fakeDeathActive) && Math.random() < 0.42) {
     return { damage: 0, outcome: 'miss' };
   }
@@ -263,10 +265,12 @@ export function rollMobPhysicalVsPlayer(
   }
   const pDefEff = Math.max(1, Math.floor(combat.pDef * pDefMulEff));
   const deb = mods?.mobPatkDebuffMul;
-  let atk = Math.max(
-    1,
-    Math.floor(mobPAtk * mobOutgoingPatkScaleByLevel(spawnLevel))
-  );
+  let atk = worldBossMode
+    ? Math.max(1, Math.floor(mobPAtk))
+    : Math.max(
+        1,
+        Math.floor(mobPAtk * mobOutgoingPatkScaleByLevel(spawnLevel))
+      );
   if (typeof deb === 'number' && deb > 0 && deb < 1 && Number.isFinite(deb)) {
     atk = Math.max(1, Math.floor(atk * deb));
   }
@@ -288,6 +292,7 @@ export function rollMobPhysicalVsPlayer(
     critDmgMul: 1,
     addCritDmg: 0,
     allowCrit: true,
+    damageMode: worldBossMode ? 'worldBoss' : 'standard',
   });
   let dmg = r.damage;
   const sanIn = jsonFiniteNum(mods?.sanctuaryIncomingPhysMul);
