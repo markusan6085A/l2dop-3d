@@ -11,6 +11,7 @@ import {
   type WhirlwindExtraMobJson,
 } from '../domain/battle.js';
 import type { WeaknessKind } from '../domain/mobWeaknessFamily.js';
+import { applyRiposteReflectToBattleMods } from '../domain/riposteStance.js';
 import {
   mobMaxCpFromMobMaxHp,
 } from '../data/wrathSkillConstants.js';
@@ -298,6 +299,17 @@ export function parseBattleJson(
     }
     const gapRdr = jsonFiniteNum(bm.reflectDamageReturnRatio);
     if (gapRdr !== undefined && gapRdr > 0) next.reflectDamageReturnRatio = gapRdr;
+    const rtRaw = (bm as { raceToggleRanks?: unknown }).raceToggleRanks;
+    if (rtRaw != null && typeof rtRaw === 'object' && !Array.isArray(rtRaw)) {
+      const nextRanks: Record<string, number> = {};
+      for (const [k, v] of Object.entries(rtRaw as Record<string, unknown>)) {
+        const r = jsonFiniteNum(v);
+        if (r !== undefined && r >= 1) nextRanks[k] = Math.floor(r);
+      }
+      if (Object.keys(nextRanks).length > 0) {
+        next.raceToggleRanks = nextRanks;
+      }
+    }
     const gapPmr = jsonFiniteNum(bm.physicalMirrorReflectRatio);
     if (gapPmr !== undefined && gapPmr > 0) next.physicalMirrorReflectRatio = gapPmr;
     const gapVin = jsonFiniteNum(bm.vengeanceIncomingPhysMul);
@@ -418,7 +430,9 @@ export function parseBattleJson(
       (gapMbsMul !== undefined &&
         gapMbsMul > 1 &&
         gapMbsId !== undefined &&
-        gapMbsId > 0)
+        gapMbsId > 0) ||
+      (next.raceToggleRanks != null &&
+        Object.keys(next.raceToggleRanks).length > 0)
     ) {
       battleMods = next;
     }
@@ -504,6 +518,7 @@ export function parseBattleJson(
   }
 
   if (battleMods) {
+    applyRiposteReflectToBattleMods(battleMods);
     stripExpiredZealotFromBattleMods(battleMods, Date.now());
     if (Object.keys(battleMods).length === 0) battleMods = undefined;
   }

@@ -33,6 +33,7 @@ import {
   type WorldCombatState,
 } from '../domain/worldCombatState.js';
 import type { BattleBattleMods } from '../domain/battle.js';
+import { applyRiposteReflectToBattleMods } from '../domain/riposteStance.js';
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
@@ -181,6 +182,8 @@ export async function toggleSelfStance(
         mods.raceToggleRanks = next;
       }
     }
+
+    applyRiposteReflectToBattleMods(mods);
 
     const nextWorld: WorldCombatState = {
       ...current,

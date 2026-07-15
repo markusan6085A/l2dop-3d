@@ -365,14 +365,15 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
     }
     const mp =
       (l2dopXmlMpPower(345, rank)?.mp) ?? stubMpForCanon('l2_345', rank);
-    const atk = Math.max(1, Math.floor(combat.pAtk));
+    const pow = (l2dopXmlMpPower(345, rank)?.power) ?? 600;
+    const atk = Math.floor(combat.pAtk * (1.15 + pow / 460) * profM);
     const r = rollPhys(atk);
     const heal = sonicMasteryLifestealHeal(ctx, 345, r.damage);
     return {
       mpCost: mp,
       pDmg: r.damage,
       skillLine:
-        'Звукова лють (Sonic Rage): дальній удар (урон = P.Atk); +' +
+        'Звукова лють (Sonic Rage): дальній удар; +' +
         SONIC_FOCUS_GAIN_PER_CAST +
         ' Sonic Focus.',
       physOutcome: r.outcome,

@@ -15,6 +15,7 @@ import {
   tickWorldCombatState,
   worldCombatStateFromBattleJson,
 } from '../domain/worldCombatState.js';
+import { applyRiposteReflectToBattleMods } from '../domain/riposteStance.js';
 import { prisma } from '../lib/prisma.js';
 import {
   gameConflictFromCharacter,
@@ -188,7 +189,9 @@ export async function startBattleInTx(
     mobHitsUntilRetaliation: randomMobRetaliationWindowHits(),
   };
   if (wTick?.battleMods) {
-    st.battleMods = wTick.battleMods;
+    const bm = { ...wTick.battleMods };
+    applyRiposteReflectToBattleMods(bm);
+    st.battleMods = bm;
   }
   if (
     wTick?.battleModsExpiresAtMsBySkillId &&

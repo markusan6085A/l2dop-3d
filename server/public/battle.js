@@ -750,11 +750,17 @@
     return v === true || v === 1 || v === '1';
   }
 
+  function isRiposteStanceActiveBm(bm) {
+    if (!bm || !bm.raceToggleRanks) return false;
+    var r = bm.raceToggleRanks.l2_340;
+    return typeof r === 'number' && Number.isFinite(r) && r >= 1;
+  }
+
   /** Після delta `battleMods` — оновити toggle-іконки смуги бафів без F5. */
   function patchBattleToggleBuffIcons(battle) {
     if (!battle) return;
     var bm = battle.battleMods || {};
-    var managedKeys = {};
+    var managedKeys = { riposte_stance: true };
     for (var mk = 0; mk < BATTLE_TOGGLE_STANCE_ICONS.length; mk++) {
       managedKeys[BATTLE_TOGGLE_STANCE_ICONS[mk].key] = true;
     }
@@ -762,7 +768,10 @@
       ? battle.battleBuffIcons.slice()
       : [];
     icons = icons.filter(function (b) {
-      return !b || !managedKeys[b.key];
+      if (!b) return false;
+      if (managedKeys[b.key]) return false;
+      if (isRiposteStanceActiveBm(bm) && b.key === 'reflect_damage') return false;
+      return true;
     });
     for (var ti = 0; ti < BATTLE_TOGGLE_STANCE_ICONS.length; ti++) {
       var row = BATTLE_TOGGLE_STANCE_ICONS[ti];
@@ -774,6 +783,14 @@
           isToggle: true,
         });
       }
+    }
+    if (isRiposteStanceActiveBm(bm)) {
+      icons.push({
+        key: 'riposte_stance',
+        l2SkillId: 340,
+        labelUk: 'Стійка відбиття',
+        isToggle: true,
+      });
     }
     if (icons.length > 0) {
       battle.battleBuffIcons = icons;

@@ -1221,6 +1221,12 @@
       return v === true || v === 1 || v === '1';
     }
 
+    function isRiposteStanceActiveBm(bm) {
+      if (!bm || !bm.raceToggleRanks) return false;
+      var r = bm.raceToggleRanks.l2_340;
+      return typeof r === 'number' && Number.isFinite(r) && r >= 1;
+    }
+
     /** Активні toggle-скілі: `battleMods` (delta) + `battleBuffIcons` (повний snapshot). */
     function activeToggleSkillIdSet(battle) {
       var out = {};
@@ -1230,6 +1236,7 @@
         if (battleModTruthy(bm.stanceVicious)) out[312] = true;
         if (battleModTruthy(bm.stanceParry)) out[339] = true;
         if (battleModTruthy(bm.aegisStanceActive)) out[318] = true;
+        if (isRiposteStanceActiveBm(bm)) out[340] = true;
       }
       var icons = battle && battle.battleBuffIcons;
       if (!icons || !icons.length) return out;

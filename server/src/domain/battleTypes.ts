@@ -455,5 +455,4 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   /** Sonic-буфер швидкості/захисту. */
   'sonic_move',
   'sonic_guard',
-  'sonic_rage',
 ]);

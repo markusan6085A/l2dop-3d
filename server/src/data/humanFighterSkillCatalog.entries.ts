@@ -382,7 +382,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 16000000,
     nameUk: 'Звукова лють (Sonic Rage)',
     hintUk:
-      'Актив: дальній промінь звукової енергії; урон = P.Atk зі статів. +1 Sonic Focus. Лише дуальні мечі, 1 р., з 78 лвл. Duelist.',
+      'Актив: дальній промінь звукової енергії; +1 Sonic Focus. Лише дуальні мечі, 1 р., з 78 лвл. Duelist.',
     kind: 'battle',
     professionReq: 'human_duelist',
   },

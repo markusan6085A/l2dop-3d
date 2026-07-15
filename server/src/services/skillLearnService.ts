@@ -306,7 +306,7 @@ function dreadnoughtSkillStatsNoteUk(args: {
     return 'Поточний ранг: toggle — 30% відбиття ближнього урону; −20% Atk.Spd., −10% Run Speed, −4 Accuracy.';
   }
   if (b === 'l2_345') {
-    return 'Поточний ранг: дальній удар (урон = P.Atk); +1 Sonic Focus. Лише дуальний меч.';
+    return 'Поточний ранг: дальній удар; +1 Sonic Focus. Лише дуальний меч.';
   }
   return null;
 }

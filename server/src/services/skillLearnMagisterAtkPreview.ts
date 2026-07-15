@@ -301,6 +301,12 @@ export function magisterEstimatedAtkBase(
       const pow = hm?.power ?? 1973;
       return Math.floor(pAtk * (1.12 + pow / 480) * profM);
     }
+    case 'l2_345': {
+      if (prof !== 'human_duelist') return null;
+      const sr = l2dopXmlMpPower(345, skillRank);
+      const pow = sr?.power ?? 600;
+      return Math.floor(pAtk * (1.15 + pow / 460) * profM);
+    }
     default:
       return null;
   }
@@ -309,15 +315,11 @@ export function magisterEstimatedAtkBase(
 export function magisterDamageHintUk(
   battleId: string,
   estimatedAtk: number | null,
-  power: number | null
+  _power: number | null
 ): string | null {
   if (estimatedAtk == null) return null;
   const b = canonicalBattleSkillId(battleId);
-  let s =
-    'Орієнт. база удару скілом (до захисту): ~' +
-    estimatedAtk +
-    (power != null ? ' · power ' + power : '') +
-    '.';
+  let s = '(до захисту): ~' + estimatedAtk + '.';
   if (b === 'l2_36' || b === 'l2_48' || b === 'l2_245' || b === 'l2_347' || b === 'l2_361') {
     s += ' У бою потрібні алебарда або спис (древко).';
   }
@@ -342,7 +344,7 @@ export function magisterDamageHintUk(
   if (b === 'l2_1') {
     s += ' У бою потрібен дуальний меч. Орієнтир — сумарно за 3 удари (до захисту).';
   }
-  if (b === 'l2_5' || b === 'l2_261') {
+  if (b === 'l2_5' || b === 'l2_261' || b === 'l2_345') {
     s += ' У бою потрібен дуальний меч.';
   }
   if (b === 'l2_260') {

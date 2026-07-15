@@ -10,6 +10,7 @@ import {
   migrateBattleModsStancesFromLegacy,
 } from './battleModsJson.js';
 import { normalizeBattleModsNumsInPlace } from './battleModsNormalizeNums.js';
+import { applyRiposteReflectToBattleMods } from './riposteStance.js';
 
 /** Що треба зберігати в `worldCombatStateJson` після бою / між ходами (узгоджено з `applyBattleModsPatch`). */
 export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
@@ -603,6 +604,7 @@ export function applyBattleModsPatch(
   }
   normalizeBattleModsNumsInPlace(next);
   migrateBattleModsStancesFromLegacy(next);
+  applyRiposteReflectToBattleMods(next);
   const hasBuff = battleModsHasPersistableBuffs(next);
   return hasBuff ? next : undefined;
 }

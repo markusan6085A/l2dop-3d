@@ -315,7 +315,7 @@ export function battleBuffLinesUk(
   if (jsonFiniteNum(m.shieldFortressPDefMul) !== undefined) {
     out.push('Фортеця щита');
   }
-  if (jsonFiniteNum(m.reflectDamageReturnRatio) !== undefined) {
+  if (jsonFiniteNum(m.reflectDamageReturnRatio) !== undefined && !isRiposteStanceActive(m)) {
     out.push('Відбиття шкоди');
   }
   if (jsonFiniteNum(m.physicalMirrorReflectRatio) !== undefined) {
@@ -836,7 +836,7 @@ export function battleBuffIconsForUi(
       ...iconDurationExtrasCombined(322, activeByIdForIcons, st),
     });
   }
-  if (jsonFiniteNum(m.reflectDamageReturnRatio) !== undefined) {
+  if (jsonFiniteNum(m.reflectDamageReturnRatio) !== undefined && !isRiposteStanceActive(m)) {
     out.push({
       key: 'reflect_damage',
       l2SkillId: 86,

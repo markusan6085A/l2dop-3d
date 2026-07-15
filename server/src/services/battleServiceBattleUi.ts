@@ -347,6 +347,16 @@ export function stanceBattleActionAllowed(
         fighterBranch)
     );
   }
+  if (action === 'riposte_stance') {
+    return (
+      learned.has('l2_340') &&
+      (prof === 'human_duelist' ||
+        prof === 'orc_grand_khavatari' ||
+        prof === 'dwarf_fortune_seeker' ||
+        prof === 'dwarf_maestro' ||
+        (HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ && prof === 'human_fighter'))
+    );
+  }
   return false;
 }
 

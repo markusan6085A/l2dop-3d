@@ -1029,7 +1029,8 @@ export async function performBattleAction(
         cooldownsChanged ||
         !!inventoryDirty ||
         nearbyExtraEconomy !== undefined ||
-        Math.floor(currentMp) !== Math.floor(initialMp),
+        Math.floor(currentMp) !== Math.floor(initialMp) ||
+        (!!battleModsPatch && Object.keys(battleModsPatch).length > 0),
     };
 
     const logLinesAdded = Math.max(0, log.length - initialLogLen);

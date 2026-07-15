@@ -14,6 +14,7 @@ import {
   stripExpiredZealotFromBattleMods,
 } from './battle.js';
 import { battleModsHasPersistableBuffs } from './battleModsPatch.js';
+import { applyRiposteReflectToBattleMods } from './riposteStance.js';
 import { LEGACY_BUFF_STRIP_BY_SKILL_ID } from './legacyBuffStrip.js';
 import { HUMAN_FIGHTER_SKILL_CATALOG } from '../data/humanFighterSkillCatalog.js';
 import { ELVEN_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/elvenFighterSkillCatalog.generated.js';
@@ -152,6 +153,7 @@ export function stripStances(mods: BattleBattleMods): BattleBattleMods {
   clearIconChannelIfToggle('mysticMdefBuffIconSkillId', 'mysticMdefBuffMul');
   migrateBattleModsStancesFromLegacy(o);
   delete o.stance;
+  applyRiposteReflectToBattleMods(o);
   return o;
 }
 

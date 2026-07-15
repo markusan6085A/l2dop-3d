@@ -425,9 +425,9 @@ function magisterBattleStatsPreviewCore(
     case 'l2_345':
       return {
         mp: 5,
-        power: null,
+        power: 600,
         statsNoteUk:
-          'Дальній удар (урон = P.Atk зі статів); +1 Sonic Focus. Лише дуальний меч.',
+          'Дальній удар; +1 Sonic Focus. Лише дуальний меч.',
       };
     case 'l2_18':
       return {
