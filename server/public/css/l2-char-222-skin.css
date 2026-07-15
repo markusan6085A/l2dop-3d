@@ -815,6 +815,15 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip {
   font-weight: 600 !important;
 }
 
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--wear {
+  font-size: 12px !important;
+  color: #c8c8c8 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--warehouse {
+  color: #e84848 !important;
+}
+
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip:hover,
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip:focus,
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip:focus-visible {
@@ -829,6 +838,18 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip:foc
   filter: none !important;
   -webkit-filter: none !important;
   transform: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--wear:hover,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--wear:focus,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--wear:focus-visible {
+  color: #e0e0e0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--warehouse:hover,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--warehouse:focus,
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--warehouse:focus-visible {
+  color: #ff6868 !important;
 }
 
 /* ПК (+30% колонки): трохи читабельніші таби сумки, портрет пропорційно ширший */

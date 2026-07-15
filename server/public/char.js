@@ -164,6 +164,7 @@
   }
 
   var revision = 0;
+  var charPageReady = false;
   var equipRequestInFlight = false;
   var warehouseDepositInFlight = false;
 
@@ -954,7 +955,7 @@
       actions.className = 'l2-char-bag-actions';
       var depBtn = document.createElement('button');
       depBtn.type = 'button';
-      depBtn.className = 'l2-char-bag-equip';
+      depBtn.className = 'l2-char-bag-equip l2-char-bag-equip--warehouse';
       depBtn.textContent = '[На склад]';
       depBtn.setAttribute('data-wh-item-id', String(st.itemId));
       depBtn.setAttribute('data-wh-enchant', String(en));
@@ -963,8 +964,8 @@
       if (canEquipFromBag(st.itemId)) {
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'l2-char-bag-equip';
-        btn.textContent = 'Одіти';
+        btn.className = 'l2-char-bag-equip l2-char-bag-equip--wear';
+        btn.textContent = '[Одіти]';
         btn.setAttribute('data-item-id', String(st.itemId));
         btn.setAttribute('data-item-enchant', String(en));
         actions.appendChild(btn);
@@ -1842,7 +1843,27 @@
         window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
       if (latest) renderAll(latest);
     });
+
+    charPageReady = true;
   }
+
+  window.addEventListener('pageshow', function (ev) {
+    if (!charPageReady || !ev.persisted) return;
+    var t = localStorage.getItem('token');
+    if (!t) return;
+    fetchCharacterSnapshotFast(t).then(function (fresh) {
+      if (!fresh) return;
+      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(fresh);
+      } else if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(fresh);
+        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(fresh);
+        }
+      }
+      renderAll(fresh);
+    });
+  });
 
   init();
 })();

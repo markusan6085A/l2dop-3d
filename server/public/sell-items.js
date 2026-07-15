@@ -435,6 +435,59 @@
     return el;
   }
 
+  function clampSellListPage() {
+    var stacks = filteredStacks();
+    if (!stacks.length) {
+      statePage = 0;
+      return;
+    }
+    var totalPages = Math.ceil(stacks.length / PAGE_SIZE);
+    if (statePage >= totalPages) statePage = Math.max(0, totalPages - 1);
+    if (statePage < 0) statePage = 0;
+  }
+
+  function refetchSellCharacter() {
+    var token = localStorage.getItem('token');
+    if (!token) return Promise.resolve(null);
+    return fetch('/character', {
+      headers: { Authorization: 'Bearer ' + token },
+    })
+      .then(function (r) {
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return null;
+        }
+        return r.ok ? r.json() : null;
+      })
+      .then(function (j) {
+        return j && j.character ? j.character : null;
+      });
+  }
+
+  function finishSellUi(stack, qty, total) {
+    clampSellListPage();
+    paint();
+    setSellCongrats(stack, qty, total);
+    closeSellModals();
+  }
+
+  function onSellSnapshot(character, stack, qty, total) {
+    if (!character) {
+      return refetchSellCharacter().then(function (fresh) {
+        if (!fresh) {
+          setMsg('Продано, але не вдалося оновити список — онови сторінку.');
+          closeSellModals();
+          return;
+        }
+        applySnapshotFromServer(fresh);
+        finishSellUi(stack, qty, total);
+      });
+    }
+    applySnapshotFromServer(character);
+    finishSellUi(stack, qty, total);
+  }
+
   function performSellRequest(stack, qty, onDone) {
     if (sellInFlight || !snap) return;
     var itemId = stack.itemId;
@@ -492,12 +545,7 @@
             setMsg((j && j.messageUk) || 'Не вдалося продати.');
             return;
           }
-          if (j && j.character) {
-            applySnapshotFromServer(j.character);
-            paint();
-            setSellCongrats(stack, qty, total);
-            closeSellModals();
-          }
+          onSellSnapshot(j && j.character ? j.character : null, stack, qty, total);
         });
       })
       .catch(function () {
@@ -860,6 +908,14 @@
     }
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(character);
+    }
+    try {
+      sessionStorage.setItem(
+        'l2-char-snapshot-cache-v1',
+        JSON.stringify(character)
+      );
+    } catch (_e) {
+      /* ignore cache quota */
     }
   }
 
