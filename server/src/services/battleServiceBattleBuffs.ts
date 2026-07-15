@@ -11,6 +11,7 @@ import {
   type BattleBattleMods,
   type BattleJsonState,
 } from '../domain/battle.js';
+import type { WeaknessKind } from '../domain/mobWeaknessFamily.js';
 import { warCryPatkPercentAtRank } from '../data/warCryTables.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { buffDurationSecForSkillId } from '../data/l2dopBuffDurations.js';

@@ -28,6 +28,7 @@ import {
   markSkillCast,
   parseSkillCooldowns,
 } from '../data/skillCooldowns.js';
+import { resolveBattleSkillCooldownSec } from '../data/skillCooldownScaling.js';
 import { warCryMpAtRank } from '../data/warCryTables.js';
 import {
   canonicalBattleSkillId,
