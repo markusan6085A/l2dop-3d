@@ -189,6 +189,8 @@
   var bagInvArmorSub = 'all';
   var bagInvJewelrySub = 'all';
   var bagInvConsumableSub = 'all';
+  var BAG_INV_PAGE_SIZE = 15;
+  var bagInvPage = 0;
 
   var BAG_CAT_ORDER = ['weapon', 'shield', 'armor', 'accessor', 'consumable'];
   var BAG_CAT_LABEL_UK = {
@@ -840,6 +842,7 @@
           resetCharBagSubsToAll();
         }
         syncBagFilterTabsUi();
+        bagInvPage = 0;
         renderBagFromSnapshot();
         return;
       }
@@ -852,6 +855,7 @@
         bagInvGradeSub = '';
         resetCharBagSubsToAll();
         syncBagFilterTabsUi();
+        bagInvPage = 0;
         renderBagFromSnapshot();
         return;
       }
@@ -861,6 +865,7 @@
         var gx = String(grBtn.getAttribute('data-inv-grade') || '').toLowerCase();
         bagInvGradeSub = gx === 'all' ? '' : gx;
         syncBagFilterTabsUi();
+        bagInvPage = 0;
         renderBagFromSnapshot();
         return;
       }
@@ -871,6 +876,7 @@
         if (!sx) return;
         setCharBagSubKey(sx);
         syncBagFilterTabsUi();
+        bagInvPage = 0;
         renderBagFromSnapshot();
       }
     });
@@ -895,6 +901,58 @@
     return entries;
   }
 
+  function hideBagPager() {
+    var pager = $('char-bag-pager');
+    if (pager) pager.hidden = true;
+  }
+
+  function clampBagInvPage(totalItems) {
+    if (!totalItems || totalItems <= 0) {
+      bagInvPage = 0;
+      return;
+    }
+    var totalPages = Math.ceil(totalItems / BAG_INV_PAGE_SIZE);
+    if (bagInvPage >= totalPages) bagInvPage = Math.max(0, totalPages - 1);
+    if (bagInvPage < 0) bagInvPage = 0;
+  }
+
+  function renderBagPager(totalItems) {
+    var pager = $('char-bag-pager');
+    if (!pager) return;
+    if (totalItems <= BAG_INV_PAGE_SIZE) {
+      pager.hidden = true;
+      return;
+    }
+    clampBagInvPage(totalItems);
+    var totalPages = Math.ceil(totalItems / BAG_INV_PAGE_SIZE);
+    pager.hidden = false;
+    pager.innerHTML = '';
+    var prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.className = 'l2-char-bag-pager__btn';
+    prevBtn.textContent = '<<';
+    prevBtn.setAttribute('aria-label', 'Попередня сторінка');
+    prevBtn.disabled = bagInvPage <= 0;
+    var nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'l2-char-bag-pager__btn';
+    nextBtn.textContent = '>>';
+    nextBtn.setAttribute('aria-label', 'Наступна сторінка');
+    nextBtn.disabled = bagInvPage >= totalPages - 1;
+    prevBtn.addEventListener('click', function () {
+      if (bagInvPage <= 0) return;
+      bagInvPage -= 1;
+      renderBagFromSnapshot();
+    });
+    nextBtn.addEventListener('click', function () {
+      if (bagInvPage >= totalPages - 1) return;
+      bagInvPage += 1;
+      renderBagFromSnapshot();
+    });
+    pager.appendChild(prevBtn);
+    pager.appendChild(nextBtn);
+  }
+
   function renderBag(inv) {
     inv = inv || defaultInventory();
     var root = $('char-bag-list');
@@ -902,6 +960,7 @@
     var filtEmpty = $('char-bag-filter-empty');
     if (!root) return;
     root.innerHTML = '';
+    hideBagPager();
     var entries = bagRenderEntries(inv);
     if (entries.length === 0) {
       if (empty) empty.hidden = false;
@@ -915,7 +974,11 @@
       return;
     }
     if (filtEmpty) filtEmpty.hidden = true;
-    filtered.forEach(function (st) {
+    clampBagInvPage(filtered.length);
+    var pageStart = bagInvPage * BAG_INV_PAGE_SIZE;
+    var pageItems = filtered.slice(pageStart, pageStart + BAG_INV_PAGE_SIZE);
+    renderBagPager(filtered.length);
+    pageItems.forEach(function (st) {
       var en = st.enchant != null ? Number(st.enchant) : 0;
       if (!Number.isFinite(en) || en < 0) en = 0;
       var row = document.createElement('div');
@@ -981,6 +1044,7 @@
     var filtEmpty = $('char-bag-filter-empty');
     if (!root) return;
     root.innerHTML = '';
+    hideBagPager();
     if (empty) empty.hidden = true;
     if (filtEmpty) filtEmpty.hidden = true;
     for (var i = 0; i < 8; i++) {
