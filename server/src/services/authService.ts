@@ -113,7 +113,7 @@ export async function register(input: {
       /** Стартові innate-скіли мага за расою (Wind Strike + Spellcraft тощо). */
       const mysticStarterSkills: Prisma.InputJsonValue | undefined =
         classBranch === 'mystic'
-          ? (mysticStarterLearnedSkillsForRace(race) as Prisma.InputJsonValue)
+          ? (mysticStarterLearnedSkillsForRace(race) as unknown as Prisma.InputJsonValue)
           : undefined;
       const start = starterWorldForNewCharacter(race, classBranch);
       const starterInv = starterInventory(

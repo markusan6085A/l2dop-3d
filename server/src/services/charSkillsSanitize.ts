@@ -14,12 +14,13 @@ import type { CharacterRow } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function mergeMissingMysticStarterSkills(
-  entries: ReturnType<typeof normalizeLearnedSkillsJson>
+  entries: ReturnType<typeof normalizeLearnedSkillsJson>,
+  race: string
 ): ReturnType<typeof normalizeLearnedSkillsJson> | null {
   const have = new Set(
     entries.filter((e) => e.level >= 1).map((e) => e.battleId)
   );
-  const missing = mysticStarterLearnedSkillsForRace(row.race).filter(
+  const missing = mysticStarterLearnedSkillsForRace(race).filter(
     (s) => !have.has(s.battleId)
   );
   if (missing.length === 0) return null;
@@ -35,7 +36,7 @@ export async function ensureMysticStarterSkillsRow(
   if (!isMysticClassBranch(row.classBranch)) return row;
   const prof = resolveL2ProfessionForSkillsRow(row);
   const current = normalizeLearnedSkillsJson(row.skillsLearnedJson);
-  const mergedRaw = mergeMissingMysticStarterSkills(current);
+  const mergedRaw = mergeMissingMysticStarterSkills(current, row.race);
   if (!mergedRaw) return row;
   const merged = filterLearnedSkillEntriesForCharacter(
     mergedRaw,
