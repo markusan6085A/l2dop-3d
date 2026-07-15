@@ -465,23 +465,32 @@
       });
   }
 
+  function releaseSellLock() {
+    sellInFlight = false;
+  }
+
   function finishSellUi(stack, qty, total) {
+    releaseSellLock();
     closeSellModals();
     clampSellListPage();
     paint();
     setSellCongrats(stack, qty, total);
   }
 
+  /** Snapshot з POST /game/shop/sell — єдине джерело правди; refetch лише якщо немає в тілі. */
   function resolveCharacterAfterSell(responseCharacter) {
-    return refetchSellCharacter().then(function (fresh) {
-      return fresh || responseCharacter || null;
-    });
+    if (responseCharacter && typeof responseCharacter === 'object') {
+      return Promise.resolve(responseCharacter);
+    }
+    return refetchSellCharacter();
   }
 
   function refreshPageAfterSell(character, stack, qty, total) {
+    releaseSellLock();
     if (!character) {
       setMsg('Продано, але не вдалося оновити список — онови сторінку.');
       closeSellModals();
+      paint();
       return;
     }
     applySnapshotFromServer(character);
@@ -553,10 +562,13 @@
               ? L2.resyncCharacterAfterConflict(function (s) {
                   snap = s;
                 }, j409).then(function () {
+                  releaseSellLock();
                   paint();
                   setMsg('Стан оновлено — спробуй ще раз.');
                 })
               : Promise.resolve().then(function () {
+                  releaseSellLock();
+                  paint();
                   setMsg('Конфлікт ревізії — онови сторінку.');
                 });
           });
@@ -577,8 +589,9 @@
         setMsg('Помилка мережі.');
       })
       .finally(function () {
-        sellInFlight = false;
+        releaseSellLock();
         setModalSellBusy(okBtn, false);
+        paint();
       });
   }
 
