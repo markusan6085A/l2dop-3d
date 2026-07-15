@@ -20,6 +20,7 @@ import {
 } from '../data/l2dopHumanMysticBattleSkills.js';
 import type { MagisterProfessionBanner } from './skillLearnMagisterTypes.js';
 import { nonHumanFighterProfessionBanner } from './nonHumanFighterMagisterBanner.js';
+import { parseQuestProgressJson } from '../domain/humanFighterFirstProfessionQuest.js';
 
 function humanMysticProfessionBannerFor(
   row: CharacterRow
@@ -607,9 +608,23 @@ export function professionBannerFor(row: CharacterRow): MagisterProfessionBanner
   const dreadnoughtLvlOk =
     HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ ||
     lv >= HUMAN_FIGHTER_PRO_DREADNOUGHT_LEVEL;
-  const canWar = prof === 'human_fighter' && warLvlOk;
-  const canKnight = prof === 'human_fighter' && warLvlOk;
-  const canRogue = prof === 'human_fighter' && warLvlOk;
+  const lockedFirstProfTarget =
+    prof === 'human_fighter'
+      ? parseQuestProgressJson(row.questProgressJson).active?.targetProfession ??
+        null
+      : null;
+  const canWar =
+    prof === 'human_fighter' &&
+    warLvlOk &&
+    (!lockedFirstProfTarget || lockedFirstProfTarget === 'human_warrior');
+  const canKnight =
+    prof === 'human_fighter' &&
+    warLvlOk &&
+    (!lockedFirstProfTarget || lockedFirstProfTarget === 'human_knight');
+  const canRogue =
+    prof === 'human_fighter' &&
+    warLvlOk &&
+    (!lockedFirstProfTarget || lockedFirstProfTarget === 'human_rogue');
   const canWarlord = prof === 'human_warrior' && warlordLvlOk;
   const canGladiator = prof === 'human_warrior' && warlordLvlOk;
   const canPaladin = prof === 'human_knight' && warlordLvlOk;
@@ -618,14 +633,10 @@ export function professionBannerFor(row: CharacterRow): MagisterProfessionBanner
   const canDuelist = prof === 'human_gladiator' && dreadnoughtLvlOk;
   const canPhoenixKnight = prof === 'human_paladin' && dreadnoughtLvlOk;
   const canHellKnight = prof === 'human_dark_avenger' && dreadnoughtLvlOk;
-  const canTreasureHunter = prof === 'human_rogue';
+  const canTreasureHunter = prof === 'human_rogue' && warlordLvlOk;
   const canAdventurer = prof === 'human_treasure_hunter' && dreadnoughtLvlOk;
-  /**
-   * Кнопку показуємо на правильній гілці без вимоги рівня — інакче гравець не бачить 2-гу профу,
-   * поки не добере 40 / 76 р.; перевірка лишається в performSecond/ThirdProfession* (409/400).
-   */
-  const canHawkeye = prof === 'human_rogue';
-  const canSagittarius = prof === 'human_hawkeye';
+  const canHawkeye = prof === 'human_rogue' && warlordLvlOk;
+  const canSagittarius = prof === 'human_hawkeye' && dreadnoughtLvlOk;
   let messageUk =
     prof === 'human_warrior'
       ? 'Перша профа: Воїн (Warrior). Доступні воїнські скіли.' +
@@ -668,9 +679,14 @@ export function professionBannerFor(row: CharacterRow): MagisterProfessionBanner
       : prof === 'human_hell_knight'
         ? 'Третя профа: Лицар пекла (Hell Knight). Темна гілка лицаря завершена.'
       : prof === 'human_rogue'
-        ? 'Перша профа: Розбійник (Rogue). Друга профа (з ' +
-          HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL +
-          ' р.): обери Мисливця за скарбами (Treasure Hunter) або Яструба (Hawkeye) — як на l2db. З TH → Adventurer; з Hawkeye → Sagittarius.'
+        ? 'Перша профа: Розбійник (Rogue).' +
+          (warlordLvlOk
+            ? ' Друга профа: обери Мисливця за скарбами (Treasure Hunter) або Яструба (Hawkeye) — з ' +
+              HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL +
+              ' р.'
+            : ' До другої профи — дійти до ' +
+              HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL +
+              ' рівня.')
       : prof === 'human_treasure_hunter'
         ? 'Друга профа: Мисливець за скарбами (Treasure Hunter).' +
           (dreadnoughtLvlOk
@@ -717,12 +733,7 @@ export function professionBannerFor(row: CharacterRow): MagisterProfessionBanner
           ? 'Третя профа: Дуелянт (Duelist). Гілка подвійних мечів.'
           : prof === 'human_fighter'
             ? warLvlOk
-              ? 'Перша профа: обери Воїна (Warrior), Лицаря (Human Knight) або Розбійника (Rogue). З Rogue друга профа — Treasure Hunter або Hawkeye (l2db).' +
-                (HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ
-                  ? ' Тест: вимогу ' +
-                    HUMAN_FIGHTER_PROFESSION_WARRIOR_MIN_LEVEL +
-                    ' р. тимчасово знято.'
-                  : '')
+              ? ''
               : 'До першої профи — дійти до ' +
                 HUMAN_FIGHTER_PROFESSION_WARRIOR_MIN_LEVEL +
                 ' рівня.'

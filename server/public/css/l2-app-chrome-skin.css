@@ -2197,7 +2197,7 @@ body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus-vis
   border-image-width: calc(1px * var(--l2s-mastBack989-bd-y)) calc(1px * var(--l2s-mastBack989-bd-x)) !important;
 }
 
-/* magister.html: блок вибору профи — без зовнішнього квадрата */
+/* magister.html: блок вибору профи — лише текст-посилання (#bfa88a), без рамок 1512125 */
 body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession {
   margin: 0 0 12px !important;
   padding: 0 !important;
@@ -2207,48 +2207,61 @@ body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession {
   box-shadow: none !important;
 }
 
-/* magister.html: кнопки вибору профи (усі раси) — рамка 1512125 */
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2 {
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  min-height: 36px;
-  margin: 8px 0 !important;
-  padding: 10px 14px !important;
-  border: 0 !important;
-  border-width: 0 !important;
-  border-style: none !important;
-  border-color: transparent !important;
-  border-radius: 0 !important;
-  border-image: none !important;
-  border-image-source: none !important;
-  border-image-slice: none !important;
-  border-image-width: 0 !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magProf1512') center / 100% 100%
-    no-repeat !important;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
-  color: #f0e6b8 !important;
-  filter: none !important;
-  -webkit-filter: none !important;
-  transform: none !important;
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession-msg {
+  color: #bfa88a !important;
+  text-shadow: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2:hover,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2:focus,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession .btn-l2:focus-visible {
-  border: 0 !important;
-  border-image: none !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705magProf1512') center / 100% 100%
-    no-repeat !important;
-  transform: none !important;
-  -webkit-box-shadow: none !important;
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession-link {
+  color: #bfa88a !important;
+  text-shadow: none !important;
+  background: none !important;
+  border: none !important;
   box-shadow: none !important;
-  filter: brightness(1.06) !important;
-  -webkit-filter: brightness(1.06) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession-link:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession-link:focus,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-profession-link:focus-visible {
+  color: #d4c4a8 !important;
+  background: none !important;
+  filter: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-confirm-btn {
+  border: 1px solid #bfa88a !important;
+  border-image: none !important;
+  border-radius: 6px !important;
+  background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
+  color: #fff !important;
+  text-shadow: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-confirm-btn:hover:not(:disabled),
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-confirm-btn:focus:not(:disabled),
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-confirm-btn:focus-visible:not(:disabled) {
+  filter: brightness(1.1) !important;
+  color: #fff !important;
+  background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-pers-h1 {
+  color: #bfa88a !important;
+  text-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-detail__body {
+  color: #d8d0c4 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-detail__quest,
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-detail__quest-hint-text {
+  color: #e8dcc8 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magister-profession .l2-magister-profession-detail__hr {
+  border-top-color: #6a5a48 !important;
 }
 
 /* magister.html: назви скілів і «Вивчити скіл» — білий */

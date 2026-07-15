@@ -12,6 +12,7 @@ import {
   performFirstProfessionHumanRogue,
   performFirstProfessionHumanWarrior,
 } from '../services/charProfessionService.js';
+import { sendProfessionQuestError } from './characterProfessionQuestRouteErrors.js';
 
 /** 1-ша профа: Warrior, Knight, Rogue. */
 export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstance): void {
@@ -32,6 +33,7 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
         if (err instanceof GameConflictError) {
           return sendGameConflict(reply, err);
         }
+        if (sendProfessionQuestError(reply, err)) return;
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'profession_wrong_branch') {
           return reply.code(400).send({
@@ -81,6 +83,7 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
         if (err instanceof GameConflictError) {
           return sendGameConflict(reply, err);
         }
+        if (sendProfessionQuestError(reply, err)) return;
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'profession_wrong_branch') {
           return reply.code(400).send({
@@ -130,6 +133,7 @@ export function registerCharacterProfessionRoutesFighterBase(app: FastifyInstanc
         if (err instanceof GameConflictError) {
           return sendGameConflict(reply, err);
         }
+        if (sendProfessionQuestError(reply, err)) return;
         const msg = err instanceof Error ? err.message : '';
         if (msg === 'profession_wrong_branch') {
           return reply.code(400).send({

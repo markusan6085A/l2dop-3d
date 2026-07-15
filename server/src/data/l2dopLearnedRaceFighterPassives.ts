@@ -23,6 +23,10 @@ import {
 } from './fighterSkillCatalog.byRace.js';
 import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from './l2dopXmlSkillLevels.lookup.js';
+import {
+  weaponMasteryPatkAtRank,
+  WEAPON_MASTERY_L2_SKILL_ID_FIGHTER,
+} from './weaponMasteryTables.js';
 
 function clampRank(
   battleId: string,
@@ -132,6 +136,11 @@ export function learnedRaceFighterPassivesBuffDelta(
     if (!cat || cat.kind !== 'passive') continue;
     if (!raceFighterCatalogEntryVisibleForProfession(cat, prof)) continue;
     const r = clampRank(bid, e.level, race, classBranch);
+    if (cat.l2SkillId === WEAPON_MASTERY_L2_SKILL_ID_FIGHTER) {
+      const patk = weaponMasteryPatkAtRank(r);
+      if (patk > 0) acc = applyBuffDelta(acc, { addPatk: patk });
+      continue;
+    }
     const row = cat.levels[r - 1];
     if (!row) continue;
     const power = row.power;

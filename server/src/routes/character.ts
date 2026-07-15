@@ -6,6 +6,7 @@ import { registerCharacterConsumableUseRoutes } from './characterConsumableUseRo
 import { registerCharacterProfileStatusRoutes } from './characterProfileStatusRoutes.js';
 import { registerDevSelfBoostRoutes } from './devSelfBoostRoutes.js';
 import { registerWarehouseRoutes } from './warehouseRoutes.js';
+import { registerCharacterProfessionQuestRoutes } from './characterProfessionQuestRoutes.js';
 
 /**
  * Маршрути /character/* — тонкий фасад; реєстрація в `character*Routes.ts`.
@@ -18,4 +19,5 @@ export const characterRoutes: FastifyPluginAsync = async (app) => {
   registerCharacterProfileStatusRoutes(app);
   registerDevSelfBoostRoutes(app);
   registerWarehouseRoutes(app);
+  registerCharacterProfessionQuestRoutes(app);
 };

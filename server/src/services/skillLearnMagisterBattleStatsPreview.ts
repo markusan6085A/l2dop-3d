@@ -24,9 +24,9 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
   const b = canonicalBattleSkillId(battleId);
   switch (b) {
     case 'l2_141':
-      return 'Пасив: вища P. Def. Ранги з 10 і 15 р. MP у бою не витрачається.';
+      return 'Пасив: +9 P. Def. за кожен рівень скіла. MP у бою не витрачається.';
     case 'l2_142':
-      return 'Пасив: вища P. Atk / M. Atk. MP у бою не витрачається.';
+      return 'Пасив: +P. Atk (flat) за рівень скіла. MP у бою не витрачається.';
     case 'l2_148':
       return 'Пасив: більше HP/CP. MP у бою не витрачається.';
     case 'l2_211':

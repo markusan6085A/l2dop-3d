@@ -148,7 +148,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 5,
     spCost: 50,
     nameUk: "Силовий удар (Power Strike)",
-    hintUk: "Завдає потужного удару. Лише з булавою або мечем. Можливий надудар.",
+    hintUk: "Накопичує силу для різкого удару. Лише з мечем або булавою. Можливий надудар.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -1415,7 +1415,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 20,
     spCost: 1000,
     nameUk: "Силовий постріл (Power Shot)",
-    hintUk: "Завдає великої шкоди при стрільбі з лука. Можливий надудар. Потрібен лук.",
+    hintUk: "Смертельний постріл з лука. Можливий надудар. Лише з луком.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -3034,7 +3034,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 5,
     spCost: 160,
     nameUk: "Майстерність обладунку (Armor Mastery)",
-    hintUk: "Пасив: підвищує P. Def.",
+    hintUk: "Пасив: +9 P. Def. за кожен вивчений рівень скіла.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3093,7 +3093,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 5,
     spCost: 160,
     nameUk: "Майстерність зброї (Weapon Mastery)",
-    hintUk: "Пасив: підвищує фізичну атаку.",
+    hintUk: "Пасив: +P. Atk (flat) за рівнем скіла (1 р. — +1.5, 40 р. — +79.4).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [

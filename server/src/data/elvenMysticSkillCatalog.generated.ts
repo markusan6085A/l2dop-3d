@@ -173,8 +173,8 @@ export const ELVEN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 142,
     minLevel: 40,
     spCost: 10000,
-    nameUk: "Скіл №142",
-    hintUk: "Скіл №142",
+    nameUk: "Майстерність зброї (Weapon Mastery)",
+    hintUk: "Пасив: +M. Atk (flat) за рівнем скіла (1 р. — +1.9, 40 р. — +99.3).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [

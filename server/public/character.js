@@ -340,6 +340,7 @@
 
     var actions = $('character-actions');
     if (!actions) return;
+
     actions.querySelectorAll('[data-stub]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var label = btn.getAttribute('data-stub') || 'Дія';

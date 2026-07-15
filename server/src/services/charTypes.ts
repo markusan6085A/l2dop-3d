@@ -3,6 +3,7 @@ import type { InventoryState } from '../data/inventory.js';
 import type { WarehouseSnapshot } from '../data/warehouse.js';
 import type { LearnedSkillSnapshotEntry } from './charLearnedSkillsSnapshot.js';
 import type { CastableSelfBuffEntry } from '../data/castableSelfBuffs.js';
+import type { FirstProfessionQuestSnapshot } from '../domain/humanFighterFirstProfessionQuest.js';
 import type { BattleHotbarSlot } from '../domain/battleHotbar.js';
 
 /** Рядок Character з БД (Prisma XOR інколи «губить» Json у create/update — тут явно). */
@@ -54,6 +55,7 @@ export interface CharacterRow {
   skillCooldownsJson: Prisma.JsonValue | null;
   /** Розкладка панелі скілів у бою (41 слот). */
   battleHotbarJson: Prisma.JsonValue | null;
+  questProgressJson: Prisma.JsonValue | null;
   buffHeroicTier: number | null;
   buffZealotStacks: number | null;
   chatRepliesReadAt: Date;
@@ -206,4 +208,6 @@ export interface CharacterSnapshot {
     nearestTownLabelUk: string;
     nearestTeleportId: string;
   } | null;
+  /** Квест 1-ї профи людини-воїна; `null` — не human_fighter. */
+  firstProfessionQuest: FirstProfessionQuestSnapshot | null;
 }

@@ -19,6 +19,11 @@ import {
 } from '../domain/battleVersion.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
 import { rollKillLoot } from '../domain/killLoot.js';
+import {
+  incrementQuestKillOnVictory,
+  parseQuestProgressJson,
+  serializeQuestProgressJson,
+} from '../domain/humanFighterFirstProfessionQuest.js';
 import { resolveL2dopNpcIdByMobName } from './spawnCatalogService.js';
 import {
   gameConflictFromMutation,
@@ -174,6 +179,10 @@ export async function persistBattleVictoryInTx(
   if (isSharedWorldBossKind(spawn.kind)) {
     await deleteWorldBossSession(tx, bj.spawnId);
   }
+  const questBefore = parseQuestProgressJson(char.questProgressJson);
+  const questAfter = incrementQuestKillOnVictory(questBefore, npcId);
+  const questJsonChanged =
+    JSON.stringify(questBefore) !== JSON.stringify(questAfter);
   const result = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -198,6 +207,13 @@ export async function persistBattleVictoryInTx(
             : Prisma.JsonNull,
         ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
         ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
+        ...(questJsonChanged
+          ? {
+              questProgressJson: serializeQuestProgressJson(
+                questAfter
+              ) as unknown as Prisma.InputJsonValue,
+            }
+          : {}),
       },
     })
   );

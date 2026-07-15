@@ -20,6 +20,10 @@ import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalo
 import { maxMysticSkillRankForBattleId } from './humanMysticSkillCatalog.learnedRanks.js';
 import { mysticCatalogEntryForRace } from './mysticSkillCatalog.byRace.js';
 import { l2dopXmlSkillRow } from './l2dopXmlSkillLevels.lookup.js';
+import {
+  isMysticWeaponMasterySkill,
+  weaponMasteryMatkAtRank,
+} from './weaponMasteryTables.js';
 
 function clampMysticRank(battleId: string, level: number, race: string): number {
   const max = maxMysticSkillRankForBattleId(battleId, race);
@@ -129,6 +133,17 @@ export function learnedMysticPassivesBuffDelta(
       continue;
     }
     const r = clampMysticRank(bid, e.level, race);
+    if (
+      isMysticWeaponMasterySkill({
+        l2SkillId: cat.l2SkillId,
+        nameUk: cat.nameUk,
+        effectStats: cat.effects.map((fx) => fx.stat),
+      })
+    ) {
+      const matk = weaponMasteryMatkAtRank(r);
+      if (matk > 0) acc = applyBuffDelta(acc, { addMatk: matk });
+      continue;
+    }
     const row = cat.levels[r - 1];
     if (!row) continue;
     const power = row.power;

@@ -1047,7 +1047,7 @@ export const DARK_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 13000,
     nameUk: "Майстерність зброї",
-    hintUk: "Пасив: кращі бонуси від зброї.",
+    hintUk: "Пасив: +M. Atk (flat) за рівнем скіла (1 р. — +1.9, 40 р. — +99.3).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [

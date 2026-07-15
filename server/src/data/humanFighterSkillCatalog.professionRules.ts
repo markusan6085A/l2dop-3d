@@ -10,6 +10,7 @@ import type {
   HumanFighterSkillCatalogEntry,
   LearnedSkillEntry,
 } from './humanFighterSkillCatalog.types.js';
+import { maxSkillRankForBattleId } from './humanFighterSkillCatalog.learnedRanks.js';
 
 /** Warlord або Dreadnought — одна гілка алебарди. */
 export function isHumanWarlordTrackProfession(l2Profession: string): boolean {
@@ -225,6 +226,23 @@ export function catalogEntryMeetsRequirements(
   return effectiveLevel >= entry.minLevel;
 }
 
+/** Макс. ранг з урахуванням профи (Boost HP 211: Warrior/Gladiator — лише 1–3). */
+export function maxSkillRankForCatalogEntry(
+  entry: HumanFighterSkillCatalogEntry,
+  l2Profession: string
+): number {
+  const global = maxSkillRankForBattleId(entry.battleId);
+  const c = canonicalBattleSkillId(entry.battleId);
+  if (c !== 'l2_211') return global;
+  const p = mapFighterProfessionToHumanSkillCatalog(
+    String(l2Profession || '').trim()
+  );
+  if (p === 'human_warrior' || isHumanGladiatorTrackProfession(p)) {
+    return Math.min(global, 3);
+  }
+  return global;
+}
+
 /** Ранги 6–20 Vicious Stance (312) — лише 2–3 профа алебарди (Interlude). */
 export function catalogEntryAllowsSkillRank(
   entry: HumanFighterSkillCatalogEntry,
@@ -246,6 +264,9 @@ export function catalogEntryAllowsSkillRank(
       isHumanRogueTrackProfession(p) ||
       isHumanArcherTrackProfession(p)
     );
+  }
+  if (c === 'l2_211') {
+    return r <= maxSkillRankForCatalogEntry(entry, l2Profession);
   }
   return true;
 }

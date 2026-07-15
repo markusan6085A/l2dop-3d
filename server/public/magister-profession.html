@@ -3,13 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Магістр — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260711magLearnWhite1" />
+    <title>Професія — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260711magLearnWhite1" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-magister l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-magister l2-page-magister-profession l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
@@ -55,39 +58,43 @@
         </div>
         <div class="l2-screen-inner l2-magister-root">
           <div id="l2-hud-panel-mount"></div>
-
           <div id="l2-nav-top"></div>
 
-          <p class="err" id="magister-load-err" hidden></p>
+          <p class="err" id="magister-prof-load-err" hidden></p>
 
-          <main class="l2-magister-panel" id="magister-panel" hidden>
+          <main class="l2-magister-panel" id="magister-prof-panel" hidden>
             <p class="l2-magister-back">
-              <a class="l2-town-btn" href="/city.html">Назад до міста</a>
+              <a class="l2-magister-profession-link l2-magister-profession-link--back" id="magister-prof-back" href="/magister.html"
+                >← Назад до вибору професій</a
+              >
             </p>
-            <div class="l2-magister-intro">
-              <p data-i18n="magister_page_intro_p1">
-                Привіт, мандрівнику. Бачу, ти вже дістався сюди — отже настав час стати сильнішим.
+            <h1 class="l2-pers-h1" id="magister-prof-title">Професія</h1>
+            <div class="l2-magister-profession-detail__body" id="magister-prof-body"></div>
+            <hr class="l2-magister-profession-detail__hr" id="magister-prof-quest-hr" hidden />
+            <div class="l2-magister-profession-detail__quest" id="magister-prof-quest-block" hidden></div>
+            <div class="l2-magister-profession-detail__quest-hint" id="magister-prof-quest-hint" hidden>
+              <p class="l2-magister-profession-detail__quest-hint-text" id="magister-prof-quest-hint-text">
+                Моби для квесту знаходяться біля міста Town of Dion.
               </p>
-              <p data-i18n="magister_page_intro_p2">
-                Тут досвідчені магістри навчають героїв мистецтву бою, могутнім технікам і секретам свого класу.
-              </p>
-              <p data-i18n="magister_page_intro_p3">
-                Вивчай активні навички, що допоможуть нищити ворогів у бою, та пасивні вміння, які підвищать твою
-                силу, захист і витривалість.
-              </p>
-              <p data-i18n="magister_page_intro_p4">
-                Кожна нова навичка зробить тебе небезпечнішим суперником на шляху до слави.
-              </p>
+              <button
+                type="button"
+                class="l2-magister-profession-confirm-btn l2-magister-profession-teleport-btn"
+                id="magister-prof-teleport-dion"
+              >
+                Телепорт до Town of Dion
+              </button>
             </div>
-            <h1 class="l2-magister-panel__title" id="magister-title">Магістр</h1>
-            <p class="l2-magister-panel__sub" id="magister-sub"></p>
-            <p class="l2-magister-note" id="magister-note" hidden></p>
-            <div class="l2-magister-profession" id="magister-profession" hidden></div>
-            <p class="err" id="magister-err" hidden></p>
-            <ul class="l2-magister-list" id="magister-list"></ul>
+            <p class="err" id="magister-prof-err" hidden></p>
+            <div class="l2-magister-profession-detail__actions">
+              <button type="button" class="l2-magister-profession-confirm-btn" id="magister-prof-quest" hidden>
+                Взяти квест на професію
+              </button>
+              <button type="button" class="l2-magister-profession-confirm-btn" id="magister-prof-confirm" hidden>
+                Стати
+              </button>
+            </div>
           </main>
 
-          <div id="l2-foot-links"></div>
           <div id="l2-nav-bottom"></div>
         </div>
       </div>
@@ -98,6 +105,6 @@
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/magister-profession-info-data.js"></script>
     <script src="/magister-profession-common.js"></script>
-    <script src="/magister.js?v=20260711magLearnWhite1"></script>
+    <script src="/magister-profession-page.js"></script>
   </body>
 </html>

@@ -15,8 +15,10 @@ import {
 } from './l2dopCombatBuffModifiers.js';
 import {
   l2dopBuffDeltaFromTextRpgEffect,
-  l2dopBuffDeltaPatkMatkSamePercent,
 } from './textRpgCombatBuffFromEffect.js';
+import {
+  weaponMasteryPatkAtRank,
+} from './weaponMasteryTables.js';
 import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
 import type { TextRpgHfPassiveRow } from './textRpgPassiveEffects.generated.js';
 import type { TextRpgEffectMode } from './textRpgSkillEffectTypes.js';
@@ -98,13 +100,13 @@ export function textRpgPassiveDeltaForSkill(
   return partialCombatBuffDeltaFromNeutral(acc);
 }
 
-/** 142: у text-rpg один % до P.Atk і M.Atk. */
+/** 142: flat P.Atk за таблицею Weapon Mastery (воїни). */
 export function textRpgWeaponMastery142Delta(
   row: TextRpgHfPassiveRow,
   rank: number
 ): Partial<L2dopCombatBuffModifiers> | undefined {
   if (row.l2SkillId !== 142) return undefined;
-  const p = powerAtRank(row, rank);
-  const d = l2dopBuffDeltaPatkMatkSamePercent(p);
-  return d ?? undefined;
+  const add = weaponMasteryPatkAtRank(rank);
+  if (add <= 0) return undefined;
+  return { addPatk: add };
 }

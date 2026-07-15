@@ -66,6 +66,11 @@ import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkills
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { buildCastableSelfBuffs } from '../data/castableSelfBuffs.js';
+import { isHumanFighter } from '../data/l2dopHumanFighterBattleSkills.js';
+import {
+  firstProfessionQuestSnapshot,
+  parseQuestProgressJson,
+} from '../domain/humanFighterFirstProfessionQuest.js';
 import type {
   ActiveBuffSnapshotEntry,
   CharacterRow,
@@ -441,6 +446,18 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
       const pending = parsePvePendingDefeat(row.pvePendingDefeatJson);
       if (!pending) return null;
       return pvePendingDefeatToSummary(pending);
+    })(),
+    firstProfessionQuest: (() => {
+      if (!isHumanFighter(row.race, row.classBranch)) return null;
+      const prof =
+        typeof row.l2Profession === 'string' && row.l2Profession.trim()
+          ? row.l2Profession.trim()
+          : 'human_fighter';
+      if (prof !== 'human_fighter') return null;
+      return firstProfessionQuestSnapshot(
+        parseQuestProgressJson(row.questProgressJson),
+        inv
+      );
     })(),
   };
 }

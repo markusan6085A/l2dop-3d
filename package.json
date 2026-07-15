@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
+    "predev": "prisma generate",
     "dev": "tsx watch server/src/index.ts",
     "d": "tsx watch server/src/index.ts",
     "build": "tsc",

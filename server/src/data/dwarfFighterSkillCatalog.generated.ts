@@ -145,7 +145,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 14000,
     nameUk: "Вихор (Whirlwind)",
-    hintUk: "Той самий фізичний урон по головній цілі та до двох мобів поруч на карті (у радіусі бою). Лише зі списом або алебардами. Блок щита ігнорується. Можливий надудар. Кулдаун 17 с.",
+    hintUk: "Стабільний AoE-спам: б’є головну ціль і ще до 2 поруч. Лише зі списом/алебардою. Кулдаун 6 с.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -614,7 +614,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 5,
     spCost: 310,
     nameUk: "Майстерність обладунку (Armor Mastery)",
-    hintUk: "Пасив: підвищує P. Def.",
+    hintUk: "Пасив: +9 P. Def. за кожен вивчений рівень скіла.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -662,7 +662,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 5,
     spCost: 310,
     nameUk: "Майстерність зброї (Weapon Mastery)",
-    hintUk: "Пасив: підвищує фізичну атаку.",
+    hintUk: "Пасив: +P. Atk (flat) за рівнем скіла (1 р. — +1.5, 40 р. — +79.4).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3235,7 +3235,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 78,
     spCost: 32000000,
     nameUk: "Землетрус (Earthquake)",
-    hintUk: "Удар списом по ближніх ворогах: велика шкода по площі, знімає ціль. Лише зі списом. Можливий надудар.",
+    hintUk: "Масовий удар по землі з шансом шоку/оглушення. Добрий opener проти пачки мобів. Лише зі списом/алебардою.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [

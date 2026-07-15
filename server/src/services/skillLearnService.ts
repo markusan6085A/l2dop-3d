@@ -27,6 +27,7 @@ import {
   catalogEntryVisibleForProfession,
   humanFighterCatalogEntry,
   maxSkillRankForBattleId,
+  maxSkillRankForCatalogEntry,
   minCharLevelForSkillRank,
   normalizeLearnedSkillsJson,
   skillIconUrlForClient,
@@ -54,6 +55,7 @@ import {
 } from '../data/raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
 import { mysticDebuffProfileNoteUk } from '../data/l2dopMysticDebuffProfiles.js';
+import { boostHpStatsNoteUk } from '../data/boostHpTables.js';
 import { TEXT_RPG_HF_PASSIVE_EFFECTS } from '../data/textRpgPassiveEffects.generated.js';
 import { magisterBattleStatsPreview } from './skillLearnMagisterBattleStatsPreview.js';
 import {
@@ -63,6 +65,13 @@ import {
 import { professionBannerFor } from './skillLearnProfessionBanner.js';
 import { magisterHideOfferExclusiveToNextProfession } from '../data/magisterProfessionGate.js';
 import { L2DB_SKILL_HINT_UK_BY_ID } from '../data/l2dbSkillHintUk.generated.js';
+import {
+  isMysticWeaponMasterySkill,
+  weaponMasteryFighterStatsNoteUk,
+  weaponMasteryMysticStatsNoteUk,
+  WEAPON_MASTERY_FIGHTER_HINT_UK,
+  WEAPON_MASTERY_MYSTIC_HINT_UK,
+} from '../data/weaponMasteryTables.js';
 import {
   LEARNABLE_IDS,
   magisterNpcPayloadForEffectiveId,
@@ -358,7 +367,7 @@ export async function getMagisterDialogForUser(
             o.battleId
           )
         : maxMysticSkillRankForBattleId(o.battleId, row.race)
-      : maxSkillRankForBattleId(o.battleId);
+      : maxSkillRankForCatalogEntry(o as HumanFighterSkillCatalogEntry, prof);
     if (
       hm &&
       isInnateMysticPassiveOfferHidden(hm, skillLevel, maxSkillLevel)
@@ -464,6 +473,21 @@ export async function getMagisterDialogForUser(
     if (canonBattleId === 'l2_257') {
       st.statsNoteUk = swordBluntMasteryStatsNoteUk(maxSkillLevel);
     }
+    if (o.l2SkillId === 211) {
+      st.statsNoteUk = boostHpStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 142 && !mysticLike) {
+      st.statsNoteUk = weaponMasteryFighterStatsNoteUk(rankPreview);
+    } else if (
+      mysticLike &&
+      (o.l2SkillId === 142 ||
+        isMysticWeaponMasterySkill({
+          l2SkillId: o.l2SkillId,
+          nameUk: o.nameUk,
+          effectStats: mysticLike.effects.map((fx) => fx.stat),
+        }))
+    ) {
+      st.statsNoteUk = weaponMasteryMysticStatsNoteUk(rankPreview);
+    }
     const dreadNote = dreadnoughtSkillStatsNoteUk({
       canonBattleId,
       rankPreview,
@@ -487,18 +511,40 @@ export async function getMagisterDialogForUser(
           rankPreview
         );
     const l2dbHint = L2DB_SKILL_HINT_UK_BY_ID[o.l2SkillId];
-    const compactHintUk = compactSkillHintUk({
-      baseHint:
-        hm && o.kind === 'passive' && o.hintUk.trim()
-          ? o.hintUk
-          : l2dbHint && l2dbHint.trim()
-            ? l2dbHint
-            : o.hintUk,
-      kind: o.kind,
-      mpCost: st.mp,
-      power: st.power,
-      statsNoteUk: st.statsNoteUk,
-    });
+    const passiveHintUk =
+      o.kind === 'passive'
+        ? st.statsNoteUk && st.statsNoteUk.trim()
+          ? st.statsNoteUk.trim()
+          : o.l2SkillId === 142 && !mysticLike
+            ? WEAPON_MASTERY_FIGHTER_HINT_UK
+            : mysticLike &&
+                (o.l2SkillId === 142 ||
+                  isMysticWeaponMasterySkill({
+                    l2SkillId: o.l2SkillId,
+                    nameUk: o.nameUk,
+                    effectStats: mysticLike.effects.map((fx) => fx.stat),
+                  }))
+              ? WEAPON_MASTERY_MYSTIC_HINT_UK
+              : mysticLike && mysticLike.hintUk.trim()
+                ? mysticLike.hintUk.trim()
+                : l2dbHint && l2dbHint.trim()
+                  ? l2dbHint.trim()
+                  : o.hintUk.trim()
+        : '';
+    const compactHintUk =
+      o.kind === 'passive'
+        ? passiveHintUk
+        : compactSkillHintUk({
+            baseHint: o.hintUk.trim()
+              ? o.hintUk
+              : l2dbHint && l2dbHint.trim()
+                ? l2dbHint
+                : '',
+            kind: o.kind,
+            mpCost: st.mp,
+            power: st.power,
+            statsNoteUk: st.statsNoteUk,
+          });
     skills.push({
       battleId: o.battleId,
       l2SkillId: o.l2SkillId,
@@ -515,7 +561,7 @@ export async function getMagisterDialogForUser(
       canLearn,
       mpCost: st.mp,
       damagePower: st.power,
-      statsNoteUk: st.statsNoteUk,
+      statsNoteUk: o.kind === 'passive' ? null : st.statsNoteUk,
       damageHintUk: mysticLike
         ? null
         : magisterDamageHintUk(o.battleId, atkBase, st.power),
@@ -658,7 +704,7 @@ export async function learnSkillForUser(
         ...gateCtx,
         catalogMinLevel: fighterOffer.minLevel,
       });
-      const maxR = maxSkillRankForBattleId(canon);
+      const maxR = maxSkillRankForCatalogEntry(fighterOffer, prof);
       idx = entries.findIndex((e) => e.battleId === canon);
       const currentLv = idx >= 0 ? entries[idx]!.level : 0;
       if (currentLv >= maxR) throw new Error('skill_already_maxed');

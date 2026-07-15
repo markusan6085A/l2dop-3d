@@ -98,6 +98,13 @@ const PROF_TO_SLUG = {
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
+/** Канонічні описи, коли l2db змішує однакові skillId між класами (3/16/56 тощо). */
+const MANUAL_HINT_OVERRIDES_UK = {
+  3: 'Накопичує силу для різкого удару. Лише з мечем або булавою. Можливий надудар.',
+  16: 'Потенційно смертельна атака. Лише з кинжалами. Можливий надудар.',
+  56: 'Смертельний постріл з лука. Можливий надудар. Лише з луком.',
+};
+
 function decodeHtml(s) {
   return String(s || '')
     .replace(/&nbsp;/g, ' ')
@@ -208,6 +215,11 @@ async function main() {
 
   const hints = new Map();
   for (const [skillId, variants] of byId.entries()) {
+    const manual = MANUAL_HINT_OVERRIDES_UK[skillId];
+    if (manual) {
+      hints.set(skillId, manual);
+      continue;
+    }
     const picked = [...variants.entries()].sort((a, b) => {
       if (b[1] !== a[1]) return b[1] - a[1];
       return a[0].length - b[0].length;

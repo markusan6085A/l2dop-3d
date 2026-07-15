@@ -3,15 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Магістр — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260711magLearnWhite1" />
+    <title>Мої квести — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-character-page.css?v=20260715quests3" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-magister l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-character-quests l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
     <div class="l2-shell">
-      <div class="l2-screen l2-outer-sframe-host">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
           <div class="l2-outer-sframe__g">
             <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
@@ -53,41 +57,20 @@
             decoding="async"
           />
         </div>
-        <div class="l2-screen-inner l2-magister-root">
+        <div class="l2-screen-inner l2-character-quests-root">
           <div id="l2-hud-panel-mount"></div>
-
           <div id="l2-nav-top"></div>
 
-          <p class="err" id="magister-load-err" hidden></p>
+          <p class="err" id="character-quests-load-err" hidden></p>
 
-          <main class="l2-magister-panel" id="magister-panel" hidden>
-            <p class="l2-magister-back">
-              <a class="l2-town-btn" href="/city.html">Назад до міста</a>
+          <main class="l2-character-quests-panel" id="character-quests-content" hidden>
+            <p class="l2-character-quests-back">
+              <a class="l2-character-quests-back-link" href="/character.html">← Назад до персонажа</a>
             </p>
-            <div class="l2-magister-intro">
-              <p data-i18n="magister_page_intro_p1">
-                Привіт, мандрівнику. Бачу, ти вже дістався сюди — отже настав час стати сильнішим.
-              </p>
-              <p data-i18n="magister_page_intro_p2">
-                Тут досвідчені магістри навчають героїв мистецтву бою, могутнім технікам і секретам свого класу.
-              </p>
-              <p data-i18n="magister_page_intro_p3">
-                Вивчай активні навички, що допоможуть нищити ворогів у бою, та пасивні вміння, які підвищать твою
-                силу, захист і витривалість.
-              </p>
-              <p data-i18n="magister_page_intro_p4">
-                Кожна нова навичка зробить тебе небезпечнішим суперником на шляху до слави.
-              </p>
-            </div>
-            <h1 class="l2-magister-panel__title" id="magister-title">Магістр</h1>
-            <p class="l2-magister-panel__sub" id="magister-sub"></p>
-            <p class="l2-magister-note" id="magister-note" hidden></p>
-            <div class="l2-magister-profession" id="magister-profession" hidden></div>
-            <p class="err" id="magister-err" hidden></p>
-            <ul class="l2-magister-list" id="magister-list"></ul>
+            <h1 class="l2-character-quests-panel__title">Мої квести</h1>
+            <div class="l2-character-quests-list" id="character-quests-list"></div>
           </main>
 
-          <div id="l2-foot-links"></div>
           <div id="l2-nav-bottom"></div>
         </div>
       </div>
@@ -96,8 +79,7 @@
     <script src="/common.js?v=20260712wapBars16"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/magister-profession-info-data.js"></script>
-    <script src="/magister-profession-common.js"></script>
-    <script src="/magister.js?v=20260711magLearnWhite1"></script>
+    <script src="/character-active-quests.js?v=20260715quests3"></script>
+    <script src="/character-quests-page.js?v=20260715quests3"></script>
   </body>
 </html>

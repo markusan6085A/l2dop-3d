@@ -84,6 +84,7 @@ export {
   catalogEntryOfferedAtGludioMagister,
   catalogEntryMeetsRequirements,
   catalogEntryAllowsSkillRank,
+  maxSkillRankForCatalogEntry,
 } from './humanFighterSkillCatalog.professionRules.js';
 export {
   MAX_SKILL_RANK_BY_BATTLE_ID,
