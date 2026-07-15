@@ -59,15 +59,19 @@
     var btn = $('opt-logout');
     if (btn) {
       btn.addEventListener('click', function () {
-        try {
-          localStorage.removeItem('token');
+        if (window.L2 && typeof L2.setToken === 'function') {
+          L2.setToken(null);
+        } else {
           try {
-            sessionStorage.removeItem('token');
-          } catch (e2) {
+            localStorage.removeItem('token');
+            try {
+              sessionStorage.removeItem('token');
+            } catch (e2) {
+              /* ignore */
+            }
+          } catch (e) {
             /* ignore */
           }
-        } catch (e) {
-          /* ignore */
         }
         window.location.href = '/';
       });

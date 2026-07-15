@@ -8,7 +8,7 @@ import { learnedMysticHotbarPickSkills } from './humanMysticSkillCatalog.js';
 export const MYSTIC_SPELLCRAFT_L2_SKILL_ID = 163;
 export const MYSTIC_SPELLCRAFT_ROBE_BUFF_CAST = 2;
 
-/** Стартові вивчені скіли мага (як у L2: Wind Strike + Spellcraft). */
+/** Стартові вивчені скіли мага (Human — для сумісності; нові персонажі — `mysticStarterLearnedSkillsForRace`). */
 export const MYSTIC_STARTER_LEARNED_SKILLS = [
   { battleId: 'l2_1177', level: 1 },
   { battleId: 'l2_163', level: 1 },

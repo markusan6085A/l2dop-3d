@@ -157,6 +157,11 @@ export function buildBattleDeltaPayload(args: {
       ? { ...st.mysticSkillCdUntil }
       : undefined;
 
+  const battleMods =
+    st.battleMods && Object.keys(st.battleMods).length > 0
+      ? { ...st.battleMods }
+      : null;
+
   return {
     changed: true,
     revision,
@@ -166,6 +171,7 @@ export function buildBattleDeltaPayload(args: {
     outcome: args.outcome ?? null,
     battleEnded: args.battleEnded ?? false,
     mysticSkillCdUntil,
+    battleMods,
     ...(args.hotbarStale ? { hotbarStale: true } : {}),
     ...battleVitalsPayload({
       row: args.row,

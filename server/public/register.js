@@ -88,7 +88,21 @@
       );
       return;
     }
-    localStorage.setItem('token', j.token);
+    if (window.L2 && typeof L2.clearSessionCharacterCache === 'function') {
+      L2.clearSessionCharacterCache();
+    } else {
+      try {
+        sessionStorage.removeItem('l2-char-snapshot-cache-v1');
+        sessionStorage.removeItem('l2-map-snapshot-cache-v1');
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    if (window.L2 && typeof L2.setToken === 'function') {
+      L2.setToken(j.token);
+    } else {
+      localStorage.setItem('token', j.token);
+    }
     if (window.L2 && typeof L2.markHelperBufferTipPending === 'function') {
       L2.markHelperBufferTipPending();
     } else {

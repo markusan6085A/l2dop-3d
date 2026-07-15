@@ -14,8 +14,8 @@ import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkills
 import { resolveL2ProfessionForSkillsRow } from '../data/l2dopHumanFighterBattleSkills.js';
 import {
   isMysticClassBranch,
-  MYSTIC_STARTER_LEARNED_SKILLS,
 } from '../data/l2dopHumanMysticBattleSkills.js';
+import { mysticStarterLearnedSkillsForRace } from '../data/mysticStarterSkills.js';
 
 /**
  * Read-path: regen, рух, sanitize скілів/інвентаря лише в пам’яті — без write у БД.
@@ -52,7 +52,7 @@ export function applyCharacterReadView(
     const have = new Set(
       nextEntries.filter((e) => e.level >= 1).map((e) => e.battleId)
     );
-    const missingStarters = MYSTIC_STARTER_LEARNED_SKILLS.filter(
+    const missingStarters = mysticStarterLearnedSkillsForRace(row.race).filter(
       (s) => !have.has(s.battleId)
     );
     if (missingStarters.length > 0) {

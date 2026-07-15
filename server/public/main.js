@@ -102,7 +102,14 @@
     } else {
       localStorage.removeItem('auth_saved_login');
     }
-    localStorage.setItem('token', j.token);
+    if (window.L2 && typeof L2.clearSessionCharacterCache === 'function') {
+      L2.clearSessionCharacterCache();
+    }
+    if (window.L2 && typeof L2.setToken === 'function') {
+      L2.setToken(j.token);
+    } else {
+      localStorage.setItem('token', j.token);
+    }
     window.location.href = '/city.html';
   });
 })();

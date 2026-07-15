@@ -1,3 +1,4 @@
+import type { BattleBattleMods } from '../domain/battle.js';
 import type { BattleDefeatSummary, BattleVictorySummary } from './battleServiceTypes.js';
 
 export type BattleOutcomeKind = 'DEFEAT' | 'VICTORY' | null;
@@ -22,6 +23,8 @@ export interface BattleDeltaPayload {
   logSeq?: number;
   /** true — клієнт має оновити хотбар (інвентар/бафи/КД поза mysticSkillCdUntil). */
   hotbarStale?: boolean;
+  /** Поточні battleMods (null — немає активних модів у бою). */
+  battleMods?: BattleBattleMods | null;
 }
 
 export interface BattleSyncResponse extends BattleDeltaPayload {

@@ -42,6 +42,7 @@ import {
   spCostForMysticSkillRankUpgrade,
 } from '../data/humanMysticSkillCatalog.js';
 import { mysticCatalogEntryForRace } from '../data/mysticSkillCatalog.byRace.js';
+import { isInnateMysticPassiveOfferHidden } from '../data/mysticStarterSkills.js';
 import {
   fighterCatalogEntryForRace,
   maxRaceFighterSkillRankForBattleId,
@@ -358,14 +359,24 @@ export async function getMagisterDialogForUser(
           )
         : maxMysticSkillRankForBattleId(o.battleId, row.race)
       : maxSkillRankForBattleId(o.battleId);
+    if (
+      hm &&
+      isInnateMysticPassiveOfferHidden(hm, skillLevel, maxSkillLevel)
+    ) {
+      continue;
+    }
     const learnedMax = skillLevel >= maxSkillLevel;
     const nextRank = Math.min(maxSkillLevel, skillLevel + 1);
     const minForNext =
       mysticLike != null
         ? minCharLevelForMysticSkillRank(mysticLike, nextRank)
         : minCharLevelForSkillRank(o as HumanFighterSkillCatalogEntry, nextRank);
-    /** У списку майстра не показуємо наступний ранг, доки не вистачає рівня (незалежно від тестового TEST_SKIP у бою/профі). */
-    if (!learnedMax && effLevel < minForNext) {
+    /** Повний макс. ранг — не показувати в «вивчити» (лише у вкладці вивчених). */
+    if (learnedMax) {
+      continue;
+    }
+    /** Наступний ранг ще недоступний за рівнем — ховаємо до нового lv (частково вивчені теж). */
+    if (effLevel < minForNext) {
       continue;
     }
     if (
@@ -433,7 +444,11 @@ export async function getMagisterDialogForUser(
             mysticLike.category === 'debuff' ||
             mysticLike.category === 'magic_attack'
               ? mysticDebuffProfileNoteUk(mysticLike.l2SkillId)
-              : (null as string | null),
+              : mysticLike.kind === 'passive' && mysticLike.l2SkillId === 163
+                ? '×2 швидкість касту в мантії (магічна броня).'
+                : mysticLike.kind === 'passive' && mysticLike.hintUk.trim()
+                  ? mysticLike.hintUk.replace(/^Пасив:\s*/i, '').trim()
+                  : (null as string | null),
         }
       : magisterBattleStatsPreview(
           o.battleId,
@@ -471,11 +486,14 @@ export async function getMagisterDialogForUser(
           prof,
           rankPreview
         );
+    const l2dbHint = L2DB_SKILL_HINT_UK_BY_ID[o.l2SkillId];
     const compactHintUk = compactSkillHintUk({
       baseHint:
-        L2DB_SKILL_HINT_UK_BY_ID[o.l2SkillId] && L2DB_SKILL_HINT_UK_BY_ID[o.l2SkillId]!.trim()
-          ? L2DB_SKILL_HINT_UK_BY_ID[o.l2SkillId]!
-          : o.hintUk,
+        hm && o.kind === 'passive' && o.hintUk.trim()
+          ? o.hintUk
+          : l2dbHint && l2dbHint.trim()
+            ? l2dbHint
+            : o.hintUk,
       kind: o.kind,
       mpCost: st.mp,
       power: st.power,

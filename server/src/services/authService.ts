@@ -5,6 +5,8 @@ import { defaultFighterBaseProfessionForRace } from '../data/l2dopHumanFighterBa
 import { prisma } from '../lib/prisma.js';
 import { signAccessToken } from '../lib/jwt.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
+import { computeStarterVitalsForNewCharacter } from './charStarterVitals.js';
+import { mysticStarterLearnedSkillsForRace } from '../data/mysticStarterSkills.js';
 
 const RACES = [
   'Human',
@@ -108,15 +110,22 @@ export async function register(input: {
                 ? 'orc_mage'
                 : 'human_mage'
           : defaultFighterBaseProfessionForRace(race);
-      /** Стартові скіли мага — Wind Strike + Spellcraft, як у L2. */
+      /** Стартові innate-скіли мага за расою (Wind Strike + Spellcraft тощо). */
       const mysticStarterSkills: Prisma.InputJsonValue | undefined =
         classBranch === 'mystic'
-          ? ([
-              { battleId: 'l2_1177', level: 1 },
-              { battleId: 'l2_163', level: 1 },
-            ] as Prisma.InputJsonValue)
+          ? (mysticStarterLearnedSkillsForRace(race) as Prisma.InputJsonValue)
           : undefined;
       const start = starterWorldForNewCharacter(race, classBranch);
+      const starterInv = starterInventory(
+        classBranch as 'fighter' | 'mystic'
+      );
+      const starterVitals = computeStarterVitalsForNewCharacter({
+        race,
+        classBranch,
+        l2Profession,
+        inventory: starterInv,
+        skillsLearnedJson: mysticStarterSkills,
+      });
       const charData = {
         name: characterName,
         userId: u.id,
@@ -124,15 +133,15 @@ export async function register(input: {
         classBranch,
         gender,
         l2Profession,
+        hp: starterVitals.hp,
+        maxHp: starterVitals.maxHp,
         adena: BigInt(STARTER_ADENA),
         cityId: start.cityId,
         worldX: start.worldX,
         worldY: start.worldY,
         moveFromX: start.worldX,
         moveFromY: start.worldY,
-        inventoryJson: starterInventory(
-          classBranch as 'fighter' | 'mystic'
-        ) as unknown as Prisma.InputJsonValue,
+        inventoryJson: starterInv as unknown as Prisma.InputJsonValue,
         ...(mysticStarterSkills != null
           ? { skillsLearnedJson: mysticStarterSkills }
           : {}),

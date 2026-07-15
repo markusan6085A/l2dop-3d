@@ -19,23 +19,15 @@
   }
 
   function readCachedMapSnapshot() {
-    try {
-      var raw = sessionStorage.getItem(MAP_SNAPSHOT_CACHE_KEY);
-      if (!raw) return null;
-      var j = JSON.parse(raw);
-      if (!j || typeof j !== 'object') return null;
-      return j;
-    } catch (e) {
-      return null;
+    if (window.L2 && typeof L2.readSessionSnapshotCache === 'function') {
+      return L2.readSessionSnapshotCache(MAP_SNAPSHOT_CACHE_KEY);
     }
+    return null;
   }
 
   function writeCachedMapSnapshot(snapshot) {
-    if (!snapshot || typeof snapshot !== 'object') return;
-    try {
-      sessionStorage.setItem(MAP_SNAPSHOT_CACHE_KEY, JSON.stringify(snapshot));
-    } catch (e) {
-      /* ignore */
+    if (window.L2 && typeof L2.writeSessionSnapshotCache === 'function') {
+      L2.writeSessionSnapshotCache(MAP_SNAPSHOT_CACHE_KEY, snapshot);
     }
   }
 

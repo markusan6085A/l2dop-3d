@@ -5,22 +5,15 @@
   var CHAR_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
 
   function readCachedCharSnapshot() {
-    try {
-      var raw = sessionStorage.getItem(CHAR_SNAPSHOT_CACHE_KEY);
-      if (!raw) return null;
-      var j = JSON.parse(raw);
-      return j && typeof j === 'object' ? j : null;
-    } catch (_e) {
-      return null;
+    if (window.L2 && typeof L2.readSessionSnapshotCache === 'function') {
+      return L2.readSessionSnapshotCache(CHAR_SNAPSHOT_CACHE_KEY);
     }
+    return null;
   }
 
   function writeCachedCharSnapshot(snapshot) {
-    if (!snapshot || typeof snapshot !== 'object') return;
-    try {
-      sessionStorage.setItem(CHAR_SNAPSHOT_CACHE_KEY, JSON.stringify(snapshot));
-    } catch (_e) {
-      /* ignore cache quota errors */
+    if (window.L2 && typeof L2.writeSessionSnapshotCache === 'function') {
+      L2.writeSessionSnapshotCache(CHAR_SNAPSHOT_CACHE_KEY, snapshot);
     }
   }
 

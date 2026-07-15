@@ -92,6 +92,12 @@ async function main() {
   assert.equal(ch0.status, 200, 'GET /character must be 200');
   let character = (ch0.json as { character?: JsonObject }).character as JsonObject;
   assert.ok(character, 'GET /character must return character');
+  assert.equal(Number(character.sp), 0, 'new char SP must be 0');
+  assert.equal(String(character.exp ?? ''), '0', 'new char EXP must be 0');
+  assert.equal(Number(character.karma ?? 0), 0, 'new char karma must be 0');
+  assert.equal(Number(character.hp), Number(character.maxHp), 'new char HP must be full');
+  const learned = (character.learnedBattleSkills as unknown[] | undefined) ?? [];
+  assert.equal(learned.length, 0, 'new Human fighter must have no learned skills');
 
   // 1) battle/start valid
   const around = await jsonRequest('/game/map/around', {

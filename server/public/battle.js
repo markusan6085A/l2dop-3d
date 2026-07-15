@@ -1316,6 +1316,17 @@
         if (delta.mysticSkillCdUntil) {
           battle.mysticSkillCdUntil = delta.mysticSkillCdUntil;
         }
+        if (Object.prototype.hasOwnProperty.call(delta, 'battleMods')) {
+          if (
+            delta.battleMods &&
+            typeof delta.battleMods === 'object' &&
+            Object.keys(delta.battleMods).length > 0
+          ) {
+            battle.battleMods = delta.battleMods;
+          } else {
+            delete battle.battleMods;
+          }
+        }
       }
       if (typeof delta.battleVersion === 'number') {
         lastBattleVersion = Math.floor(delta.battleVersion);
@@ -1362,6 +1373,23 @@
       var lines = getActiveBattleLogLines(b);
       var tail0 = lines.length > 0 ? String(lines[lines.length - 1]) : '';
       var tail1 = lines.length > 1 ? String(lines[lines.length - 2]) : '';
+      var bmSig = b.battleMods;
+      var ssSig =
+        bmSig && bmSig.fighterSoulshotPatkMul != null
+          ? String(bmSig.fighterSoulshotPatkMul) +
+            ':' +
+            String(bmSig.fighterSoulshotItemId != null ? bmSig.fighterSoulshotItemId : '')
+          : '';
+      var spSig =
+        bmSig && bmSig.mysticBlessedSpiritshotMatkMul != null
+          ? String(bmSig.mysticBlessedSpiritshotMatkMul) +
+            ':' +
+            String(
+              bmSig.mysticBlessedSpiritshotItemId != null
+                ? bmSig.mysticBlessedSpiritshotItemId
+                : ''
+            )
+          : '';
       return [
         String(c.revision != null ? c.revision : ''),
         String(c.hp != null ? c.hp : ''),
@@ -1371,6 +1399,8 @@
         String(lines.length),
         tail0,
         tail1,
+        ssSig,
+        spSig,
       ].join('\u001f');
     }
 

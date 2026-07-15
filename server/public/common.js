@@ -735,14 +735,65 @@
     token: function () {
       return localStorage.getItem('token');
     },
+    /** Підпис поточної JWT-сесії для прив’язки snapshot-кешу (не characterId). */
+    tokenSessionSig: function (t) {
+      t = t != null ? String(t) : global.L2.token() || '';
+      return t.length >= 8 ? t.slice(-16) : t;
+    },
+    /** Кеш snapshot у sessionStorage — лише для поточного token (без «чужого» героя). */
+    readSessionSnapshotCache: function (key) {
+      try {
+        var tok = global.L2.token();
+        if (!tok) return null;
+        var raw = sessionStorage.getItem(key);
+        if (!raw) return null;
+        var j = JSON.parse(raw);
+        if (!j || typeof j !== 'object') return null;
+        if (j.tokenSig !== global.L2.tokenSessionSig(tok)) return null;
+        var snap = j.snapshot;
+        return snap && typeof snap === 'object' ? snap : null;
+      } catch (e) {
+        return null;
+      }
+    },
+    writeSessionSnapshotCache: function (key, snapshot) {
+      if (!snapshot || typeof snapshot !== 'object') return;
+      var tok = global.L2.token();
+      if (!tok) return;
+      try {
+        sessionStorage.setItem(
+          key,
+          JSON.stringify({
+            tokenSig: global.L2.tokenSessionSig(tok),
+            snapshot: snapshot,
+          })
+        );
+      } catch (e) {
+        /* ignore quota */
+      }
+    },
+    /** Скинути in-memory snapshot і sessionStorage-кеші персонажа (logout / новий акаунт). */
+    clearSessionCharacterCache: function () {
+      lastSnapshot = null;
+      try {
+        sessionStorage.removeItem('l2-char-snapshot-cache-v1');
+        sessionStorage.removeItem('l2-map-snapshot-cache-v1');
+      } catch (e) {
+        /* ignore */
+      }
+    },
     setToken: function (t) {
       try {
         if (t) localStorage.setItem('token', t);
-        else localStorage.removeItem('token');
+        else {
+          localStorage.removeItem('token');
+          global.L2.clearSessionCharacterCache();
+        }
         sessionStorage.removeItem('token');
       } catch (e) {
         /* ignore */
       }
+      if (!t) lastSnapshot = null;
     },
 
     fetchSnapshot: async function () {
