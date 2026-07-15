@@ -21,8 +21,8 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   75: 300,
   /** Aggression (18) — короткий контроль агро/дебаф. */
   18: 15,
-  /** War Cry */
-  78: 120,
+  /** War Cry — 5 хв. */
+  78: 300,
   /** Detect Monster Weakness */
   80: 300,
   /** Detect Animal Weakness */
@@ -43,8 +43,8 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   99: 60,
   /** Howl (Warlord) — дебаф P.Atk моба. */
   116: 120,
-  /** Battle Roar (+Max HP / миттєвий хіл) */
-  121: 1200,
+  /** Battle Roar (+Max HP / миттєвий хіл) — 10 хв */
+  121: 600,
   /** Thrill Fight */
   130: 600,
   /** Guts — міцніший P.Def. */

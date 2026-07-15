@@ -15,4 +15,6 @@ export const L2DOP_SKILL_REUSE_DELAY_SEC: Readonly<
   100: 13,
   /** Power Smash — відкат 13 с на всіх рівнях (каст 1.08 с). */
   255: 13,
+  /** Wild Sweep — відкат 17 с на всіх рівнях (каст 1.08 с). */
+  245: 17,
 };

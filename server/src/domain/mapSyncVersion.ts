@@ -1,7 +1,7 @@
 import { parseMobSpawnHpState } from './mobSpawnHpState.js';
 
 /** Піднімати при зміні статичного каталогу спавнів (generated coords / ids). */
-export const MAP_CATALOG_VERSION = 1;
+export const MAP_CATALOG_VERSION = 4;
 /** Стабільний підпис персонального mobSpawnHpJson (без write-path version bump). */
 export function mobSpawnHpPersonalSig(
   raw: unknown,

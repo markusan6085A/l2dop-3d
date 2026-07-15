@@ -1260,6 +1260,73 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     hideAtBaseFighterUntilFirstProf: false
   },
   {
+    battleId: "l2_121",
+    l2SkillId: 121,
+    minLevel: 28,
+    spCost: 11000,
+    nameUk: "Бойовий рик (Battle Roar)",
+    hintUk: "Миттєво відновлює HP і збільшує максимальний запас HP на 10 хвилин.",
+    kind: "battle",
+    category: "buff",
+    visibleForProfessions: [
+      "dwarf_artisan",
+      "dwarf_scavenger"
+    ],
+    levels: [
+      {
+        level: 1,
+        requiredLevel: 28,
+        spCost: 11000,
+        mpCost: 13,
+        power: 10
+      },
+      {
+        level: 2,
+        requiredLevel: 40,
+        spCost: 33000,
+        mpCost: 18,
+        power: 15
+      },
+      {
+        level: 3,
+        requiredLevel: 49,
+        spCost: 82000,
+        mpCost: 22,
+        power: 20
+      },
+      {
+        level: 4,
+        requiredLevel: 58,
+        spCost: 173000,
+        mpCost: 27,
+        power: 25
+      },
+      {
+        level: 5,
+        requiredLevel: 64,
+        spCost: 400000,
+        mpCost: 30,
+        power: 30
+      },
+      {
+        level: 6,
+        requiredLevel: 70,
+        spCost: 720000,
+        mpCost: 33,
+        power: 35
+      }
+    ],
+    effects: [
+      {
+        stat: "maxHp",
+        mode: "multiplier"
+      }
+    ],
+    cooldownSec: 600,
+    skipMobHp: true,
+    hideAtBaseFighterUntilFirstProf: false
+  },
+  {
     battleId: "l2_212",
     l2SkillId: 212,
     minLevel: 40,

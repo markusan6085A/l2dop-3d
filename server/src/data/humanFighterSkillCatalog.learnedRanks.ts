@@ -79,6 +79,8 @@ export const MAX_SKILL_RANK_BY_BATTLE_ID: Record<string, number> = {
   l2_190: 37,
   l2_260: 37,
   l2_261: 22,
+  /** War Cry: 2 р. лише Gladiator/Duelist (2-й — з 43 лвл). */
+  l2_78: 2,
   l2_442: 1,
   l2_451: 2,
 };

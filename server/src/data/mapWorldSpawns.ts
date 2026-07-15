@@ -5,9 +5,9 @@
 
 import {
   MAP_TOWNS,
-  mobPoolForCity,
+  mobPoolForTeleport,
+  nearestMapTown,
   type MapLocalityMob,
-  type MapTownRef,
 } from './mapLocalities.js';
 import { L2DOP_MAP_CHAMPION_SPAWNS } from './l2dopMapChampionSpawns.generated.js';
 import { L2DOP_LINEAGE_EPIC_BOSS_SPAWNS } from './l2dopMapEpicBossSpawns.generated.js';
@@ -33,6 +33,9 @@ export const MAP_NEARBY_LIST_RADIUS = 26_000;
 
 /** Радіус «поруч» для інших гравців на карті (менший за мобів). */
 export const MAP_NEARBY_HERO_RADIUS = 12_000;
+
+/** Радіус щільного поля спавнів навколо точки телепорту (світові одиниці). */
+export const TELEPORT_SPAWN_RING = 7_000;
 
 /** Злиття ×3 дає id виду `dense_12__dup1` — для списку лишаємо одну точку на базовий спавн. */
 export function stripSpawnDupSuffix(spawnId: string): string {
@@ -110,29 +113,16 @@ function kindForMob(_mob: MapLocalityMob, seed: string, idx: number): MapSpawnKi
   return 'neutral';
 }
 
-function nearestTown(wx: number, wy: number): MapTownRef {
-  let best = MAP_TOWNS[0]!;
-  let bestD = Infinity;
-  for (const t of MAP_TOWNS) {
-    const d = Math.hypot(t.worldX - wx, t.worldY - wy);
-    if (d < bestD) {
-      bestD = d;
-      best = t;
-    }
-  }
-  return best;
-}
-
 /**
- * Щільне поле навколо міст — великий диск, щоб покрити околиці (не лише 3–4 тис. од. від центру міста).
+ * Щільне поле навколо кожної зони телепорту — диск RING від точки телепорту, свій пул мобів.
  */
 function buildDenseTownFieldSpawns(): MapWorldSpawn[] {
   const out: MapWorldSpawn[] = [];
   let idx = 0;
   const STEP = 280;
-  const RING = 10_000;
+  const RING = TELEPORT_SPAWN_RING;
   for (const t of MAP_TOWNS) {
-    const pool = mobPoolForCity(t.cityId);
+    const pool = mobPoolForTeleport(t.teleportId, t.cityId);
     for (let gx = -RING; gx <= RING; gx += STEP) {
       for (let gy = -RING; gy <= RING; gy += STEP) {
         if (gx * gx + gy * gy > RING * RING) continue;
@@ -141,7 +131,7 @@ function buildDenseTownFieldSpawns(): MapWorldSpawn[] {
         const c = clampWorld(t.worldX + gx + jx, t.worldY + gy + jy);
         const mob = pickMob(pool, t.labelUk + 'd', idx);
         let kind: MapSpawnKind = kindForMob(mob, t.labelUk, idx);
-        const champRoll = rng('champ' + t.cityId, idx);
+        const champRoll = rng('champ' + t.teleportId, idx);
         if (
           champRoll < 0.035 &&
           kind !== 'raid' &&
@@ -180,9 +170,11 @@ function buildScatterSpawns(): MapWorldSpawn[] {
     const rx = -131000 + rng('scx', i) * 359000;
     const ry = -259000 + rng('scy', i) * 521000;
     const c = clampWorld(rx, ry);
-    const t = nearestTown(c.x, c.y);
-    const pool = mobPoolForCity(t.cityId);
-    const mob = pickMob(pool, 'scatter' + t.cityId, i);
+    const t = nearestMapTown(c.x, c.y);
+    const dist = Math.hypot(t.worldX - c.x, t.worldY - c.y);
+    if (dist > TELEPORT_SPAWN_RING) continue;
+    const pool = mobPoolForTeleport(t.teleportId, t.cityId);
+    const mob = pickMob(pool, 'scatter' + t.teleportId, i);
     let kind: MapSpawnKind = kindForMob(mob, 'scatterk', i);
     if (rng('schamp', i) < 0.028 && kind !== 'raid' && kind !== 'epic') {
       kind = 'champion';

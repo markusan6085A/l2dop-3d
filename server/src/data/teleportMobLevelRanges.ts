@@ -37,7 +37,7 @@ export const TELEPORT_MOB_LEVEL_RANGES: Record<string, TeleportMobLevelRange> = 
   // —— Oren ——
   oren: { min: 35, max: 45 },
   ivory_tower: { min: 40, max: 50 },
-  skyshadow_meadow: { min: 30, max: 40 },
+  skyshadow_meadow: { min: 54, max: 54 },
   plains_of_the_lizardman: { min: 35, max: 45 },
   outlaw_forest: { min: 40, max: 50 },
   sea_of_spores: { min: 42, max: 52 },

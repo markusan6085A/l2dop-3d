@@ -183,25 +183,7 @@
   }
 
   function combatLine(s) {
-    var lines = [];
-    if (s.kind === 'passive') {
-      return '';
-    } else if (s.mpCost != null) {
-      var t = 'MP: ' + s.mpCost;
-      if (s.damagePower != null) {
-        t += ' · базова сила скіла: ' + s.damagePower;
-      }
-      if (s.statsNoteUk) {
-        t += ' · ' + s.statsNoteUk;
-      }
-      lines.push(t);
-    } else {
-      lines.push(s.statsNoteUk || 'Параметри з’являться після умов скіла.');
-    }
-    if (s.damageHintUk) {
-      lines.push(s.damageHintUk);
-    }
-    return lines.join('\n');
+    return '';
   }
 
   function renderLearnedOnlyList(list, d) {

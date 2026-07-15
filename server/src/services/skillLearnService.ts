@@ -55,6 +55,8 @@ import {
 import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
 import { mysticDebuffProfileNoteUk } from '../data/l2dopMysticDebuffProfiles.js';
 import { boostHpStatsNoteUk } from '../data/boostHpTables.js';
+import { fastHpRecoveryStatsNoteUk } from '../data/fastHpRecoveryTables.js';
+import { battleRoarStatsNoteUk } from '../data/battleRoarTables.js';
 import {
   HEAVY_ARMOR_MASTERY_HINT_UK,
   heavyArmorMasteryStatsNoteUk,
@@ -131,6 +133,36 @@ function finalFrenzyStatsNoteUk(rankRaw: number, currentPatk: number): string {
   );
 }
 
+function extractSkillEquipHintUk(baseHint: string): string | null {
+  const base = String(baseHint || '').replace(/\s+/g, ' ').trim();
+  const equipMatch =
+    base.match(/Лише з [^.]+/i) ??
+    base.match(/Потрібен [^.]+/i) ??
+    base.match(/Меч, булава або дуал/i) ??
+    base.match(/Лише зі списом[^.]*/i) ??
+    base.match(/Лише з луком[^.]*/i);
+  return equipMatch ? equipMatch[0].replace(/\.$/, '') : null;
+}
+
+function equipHintAlreadyInText(equip: string | null, text: string): boolean {
+  if (!equip || !text) return false;
+  const needle = equip
+    .replace(/^ліше з\s*/i, '')
+    .replace(/^потрібен\s*/i, '')
+    .slice(0, 12)
+    .toLowerCase();
+  return needle.length >= 4 && text.toLowerCase().includes(needle);
+}
+
+function joinMagisterHintParts(parts: string[]): string {
+  const clean = parts
+    .map((p) => String(p || '').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .map((p) => p.replace(/\.+$/, ''));
+  if (clean.length === 0) return '';
+  return clean.join('. ') + '.';
+}
+
 function compactSkillHintUk(args: {
   baseHint: string;
   kind: 'battle' | 'toggle' | 'passive';
@@ -138,46 +170,52 @@ function compactSkillHintUk(args: {
   power: number | null;
   statsNoteUk: string | null;
 }): string {
+  const statsNote = args.statsNoteUk?.trim();
+  if (statsNote) {
+    const equip = extractSkillEquipHintUk(args.baseHint);
+    if (equip && !equipHintAlreadyInText(equip, statsNote)) {
+      return joinMagisterHintParts([statsNote, equip]);
+    }
+    return statsNote.endsWith('.') ? statsNote : statsNote + '.';
+  }
+
   const base = String(args.baseHint || '').replace(/\s+/g, ' ').trim();
   const firstSentence = base.split('.').map((s) => s.trim()).find(Boolean) ?? '';
-  const equipMatch =
-    base.match(/Лише з [^.]+/i) ??
-    base.match(/Потрібен [^.]+/i) ??
-    base.match(/Меч, булава або дуал/i) ??
-    base.match(/Лише зі списом[^.]*/i) ??
-    base.match(/Лише з луком[^.]*/i);
-  const equip = equipMatch ? equipMatch[0].replace(/\.$/, '') : null;
-  const parts: string[] = [];
-
-  if (args.kind === 'passive') {
-    parts.push('Пасив');
-  } else if (args.kind === 'toggle') {
-    parts.push('Стійка');
-  } else {
-    parts.push('Активний');
-  }
+  const equip = extractSkillEquipHintUk(base);
+  const tech: string[] = [];
   if (args.mpCost != null) {
-    parts.push('MP: ' + Math.max(0, Math.floor(args.mpCost)));
+    tech.push('MP ' + Math.max(0, Math.floor(args.mpCost)));
   }
   if (args.power != null) {
-    parts.push('Сила: ' + Math.max(0, Math.floor(args.power)));
-  }
-  if (equip) {
-    parts.push('Екіп: ' + equip);
+    tech.push('сила ' + Math.max(0, Math.floor(args.power)));
   }
 
-  const coreRaw =
-    args.statsNoteUk && args.statsNoteUk.trim()
-      ? args.statsNoteUk.trim()
-      : firstSentence || base;
-  const core = coreRaw
-    .replace(/^пасив\s*[:\-]\s*/i, '')
-    .replace(/^активний\s*[:\-]\s*/i, '')
-    .replace(/^стійка\s*[:\-]\s*/i, '')
-    .trim();
-  if (core) parts.push(core.replace(/\.$/, ''));
+  const parts: string[] = [];
+  if (firstSentence) parts.push(firstSentence);
+  if (tech.length > 0) parts.push(tech.join(', '));
+  if (equip && !equipHintAlreadyInText(equip, firstSentence)) parts.push(equip);
+  return joinMagisterHintParts(parts);
+}
 
-  return parts.join(' · ');
+function appendMagisterDamageHintUk(
+  hintUk: string,
+  damageHintUk: string | null,
+  power: number | null
+): string {
+  const damage = String(damageHintUk || '').replace(/\s+/g, ' ').trim();
+  if (!damage) return hintUk;
+  let shortDamage = damage;
+  if (power != null && Number.isFinite(power)) {
+    shortDamage = shortDamage.replace(
+      new RegExp('\\s*·\\s*power\\s+' + Math.floor(power) + '\\b', 'i'),
+      ''
+    );
+  }
+  shortDamage = shortDamage.replace(/\s+/g, ' ').trim();
+  if (!shortDamage) return hintUk;
+  const base = String(hintUk || '').replace(/\s+/g, ' ').trim();
+  if (!base) return shortDamage.endsWith('.') ? shortDamage : shortDamage + '.';
+  return joinMagisterHintParts([base.replace(/\.+$/, ''), shortDamage]);
 }
 
 function passiveRankPercentsNoteUk(
@@ -479,6 +517,10 @@ export async function getMagisterDialogForUser(
     }
     if (o.l2SkillId === 211) {
       st.statsNoteUk = boostHpStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 212) {
+      st.statsNoteUk = fastHpRecoveryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 121) {
+      st.statsNoteUk = battleRoarStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 231 && !mysticLike) {
       st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 227 && !mysticLike) {
@@ -554,17 +596,23 @@ export async function getMagisterDialogForUser(
     const compactHintUk =
       o.kind === 'passive'
         ? passiveHintUk
-        : compactSkillHintUk({
-            baseHint: o.hintUk.trim()
-              ? o.hintUk
-              : l2dbHint && l2dbHint.trim()
-                ? l2dbHint
-                : '',
-            kind: o.kind,
-            mpCost: st.mp,
-            power: st.power,
-            statsNoteUk: st.statsNoteUk,
-          });
+        : appendMagisterDamageHintUk(
+            compactSkillHintUk({
+              baseHint: o.hintUk.trim()
+                ? o.hintUk
+                : l2dbHint && l2dbHint.trim()
+                  ? l2dbHint
+                  : '',
+              kind: o.kind,
+              mpCost: st.mp,
+              power: st.power,
+              statsNoteUk: st.statsNoteUk,
+            }),
+            mysticLike
+              ? null
+              : magisterDamageHintUk(o.battleId, atkBase, st.power),
+            st.power
+          );
     skills.push({
       battleId: o.battleId,
       l2SkillId: o.l2SkillId,
@@ -581,10 +629,8 @@ export async function getMagisterDialogForUser(
       canLearn,
       mpCost: st.mp,
       damagePower: st.power,
-      statsNoteUk: o.kind === 'passive' ? null : st.statsNoteUk,
-      damageHintUk: mysticLike
-        ? null
-        : magisterDamageHintUk(o.battleId, atkBase, st.power),
+      statsNoteUk: null,
+      damageHintUk: null,
     });
   }
 

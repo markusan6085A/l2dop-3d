@@ -15,8 +15,18 @@ import {
   stunShotMpAndPower,
   thunderStormMpAndPower,
   wildSweepMpAndPower,
+  wildSweepStatsNoteUk,
   whirlwindMpAndPower,
 } from '../data/l2dopHumanFighterBattleSkills.js';
+import {
+  warCryMpAtRank,
+  warCryPatkPercentAtRank,
+  warCryStatsNoteUk,
+} from '../data/warCryTables.js';
+import {
+  battleRoarMpAtRank,
+  battleRoarStatsNoteUk,
+} from '../data/battleRoarTables.js';
 import { powerSmashStatsNoteUk } from '../data/powerSmashTables.js';
 import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
@@ -34,7 +44,7 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
     case 'l2_211':
       return 'Пасив: максимум HP. MP у бою не витрачається.';
     case 'l2_212':
-      return 'Пасив: швидше відновлення HP. MP у бою не витрачається.';
+      return 'Пасив: +HP/тік за рангом скіла. MP у бою не витрачається.';
     case 'l2_216':
       return 'Пасив: +P. Atk (flat) зі списом або алебардою. MP у бою не витрачається.';
     case 'l2_227':
@@ -90,10 +100,9 @@ function magisterBattleStatsPreviewCore(
   switch (b) {
     case 'l2_78':
       return {
-        mp: 10,
-        power: 20,
-        statsNoteUk:
-          'Короткий буф фізичної атаки на себе (~+20% на 1 р.), ~60 с дії.',
+        mp: warCryMpAtRank(skillRank) ?? 10,
+        power: warCryPatkPercentAtRank(skillRank),
+        statsNoteUk: warCryStatsNoteUk(skillRank),
       };
     case 'l2_3':
       row = powerStrikeMpAndPower(
@@ -153,7 +162,11 @@ function magisterBattleStatsPreviewCore(
           statsNoteUk: 'Після профи воїн; у бою — древко.',
         };
       }
-      break;
+      return {
+        mp: row.mp,
+        power: row.power,
+        statsNoteUk: wildSweepStatsNoteUk(skillRank),
+      };
     case 'l2_255':
       row = powerSmashMpAndPower(
         Math.max(lv, HUMAN_FIGHTER_PRO_WARRIOR_LEVEL),
@@ -341,9 +354,9 @@ function magisterBattleStatsPreviewCore(
       };
     case 'l2_121':
       return {
-        mp: 18,
-        power: 15,
-        statsNoteUk: 'Баф макс. HP (%) і відновлення; тривалість до ~20 хв на високих рангах.',
+        mp: battleRoarMpAtRank(skillRank) ?? 18,
+        power: null,
+        statsNoteUk: battleRoarStatsNoteUk(skillRank),
       };
     case 'l2_130':
       return {

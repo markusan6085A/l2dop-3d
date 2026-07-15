@@ -78,7 +78,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 20,
     spCost: 3700,
     nameUk: 'Бойовий клич (War Cry)',
-    hintUk: 'Миттєво підвищує фізичну атаку. Відкат: 180 с.',
+    hintUk:
+      'Селф-баф на 5 хв.: +20% до фізичної атаки (1 р.; Gladiator 2 р. — +25%, з 43 лвл). Відкат: 180 с.',
     kind: 'battle',
     professionReq: 'human_warrior',
   },
@@ -120,7 +121,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 24,
     spCost: 6400,
     nameUk: 'Швидке відновлення HP (Fast HP Recovery)',
-    hintUk: 'Пасив: підвищує відновлення HP.',
+    hintUk:
+      'Пасив: +HP/тік (1 р. — +1.1, 2 р. — +1.6, 3 р. — +1.7, 4 р. — +2.1, 5 р. — +2.6, 6 р. — +2.7, 7 р. — +3.4, 8 р. — +4.0).',
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -164,8 +166,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 1200,
     nameUk: 'Дикий розмах (Wild Sweep)',
     hintUk:
-      'Завдає шкоди кільком суперникам. Лише зі списом або алебардами. Можливий надудар.',
+      'Актив: фіз. атака кільком суперникам попереду в зоні удару. Лише спис або алебарда (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Відкат: 17 с. Можливий надудар.',
     kind: 'battle',
+    cooldownSec: 17,
     professionReq: 'human_warrior',
   },
   {
@@ -452,13 +455,13 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_121',
     l2SkillId: 121,
-    minLevel: 40,
-    spCost: 39000,
+    minLevel: 28,
+    spCost: 11000,
     nameUk: 'Бойовий рик (Battle Roar)',
     hintUk:
-      'Тимчасово збільшує максимальне HP і відновлює здоров’я.',
+      'Миттєво відновлює HP і збільшує максимальний запас HP на 10 хвилин.',
     kind: 'battle',
-    professionReq: 'human_warlord',
+    professionReq: 'human_warrior',
   },
   {
     battleId: 'l2_130',

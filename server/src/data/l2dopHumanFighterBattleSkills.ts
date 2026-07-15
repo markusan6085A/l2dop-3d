@@ -610,7 +610,7 @@ const WILD_SWEEP_MP = [
   19, 20, 20, 21, 22, 23, 25, 26, 27, 28, 28, 29, 32, 33, 34,
 ] as const;
 const WILD_SWEEP_POW = [
-  108, 117, 126, 147, 159, 171, 198, 213, 229, 263, 281, 301, 344, 367, 391,
+  90, 97, 105, 123, 132, 143, 165, 177, 191, 219, 235, 251, 287, 306, 326,
 ] as const;
 
 export function wildSweepMpAndPower(
@@ -629,6 +629,24 @@ export function wildSweepMpAndPower(
   const iLv = skillRowIndex(lv, WARRIOR_SKILL_TIER_MAGIC);
   const i = clampSkillTableIndex(iLv, skillRank, WILD_SWEEP_MP.length);
   return { mp: WILD_SWEEP_MP[i]!, power: WILD_SWEEP_POW[i]! };
+}
+
+/** Текст для магістра / UI на конкретному рівні Wild Sweep. */
+export function wildSweepStatsNoteUk(rank: number): string {
+  const row = wildSweepMpAndPower(HUMAN_FIGHTER_PRO_WARRIOR_LEVEL, rank);
+  const lv = Math.max(1, Math.floor(rank));
+  if (!row) {
+    return 'Актив: урон кільком суперникам попереду. Лише спис або алебарда. Можливий надудар.';
+  }
+  return (
+    'Актив: MP ' +
+    row.mp +
+    ', power ' +
+    row.power +
+    ' на р. ' +
+    lv +
+    ' скіла. Відкат: 17 с. Лише спис/алебарда; можливий надудар.'
+  );
 }
 
 //==== Power Smash · 255 — text-rpg Warrior/Skill_0255 (ті самі magicLvl, інший power) ====

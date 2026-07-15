@@ -1956,7 +1956,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 33000,
     nameUk: "Бойовий рик (Battle Roar)",
-    hintUk: "Тимчасово збільшує максимальне HP і відновлює здоров’я.",
+    hintUk: "Миттєво відновлює HP і збільшує максимальний запас HP на 10 хвилин.",
     kind: "battle",
     category: "buff",
     visibleForProfessions: [
@@ -1965,6 +1965,13 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       "orc_titan"
     ],
     levels: [
+      {
+        level: 1,
+        requiredLevel: 28,
+        spCost: 11000,
+        mpCost: 13,
+        power: 10
+      },
       {
         level: 2,
         requiredLevel: 40,

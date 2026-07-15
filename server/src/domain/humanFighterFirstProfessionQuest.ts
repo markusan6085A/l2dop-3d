@@ -5,6 +5,9 @@ import { countBagQty, removeBagQty, type InventoryState } from '../data/inventor
 
 export const HUMAN_FIGHTER_FIRST_PROF_QUEST_ID = 'human_fighter_first_prof';
 
+/** Тимчасово: без квесту (моби + шкурки) перед 1-ю профою людини-воїна. */
+export const HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED = false;
+
 export const HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID = 1867;
 export const HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY = 15;
 
@@ -176,6 +179,9 @@ export function assertFirstProfessionQuestForChange(
   targetProfession: HumanFighterFirstProfTarget,
   inv: InventoryState
 ): { nextInv: InventoryState; cleared: QuestProgressJson } {
+  if (!HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED) {
+    return { nextInv: inv, cleared: emptyQuestProgressJson() };
+  }
   const active = state.active;
   if (!active) throw new Error('profession_quest_not_accepted');
   if (active.targetProfession !== targetProfession) {
@@ -196,6 +202,8 @@ export function assertFirstProfessionQuestForChange(
 }
 
 export interface FirstProfessionQuestSnapshot {
+  /** false — квест вимкнено, профу можна взяти одразу (див. HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED). */
+  questRequired: boolean;
   accepted: boolean;
   targetProfession: string | null;
   ready: boolean;
@@ -230,9 +238,10 @@ export function firstProfessionQuestSnapshot(
   }));
   if (!active) {
     return {
+      questRequired: HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED,
       accepted: false,
       targetProfession: null,
-      ready: false,
+      ready: !HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED,
       kills,
       itemId: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID,
       itemNeed: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY,
@@ -241,9 +250,12 @@ export function firstProfessionQuestSnapshot(
     };
   }
   return {
+    questRequired: HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED,
     accepted: true,
     targetProfession: active.targetProfession,
-    ready: firstProfessionQuestReady(active, inv),
+    ready:
+      !HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED ||
+      firstProfessionQuestReady(active, inv),
     kills,
     itemId: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID,
     itemNeed: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY,

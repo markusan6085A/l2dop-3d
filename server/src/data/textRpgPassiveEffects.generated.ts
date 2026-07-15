@@ -225,9 +225,9 @@ export const TEXT_RPG_HF_PASSIVE_EFFECTS: readonly TextRpgHfPassiveRow[] = [
   {
     battleId: "l2_212",
     l2SkillId: 212,
-    effectPairs: [{"stat":"hpRegen","mode":"percent"}] as const,
+    effectPairs: [{"stat":"hpRegen","mode":"flat"}] as const,
     stat: "hpRegen",
-    mode: "percent",
+    mode: "flat",
     requiresArmor: null,
     requiresWeapon: null,
     maxRank: 8,

@@ -233,6 +233,13 @@ export function maxSkillRankForCatalogEntry(
 ): number {
   const global = maxSkillRankForBattleId(entry.battleId);
   const c = canonicalBattleSkillId(entry.battleId);
+  if (c === 'l2_78') {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    if (isHumanGladiatorTrackProfession(p)) return Math.min(global, 2);
+    return Math.min(global, 1);
+  }
   if (c !== 'l2_211') return global;
   const p = mapFighterProfessionToHumanSkillCatalog(
     String(l2Profession || '').trim()
@@ -252,6 +259,12 @@ export function catalogEntryAllowsSkillRank(
   if (!catalogEntryVisibleForProfession(entry, l2Profession)) return false;
   const c = canonicalBattleSkillId(entry.battleId);
   const r = Math.max(1, Math.floor(targetRank));
+  if (c === 'l2_78' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return isHumanGladiatorTrackProfession(p);
+  }
   if (c === 'l2_312' && r >= 6) {
     const p = mapFighterProfessionToHumanSkillCatalog(
       String(l2Profession || '').trim()
@@ -266,6 +279,9 @@ export function catalogEntryAllowsSkillRank(
     );
   }
   if (c === 'l2_211') {
+    return r <= maxSkillRankForCatalogEntry(entry, l2Profession);
+  }
+  if (c === 'l2_78') {
     return r <= maxSkillRankForCatalogEntry(entry, l2Profession);
   }
   return true;

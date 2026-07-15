@@ -11,7 +11,7 @@ import {
   type BattleBattleMods,
   type BattleJsonState,
 } from '../domain/battle.js';
-import type { WeaknessKind } from '../domain/mobWeaknessFamily.js';
+import { warCryPatkPercentAtRank } from '../data/warCryTables.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { buffDurationSecForSkillId } from '../data/l2dopBuffDurations.js';
 import type { BattleBuffIcon } from './battleServiceTypes.js';
@@ -143,8 +143,10 @@ export function battleBuffLinesUk(
   const activeByIdForLines = new Map<number, ActiveBuffEntry>();
   for (const b of activeBuffs) activeByIdForLines.set(b.skillId, b);
   const wc = jsonFiniteNum(m?.warCryPatkMul ?? st.warCryPatkMul);
-  if ((wc !== undefined && wc > 1) || activeByIdForLines.has(78)) {
-    out.push('Бойовий клич: +фіз. урон');
+  const wcEntry = activeByIdForLines.get(78);
+  if ((wc !== undefined && wc > 1) || wcEntry) {
+    const wcPct = warCryPatkPercentAtRank(wcEntry?.level ?? 1);
+    out.push('Бойовий клич: +' + wcPct + '% до P.Atk');
   }
   const dash = jsonFiniteNum(m.dashRunSpeedFlat);
   if (dash !== undefined && dash > 0) {

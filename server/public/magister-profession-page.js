@@ -50,6 +50,25 @@
     var questBlock = $('magister-prof-quest-block');
     var questHint = $('magister-prof-quest-hint');
     var targetProf = L2MagisterProfession.slugToL2Profession(pageSlug);
+    var q = ch && ch.firstProfessionQuest ? ch.firstProfessionQuest : null;
+
+    if (isFirst) {
+      var questRequired =
+        q && typeof q.questRequired === 'boolean' ? q.questRequired : true;
+      if (!questRequired) {
+        if (questHr) questHr.hidden = true;
+        if (questBlock) questBlock.hidden = true;
+        if (questHint) questHint.hidden = true;
+        if (questBtn) questBtn.hidden = true;
+        var tpBtnOff = $('magister-prof-teleport-dion');
+        if (tpBtnOff) tpBtnOff.hidden = true;
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.title = '';
+        }
+        return;
+      }
+    }
 
     if (!isFirst) {
       if (questHr) questHr.hidden = true;
@@ -69,7 +88,6 @@
     if (questHint) questHint.hidden = !questText;
     if (questBtn) questBtn.hidden = false;
 
-    var q = ch && ch.firstProfessionQuest ? ch.firstProfessionQuest : null;
     var acceptedForThis =
       q && q.accepted && q.targetProfession === targetProf;
     var acceptedOther =

@@ -16,6 +16,11 @@ import {
   whirlwindMpAndPower,
 } from '../../data/l2dopHumanFighterBattleSkills.js';
 import {
+  warCryMpAtRank,
+  warCryPatkPercentAtRank,
+} from '../../data/warCryTables.js';
+import { battleRoarSkillLineUk } from '../../data/battleRoarTables.js';
+import {
   effectiveMobDebuffResistPct,
   effectiveMobStunResistPct,
   scaleLandChancePercentAfterResist,
@@ -189,11 +194,14 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     const cdUntil = ctx.st.mysticSkillCdUntil?.['l2_78'];
     assertSkillCooldownReady(cdUntil);
     const wcRow = l2dopXmlSkillRow(78, rank);
+    const wcPct = warCryPatkPercentAtRank(rank);
     return {
-      mpCost: wcRow?.m ?? 10,
+      mpCost: warCryMpAtRank(rank) ?? wcRow?.m ?? 10,
       pDmg: 0,
       skillLine:
-        'Бойовий клич (War Cry): +фіз. урон (L2 Interlude тривалість).',
+        'Бойовий клич (War Cry): +' +
+        wcPct +
+        '% до фіз. атаки на 5 хв.',
       physOutcome: null,
       magicOutcome: null,
       activeBuffPatch: { skillId: 78, level: rank, action: 'add' },
@@ -416,8 +424,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     return {
       mpCost: stubMpForCanon('l2_121', rank),
       pDmg: 0,
-      skillLine:
-        'Бойовий рик (Battle Roar): +Max HP і миттєвий хіл (L2 Interlude).',
+      skillLine: battleRoarSkillLineUk(rank),
       physOutcome: null,
       magicOutcome: null,
       activeBuffPatch: { skillId: 121, level: rank, action: 'add' },
@@ -463,7 +470,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     return {
       mpCost: ws.mp,
       pDmg: r.damage,
-      skillLine: 'Дикий розмах (245, Wild Sweep).',
+      skillLine: 'Дикий розмах (Wild Sweep): power ' + ws.power + '.',
       physOutcome: r.outcome,
       magicOutcome: null,
       ...(r.weaknessLogLineUk

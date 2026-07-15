@@ -28,7 +28,7 @@ import {
   markSkillCast,
   parseSkillCooldowns,
 } from '../data/skillCooldowns.js';
-import { resolveBattleSkillCooldownSec } from '../data/skillCooldownScaling.js';
+import { warCryMpAtRank } from '../data/warCryTables.js';
 import {
   canonicalBattleSkillId,
   normalizeLearnedSkillsJson,
@@ -219,9 +219,12 @@ export async function castActiveSelfBuff(
       throw new Error('skill_on_cooldown' satisfies CastSelfBuffError);
     }
 
-    /** MP cost з l2dop XML. Якщо в таблицях нема — уникаємо касту (не вигадуємо числа). */
+    /** MP cost з l2dop XML; War Cry (78) — l2db Interlude, якщо XML порожній. */
     const mpRow = l2dopXmlMpPower(skillId, skillLevel);
-    const mpCost = mpRow?.mp;
+    const mpCost =
+      skillId === 78
+        ? (warCryMpAtRank(skillLevel) ?? mpRow?.mp)
+        : mpRow?.mp;
     if (mpCost === undefined || !Number.isFinite(mpCost) || mpCost < 0) {
       throw new Error('skill_unknown' satisfies CastSelfBuffError);
     }

@@ -113,7 +113,7 @@ export const TEXT_RPG_HF_BUFF_EFFECTS: readonly TextRpgHfBuffRow[] = [
     l2SkillId: 121,
     maxLevel: 6,
     effects: [{"stat":"maxHp","mode":"percent"}] as const,
-    powerByLevel: [0,0,15,20,25,30,35] as const,
+    powerByLevel: [0,10,15,20,25,30,35] as const,
   },
   {
     l2SkillId: 130,
