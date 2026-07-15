@@ -5,6 +5,8 @@
 
 import type { MapLocalityMob } from './mapLocalities.js';
 import { TELEPORT_POOL_OVERRIDES_GIRAN_ADEN } from './mapTeleportPoolOverridesGiranAden.js';
+import { TELEPORT_POOL_OVERRIDES_HEINE_SCHUTTGART } from './mapTeleportPoolOverridesHeineSchuttgart.js';
+import { TELEPORT_POOL_OVERRIDES_GLUDIN_STARTER } from './mapTeleportPoolOverridesGludinStarter.js';
 
 const TELEPORT_POOL_OVERRIDES_GLUDIO_OREN: Record<string, MapLocalityMob[]> = {
   // —— Gludio ——
@@ -182,4 +184,6 @@ const TELEPORT_POOL_OVERRIDES_GLUDIO_OREN: Record<string, MapLocalityMob[]> = {
 export const TELEPORT_POOL_OVERRIDES: Record<string, MapLocalityMob[]> = {
   ...TELEPORT_POOL_OVERRIDES_GLUDIO_OREN,
   ...TELEPORT_POOL_OVERRIDES_GIRAN_ADEN,
+  ...TELEPORT_POOL_OVERRIDES_HEINE_SCHUTTGART,
+  ...TELEPORT_POOL_OVERRIDES_GLUDIN_STARTER,
 };
