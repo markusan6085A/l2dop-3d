@@ -50,7 +50,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_75', rank),
       pDmg: 0,
       skillLine:
-        'Вразливість комах: більший фіз. урон проти комах (L2 Interlude 300 с).',
+        'Вразливість комах: +30% P.Atk проти комах (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'insect', weaknessPatkMul: 1.3 },
@@ -70,7 +70,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_80', rank),
       pDmg: 0,
       skillLine:
-        'Вразливість монстрів: більший фіз. урон проти монстрів (300 с).',
+        'Вразливість монстрів: +30% P.Atk проти монстрів (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'monster', weaknessPatkMul: 1.3 },
@@ -89,7 +89,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
     return {
       mpCost: stubMpForCanon('l2_87', rank),
       pDmg: 0,
-      skillLine: 'Вразливість звірів: більший урон проти тварин (300 с).',
+      skillLine: 'Вразливість звірів: +30% P.Atk проти тварин (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'animal', weaknessPatkMul: 1.3 },
@@ -108,7 +108,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
     return {
       mpCost: stubMpForCanon('l2_88', rank),
       pDmg: 0,
-      skillLine: 'Вразливість драконів: більший урон проти драконів (300 с).',
+      skillLine: 'Вразливість драконів: +30% P.Atk проти драконів (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'dragon', weaknessPatkMul: 1.35 },
@@ -128,7 +128,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_104', rank),
       pDmg: 0,
       skillLine:
-        'Вразливість рослин: більший урон проти рослинних істот (300 с).',
+        'Вразливість рослин: +30% P.Atk проти рослинних істот (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'plant', weaknessPatkMul: 1.3 },
@@ -269,18 +269,16 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
-    if (legacyBuffOnCd(ctx, 287)) {
-      throw new Error('battle_skill_not_allowed');
-    }
-    const LION_INCOMING = 0.88;
+    const cdUntil = ctx.st.mysticSkillCdUntil?.['l2_287'];
+    assertSkillCooldownReady(cdUntil);
     return {
       mpCost: stubMpForCanon('l2_287', rank),
       pDmg: 0,
-      skillLine: 'Левине серце: менший вхідний фіз. урон від моба (60 с).',
+      skillLine:
+        'Левине серце (Lionheart): +40% стійкості до шоку, сну, утримання та паралічу (60 с).',
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { lionheartIncomingPhysMul: LION_INCOMING },
-      ...legacyBuffCdAndExpirePatches(287, ctx),
+      activeBuffPatch: { skillId: 287, level: rank, action: 'add' },
     };
   }
 

@@ -666,6 +666,7 @@
           : String(iconUrl);
       }
       var id = normalizePositiveInt(skillId);
+      if (id === 1) return '/skills/0001.jpg';
       if (id > 0) return '/game/skill-icon/' + id;
       return '/icons/drops/other.svg';
     },

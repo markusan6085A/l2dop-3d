@@ -23,6 +23,10 @@ import {
 } from './fighterSkillCatalog.byRace.js';
 import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from './l2dopXmlSkillLevels.lookup.js';
+import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import {
+  dualWeaponMasteryPatkFlatAtRank,
+} from './dualWeaponMasteryTables.js';
 import {
   weaponMasteryPatkAtRank,
   WEAPON_MASTERY_L2_SKILL_ID_FIGHTER,
@@ -138,6 +142,13 @@ export function learnedRaceFighterPassivesBuffDelta(
     const r = clampRank(bid, e.level, race, classBranch);
     if (cat.l2SkillId === WEAPON_MASTERY_L2_SKILL_ID_FIGHTER) {
       const patk = weaponMasteryPatkAtRank(r);
+      if (patk > 0) acc = applyBuffDelta(acc, { addPatk: patk });
+      continue;
+    }
+    if (cat.l2SkillId === 144) {
+      const wk = equippedWeaponKind(_inv) ?? '';
+      if (wk !== 'dual' && wk !== 'dualsword') continue;
+      const patk = dualWeaponMasteryPatkFlatAtRank(r);
       if (patk > 0) acc = applyBuffDelta(acc, { addPatk: patk });
       continue;
     }

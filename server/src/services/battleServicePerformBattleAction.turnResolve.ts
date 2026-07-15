@@ -39,6 +39,7 @@ export type BattleTurnResolveInput = {
   spawnStunResistPct?: number;
   spawnDebuffResistPct?: number;
   spawnMobName: string;
+  spawnKind?: import('../data/mapWorldSpawns.js').MapWorldSpawn['kind'];
   playerHp: number;
   maxHpBattle: number;
   maxMpEff: number;
@@ -80,6 +81,7 @@ export function executeBattleTurnResolve(
     spawnStunResistPct,
     spawnDebuffResistPct,
     spawnMobName,
+    spawnKind,
     maxHpBattle,
     maxMpEff,
     mobEva,
@@ -194,6 +196,7 @@ export function executeBattleTurnResolve(
           spawnStunResistPct,
           spawnDebuffResistPct,
           spawnMobName,
+          spawnKind,
           playerHpInBattle: playerHp,
           playerMaxHpInBattle: maxHpBattle,
           weaponKind: equippedWeaponKind(inv),

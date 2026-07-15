@@ -96,11 +96,15 @@ export function textRpgPassiveDeltaForSkill(
 
   if (id === 216 && !pole) return undefined;
   if (id === 257 && !swordBlunt) return undefined;
+  if (id === 144 && wk !== 'dual' && wk !== 'dualsword') return undefined;
   /** Bow / Dagger Mastery — бонус лише з відповідною зброєю в руці (l1). */
   if (id === 208 && wk !== 'bow') return undefined;
   if (id === 209 && wk !== 'dagger') return undefined;
   if (row.requiresWeapon === 'pole' && wk !== 'pole') return undefined;
   if (row.requiresWeapon === 'sword_blunt' && !swordBlunt) return undefined;
+  if (row.requiresWeapon === 'dual' && wk !== 'dual' && wk !== 'dualsword') {
+    return undefined;
+  }
   if (row.requiresWeapon === 'bow' && wk !== 'bow') return undefined;
   if (row.requiresWeapon === 'dagger' && wk !== 'dagger') return undefined;
 

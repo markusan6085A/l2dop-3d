@@ -40,7 +40,9 @@ export function resolveMobShouldCounterAttack(args: MobRetaliationGateArgs): boo
   let shouldMobCounterAttack = true;
   const sleepUntilNow = jsonFiniteNum(st.battleMods?.mobSleepUntilMs);
   const mobSleepingNow = sleepUntilNow !== undefined && sleepUntilNow > nowMs;
-  if (mobSleepingNow) {
+  const stunUntilNow = jsonFiniteNum(st.battleMods?.mobStunUntilMs);
+  const mobStunnedNow = stunUntilNow !== undefined && stunUntilNow > nowMs;
+  if (mobSleepingNow || mobStunnedNow) {
     shouldMobCounterAttack = false;
   }
   if (skipMobCounterAttackOnce) {
@@ -63,6 +65,7 @@ export function resolveMobShouldCounterAttack(args: MobRetaliationGateArgs): boo
   }
   if (
     !mobSleepingNow &&
+    !mobStunnedNow &&
     !battleActionSkipsMobHp(action, race, classBranch)
   ) {
     const curHitsUntil =

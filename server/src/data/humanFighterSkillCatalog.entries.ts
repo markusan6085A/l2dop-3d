@@ -68,7 +68,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 18000,
     nameUk: 'Вразливість комах (Detect Insect Weakness)',
     hintUk:
-      'Тимчасово підвищує фізичну атаку проти комах.',
+      'Актив: +30% P.Atk проти комах на 10 хв (1 р., з 32 лвл).',
     kind: 'battle',
     professionReq: 'human_warrior',
   },
@@ -211,7 +211,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 31000,
     nameUk: 'Левине серце (Lionheart)',
     hintUk:
-      'Тимчасово сильно підвищує стійкість до сну, паралічу, утримання, оглушення та ослаблювальних атак.',
+      'Актив: +40% стійкості до шоку, сну, утримання (Root) та паралічу на 1 хв (1 р., з 36 лвл).',
     kind: 'battle',
     professionReq: 'human_warrior',
   },
@@ -237,18 +237,18 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 11000,
     nameUk: 'Потрійний удар (Triple Slash)',
     hintUk:
-      'Серія з трьох ударів по цілі. Лише з дуальним мечем. Можливий надудар.',
+      'Актив: 3 швидких удари по цілі. Лише дуальні мечі; over-hit/крит. 37 р., з 40 лвл.',
     kind: 'battle',
     professionReq: 'human_gladiator',
   },
   {
     battleId: 'l2_6',
     l2SkillId: 6,
-    minLevel: 35,
-    spCost: 16000,
+    minLevel: 40,
+    spCost: 11000,
     nameUk: 'Звуковий залп (Sonic Blaster)',
     hintUk:
-      'Швидкий звуковий удар. Витрачає 1 Sonic Focus. Меч, булава або дуал.',
+      'Актив: дальня звукова атака. 2 заряди Sonic Focus. Меч, булава або дуал. 37 р.',
     kind: 'battle',
     professionReq: 'human_gladiator',
   },
@@ -279,9 +279,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_144',
     l2SkillId: 144,
     minLevel: 40,
-    spCost: 36000,
+    spCost: 11000,
     nameUk: 'Майстерність дуального меча (Dual Weapon Mastery)',
-    hintUk: 'Пасив: підвищує ефективність ударів дуальним мечем.',
+    hintUk:
+      'Пасив: +P. Atk (flat) з дуальними мечами. Пакети рангів (Interlude): 40 лвл — 1–3 р., 43 — 4–6, 46 — 7–9, 49 — 10–12, 52 — 13–15, 55 — 16–18, 58 — 19–21, 60 — 22–23, 62 — 24, 64 — 25–27, 66 — 28–29, 68 — 30–31, 70 — 32–33, 72 — 34–35, 74 — 36–37 р.',
     kind: 'passive',
     professionReq: 'human_gladiator',
   },
@@ -321,12 +322,13 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_260',
     l2SkillId: 260,
-    minLevel: 50,
-    spCost: 450000,
+    minLevel: 40,
+    spCost: 14000,
     nameUk: 'Скрушний молот (Hammer Crush)',
     hintUk:
-      'Важкий удар булавою з високою шкодою. Лише з булавою.',
+      'Актив: потужний удар булавою (ігнорує щит), Shock/Stun ~4–9 с, over-hit/крит. 19 р., відкат 13 с. Не діє на РБ/епіків.',
     kind: 'battle',
+    cooldownSec: 13,
     professionReq: 'human_gladiator',
   },
   {
@@ -415,7 +417,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 39000,
     nameUk: 'Вразливість звірів (Detect Animal Weakness)',
     hintUk:
-      'Тимчасово підвищує фізичну атаку проти звірів.',
+      'Актив: +30% P.Atk проти звірів (Animal) на 10 хв (1 р., з 40 лвл). Gladiator / Warlord.',
     kind: 'battle',
     professionReq: 'human_warlord_shared',
   },

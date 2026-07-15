@@ -29,6 +29,8 @@ import {
 } from '../data/battleRoarTables.js';
 import { powerSmashStatsNoteUk } from '../data/powerSmashTables.js';
 import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
+import { tripleSlashStatsNoteUk, sonicBlasterStatsNoteUk } from '../data/sonicGladiatorTables.js';
+import { hammerCrushStatsNoteUk } from '../data/hammerCrushTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
 import { applyL2dopXmlMagisterOverlay } from '../data/l2dopXmlMagisterOverlay.js';
 import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
@@ -47,6 +49,8 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
       return 'Пасив: +HP/тік за рангом скіла. MP у бою не витрачається.';
     case 'l2_216':
       return 'Пасив: +P. Atk (flat) зі списом або алебардою. MP у бою не витрачається.';
+    case 'l2_144':
+      return 'Пасив: +P. Atk (flat) з дуальними мечами. MP у бою не витрачається.';
     case 'l2_227':
       return 'Пасив: +P. Def (%) і ухилення в легкій броні. MP у бою не витрачається.';
     case 'l2_231':
@@ -231,7 +235,7 @@ function magisterBattleStatsPreviewCore(
       return {
         mp: xr?.m ?? 47,
         power: xr?.p ?? 431,
-        statsNoteUk: 'Потрібен дуальний меч. Серія ударів по одній цілі.',
+        statsNoteUk: tripleSlashStatsNoteUk(skillRank),
       };
     }
     case 'l2_6': {
@@ -239,8 +243,7 @@ function magisterBattleStatsPreviewCore(
       return {
         mp: xr?.m ?? 19,
         power: xr?.p ?? 300,
-        statsNoteUk:
-          'Витрачає 1 заряд Sonic Focus. Меч/булава/дуал. З Sonic Mastery дає вампіризм.',
+        statsNoteUk: sonicBlasterStatsNoteUk(skillRank),
       };
     }
     case 'l2_8': {
@@ -289,14 +292,10 @@ function magisterBattleStatsPreviewCore(
     }
     case 'l2_260': {
       const xr = l2dopXmlSkillRow(260, skillRank);
-      const stunPct = Math.min(75, 45 + Math.max(1, skillRank) * 2);
       return {
         mp: xr?.m ?? 68,
         power: xr?.p ?? 680,
-        statsNoteUk:
-          'Потрібна булава. Шанс оглушення ~' +
-          stunPct +
-          '%; при успіху ціль пропускає контрудар у цьому ході.',
+        statsNoteUk: hammerCrushStatsNoteUk(skillRank),
       };
     }
     case 'l2_261': {
@@ -336,7 +335,7 @@ function magisterBattleStatsPreviewCore(
         mp: 16,
         power: 40,
         statsNoteUk:
-          'Стійкість до паралічу/шоку/сну/утримання; трохи M. Def. ~60 с.',
+          '+40% стійкості до шоку, сну, утримання (Root) та паралічу; 60 с.',
       };
     case 'l2_80':
       return { mp: 24, power: null, statsNoteUk: 'Проти монстрів: ~+30% P. Atk, ~10 хв.' };

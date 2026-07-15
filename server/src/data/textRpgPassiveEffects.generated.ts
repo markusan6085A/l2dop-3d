@@ -75,7 +75,7 @@ export const TEXT_RPG_HF_PASSIVE_EFFECTS: readonly TextRpgHfPassiveRow[] = [
     stat: "pAtk",
     mode: "flat",
     requiresArmor: null,
-    requiresWeapon: null,
+    requiresWeapon: "dual",
     maxRank: 37,
     powerByRank: [0,23.7,25.4,27.1,29,30.9,32.9,35,37.1,39.4,41.7,44.1,46.6,49.2,51.9,54.6,57.5,60.4,63.3,66.4,69.5,72.7,76,79.3,82.7,86.1,89.6,93.1,96.6,100.2,103.8,107.5,111.1,114.8,118.4,122.1,125.7,129.3] as const,
   },

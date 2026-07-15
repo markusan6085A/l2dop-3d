@@ -1193,8 +1193,8 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
     l2SkillId: 260,
     minLevel: 40,
     spCost: 9000,
-    nameUk: "Звуковий удар",
-    hintUk: "Потужний фізичний удар; тимчасово підсилює стійкість до оглушення.",
+    nameUk: "Скрушний молот (Hammer Crush)",
+    hintUk: "Актив: потужний удар булавою (ігнорує щит), Shock/Stun ~4–9 с, over-hit/крит. 19 р., відкат 13 с. Не діє на РБ/епіків.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [

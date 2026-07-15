@@ -67,6 +67,10 @@ function mergeBuffPartial(
     addCrit: number;
     addCritDmg: number;
     subcriticalMulOfBase: number;
+    holdResistMul: number;
+    sleepResistMul: number;
+    mentalResistMul: number;
+    addStunResistPct: number;
   },
   d: Partial<L2dopCombatBuffModifiers>
 ): void {
@@ -91,6 +95,10 @@ function mergeBuffPartial(
   if (d.addCrit != null) acc.addCrit += d.addCrit;
   if (d.addCritDmg != null) acc.addCritDmg += d.addCritDmg;
   if (d.subcriticalMulOfBase != null) acc.subcriticalMulOfBase += d.subcriticalMulOfBase;
+  if (d.holdResistMul != null) acc.holdResistMul *= d.holdResistMul;
+  if (d.sleepResistMul != null) acc.sleepResistMul *= d.sleepResistMul;
+  if (d.mentalResistMul != null) acc.mentalResistMul *= d.mentalResistMul;
+  if (d.addStunResistPct != null) acc.addStunResistPct += d.addStunResistPct;
 }
 
 function powerForBuffLevel(row: TextRpgHfBuffRow, requestedLevel: number): number {
@@ -148,6 +156,10 @@ export function textRpgHfActiveBuffDelta(
     addCrit: 0,
     addCritDmg: 0,
     subcriticalMulOfBase: 0,
+    holdResistMul: 1,
+    sleepResistMul: 1,
+    mentalResistMul: 1,
+    addStunResistPct: 0,
   };
 
   let any = false;
@@ -186,6 +198,10 @@ export function textRpgHfActiveBuffDelta(
   if (acc.subcriticalMulOfBase !== 0) {
     out.subcriticalMulOfBase = acc.subcriticalMulOfBase;
   }
+  if (acc.holdResistMul !== 1) out.holdResistMul = acc.holdResistMul;
+  if (acc.sleepResistMul !== 1) out.sleepResistMul = acc.sleepResistMul;
+  if (acc.mentalResistMul !== 1) out.mentalResistMul = acc.mentalResistMul;
+  if (acc.addStunResistPct !== 0) out.addStunResistPct = acc.addStunResistPct;
 
   return Object.keys(out).length > 0 ? out : null;
 }

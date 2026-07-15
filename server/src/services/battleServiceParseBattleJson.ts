@@ -289,6 +289,13 @@ export function parseBattleJson(
       next.mobSleepIconSkillId =
         sid !== undefined && sid > 0 ? Math.floor(sid) : 1069;
     }
+    const stunUntil = jsonFiniteNum(bm.mobStunUntilMs);
+    if (stunUntil !== undefined && stunUntil > 0) {
+      next.mobStunUntilMs = Math.floor(stunUntil);
+      const stunSid = jsonFiniteNum(bm.mobStunIconSkillId);
+      next.mobStunIconSkillId =
+        stunSid !== undefined && stunSid > 0 ? Math.floor(stunSid) : 260;
+    }
     const gapRdr = jsonFiniteNum(bm.reflectDamageReturnRatio);
     if (gapRdr !== undefined && gapRdr > 0) next.reflectDamageReturnRatio = gapRdr;
     const gapPmr = jsonFiniteNum(bm.physicalMirrorReflectRatio);

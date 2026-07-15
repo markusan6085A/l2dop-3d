@@ -1,4 +1,5 @@
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
+import { HAMMER_CRUSH_MAX_SKILL_RANK } from './hammerCrushTables.js';
 import { humanMysticCatalogEntry } from './humanMysticSkillCatalog.lookup.js';
 import { elvenMysticCatalogEntry } from './elvenMysticSkillCatalog.lookup.js';
 import { darkMysticCatalogEntry } from './darkMysticSkillCatalog.lookup.js';
@@ -29,6 +30,7 @@ export function maxMysticSkillRankAcrossCatalogs(battleId: string): number {
       ? L2DB_SKILL_LEVELS_BY_ID[skillId]
       : undefined;
   if (l2dbRows && l2dbRows.length >= 1) r = Math.max(r, l2dbRows.length);
+  if (c === 'l2_260') r = Math.min(r, HAMMER_CRUSH_MAX_SKILL_RANK);
   return r;
 }
 

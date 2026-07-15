@@ -307,17 +307,5 @@ export function rollMobPhysicalVsPlayer(
   if (venIn !== undefined && venIn > 0 && venIn < 1) {
     dmg = Math.max(0, Math.floor(dmg * venIn));
   }
-  const lion = st.battleMods?.lionheartIncomingPhysMul;
-  if (
-    typeof lion === 'number' &&
-    lion > 0 &&
-    lion < 1 &&
-    Number.isFinite(lion)
-  ) {
-    return {
-      ...r,
-      damage: Math.max(1, Math.floor(dmg * lion)),
-    };
-  }
   return { ...r, damage: Math.max(0, dmg) };
 }

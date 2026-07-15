@@ -17,20 +17,20 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   // ---- Human Fighter → Warrior → Warlord → Dreadnought ----
   /** Dash (Rogue — для довідки, бо є в каталозі Fighter) */
   4: 20,
-  /** Detect Insect Weakness */
-  75: 300,
+  /** Detect Insect Weakness — 10 хв */
+  75: 600,
   /** Aggression (18) — короткий контроль агро/дебаф. */
   18: 15,
   /** War Cry — 5 хв. */
   78: 300,
-  /** Detect Monster Weakness */
-  80: 300,
-  /** Detect Animal Weakness */
-  87: 300,
-  /** Detect Dragon Weakness */
-  88: 300,
-  /** Detect Plant Weakness */
-  104: 300,
+  /** Detect Monster Weakness — 10 хв */
+  80: 600,
+  /** Detect Animal Weakness — 10 хв */
+  87: 600,
+  /** Detect Dragon Weakness — 10 хв */
+  88: 600,
+  /** Detect Plant Weakness — 10 хв */
+  104: 600,
   /** Horror (Dark Avenger/Hell Knight) */
   65: 20,
   /** Reflect Damage */

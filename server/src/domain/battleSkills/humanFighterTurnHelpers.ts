@@ -34,6 +34,47 @@ import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import { sonicChargeRequirementForSkillId } from '../sonicCharges.js';
 import { BattleSkillNotAllowedError } from '../battleSkillNotAllowedError.js';
 
+/** Фіксована кількість фіз. ударів (Triple Slash тощо) — сумарна шкода й агрегований outcome. */
+export function rollFixedHitCountPhys(
+  rollPhys: PhysicalRollFn,
+  atk: number,
+  hitCount: number,
+  options?: { forceNoMiss?: boolean }
+): {
+  damage: number;
+  outcome: 'miss' | 'hit' | 'crit';
+  weaknessLogLineUk?: string;
+  hitSummaryUk: string;
+} {
+  const hits = Math.max(1, Math.floor(hitCount));
+  let totalDamage = 0;
+  let normalHits = 0;
+  let critHits = 0;
+  let missHits = 0;
+  let weaknessLogLineUk: string | undefined;
+  for (let i = 0; i < hits; i++) {
+    const r = rollPhys(atk, options);
+    totalDamage += r.damage;
+    if (r.outcome === 'crit') critHits++;
+    else if (r.outcome === 'hit') normalHits++;
+    else missHits++;
+    if (!weaknessLogLineUk && r.weaknessLogLineUk) {
+      weaknessLogLineUk = r.weaknessLogLineUk;
+    }
+  }
+  const landed = normalHits + critHits;
+  const outcome: 'miss' | 'hit' | 'crit' =
+    landed <= 0 ? 'miss' : critHits > 0 ? 'crit' : 'hit';
+  const hitSummaryUk =
+    landed + '/' + hits + ' ударів' + (missHits > 0 ? ' (є промахи)' : '');
+  return {
+    damage: totalDamage,
+    outcome,
+    weaknessLogLineUk,
+    hitSummaryUk,
+  };
+}
+
 export function warriorProfOkForSkill(ctx: BattleSkillResolveContext): boolean {
   const p = String(ctx.l2Profession).trim();
   if (

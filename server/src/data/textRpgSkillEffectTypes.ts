@@ -31,4 +31,8 @@ export type TextRpgMappedCombatStat =
   | 'accuracy'
   | 'evasion'
   | 'critRate'
-  | 'critDamage';
+  | 'critDamage'
+  | 'stunResist'
+  | 'holdResist'
+  | 'sleepResist'
+  | 'mentalResist';

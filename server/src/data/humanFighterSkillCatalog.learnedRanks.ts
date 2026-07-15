@@ -3,6 +3,10 @@ import {
   INTERLUDE_HF_MIN_CHAR_LEVEL_BY_RANK,
   INTERLUDE_HF_SP_BY_RANK,
 } from './l2dbInterludeHumanFighterSkillLevels.generated.js';
+import {
+  l2dbMinCharLevelForSkillRank,
+  l2dbSpCostForSkillRank,
+} from './sonicGladiatorTables.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
 import { humanFighterCatalogHasBattleId } from './humanFighterSkillCatalog.lookup.js';
 import { humanMysticCatalogHasBattleId } from './humanMysticSkillCatalog.lookup.js';
@@ -77,10 +81,14 @@ export const MAX_SKILL_RANK_BY_BATTLE_ID: Record<string, number> = {
   l2_8: 7,
   l2_9: 34,
   l2_190: 37,
-  l2_260: 37,
+  l2_260: 19,
   l2_261: 22,
+  /** Dual Weapon Mastery — Gladiator/Duelist (l2db Interlude, 37 р.). */
+  l2_144: 37,
   /** War Cry: 2 р. лише Gladiator/Duelist (2-й — з 43 лвл). */
   l2_78: 2,
+  /** Lionheart — лише 1 р. (Warrior → Gladiator / Warlord). */
+  l2_287: 1,
   l2_442: 1,
   l2_451: 2,
 };
@@ -101,6 +109,10 @@ export function minCharLevelForSkillRank(
 ): number {
   const r = Math.max(1, Math.floor(rank));
   const c = canonicalBattleSkillId(entry.battleId);
+  if (c === 'l2_1' || c === 'l2_6') {
+    const fromL2db = l2dbMinCharLevelForSkillRank(entry.l2SkillId, r);
+    if (fromL2db !== undefined) return fromL2db;
+  }
   const tbl = INTERLUDE_HF_MIN_CHAR_LEVEL_BY_RANK[c];
   if (tbl != null && r < tbl.length) {
     const v = tbl[r];
@@ -119,6 +131,14 @@ export function spCostForSkillRankUpgrade(
 ): number | undefined {
   const c = canonicalBattleSkillId(battleId);
   const r = Math.max(1, Math.floor(targetRank));
+  if (c === 'l2_1') {
+    const sp = l2dbSpCostForSkillRank(1, r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_6') {
+    const sp = l2dbSpCostForSkillRank(6, r);
+    if (sp !== undefined) return sp;
+  }
   const tbl = INTERLUDE_HF_SP_BY_RANK[c];
   if (tbl != null && r < tbl.length && typeof tbl[r] === 'number') {
     const v = tbl[r];

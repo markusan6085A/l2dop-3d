@@ -81,7 +81,7 @@ export interface BattleBattleMods {
   zealotCritDmgMul?: number;
   /** Zealot: час закінчення ефекту (unix ms). */
   zealotUntilMs?: number;
-  /** Lionheart (287): менший вхідний фіз. урон від моба. */
+  /** Lionheart (287): +стійкості до шоку/сну/утримання/паралічу через `activeBuffsJson`. */
   lionheartIncomingPhysMul?: number;
   /**
    * Focus Attack (317): сила криту (text-rpg critDamage %). Тривалість 30 с
@@ -136,6 +136,9 @@ export interface BattleBattleMods {
   mobSleepUntilMs?: number;
   /** Іконка джерела Sleep дебафа (зазвичай 1069). */
   mobSleepIconSkillId?: number;
+  /** Shock/Stun на мобі (Hammer Crush 260 тощо) — unix ms. */
+  mobStunUntilMs?: number;
+  mobStunIconSkillId?: number;
   /** Відбиття шкоди (86): частка вхідного урону → назад мобу. */
   reflectDamageReturnRatio?: number;
   /** Фізичне дзеркало (350). */

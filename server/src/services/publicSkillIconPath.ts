@@ -35,15 +35,17 @@ export function resolvePublicSkillIconPath(skillId: number): string | null {
   if (!fs.existsSync(base) || !fs.statSync(base).isDirectory()) return null;
 
   const pad4 = String(id).padStart(4, '0');
-  /** Базовий удар у пакеті — окремий файл `attack.jpg`, не завжди збігається з `0001.jpg`. */
+  /** l2_1 Triple Slash (Gladiator): канонічний арт `0001.jpg`; `attack.jpg` — лише для кнопки «Удар» у hotbar. */
   const candidates =
     id === 1
       ? [
+          `${pad4}.jpg`,
+          `${pad4}.jpeg`,
+          `${pad4}.png`,
           'attack.jpg',
           'Attack.jpg',
           'attack.jpeg',
           'attack.png',
-          `${pad4}.jpg`,
         ]
       : [];
   candidates.push(
@@ -82,4 +84,14 @@ export function resolvePublicSkillIconPath(skillId: number): string | null {
     }
   }
   return null;
+}
+
+/** Відносний URL для статики `public/skills/` (надійніше за dynamic `/game/skill-icon/` у магістрі). */
+export function resolvePublicSkillIconWebPath(skillId: number): string | null {
+  const filePath = resolvePublicSkillIconPath(skillId);
+  if (!filePath) return null;
+  const base = path.join(resolvePublicRoot(), 'skills');
+  const rel = path.relative(base, filePath).replace(/\\/g, '/');
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  return '/skills/' + rel;
 }

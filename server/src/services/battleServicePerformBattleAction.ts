@@ -263,6 +263,11 @@ export async function performBattleAction(
         delete st.battleMods.mobSleepUntilMs;
         delete st.battleMods.mobSleepIconSkillId;
       }
+      const stunUntil = jsonFiniteNum(st.battleMods.mobStunUntilMs);
+      if (stunUntil !== undefined && stunUntil <= nowMsTurn) {
+        delete st.battleMods.mobStunUntilMs;
+        delete st.battleMods.mobStunIconSkillId;
+      }
     }
     const activeBuffsPre = persistableActiveBuffsFromJson(
       (char as CharacterRow).activeBuffsJson,
@@ -417,6 +422,7 @@ export async function performBattleAction(
       spawnStunResistPct: spawn.stunResistPct,
       spawnDebuffResistPct: spawn.debuffResistPct,
       spawnMobName: spawn.name,
+      spawnKind: spawn.kind,
       playerHp,
       maxHpBattle,
       maxMpEff,

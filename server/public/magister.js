@@ -120,9 +120,12 @@
     return r;
   }
 
-  var SKILL_ICON_CACHE_BUST = 'icb=6';
+  var SKILL_ICON_CACHE_BUST = 'icb=7';
 
   function magisterSkillIconUrlWithDpr(iconUrl) {
+    if (iconUrl && String(iconUrl).indexOf('/skills/') === 0) {
+      return iconUrl;
+    }
     var dpr = effectiveSkillIconDpr();
     var sep = iconUrl.indexOf('?') >= 0 ? '&' : '?';
     return (
@@ -226,7 +229,7 @@
             var m = /^l2_(\d+)$/.exec(bid);
             return m ? parseInt(m[1], 10) : 1;
           })();
-      mountMagisterSkillIconCrisp(frame, magisterSkillIconUrl({ l2SkillId: iconSkillId, iconUrl: null }));
+      mountMagisterSkillIconCrisp(frame, magisterSkillIconUrl({ l2SkillId: iconSkillId, iconUrl: e.iconUrl || null }));
       head.appendChild(frame);
       var name = document.createElement('h2');
       name.className = 'l2-magister-skill-card__name';

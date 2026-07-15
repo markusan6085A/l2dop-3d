@@ -113,8 +113,18 @@ function kindForMob(_mob: MapLocalityMob, seed: string, idx: number): MapSpawnKi
   return 'neutral';
 }
 
+/** Точка належить зоні телепорту, якщо цей телепорт — найближчий до координат (Voronoi). */
+function belongsToNearestTeleport(
+  worldX: number,
+  worldY: number,
+  teleportId: string
+): boolean {
+  return nearestMapTown(worldX, worldY).teleportId === teleportId;
+}
+
 /**
  * Щільне поле навколо кожної зони телепорту — диск RING від точки телепорту, свій пул мобів.
+ * Точка лише в «своїй» Voronoi-зоні (найближчий teleportId), щоб на кордонах не змішувались пули.
  */
 function buildDenseTownFieldSpawns(): MapWorldSpawn[] {
   const out: MapWorldSpawn[] = [];
@@ -129,6 +139,7 @@ function buildDenseTownFieldSpawns(): MapWorldSpawn[] {
         const jx = (rng(t.labelUk + 'jx', idx) - 0.5) * 42;
         const jy = (rng(t.labelUk + 'jy', idx) - 0.5) * 42;
         const c = clampWorld(t.worldX + gx + jx, t.worldY + gy + jy);
+        if (!belongsToNearestTeleport(c.x, c.y, t.teleportId)) continue;
         const mob = pickMob(pool, t.labelUk + 'd', idx);
         let kind: MapSpawnKind = kindForMob(mob, t.labelUk, idx);
         const champRoll = rng('champ' + t.teleportId, idx);
@@ -254,6 +265,8 @@ function expandRegularSpawnsThreefold(spawns: MapWorldSpawn[]): MapWorldSpawn[] 
       const jx = (rng(s.id + 'dupx', k) - 0.5) * 160;
       const jy = (rng(s.id + 'dupy', k) - 0.5) * 160;
       const c = clampWorld(s.worldX + jx, s.worldY + jy);
+      const home = nearestMapTown(s.worldX, s.worldY).teleportId;
+      if (!belongsToNearestTeleport(c.x, c.y, home)) continue;
       out.push({
         ...s,
         id: `${s.id}__dup${k}`,

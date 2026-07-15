@@ -63,8 +63,8 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
     delete m.frenzyBattlePatkMul;
     delete m.frenzyBattleAccFlat;
   },
-  287: (m) => {
-    delete m.lionheartIncomingPhysMul;
+  287: () => {
+    /* Lionheart — через `activeBuffsJson`, legacy-поле не використовується. */
   },
   283: (m) => {
     delete m.thrillFightPatkMul;

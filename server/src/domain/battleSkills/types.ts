@@ -33,6 +33,8 @@ export type BattleSkillResolveContext = {
   spawnDebuffResistPct?: number | undefined;
   /** Ім’я моба зі спавну — детекти слабкості (`mobWeaknessFamily`). */
   spawnMobName: string;
+  /** Тип спавну (звичайний / raid / epic) — Hammer Crush stun тощо. */
+  spawnKind?: import('../../data/mapWorldSpawns.js').MapWorldSpawn['kind'];
   /** Поточне HP в бою (до дії) — Відродження (181). */
   playerHpInBattle: number;
   /** Ефективний max HP у бою — Відродження. */

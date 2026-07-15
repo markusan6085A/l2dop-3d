@@ -11,6 +11,7 @@ import {
   type CharacterRow,
 } from './charService.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
+import { hammerCrushStatsNoteUk } from '../data/hammerCrushTables.js';
 import {
   HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ,
   isFighterClassBranch,
@@ -69,6 +70,10 @@ import {
   POLEARM_MASTERY_HINT_UK,
   polearmMasteryStatsNoteUk,
 } from '../data/polearmMasteryTables.js';
+import {
+  DUAL_WEAPON_MASTERY_HINT_UK,
+  dualWeaponMasteryStatsNoteUk,
+} from '../data/dualWeaponMasteryTables.js';
 import {
   powerSmashStatsNoteUk,
 } from '../data/powerSmashTables.js';
@@ -512,6 +517,9 @@ export async function getMagisterDialogForUser(
     if (canonBattleId === 'l2_100' && !mysticLike) {
       st.statsNoteUk = stunAttackStatsNoteUk(rankPreview);
     }
+    if (canonBattleId === 'l2_260') {
+      st.statsNoteUk = hammerCrushStatsNoteUk(rankPreview);
+    }
     if (o.l2SkillId === 312 && !mysticLike) {
       st.statsNoteUk = viciousStanceStatsNoteUk(rankPreview);
     }
@@ -527,6 +535,8 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = lightArmorMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 216 && !mysticLike) {
       st.statsNoteUk = polearmMasteryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 144 && !mysticLike) {
+      st.statsNoteUk = dualWeaponMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 257 && !mysticLike) {
       st.statsNoteUk = swordBluntMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 142 && !mysticLike) {
@@ -554,7 +564,17 @@ export async function getMagisterDialogForUser(
     const atkBase = mysticLike
       ? mysticLike.category === 'magic_attack'
         ? snap.mAtk
-        : snap.pAtk
+        : canonBattleId === 'l2_260'
+          ? magisterEstimatedAtkBase(
+              o.battleId,
+              o.kind,
+              effLevel,
+              o.minLevel,
+              snap.pAtk,
+              prof,
+              rankPreview
+            )
+          : snap.pAtk
       : magisterEstimatedAtkBase(
           o.battleId,
           o.kind,
@@ -575,6 +595,8 @@ export async function getMagisterDialogForUser(
               ? LIGHT_ARMOR_MASTERY_HINT_UK
             : o.l2SkillId === 216 && !mysticLike
               ? POLEARM_MASTERY_HINT_UK
+            : o.l2SkillId === 144 && !mysticLike
+              ? DUAL_WEAPON_MASTERY_HINT_UK
             : o.l2SkillId === 257 && !mysticLike
               ? SWORD_BLUNT_MASTERY_HINT_UK
             : o.l2SkillId === 142 && !mysticLike

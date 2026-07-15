@@ -491,6 +491,18 @@ export function applyBattleModsPatch(
       delete next.mobSleepIconSkillId;
     }
   }
+  if (patch.mobStunUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.mobStunUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.mobStunUntilMs = Math.floor(v);
+      const sid = jsonFiniteNum(patch.mobStunIconSkillId);
+      next.mobStunIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 260;
+    } else {
+      delete next.mobStunUntilMs;
+      delete next.mobStunIconSkillId;
+    }
+  }
   if (patch.reflectDamageReturnRatio !== undefined) {
     const v = jsonFiniteNum(patch.reflectDamageReturnRatio);
     if (v !== undefined && v > 0) next.reflectDamageReturnRatio = v;

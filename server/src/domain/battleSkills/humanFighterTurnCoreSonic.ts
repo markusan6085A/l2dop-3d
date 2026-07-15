@@ -1,10 +1,6 @@
 /**
  * Human fighter turn — Gladiator / Duelist, sonic-заряди (ланцюг з resolveHumanFighterTurnCore).
  */
-import {
-  effectiveMobStunResistPct,
-  scaleLandChancePercentAfterResist,
-} from '../controlLandResist.js';
 import type { BattleSkillTurnResult } from './types.js';
 import { l2dopXmlMpPower } from '../../data/l2dopXmlSkillLevels.lookup.js';
 import {
@@ -13,23 +9,19 @@ import {
 } from '../sonicCharges.js';
 
 import {
-  HAMMER_CRUSH_BASE_STUN_CHANCE_PCT,
-  HAMMER_CRUSH_STUN_CHANCE_CAP_PCT,
-  HAMMER_CRUSH_STUN_PER_RANK_PCT,
-} from './humanFighterTurnConstants.js';
-import {
   dualSwordWeapon,
   gladiatorBranchProfession,
   legacyBuffCdAndExpirePatches,
   legacyBuffOnCd,
   requireCatalogEntryForAction,
   requireSonicChargeCost,
+  rollFixedHitCountPhys,
   sonicMasteryLifestealHeal,
   stubMpForCanon,
   swordOrBluntOrDualWeapon,
   swordOrBluntWeapon,
-  warriorProfOkForSkill,
 } from './humanFighterTurnHelpers.js';
+import { TRIPLE_SLASH_HIT_COUNT } from '../../data/sonicGladiatorTables.js';
 import type { FighterTurnCoreArgs } from './humanFighterTurnCoreArgs.js';
 
 export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleSkillTurnResult | undefined {
@@ -46,7 +38,7 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
    * ============================================================ */
 
   if (action === 'triple_slash') {
-    if (!warriorProfOkForSkill(ctx)) {
+    if (!gladiatorBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
     if (!dualSwordWeapon(ctx.weaponKind)) {
@@ -58,11 +50,12 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
     const pow =
       (l2dopXmlMpPower(1, rank)?.power) ?? 431;
     const atk = Math.floor(combat.pAtk * (1.10 + pow / 520) * profM);
-    const r = rollPhys(atk);
+    const r = rollFixedHitCountPhys(rollPhys, atk, TRIPLE_SLASH_HIT_COUNT);
     return {
       mpCost: mp,
       pDmg: r.damage,
-      skillLine: 'Потрійний удар (1, Triple Slash).',
+      skillLine:
+        'Потрійний удар (Triple Slash): ' + r.hitSummaryUk + '.',
       physOutcome: r.outcome,
       magicOutcome: null,
       ...(r.weaknessLogLineUk
@@ -72,7 +65,7 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
   }
 
   if (action === 'sonic_focus') {
-    if (!warriorProfOkForSkill(ctx)) {
+    if (!gladiatorBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
@@ -108,7 +101,7 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
   }
 
   if (action === 'sonic_blaster') {
-    if (!warriorProfOkForSkill(ctx)) {
+    if (!gladiatorBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
     if (!swordOrBluntOrDualWeapon(ctx.weaponKind)) {
@@ -125,7 +118,9 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       mpCost: mp,
       pDmg: r.damage,
       skillLine:
-        'Звуковий залп (6, Sonic Blaster): −' + cost + ' заряд Sonic Focus.',
+        'Звуковий залп (Sonic Blaster): дальня атака; −' +
+        cost +
+        ' заряди Sonic Focus.',
       physOutcome: r.outcome,
       magicOutcome: null,
       sonicChargesPatch: { delta: -cost },
@@ -283,51 +278,6 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       skillLine: 'Фатальний удар (190, Fatal Strike).',
       physOutcome: r.outcome,
       magicOutcome: null,
-      ...(r.weaknessLogLineUk
-        ? { weaknessLogLineUk: r.weaknessLogLineUk }
-        : {}),
-    };
-  }
-
-  if (action === 'hammer_crush') {
-    if (!gladiatorBranchProfession(String(l2Profession))) {
-      throw new Error('battle_skill_not_allowed');
-    }
-    if (ctx.weaponKind !== 'blunt' && ctx.weaponKind !== 'bigblunt') {
-      throw new Error('battle_skill_not_allowed');
-    }
-    requireCatalogEntryForAction(action, String(l2Profession));
-    const mp =
-      (l2dopXmlMpPower(260, rank)?.mp) ?? stubMpForCanon('l2_260', rank);
-    const pow =
-      (l2dopXmlMpPower(260, rank)?.power) ?? 680;
-    const atk = Math.floor(combat.pAtk * (1.17 + pow / 440) * profM);
-    const r = rollPhys(atk, { forceNoMiss: true });
-    const stunChancePct = Math.min(
-      HAMMER_CRUSH_STUN_CHANCE_CAP_PCT,
-      HAMMER_CRUSH_BASE_STUN_CHANCE_PCT + rank * HAMMER_CRUSH_STUN_PER_RANK_PCT
-    );
-    const effStunPct = scaleLandChancePercentAfterResist(
-      stunChancePct,
-      effectiveMobStunResistPct({
-        level: ctx.spawnLevel,
-        stunResistPct: ctx.spawnStunResistPct,
-        debuffResistPct: ctx.spawnDebuffResistPct,
-      })
-    );
-    const appliedStun =
-      r.outcome !== 'miss' &&
-      r.damage > 0 &&
-      Math.random() * 100 < effStunPct;
-    return {
-      mpCost: mp,
-      pDmg: r.damage,
-      skillLine: appliedStun
-        ? 'Скрушний молот (260, Hammer Crush): ціль оглушено, контрудар пропущено.'
-        : 'Скрушний молот (260, Hammer Crush): оглушення не спрацювало.',
-      physOutcome: r.outcome,
-      magicOutcome: null,
-      ...(appliedStun ? { skipMobCounterAttackOnce: true } : {}),
       ...(r.weaknessLogLineUk
         ? { weaknessLogLineUk: r.weaknessLogLineUk }
         : {}),

@@ -123,9 +123,9 @@ export const TEXT_RPG_HF_BUFF_EFFECTS: readonly TextRpgHfBuffRow[] = [
   },
   {
     l2SkillId: 287,
-    maxLevel: 3,
-    effects: [{"stat":"stunResist","mode":"percent"},{"stat":"sleepResist","mode":"percent"},{"stat":"holdResist","mode":"percent"},{"stat":"mentalResist","mode":"percent"},{"stat":"mDef","mode":"percent"}] as const,
-    powerByLevel: [0,60,80,0] as const,
+    maxLevel: 1,
+    effects: [{"stat":"stunResist","mode":"percent"},{"stat":"sleepResist","mode":"percent"},{"stat":"holdResist","mode":"percent"},{"stat":"mentalResist","mode":"percent"}] as const,
+    powerByLevel: [0,40] as const,
   },
   {
     l2SkillId: 297,

@@ -4633,7 +4633,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 11000,
     nameUk: "Скрушний молот (Hammer Crush)",
-    hintUk: "Важкий удар булавою з високою шкодою. Лише з булавою.",
+    hintUk: "Актив: потужний удар булавою (ігнорує щит), Shock/Stun ~4–9 с, over-hit/крит. 19 р., відкат 13 с. Не діє на РБ/епіків.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [

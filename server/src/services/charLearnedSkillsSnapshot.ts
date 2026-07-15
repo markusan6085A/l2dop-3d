@@ -1,3 +1,4 @@
+import { skillIconUrlForClient } from '../data/humanFighterSkillCatalog.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.legacyIds.js';
 import type { LearnedSkillEntry } from '../data/humanFighterSkillCatalog.types.js';
 import { humanFighterCatalogEntry } from '../data/humanFighterSkillCatalog.lookup.js';
@@ -50,6 +51,7 @@ export interface LearnedSkillSnapshotEntry extends LearnedSkillEntry {
   nameUk?: string;
   hintUk?: string;
   l2SkillId?: number;
+  iconUrl?: string;
   kind?: string;
   maxSkillLevel?: number;
 }
@@ -79,6 +81,7 @@ export function enrichLearnedSkillsForSnapshot(
       nameUk: cat.nameUk,
       hintUk,
       l2SkillId: cat.l2SkillId,
+      iconUrl: skillIconUrlForClient(cat.l2SkillId),
       kind: cat.kind,
       maxSkillLevel,
     };

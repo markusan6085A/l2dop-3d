@@ -20,6 +20,7 @@ import { humanFighterCatalogEntry } from './humanFighterSkillCatalog.lookup.js';
 import { catalogEntryVisibleForProfession } from './humanFighterSkillCatalog.professionRules.js';
 import { fighterCatalogEntryForRace } from './fighterSkillCatalog.byRace.js';
 import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
+import { resolvePublicSkillIconWebPath } from '../services/publicSkillIconPath.js';
 
 /**
  * Видалені з гри скіли (l2 id) — не показувати в бою, навіть якщо залишок у кеші/JSON.
@@ -107,7 +108,10 @@ export function skillIconAssetIdForDisplay(l2SkillId: number): number {
 }
 
 export function skillIconUrlForClient(l2SkillId: number): string {
-  return `/game/skill-icon/${skillIconAssetIdForDisplay(l2SkillId)}`;
+  const displayId = skillIconAssetIdForDisplay(l2SkillId);
+  const pub = resolvePublicSkillIconWebPath(displayId);
+  if (pub) return pub;
+  return `/game/skill-icon/${displayId}`;
 }
 
 /**

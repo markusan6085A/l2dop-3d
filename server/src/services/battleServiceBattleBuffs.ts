@@ -35,6 +35,7 @@ const ACTIVE_BUFF_LABEL_UK_BY_SKILL_ID: Readonly<Partial<Record<number, string>>
   121: 'Бойовий рик',
   1240: 'Наведення',
   130: 'Азарт бою',
+  287: 'Левине серце',
   336: 'Таємна мудрість',
   337: 'Таємна сила',
   338: 'Таємна спритність',
@@ -274,9 +275,10 @@ export function battleBuffLinesUk(
     }
     out.push('Zealot: ' + parts.join(', '));
   }
-  const lh = jsonFiniteNum(m.lionheartIncomingPhysMul);
-  if (lh !== undefined && lh > 0 && lh < 1) {
-    out.push('Левине серце: менший вхідний урон');
+  if (activeByIdForLines.has(287)) {
+    out.push(
+      'Левине серце: +40% стійкості до шоку, сну, утримання та паралічу'
+    );
   }
   // Моб-цільові дебафи не показуємо в рядку бафів гравця.
   if (jsonFiniteNum(m.focusChanceCritRateAdd) !== undefined) {
@@ -346,6 +348,10 @@ export function battleMobDebuffLinesUk(st: BattleJsonState): string[] {
   const sleepUntil = jsonFiniteNum(m.mobSleepUntilMs);
   if (sleepUntil !== undefined && sleepUntil > Date.now()) {
     out.push('Моб приспаний (Sleep)');
+  }
+  const stunUntil = jsonFiniteNum(m.mobStunUntilMs);
+  if (stunUntil !== undefined && stunUntil > Date.now()) {
+    out.push('Моб оглушений (Shock/Stun)');
   }
   return out;
 }
@@ -417,6 +423,11 @@ export function battleMobDebuffIconsForUi(
   if (sleepUntil !== undefined && sleepUntil > Date.now()) {
     const sid = jsonFiniteNum(m.mobSleepIconSkillId) ?? 1069;
     pushIcon('mob_debuff_sleep', sid, 'Сон (моб не атакує)');
+  }
+  const stunUntil = jsonFiniteNum(m.mobStunUntilMs);
+  if (stunUntil !== undefined && stunUntil > Date.now()) {
+    const sid = jsonFiniteNum(m.mobStunIconSkillId) ?? 260;
+    pushIcon('mob_debuff_stun', sid, 'Оглушення (Shock)');
   }
   return out;
 }
@@ -746,15 +757,6 @@ export function battleBuffIconsForUi(
             buffDurationTotalMs: ZEALOT_EFFECT_DURATION_MS,
           }
         : {}),
-    });
-  }
-  const lh = jsonFiniteNum(m.lionheartIncomingPhysMul);
-  if (lh !== undefined && lh > 0 && lh < 1) {
-    out.push({
-      key: 'lionheart',
-      l2SkillId: 287,
-      labelUk: 'Левине серце',
-      ...iconDurationExtrasCombined(287, activeByIdForIcons, st),
     });
   }
   // Моб-цільові дебафи не рендеримо в смузі бафів гравця.

@@ -176,6 +176,8 @@ function stripMobTargetDebuffsInPlace(m: BattleBattleMods): void {
   delete m.mobTargetMDefDebuffIconSkillIds;
   delete m.mobSleepUntilMs;
   delete m.mobSleepIconSkillId;
+  delete m.mobStunUntilMs;
+  delete m.mobStunIconSkillId;
 }
 
 export function parseWorldCombatState(

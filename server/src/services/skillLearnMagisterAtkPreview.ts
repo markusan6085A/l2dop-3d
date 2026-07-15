@@ -197,13 +197,14 @@ export function magisterEstimatedAtkBase(
       return Math.floor(pAtk * 1.14 * profM);
     }
     case 'l2_1': {
-      if (!magisterWarriorPreviewProfOk(prof)) return null;
+      if (!isHumanGladiatorTrackProfession(prof)) return null;
       const t = l2dopXmlMpPower(1, skillRank);
       const pow = t?.power ?? 431;
-      return Math.floor(pAtk * (1.1 + pow / 520) * profM);
+      const perHit = Math.floor(pAtk * (1.1 + pow / 520) * profM);
+      return perHit * 3;
     }
     case 'l2_6': {
-      if (!magisterWarriorPreviewProfOk(prof)) return null;
+      if (!isHumanGladiatorTrackProfession(prof)) return null;
       const sb = l2dopXmlMpPower(6, skillRank);
       const pow = sb?.power ?? 300;
       return Math.floor(pAtk * (1.09 + pow / 540) * profM);
@@ -237,7 +238,6 @@ export function magisterEstimatedAtkBase(
       return Math.floor(pAtk * (1.14 + pow / 460) * profM);
     }
     case 'l2_260': {
-      if (!isHumanGladiatorTrackProfession(prof)) return null;
       const hc = l2dopXmlMpPower(260, skillRank);
       const pow = hc?.power ?? 680;
       return Math.floor(pAtk * (1.17 + pow / 440) * profM);
@@ -339,7 +339,10 @@ export function magisterDamageHintUk(
   if (b === 'l2_344') {
     s += ' У бою потрібен кинжал.';
   }
-  if (b === 'l2_1' || b === 'l2_5' || b === 'l2_261') {
+  if (b === 'l2_1') {
+    s += ' У бою потрібен дуальний меч. Орієнтир — сумарно за 3 удари (до захисту).';
+  }
+  if (b === 'l2_5' || b === 'l2_261') {
     s += ' У бою потрібен дуальний меч.';
   }
   if (b === 'l2_260') {
