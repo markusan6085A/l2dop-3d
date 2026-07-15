@@ -63,3 +63,31 @@ export function ensureWhirlwindExtraMobs(
   );
   st.whirlwindExtras = picks.map(extraMobFromSpawn);
 }
+
+/** Максимум додаткових цілей поруч (головна + ці = до 3 цілей для Sonic Storm / Вихор). */
+export const NEARBY_EXTRA_MOB_CAP = 2;
+
+/**
+ * Той самий фіз. урон по `whirlwindExtras`, що вже нараховано по головній цілі.
+ * Повертає імена цілей, які ще були живі до удару.
+ */
+export function applyPhysDamageToNearbyExtraMobs(
+  st: BattleJsonState,
+  pDmg: number,
+  onExtraKill?: (mobName: string) => void
+): string[] {
+  if (pDmg <= 0 || !st.whirlwindExtras || st.whirlwindExtras.length === 0) {
+    return [];
+  }
+  const hit: string[] = [];
+  for (const ex of st.whirlwindExtras) {
+    const before = ex.mobHp;
+    if (before <= 0) continue;
+    ex.mobHp = Math.max(0, ex.mobHp - pDmg);
+    hit.push(ex.name);
+    if (before > 0 && ex.mobHp <= 0 && onExtraKill) {
+      onExtraKill(ex.name);
+    }
+  }
+  return hit;
+}

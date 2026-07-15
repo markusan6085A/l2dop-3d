@@ -3,6 +3,7 @@
  */
 export type MobWeaknessFamily =
   | 'insect'
+  | 'animal'
   | 'beast'
   | 'plant'
   | 'dragon'
@@ -55,11 +56,19 @@ export function inferMobWeaknessFamilyFromName(name: string): MobWeaknessFamily 
   }
 
   if (
-    /wolf|bear|grizzly|boar|fox|rat|hound|lycan|tiger|lion|orc|goblin|keltir|buffalo|unicorn|pixy|sprite|animal|beast|волк|гоблин|гоблін|медвед|медведь|ведмед|ведмідь|ведмеж|кабан|шакал|лис|лиси|лисиц|кобольд|орк|гризл|гризли|тигр|заєц|заяц|овець|овец|козел|коза|конь|кінь|собак|пес|пташк|ворон|сова|орел|лебідь|лебед|качк|гусь|індик|курк|кролик|білк|белк|білочк|птиц/i.test(
+    /orc|goblin|troll|kobold|pixy|sprite|ogre|минотавр|минотав|тролль|троль|гоблин|гоблін|кобольд|орк|огр/i.test(
       n
     )
   ) {
     return 'beast';
+  }
+
+  if (
+    /wolf|bear|grizzly|boar|fox|rat|hound|lycan|tiger|lion|keltir|buffalo|unicorn|animal|волк|медвед|медведь|ведмед|ведмідь|ведмеж|кабан|шакал|лис|лиси|лисиц|гризл|гризли|тигр|заєц|заяц|овець|овец|козел|коза|конь|кінь|собак|пес|пташк|ворон|сова|орел|лебідь|лебед|качк|гусь|індик|курк|кролик|білк|белк|білочк|птиц/i.test(
+      n
+    )
+  ) {
+    return 'animal';
   }
 
   if (
@@ -88,21 +97,19 @@ export function weaknessMatchesKind(
     case 'insect':
       return f === 'insect';
     case 'animal':
-      return f === 'beast';
+      return f === 'animal';
     case 'plant':
       return f === 'plant';
     case 'dragon':
       return f === 'dragon';
     case 'eye_hunter':
-      return f === 'insect' || f === 'plant' || f === 'beast';
+      return f === 'insect' || f === 'plant' || f === 'animal';
     case 'eye_slayer':
       return (
         f === 'beast' ||
         f === 'dragon' ||
         f === 'giant' ||
-        f === 'magic' ||
-        f === 'undead' ||
-        f === 'default'
+        f === 'magic'
       );
     default:
       return false;

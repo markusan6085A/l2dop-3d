@@ -28,6 +28,7 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_256: 'accuracy_stance',
   l2_312: 'vicious_stance',
   l2_339: 'parry_stance',
+  l2_340: 'riposte_stance',
   l2_75: 'detect_insect_weakness',
   l2_80: 'detect_monster_weakness',
   l2_87: 'detect_animal_weakness',
@@ -85,6 +86,7 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_261: 'triple_sonic_slash',
   l2_451: 'sonic_move',
   l2_442: 'sonic_guard',
+  l2_345: 'sonic_rage',
 };
 
 /** Один `BattleActionId` на один `l2_*` (для рангу з БД у резолвері). */
@@ -176,6 +178,8 @@ export function l2SkillIdForBattleActionIcon(action: BattleActionId): number {
       return 312;
     case 'parry_stance':
       return 339;
+    case 'riposte_stance':
+      return 340;
     case 'detect_insect_weakness':
       return 75;
     case 'detect_monster_weakness':
@@ -286,6 +290,8 @@ export function l2SkillIdForBattleActionIcon(action: BattleActionId): number {
       return 451;
     case 'sonic_guard':
       return 442;
+    case 'sonic_rage':
+      return 345;
     case 'power':
       return 3;
     case 'bolt':

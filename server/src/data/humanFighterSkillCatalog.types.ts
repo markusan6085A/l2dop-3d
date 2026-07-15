@@ -23,6 +23,7 @@ export interface HumanFighterSkillCatalogEntry {
     | 'human_warlord'
     | 'human_warlord_shared'
     | 'human_gladiator'
+    | 'human_duelist'
     | 'human_dreadnought'
     | 'human_dreadnought_or_duelist'
     /** Dreadnought, Phoenix або Hell Knight (Wisdom / Health 328–329). */

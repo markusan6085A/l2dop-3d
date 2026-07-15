@@ -25,6 +25,7 @@ import {
   assertSkillCooldownReady,
   isCooldownBlocked,
 } from './humanFighterTurnHelpers.js';
+import { buildRiposteStanceToggleTurn } from '../riposteStance.js';
 
 function mysticCdKey(skillId: number): string {
   return `l2_${skillId}`;
@@ -212,6 +213,14 @@ export function tryResolveFighterRaceCatalogTurn(
     battleId
   );
   if (!entry || entry.kind === 'passive') return null;
+
+  if (entry.l2SkillId === 340) {
+    const prof = String(ctx.l2Profession || '').trim();
+    if (!mysticCatalogEntryVisibleForProfession(entry, prof)) return null;
+    const rank = ctx.learnedSkillLevelByBattleId?.[battleId] ?? 0;
+    if (rank < 1) return null;
+    return buildRiposteStanceToggleTurn(ctx, rank);
+  }
 
   const prof = String(ctx.l2Profession || '').trim();
   if (!mysticCatalogEntryVisibleForProfession(entry, prof)) return null;

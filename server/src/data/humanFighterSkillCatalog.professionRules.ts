@@ -115,6 +115,9 @@ export function catalogEntryVisibleForProfession(
   if (entry.professionReq === 'human_gladiator') {
     return isHumanGladiatorTrackProfession(p);
   }
+  if (entry.professionReq === 'human_duelist') {
+    return p === 'human_duelist';
+  }
   if (entry.professionReq === 'human_dreadnought') {
     return p === 'human_dreadnought';
   }

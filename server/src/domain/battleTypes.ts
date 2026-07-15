@@ -182,7 +182,7 @@ export interface BattlePotionHoTEntry {
   nextTickAtMs: number;
 }
 
-/** Додаткові «поруч» для Вихору (36): той самий фіз. урон, що й по головній цілі. */
+/** Додаткові «поруч» для AoE (Вихор 36, Sonic Storm 7): той самий фіз. урон, що й по головній цілі. */
 export interface WhirlwindExtraMobJson {
   spawnId: string;
   name: string;
@@ -193,6 +193,8 @@ export interface WhirlwindExtraMobJson {
   mobMAtk: number;
   mobMDef: number;
   mobEvasion: number;
+  /** Лут/EXP уже видано (щоб не дублювати при наступних ударах). */
+  lootGranted?: boolean;
 }
 
 export interface BattleJsonState {
@@ -322,6 +324,7 @@ export type BattleActionId =
   | 'accuracy_stance'
   | 'vicious_stance'
   | 'parry_stance'
+  | 'riposte_stance'
   /** Ривок (4) — короткий бонус до швидкості в бою (Rogue-гілка). */
   | 'dash'
   /** Швидкий постріл (99) — баф швидкості атаки з луком (Hawkeye / Sagittarius). */
@@ -394,6 +397,7 @@ export type BattleActionId =
   | 'triple_sonic_slash'
   | 'sonic_move'
   | 'sonic_guard'
+  | 'sonic_rage'
   | MysticL2BattleActionId;
 
 /**
@@ -410,6 +414,7 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'accuracy_stance',
   'vicious_stance',
   'parry_stance',
+  'riposte_stance',
   'detect_insect_weakness',
   'detect_monster_weakness',
   'detect_animal_weakness',
@@ -450,4 +455,5 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   /** Sonic-буфер швидкості/захисту. */
   'sonic_move',
   'sonic_guard',
+  'sonic_rage',
 ]);

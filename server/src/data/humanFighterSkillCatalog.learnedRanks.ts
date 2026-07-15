@@ -6,6 +6,8 @@ import {
 import {
   l2dbMinCharLevelForSkillRank,
   l2dbSpCostForSkillRank,
+  sonicBlasterMinCharLevelForRank,
+  sonicBusterMinCharLevelForRank,
 } from './sonicGladiatorTables.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
 import { humanFighterCatalogHasBattleId } from './humanFighterSkillCatalog.lookup.js';
@@ -109,9 +111,17 @@ export function minCharLevelForSkillRank(
 ): number {
   const r = Math.max(1, Math.floor(rank));
   const c = canonicalBattleSkillId(entry.battleId);
-  if (c === 'l2_1' || c === 'l2_6') {
+  if (c === 'l2_1') {
     const fromL2db = l2dbMinCharLevelForSkillRank(entry.l2SkillId, r);
     if (fromL2db !== undefined) return fromL2db;
+  }
+  if (c === 'l2_6') {
+    const fromSonic = sonicBlasterMinCharLevelForRank(r);
+    if (fromSonic !== undefined) return fromSonic;
+  }
+  if (c === 'l2_9') {
+    const fromSonic = sonicBusterMinCharLevelForRank(r);
+    if (fromSonic !== undefined) return fromSonic;
   }
   const tbl = INTERLUDE_HF_MIN_CHAR_LEVEL_BY_RANK[c];
   if (tbl != null && r < tbl.length) {
@@ -137,6 +147,10 @@ export function spCostForSkillRankUpgrade(
   }
   if (c === 'l2_6') {
     const sp = l2dbSpCostForSkillRank(6, r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_9') {
+    const sp = l2dbSpCostForSkillRank(9, r);
     if (sp !== undefined) return sp;
   }
   const tbl = INTERLUDE_HF_SP_BY_RANK[c];

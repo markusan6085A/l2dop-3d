@@ -248,7 +248,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 11000,
     nameUk: 'Звуковий залп (Sonic Blaster)',
     hintUk:
-      'Актив: дальня звукова атака. 2 заряди Sonic Focus. Меч, булава або дуал. 37 р.',
+      'Актив: дальня звукова атака; over-hit/крит. ≥2 заряди Sonic Focus (витрата 2). Меч/булава/дуал. 37 р., з 40 лвл.',
     kind: 'battle',
     professionReq: 'human_gladiator',
   },
@@ -289,11 +289,11 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_9',
     l2SkillId: 9,
-    minLevel: 44,
-    spCost: 170000,
+    minLevel: 55,
+    spCost: 44000,
     nameUk: 'Звуковий розрив (Sonic Buster)',
     hintUk:
-      'Потужний звуковий удар. Витрачає 1 Sonic Focus. Меч, булава або дуал.',
+      'Актив: AoE-хвиля звукової енергії попереду; крит. ≥2 заряди Sonic Focus (витрата 2). Меч/булава/дуал. 34 р., з 55 лвл.',
     kind: 'battle',
     professionReq: 'human_gladiator',
   },
@@ -304,7 +304,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 220000,
     nameUk: 'Звукова буря (Sonic Storm)',
     hintUk:
-      'Вибух звукової хвилі по цілі. Витрачає 3 Sonic Focus. Меч, булава або дуал.',
+      'Актив: дальня звукова атака до 3 цілей (головна + 2 поруч). ≥2 заряди Sonic Focus (витрата 3). Меч/булава/дуал.',
     kind: 'battle',
     professionReq: 'human_gladiator',
   },
@@ -375,6 +375,28 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     kind: 'passive',
     professionReq: 'human_gladiator',
   },
+  {
+    battleId: 'l2_345',
+    l2SkillId: 345,
+    minLevel: 78,
+    spCost: 16000000,
+    nameUk: 'Звукова лють (Sonic Rage)',
+    hintUk:
+      'Актив: дальній промінь звукової енергії; урон = P.Atk зі статів. +1 Sonic Focus. Лише дуальні мечі, 1 р., з 78 лвл. Duelist.',
+    kind: 'battle',
+    professionReq: 'human_duelist',
+  },
+  {
+    battleId: 'l2_340',
+    l2SkillId: 340,
+    minLevel: 77,
+    spCost: 15000000,
+    nameUk: 'Стійка відбиття (Riposte Stance)',
+    hintUk:
+      'Toggle: 30% відбиття ближнього урону; −20% Atk.Spd., −10% Run Speed, −4 Accuracy; постійна витрата MP. 1 р., з 77 лвл. Duelist.',
+    kind: 'toggle',
+    professionReq: 'human_duelist',
+  },
   // ---- Warlord (2-га профа) — набір як l2db.ru/skills/warlord/_/interlude (Human Warlord) ----
   {
     battleId: 'l2_36',
@@ -439,7 +461,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 55000,
     nameUk: 'Вразливість рослин (Detect Plant Weakness)',
     hintUk:
-      'Тимчасово підвищує фізичну атаку проти рослин.',
+      'Актив: +30% P.Atk проти Plant на 10 хв (1 р., з 46 лвл). 21 MP, відкат 10 с. Gladiator / Warlord.',
     kind: 'battle',
     professionReq: 'human_warlord_shared',
   },
@@ -505,9 +527,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 46000,
     nameUk: 'Остання лютість (Final Frenzy)',
     hintUk:
-      'Пасив: автоматично підвищує фізичну атаку, коли здоров’я падає.',
+      'Пасив: автоматично +P.Atk, коли HP < 30% (1 р. з 43 лвл, макс. 14 р.). Gladiator / Warlord.',
     kind: 'passive',
-    professionReq: 'human_warlord',
+    professionReq: 'human_warlord_shared',
   },
   {
     battleId: 'l2_317',
@@ -594,7 +616,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 15000000,
     nameUk: 'Око мисливця (Eye of the Hunter)',
     hintUk:
-      'Тимчасово підвищує фізичну атаку проти комах, рослин і звірів.',
+      'Актив: +30% P.Atk проти Insect, Plant та Animal на 10 хв (1 р., з 77 лвл). 70 MP. Duelist / Dreadnought.',
     kind: 'battle',
     professionReq: 'human_dreadnought_or_duelist',
   },
@@ -605,7 +627,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 21000000,
     nameUk: 'Око вбивці (Eye of the Slayer)',
     hintUk:
-      'Тимчасово підвищує фізичну атаку проти звірів, магічних істот, гігантів і драконів.',
+      'Актив: +30% P.Atk проти Beast, Magic Creature, Giant та Dragon на 10 хв (1 р., з 78 лвл). 71 MP. Duelist / Dreadnought.',
     kind: 'battle',
     professionReq: 'human_dreadnought_or_duelist',
   },

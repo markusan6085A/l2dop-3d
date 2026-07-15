@@ -19,6 +19,7 @@ import {
   partialCombatBuffDeltaFromNeutral,
   type L2dopCombatBuffModifiers,
 } from './l2dopCombatBuffModifiers.js';
+import { riposteStanceCombatBuffDelta } from '../domain/riposteStance.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
 import { fighterCatalogEntryForRace } from './fighterSkillCatalog.byRace.js';
 import { maxRaceFighterSkillRankForBattleId } from './fighterSkillCatalog.byRace.js';
@@ -144,6 +145,10 @@ export function raceFighterToggleStanceCombatDelta(
   for (const [rawId, rawRank] of Object.entries(ranks)) {
     const rank = Math.floor(Number(rawRank));
     if (!Number.isFinite(rank) || rank < 1) continue;
+    if (rawId === 'l2_340') {
+      acc = applyBuffDelta(acc, riposteStanceCombatBuffDelta());
+      continue;
+    }
     const cat = lookupToggleEntry(rawId, race, classBranch);
     if (!cat) continue;
     if (prof && !cat.visibleForProfessions.includes(prof)) continue;

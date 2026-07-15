@@ -57,10 +57,10 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   287: 60,
   /** Focus Attack (полеарм +accuracy/+crit) */
   317: 30,
-  /** Eye of the Hunter */
-  359: 300,
-  /** Eye of the Slayer */
-  360: 300,
+  /** Eye of the Hunter — 10 хв */
+  359: 600,
+  /** Eye of the Slayer — 10 хв */
+  360: 600,
   /** Sanctuary (Paladin/Phoenix) */
   97: 30,
   /** Shield Fortress */

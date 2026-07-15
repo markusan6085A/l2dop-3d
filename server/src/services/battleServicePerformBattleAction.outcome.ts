@@ -35,6 +35,8 @@ export type BattleTurnPersistSide = {
   inv?: InventoryState;
   /** true — клієнт має зробити повний GET /battle (хотбар/бафи поза delta). */
   hotbarStale?: boolean;
+  /** Лут/EXP за додаткові цілі AoE в цьому ж ході (до persist). */
+  nearbyExtraEconomy?: import('./battleNearbyExtraMobLoot.js').NearbyExtraMobEconomyPatch;
 };
 
 export function battleTurnJsonExtras(
@@ -91,6 +93,7 @@ export async function persistBattleContinueFromTurn(
     ...battleTurnJsonExtras(side),
     logLinesAdded,
     hotbarStale: side.hotbarStale,
+    nearbyExtraEconomy: side.nearbyExtraEconomy,
   });
 }
 
@@ -138,6 +141,7 @@ export async function resolveMobDeadVictoryInTx(
     st: args.st,
     log: args.log,
     ...extras,
+    nearbyExtraEconomy: args.side.nearbyExtraEconomy,
   });
   return wrapVictoryAsFull({ ...v, battle: null });
 }

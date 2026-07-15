@@ -17,4 +17,6 @@ export const L2DOP_SKILL_REUSE_DELAY_SEC: Readonly<
   255: 13,
   /** Wild Sweep — відкат 17 с на всіх рівнях (каст 1.08 с). */
   245: 17,
+  /** Detect Plant Weakness — відкат 10 с (каст ~1.5 с). */
+  104: 10,
 };

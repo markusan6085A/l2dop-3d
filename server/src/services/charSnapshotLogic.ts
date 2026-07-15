@@ -43,6 +43,10 @@ import {
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
 import {
+  isRiposteStanceActive,
+  RIPOSTE_REFLECT_PCT,
+} from '../domain/riposteStance.js';
+import {
   parseWorldCombatState,
   tickWorldCombatState,
 } from '../domain/worldCombatState.js';
@@ -392,7 +396,9 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     ),
     weaponGradeMatchesArmor: combat.weaponGradeMatchesArmor,
     vampiricPct: combat.vampiricPct,
-    reflectPct: combat.reflectPct,
+    reflectPct: isRiposteStanceActive(displayMods)
+      ? RIPOSTE_REFLECT_PCT
+      : combat.reflectPct,
     regenCp: combat.regenCp,
     regenHp: combat.regenHp,
     regenMp: combat.regenMp,

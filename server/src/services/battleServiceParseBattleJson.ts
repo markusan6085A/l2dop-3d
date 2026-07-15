@@ -563,6 +563,7 @@ export function parseBattleJson(
         mobMAtk: Math.floor(mobMAtk),
         mobMDef: Math.floor(mobMDef),
         mobEvasion: Math.max(0, Math.floor(mobEvasion)),
+        ...(r.lootGranted === true ? { lootGranted: true } : {}),
       });
       if (next.length >= 2) break;
     }

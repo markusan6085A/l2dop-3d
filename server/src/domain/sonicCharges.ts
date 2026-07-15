@@ -1,7 +1,7 @@
 /**
  * Sonic Focus charges (Gladiator/Duelist — L2 Interlude): лічильник зарядів, які
  * генеруються Sonic Focus (id 8) і витрачаються іншими sonic-скілами:
- * Sonic Blaster (6) = 2, Sonic Buster (9) = 1, Sonic Storm (7) = 3,
+ * Sonic Blaster (6) = 2, Sonic Buster (9) = 2, Sonic Storm (7) = 3,
  * Double Sonic Slash (5) = 2, Triple Sonic Slash (261) = 3, Sonic Guard (442) = 5.
  *
  * В L2 Interlude максимум — 7. За бажанням гравця в нашій реалізації ліміт
@@ -27,7 +27,7 @@ export const SONIC_CHARGE_COST_BY_SKILL_ID: Readonly<
   5: 2, // Double Sonic Slash
   6: 2, // Sonic Blaster (2 заряди Sonic Focus)
   7: 3, // Sonic Storm
-  9: 1, // Sonic Buster
+  9: 2, // Sonic Buster (мін. 2 заряди Sonic Focus)
   261: 3, // Triple Sonic Slash
   442: 5, // Sonic Guard
 };

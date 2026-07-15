@@ -29,7 +29,7 @@ import {
 } from '../data/battleRoarTables.js';
 import { powerSmashStatsNoteUk } from '../data/powerSmashTables.js';
 import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
-import { tripleSlashStatsNoteUk, sonicBlasterStatsNoteUk } from '../data/sonicGladiatorTables.js';
+import { tripleSlashStatsNoteUk, sonicBlasterStatsNoteUk, sonicBusterStatsNoteUk, sonicStormStatsNoteUk } from '../data/sonicGladiatorTables.js';
 import { hammerCrushStatsNoteUk } from '../data/hammerCrushTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
 import { applyL2dopXmlMagisterOverlay } from '../data/l2dopXmlMagisterOverlay.js';
@@ -60,7 +60,7 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
     case 'l2_257':
       return 'Пасив: +P. Atk (flat) з мечем або булавою. MP у бою не витрачається.';
     case 'l2_290':
-      return 'Пасив: бонус при низькому HP. MP у бою не витрачається.';
+      return 'Пасив: автоматично +P.Atk (flat), коли HP < 30%. Макс. 14 р. MP у бою не витрачається.';
     case 'l2_312':
       return 'Toggle: крит / сила криту; MP ~0.4/с, поки увімкнено (не аура).';
     case 'l2_328':
@@ -269,8 +269,7 @@ function magisterBattleStatsPreviewCore(
       return {
         mp: xr?.m ?? 47,
         power: xr?.p ?? 520,
-        statsNoteUk:
-          'Витрачає 1 заряд Sonic Focus. Меч/булава/дуал. З Sonic Mastery дає вампіризм.',
+        statsNoteUk: sonicBusterStatsNoteUk(skillRank),
       };
     }
     case 'l2_7': {
@@ -278,8 +277,7 @@ function magisterBattleStatsPreviewCore(
       return {
         mp: xr?.m ?? 82,
         power: xr?.p ?? 600,
-        statsNoteUk:
-          'Витрачає 3 заряди Sonic Focus. Меч/булава/дуал. З Sonic Mastery дає вампіризм.',
+        statsNoteUk: sonicStormStatsNoteUk(skillRank),
       };
     }
     case 'l2_190': {
@@ -344,7 +342,12 @@ function magisterBattleStatsPreviewCore(
     case 'l2_88':
       return { mp: 27, power: null, statsNoteUk: 'Проти драконів: ~+30% P. Atk, ~10 хв.' };
     case 'l2_104':
-      return { mp: 21, power: null, statsNoteUk: 'Проти рослин: ~+30% P. Atk, ~10 хв.' };
+      return {
+        mp: 21,
+        power: null,
+        statsNoteUk:
+          'Проти Plant: +30% P.Atk на 10 хв. 1 р., 21 MP, відкат 10 с.',
+      };
     case 'l2_116':
       return {
         mp: 29,
@@ -395,14 +398,15 @@ function magisterBattleStatsPreviewCore(
       return {
         mp: 70,
         power: null,
-        statsNoteUk: 'Баф P. Atk проти комах, рослин і тварин; ~10 хв., каст 2 с.',
+        statsNoteUk:
+          'Проти Insect, Plant, Animal: +30% P.Atk на 10 хв. 1 р., 70 MP.',
       };
     case 'l2_360':
       return {
         mp: 71,
         power: null,
         statsNoteUk:
-          'Баф P. Atk проти звірів, магічних істот, гігантів і драконів; ~10 хв.',
+          'Проти Beast, Magic Creature, Giant, Dragon: +30% P.Atk на 10 хв. 1 р., 71 MP.',
       };
     case 'l2_361':
       return {
@@ -410,6 +414,20 @@ function magisterBattleStatsPreviewCore(
         power: 1973,
         statsNoteUk:
           'Shock Stomp: контрольний AoE-скіл (нижчий урон, вищий шанс шоку ~55-70%) + дебаф P.Def. Лише спис/алебарда.',
+      };
+    case 'l2_340':
+      return {
+        mp: 35,
+        power: null,
+        statsNoteUk:
+          'Toggle: 30% відбиття ближнього урону; −20% Atk.Spd., −10% Run Speed, −4 Accuracy; MP у такті.',
+      };
+    case 'l2_345':
+      return {
+        mp: 5,
+        power: null,
+        statsNoteUk:
+          'Дальній удар (урон = P.Atk зі статів); +1 Sonic Focus. Лише дуальний меч.',
       };
     case 'l2_18':
       return {

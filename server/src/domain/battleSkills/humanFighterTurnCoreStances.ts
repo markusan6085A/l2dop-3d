@@ -23,6 +23,7 @@ import {
   skillRankForCurrentAction,
   stubMpForCanon,
 } from './humanFighterTurnHelpers.js';
+import { buildRiposteStanceToggleTurn } from '../riposteStance.js';
 import type { FighterTurnCoreArgs } from './humanFighterTurnCoreArgs.js';
 
 export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): BattleSkillTurnResult | undefined {
@@ -98,6 +99,20 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
       magicOutcome: null,
       battleModsPatch: { stanceParry: true },
     };
+  }
+
+  if (action === 'riposte_stance') {
+    if (
+      !catalogAllowsFighterAction(
+        action,
+        String(l2Profession),
+        ctx.race,
+        ctx.classBranch
+      )
+    ) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    return buildRiposteStanceToggleTurn(ctx, skillRankForCurrentAction(ctx));
   }
 
   if (action === 'l2_94') {

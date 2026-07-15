@@ -118,7 +118,7 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       mpCost: mp,
       pDmg: r.damage,
       skillLine:
-        'Звуковий залп (Sonic Blaster): дальня атака; −' +
+        'Звуковий залп (Sonic Blaster): дальня атака; over-hit/крит; −' +
         cost +
         ' заряди Sonic Focus.',
       physOutcome: r.outcome,
@@ -182,7 +182,9 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       mpCost: mp,
       pDmg: r.damage,
       skillLine:
-        'Звуковий розрив (9, Sonic Buster): −' + cost + ' заряд Sonic Focus.',
+        'Звуковий розрив (Sonic Buster): AoE-хвиля попереду; −' +
+        cost +
+        ' заряди Sonic Focus.',
       physOutcome: r.outcome,
       magicOutcome: null,
       sonicChargesPatch: { delta: -cost },
@@ -212,7 +214,9 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       mpCost: mp,
       pDmg: r.damage,
       skillLine:
-        'Звукова буря (7, Sonic Storm): −' + cost + ' заряди Sonic Focus.',
+        'Звукова буря (Sonic Storm): дальня атака (до 3 цілей); −' +
+        cost +
+        ' заряди Sonic Focus.',
       physOutcome: r.outcome,
       magicOutcome: null,
       sonicChargesPatch: { delta: -cost },
@@ -340,6 +344,48 @@ export function tryResolveHumanFighterTurnSonic(a: FighterTurnCoreArgs): BattleS
       battleModsPatch: { sanctuaryIncomingPhysMul: 0.7 },
       sonicChargesPatch: { delta: -cost },
       ...legacyBuffCdAndExpirePatches(442, ctx),
+    };
+  }
+
+  if (action === 'sonic_rage') {
+    if (String(l2Profession).trim() !== 'human_duelist') {
+      throw new Error('battle_skill_not_allowed');
+    }
+    if (!dualSwordWeapon(ctx.weaponKind)) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    requireCatalogEntryForAction(action, String(l2Profession));
+    const cur = ctx.st.sonicCharges ?? 0;
+    const max =
+      typeof ctx.st.maxSonicCharges === 'number' && ctx.st.maxSonicCharges > 0
+        ? ctx.st.maxSonicCharges
+        : SONIC_MAX_CHARGES_DEFAULT;
+    if (cur >= max) {
+      throw new Error('battle_sonic_max_charges');
+    }
+    const mp =
+      (l2dopXmlMpPower(345, rank)?.mp) ?? stubMpForCanon('l2_345', rank);
+    const atk = Math.max(1, Math.floor(combat.pAtk));
+    const r = rollPhys(atk);
+    const heal = sonicMasteryLifestealHeal(ctx, 345, r.damage);
+    return {
+      mpCost: mp,
+      pDmg: r.damage,
+      skillLine:
+        'Звукова лють (Sonic Rage): дальній удар (урон = P.Atk); +' +
+        SONIC_FOCUS_GAIN_PER_CAST +
+        ' Sonic Focus.',
+      physOutcome: r.outcome,
+      magicOutcome: null,
+      sonicChargesPatch: {
+        delta: SONIC_FOCUS_GAIN_PER_CAST,
+        maxSet: SONIC_MAX_CHARGES_DEFAULT,
+      },
+      ...(heal > 0 ? { playerHeal: heal } : {}),
+      ...(heal > 0 ? { playerHealSourceUk: 'Sonic Mastery' } : {}),
+      ...(r.weaknessLogLineUk
+        ? { weaknessLogLineUk: r.weaknessLogLineUk }
+        : {}),
     };
   }
   return undefined;

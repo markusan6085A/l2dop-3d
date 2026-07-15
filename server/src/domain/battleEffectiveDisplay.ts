@@ -10,6 +10,13 @@ import {
   migrateBattleModsStancesFromLegacy,
   stripExpiredZealotFromBattleMods,
 } from './battleModsJson.js';
+import {
+  applyRiposteReflectToBattleMods,
+  isRiposteStanceActive,
+  RIPOSTE_ACCURACY_FLAT,
+  RIPOSTE_ATK_SPD_MUL,
+  RIPOSTE_RUN_SPEED_MUL,
+} from './riposteStance.js';
 
 /** Ефективний max HP гравця в бою з урахуванням Battle Roar. */
 export function effectiveBattleMaxHp(
@@ -76,6 +83,7 @@ export function resolveDisplayBattleMods(
         normalizeBattleModsFromJson(m);
         migrateBattleModsStancesFromLegacy(m);
         stripExpiredZealotFromBattleMods(m, Date.now());
+        applyRiposteReflectToBattleMods(m);
         return m;
       }
       /** У бою `battleMods` інколи відсутній у JSON — тоді стійки/Focus з `worldCombatStateJson`. */
@@ -84,6 +92,7 @@ export function resolveDisplayBattleMods(
         normalizeBattleModsFromJson(m);
         migrateBattleModsStancesFromLegacy(m);
         stripExpiredZealotFromBattleMods(m, Date.now());
+        applyRiposteReflectToBattleMods(m);
         return m;
       }
       return undefined;
@@ -94,6 +103,7 @@ export function resolveDisplayBattleMods(
     normalizeBattleModsFromJson(m);
     migrateBattleModsStancesFromLegacy(m);
     stripExpiredZealotFromBattleMods(m, Date.now());
+    applyRiposteReflectToBattleMods(m);
     return m;
   }
   return undefined;
@@ -215,6 +225,9 @@ export function effectiveBattleAccuracyDisplay(
   if (fzAcc !== undefined && fzAcc > 0) {
     acc = Math.max(0, Math.floor(acc + fzAcc));
   }
+  if (isRiposteStanceActive(mods)) {
+    acc = Math.max(0, Math.floor(acc + RIPOSTE_ACCURACY_FLAT));
+  }
   return acc;
 }
 
@@ -254,6 +267,9 @@ export function effectiveBattlePAtkSpdDisplay(
   if (zAspd !== undefined && zAspd > 1 && Number.isFinite(zAspd)) {
     spd = Math.max(1, Math.floor(spd * zAspd));
   }
+  if (isRiposteStanceActive(mods)) {
+    spd = Math.max(1, Math.floor(spd * RIPOSTE_ATK_SPD_MUL));
+  }
   return spd;
 }
 
@@ -279,8 +295,14 @@ export function effectiveBattleRunSpeedDisplay(
   const zRun = jsonFiniteNum(mods?.zealotRunSpeedFlat);
   const zealRunAdd =
     zRun !== undefined && zRun > 0 ? Math.floor(zRun) : 0;
-  if (dashAdd === 0 && smAdd === 0 && zealRunAdd === 0) return baseRunSpeed;
-  return Math.max(1, 2 * (T + dashAdd + smAdd + zealRunAdd));
+  let runMul = 1;
+  if (isRiposteStanceActive(mods)) {
+    runMul = RIPOSTE_RUN_SPEED_MUL;
+  }
+  if (dashAdd === 0 && smAdd === 0 && zealRunAdd === 0 && runMul === 1) {
+    return baseRunSpeed;
+  }
+  return Math.max(1, Math.floor(2 * (T + dashAdd + smAdd + zealRunAdd) * runMul));
 }
 
 /** Крит. шанс (стат) для панелі: жорстка стійка — text-rpg (Focus без окремого stat у даних). */

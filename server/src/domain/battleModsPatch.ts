@@ -508,6 +508,19 @@ export function applyBattleModsPatch(
     if (v !== undefined && v > 0) next.reflectDamageReturnRatio = v;
     else delete next.reflectDamageReturnRatio;
   }
+  if (patch.raceToggleRanks !== undefined) {
+    const p = patch.raceToggleRanks;
+    if (
+      p == null ||
+      typeof p !== 'object' ||
+      Array.isArray(p) ||
+      Object.keys(p).length === 0
+    ) {
+      delete next.raceToggleRanks;
+    } else {
+      next.raceToggleRanks = { ...p };
+    }
+  }
   if (patch.physicalMirrorReflectRatio !== undefined) {
     const v = jsonFiniteNum(patch.physicalMirrorReflectRatio);
     if (v !== undefined && v > 0) next.physicalMirrorReflectRatio = v;

@@ -297,10 +297,16 @@ function dreadnoughtSkillStatsNoteUk(args: {
       : 'Лише спис/алебарда. Поточний ранг: control-удар з шансом шоку ~55-70% + дебаф P.Def.';
   }
   if (b === 'l2_359') {
-    return 'Поточний ранг: баф P.Atk проти комах/рослин/тварин (~10 хв).';
+    return 'Поточний ранг: +30% P.Atk проти Insect/Plant/Animal на 10 хв.';
   }
   if (b === 'l2_360') {
-    return 'Поточний ранг: баф P.Atk проти звірів/гігантів/драконів/магічних істот (~10 хв).';
+    return 'Поточний ранг: +30% P.Atk проти Beast/Magic Creature/Giant/Dragon на 10 хв.';
+  }
+  if (b === 'l2_340') {
+    return 'Поточний ранг: toggle — 30% відбиття ближнього урону; −20% Atk.Spd., −10% Run Speed, −4 Accuracy.';
+  }
+  if (b === 'l2_345') {
+    return 'Поточний ранг: дальній удар (урон = P.Atk); +1 Sonic Focus. Лише дуальний меч.';
   }
   return null;
 }

@@ -47,6 +47,7 @@ import {
 } from './charService.js';
 import {
   computeCombatStats,
+  computeCombatStatsOptionsForCharacter,
   effectiveMaxHpWithJewelFlat,
   effectiveMaxMpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
@@ -75,7 +76,14 @@ import { battleActionAllowed } from './battleServiceBattleUi.js';
 import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
-import { ensureWhirlwindExtraMobs } from '../domain/battleWhirlwindExtras.js';
+import {
+  applyPhysDamageToNearbyExtraMobs,
+  ensureWhirlwindExtraMobs,
+} from '../domain/battleWhirlwindExtras.js';
+import {
+  applyNearbyExtraMobKillLoot,
+  type NearbyExtraMobEconomyPatch,
+} from './battleNearbyExtraMobLoot.js';
 import { FIGHTER_PHYSICAL_SOULSHOT_ITEM_IDS } from '../data/fighterPhysicalSoulshot.js';
 import { MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS } from '../data/mysticBlessedSpiritshot.js';
 import { applyBattlePotionHoTTicks } from '../domain/battleCombatPotions.js';
@@ -226,9 +234,6 @@ export async function performBattleAction(
     }
     const log = [...st.log];
     const initialLogLen = log.length;
-    const pushExtraMobKillLog = (mobName: string) => {
-      log.push('Додаткова ціль повалена: ' + mobName + '.');
-    };
     let playerHp = Math.min(
       Math.max(0, char.hp),
       effectiveBattleMaxHp(maxHpEff, st.battleMods)
@@ -410,13 +415,26 @@ export async function performBattleAction(
       st.playerMp = currentMp;
     }
 
+    /** HP-умовні пасиви (Final Frenzy 290) — за поточним HP у бою, не за `char.hp` у БД. */
+    const combatForTurn = computeCombatStats(
+      preLevel,
+      char.race,
+      char.classBranch,
+      inv,
+      computeCombatStatsOptionsForCharacter({
+        ...(char as CharacterRow),
+        hp: playerHp,
+        maxHp: maxHpBattle,
+      })
+    );
+
     const turnResolved = executeBattleTurnResolve({
       action,
       preLevel,
       race: char.race,
       classBranch: char.classBranch,
       profAct,
-      combat,
+      combat: combatForTurn,
       st,
       spawnLevel: spawn.level,
       spawnStunResistPct: spawn.stunResistPct,
@@ -816,17 +834,25 @@ export async function performBattleAction(
         char.worldY,
         bj.spawnId
       );
-      if (st.whirlwindExtras) {
-        for (const ex of st.whirlwindExtras) {
-          const before = ex.mobHp;
-          ex.mobHp = Math.max(0, ex.mobHp - pDmg);
-          if (before > 0 && ex.mobHp <= 0) {
-            pushExtraMobKillLog(ex.name);
-          }
-        }
-      }
+      applyPhysDamageToNearbyExtraMobs(st, pDmg);
       /** Після Вихору наступна базова автоатака також cleave'ить по додаткових цілях. */
       st.whirlwindNextAutoCleaveHits = 1;
+    }
+    if (action === 'sonic_storm' && pDmg > 0) {
+      ensureWhirlwindExtraMobs(
+        st,
+        char.worldX,
+        char.worldY,
+        bj.spawnId
+      );
+      const extraHits = applyPhysDamageToNearbyExtraMobs(st, pDmg);
+      if (extraHits.length > 0) {
+        log.push(
+          'Звукова буря вразила ворогів поруч: ' +
+            extraHits.map((n) => n + ' −' + pDmg).join(', ') +
+            '.'
+        );
+      }
     }
     if (action === 'provoke') {
       ensureWhirlwindExtraMobs(
@@ -849,18 +875,14 @@ export async function performBattleAction(
       st.whirlwindExtras &&
       st.whirlwindExtras.length > 0
     ) {
-      for (const ex of st.whirlwindExtras) {
-        const before = ex.mobHp;
-        ex.mobHp = Math.max(0, ex.mobHp - pDmg);
-        if (before > 0 && ex.mobHp <= 0) {
-          pushExtraMobKillLog(ex.name);
-        }
+      const cleaveHits = applyPhysDamageToNearbyExtraMobs(st, pDmg);
+      if (cleaveHits.length > 0) {
+        log.push(
+          'Древко розсікло ворогів поруч: ' +
+            cleaveHits.map((n) => n + ' −' + pDmg).join(', ') +
+            '.'
+        );
       }
-      log.push(
-        'Древко розсікло ворогів поруч: ' +
-          st.whirlwindExtras.map((e) => e.name + ' −' + pDmg).join(', ') +
-          '.'
-      );
     }
     if (typeof mobCpDrain === 'number' && mobCpDrain > 0) {
       const mmc = st.mobMaxCp ?? mobMaxCpFromMobMaxHp(st.mobMaxHp);
@@ -940,11 +962,44 @@ export async function performBattleAction(
       log.push(
         'Древко розсікло ворогів поруч: ' +
           st.whirlwindExtras
+            .filter((e) => e.mobHp > 0)
             .map((e) => e.name + ' −' + pDmg)
             .join(', ') +
           '.'
       );
     }
+
+    let nearbyExtraEconomy: NearbyExtraMobEconomyPatch | undefined;
+    if (!isPvpBattleJson(bj) && !worldBossBattle) {
+      const extraLoot = applyNearbyExtraMobKillLoot({
+        st,
+        char: char as CharacterRow,
+        inv,
+        preLevel,
+        log,
+        nowMs: nowMsTurn,
+      });
+      if (extraLoot.changed && extraLoot.economyPatch) {
+        inv = extraLoot.inv;
+        inventoryDirty = true;
+        nearbyExtraEconomy = extraLoot.economyPatch;
+        char = {
+          ...(char as CharacterRow),
+          exp: extraLoot.economyPatch.exp,
+          level: extraLoot.economyPatch.level,
+          maxHp: extraLoot.economyPatch.maxHp,
+          mobSpawnHpJson:
+            extraLoot.economyPatch.mobSpawnHpJson as CharacterRow['mobSpawnHpJson'],
+          ...(extraLoot.economyPatch.questProgressJson != null
+            ? {
+                questProgressJson:
+                  extraLoot.economyPatch.questProgressJson as CharacterRow['questProgressJson'],
+              }
+            : {}),
+        };
+      }
+    }
+
     const continueBase: BattleContinueTurnBase = {
       userId,
       expectedRevision,
@@ -968,10 +1023,12 @@ export async function performBattleAction(
       nextCooldowns,
       inventoryDirty,
       inv,
+      nearbyExtraEconomy,
       hotbarStale:
         activeBuffsChanged ||
         cooldownsChanged ||
         !!inventoryDirty ||
+        nearbyExtraEconomy !== undefined ||
         Math.floor(currentMp) !== Math.floor(initialMp),
     };
 
@@ -980,7 +1037,7 @@ export async function performBattleAction(
     if (mobHp <= 0) {
       const victory = await resolveMobDeadVictoryInTx(tx, {
         ...continueBase,
-        cr,
+        cr: char as CharacterRow,
         currentMp,
         side: persistSide,
       });

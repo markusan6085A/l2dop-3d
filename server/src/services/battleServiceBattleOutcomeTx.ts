@@ -64,6 +64,7 @@ import {
   HUNT_LEVEL_TOLERANCE,
 } from '../domain/battleHuntChain.js';
 import { MOB_KILL_KARMA_WASH } from '../domain/pvpKarma.js';
+import type { NearbyExtraMobEconomyPatch } from './battleNearbyExtraMobLoot.js';
 import { resolvedWorldPositionFromCharacterRow } from './mapAroundService.js';
 
 type Tx = Prisma.TransactionClient;
@@ -87,6 +88,8 @@ export async function persistBattleVictoryInTx(
     activeBuffsJson?: Prisma.InputJsonValue;
     /** Якщо останній ход пробудив новий кулдаун — персистимо його. */
     skillCooldownsJson?: Prisma.InputJsonValue;
+    /** EXP/SP/адена за додаткові AoE-цілі в цьому ж ході (char.exp уже містить їхній EXP). */
+    nearbyExtraEconomy?: NearbyExtraMobEconomyPatch;
   }
 ): Promise<{ character: CharacterSnapshot; victory: BattleVictorySummary }> {
   const {
@@ -104,6 +107,7 @@ export async function persistBattleVictoryInTx(
     log,
     activeBuffsJson,
     skillCooldownsJson,
+    nearbyExtraEconomy,
   } = args;
 
   const npcId = resolveL2dopNpcIdByMobName(spawn.name) ?? null;
@@ -121,6 +125,10 @@ export async function persistBattleVictoryInTx(
   if (newExp > L2DOP_MAX_TOTAL_EXP_INCLUSIVE) {
     newExp = L2DOP_MAX_TOTAL_EXP_INCLUSIVE;
   }
+  const spGainTotal = loot.spGain + (nearbyExtraEconomy?.spIncrement ?? 0);
+  const adenaGainTotal =
+    loot.adena + (nearbyExtraEconomy?.adenaIncrement ?? BigInt(0));
+  const mobsKilledTotal = 1 + (nearbyExtraEconomy?.mobsKilledIncrement ?? 0);
   const newLevel = levelFromTotalExp(newExp);
   const combatAfter = computeCombatStats(
     newLevel,
@@ -165,8 +173,14 @@ export async function persistBattleVictoryInTx(
   void userId;
   const nowVictoryMs = Date.now();
   const karmaBefore = Math.max(0, Math.floor(Number(char.karma) || 0));
-  const karmaAfter = Math.max(0, karmaBefore - MOB_KILL_KARMA_WASH);
-  let mobHpAfterVictory = parseMobSpawnHpState(char.mobSpawnHpJson, nowVictoryMs);
+  const karmaAfter =
+    nearbyExtraEconomy?.karma != null
+      ? Math.max(0, nearbyExtraEconomy.karma - MOB_KILL_KARMA_WASH)
+      : Math.max(0, karmaBefore - MOB_KILL_KARMA_WASH);
+  let mobHpAfterVictory = parseMobSpawnHpState(
+    nearbyExtraEconomy?.mobSpawnHpJson ?? char.mobSpawnHpJson,
+    nowVictoryMs
+  );
   if (isRegularMobRespawnKind(spawn.kind)) {
     mobHpAfterVictory = setMobSpawnRespawnEntry(
       clearMobSpawnHpEntry(mobHpAfterVictory, bj.spawnId),
@@ -179,7 +193,9 @@ export async function persistBattleVictoryInTx(
   if (isSharedWorldBossKind(spawn.kind)) {
     await deleteWorldBossSession(tx, bj.spawnId);
   }
-  const questBefore = parseQuestProgressJson(char.questProgressJson);
+  const questBefore = parseQuestProgressJson(
+    nearbyExtraEconomy?.questProgressJson ?? char.questProgressJson
+  );
   const questAfter = incrementQuestKillOnVictory(questBefore, npcId);
   const questJsonChanged =
     JSON.stringify(questBefore) !== JSON.stringify(questAfter);
@@ -193,10 +209,10 @@ export async function persistBattleVictoryInTx(
         hp: nextHp,
         maxHp: maxHpAfter,
         level: newLevel,
-        adena: { increment: loot.adena },
+        adena: { increment: adenaGainTotal },
         exp: newExp,
-        sp: { increment: loot.spGain },
-        mobsKilled: { increment: 1 },
+        sp: { increment: spGainTotal },
+        mobsKilled: { increment: mobsKilledTotal },
         karma: karmaAfter,
         inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
         battleJson: Prisma.JsonNull,
@@ -238,9 +254,11 @@ export async function persistBattleVictoryInTx(
     mobLevel: spawn.level,
     aggressive: spawn.aggressive,
     fullLog: log.map((x) => String(x)),
-    adenaGain: loot.adena.toString(),
-    expGain: loot.expGain.toString(),
-    spGain: loot.spGain,
+    adenaGain: adenaGainTotal.toString(),
+    expGain: (
+      loot.expGain + (nearbyExtraEconomy?.expGainFromExtras ?? BigInt(0))
+    ).toString(),
+    spGain: spGainTotal,
     items: loot.items.map((it) => ({ ...it })),
     levelUp: newLevel > preLevel ? newLevel : null,
     nextHuntSpawnId: nextHunt?.spawnId ?? null,
@@ -376,6 +394,7 @@ export async function persistBattleContinueTurnInTx(
     /** Скільки рядків додано до логу в цьому ході (для logTail у delta). */
     logLinesAdded: number;
     hotbarStale?: boolean;
+    nearbyExtraEconomy?: NearbyExtraMobEconomyPatch;
   }
 ): Promise<BattleActionDeltaResponse> {
   const {
@@ -398,6 +417,7 @@ export async function persistBattleContinueTurnInTx(
     inventoryJson,
     logLinesAdded,
     hotbarStale,
+    nearbyExtraEconomy,
   } = args;
 
   void userId;
@@ -435,6 +455,21 @@ export async function persistBattleContinueTurnInTx(
         ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
         ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
         ...(inventoryJson !== undefined ? { inventoryJson } : {}),
+        ...(nearbyExtraEconomy
+          ? {
+              exp: nearbyExtraEconomy.exp,
+              level: nearbyExtraEconomy.level,
+              maxHp: nearbyExtraEconomy.maxHp,
+              sp: { increment: nearbyExtraEconomy.spIncrement },
+              adena: { increment: nearbyExtraEconomy.adenaIncrement },
+              mobsKilled: { increment: nearbyExtraEconomy.mobsKilledIncrement },
+              karma: nearbyExtraEconomy.karma,
+              mobSpawnHpJson: nearbyExtraEconomy.mobSpawnHpJson,
+              ...(nearbyExtraEconomy.questProgressJson !== undefined
+                ? { questProgressJson: nearbyExtraEconomy.questProgressJson }
+                : {}),
+            }
+          : {}),
       },
     })
   );
@@ -467,7 +502,8 @@ export async function persistBattleContinueTurnInTx(
     hotbarStale === true ||
     activeBuffsJson !== undefined ||
     skillCooldownsJson !== undefined ||
-    inventoryJson !== undefined;
+    inventoryJson !== undefined ||
+    nearbyExtraEconomy !== undefined;
 
   const delta = buildBattleDeltaPayload({
     row,

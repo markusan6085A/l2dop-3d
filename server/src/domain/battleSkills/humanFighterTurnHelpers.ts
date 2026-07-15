@@ -514,6 +514,7 @@ const STUB_SKILL_MP: Record<string, number> = {
   l2_359: 70,
   l2_360: 71,
   l2_361: 65,
+  l2_345: 5,
   l2_420: 106,
   l2_94: 25,
   l2_139: 19,

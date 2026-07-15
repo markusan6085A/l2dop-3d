@@ -1,8 +1,8 @@
 /**
  * Бойові дії людини-воїна (пакет l2dopHumanFighterBattleSkills).
  *
- * Урон по «AoE» скілах (Whirlwind, Thunder Storm, Earthquake, …) у цій моделі — лише по
- * `mobHp` у `battleJson`, як у text-rpg для однієї цілі; не додається до pAtk/mAtk у профілі
+ * Урон по «AoE» скілах (Whirlwind, Sonic Storm, Thunder Storm, Earthquake, …) у цій моделі — по
+ * `mobHp` + до 2 сусідніх спавнів у `whirlwindExtras` (разом до 3 цілей); не додається до pAtk/mAtk у профілі
  * (`computeCombatStats` у `performBattleAction` не бачить `battleMods`).
  */
 import type {

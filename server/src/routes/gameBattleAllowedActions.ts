@@ -27,6 +27,7 @@ export const GAME_BATTLE_NAMED_ALLOWED_ACTIONS: readonly BattleActionId[] = [
   'accuracy_stance',
   'vicious_stance',
   'parry_stance',
+  'riposte_stance',
   'detect_insect_weakness',
   'detect_monster_weakness',
   'detect_animal_weakness',
@@ -84,5 +85,6 @@ export const GAME_BATTLE_NAMED_ALLOWED_ACTIONS: readonly BattleActionId[] = [
   'hammer_crush',
   'sonic_move',
   'sonic_guard',
+  'sonic_rage',
   'battle_potion_use',
 ];

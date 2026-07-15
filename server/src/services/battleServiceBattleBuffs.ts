@@ -12,6 +12,7 @@ import {
   type BattleJsonState,
 } from '../domain/battle.js';
 import type { WeaknessKind } from '../domain/mobWeaknessFamily.js';
+import { isRiposteStanceActive } from '../domain/riposteStance.js';
 import { warCryPatkPercentAtRank } from '../data/warCryTables.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { buffDurationSecForSkillId } from '../data/l2dopBuffDurations.js';
@@ -683,6 +684,14 @@ export function battleBuffIconsForUi(
       key: 'stance_parry',
       l2SkillId: 339,
       labelUk: 'Стійка парування',
+      isToggle: true,
+    });
+  }
+  if (isRiposteStanceActive(m)) {
+    out.push({
+      key: 'riposte_stance',
+      l2SkillId: 340,
+      labelUk: 'Стійка відбиття',
       isToggle: true,
     });
   }

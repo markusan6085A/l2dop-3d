@@ -128,7 +128,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_104', rank),
       pDmg: 0,
       skillLine:
-        'Вразливість рослин: +30% P.Atk проти рослинних істот (10 хв).',
+        'Вразливість рослин (Plant): +30% P.Atk на 10 хв.',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'plant', weaknessPatkMul: 1.3 },
@@ -295,10 +295,10 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_359', rank),
       pDmg: 0,
       skillLine:
-        'Око мисливця: більший урон проти комах, рослин і звірів (300 с).',
+        'Око мисливця: +30% P.Atk проти комах, рослин і тварин (10 хв).',
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { weaknessKind: 'eye_hunter', weaknessPatkMul: 1.4 },
+      battleModsPatch: { weaknessKind: 'eye_hunter', weaknessPatkMul: 1.3 },
       ...legacyBuffCdAndExpirePatches(359, ctx),
     };
   }
@@ -316,10 +316,10 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_360', rank),
       pDmg: 0,
       skillLine:
-        'Око вбивці: більший урон проти звірів, драконів, гігантів і магічних істот (300 с).',
+        'Око вбивці: +30% P.Atk проти звірів, драконів, гігантів і магічних істот (10 хв).',
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { weaknessKind: 'eye_slayer', weaknessPatkMul: 1.4 },
+      battleModsPatch: { weaknessKind: 'eye_slayer', weaknessPatkMul: 1.3 },
       ...legacyBuffCdAndExpirePatches(360, ctx),
     };
   }
