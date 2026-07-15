@@ -13,7 +13,7 @@
   };
   var GRADE_ORDER = ['all', 'NG', 'D', 'C', 'B', 'A', 'S'];
   var GRADE_LABEL_UK = {
-    all: 'Всі',
+    all: 'Все',
     NG: 'NG',
     D: 'D',
     C: 'C',
@@ -952,6 +952,9 @@
   }
 
   function initPage() {
+    stateCat = 'all';
+    stateGrade = 'all';
+    statePage = 0;
     var token = localStorage.getItem('token');
     if (!token) {
       setMsg('Потрібен вхід.');

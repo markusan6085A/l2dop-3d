@@ -143,7 +143,7 @@
   ];
 
   var WEAPON_SUB_LABEL_UK = {
-    all: 'Усі',
+    all: 'Все',
     sword: 'Мечі',
     dagger: 'Кинж..',
     bow: 'Луки',
@@ -170,7 +170,7 @@
   var ARMOR_SUB_KEYS = ['all', 'head', 'torso', 'legs', 'gloves', 'feet'];
 
   var ARMOR_SUB_LABEL_UK = {
-    all: 'Усі',
+    all: 'Все',
     head: 'Шолом',
     torso: 'Торс',
     legs: 'Штани',
@@ -182,7 +182,7 @@
   var JEWELRY_SUB_KEYS = ['all', 'neck', 'earring', 'ring'];
 
   var JEWELRY_SUB_LABEL_UK = {
-    all: 'Усі',
+    all: 'Все',
     neck: 'Амулет',
     earring: 'Сережки',
     ring: 'Кільця',
@@ -192,7 +192,7 @@
   var CONSUMABLE_SUB_KEYS = ['all', 'vials', 'arrows', 'charges'];
 
   var CONSUMABLE_SUB_LABEL_UK = {
-    all: 'Усі',
+    all: 'Все',
     vials: 'Банки',
     arrows: 'Стріли',
     charges: 'Заряди',
@@ -952,7 +952,13 @@
 
     var gradesSorted = sortGrades(rawGrades);
 
-    var saved = loadUiState();
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem(SS_UI);
+        sessionStorage.removeItem('drops-shop-grade');
+      }
+    } catch (_) {}
+    var saved = null;
 
     var activeCats = CAT_ORDER.filter(function (c) {
       return categoryHasItems(gradesSorted, c);
@@ -1007,7 +1013,7 @@
     weaponAllBar.className =
       'l2-drops-shop-tablist l2-drops-shop-tablist--weapon-all';
     weaponAllBar.setAttribute('role', 'tablist');
-    weaponAllBar.setAttribute('aria-label', 'Усі типи зброї');
+    weaponAllBar.setAttribute('aria-label', 'Все');
     weaponAllBar.hidden = true;
 
     var weaponKindBar = document.createElement('div');

@@ -180,10 +180,10 @@
   var craftBookIndex = null;
   var bagModalCtx = null;
 
-  /** Як у GM-шопу: категорія + грейд + підтип; '' — усі предмети (кнопка «Всі предмети»). */
+  /** Як у GM-шопу: категорія + грейд + підтип; '' — усі предмети (кнопка «Все»). */
   var bagInvCat = 'weapon';
-  var bagInvShowAll = false;
-  /** '' — усі грейди (кнопка «Усі»); ng|d|c|b|a|s */
+  var bagInvShowAll = true;
+  /** '' — усі грейди (кнопка «Все»); ng|d|c|b|a|s */
   var bagInvGradeSub = '';
   var bagInvWeaponSub = 'all';
   var bagInvArmorSub = 'all';
@@ -200,7 +200,7 @@
     accessor: 'Аксесуари',
     consumable: 'Розхідники',
   };
-  /** Порядок грейду: NG…S та «Усі» в кінці (зліва направо як у магазині). */
+  /** Порядок грейду: NG…S та «Все» в кінці (зліва направо як у магазині). */
   var BAG_GRADE_UI = [
     ['ng', 'NG'],
     ['d', 'D'],
@@ -208,10 +208,10 @@
     ['b', 'B'],
     ['a', 'A'],
     ['s', 'S'],
-    ['all', 'Усі'],
+    ['all', 'Все'],
   ];
   var BAG_WEAPON_SUB_ROWS = [
-    ['all', 'Усі'],
+    ['all', 'Все'],
     ['sword', 'Мечі'],
     ['dagger', 'Кинжали'],
     ['bow', 'Луки'],
@@ -222,7 +222,7 @@
     ['magic', 'Магія'],
   ];
   var BAG_ARMOR_SUB_ROWS = [
-    ['all', 'Усі'],
+    ['all', 'Все'],
     ['head', 'Шолом'],
     ['torso', 'Торс'],
     ['legs', 'Штани'],
@@ -230,13 +230,13 @@
     ['feet', 'Чоботи'],
   ];
   var BAG_JEWEL_SUB_ROWS = [
-    ['all', 'Усі'],
+    ['all', 'Все'],
     ['neck', 'Амулет'],
     ['earring', 'Сережки'],
     ['ring', 'Кільця'],
   ];
   var BAG_CONS_SUB_ROWS = [
-    ['all', 'Усі'],
+    ['all', 'Все'],
     ['vials', 'Банки'],
     ['arrows', 'Стріли'],
     ['charges', 'Заряди'],
@@ -719,7 +719,7 @@
     btn.setAttribute('data-inv-all-items', '1');
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-selected', 'false');
-    btn.textContent = 'Всі предмети';
+    btn.textContent = 'Все';
     host.appendChild(btn);
   }
 
@@ -1791,6 +1791,10 @@
   }
 
   async function init() {
+    bagInvShowAll = true;
+    bagInvGradeSub = '';
+    bagInvPage = 0;
+    resetCharBagSubsToAll();
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
         onStub: function (label) {
