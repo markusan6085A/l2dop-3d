@@ -179,6 +179,7 @@ import type {
 } from './skillLearnMagisterTypes.js';
 import { GLUDIO_MAGISTER_NPC } from './skillLearnMagisterTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { resolveMagisterCanLearn } from './magisterCanLearnResolve.js';
 
 const FINAL_FRENZY_PASSIVE = TEXT_RPG_HF_PASSIVE_EFFECTS.find(
   (r) => r.l2SkillId === 290
@@ -446,8 +447,9 @@ export async function getMagisterDialogForUser(
     levelById.set(canonicalBattleSkillId(e.battleId), e.level);
   }
   const effLevel = levelFromTotalExp(row.exp);
-  const { noteUk, offers } = offersForCharacter(row as CharacterRow);
+  const spNow = Math.max(0, Math.floor(row.sp));
   const snap = toSnapshot(row as CharacterRow);
+  const { noteUk, offers } = offersForCharacter(row as CharacterRow);
 
   const gateRow = {
     race: row.race,
@@ -517,8 +519,6 @@ export async function getMagisterDialogForUser(
       continue;
     }
 
-    const meetsNext =
-      HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ || effLevel >= minForNext;
     const meetsBase = mysticLike
       ? mysticCatalogEntryMeetsLevel(mysticLike, effLevel, nextRank)
       : catalogEntryMeetsRequirements(
@@ -529,21 +529,28 @@ export async function getMagisterDialogForUser(
     const meetsProfRank = rf
       ? raceFighterCatalogEntryAllowsSkillRank(rf, prof, nextRank)
       : hm
-        ? mysticCatalogEntryAllowsSkillRank(hm, prof, nextRank)
+        ? mysticCatalogEntryAllowsSkillRank(hm, prof, nextRank, skillLevel)
         : catalogEntryAllowsSkillRank(
             o as HumanFighterSkillCatalogEntry,
             prof,
             nextRank
           );
+    /** Ранг недоступний поточній профі — не показувати «мертву» кнопку. */
+    if (!meetsProfRank) {
+      continue;
+    }
     const spNext = mysticLike
       ? spCostForMysticSkillRankUpgrade(mysticLike, nextRank)
       : spCostForSkillRankUpgrade(o.battleId, nextRank, prof) ?? o.spCost;
-    const canLearn =
-      !learnedMax &&
-      meetsNext &&
-      meetsBase &&
-      meetsProfRank &&
-      row.sp >= spNext;
+    const { canLearn, blockReasonUk } = resolveMagisterCanLearn({
+      learnedMax,
+      effLevel,
+      minForNext,
+      meetsBase,
+      meetsProfRank,
+      spNow,
+      spNext,
+    });
     const rankPreview = skillLevel >= 1 ? skillLevel : 1;
     const mysticRow = mysticLike?.levels[rankPreview - 1];
     const mysticXml = mysticLike
@@ -864,6 +871,7 @@ export async function getMagisterDialogForUser(
       learnedMax,
       learned: skillLevel >= 1,
       canLearn,
+      canLearnBlockReasonUk: blockReasonUk,
       mpCost: st.mp,
       damagePower: st.power,
       statsNoteUk:
@@ -888,6 +896,7 @@ export async function getMagisterDialogForUser(
     noteUk,
     skills,
     profession: profBanner,
+    characterSp: spNow,
   };
 }
 
@@ -952,7 +961,7 @@ export async function learnSkillForUser(
       const currentLv0 = idx >= 0 ? entries[idx]!.level : 0;
       if (currentLv0 >= maxR) throw new Error('skill_already_maxed');
       nextLv = currentLv0 + 1;
-      if (!mysticCatalogEntryAllowsSkillRank(mysticOffer, prof, nextLv)) {
+      if (!mysticCatalogEntryAllowsSkillRank(mysticOffer, prof, nextLv, currentLv0)) {
         throw new Error('skill_wrong_class');
       }
       const effLevel0 = levelFromTotalExp(char.exp);

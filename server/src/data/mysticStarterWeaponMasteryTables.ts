@@ -88,17 +88,24 @@ export function mysticStarterWeaponMasterySpCostAtRank(
   return MYSTIC_STARTER_WEAPON_MASTERY_LEVEL_ROWS[r - 1]?.spCost;
 }
 
-/** Human Mystic: 1–2; wizard/cleric-гілки: 3+. */
+/** Human Mystic: 1–2; wizard/cleric-гілки: 3+ (+ catch-up 1–2). */
 export function humanMysticWeaponMasteryAllowsSkillRank(
   l2Profession: string,
-  targetRank: number
+  targetRank: number,
+  currentSkillLevel = 0
 ): boolean {
   const p = String(l2Profession || '').trim();
   const r = Math.max(1, Math.floor(targetRank));
+  const cur = Math.max(0, Math.floor(currentSkillLevel));
   if (p === 'human_mage') {
     return r >= 1 && r <= MYSTIC_STARTER_WEAPON_MASTERY_MAX_RANK;
   }
-  if (HUMAN_MYSTIC_WM_EXTENDED_PROFESSIONS.has(p)) return r >= 3;
+  if (HUMAN_MYSTIC_WM_EXTENDED_PROFESSIONS.has(p)) {
+    if (cur < MYSTIC_STARTER_WEAPON_MASTERY_MAX_RANK) {
+      return r >= 1 && r <= MYSTIC_STARTER_WEAPON_MASTERY_MAX_RANK;
+    }
+    return r >= 3;
+  }
   return false;
 }
 

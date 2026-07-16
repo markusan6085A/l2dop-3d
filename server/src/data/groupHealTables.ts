@@ -82,17 +82,24 @@ export function groupHealMpCostAtRank(rank: number): number | undefined {
   return GROUP_HEAL_LEVEL_ROWS[r - 1]?.mpCost;
 }
 
-/** Human Mystic: 1–3; cleric-гілка: 4–15. */
+/** Human Mystic: 1–3; cleric-гілка: 4–15 (+ catch-up 1–3 на cleric). */
 export function humanGroupHealAllowsSkillRank(
   l2Profession: string,
-  targetRank: number
+  targetRank: number,
+  currentSkillLevel = 0
 ): boolean {
   const p = String(l2Profession || '').trim();
   const r = Math.max(1, Math.floor(targetRank));
+  const cur = Math.max(0, Math.floor(currentSkillLevel));
   if (p === 'human_mage') {
     return r >= 1 && r <= GROUP_HEAL_STARTER_MAX_RANK;
   }
-  if (HUMAN_GROUP_HEAL_CLERIC_PROFESSIONS.has(p)) return r >= 4;
+  if (HUMAN_GROUP_HEAL_CLERIC_PROFESSIONS.has(p)) {
+    if (cur < GROUP_HEAL_STARTER_MAX_RANK) {
+      return r >= 1 && r <= GROUP_HEAL_STARTER_MAX_RANK;
+    }
+    return r >= 4;
+  }
   return false;
 }
 

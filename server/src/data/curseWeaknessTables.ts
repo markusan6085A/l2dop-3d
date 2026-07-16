@@ -98,18 +98,25 @@ export function curseWeaknessPatkCutPctAtRank(rank: number): number {
   return CURSE_WEAKNESS_LEVEL_ROWS[r - 1]?.patkCutPct ?? 0;
 }
 
-/** Human Mystic: 1; Wizard: 2–5; Necromancer-гілка: 6–19. */
+/** Human Mystic: 1; Wizard: 2–5; Necromancer-гілка: 6–19 (+ catch-up 1 на wizard). */
 export function humanCurseWeaknessAllowsSkillRank(
   l2Profession: string,
-  targetRank: number
+  targetRank: number,
+  currentSkillLevel = 0
 ): boolean {
   const p = String(l2Profession || '').trim();
   const r = Math.max(1, Math.floor(targetRank));
+  const cur = Math.max(0, Math.floor(currentSkillLevel));
   if (p === 'human_mage') return r === 1;
   if (p === 'human_wizard') {
+    if (cur < 1) return r === 1;
     return r >= 2 && r <= CURSE_WEAKNESS_WIZARD_MAX_RANK;
   }
   if (HUMAN_CURSE_WEAKNESS_NECROMANCER_PROFESSIONS.has(p)) {
+    if (cur < 1) return r === 1;
+    if (cur < CURSE_WEAKNESS_WIZARD_MAX_RANK) {
+      return r >= 2 && r <= CURSE_WEAKNESS_WIZARD_MAX_RANK;
+    }
     return r >= CURSE_WEAKNESS_WIZARD_MAX_RANK + 1 && r <= CURSE_WEAKNESS_MAX_RANK;
   }
   return false;

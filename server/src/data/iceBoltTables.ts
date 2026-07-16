@@ -73,17 +73,22 @@ export function iceBoltMpCostAtRank(rank: number): number | undefined {
   return ICE_BOLT_LEVEL_ROWS[r - 1]?.mpCost;
 }
 
-/** Human Mystic: 1–4; wizard-гілка: 5–6. */
+/** Human Mystic: 1–4; wizard-гілка: 5–6 (+ catch-up 1–4, якщо пропустили на mage). */
 export function humanIceBoltAllowsSkillRank(
   l2Profession: string,
-  targetRank: number
+  targetRank: number,
+  currentSkillLevel = 0
 ): boolean {
   const p = String(l2Profession || '').trim();
   const r = Math.max(1, Math.floor(targetRank));
+  const cur = Math.max(0, Math.floor(currentSkillLevel));
   if (p === 'human_mage') {
     return r >= 1 && r <= ICE_BOLT_STARTER_MAX_RANK;
   }
   if (HUMAN_ICE_BOLT_WIZARD_PROFESSIONS.has(p)) {
+    if (cur < ICE_BOLT_STARTER_MAX_RANK) {
+      return r >= 1 && r <= ICE_BOLT_STARTER_MAX_RANK;
+    }
     return r >= ICE_BOLT_STARTER_MAX_RANK + 1 && r <= ICE_BOLT_MAX_RANK;
   }
   return false;

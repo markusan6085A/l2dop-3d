@@ -42,9 +42,11 @@ export function mysticCatalogEntryVisibleForProfession(
 export function mysticCatalogEntryAllowsSkillRank(
   entry: HumanMysticSkillCatalogEntry,
   l2Profession: string,
-  targetRank: number
+  targetRank: number,
+  currentSkillLevel = 0
 ): boolean {
   if (!mysticCatalogEntryVisibleForProfession(entry, l2Profession)) return false;
+  const cur = Math.max(0, Math.floor(currentSkillLevel));
   if (isAntiMagicCatalogSkill(entry.l2SkillId)) {
     return antiMagicAllowsSkillRank(l2Profession, targetRank);
   }
@@ -55,31 +57,39 @@ export function mysticCatalogEntryAllowsSkillRank(
     isMysticStarterWeaponMasterySkill(entry.l2SkillId) &&
     String(l2Profession || '').trim().startsWith('human_')
   ) {
-    return humanMysticWeaponMasteryAllowsSkillRank(l2Profession, targetRank);
+    return humanMysticWeaponMasteryAllowsSkillRank(
+      l2Profession,
+      targetRank,
+      cur
+    );
   }
   if (
     isBattleHealCatalogSkill(entry.l2SkillId) &&
     String(l2Profession || '').trim().startsWith('human_')
   ) {
-    return humanBattleHealAllowsSkillRank(l2Profession, targetRank);
+    return humanBattleHealAllowsSkillRank(l2Profession, targetRank, cur);
   }
   if (
     isGroupHealCatalogSkill(entry.l2SkillId) &&
     String(l2Profession || '').trim().startsWith('human_')
   ) {
-    return humanGroupHealAllowsSkillRank(l2Profession, targetRank);
+    return humanGroupHealAllowsSkillRank(l2Profession, targetRank, cur);
   }
   if (
     isIceBoltCatalogSkill(entry.l2SkillId) &&
     String(l2Profession || '').trim().startsWith('human_')
   ) {
-    return humanIceBoltAllowsSkillRank(l2Profession, targetRank);
+    return humanIceBoltAllowsSkillRank(l2Profession, targetRank, cur);
   }
   if (
     isCurseWeaknessCatalogSkill(entry.l2SkillId) &&
     String(l2Profession || '').trim().startsWith('human_')
   ) {
-    return humanCurseWeaknessAllowsSkillRank(l2Profession, targetRank);
+    return humanCurseWeaknessAllowsSkillRank(
+      l2Profession,
+      targetRank,
+      cur
+    );
   }
   return true;
 }

@@ -33,6 +33,8 @@ export interface MagisterSkillOffer {
   /** Є хоча б 1 ранг (для підписів). */
   learned: boolean;
   canLearn: boolean;
+  /** Причина блокування кнопки «Вивчити» (укр.). */
+  canLearnBlockReasonUk: string | null;
   /** Для бойових скілів — базова «сила» з датапаку (не фінальний урон по HP). */
   mpCost: number | null;
   damagePower: number | null;
@@ -148,4 +150,6 @@ export interface MagisterDialogPayload {
   noteUk: string | null;
   skills: MagisterSkillOffer[];
   profession: MagisterProfessionBanner | null;
+  /** SP з БД на момент запиту (для узгодженості з canLearn). */
+  characterSp: number;
 }

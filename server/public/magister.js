@@ -324,11 +324,29 @@
     panel.hidden = false;
 
     var d = await r.json();
+    if (
+      d &&
+      typeof d.characterSp === 'number' &&
+      Number.isFinite(d.characterSp) &&
+      window.L2 &&
+      typeof L2.lastSnapshot === 'function'
+    ) {
+      var snapPatch = L2.lastSnapshot();
+      if (snapPatch) {
+        snapPatch.sp = Math.max(0, Math.floor(d.characterSp));
+        if (typeof L2.setLastSnapshot === 'function') {
+          L2.setLastSnapshot(snapPatch);
+        }
+      }
+    }
     var snapNowHeader =
       window.L2 && typeof L2.lastSnapshot === 'function'
         ? L2.lastSnapshot()
         : null;
-    var spNow = Number(snapNowHeader && snapNowHeader.sp);
+    var spNow =
+      d && typeof d.characterSp === 'number' && Number.isFinite(d.characterSp)
+        ? Math.max(0, Math.floor(d.characterSp))
+        : Number(snapNowHeader && snapNowHeader.sp);
     if (title) {
       title.hidden = true;
       title.textContent = '';
@@ -440,7 +458,11 @@
         learnBtn.textContent = 'Вивчити скіл';
         if (!s.canLearn) {
           learnBtn.disabled = true;
-          learnBtn.title = 'Недостатньо умов (рівень або SP).';
+          learnBtn.title =
+            s.canLearnBlockReasonUk != null &&
+            String(s.canLearnBlockReasonUk).trim() !== ''
+              ? String(s.canLearnBlockReasonUk).trim()
+              : 'Недостатньо умов (рівень або SP).';
         } else {
           learnBtn.addEventListener('click', function () {
             learnMagisterSkill(s.battleId);
