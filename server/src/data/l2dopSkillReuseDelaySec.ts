@@ -1,5 +1,7 @@
 /**
- * Interlude reuse delay (відкат «Откат»), секунди.
+ * Interlude reuse delay (відкат «Откат»), секунди — **база при castSpd = 600**.
+ *
+ * У бою масштабується через `scaleMysticCooldownByCastSpeed` (вищий castSpd → коротший CD).
  *
  * НЕ плутати з cast/hit time («Каст» / «Время перезарядки» на l2db skillInfo —
  * там часто потрапляє саме час касту, див. `l2dbSkillCooldowns.generated.ts`).

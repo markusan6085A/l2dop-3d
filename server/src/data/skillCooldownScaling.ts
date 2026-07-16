@@ -139,9 +139,9 @@ export type BattleSkillCooldownResolveInput = {
 
 /**
  * Єдина точка розрахунку CD у бою / UI.
- * - явний reuse (`cooldownSec` / `L2DOP_SKILL_REUSE_DELAY_SEC`) — фіксований відкат Interlude
- * - інакше mystic bolt з `mysticStarterCastBaseSec` — fallback (cast-база × castSpd)
- * - magic_attack без fixed: 4–7 с @ cast 600
+ * - mystic + Interlude reuse (`L2DOP_SKILL_REUSE_DELAY_SEC` / `cooldownSec`) — база @ castSpd 600,
+ *   далі `scaleMysticCooldownByCastSpeed` (вищий castSpd → коротший відкат)
+ * - mystic без fixed reuse — fallback cast-база або magic_attack 4–7 с @ 600
  * - fighter: фіксований reboot з l2db/XML (без aspd)
  */
 export function resolveBattleSkillCooldownSec(
@@ -168,32 +168,7 @@ export function resolveBattleSkillCooldownSec(
   const hasFixedBase =
     typeof rawBase === 'number' && Number.isFinite(rawBase) && rawBase > 0;
 
-  /**
-   * Перевірені Interlude reuse для mystic — фіксовані секунди, без cast/aspd
-   * і без пасивок cooldown reduction (UI і сервер мають збігатися).
-   */
-  if (isMystic && typeof input.l2SkillId === 'number' && input.l2SkillId > 0) {
-    const interludeReuse = L2DOP_SKILL_REUSE_DELAY_SEC[input.l2SkillId];
-    if (typeof interludeReuse === 'number' && interludeReuse > 0) {
-      return roundSkillCdSec(interludeReuse, MYSTIC_CD_FLOOR_SEC);
-    }
-  }
-
-  let cd: number;
-  let minFloor = MYSTIC_CD_FLOOR_SEC;
-
-  const starterCastBase =
-    isMystic &&
-    typeof input.l2SkillId === 'number' &&
-    Number.isFinite(input.l2SkillId) &&
-    input.l2SkillId > 0
-      ? mysticStarterCastBaseSec(input.l2SkillId, input.classBranch)
-      : null;
-
-  /**
-   * Явний reuse delay (каталог `cooldownSec` або `L2DOP_SKILL_REUSE_DELAY_SEC`) —
-   * Interlude «відкат», НЕ час касту. `mysticStarterCastBaseSec` лише для cast UI.
-   */
+  /** Воїн: фіксований reuse з XML/каталогу, без cast/aspd. */
   if (hasFixedBase && !isMystic) {
     return applyCooldownReductionMul(
       roundSkillCdSec(rawBase!, 0),
@@ -201,27 +176,51 @@ export function resolveBattleSkillCooldownSec(
       0
     );
   }
-  if (hasFixedBase) {
-    cd = rawBase!;
-  } else if (starterCastBase != null) {
-    cd = scaleMysticCooldownByCastSpeed(starterCastBase, input.castSpd);
-  } else if (category === 'magic_attack') {
-    cd = scaleMysticCooldownByCastSpeed(
-      mysticMagicAttackBaseCdSec(rank),
-      input.castSpd
-    );
-  } else if (isMystic) {
-    cd = scaleMysticCooldownByCastSpeed(
-      mysticMagicAttackBaseCdSec(rank),
-      input.castSpd
-    );
-  } else {
+
+  if (!isMystic) {
     return 0;
+  }
+
+  /** Базовий Interlude reuse @ castSpd 600 (або `cooldownSec` каталогу). */
+  let reuseBaseSec: number | null = null;
+  if (typeof input.l2SkillId === 'number' && input.l2SkillId > 0) {
+    const interludeReuse = L2DOP_SKILL_REUSE_DELAY_SEC[input.l2SkillId];
+    if (typeof interludeReuse === 'number' && interludeReuse > 0) {
+      reuseBaseSec = interludeReuse;
+    }
+  }
+  if (reuseBaseSec == null && hasFixedBase) {
+    reuseBaseSec = rawBase!;
+  }
+
+  let cd: number;
+  if (reuseBaseSec != null) {
+    cd = scaleMysticCooldownByCastSpeed(reuseBaseSec, input.castSpd);
+  } else {
+    const starterCastBase =
+      typeof input.l2SkillId === 'number' &&
+      Number.isFinite(input.l2SkillId) &&
+      input.l2SkillId > 0
+        ? mysticStarterCastBaseSec(input.l2SkillId, input.classBranch)
+        : null;
+    if (starterCastBase != null) {
+      cd = scaleMysticCooldownByCastSpeed(starterCastBase, input.castSpd);
+    } else if (category === 'magic_attack') {
+      cd = scaleMysticCooldownByCastSpeed(
+        mysticMagicAttackBaseCdSec(rank),
+        input.castSpd
+      );
+    } else {
+      cd = scaleMysticCooldownByCastSpeed(
+        mysticMagicAttackBaseCdSec(rank),
+        input.castSpd
+      );
+    }
   }
 
   return applyCooldownReductionMul(
     cd,
     input.cooldownReductionMul,
-    minFloor
+    MYSTIC_CD_FLOOR_SEC
   );
 }
