@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { parseInventory } from '../data/inventory.js';
+import { parseInventory, countBagQty } from '../data/inventory.js';
 import { parseWarehouse, warehouseToSnapshot } from '../data/warehouse.js';
 import {
   computeCombatStats,
@@ -77,6 +77,8 @@ import {
   firstProfessionQuestSnapshot,
   parseQuestProgressJson,
 } from '../domain/humanFighterFirstProfessionQuest.js';
+import { dailyQuestsSnapshot } from '../domain/dailyQuests.js';
+import { COIN_OF_LUCK_ITEM_ID } from '../domain/dailyQuestRewards.js';
 import type {
   ActiveBuffSnapshotEntry,
   CharacterRow,
@@ -480,5 +482,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
         inv
       );
     })(),
+    dailyQuests: dailyQuestsSnapshot(row.dailyQuestsJson, Date.now()),
+    coinOfLuck: countBagQty(inv, COIN_OF_LUCK_ITEM_ID),
   };
 }

@@ -84,6 +84,20 @@ export async function buildApp() {
     });
   }
 
+  /** Явна віддача нових HTML-сторінок (разом із fastifyStatic). */
+  for (const page of ['daily-quests.html'] as const) {
+    app.get('/' + page, async (_request, reply) => {
+      const filePath = path.join(publicDir, page);
+      if (!fs.existsSync(filePath)) {
+        return reply.code(404).send({ error: 'not_found' });
+      }
+      return reply
+        .header('Cache-Control', 'no-cache, must-revalidate')
+        .type('text/html; charset=utf-8')
+        .send(fs.readFileSync(filePath, 'utf8'));
+    });
+  }
+
   await app.register(fastifyStatic, {
     root: publicDir,
     prefix: '/',

@@ -89,6 +89,8 @@ model Character {
   battleHotbarJson Json?
   /** Прогрес квестів (1-ша профа тощо): `{ v: 1, active: { questId, targetProfession, kills } }`. */
   questProgressJson Json?
+  /** Щоденні завдання: `{ v: 1, resetDayKey, playtimeSec, tasks }`. */
+  dailyQuestsJson Json?
   /** cs1.php $heroic: 1 — «атака», 2 — «захист», 3 — «підмога» (геройські скіли 395…). */
   buffHeroicTier    Int?
   /** cs1.php $zealot для скіла 420 (Zealot). */

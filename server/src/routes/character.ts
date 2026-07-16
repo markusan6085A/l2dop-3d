@@ -7,6 +7,7 @@ import { registerCharacterProfileStatusRoutes } from './characterProfileStatusRo
 import { registerDevSelfBoostRoutes } from './devSelfBoostRoutes.js';
 import { registerWarehouseRoutes } from './warehouseRoutes.js';
 import { registerCharacterProfessionQuestRoutes } from './characterProfessionQuestRoutes.js';
+import { registerCharacterDailyQuestRoutes } from './characterDailyQuestRoutes.js';
 
 /**
  * Маршрути /character/* — тонкий фасад; реєстрація в `character*Routes.ts`.
@@ -20,4 +21,5 @@ export const characterRoutes: FastifyPluginAsync = async (app) => {
   registerDevSelfBoostRoutes(app);
   registerWarehouseRoutes(app);
   registerCharacterProfessionQuestRoutes(app);
+  registerCharacterDailyQuestRoutes(app);
 };

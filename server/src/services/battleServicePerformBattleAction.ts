@@ -87,6 +87,12 @@ import {
   normalizeLearnedSkillsJson,
 } from '../data/humanFighterSkillCatalog.js';
 import {
+  applyDailyQuestBattleTurn,
+  parseDailyQuestsJson,
+  serializeDailyQuestsJson,
+} from '../domain/dailyQuests.js';
+import { mergeDailyQuestsJsonPatch } from './dailyQuestProgressService.js';
+import {
   persistBattleDefeatInTx,
 } from './battleServiceBattleOutcomeTx.js';
 import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, applyPvpCpSetToVictimInTx, mirrorPvpPhysSkillsBlockToVictimInTx, mirrorPvpStunToVictimInTx, mirrorPvpTouchOfDeathToVictimInTx } from './battleServicePvpDamage.js';
@@ -229,6 +235,7 @@ export async function performBattleActionInTx(
     let inventoryDirty = false;
     const preLevel = levelFromTotalExp(char.exp);
     const cr = char as CharacterRow;
+    const charRowAtTurnOpen = cr;
     /** Профільні боїві стати (+ світові бафи). Не змішувати з `st.battleMods` — вони лише в кидках урону. */
     const combat = computeCombatStats(
       preLevel,
@@ -1433,6 +1440,24 @@ export async function performBattleActionInTx(
       );
     }
 
+    if (!isPvpBattleJson(bj)) {
+      const dailyQuestsState = applyDailyQuestBattleTurn(
+        parseDailyQuestsJson(charRowAtTurnOpen.dailyQuestsJson, nowMsTurn),
+        {
+          nowMs: nowMsTurn,
+          action,
+          mpCostEff,
+          damageDealt: damagingPlayerHit ? Math.max(0, pDmg) : 0,
+        }
+      );
+      char = {
+        ...(char as CharacterRow),
+        dailyQuestsJson: serializeDailyQuestsJson(
+          dailyQuestsState
+        ) as CharacterRow['dailyQuestsJson'],
+      };
+    }
+
     let nearbyExtraEconomy: NearbyExtraMobEconomyPatch | undefined;
     if (!isPvpBattleJson(bj) && !worldBossBattle) {
       const extraLoot = applyNearbyExtraMobKillLoot({
@@ -1460,6 +1485,12 @@ export async function performBattleActionInTx(
                   extraLoot.economyPatch.questProgressJson as CharacterRow['questProgressJson'],
               }
             : {}),
+          ...(extraLoot.economyPatch.dailyQuestsJson != null
+            ? {
+                dailyQuestsJson:
+                  extraLoot.economyPatch.dailyQuestsJson as CharacterRow['dailyQuestsJson'],
+              }
+            : {}),
         };
       }
     }
@@ -1480,6 +1511,11 @@ export async function performBattleActionInTx(
       log,
       maxMpEff,
     };
+    const dailyQuestsJsonPatch = mergeDailyQuestsJsonPatch(
+      charRowAtTurnOpen,
+      parseDailyQuestsJson((char as CharacterRow).dailyQuestsJson, nowMsTurn),
+      nowMsTurn
+    );
     const persistSide: BattleTurnPersistSide = {
       activeBuffsChanged,
       nextActiveBuffs,
@@ -1488,11 +1524,13 @@ export async function performBattleActionInTx(
       inventoryDirty,
       inv,
       nearbyExtraEconomy,
+      ...(dailyQuestsJsonPatch ? { dailyQuestsJson: dailyQuestsJsonPatch } : {}),
       hotbarStale:
         activeBuffsChanged ||
         cooldownsChanged ||
         !!inventoryDirty ||
         nearbyExtraEconomy !== undefined ||
+        dailyQuestsJsonPatch !== undefined ||
         Math.floor(currentMp) !== Math.floor(initialMp) ||
         (!!battleModsPatch && Object.keys(battleModsPatch).length > 0),
     };

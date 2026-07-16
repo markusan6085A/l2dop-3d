@@ -22,6 +22,12 @@ import {
   serializeQuestProgressJson,
 } from '../domain/humanFighterFirstProfessionQuest.js';
 import {
+  applyDailyQuestMobKill,
+  dailyQuestsJsonChanged,
+  parseDailyQuestsJson,
+  serializeDailyQuestsJson,
+} from '../domain/dailyQuests.js';
+import {
   clearMobSpawnHpEntry,
   parseMobSpawnHpState,
   serializeMobSpawnHpState,
@@ -49,6 +55,7 @@ export type NearbyExtraMobEconomyPatch = {
   maxHp: number;
   mobSpawnHpJson: Prisma.InputJsonValue;
   questProgressJson?: Prisma.InputJsonValue;
+  dailyQuestsJson?: Prisma.InputJsonValue;
 };
 
 export type NearbyExtraMobLootApplyResult = {
@@ -91,6 +98,8 @@ export function applyNearbyExtraMobKillLoot(args: {
   let mobHpState = parseMobSpawnHpState(char.mobSpawnHpJson, nowMs);
   let quest = parseQuestProgressJson(char.questProgressJson);
   let questChanged = false;
+  let daily = parseDailyQuestsJson(char.dailyQuestsJson, nowMs);
+  let dailyChanged = false;
   let anyKill = false;
 
   for (const ex of st.whirlwindExtras) {
@@ -124,6 +133,17 @@ export function applyNearbyExtraMobKillLoot(args: {
     if (JSON.stringify(questNext) !== JSON.stringify(quest)) {
       quest = questNext;
       questChanged = true;
+    }
+
+    const dailyNext = applyDailyQuestMobKill(daily, {
+      nowMs,
+      playerLevel: preLevel,
+      mobLevel: spMeta.level,
+      isWorldBoss: isSharedWorldBossKind(spMeta.kind),
+    });
+    if (dailyQuestsJsonChanged(daily, dailyNext)) {
+      daily = dailyNext;
+      dailyChanged = true;
     }
 
     mobHpState = setMobSpawnRespawnEntry(
@@ -185,6 +205,13 @@ export function applyNearbyExtraMobKillLoot(args: {
         ? {
             questProgressJson: serializeQuestProgressJson(
               quest
+            ) as Prisma.InputJsonValue,
+          }
+        : {}),
+      ...(dailyChanged
+        ? {
+            dailyQuestsJson: serializeDailyQuestsJson(
+              daily
             ) as Prisma.InputJsonValue,
           }
         : {}),

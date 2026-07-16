@@ -37,6 +37,8 @@ export type BattleTurnPersistSide = {
   hotbarStale?: boolean;
   /** Лут/EXP за додаткові цілі AoE в цьому ж ході (до persist). */
   nearbyExtraEconomy?: import('./battleNearbyExtraMobLoot.js').NearbyExtraMobEconomyPatch;
+  /** Прогрес щоденних завдань за хід (урон/скіли). */
+  dailyQuestsJson?: Prisma.InputJsonValue;
 };
 
 export function battleTurnJsonExtras(
@@ -94,6 +96,7 @@ export async function persistBattleContinueFromTurn(
     logLinesAdded,
     hotbarStale: side.hotbarStale,
     nearbyExtraEconomy: side.nearbyExtraEconomy,
+    dailyQuestsJson: side.dailyQuestsJson,
   });
 }
 

@@ -24,6 +24,13 @@ import {
   parseQuestProgressJson,
   serializeQuestProgressJson,
 } from '../domain/humanFighterFirstProfessionQuest.js';
+import {
+  applyDailyQuestMobKill,
+  dailyQuestsJsonChanged,
+  parseDailyQuestsJson,
+  serializeDailyQuestsJson,
+} from '../domain/dailyQuests.js';
+import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import { resolveL2dopNpcIdByMobName } from './spawnCatalogService.js';
 import {
   gameConflictFromMutation,
@@ -56,7 +63,6 @@ import {
   mobRespawnMsForKind,
   setMobSpawnRespawnEntry,
 } from '../domain/mobSpawnRespawn.js';
-import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import { deleteWorldBossSession } from './worldBossSessionService.js';
 import {
   countSameLevelHuntSpawnsNearby,
@@ -199,6 +205,17 @@ export async function persistBattleVictoryInTx(
   const questAfter = incrementQuestKillOnVictory(questBefore, npcId);
   const questJsonChanged =
     JSON.stringify(questBefore) !== JSON.stringify(questAfter);
+  const dailyBefore = parseDailyQuestsJson(
+    nearbyExtraEconomy?.dailyQuestsJson ?? char.dailyQuestsJson,
+    nowVictoryMs
+  );
+  const dailyAfter = applyDailyQuestMobKill(dailyBefore, {
+    nowMs: nowVictoryMs,
+    playerLevel: preLevel,
+    mobLevel: spawn.level,
+    isWorldBoss: isSharedWorldBossKind(spawn.kind),
+  });
+  const dailyJsonChanged = dailyQuestsJsonChanged(char.dailyQuestsJson, dailyAfter);
   const result = await mutateCharacterWithRevision(
     tx,
     char.id,
@@ -227,6 +244,13 @@ export async function persistBattleVictoryInTx(
           ? {
               questProgressJson: serializeQuestProgressJson(
                 questAfter
+              ) as unknown as Prisma.InputJsonValue,
+            }
+          : {}),
+        ...(dailyJsonChanged
+          ? {
+              dailyQuestsJson: serializeDailyQuestsJson(
+                dailyAfter
               ) as unknown as Prisma.InputJsonValue,
             }
           : {}),
@@ -391,6 +415,8 @@ export async function persistBattleContinueTurnInTx(
     skillCooldownsJson?: Prisma.InputJsonValue;
     /** Якщо ход списав предмети з сумки (заряд душі тощо). */
     inventoryJson?: Prisma.InputJsonValue;
+    /** Прогрес щоденних завдань за цей ход. */
+    dailyQuestsJson?: Prisma.InputJsonValue;
     /** Скільки рядків додано до логу в цьому ході (для logTail у delta). */
     logLinesAdded: number;
     hotbarStale?: boolean;
@@ -415,6 +441,7 @@ export async function persistBattleContinueTurnInTx(
     activeBuffsJson,
     skillCooldownsJson,
     inventoryJson,
+    dailyQuestsJson,
     logLinesAdded,
     hotbarStale,
     nearbyExtraEconomy,
@@ -455,6 +482,7 @@ export async function persistBattleContinueTurnInTx(
         ...(activeBuffsJson !== undefined ? { activeBuffsJson } : {}),
         ...(skillCooldownsJson !== undefined ? { skillCooldownsJson } : {}),
         ...(inventoryJson !== undefined ? { inventoryJson } : {}),
+        ...(dailyQuestsJson !== undefined ? { dailyQuestsJson } : {}),
         ...(nearbyExtraEconomy
           ? {
               exp: nearbyExtraEconomy.exp,
@@ -467,6 +495,9 @@ export async function persistBattleContinueTurnInTx(
               mobSpawnHpJson: nearbyExtraEconomy.mobSpawnHpJson,
               ...(nearbyExtraEconomy.questProgressJson !== undefined
                 ? { questProgressJson: nearbyExtraEconomy.questProgressJson }
+                : {}),
+              ...(nearbyExtraEconomy.dailyQuestsJson !== undefined
+                ? { dailyQuestsJson: nearbyExtraEconomy.dailyQuestsJson }
                 : {}),
             }
           : {}),
