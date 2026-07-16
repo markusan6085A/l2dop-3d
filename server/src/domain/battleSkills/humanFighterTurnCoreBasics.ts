@@ -26,6 +26,11 @@ import {
 } from '../../data/warCryTables.js';
 import { battleRoarSkillLineUk } from '../../data/battleRoarTables.js';
 import {
+  majestyMpAtRank,
+  majestySkillLineUk,
+} from '../../data/majestyTables.js';
+import { resolveShieldStunTurn } from './shieldStunTurn.js';
+import {
   effectiveMobDebuffResistPct,
   effectiveMobStunResistPct,
   scaleLandChancePercentAfterResist,
@@ -434,6 +439,35 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
       magicOutcome: null,
       activeBuffPatch: { skillId: 121, level: rank, action: 'add' },
     };
+  }
+
+  if (action === 'majesty') {
+    if (
+      !catalogAllowsFighterAction(
+        action,
+        String(l2Profession),
+        ctx.race,
+        ctx.classBranch
+      )
+    ) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const mjCd = ctx.st.mysticSkillCdUntil?.['l2_82'];
+    if (typeof mjCd === 'number' && Date.now() < mjCd) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    return {
+      mpCost: majestyMpAtRank(rank) ?? stubMpForCanon('l2_82', rank),
+      pDmg: 0,
+      skillLine: majestySkillLineUk(rank),
+      physOutcome: null,
+      magicOutcome: null,
+      activeBuffPatch: { skillId: 82, level: rank, action: 'add' },
+    };
+  }
+
+  if (action === 'shield_stun') {
+    return resolveShieldStunTurn(ctx);
   }
 
   if (action === 'stun_attack') {

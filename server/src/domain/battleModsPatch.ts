@@ -35,6 +35,8 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
   const mtdGap = jsonFiniteNum(next.mobTargetPDefMul);
   const mtmGap = jsonFiniteNum(next.mobTargetMDefMul);
   const sleepUntilGap = jsonFiniteNum(next.mobSleepUntilMs);
+  const stunUntilGap = jsonFiniteNum(next.mobStunUntilMs);
+  const playerStunUntilGap = jsonFiniteNum(next.playerStunUntilMs);
   const rdrGap = jsonFiniteNum(next.reflectDamageReturnRatio);
   const pmrGap = jsonFiniteNum(next.physicalMirrorReflectRatio);
   const vimGap = jsonFiniteNum(next.vengeanceIncomingPhysMul);
@@ -83,6 +85,8 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
     (mtdGap !== undefined && mtdGap > 0 && mtdGap < 1) ||
     (mtmGap !== undefined && mtmGap > 0 && mtmGap < 1) ||
     (sleepUntilGap !== undefined && sleepUntilGap > Date.now()) ||
+    (stunUntilGap !== undefined && stunUntilGap > Date.now()) ||
+    (playerStunUntilGap !== undefined && playerStunUntilGap > Date.now()) ||
     (rdrGap !== undefined && rdrGap > 0) ||
     (pmrGap !== undefined && pmrGap > 0) ||
     (vimGap !== undefined && vimGap > 0 && vimGap < 1) ||
@@ -510,6 +514,18 @@ export function applyBattleModsPatch(
     } else {
       delete next.mobStunUntilMs;
       delete next.mobStunIconSkillId;
+    }
+  }
+  if (patch.playerStunUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.playerStunUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.playerStunUntilMs = Math.floor(v);
+      const sid = jsonFiniteNum(patch.playerStunIconSkillId);
+      next.playerStunIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 260;
+    } else {
+      delete next.playerStunUntilMs;
+      delete next.playerStunIconSkillId;
     }
   }
   if (patch.reflectDamageReturnRatio !== undefined) {

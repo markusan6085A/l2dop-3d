@@ -141,6 +141,9 @@ export interface BattleBattleMods {
   /** Shock/Stun на мобі (Hammer Crush 260 тощо) — unix ms. */
   mobStunUntilMs?: number;
   mobStunIconSkillId?: number;
+  /** PvP: гравець оглушений (жертва) — unix ms. */
+  playerStunUntilMs?: number;
+  playerStunIconSkillId?: number;
   /** Відбиття шкоди (86): частка вхідного урону → назад мобу. */
   reflectDamageReturnRatio?: number;
   /** Фізичне дзеркало (350). */
@@ -377,6 +380,9 @@ export type BattleActionId =
   | 'aggression'
   | 'remedy'
   | 'holy_strike'
+  | 'drain_health'
+  | 'majesty'
+  | 'shield_stun'
   | 'sanctuary'
   | 'aegis_stance'
   | 'horror'
@@ -436,6 +442,8 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'thrill_fight',
   'revival',
   'lionheart',
+  'majesty',
+  'shield_stun',
   'zealot',
   'eye_hunter',
   'eye_slayer',

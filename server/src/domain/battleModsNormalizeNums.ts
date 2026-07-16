@@ -200,6 +200,16 @@ export function normalizeBattleModsNumsInPlace(m: BattleBattleMods): void {
     delete m.mobStunUntilMs;
     delete m.mobStunIconSkillId;
   }
+  const playerStunUntil = jsonFiniteNum(m.playerStunUntilMs);
+  if (playerStunUntil !== undefined && playerStunUntil > 0) {
+    m.playerStunUntilMs = Math.floor(playerStunUntil);
+    const psid = jsonFiniteNum(m.playerStunIconSkillId);
+    m.playerStunIconSkillId =
+      psid !== undefined && psid > 0 ? Math.floor(psid) : 260;
+  } else {
+    delete m.playerStunUntilMs;
+    delete m.playerStunIconSkillId;
+  }
   const rdr = jsonFiniteNum(m.reflectDamageReturnRatio);
   if (rdr !== undefined) m.reflectDamageReturnRatio = rdr;
   else delete m.reflectDamageReturnRatio;

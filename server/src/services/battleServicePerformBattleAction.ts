@@ -37,8 +37,8 @@ import {
 import {
   compactBattleSkillLogLineUk,
   formatBattleSkillLogLineForClient,
+  l2SkillIdForBattleLogLine,
 } from '../domain/battleLogFormat.js';
-import { l2SkillIdForBattleActionIcon } from '../data/humanFighterSkillCatalog.js';
 import { prisma } from '../lib/prisma.js';
 import {
   gameConflictFromCharacter,
@@ -52,6 +52,7 @@ import {
   effectiveMaxHpWithJewelFlat,
   effectiveMaxMpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
+import { stunResistPctFromCon } from '../data/l2dopPrimaryStatPipeline.js';
 import { parseInventory, countBagQty, removeBagQty } from '../data/inventory.js';
 import { computeVitals } from '../data/l2dopVitals.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
@@ -68,7 +69,7 @@ import {
 import {
   persistBattleDefeatInTx,
 } from './battleServiceBattleOutcomeTx.js';
-import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx } from './battleServicePvpDamage.js';
+import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, mirrorPvpStunToVictimInTx } from './battleServicePvpDamage.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -289,6 +290,18 @@ export async function performBattleAction(
         delete st.battleMods.mobStunUntilMs;
         delete st.battleMods.mobStunIconSkillId;
       }
+      const playerStunUntil = jsonFiniteNum(st.battleMods.playerStunUntilMs);
+      if (playerStunUntil !== undefined && playerStunUntil <= nowMsTurn) {
+        delete st.battleMods.playerStunUntilMs;
+        delete st.battleMods.playerStunIconSkillId;
+      }
+    }
+    const playerStunActive = jsonFiniteNum(st.battleMods?.playerStunUntilMs);
+    if (
+      playerStunActive !== undefined &&
+      playerStunActive > nowMsTurn
+    ) {
+      throw new Error('battle_player_stunned');
     }
     const activeBuffsPre = persistableActiveBuffsFromJson(
       (char as CharacterRow).activeBuffsJson,
@@ -445,6 +458,32 @@ export async function performBattleAction(
       })
     );
 
+    let spawnStunResistPct = spawn.stunResistPct;
+    if (isPvpBattleJson(st) && st.pvpTargetCharacterId) {
+      const victimRow = await tx.character.findFirst({
+        where: { id: st.pvpTargetCharacterId },
+        select: {
+          race: true,
+          classBranch: true,
+          exp: true,
+          inventoryJson: true,
+          skillsLearnedJson: true,
+          activeBuffsJson: true,
+        },
+      });
+      if (victimRow) {
+        const victimInv = parseInventory(victimRow.inventoryJson);
+        const victimCombat = computeCombatStats(
+          levelFromTotalExp(victimRow.exp),
+          victimRow.race,
+          victimRow.classBranch,
+          victimInv,
+          combatOptsFromRow(victimRow as CharacterRow)
+        );
+        spawnStunResistPct = stunResistPctFromCon(victimCombat.con);
+      }
+    }
+
     const turnResolved = executeBattleTurnResolve({
       action,
       preLevel,
@@ -454,7 +493,7 @@ export async function performBattleAction(
       combat: combatForTurn,
       st,
       spawnLevel: spawn.level,
-      spawnStunResistPct: spawn.stunResistPct,
+      spawnStunResistPct,
       spawnDebuffResistPct: spawn.debuffResistPct,
       spawnMobName: spawn.name,
       spawnKind: spawn.kind,
@@ -564,6 +603,16 @@ export async function performBattleAction(
       } else {
         delete st.warCryPatkMul;
       }
+    }
+
+    if (isPvpBattleJson(st) && st.pvpTargetCharacterId) {
+      await mirrorPvpStunToVictimInTx(tx, {
+        victimId: st.pvpTargetCharacterId,
+        attackerId: char.id,
+        stunUntilMs: jsonFiniteNum(st.battleMods?.mobStunUntilMs),
+        iconSkillId: jsonFiniteNum(st.battleMods?.mobStunIconSkillId),
+        nowMs: nowMsTurn,
+      });
     }
 
     applyBattleModsExpiresPatchInPlace(
@@ -718,16 +767,6 @@ export async function performBattleAction(
       if (ws) {
         mobHp = ws.mobHp;
         st.mobHp = ws.mobHp;
-      }
-      const refreshedAfterHit = await tx.character.findUnique({
-        where: { id: char.id },
-      });
-      if (refreshedAfterHit) {
-        char = refreshedAfterHit;
-        playerHp = Math.min(
-          effectiveBattleMaxHp(maxHpEff, st.battleMods),
-          Math.max(0, refreshedAfterHit.hp)
-        );
       }
     }
 
@@ -972,7 +1011,7 @@ export async function performBattleAction(
       const skillHit =
         pDmg > 0 ||
         (playerDamageLogLines != null && playerDamageLogLines.length > 0);
-      const l2Id = l2SkillIdForBattleActionIcon(action);
+      const l2Id = l2SkillIdForBattleLogLine(action);
       log.push(formatBattleSkillLogLineForClient(compact, l2Id, skillHit));
     }
     if (weaknessLogLineUk) log.push(weaknessLogLineUk);
@@ -1179,14 +1218,6 @@ export async function performBattleAction(
             st.mobHp = ws.mobHp;
           }
         }
-      }
-      const refreshed = await tx.character.findUnique({ where: { id: char.id } });
-      if (refreshed) {
-        char = refreshed;
-        playerHp = Math.min(
-          effectiveBattleMaxHp(maxHpEffAfter, st.battleMods),
-          Math.max(0, refreshed.hp)
-        );
       }
       if (playerHp <= 0) {
         const d = await persistBattleDefeatInTx(tx, {

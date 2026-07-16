@@ -56,9 +56,13 @@ import {
 import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
 import { mysticDebuffProfileNoteUk } from '../data/l2dopMysticDebuffProfiles.js';
 import { boostHpStatsNoteUk } from '../data/boostHpTables.js';
+import { magicResistanceStatsNoteUk } from '../data/magicResistanceTables.js';
+import { shieldMasteryStatsNoteUk } from '../data/shieldMasteryTables.js';
 import { fighterPassiveHintUk } from '../data/fighterCommonPassiveSkillDisplay.js';
 import { fastHpRecoveryStatsNoteUk } from '../data/fastHpRecoveryTables.js';
 import { battleRoarStatsNoteUk } from '../data/battleRoarTables.js';
+import { majestyStatsNoteUk } from '../data/majestyTables.js';
+import { shieldStunStatsNoteUk } from '../data/shieldStunTables.js';
 import {
   heavyArmorMasteryStatsNoteUk,
 } from '../data/heavyArmorMasteryTables.js';
@@ -466,7 +470,7 @@ export async function getMagisterDialogForUser(
           );
     const spNext = mysticLike
       ? spCostForMysticSkillRankUpgrade(mysticLike, nextRank)
-      : spCostForSkillRankUpgrade(o.battleId, nextRank) ?? o.spCost;
+      : spCostForSkillRankUpgrade(o.battleId, nextRank, prof) ?? o.spCost;
     const canLearn =
       !learnedMax &&
       meetsNext &&
@@ -534,6 +538,10 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = fastHpRecoveryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 121) {
       st.statsNoteUk = battleRoarStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 82) {
+      st.statsNoteUk = majestyStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 92 && !mysticLike) {
+      st.statsNoteUk = shieldStunStatsNoteUk(rankPreview, effLevel);
     } else if (o.l2SkillId === 231 && !mysticLike) {
       st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 227 && !mysticLike) {
@@ -544,6 +552,12 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = dualWeaponMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 257 && !mysticLike) {
       st.statsNoteUk = swordBluntMasteryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 147 && !mysticLike) {
+      st.statsNoteUk = magicResistanceStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 153 && !mysticLike) {
+      st.statsNoteUk = shieldMasteryStatsNoteUk(
+        skillLevel >= 1 ? skillLevel : nextRank
+      );
     } else if (o.l2SkillId === 142 && !mysticLike) {
       st.statsNoteUk = weaponMasteryFighterStatsNoteUk(rankPreview);
     } else if (
@@ -814,7 +828,7 @@ export async function learnSkillForUser(
       if (!catalogEntryAllowsSkillRank(fighterOffer, prof, nextLv)) {
         throw new Error('skill_wrong_class');
       }
-      spNeed = spCostForSkillRankUpgrade(canon, nextLv) ?? fighterOffer.spCost;
+      spNeed = spCostForSkillRankUpgrade(canon, nextLv, prof) ?? fighterOffer.spCost;
     }
     if (char.sp < spNeed) {
       throw new Error('skill_not_enough_sp');

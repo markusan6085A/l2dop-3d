@@ -60,6 +60,9 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_18: 'aggression',
   l2_44: 'remedy',
   l2_49: 'holy_strike',
+  l2_70: 'drain_health',
+  l2_82: 'majesty',
+  l2_92: 'shield_stun',
   l2_97: 'sanctuary',
   l2_318: 'aegis_stance',
   l2_65: 'horror',
@@ -242,6 +245,12 @@ export function l2SkillIdForBattleActionIcon(action: BattleActionId): number {
       return 44;
     case 'holy_strike':
       return 49;
+    case 'drain_health':
+      return 70;
+    case 'majesty':
+      return 82;
+    case 'shield_stun':
+      return 92;
     case 'sanctuary':
       return 97;
     case 'aegis_stance':

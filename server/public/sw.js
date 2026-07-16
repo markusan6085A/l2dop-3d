@@ -2,7 +2,7 @@
  * Service Worker: cache-first для статики (фото, ref, css, js).
  * HTML і API — завжди мережа (сервер = джерело правди).
  */
-var GAME_CACHE_VERSION = '20260709perf2';
+var GAME_CACHE_VERSION = '20260716mobHpNumeric2';
 var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
 var PRECACHE_URLS = [

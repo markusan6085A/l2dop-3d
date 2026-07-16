@@ -1,6 +1,28 @@
 /**
  * Текст логу бою для гравця: прибираємо "(id, EngName)" / "(EngName)" з рядка скіла.
  */
+import type { BattleActionId } from './battle.js';
+import {
+  canonicalBattleIdForAction,
+  l2SkillIdForBattleActionIcon,
+} from '../data/humanFighterSkillCatalog.js';
+import { humanFighterCatalogEntry } from '../data/humanFighterSkillCatalog.lookup.js';
+
+/** L2 id для іконки в лозі бою — каталог має пріоритет над switch у battleActionMap. */
+export function l2SkillIdForBattleLogLine(action: BattleActionId): number {
+  const canon = canonicalBattleIdForAction(action);
+  if (canon) {
+    const entry = humanFighterCatalogEntry(canon);
+    if (entry && entry.l2SkillId >= 1) return entry.l2SkillId;
+  }
+  const raw = String(action);
+  if (/^l2_\d+$/.test(raw)) {
+    const id = Number(raw.slice(3));
+    if (Number.isFinite(id) && id > 0) return Math.floor(id);
+  }
+  return l2SkillIdForBattleActionIcon(action);
+}
+
 export function compactBattleSkillLogLineUk(line: string): string {
   let s = String(line || '').trim();
   if (!s) return s;

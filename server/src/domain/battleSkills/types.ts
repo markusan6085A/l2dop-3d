@@ -35,6 +35,8 @@ export type BattleSkillResolveContext = {
   spawnMobName: string;
   /** Тип спавну (звичайний / raid / epic) — Hammer Crush stun тощо. */
   spawnKind?: import('../../data/mapWorldSpawns.js').MapWorldSpawn['kind'];
+  /** Shield Stun (92) та інші скіли, що вимагають щит у l2. */
+  hasEquippedShield?: boolean;
   /** Поточне HP в бою (до дії) — Відродження (181). */
   playerHpInBattle: number;
   /** Ефективний max HP у бою — Відродження. */

@@ -297,6 +297,15 @@ export function parseBattleJson(
       next.mobStunIconSkillId =
         stunSid !== undefined && stunSid > 0 ? Math.floor(stunSid) : 260;
     }
+    const playerStunUntil = jsonFiniteNum(bm.playerStunUntilMs);
+    if (playerStunUntil !== undefined && playerStunUntil > 0) {
+      next.playerStunUntilMs = Math.floor(playerStunUntil);
+      const playerStunSid = jsonFiniteNum(bm.playerStunIconSkillId);
+      next.playerStunIconSkillId =
+        playerStunSid !== undefined && playerStunSid > 0
+          ? Math.floor(playerStunSid)
+          : 260;
+    }
     const gapRdr = jsonFiniteNum(bm.reflectDamageReturnRatio);
     if (gapRdr !== undefined && gapRdr > 0) next.reflectDamageReturnRatio = gapRdr;
     const rtRaw = (bm as { raceToggleRanks?: unknown }).raceToggleRanks;
@@ -414,6 +423,8 @@ export function parseBattleJson(
       (gapMtd !== undefined && gapMtd > 0 && gapMtd < 1) ||
       (gapMtm !== undefined && gapMtm > 0 && gapMtm < 1) ||
       (sleepUntil !== undefined && sleepUntil > Date.now()) ||
+      (stunUntil !== undefined && stunUntil > Date.now()) ||
+      (playerStunUntil !== undefined && playerStunUntil > Date.now()) ||
       (gapRdr !== undefined && gapRdr > 0) ||
       (gapPmr !== undefined && gapPmr > 0) ||
       (gapVin !== undefined && gapVin > 0 && gapVin < 1) ||

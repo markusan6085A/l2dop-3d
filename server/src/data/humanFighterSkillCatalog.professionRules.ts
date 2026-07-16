@@ -11,6 +11,8 @@ import type {
   LearnedSkillEntry,
 } from './humanFighterSkillCatalog.types.js';
 import { maxSkillRankForBattleId } from './humanFighterSkillCatalog.learnedRanks.js';
+import { shieldMasteryMaxRankForMappedProfession } from './shieldMasteryTables.js';
+import { majestyMaxRankForMappedProfession } from './majestyTables.js';
 
 /** Warlord або Dreadnought — одна гілка алебарди. */
 export function isHumanWarlordTrackProfession(l2Profession: string): boolean {
@@ -135,6 +137,33 @@ export function catalogEntryVisibleForProfession(
   if (entry.professionReq === 'human_paladin_track') {
     return isHumanPaladinTrackProfession(p);
   }
+  if (entry.professionReq === 'human_knight') {
+    return p === 'human_knight';
+  }
+  if (entry.professionReq === 'human_knight_paladin_track') {
+    return (
+      p === 'human_knight' ||
+      p === 'human_paladin' ||
+      p === 'human_phoenix_knight'
+    );
+  }
+  if (entry.professionReq === 'human_knight_majesty_track') {
+    return isHumanKnightTrackProfession(p);
+  }
+  if (entry.professionReq === 'human_knight_drain_track') {
+    return (
+      p === 'human_knight' ||
+      p === 'human_dark_avenger' ||
+      p === 'human_hell_knight'
+    );
+  }
+  if (entry.professionReq === 'human_knight_resistance_track') {
+    return (
+      p === 'human_knight' ||
+      p === 'human_paladin' ||
+      p === 'human_dark_avenger'
+    );
+  }
   if (entry.professionReq === 'human_dark_avenger_track') {
     return isHumanDarkAvengerTrackProfession(p);
   }
@@ -236,6 +265,18 @@ export function maxSkillRankForCatalogEntry(
     if (isHumanGladiatorTrackProfession(p)) return Math.min(global, 2);
     return Math.min(global, 1);
   }
+  if (c === 'l2_153') {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return Math.min(global, shieldMasteryMaxRankForMappedProfession(p));
+  }
+  if (c === 'l2_82') {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return Math.min(global, majestyMaxRankForMappedProfession(p));
+  }
   if (c !== 'l2_211') return global;
   const p = mapFighterProfessionToHumanSkillCatalog(
     String(l2Profession || '').trim()
@@ -273,6 +314,24 @@ export function catalogEntryAllowsSkillRank(
       isHumanRogueTrackProfession(p) ||
       isHumanArcherTrackProfession(p)
     );
+  }
+  if (c === 'l2_153' && r >= 3) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_paladin' || p === 'human_dark_avenger';
+  }
+  if (c === 'l2_82' && r === 1) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_knight';
+  }
+  if (c === 'l2_82' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_paladin' || p === 'human_dark_avenger';
   }
   if (c === 'l2_211') {
     return r <= maxSkillRankForCatalogEntry(entry, l2Profession);

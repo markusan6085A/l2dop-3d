@@ -6,6 +6,7 @@ import {
 } from '../domain/battle.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import type { CombatStatsSnapshot } from '../data/l2dopCombatFormulas.js';
+import { playerHasEquippedShield } from '../data/l2dopCombatFormulas.js';
 import type { InventoryState } from '../data/inventory.js';
 import {
   equippedWeaponKind,
@@ -200,6 +201,7 @@ export function executeBattleTurnResolve(
           playerHpInBattle: playerHp,
           playerMaxHpInBattle: maxHpBattle,
           weaponKind: equippedWeaponKind(inv),
+          hasEquippedShield: playerHasEquippedShield(inv.eq),
           learnedSkillLevelByBattleId,
           activeBuffs: activeBuffsPre,
         },

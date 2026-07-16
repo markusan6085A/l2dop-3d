@@ -148,3 +148,9 @@ export function l2dbSpCostForSkillRank(
   if (!row || row.spCost < 1) return undefined;
   return row.spCost;
 }
+
+export function l2dbMaxRankForSkillId(l2SkillId: number): number | undefined {
+  const rows = L2DB_SKILL_LEVELS_BY_ID[l2SkillId];
+  const n = rows?.length;
+  return typeof n === 'number' && n >= 1 ? n : undefined;
+}

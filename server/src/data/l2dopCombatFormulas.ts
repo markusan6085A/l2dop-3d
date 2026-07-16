@@ -19,6 +19,8 @@ import {
   type WeaponKindForEnchant,
 } from './l2dopEnchant.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
+import { dropsShieldPatchForEquipped } from './l2dopDropsShieldPatches.js';
+import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 import {
   applyBuffDelta,
   neutralCombatBuffs,
@@ -398,6 +400,37 @@ export function sumEquippedArmorPDef(
     sum += base + armorPiecePDefEnchantBonus(slot.enchant);
   }
   return sum;
+}
+
+/** Shield P.Def у snapshot: база предмета × Shield Mastery rate (лише з щитом у l2). */
+export function equippedShieldPDef(
+  eq: InventoryState['eq'],
+  shieldDefenceRatePct: number
+): number {
+  const shSlot = normalizeEqSlot(eq?.l2);
+  if (!shSlot) return 0;
+  const wSlot = normalizeEqSlot(eq?.l1);
+  const wM = wSlot?.itemId ? ITEM_CATALOG[wSlot.itemId] : undefined;
+  if (wM && itemBlocksShieldSlot(wSlot!.itemId, wM.weaponType)) return 0;
+  const shM = ITEM_CATALOG[shSlot.itemId];
+  if (!shM || shM.slot !== 'lhand') return 0;
+  const patch = dropsShieldPatchForEquipped(shSlot.itemId, shM.nameUk);
+  const base = patch?.shieldDef;
+  if (typeof base !== 'number' || !Number.isFinite(base) || base <= 0) return 0;
+  const rate = Math.max(0, Math.min(100, Math.floor(shieldDefenceRatePct)));
+  if (rate <= 0) return 0;
+  return Math.floor((base * rate) / 100);
+}
+
+/** Чи екіпований щит у слоті l2 (без урахування Shield Mastery rate). */
+export function playerHasEquippedShield(eq: InventoryState['eq']): boolean {
+  const shSlot = normalizeEqSlot(eq?.l2);
+  if (!shSlot?.itemId) return false;
+  const wSlot = normalizeEqSlot(eq?.l1);
+  const wM = wSlot?.itemId ? ITEM_CATALOG[wSlot.itemId] : undefined;
+  if (wM && itemBlocksShieldSlot(wSlot!.itemId, wM.weaponType)) return false;
+  const shM = ITEM_CATALOG[shSlot.itemId];
+  return !!shM && shM.slot === 'lhand';
 }
 
 const JEWEL_EQ_KEYS = ['lr1', 'lr2', 'neck', 'le1', 'le2'] as const;
@@ -885,7 +918,7 @@ export function computeCombatStats(
     pAtkSpd,
     runSpeed,
     castSpd,
-    shieldPDef: 0,
+    shieldPDef: equippedShieldPDef(eq, B.shieldDefenceRatePct),
     mCritPct,
     critDmgMul: critDmgMulCombined,
     addCritDmg: B.addCritDmg,

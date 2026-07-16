@@ -26,14 +26,26 @@ import {
   battleRoarMpAtRank,
   battleRoarStatsNoteUk,
 } from '../data/battleRoarTables.js';
+import {
+  majestyMpAtRank,
+  majestyStatsNoteUk,
+} from '../data/majestyTables.js';
+import {
+  shieldStunMpAtRank,
+  shieldStunStatsNoteUk,
+} from '../data/shieldStunTables.js';
 import { powerSmashStatsNoteUk } from '../data/powerSmashTables.js';
 import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
 import { tripleSlashStatsNoteUk, sonicBlasterStatsNoteUk, sonicBusterStatsNoteUk, sonicStormStatsNoteUk } from '../data/sonicGladiatorTables.js';
-import {
-  provokeMpAtRank,
+import { provokeMpAtRank,
   provokePoleResistCutPctAtRank,
   provokeStatsNoteUk,
 } from '../data/provokeTables.js';
+import {
+  drainHealthMpAndPowerAtRank,
+  drainHealthStatsNoteUk,
+} from '../data/drainHealthTables.js';
+import { shieldMasteryStatsNoteUk } from '../data/shieldMasteryTables.js';
 import { hammerCrushStatsNoteUk } from '../data/hammerCrushTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
 import { applyL2dopXmlMagisterOverlay } from '../data/l2dopXmlMagisterOverlay.js';
@@ -84,6 +96,8 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
       return 'Toggle: удавана смерть; MP знімається в такті.';
     case 'l2_992':
       return 'Пасив: Sonic Mastery дає вампіризм для sonic-ударів (відновлення HP від шкоди).';
+    case 'l2_153':
+      return shieldMasteryStatsNoteUk(1);
     default:
       return null;
   }
@@ -246,6 +260,14 @@ function magisterBattleStatsPreviewCore(
         power: provokePoleResistCutPctAtRank(skillRank),
         statsNoteUk: provokeStatsNoteUk(skillRank),
       };
+    case 'l2_70': {
+      const row = drainHealthMpAndPowerAtRank(skillRank);
+      return {
+        mp: row?.mp ?? null,
+        power: row?.power ?? null,
+        statsNoteUk: drainHealthStatsNoteUk(skillRank, lv),
+      };
+    }
     case 'l2_1': {
       const xr = l2dopXmlSkillRow(1, skillRank);
       return {
@@ -388,6 +410,18 @@ function magisterBattleStatsPreviewCore(
         mp: battleRoarMpAtRank(skillRank) ?? 18,
         power: null,
         statsNoteUk: battleRoarStatsNoteUk(skillRank),
+      };
+    case 'l2_82':
+      return {
+        mp: majestyMpAtRank(skillRank) ?? 10,
+        power: null,
+        statsNoteUk: majestyStatsNoteUk(skillRank),
+      };
+    case 'l2_92':
+      return {
+        mp: shieldStunMpAtRank(skillRank) ?? null,
+        power: null,
+        statsNoteUk: shieldStunStatsNoteUk(skillRank, lv),
       };
     case 'l2_130': {
       const tfMp = l2dopXmlMpPower(130, skillRank);

@@ -18,6 +18,11 @@ import {
 import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import {
+  DRAIN_HEALTH_ABSORB_PCT,
+  drainHealthMpAndPowerAtRank,
+} from '../../data/drainHealthTables.js';
+import { resolveMagicBoltHit } from '../../data/l2dopHitResolution.js';
+import {
   canonicalBattleIdForAction,
   catalogEntryVisibleForProfession,
   humanFighterCatalogEntry,
@@ -397,6 +402,56 @@ export function resolveHumanFighterGapSkillsTurn(
       physOutcome: r.outcome,
       magicOutcome: null,
       ...(r.weaknessLogLineUk ? { weaknessLogLineUk: r.weaknessLogLineUk } : {}),
+    };
+  }
+
+  if (action === 'drain_health') {
+    reqEntry(action, String(l2Profession));
+    const cd = ctx.st.mysticSkillCdUntil?.['l2_70'];
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
+    }
+    const row = drainHealthMpAndPowerAtRank(rk);
+    if (!row) throw new Error('battle_skill_not_allowed');
+    const mMul = jsonFiniteNum(ctx.st.battleMods?.mysticMatkBuffMul) ?? 1;
+    const mAtkEff = Math.max(1, Math.floor(combat.mAtk * (mMul > 1 ? mMul : 1)));
+    const mobEva =
+      typeof ctx.st.mobEvasion === 'number' && Number.isFinite(ctx.st.mobEvasion)
+        ? Math.max(0, Math.floor(ctx.st.mobEvasion))
+        : Math.floor(Math.sqrt(combat.dex) * 6 + preLevel);
+    const r = resolveMagicBoltHit({
+      mAtk: mAtkEff,
+      mobMDef: ctx.st.mobMDef,
+      playerInt: combat.int,
+      playerWit: combat.wit,
+      playerMen: combat.men,
+      playerLevel: preLevel,
+      mobEvasion: mobEva,
+      skillPower: row.power,
+      bonusSps: 1,
+      mCritPct: combat.mCritPct,
+      magicCritDmgMul: combat.magicCritDmgMul,
+      allowMiss: true,
+      allowMagicCrit: true,
+    });
+    const heal =
+      r.damage > 0
+        ? Math.max(1, Math.floor((r.damage * DRAIN_HEALTH_ABSORB_PCT) / 100))
+        : 0;
+    const cdPatch = cooldownPatchForSkill(70, ctx);
+    return {
+      mpCost: row.mp,
+      pDmg: r.damage,
+      skillLine:
+        'Витягування життя (70, Drain Health): темний урон; +' +
+        DRAIN_HEALTH_ABSORB_PCT +
+        '% урону як HP.',
+      physOutcome: null,
+      magicOutcome: r.outcome,
+      ...(heal > 0
+        ? { playerHeal: heal, playerHealSourceUk: 'Drain Health' }
+        : {}),
+      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
     };
   }
 

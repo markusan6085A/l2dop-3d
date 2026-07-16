@@ -30,6 +30,16 @@ export interface HumanFighterSkillCatalogEntry {
     | 'human_dreadnought_or_duelist_or_phoenix_or_hell'
     /** Паладин і фінал гілки лицаря (Paladin → Phoenix Knight). */
     | 'human_paladin_track'
+    /** Knight, Dark Avenger, Hell Knight — Drain Health (70). */
+    | 'human_knight_drain_track'
+    /** Knight (1-ша профа лицаря) — Aggression, Ultimate Defense тощо. */
+    | 'human_knight'
+    /** Shield Stun (92): Knight → Paladin → Phoenix Knight. */
+    | 'human_knight_paladin_track'
+    /** Majesty (82): 1 р. — Knight; 2–3 р. — Paladin / Dark Avenger. */
+    | 'human_knight_majesty_track'
+    /** Knight, Paladin, Dark Avenger — Magic Resistance (147). */
+    | 'human_knight_resistance_track'
     /** Темний месник і фінал темної гілки (Dark Avenger → Hell Knight). */
     | 'human_dark_avenger_track'
     /** Фортеця щита (322): світла або темна 2–3 профа лицаря. */

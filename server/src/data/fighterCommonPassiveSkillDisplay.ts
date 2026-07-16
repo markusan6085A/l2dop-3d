@@ -34,6 +34,16 @@ export const FIGHTER_COMMON_PASSIVE_UK_BY_L2_ID = {
     hintUk:
       'Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +4.5, 43 р. — +122.1). Human Fighter.',
   },
+  147: {
+    nameUk: 'Опір магії (Magic Resistance)',
+    hintUk:
+      'Пасив: +M.Def (flat). 1 р. — +19, 51 р. (74 лв) — +108. Knight / Paladin / Dark Avenger та Elf/Dark Elf лицарі.',
+  },
+  153: {
+    nameUk: 'Майстерність щита (Shield Mastery)',
+    hintUk:
+      'Пасив: підвищує ефективність захисту щита при блоці (Shield Defence Rate). 1 р. — 50%, 4 р. (52 лв) — 100%. Ранги 1–2 — Knight; 3–4 — Paladin / Dark Avenger / Temple / Shillien Knight. Лише з екіпованим щитом.',
+  },
 } as const;
 
 export type FighterPassiveDisplay = {

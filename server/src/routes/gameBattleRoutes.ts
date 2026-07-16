@@ -484,6 +484,14 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             messageUk: 'Цей скіл зараз недоступний для твого персонажа.',
           });
         }
+        if (e instanceof Error && e.message === 'battle_player_stunned') {
+          return reply.code(400).send({
+            error: e.message,
+            code: 'battle_player_stunned',
+            reason: 'stunned',
+            messageUk: 'Ти оглушений і не можеш діяти.',
+          });
+        }
         if (e instanceof Error && e.message === 'mystic_spiritshot_bad_item') {
           return reply.code(400).send({
             error: e.message,

@@ -126,32 +126,17 @@
     return k === 'raid' || k === 'epic' || k === 'epic_guard';
   }
 
-  function battleUsesNumericMobHp(battle) {
-    if (!battle) return false;
-    if (battle.spawnId && String(battle.spawnId).indexOf('pvp:') === 0) return true;
-    return mobKindUsesNumericHpBar(battle.kind);
-  }
-
   function mobHpBarLabelText(kind, cur, max, spawnId) {
-    if (
-      (spawnId && String(spawnId).indexOf('pvp:') === 0) ||
-      mobKindUsesNumericHpBar(kind)
-    ) {
-      if (window.L2 && typeof L2.formatBarPair === 'function') {
-        return L2.formatBarPair(cur, max);
-      }
-      var m = max > 0 ? Number(max) : 1;
-      var x = Number(cur);
-      if (!Number.isFinite(x)) x = 0;
-      x = Math.max(0, Math.min(x, m));
-      return Math.round(x) + ' / ' + Math.round(m);
+    void kind;
+    void spawnId;
+    if (window.L2 && typeof L2.formatBarPair === 'function') {
+      return L2.formatBarPair(cur, max);
     }
-    if (window.L2 && typeof L2.formatBarPct === 'function') {
-      return L2.formatBarPct(cur, max);
-    }
-    var m2 = max > 0 ? max : 1;
-    var x2 = Math.max(0, Math.min(Number(cur), m2));
-    return ((x2 / m2) * 100).toFixed(1) + '%';
+    var m = max > 0 ? Number(max) : 1;
+    var x = Number(cur);
+    if (!Number.isFinite(x)) x = 0;
+    x = Math.max(0, Math.min(x, m));
+    return Math.round(x) + ' / ' + Math.round(m);
   }
 
   /**
@@ -384,6 +369,30 @@
     return null;
   }
 
+  /** Іконка скіла в лозі — той самий URL, що на хотбарі (`battle.skills[].iconUrl`). */
+  function skillIconUrlForBattleLog(battle, skillId) {
+    var sid = Math.floor(Number(skillId));
+    if (!Number.isFinite(sid) || sid <= 0) {
+      return '/icons/drops/other.svg';
+    }
+    var skills = battle && battle.skills;
+    if (skills && skills.length) {
+      for (var i = 0; i < skills.length; i++) {
+        var sk = skills[i];
+        if (!sk) continue;
+        if (Math.floor(Number(sk.l2SkillId)) !== sid) continue;
+        if (sk.iconUrl && String(sk.iconUrl).charAt(0) === '/') {
+          return window.L2 && typeof L2.sanitizeClientIconUrl === 'function'
+            ? L2.sanitizeClientIconUrl(String(sk.iconUrl))
+            : String(sk.iconUrl);
+        }
+      }
+    }
+    return window.L2 && typeof L2.resolveSkillIconUrl === 'function'
+      ? L2.resolveSkillIconUrl(sid, null)
+      : '/game/skill-icon/' + sid;
+  }
+
   function appendLogRowWithIcon(container, line, iconSrc, onImgErr, textClass) {
     var row = document.createElement('div');
     row.className = 'l2-battle-log-line l2-battle-log-line--drop';
@@ -594,10 +603,7 @@
           var skillText = skillLog.text;
           var stSkill = skillLog.skillHit ? 'log-skill-hit' : 'log-skill';
           if (skillLog.skillId > 0) {
-            var skillIcon =
-              window.L2 && typeof L2.resolveSkillIconUrl === 'function'
-                ? L2.resolveSkillIconUrl(skillLog.skillId, null)
-                : '/game/skill-icon/' + skillLog.skillId;
+            var skillIcon = skillIconUrlForBattleLog(opts.battle, skillLog.skillId);
             appendLogRowWithIcon(
               container,
               skillText,
@@ -977,6 +983,45 @@
     root.innerHTML = '';
   }
 
+  /** Іконки дебафів моба: з snapshot або з battleMods (fallback після hotbar resync). */
+  function resolveMobDebuffIconsForBattle(battle) {
+    if (!battle) return [];
+    if (battle.mobDebuffIcons && battle.mobDebuffIcons.length) {
+      return battle.mobDebuffIcons;
+    }
+    var bm = battle.battleMods;
+    if (!bm) return [];
+    var now = Date.now();
+    var out = [];
+    var stunUntil = Number(bm.mobStunUntilMs);
+    if (Number.isFinite(stunUntil) && stunUntil > now) {
+      var stunSid = Number(bm.mobStunIconSkillId);
+      out.push({
+        l2SkillId: Number.isFinite(stunSid) && stunSid > 0 ? Math.floor(stunSid) : 260,
+        labelUk: 'Оглушення (Shock)',
+      });
+    }
+    var sleepUntil = Number(bm.mobSleepUntilMs);
+    if (Number.isFinite(sleepUntil) && sleepUntil > now) {
+      var sleepSid = Number(bm.mobSleepIconSkillId);
+      out.push({
+        l2SkillId: Number.isFinite(sleepSid) && sleepSid > 0 ? Math.floor(sleepSid) : 1069,
+        labelUk: 'Сон (моб не атакує)',
+      });
+    }
+    return out;
+  }
+
+  function mobDebuffIconsSig(battle) {
+    var debs = resolveMobDebuffIconsForBattle(battle);
+    if (!debs.length) return '';
+    return debs
+      .map(function (d) {
+        return String(d.l2SkillId) + ':' + (d.labelUk || '');
+      })
+      .join('|');
+  }
+
   function renderMobAndLog(battle) {
     var title = $('battle-mob-title');
     var hpInner = $('battle-mob-hp-inner');
@@ -1021,17 +1066,16 @@
     renderSonicCharges(battle);
     setBar(hpInner, battle.mobHp, battle.mobMaxHp);
     if (hpVal) {
-      var numericMobHp = battleUsesNumericMobHp(battle);
       hpVal.textContent = mobHpBarLabelText(
         battle.kind,
         battle.mobHp,
         battle.mobMaxHp,
         battle.spawnId
       );
-      hpVal.classList.toggle('l2-battle-bar-innertext--pair', numericMobHp);
+      hpVal.classList.add('l2-battle-bar-innertext--pair');
     }
     if (debuffStripEl) {
-      var debs = battle.mobDebuffIcons;
+      var debs = resolveMobDebuffIconsForBattle(battle);
       var debSig = '';
       if (debs && debs.length) {
         debSig = debs
@@ -1091,14 +1135,13 @@
           var pct = document.createElement('span');
           pct.className = 'l2-battle-bar-innertext';
           setBar(inner, ex.mobHp, ex.mobMaxHp);
-          pct.textContent =
-            window.L2 && typeof L2.formatBarPct === 'function'
-              ? L2.formatBarPct(ex.mobHp, ex.mobMaxHp)
-              : (function () {
-                  var m = ex.mobMaxHp > 0 ? ex.mobMaxHp : 1;
-                  var x = Math.max(0, Math.min(Number(ex.mobHp), m));
-                  return ((x / m) * 100).toFixed(1) + '%';
-                })();
+          pct.textContent = mobHpBarLabelText(
+            battle.kind,
+            ex.mobHp,
+            ex.mobMaxHp,
+            battle.spawnId
+          );
+          pct.classList.add('l2-battle-bar-innertext--pair');
           outer.appendChild(inner);
           outer.appendChild(pct);
           wrap.appendChild(lbl);
@@ -1114,6 +1157,7 @@
       renderColoredLog(logEl, lines, {
         newestFirst: true,
         maxLines: BATTLE_LOG_MAX_VISIBLE,
+        battle: battle,
       });
       // Не показуємо battle-toast з останнім рядком логу — дублікат «Лог бою».
     }
@@ -1408,6 +1452,13 @@
           }
           patchBattleToggleBuffIcons(battle);
         }
+        if (Object.prototype.hasOwnProperty.call(delta, 'mobDebuffIcons')) {
+          if (delta.mobDebuffIcons && delta.mobDebuffIcons.length) {
+            battle.mobDebuffIcons = delta.mobDebuffIcons;
+          } else {
+            delete battle.mobDebuffIcons;
+          }
+        }
       }
       if (typeof delta.battleVersion === 'number') {
         lastBattleVersion = Math.floor(delta.battleVersion);
@@ -1491,6 +1542,7 @@
         ssSig,
         spSig,
         stanceSig,
+        mobDebuffIconsSig(b),
       ].join('\u001f');
     }
 
@@ -1674,6 +1726,34 @@
     function applyBattleMutationResult(res) {
       if (res && res.kind === 'delta') {
         if (res.delta && res.delta.hotbarStale) {
+          if (battle && res.delta) {
+            if (Object.prototype.hasOwnProperty.call(res.delta, 'battleMods')) {
+              if (
+                res.delta.battleMods &&
+                typeof res.delta.battleMods === 'object' &&
+                Object.keys(res.delta.battleMods).length > 0
+              ) {
+                battle.battleMods = res.delta.battleMods;
+              } else {
+                delete battle.battleMods;
+              }
+              patchBattleToggleBuffIcons(battle);
+            }
+            if (Object.prototype.hasOwnProperty.call(res.delta, 'mobDebuffIcons')) {
+              if (res.delta.mobDebuffIcons && res.delta.mobDebuffIcons.length) {
+                battle.mobDebuffIcons = res.delta.mobDebuffIcons;
+              } else {
+                delete battle.mobDebuffIcons;
+              }
+            }
+            if (res.delta.logTail && res.delta.logTail.length) {
+              var curLogHot = battle.log ? battle.log.slice() : [];
+              for (var hli = 0; hli < res.delta.logTail.length; hli++) {
+                curLogHot.push(res.delta.logTail[hli]);
+              }
+              battle.log = curLogHot;
+            }
+          }
           return 'hotbar_resync';
         }
         applyBattleDelta(res.delta);
@@ -1718,6 +1798,7 @@
     async function finalizeBattleActionResponse(res) {
       var outcome = applyBattleMutationResult(res);
       if (outcome === 'hotbar_resync') {
+        refreshUI();
         await syncBattleFromServerFull();
         refreshUI();
         return;
@@ -2072,6 +2153,7 @@
           battleHotbar.notifySkillUsed(act, battle);
         }
         if (outcome === 'hotbar_resync') {
+          refreshUI();
           await syncBattleFromServerFull();
           refreshUI();
           return;

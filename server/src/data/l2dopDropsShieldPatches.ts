@@ -2,6 +2,7 @@
  * Стати щитів у крамниці дропів (ключ = shopKey з каталогу, нижній регістр у мапі).
  */
 import type { DropsShopStatLineUk } from '../domain/dropsShopStatsPreviewUk.js';
+import dropsShopOverrides from './dropsShopOverrides.json';
 
 export interface DropsShieldPatch {
   /** Підпис у списку / модалці (англ. назва L2). */
@@ -156,6 +157,53 @@ export function dropsShieldPatchByNameUk(
   const key = String(nameUk ?? '').trim().toLowerCase();
   if (!key) return undefined;
   return L2DOP_DROPS_SHIELD_BY_NAME_UK_LOWER[key];
+}
+
+/** itemId → патч щита (shopKey з `dropsShopOverrides.json` + RAW). */
+export const L2DOP_DROPS_SHIELD_BY_ITEM_ID: Readonly<
+  Record<number, DropsShieldPatch>
+> = (() => {
+  const out: Record<number, DropsShieldPatch> = {};
+  const overrides = dropsShopOverrides as Record<
+    string,
+    { itemId?: number }
+  >;
+  for (const [segment, patch] of RAW) {
+    const segKey = pathKey(segment);
+    for (const [ovKey, ov] of Object.entries(overrides)) {
+      if (pathKey(ovKey) !== segKey) continue;
+      const id =
+        typeof ov.itemId === 'number' && Number.isFinite(ov.itemId)
+          ? Math.floor(ov.itemId)
+          : 0;
+      if (id > 0) out[id] = patch;
+    }
+  }
+  return out;
+})();
+
+/** Англ. назви для UA-підписів у `ITEM_CATALOG` (без циклічних імпортів). */
+const SHIELD_ITEM_EN_NAME_FALLBACK: Readonly<Record<number, string>> = {
+  18: 'Leather Shield',
+};
+
+/**
+ * Патч щита для екіпу: спочатку itemId, потім nameUk, потім EN-fallback (id 18 тощо).
+ */
+export function dropsShieldPatchForEquipped(
+  itemId: number,
+  nameUk?: string | null
+): DropsShieldPatch | undefined {
+  const id = Math.floor(itemId);
+  if (Number.isFinite(id) && id > 0) {
+    const byId = L2DOP_DROPS_SHIELD_BY_ITEM_ID[id];
+    if (byId) return byId;
+  }
+  const byName = dropsShieldPatchByNameUk(nameUk);
+  if (byName) return byName;
+  const en = SHIELD_ITEM_EN_NAME_FALLBACK[id];
+  if (en) return dropsShieldPatchByNameUk(en);
+  return undefined;
 }
 
 export function dropsShieldShopPreviewLines(

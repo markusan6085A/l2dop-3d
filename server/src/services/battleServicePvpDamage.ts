@@ -61,6 +61,80 @@ export async function applyPvpHitToVictimInTx(
   });
 }
 
+/**
+ * PvP: дзеркалить stun з battleMods атакуючого на жертву (`playerStunUntilMs`).
+ * Якщо stun прострочений або знятий — очищає поля на стороні жертви.
+ */
+export async function mirrorPvpStunToVictimInTx(
+  tx: Prisma.TransactionClient,
+  args: {
+    victimId: string;
+    attackerId: string;
+    stunUntilMs?: number;
+    iconSkillId?: number;
+    nowMs: number;
+  }
+): Promise<void> {
+  const victimId = String(args.victimId || '').trim();
+  const attackerId = String(args.attackerId || '').trim();
+  if (!victimId || !attackerId || victimId === attackerId) return;
+
+  const victim = await tx.character.findFirst({
+    where: { id: victimId },
+    select: { battleJson: true },
+  });
+  if (!victim) return;
+
+  const victimBj = parseBattleJson(victim.battleJson);
+  if (
+    !victimBj ||
+    !isPvpBattleJson(victimBj) ||
+    victimBj.pvpTargetCharacterId !== attackerId
+  ) {
+    return;
+  }
+
+  const untilRaw = args.stunUntilMs;
+  const nowMs = args.nowMs;
+  const active =
+    typeof untilRaw === 'number' &&
+    Number.isFinite(untilRaw) &&
+    untilRaw > nowMs;
+
+  const prevMods =
+    victimBj.battleMods && typeof victimBj.battleMods === 'object'
+      ? { ...victimBj.battleMods }
+      : {};
+
+  if (active) {
+    const sid =
+      typeof args.iconSkillId === 'number' &&
+      Number.isFinite(args.iconSkillId) &&
+      args.iconSkillId > 0
+        ? Math.floor(args.iconSkillId)
+        : 260;
+    prevMods.playerStunUntilMs = Math.floor(untilRaw);
+    prevMods.playerStunIconSkillId = sid;
+  } else {
+    delete prevMods.playerStunUntilMs;
+    delete prevMods.playerStunIconSkillId;
+  }
+
+  const patch: BattleJsonState = {
+    ...victimBj,
+    ...(Object.keys(prevMods).length > 0
+      ? { battleMods: prevMods }
+      : { battleMods: undefined }),
+  };
+  if (!patch.battleMods || Object.keys(patch.battleMods).length === 0) {
+    delete patch.battleMods;
+  }
+
+  await persistCharacterFieldsInTx(tx, victimId, {
+    battleJson: serializeBattleJsonForDb(patch),
+  });
+}
+
 /** Wrath (320): знімає CP у жертви PvP, якщо вона в mutual-бою з атакуючим. */
 export async function applyPvpCpDrainToVictimInTx(
   tx: Prisma.TransactionClient,

@@ -520,6 +520,17 @@ export function battleBuffIconsForUi(
       chargeMax: sonicMax,
     });
   }
+  const playerStunUntil = jsonFiniteNum(m.playerStunUntilMs);
+  if (playerStunUntil !== undefined && playerStunUntil > Date.now()) {
+    const psid = jsonFiniteNum(m.playerStunIconSkillId) ?? 260;
+    out.push({
+      key: 'player_debuff_stun',
+      l2SkillId: psid,
+      labelUk: 'Оглушення (Shock)',
+      buffExpiresAtMs: playerStunUntil,
+      buffDurationTotalMs: Math.max(1000, playerStunUntil - Date.now()),
+    });
+  }
   const wc = jsonFiniteNum(m?.warCryPatkMul ?? st.warCryPatkMul);
   const wcActive = activeByIdForIcons.get(78);
   if ((wc !== undefined && wc > 1) || wcActive) {

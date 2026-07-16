@@ -5,6 +5,7 @@
  */
 import {
   equippedArmorKindForPassives,
+  normalizeEqSlot,
   type InventoryState,
 } from './inventory.js';
 import {
@@ -20,15 +21,27 @@ import {
   weaponMasteryPatkAtRank,
 } from './weaponMasteryTables.js';
 import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
+import { ITEM_CATALOG } from './itemsCatalog.js';
 import {
   lightArmorMasteryEvasionFlatAtRank,
   lightArmorMasteryPdefPercentAtRank,
 } from './lightArmorMasteryTables.js';
 import { isSwordOrBluntWeaponKind } from './swordBluntMasteryTables.js';
+import { magicResistanceMdefFlatAtRank } from './magicResistanceTables.js';
+import {
+  shieldMasteryDefenceRatePctAtRank,
+} from './shieldMasteryTables.js';
 import type { TextRpgHfPassiveRow } from './textRpgPassiveEffects.generated.js';
 import type { TextRpgEffectMode } from './textRpgSkillEffectTypes.js';
 
 function powerAtRank(row: TextRpgHfPassiveRow, rank: number): number {
+  if (row.l2SkillId === 147) {
+    return magicResistanceMdefFlatAtRank(rank);
+  }
+  if (row.l2SkillId === 153) {
+    return shieldMasteryDefenceRatePctAtRank(rank);
+  }
   const r = Math.max(1, Math.min(row.maxRank, Math.floor(rank)));
   const p = row.powerByRank[r];
   return typeof p === 'number' && Number.isFinite(p) ? p : 0;
@@ -61,6 +74,18 @@ export function textRpgPassiveDeltaForSkill(
   const id = row.l2SkillId;
   const dPlace = dreadnoughtPlaceholderDelta(row, rank);
   if (dPlace) return dPlace;
+
+  if (id === 153) {
+    const sh = normalizeEqSlot(inv.eq?.l2);
+    if (!sh) return undefined;
+    const wSlot = normalizeEqSlot(inv.eq?.l1);
+    const wId = wSlot?.itemId ?? 0;
+    const wM = wId > 0 ? ITEM_CATALOG[wId] : undefined;
+    if (itemBlocksShieldSlot(wId, wM?.weaponType)) return undefined;
+    const rate = shieldMasteryDefenceRatePctAtRank(rank);
+    if (rate <= 0) return undefined;
+    return { shieldDefenceRatePct: rate };
+  }
 
   const p = powerAtRank(row, rank);
   if (p <= 0) return undefined;

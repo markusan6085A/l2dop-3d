@@ -25,6 +25,8 @@ export interface BattleDeltaPayload {
   hotbarStale?: boolean;
   /** Поточні battleMods (null — немає активних модів у бою). */
   battleMods?: BattleBattleMods | null;
+  /** Іконки дебафів на цілі (стун, −P.Def тощо) — під HP-баром моба / PvP-цілі. */
+  mobDebuffIcons?: import('./battleServiceTypes.js').BattleBuffIcon[];
 }
 
 export interface BattleSyncResponse extends BattleDeltaPayload {

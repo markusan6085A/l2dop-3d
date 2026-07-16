@@ -5,10 +5,24 @@ import {
 } from './l2dbInterludeHumanFighterSkillLevels.generated.js';
 import {
   l2dbMinCharLevelForSkillRank,
+  l2dbMaxRankForSkillId,
   l2dbSpCostForSkillRank,
   sonicBlasterMinCharLevelForRank,
   sonicBusterMinCharLevelForRank,
 } from './sonicGladiatorTables.js';
+import { humanFighterCatalogEntry } from './humanFighterSkillCatalog.lookup.js';
+import {
+  shieldMasteryRequiredLevelAtRank,
+  shieldMasterySpCostAtRank,
+} from './shieldMasteryTables.js';
+import {
+  majestyRequiredLevelAtRank,
+  majestySpCostAtRank,
+} from './majestyTables.js';
+import {
+  shieldStunRequiredLevelAtRank,
+  shieldStunSpCostAtRank,
+} from './shieldStunTables.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
 import { humanFighterCatalogHasBattleId } from './humanFighterSkillCatalog.lookup.js';
 import { humanMysticCatalogHasBattleId } from './humanMysticSkillCatalog.lookup.js';
@@ -93,12 +107,26 @@ export const MAX_SKILL_RANK_BY_BATTLE_ID: Record<string, number> = {
   l2_287: 1,
   l2_442: 1,
   l2_451: 2,
+  /** Magic Resistance — Knight / Paladin / Dark Avenger (l2db, 51 р.). */
+  l2_147: 51,
+  /** Shield Mastery — Knight / Paladin / Dark Avenger (Interlude, 4 р.). */
+  l2_153: 4,
+  /** Majesty — Knight (1 р.) / Paladin / Dark Avenger (3 р.). */
+  l2_82: 3,
+  /** Shield Stun — Knight → Paladin (Interlude, 52 р.). */
+  l2_92: 52,
 };
 
 export function maxSkillRankForBattleId(battleId: string): number {
   const c = canonicalBattleSkillId(battleId);
   const n = MAX_SKILL_RANK_BY_BATTLE_ID[c];
-  return typeof n === 'number' && n >= 1 ? n : 1;
+  if (typeof n === 'number' && n >= 1) return n;
+  const entry = humanFighterCatalogEntry(c);
+  if (entry) {
+    const fromL2db = l2dbMaxRankForSkillId(entry.l2SkillId);
+    if (fromL2db != null && fromL2db >= 1) return fromL2db;
+  }
+  return 1;
 }
 
 /**
@@ -123,6 +151,24 @@ export function minCharLevelForSkillRank(
     const fromSonic = sonicBusterMinCharLevelForRank(r);
     if (fromSonic !== undefined) return fromSonic;
   }
+  if (c === 'l2_147') {
+    const fromL2db = l2dbMinCharLevelForSkillRank(147, r);
+    if (fromL2db !== undefined) return fromL2db;
+  }
+  if (c === 'l2_153') {
+    const fromTable = shieldMasteryRequiredLevelAtRank(r);
+    if (fromTable !== undefined) return fromTable;
+  }
+  if (c === 'l2_82') {
+    const fromMajesty = majestyRequiredLevelAtRank(r);
+    if (fromMajesty !== undefined) return fromMajesty;
+  }
+  if (c === 'l2_92') {
+    const fromShieldStun = shieldStunRequiredLevelAtRank(r);
+    if (fromShieldStun !== undefined) return fromShieldStun;
+  }
+  const fromL2db = l2dbMinCharLevelForSkillRank(entry.l2SkillId, r);
+  if (fromL2db !== undefined) return fromL2db;
   const tbl = INTERLUDE_HF_MIN_CHAR_LEVEL_BY_RANK[c];
   if (tbl != null && r < tbl.length) {
     const v = tbl[r];
@@ -137,7 +183,8 @@ export function minCharLevelForSkillRank(
  */
 export function spCostForSkillRankUpgrade(
   battleId: string,
-  targetRank: number
+  targetRank: number,
+  mappedHumanProf?: string
 ): number | undefined {
   const c = canonicalBattleSkillId(battleId);
   const r = Math.max(1, Math.floor(targetRank));
@@ -153,6 +200,27 @@ export function spCostForSkillRankUpgrade(
     const sp = l2dbSpCostForSkillRank(9, r);
     if (sp !== undefined) return sp;
   }
+  if (c === 'l2_147') {
+    const sp = l2dbSpCostForSkillRank(147, r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_153') {
+    const sp = shieldMasterySpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_82' && mappedHumanProf) {
+    const sp = majestySpCostAtRank(r, mappedHumanProf);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_92') {
+    const sp = shieldStunSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  const fromL2dbSp = l2dbSpCostForSkillRank(
+    humanFighterCatalogEntry(c)?.l2SkillId ?? 0,
+    r
+  );
+  if (fromL2dbSp !== undefined) return fromL2dbSp;
   const tbl = INTERLUDE_HF_SP_BY_RANK[c];
   if (tbl != null && r < tbl.length && typeof tbl[r] === 'number') {
     const v = tbl[r];

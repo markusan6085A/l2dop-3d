@@ -6,6 +6,7 @@ import {
   battleVersionFromState,
 } from '../domain/battleVersion.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+import { battleMobDebuffIconsForUi } from './battleServiceBattleBuffs.js';
 import type { CharacterRow } from './charService.js';
 import type {
   BattleDeltaPayload,
@@ -86,6 +87,11 @@ export function buildBattleSyncResponse(args: {
     Object.keys(args.st.mysticSkillCdUntil).length > 0
       ? { ...args.st.mysticSkillCdUntil }
       : undefined);
+  const mobDebuffIcons = battleMobDebuffIconsForUi(args.st);
+  const battleMods =
+    args.st.battleMods && Object.keys(args.st.battleMods).length > 0
+      ? { ...args.st.battleMods }
+      : undefined;
 
   return {
     changed: true,
@@ -97,6 +103,8 @@ export function buildBattleSyncResponse(args: {
     outcome: null,
     battleEnded: false,
     mysticSkillCdUntil,
+    mobDebuffIcons,
+    ...(battleMods ? { battleMods } : {}),
     ...battleVitalsPayload({
       row: args.row,
       st: args.st,
@@ -161,6 +169,7 @@ export function buildBattleDeltaPayload(args: {
     st.battleMods && Object.keys(st.battleMods).length > 0
       ? { ...st.battleMods }
       : null;
+  const mobDebuffIcons = battleMobDebuffIconsForUi(st);
 
   return {
     changed: true,
@@ -172,6 +181,7 @@ export function buildBattleDeltaPayload(args: {
     battleEnded: args.battleEnded ?? false,
     mysticSkillCdUntil,
     battleMods,
+    mobDebuffIcons,
     ...(args.hotbarStale ? { hotbarStale: true } : {}),
     ...battleVitalsPayload({
       row: args.row,

@@ -9,6 +9,7 @@
  * броні чи стат-бусти) повністю пропадали з розрахунку статів.
  */
 import type { InventoryState } from './inventory.js';
+import { normalizeEqSlot } from './inventory.js';
 import {
   applyBuffDelta,
   neutralCombatBuffs,
@@ -24,6 +25,11 @@ import {
 import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from './l2dopXmlSkillLevels.lookup.js';
 import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
+import { ITEM_CATALOG } from './itemsCatalog.js';
+import {
+  shieldMasteryDefenceRatePctAtRank,
+} from './shieldMasteryTables.js';
 import {
   dualWeaponMasteryPatkFlatAtRank,
 } from './dualWeaponMasteryTables.js';
@@ -150,6 +156,17 @@ export function learnedRaceFighterPassivesBuffDelta(
       if (wk !== 'dual' && wk !== 'dualsword') continue;
       const patk = dualWeaponMasteryPatkFlatAtRank(r);
       if (patk > 0) acc = applyBuffDelta(acc, { addPatk: patk });
+      continue;
+    }
+    if (cat.l2SkillId === 153) {
+      const sh = normalizeEqSlot(_inv.eq?.l2);
+      if (!sh) continue;
+      const wSlot = normalizeEqSlot(_inv.eq?.l1);
+      const wId = wSlot?.itemId ?? 0;
+      const wM = wId > 0 ? ITEM_CATALOG[wId] : undefined;
+      if (itemBlocksShieldSlot(wId, wM?.weaponType)) continue;
+      const rate = shieldMasteryDefenceRatePctAtRank(r);
+      if (rate > 0) acc = applyBuffDelta(acc, { shieldDefenceRatePct: rate });
       continue;
     }
     const row = cat.levels[r - 1];

@@ -896,10 +896,14 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-battle-mob-hp-outer .l2-battle-bar-innertext--pair {
-  font-size: 8px;
+  font-size: 9px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
   white-space: nowrap;
+}
+
+.l2-battle-mob-hp-outer .l2-battle-bar-innertext {
+  font-size: 9px;
 }
 
 .l2-battle-mob-panel {
@@ -933,17 +937,21 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-battle-mob-debuff-strip {
-  margin: 6px auto 8px;
-  min-height: 20px;
+  margin: 4px 0 0;
+  min-height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
 }
 
+.l2-battle-mob-hp-wrap .l2-battle-mob-debuff-strip {
+  width: 100%;
+}
+
 .l2-battle-mob-debuff-icon {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 2px;
   border: 1px solid rgba(255, 152, 94, 0.8);
   box-shadow:
@@ -1023,26 +1031,42 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-battle-bar-row--mob.l2-battle-mob-bars .l2-battle-mob-hp-wrap {
   order: 1;
+  width: 100%;
+  max-width: 100%;
 }
 
-/* Явна ширина блоку HP — інакше flex з basis auto стискає .l2-battle-bar-outer до 0 */
+/* Явна ширина блоку HP — на всю панель моба */
 .l2-battle-mob-hp-wrap {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
   align-items: center;
-  flex-direction: row;
-  gap: 4px;
+  gap: 4px 6px;
   box-sizing: border-box;
-  flex: 0 0 auto;
-  width: min(220px, 72%);
-  max-width: 72%;
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
+.l2-battle-mob-hp-wrap .l2-battle-bar-lbl {
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .l2-battle-mob-hp-wrap .l2-battle-bar-outer {
+  grid-column: 2;
+  grid-row: 1;
   flex: 1 1 auto;
-  width: auto;
-  min-width: 88px;
+  width: 100%;
+  min-width: 0;
   max-width: none;
-  height: 14px;
+  height: 16px;
+}
+
+.l2-battle-mob-hp-wrap .l2-battle-mob-debuff-strip {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin-top: 2px;
 }
 
 .l2-battle-mob-hp-name {

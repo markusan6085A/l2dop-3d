@@ -25,6 +25,8 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   78: 300,
   /** Detect Monster Weakness — 10 хв */
   80: 600,
+  /** Majesty — 5 хв */
+  82: 300,
   /** Detect Animal Weakness — 10 хв */
   87: 600,
   /** Detect Dragon Weakness — 10 хв */

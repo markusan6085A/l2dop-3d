@@ -107,6 +107,9 @@
     aggression: 18,
     remedy: 44,
     holy_strike: 49,
+    drain_health: 70,
+    majesty: 82,
+    shield_stun: 92,
     sanctuary: 97,
     aegis_stance: 318,
     horror: 65,
@@ -272,6 +275,20 @@
     return null;
   }
 
+  function skillIconUrlForBattleAction(battle, actionId) {
+    var aid = canonicalBattleActionId(actionId);
+    var skills = filterBattleSkillsForUi((battle && battle.skills) || []);
+    for (var i = 0; i < skills.length; i++) {
+      if (!battleSkillRowMatchesAction(skills[i].id, aid)) continue;
+      return skillIconUrl(
+        aid,
+        skills[i].l2SkillId,
+        skills[i].iconUrl
+      );
+    }
+    return skillIconUrl(aid, l2SkillIdForBattleAction(battle, aid));
+  }
+
   function mergeCharacterCatalog(j) {
     if (!j || !global.L2) return;
     if (j.gearCatalog && L2.mergeGearCatalog) {
@@ -344,10 +361,15 @@
     button.appendChild(img);
   }
 
-  function skillIconUrl(actionId, l2SkillId) {
+  function skillIconUrl(actionId, l2SkillId, iconUrlHint) {
     /* Файл з пакета: public/skills/attack.jpg (не обов’язково той самий арт, що 0001.jpg). */
     if (actionId === 'attack') {
       return '/skills/attack.jpg';
+    }
+    if (iconUrlHint && String(iconUrlHint).charAt(0) === '/') {
+      return global.L2 && typeof L2.sanitizeClientIconUrl === 'function'
+        ? L2.sanitizeClientIconUrl(String(iconUrlHint))
+        : String(iconUrlHint);
     }
     if (global.L2 && typeof L2.resolveSkillIconUrl === 'function') {
       var fallbackN =
@@ -1082,7 +1104,10 @@
               b.type = 'button';
               b.className = 'l2-battle-hotbar-pick';
               b.title = sk.labelUk || sk.id;
-              appendHotbarPickImg(b, skillIconUrl(sk.id, sk.l2SkillId));
+              appendHotbarPickImg(
+                b,
+                skillIconUrl(sk.id, sk.l2SkillId, sk.iconUrl)
+              );
               b.addEventListener('click', function () {
                 if (pickerSlot == null) return;
                 slotsCache[pickerSlot] = { k: 'a', a: canonicalBattleActionId(sk.id) };
@@ -1177,7 +1202,7 @@
               var tit;
               if (s.k === 'a') {
                 var ca = canonicalBattleActionId(s.a);
-                src = skillIconUrl(ca, l2SkillIdForBattleAction(battle, ca));
+                src = skillIconUrlForBattleAction(battle, ca);
                 tit = labelForBattleAction(battle, ca);
               } else {
                 src = itemIconUrlForBattleItem(s.id);
@@ -1266,10 +1291,7 @@
         var imgA = document.createElement('img');
         imgA.className = 'l2-battle-hotbar-slot-img';
         imgA.alt = '';
-        imgA.src = skillIconUrl(
-          actId,
-          l2SkillIdForBattleAction(battle, actId)
-        );
+        imgA.src = skillIconUrlForBattleAction(battle, actId);
         imgA.addEventListener('error', function () {
           imgA.src = '/icons/drops/other.svg';
         });

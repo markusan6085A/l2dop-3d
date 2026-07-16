@@ -24,6 +24,7 @@ import {
   humanFighterCatalogEntry,
   learnedHumanFighterHotbarPickSkills,
   l2SkillIdForBattleActionIcon,
+  skillIconUrlForClient,
 } from '../data/humanFighterSkillCatalog.js';
 import { fighterCatalogEntryForRace } from '../data/fighterSkillCatalog.byRace.js';
 import { mysticCatalogEntryForRace } from '../data/mysticSkillCatalog.byRace.js';
@@ -221,6 +222,7 @@ export function battleSkillBarForChar(
   id: BattleActionId;
   labelUk: string;
   l2SkillId?: number;
+  iconUrl?: string;
   cooldownSec?: number;
 }[] {
   const prof = effectiveBattleProfession(l2Profession, classBranch, _race);
@@ -233,8 +235,10 @@ export function battleSkillBarForChar(
       id: BattleActionId;
       labelUk: string;
       l2SkillId: number;
+      iconUrl: string;
       cooldownSec?: number;
     }[] = bar.map((s) => {
+      const l2Id = l2SkillIdForBattleActionIcon(s.id);
       const cdSec = mysticCooldownSecForBattleAction(s.id, _race, {
         ...(cdCtx ?? {}),
         classBranch,
@@ -242,7 +246,8 @@ export function battleSkillBarForChar(
       return {
         id: s.id,
         labelUk: s.labelUk,
-        l2SkillId: l2SkillIdForBattleActionIcon(s.id),
+        l2SkillId: l2Id,
+        iconUrl: skillIconUrlForClient(l2Id),
         ...(cdSec != null ? { cooldownSec: cdSec } : {}),
       };
     });
@@ -257,12 +262,14 @@ export function battleSkillBarForChar(
       id: BattleActionId;
       labelUk: string;
       l2SkillId: number;
+      iconUrl: string;
       cooldownSec?: number;
     }[] = [
       {
         id: 'attack',
         labelUk: 'Атака',
         l2SkillId: l2SkillIdForBattleActionIcon('attack'),
+        iconUrl: '/skills/attack.jpg',
       },
     ];
     const seen = new Set<BattleActionId>(['attack']);
@@ -287,17 +294,22 @@ export function battleSkillBarForChar(
         id: row.id,
         labelUk: row.labelUk,
         l2SkillId: row.l2SkillId,
+        iconUrl: skillIconUrlForClient(row.l2SkillId),
         ...(cdPick != null ? { cooldownSec: cdPick } : {}),
       });
     }
     return filterBattleSkillBarRows(out);
   }
   return filterBattleSkillBarRows(
-    legacyMeleeSkillBar().map((s) => ({
-      id: s.id,
-      labelUk: s.labelUk,
-      l2SkillId: l2SkillIdForBattleActionIcon(s.id),
-    }))
+    legacyMeleeSkillBar().map((s) => {
+      const l2Id = l2SkillIdForBattleActionIcon(s.id);
+      return {
+        id: s.id,
+        labelUk: s.labelUk,
+        l2SkillId: l2Id,
+        iconUrl: skillIconUrlForClient(l2Id),
+      };
+    })
   );
 }
 

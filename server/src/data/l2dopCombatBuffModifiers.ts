@@ -73,6 +73,11 @@ export interface L2dopCombatBuffModifiers {
   addDebuffLandChancePct: number;
   /** +N% до шансу фіз. крита (до капа 60%) перед мапінгом у critRate. */
   addPhysicalCritChancePct: number;
+  /**
+   * Shield Mastery (153): % ефективності захисту щита при блоці (Interlude p_shield_defence_rate).
+   * Застосовується до shieldPDef у snapshot лише з екіпованим щитом.
+   */
+  shieldDefenceRatePct: number;
 }
 
 const NEUTRAL: L2dopCombatBuffModifiers = {
@@ -122,6 +127,7 @@ const NEUTRAL: L2dopCombatBuffModifiers = {
   skillMpCostMul: 1,
   addDebuffLandChancePct: 0,
   addPhysicalCritChancePct: 0,
+  shieldDefenceRatePct: 0,
 };
 
 export function neutralCombatBuffs(): L2dopCombatBuffModifiers {
@@ -185,6 +191,10 @@ export function applyBuffDelta(
       base.addDebuffLandChancePct + (d.addDebuffLandChancePct ?? 0),
     addPhysicalCritChancePct:
       base.addPhysicalCritChancePct + (d.addPhysicalCritChancePct ?? 0),
+    shieldDefenceRatePct: Math.max(
+      base.shieldDefenceRatePct,
+      d.shieldDefenceRatePct ?? 0
+    ),
   };
 }
 

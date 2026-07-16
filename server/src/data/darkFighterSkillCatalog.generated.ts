@@ -3484,8 +3484,8 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 147,
     minLevel: 40,
     spCost: 14000,
-    nameUk: "Magic Resistance",
-    hintUk: "Magic Resistance",
+    nameUk: "Опір магії (Magic Resistance)",
+    hintUk: "Пасив: +M.Def (flat). 1 р. — +19, 51 р. (74 лв) — +108. Knight / Paladin / Dark Avenger та Elf/Dark Elf лицарі.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3770,9 +3770,10 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     battleId: "l2_153",
     l2SkillId: 153,
     minLevel: 20,
-    spCost: 4700,
-    nameUk: "Shield Mastery",
-    hintUk: "Shield Mastery",
+    spCost: 4100,
+    nameUk: "Майстерність щита (Shield Mastery)",
+    hintUk:
+      "Пасив: підвищує ефективність захисту щита при блоці (Shield Defence Rate). 1 р. — 50%, 4 р. (52 лв) — 100%. Ранги 1–2 — Knight; 3–4 — Paladin / Dark Avenger / Temple / Shillien Knight. Лише з екіпованим щитом.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3784,21 +3785,35 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       {
         level: 1,
         requiredLevel: 20,
-        spCost: 4700,
+        spCost: 4100,
         mpCost: 0,
-        power: 60
+        power: 50
       },
       {
         level: 2,
         requiredLevel: 28,
-        spCost: 13000,
+        spCost: 12000,
         mpCost: 0,
         power: 70
+      },
+      {
+        level: 3,
+        requiredLevel: 40,
+        spCost: 26000,
+        mpCost: 0,
+        power: 85
+      },
+      {
+        level: 4,
+        requiredLevel: 52,
+        spCost: 94000,
+        mpCost: 0,
+        power: 100
       }
     ],
     effects: [
       {
-        stat: "shieldBlockRate",
+        stat: "shieldDefenceRate",
         mode: "flat"
       }
     ],
