@@ -30,7 +30,7 @@ import { parseSkillsLearnedJson } from './skillLearnService.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { isInPvpSafeZone } from '../domain/pvpSafeZones.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
-import { battleViewFromState, skillCooldownUiContextFromParts } from './battleServiceBattleUi.js';
+import { battleViewFromState, skillCooldownUiContextFromRow } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
@@ -177,10 +177,9 @@ function buildPvpBattleView(
     parseInventory(attackerRow.inventoryJson),
     persistableActiveBuffsFromJson(attackerRow.activeBuffsJson, Date.now()),
     parseSkillCooldowns(attackerRow.skillCooldownsJson, Date.now()),
-    skillCooldownUiContextFromParts(
-      attackerRow.classBranch,
-      snap.castSpd,
-      snap.pAtkSpd,
+    skillCooldownUiContextFromRow(
+      attackerRow,
+      effLv0,
       snap.learnedBattleSkillsDetail
     )
   );

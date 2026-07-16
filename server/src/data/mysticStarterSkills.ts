@@ -30,6 +30,14 @@ function isInnateMysticStarterAttack(entry: HumanMysticSkillCatalogEntry): boole
   return !!r1 && r1.level === 1 && r1.spCost === 0;
 }
 
+/** Self Heal (l2_1216) — innate зцілення себе на 1 р. */
+function isInnateMysticStarterSelfHeal(entry: HumanMysticSkillCatalogEntry): boolean {
+  if (entry.kind !== 'battle' || entry.minLevel > 1) return false;
+  if (entry.l2SkillId !== 1216 || entry.category !== 'heal') return false;
+  const r1 = entry.levels[0];
+  return !!r1 && r1.level === 1 && r1.spCost === 0 && entry.levels.length === 1;
+}
+
 /**
  * Стартові вивчені скіли мага за расою (як innate у L2 Interlude):
  * Wind Strike + безкоштовні однорангові пасиви (Spellcraft, Anti Magic, Lucky, …).
@@ -42,7 +50,11 @@ export function mysticStarterLearnedSkillsForRace(race: string): LearnedSkillEnt
 
   for (const entry of catalog) {
     if (!entry.visibleForProfessions.includes(prof)) continue;
-    if (!isInnateMysticPassive(entry) && !isInnateMysticStarterAttack(entry)) {
+    if (
+      !isInnateMysticPassive(entry) &&
+      !isInnateMysticStarterAttack(entry) &&
+      !isInnateMysticStarterSelfHeal(entry)
+    ) {
       continue;
     }
     if (seen.has(entry.battleId)) continue;

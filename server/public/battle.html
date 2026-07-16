@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260716mobHpNumeric2" />
+    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260716profQuestFrame1" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260713battleLogBold1" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260716profQuestFrame1" />
   </head>
   <body class="l2-body l2-page-city l2-page-battle l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
@@ -87,7 +87,16 @@
               <h2 class="l2-battle-mob-title" id="battle-mob-title"></h2>
               <p class="l2-battle-buffs l2-battle-buffs--sr" id="battle-active-buffs" hidden aria-live="polite"></p>
               <div class="l2-battle-bar-row l2-battle-bar-row--mob l2-battle-mob-bars">
-                <div class="l2-battle-mob-hp-wrap">
+                <div class="l2-battle-mob-hp-wrap" id="battle-mob-hp-wrap">
+                  <img
+                    id="battle-mob-icon"
+                    class="l2-battle-mob-icon"
+                    width="52"
+                    height="52"
+                    alt=""
+                    decoding="async"
+                    hidden
+                  />
                   <span class="l2-battle-bar-lbl" data-i18n="battle_lbl_hp">HP</span>
                   <div
                     class="l2-pers-bar-outer l2-battle-bar-outer l2-battle-mob-hp-outer"
@@ -244,6 +253,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
     <script src="/battle-hotbar.js?v=20260715hotbarSafeImg1"></script>
-    <script src="/battle.js?v=20260716mobHpNumeric2"></script>
+    <script src="/battle.js?v=20260716mobPortrait2"></script>
   </body>
 </html>

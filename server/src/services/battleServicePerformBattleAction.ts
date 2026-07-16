@@ -85,6 +85,7 @@ import {
   persistBattleDefeatInTx,
 } from './battleServiceBattleOutcomeTx.js';
 import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, applyPvpCpSetToVictimInTx, mirrorPvpPhysSkillsBlockToVictimInTx, mirrorPvpStunToVictimInTx, mirrorPvpTouchOfDeathToVictimInTx } from './battleServicePvpDamage.js';
+import { appendPvpTurnHitLogsInTx } from './battleServicePvpBattleLog.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -1258,7 +1259,12 @@ export async function performBattleAction(
         pDmg > 0 ||
         (playerDamageLogLines != null && playerDamageLogLines.length > 0);
       const l2Id = l2SkillIdForBattleLogLine(action);
-      log.push(formatBattleSkillLogLineForClient(compact, l2Id, skillHit));
+      const pvpBattle = isPvpBattleJson(st);
+      if (!pvpBattle) {
+        log.push(formatBattleSkillLogLineForClient(compact, l2Id, skillHit));
+      } else if (!skillHit) {
+        log.push(formatBattleSkillLogLineForClient(compact, l2Id, false));
+      }
     }
     if (weaknessLogLineUk) log.push(weaknessLogLineUk);
     if (playerDamageLogLines && playerDamageLogLines.length > 0) {
@@ -1325,23 +1331,37 @@ export async function performBattleAction(
       physOutcome === null &&
       magicOutcome === null &&
       action !== 'bolt';
-    if (!skipDamageFollowupLog && !(playerDamageLogLines && playerDamageLogLines.length > 0)) {
-      if (action === 'bolt') {
-        if (magicOutcome === 'miss') {
-          log.push('Промах (магія).');
+    if (!skipDamageFollowupLog) {
+      if (isPvpBattleJson(st)) {
+        await appendPvpTurnHitLogsInTx(tx, {
+          st,
+          attackerId: char.id,
+          attackerName: char.name,
+          action,
+          skillLine,
+          pDmg,
+          physOutcome,
+          magicOutcome,
+          log,
+        });
+      } else if (!(playerDamageLogLines && playerDamageLogLines.length > 0)) {
+        if (action === 'bolt') {
+          if (magicOutcome === 'miss') {
+            log.push('Промах (магія).');
+          } else if (magicOutcome === 'crit' && pDmg > 0) {
+            log.push('Крит! Ти завдав ' + pDmg + ' урона.');
+          } else {
+            log.push('Ти завдав ' + pDmg + ' урона.');
+          }
         } else if (magicOutcome === 'crit' && pDmg > 0) {
+          log.push('Крит! Ти завдав ' + pDmg + ' урона.');
+        } else if (physOutcome === 'miss') {
+          log.push('Промах.');
+        } else if (physOutcome === 'crit' && pDmg > 0) {
           log.push('Крит! Ти завдав ' + pDmg + ' урона.');
         } else {
           log.push('Ти завдав ' + pDmg + ' урона.');
         }
-      } else if (magicOutcome === 'crit' && pDmg > 0) {
-        log.push('Крит! Ти завдав ' + pDmg + ' урона.');
-      } else if (physOutcome === 'miss') {
-        log.push('Промах.');
-      } else if (physOutcome === 'crit' && pDmg > 0) {
-        log.push('Крит! Ти завдав ' + pDmg + ' урона.');
-      } else {
-        log.push('Ти завдав ' + pDmg + ' урона.');
       }
     }
     if (

@@ -23,6 +23,7 @@ export {
 } from './humanMysticSkillCatalog.lookup.js';
 export {
   mysticCatalogEntryVisibleForProfession,
+  mysticCatalogEntryAllowsSkillRank,
   mysticCatalogEntryOfferedAtGludioMagister,
 } from './humanMysticSkillCatalog.professionRules.js';
 export {

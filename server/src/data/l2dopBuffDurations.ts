@@ -123,6 +123,8 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   1242: 1200,
   /** Bless Shield */
   1243: 1200,
+  /** Ice Bolt — сповільнення руху моба */
+  1184: 120,
 };
 
 /** Секунди тривалості для `skillId`; `undefined` — тривалість не описана (трактується як постійний). */

@@ -37,6 +37,29 @@ import {
 } from './humanFighterTurnHelpers.js';
 import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
 import {
+  MYSTIC_SELF_HEAL_L2_SKILL_ID,
+  MYSTIC_SELF_HEAL_POWER,
+  MYSTIC_BATTLE_HEAL_L2_SKILL_ID,
+  MYSTIC_GROUP_HEAL_L2_SKILL_ID,
+} from '../../data/l2dopHumanMysticBattleSkills.js';
+import {
+  battleHealPowerAtRank,
+  isBattleHealStarterRank,
+} from '../../data/battleHealTables.js';
+import { groupHealPowerAtRank } from '../../data/groupHealTables.js';
+import {
+  iceBoltPowerAtRank,
+  iceBoltSlowDurationMs,
+  isIceBoltCatalogSkill,
+  ICE_BOLT_RUN_SPEED_MUL,
+} from '../../data/iceBoltTables.js';
+import {
+  curseWeaknessDebuffExpiresAtMs,
+  curseWeaknessMpCostAtRank,
+  curseWeaknessPatkMulAtRank,
+  isCurseWeaknessCatalogSkill,
+} from '../../data/curseWeaknessTables.js';
+import {
   assertSkillCooldownReady,
   isCooldownBlocked,
 } from './humanFighterTurnHelpers.js';
@@ -421,6 +444,20 @@ export function mysticDebuffPatch(
     fx.some((e) => pred(String(e.stat || '')));
   const hasName = (re: RegExp): boolean => re.test(entry.nameUk);
 
+  if (isIceBoltCatalogSkill(entry.l2SkillId)) {
+    return {
+      mobRunSpeedDebuffMul: ICE_BOLT_RUN_SPEED_MUL,
+      mobRunSpeedDebuffIconSkillId: entry.l2SkillId,
+    };
+  }
+
+  if (isCurseWeaknessCatalogSkill(entry.l2SkillId)) {
+    return {
+      mobPatkDebuffMul: curseWeaknessPatkMulAtRank(rank),
+      mobPatkDebuffIconSkillId: entry.l2SkillId,
+    };
+  }
+
   if (
     has((s) =>
       [
@@ -577,6 +614,18 @@ function skillExpiresPatch(skillId: number): Record<string, number> | undefined 
   return { [String(skillId)]: Date.now() + Math.floor(sec * 1000) };
 }
 
+function mysticDebuffExpiresPatch(
+  entry: HumanMysticSkillCatalogEntry,
+  rank: number
+): Record<string, number> | undefined {
+  if (isCurseWeaknessCatalogSkill(entry.l2SkillId)) {
+    const exp = curseWeaknessDebuffExpiresAtMs(rank, Date.now());
+    if (exp === undefined) return undefined;
+    return { [String(entry.l2SkillId)]: exp };
+  }
+  return skillExpiresPatch(entry.l2SkillId);
+}
+
 export function resolveHumanMysticTurn(
   ctx: BattleSkillResolveContext,
   rollPhys: PhysicalRollFn,
@@ -635,20 +684,33 @@ export function resolveHumanMysticTurn(
     assertSkillCooldownReady(cdUntil);
   }
 
-  const mpCost = Math.max(
+  const mpCostRaw = Math.max(
     0,
     Math.floor(xmlRow?.m ?? row?.mpCost ?? 0)
   );
+  let mpCost = mpCostRaw;
+  if (isCurseWeaknessCatalogSkill(entry.l2SkillId)) {
+    const mpFromTable = curseWeaknessMpCostAtRank(rank);
+    if (mpFromTable !== undefined) mpCost = mpFromTable;
+  }
   const rowPower = row?.power ?? 0;
-  const skillPower =
+  let skillPower =
     xmlRow == null
       ? rowPower
-      : xmlRow.p !== 0 ||
-          entry.category === 'magic_attack' ||
-          entry.category === 'physical_attack' ||
-          entry.category === 'heal'
-        ? xmlRow.p
-        : rowPower;
+      : (() => {
+          const xmlP = xmlRow.p;
+          const preferXml =
+            xmlP !== 0 ||
+            entry.category === 'magic_attack' ||
+            entry.category === 'physical_attack' ||
+            entry.category === 'heal';
+          if (!preferXml) return rowPower;
+          return xmlP !== 0 ? xmlP : rowPower;
+        })();
+  if (isIceBoltCatalogSkill(entry.l2SkillId)) {
+    const fromTable = iceBoltPowerAtRank(rank);
+    if (fromTable > 0) skillPower = fromTable;
+  }
   const effectiveCastSpd = effectiveCastSpdForCooldown(ctx);
   const fixedCdRaw =
     typeof entry.cooldownSec === 'number' && entry.cooldownSec > 0
@@ -783,6 +845,13 @@ export function resolveHumanMysticTurn(
         if (Object.keys(deb).length > 0) {
           battleModsPatch = applyMobDebuffsWithPolicy(st, deb, entry.l2SkillId);
         }
+        if (battleModsPatch?.mobRunSpeedDebuffMul !== undefined) {
+          const until = Date.now() + iceBoltSlowDurationMs();
+          battleModsPatch = {
+            ...battleModsPatch,
+            mobRunSpeedDebuffUntilMs: until,
+          };
+        }
         if (isControlDebuff(entry)) {
           skipMobCounterAttackOnce = true;
           mobRetaliationDelayHits = entry.l2SkillId === 1069 ? 3 : 2;
@@ -837,6 +906,59 @@ export function resolveHumanMysticTurn(
         skillLine: entry.nameUk + '. Уміння слуги застосовано.',
         physOutcome: null,
         magicOutcome: null,
+        mysticSkillCdUntilPatch,
+      };
+    }
+    /** Self Heal (1216): flat power з каталогу, лише на себе. */
+    if (entry.l2SkillId === MYSTIC_SELF_HEAL_L2_SKILL_ID) {
+      const heal = Math.max(
+        1,
+        Math.floor(skillPower > 0 ? skillPower : MYSTIC_SELF_HEAL_POWER)
+      );
+      return {
+        mpCost,
+        pDmg: 0,
+        skillLine,
+        physOutcome: null,
+        magicOutcome: null,
+        playerHeal: heal,
+        mysticSkillCdUntilPatch,
+      };
+    }
+    /** Battle Heal (1015) ранги 1–3: flat power з таблиці Interlude. */
+    if (
+      entry.l2SkillId === MYSTIC_BATTLE_HEAL_L2_SKILL_ID &&
+      isBattleHealStarterRank(rank)
+    ) {
+      const fromTable = battleHealPowerAtRank(rank);
+      const heal = Math.max(
+        1,
+        Math.floor(fromTable > 0 ? fromTable : skillPower)
+      );
+      return {
+        mpCost,
+        pDmg: 0,
+        skillLine,
+        physOutcome: null,
+        magicOutcome: null,
+        playerHeal: heal,
+        mysticSkillCdUntilPatch,
+      };
+    }
+    /** Group Heal (1027): flat power з таблиці Interlude (усі ранги). */
+    if (entry.l2SkillId === MYSTIC_GROUP_HEAL_L2_SKILL_ID) {
+      const fromTable = groupHealPowerAtRank(rank);
+      const heal = Math.max(
+        1,
+        Math.floor(fromTable > 0 ? fromTable : skillPower)
+      );
+      return {
+        mpCost,
+        pDmg: 0,
+        skillLine,
+        physOutcome: null,
+        magicOutcome: null,
+        playerHeal: heal,
         mysticSkillCdUntilPatch,
       };
     }
@@ -929,7 +1051,7 @@ export function resolveHumanMysticTurn(
         : undefined;
     const expPatch =
       landed && Object.keys(deb).length > 0
-        ? skillExpiresPatch(entry.l2SkillId)
+        ? mysticDebuffExpiresPatch(entry, rank)
         : undefined;
     return {
       mpCost,

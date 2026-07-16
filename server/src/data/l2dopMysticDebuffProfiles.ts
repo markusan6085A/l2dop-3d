@@ -22,7 +22,8 @@ const PVE_PROFILES: MysticDebuffProfileMap = {
   // Eva's Saint / Elven Elder
   1273: { baseChance: 0.44, minChance: 0.12, maxChance: 0.82, control: 'hard' }, // Eva's Serenade
   1160: { baseChance: 0.66, minChance: 0.2, maxChance: 0.94, control: 'soft' }, // Slow
-  1164: { baseChance: 0.72, minChance: 0.24, maxChance: 0.95, control: 'soft' }, // Curse Weakness
+  1164: { baseChance: 0.8, minChance: 0.2, maxChance: 0.95, control: 'soft' }, // Curse Weakness
+  1184: { baseChance: 0.6, minChance: 0.14, maxChance: 0.84, control: 'soft' }, // Ice Bolt
   1168: { baseChance: 0.69, minChance: 0.2, maxChance: 0.94, control: 'soft' }, // Poison
   1233: { baseChance: 0.63, minChance: 0.18, maxChance: 0.9, control: 'soft' }, // Decay
   // Soultaker / Necromancer

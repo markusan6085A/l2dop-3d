@@ -13,9 +13,26 @@ import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js'
 import type { LearnedSkillEntry } from './humanFighterSkillCatalog.types.js';
 import {
   defaultMysticL2ProfessionForRace,
+  MYSTIC_MANA_RECOVERY_L2_SKILL_ID,
+  MYSTIC_MANA_RECOVERY_ROBE_MP_REGEN_MUL,
   MYSTIC_SPELLCRAFT_L2_SKILL_ID,
-  MYSTIC_SPELLCRAFT_ROBE_BUFF_CAST,
+  MYSTIC_SPELLCRAFT_NON_ROBE_CAST_MUL,
 } from './l2dopHumanMysticBattleSkills.js';
+import {
+  antiMagicMdefFlatAtRank,
+  ANTI_MAGIC_L2_SKILL_ID,
+} from './antiMagicTables.js';
+import {
+  isMysticArmorMasteryCatalogSkill,
+  mysticArmorMasteryPdefFlatAtRank,
+  MYSTIC_ARMOR_MASTERY_L2_SKILL_ID,
+} from './mysticArmorMasteryTables.js';
+import {
+  isMysticStarterWeaponMasteryRank,
+  isMysticStarterWeaponMasterySkill,
+  mysticStarterWeaponMasteryCombatDelta,
+  MYSTIC_STARTER_WEAPON_MASTERY_L2_SKILL_ID,
+} from './mysticStarterWeaponMasteryTables.js';
 import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
 import { maxMysticSkillRankForBattleId } from './humanMysticSkillCatalog.learnedRanks.js';
 import { mysticCatalogEntryForRace } from './mysticSkillCatalog.byRace.js';
@@ -122,17 +139,57 @@ export function learnedMysticPassivesBuffDelta(
     const bid = canonicalBattleSkillId(e.battleId);
     const cat = mysticCatalogEntryForRace(race, bid);
     if (!cat || cat.kind !== 'passive') continue;
-    if (!mysticCatalogEntryVisibleForProfession(cat, prof)) continue;
-    /** Spellcraft: подвоєння castSpd лише в мантії (magic armor). */
+    const r = clampMysticRank(bid, e.level, race);
+    const armorMasteryLearned =
+      cat.l2SkillId === MYSTIC_ARMOR_MASTERY_L2_SKILL_ID && e.level >= 1;
+    const weaponMasteryLearned =
+      isMysticStarterWeaponMasterySkill(cat.l2SkillId) && e.level >= 1;
+    if (
+      !armorMasteryLearned &&
+      !weaponMasteryLearned &&
+      !mysticCatalogEntryVisibleForProfession(cat, prof)
+    ) {
+      continue;
+    }
+    /** Spellcraft: без повної мантії каст на 50% повільніший (light / heavy / без броні). */
     if (cat.l2SkillId === MYSTIC_SPELLCRAFT_L2_SKILL_ID) {
-      if (armorKind === 'magic') {
+      if (armorKind !== 'magic') {
         acc = applyBuffDelta(acc, {
-          buffCast: MYSTIC_SPELLCRAFT_ROBE_BUFF_CAST,
+          buffCast: MYSTIC_SPELLCRAFT_NON_ROBE_CAST_MUL,
         });
       }
       continue;
     }
-    const r = clampMysticRank(bid, e.level, race);
+    /** Mana Recovery: +20% MP regen лише в повній мантії (верх + низ). */
+    if (cat.l2SkillId === MYSTIC_MANA_RECOVERY_L2_SKILL_ID) {
+      if (armorKind === 'magic') {
+        acc = applyBuffDelta(acc, {
+          regenMpMul: MYSTIC_MANA_RECOVERY_ROBE_MP_REGEN_MUL,
+        });
+      }
+      continue;
+    }
+    /** Anti Magic: flat +M.Def за таблицею Interlude. */
+    if (cat.l2SkillId === ANTI_MAGIC_L2_SKILL_ID) {
+      const flat = antiMagicMdefFlatAtRank(r);
+      if (flat > 0) acc = applyBuffDelta(acc, { addMdef: flat });
+      continue;
+    }
+    /** Armor Mastery: flat +P.Def (лише стартова профа mystic, ефект лишається після 1-ї зміни). */
+    if (isMysticArmorMasteryCatalogSkill(cat.l2SkillId)) {
+      const flat = mysticArmorMasteryPdefFlatAtRank(r);
+      if (flat > 0) acc = applyBuffDelta(acc, { addPdef: flat });
+      continue;
+    }
+    /** Weapon Mastery 1–2: flat + % P.Atk і M.Atk (Human Mystic). */
+    if (
+      cat.l2SkillId === MYSTIC_STARTER_WEAPON_MASTERY_L2_SKILL_ID &&
+      isMysticStarterWeaponMasteryRank(r)
+    ) {
+      const d = mysticStarterWeaponMasteryCombatDelta(r);
+      if (Object.keys(d).length > 0) acc = applyBuffDelta(acc, d);
+      continue;
+    }
     if (
       isMysticWeaponMasterySkill({
         l2SkillId: cat.l2SkillId,

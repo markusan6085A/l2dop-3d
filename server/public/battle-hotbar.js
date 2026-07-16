@@ -750,13 +750,16 @@
       }
       var prev = localCdDuration[trackKey];
       if (!prev || until > prev.until + 80) {
-        var fromCat =
-          cdSec != null && cdSec > 0 ? Math.floor(cdSec * 1000) : 0;
-        var cdMs = Math.max(fromCat, remMs, 100);
+        /** Джерело правди — `until` з сервера; не роздувати cdMs через `cooldownSec`. */
+        var cdMs = Math.max(remMs, 100);
         localCdDuration[trackKey] = { until: until, cdMs: cdMs };
         return cdMs;
       }
       prev.until = until;
+      /** Якщо сервер скоротив until — підтягуємо тривалість sweep. */
+      if (remMs < prev.cdMs) {
+        prev.cdMs = Math.max(remMs, 100);
+      }
       return prev.cdMs;
     }
 
@@ -827,6 +830,7 @@
           if (typeof sv === 'number' && Number.isFinite(sv)) out[sk] = sv;
         }
       }
+      /** Локальний optimistic — лише якщо довший за сервер (ще не прийшов delta). */
       for (var lk in localCdUntil) {
         if (!Object.prototype.hasOwnProperty.call(localCdUntil, lk)) continue;
         var lv = localCdUntil[lk];
@@ -843,10 +847,11 @@
       for (var k in srv) {
         if (!Object.prototype.hasOwnProperty.call(srv, k)) continue;
         var v = srv[k];
-        if (typeof v === 'number' && Number.isFinite(v) && v > now) {
-          if (typeof localCdUntil[k] !== 'number' || v > localCdUntil[k]) {
-            localCdUntil[k] = v;
-          }
+        if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+        if (v > now) {
+          localCdUntil[k] = v;
+        } else if (Object.prototype.hasOwnProperty.call(localCdUntil, k)) {
+          delete localCdUntil[k];
         }
       }
     }

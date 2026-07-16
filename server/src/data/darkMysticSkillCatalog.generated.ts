@@ -78,7 +78,7 @@ export const DARK_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 1,
     spCost: 0,
     nameUk: "Майстерність чар",
-    hintUk: "Пасив: підсилює магічну атаку.",
+    hintUk: "Пасив: у повній мантії (верх і низ) — нормальна швидкість касту; без броні, у light або heavy — −50%.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -291,7 +291,7 @@ export const DARK_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 1,
     spCost: 0,
     nameUk: "Відновлення мани",
-    hintUk: "Пасив: прискорює відновлення MP.",
+    hintUk: "Пасив: +20% регенерації MP у повній мантії (верх і низ). Без мантії бонус не працює.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -311,13 +311,14 @@ export const DARK_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         requiredLevel: 1,
         spCost: 0,
         mpCost: 0,
-        power: 0
+        power: 20
       }
     ],
     effects: [
       {
         stat: "mpRegen",
-        mode: "multiplier"
+        mode: "percent",
+        value: 20
       }
     ],
     cooldownSec: null,
@@ -2583,7 +2584,7 @@ export const DARK_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 1,
     spCost: 0,
     nameUk: "Удар вітру",
-    hintUk: "Магічний удар вітром.",
+    hintUk: "Магічна атака вітром. Урон на дистанції до 600. Каст 4 с, відкат 6 с.",
     kind: "battle",
     category: "magic_attack",
     visibleForProfessions: [
@@ -3207,7 +3208,7 @@ export const DARK_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 1,
     spCost: 0,
     nameUk: "Самозцілення",
-    hintUk: "Миттєве зцілення себе.",
+    hintUk: "Активне зцілення: +42 HP собі. Каст 5 с, відкат 10 с, MP 7.",
     kind: "battle",
     category: "heal",
     visibleForProfessions: [

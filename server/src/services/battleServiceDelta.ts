@@ -160,10 +160,11 @@ export function buildBattleDeltaPayload(args: {
     ).tail;
   }
 
-  const mysticSkillCdUntil =
-    st.mysticSkillCdUntil && Object.keys(st.mysticSkillCdUntil).length > 0
-      ? { ...st.mysticSkillCdUntil }
-      : undefined;
+  const mysticSkillCdUntil = battleCooldownsForSync(
+    args.row,
+    st,
+    Date.now()
+  );
 
   const battleMods =
     st.battleMods && Object.keys(st.battleMods).length > 0

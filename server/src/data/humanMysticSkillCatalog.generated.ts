@@ -53,28 +53,107 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
   {
     battleId: "l2_146",
     l2SkillId: 146,
-    minLevel: 40,
-    spCost: 11000,
+    minLevel: 7,
+    spCost: 240,
     nameUk: "Антимагія",
-    hintUk: "Пасив: підвищує опір магічній шкоді (M. Def).",
+    hintUk: "Пасив: +M.Def (flat). 1–4 р. — Human Mystic; 5–12 — Wizard; 13–45 — Sorcerer.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
       "human_arcana_lord",
       "human_archmage",
-      "human_bishop",
-      "human_cardinal",
-      "human_cleric",
-      "human_hierophant",
       "human_mage",
       "human_necromancer",
-      "human_prophet",
       "human_sorcerer",
       "human_soultaker",
       "human_warlock",
       "human_wizard"
     ],
     levels: [
+      {
+        level: 1,
+        requiredLevel: 7,
+        spCost: 240,
+        mpCost: 0,
+        power: 10
+      },
+      {
+        level: 2,
+        requiredLevel: 7,
+        spCost: 240,
+        mpCost: 0,
+        power: 12
+      },
+      {
+        level: 3,
+        requiredLevel: 14,
+        spCost: 1100,
+        mpCost: 0,
+        power: 14
+      },
+      {
+        level: 4,
+        requiredLevel: 14,
+        spCost: 1100,
+        mpCost: 0,
+        power: 16
+      },
+      {
+        level: 5,
+        requiredLevel: 20,
+        spCost: 1400,
+        mpCost: 0,
+        power: 18
+      },
+      {
+        level: 6,
+        requiredLevel: 20,
+        spCost: 1400,
+        mpCost: 0,
+        power: 20
+      },
+      {
+        level: 7,
+        requiredLevel: 25,
+        spCost: 2800,
+        mpCost: 0,
+        power: 23
+      },
+      {
+        level: 8,
+        requiredLevel: 25,
+        spCost: 2800,
+        mpCost: 0,
+        power: 25
+      },
+      {
+        level: 9,
+        requiredLevel: 30,
+        spCost: 5300,
+        mpCost: 0,
+        power: 28
+      },
+      {
+        level: 10,
+        requiredLevel: 30,
+        spCost: 5300,
+        mpCost: 0,
+        power: 30
+      },
+      {
+        level: 11,
+        requiredLevel: 35,
+        spCost: 8800,
+        mpCost: 0,
+        power: 34
+      },
+      {
+        level: 12,
+        requiredLevel: 35,
+        spCost: 8800,
+        mpCost: 0,
+        power: 36
+      },
       {
         level: 13,
         requiredLevel: 40,
@@ -99,210 +178,210 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       {
         level: 16,
         requiredLevel: 44,
-        spCost: 13000,
+        spCost: 15000,
         mpCost: 0,
         power: 46
       },
       {
         level: 17,
         requiredLevel: 44,
-        spCost: 13000,
+        spCost: 15000,
         mpCost: 0,
         power: 47
       },
       {
         level: 18,
         requiredLevel: 44,
-        spCost: 13000,
+        spCost: 15000,
         mpCost: 0,
         power: 49
       },
       {
         level: 19,
         requiredLevel: 48,
-        spCost: 21000,
+        spCost: 22000,
         mpCost: 0,
         power: 52
       },
       {
         level: 20,
         requiredLevel: 48,
-        spCost: 21000,
+        spCost: 22000,
         mpCost: 0,
         power: 54
       },
       {
         level: 21,
         requiredLevel: 48,
-        spCost: 21000,
+        spCost: 22000,
         mpCost: 0,
         power: 56
       },
       {
         level: 22,
         requiredLevel: 52,
-        spCost: 33000,
+        spCost: 35000,
         mpCost: 0,
         power: 59
       },
       {
         level: 23,
         requiredLevel: 52,
-        spCost: 33000,
+        spCost: 35000,
         mpCost: 0,
         power: 61
       },
       {
         level: 24,
         requiredLevel: 52,
-        spCost: 33000,
+        spCost: 35000,
         mpCost: 0,
         power: 63
       },
       {
         level: 25,
         requiredLevel: 56,
-        spCost: 35000,
+        spCost: 38000,
         mpCost: 0,
         power: 66
       },
       {
         level: 26,
         requiredLevel: 56,
-        spCost: 35000,
+        spCost: 38000,
         mpCost: 0,
         power: 68
       },
       {
         level: 27,
         requiredLevel: 56,
-        spCost: 35000,
+        spCost: 38000,
         mpCost: 0,
         power: 70
       },
       {
         level: 28,
         requiredLevel: 58,
-        spCost: 110000,
+        spCost: 73000,
         mpCost: 0,
         power: 72
       },
       {
         level: 29,
         requiredLevel: 58,
-        spCost: 110000,
+        spCost: 73000,
         mpCost: 0,
         power: 74
       },
       {
         level: 30,
         requiredLevel: 60,
-        spCost: 140000,
+        spCost: 88000,
         mpCost: 0,
         power: 76
       },
       {
         level: 31,
         requiredLevel: 60,
-        spCost: 140000,
+        spCost: 88000,
         mpCost: 0,
         power: 78
       },
       {
         level: 32,
         requiredLevel: 62,
-        spCost: 180000,
+        spCost: 130000,
         mpCost: 0,
         power: 80
       },
       {
         level: 33,
         requiredLevel: 62,
-        spCost: 180000,
+        spCost: 130000,
         mpCost: 0,
         power: 82
       },
       {
         level: 34,
         requiredLevel: 64,
-        spCost: 240000,
+        spCost: 150000,
         mpCost: 0,
         power: 84
       },
       {
         level: 35,
         requiredLevel: 64,
-        spCost: 240000,
+        spCost: 150000,
         mpCost: 0,
         power: 86
       },
       {
         level: 36,
         requiredLevel: 66,
-        spCost: 350000,
+        spCost: 210000,
         mpCost: 0,
         power: 88
       },
       {
         level: 37,
         requiredLevel: 66,
-        spCost: 350000,
+        spCost: 210000,
         mpCost: 0,
         power: 91
       },
       {
         level: 38,
         requiredLevel: 68,
-        spCost: 390000,
+        spCost: 210000,
         mpCost: 0,
         power: 93
       },
       {
         level: 39,
         requiredLevel: 68,
-        spCost: 390000,
+        spCost: 210000,
         mpCost: 0,
         power: 95
       },
       {
         level: 40,
         requiredLevel: 70,
-        spCost: 520000,
+        spCost: 290000,
         mpCost: 0,
         power: 97
       },
       {
         level: 41,
         requiredLevel: 70,
-        spCost: 520000,
+        spCost: 290000,
         mpCost: 0,
         power: 99
       },
       {
         level: 42,
         requiredLevel: 72,
-        spCost: 830000,
+        spCost: 470000,
         mpCost: 0,
         power: 102
       },
       {
         level: 43,
         requiredLevel: 72,
-        spCost: 830000,
+        spCost: 470000,
         mpCost: 0,
         power: 104
       },
       {
         level: 44,
         requiredLevel: 74,
-        spCost: 1300000,
+        spCost: 640000,
         mpCost: 0,
         power: 106
       },
       {
         level: 45,
         requiredLevel: 74,
-        spCost: 1300000,
+        spCost: 640000,
         mpCost: 0,
         power: 108
       }
@@ -310,7 +389,7 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     effects: [
       {
         stat: "mDef",
-        mode: "percent"
+        mode: "flat"
       }
     ],
     cooldownSec: null,
@@ -322,7 +401,7 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 1,
     spCost: 0,
     nameUk: "Майстерність чар",
-    hintUk: "Пасив: підсилює магічну атаку.",
+    hintUk: "Пасив: у повній мантії (верх і низ) — нормальна швидкість касту; без броні, у light або heavy — −50%.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -697,7 +776,7 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 1,
     spCost: 0,
     nameUk: "Відновлення мани",
-    hintUk: "Пасив: прискорює відновлення MP.",
+    hintUk: "Пасив: +20% регенерації MP у повній мантії (верх і низ). Без мантії бонус не працює.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -721,13 +800,14 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         requiredLevel: 1,
         spCost: 0,
         mpCost: 0,
-        power: 8
+        power: 20
       }
     ],
     effects: [
       {
         stat: "mpRegen",
-        mode: "percent"
+        mode: "percent",
+        value: 20
       }
     ],
     cooldownSec: null,
@@ -1501,8 +1581,52 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 244,
     minLevel: 7,
     spCost: 470,
-    nameUk: "Майстерність обладунків",
-    hintUk: "Пасив: кращі бонуси в обладунках.",
+    nameUk: "Майстерність обладунку (Armor Mastery)",
+    hintUk: "Пасив: +P.Def (flat), незалежно від типу броні. Лише Human Mystic (макс. 3 р.).",
+    kind: "passive",
+    category: "passive",
+    visibleForProfessions: [
+      "human_mage"
+    ],
+    levels: [
+      {
+        level: 1,
+        requiredLevel: 7,
+        spCost: 470,
+        mpCost: 0,
+        power: 6.7
+      },
+      {
+        level: 2,
+        requiredLevel: 14,
+        spCost: 1100,
+        mpCost: 0,
+        power: 8
+      },
+      {
+        level: 3,
+        requiredLevel: 14,
+        spCost: 1100,
+        mpCost: 0,
+        power: 9.2
+      }
+    ],
+    effects: [
+      {
+        stat: "pDef",
+        mode: "flat"
+      }
+    ],
+    cooldownSec: null,
+    skipMobHp: true
+  },
+  {
+    battleId: "l2_249",
+    l2SkillId: 249,
+    minLevel: 7,
+    spCost: 470,
+    nameUk: "Майстерність зброї (Weapon Mastery)",
+    hintUk: "Пасив: +P.Atk і +M.Atk (flat і %), незалежно від зброї. Human Mystic — макс. 2 р.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -1526,57 +1650,15 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         requiredLevel: 7,
         spCost: 470,
         mpCost: 0,
-        power: 8
+        power: 1.5
       },
       {
         level: 2,
         requiredLevel: 14,
-        spCost: 1100,
+        spCost: 2100,
         mpCost: 0,
-        power: 10
+        power: 2.8
       },
-      {
-        level: 3,
-        requiredLevel: 14,
-        spCost: 1100,
-        mpCost: 0,
-        power: 12
-      }
-    ],
-    effects: [
-      {
-        stat: "pDef",
-        mode: "percent"
-      }
-    ],
-    cooldownSec: null,
-    skipMobHp: true
-  },
-  {
-    battleId: "l2_249",
-    l2SkillId: 249,
-    minLevel: 40,
-    spCost: 11000,
-    nameUk: "Майстерність зброї",
-    hintUk: "Пасив: +M. Atk (flat) за рівнем скіла (1 р. — +1.9, 40 р. — +99.3).",
-    kind: "passive",
-    category: "passive",
-    visibleForProfessions: [
-      "human_arcana_lord",
-      "human_archmage",
-      "human_bishop",
-      "human_cardinal",
-      "human_cleric",
-      "human_hierophant",
-      "human_mage",
-      "human_necromancer",
-      "human_prophet",
-      "human_sorcerer",
-      "human_soultaker",
-      "human_warlock",
-      "human_wizard"
-    ],
-    levels: [
       {
         level: 10,
         requiredLevel: 40,
@@ -2836,10 +2918,10 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
   {
     battleId: "l2_1015",
     l2SkillId: 1015,
-    minLevel: 20,
-    spCost: 1100,
-    nameUk: "Бойове зцілення",
-    hintUk: "Швидке зцілення однієї цілі в бою.",
+    minLevel: 14,
+    spCost: 700,
+    nameUk: "Бойове зцілення (Battle Heal)",
+    hintUk: "Швидке зцілення себе або союзника (600). Каст 2 с, відкат 3 с. Human Mystic — макс. 3 р.",
     kind: "battle",
     category: "heal",
     visibleForProfessions: [
@@ -2858,6 +2940,27 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       "human_wizard"
     ],
     levels: [
+      {
+        level: 1,
+        requiredLevel: 14,
+        spCost: 700,
+        mpCost: 25,
+        power: 83
+      },
+      {
+        level: 2,
+        requiredLevel: 14,
+        spCost: 700,
+        mpCost: 28,
+        power: 95
+      },
+      {
+        level: 3,
+        requiredLevel: 14,
+        spCost: 700,
+        mpCost: 32,
+        power: 107
+      },
       {
         level: 4,
         requiredLevel: 20,
@@ -3269,10 +3372,10 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
   {
     battleId: "l2_1027",
     l2SkillId: 1027,
-    minLevel: 20,
-    spCost: 1100,
-    nameUk: "Групове зцілення",
-    hintUk: "Зцілює групу союзників у зоні дії.",
+    minLevel: 14,
+    spCost: 700,
+    nameUk: "Групове зцілення (Group Heal)",
+    hintUk: "Масове зцілення групи в радіусі 1000. Каст 7 с, відкат 25 с. Mystic 1–3 р., Cleric 4–15 р.",
     kind: "battle",
     category: "heal",
     visibleForProfessions: [
@@ -3291,6 +3394,27 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       "human_wizard"
     ],
     levels: [
+      {
+        level: 1,
+        requiredLevel: 14,
+        spCost: 700,
+        mpCost: 33,
+        power: 66
+      },
+      {
+        level: 2,
+        requiredLevel: 14,
+        spCost: 700,
+        mpCost: 38,
+        power: 76
+      },
+      {
+        level: 3,
+        requiredLevel: 14,
+        spCost: 700,
+        mpCost: 43,
+        power: 86
+      },
       {
         level: 4,
         requiredLevel: 20,
@@ -7055,8 +7179,8 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 1164,
     minLevel: 14,
     spCost: 2100,
-    nameUk: "Прокляття: слабкість",
-    hintUk: "Прокляття слабкості: знижує фізичну атаку.",
+    nameUk: "Curse: Weakness (Прокляття слабкості)",
+    hintUk: "Дебаф P.Atk без урону. Дальність 600, каст 1,5 с, відкат 8 с. 80% шанс. Mystic 1 р., Wizard 2–5 р., Necromancer 6–19 р.",
     kind: "battle",
     category: "debuff",
     visibleForProfessions: [
@@ -7075,19 +7199,31 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       "human_wizard"
     ],
     levels: [
-      {
-        level: 1,
-        requiredLevel: 14,
-        spCost: 2100,
-        mpCost: 3,
-        power: 0
-      }
+      { level: 1, requiredLevel: 14, spCost: 2100, mpCost: 3, power: 0 },
+      { level: 2, requiredLevel: 20, spCost: 2900, mpCost: 10, power: 0 },
+      { level: 3, requiredLevel: 25, spCost: 5500, mpCost: 12, power: 0 },
+      { level: 4, requiredLevel: 30, spCost: 11000, mpCost: 14, power: 0 },
+      { level: 5, requiredLevel: 35, spCost: 18000, mpCost: 15, power: 0 },
+      { level: 6, requiredLevel: 40, spCost: 32000, mpCost: 35, power: 0 },
+      { level: 7, requiredLevel: 44, spCost: 35000, mpCost: 39, power: 0 },
+      { level: 8, requiredLevel: 48, spCost: 55000, mpCost: 44, power: 0 },
+      { level: 9, requiredLevel: 52, spCost: 78000, mpCost: 48, power: 0 },
+      { level: 10, requiredLevel: 56, spCost: 83000, mpCost: 52, power: 0 },
+      { level: 11, requiredLevel: 58, spCost: 100000, mpCost: 54, power: 0 },
+      { level: 12, requiredLevel: 60, spCost: 130000, mpCost: 55, power: 0 },
+      { level: 13, requiredLevel: 62, spCost: 180000, mpCost: 58, power: 0 },
+      { level: 14, requiredLevel: 64, spCost: 200000, mpCost: 60, power: 0 },
+      { level: 15, requiredLevel: 66, spCost: 300000, mpCost: 62, power: 0 },
+      { level: 16, requiredLevel: 68, spCost: 330000, mpCost: 64, power: 0 },
+      { level: 17, requiredLevel: 70, spCost: 410000, mpCost: 65, power: 0 },
+      { level: 18, requiredLevel: 72, spCost: 610000, mpCost: 67, power: 0 },
+      { level: 19, requiredLevel: 74, spCost: 920000, mpCost: 69, power: 0 }
     ],
     effects: [
       {
         stat: "pAtk",
         mode: "percent",
-        value: -25
+        value: -17
       }
     ],
     cooldownSec: 8,
@@ -7651,7 +7787,7 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 1,
     spCost: 0,
     nameUk: "Удар вітру",
-    hintUk: "Магічний удар вітром.",
+    hintUk: "Магічна атака вітром. Урон на дистанції до 600. Каст 4 с, відкат 6 с.",
     kind: "battle",
     category: "magic_attack",
     visibleForProfessions: [
@@ -7806,8 +7942,8 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 1184,
     minLevel: 7,
     spCost: 240,
-    nameUk: "Крижана блискавка",
-    hintUk: "Крижана блискавка по цілі.",
+    nameUk: "Ice Bolt (Крижана блискавка)",
+    hintUk: "Магічна атака водою. Дальність 600, каст 3,1 с, відкат 8 с. 60% сповільнення −30% на 2 хв. Mystic 1–4 р., Wizard 5–6 р.",
     kind: "battle",
     category: "magic_attack",
     visibleForProfessions: [
@@ -7853,9 +7989,29 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         spCost: 1100,
         mpCost: 15,
         power: 13
+      },
+      {
+        level: 5,
+        requiredLevel: 20,
+        spCost: 1400,
+        mpCost: 18,
+        power: 14
+      },
+      {
+        level: 6,
+        requiredLevel: 20,
+        spCost: 1400,
+        mpCost: 20,
+        power: 16
       }
     ],
-    effects: [],
+    effects: [
+      {
+        stat: "moveSpeed",
+        mode: "pct",
+        value: 30
+      }
+    ],
     cooldownSec: 8,
     skipMobHp: false
   },
@@ -8190,7 +8346,7 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 1,
     spCost: 0,
     nameUk: "Самозцілення",
-    hintUk: "Миттєве зцілення себе.",
+    hintUk: "Активне зцілення: +42 HP собі. Каст 5 с, відкат 10 с, MP 9.",
     kind: "battle",
     category: "heal",
     visibleForProfessions: [

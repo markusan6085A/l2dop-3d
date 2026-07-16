@@ -1022,8 +1022,77 @@
       .join('|');
   }
 
+  function battleMobIconFallbackSrc() {
+    return '/mobs/1.png';
+  }
+
+  function battleMobIconSrc(iconUrl) {
+    if (iconUrl && String(iconUrl).trim()) return String(iconUrl).trim();
+    return battleMobIconFallbackSrc();
+  }
+
+  function bindBattleMobIconError(img) {
+    if (!img || img.dataset.errBound === '1') return;
+    img.dataset.errBound = '1';
+    img.addEventListener('error', function () {
+      var fb = battleMobIconFallbackSrc();
+      if (this.dataset.iconSrc !== fb) {
+        this.dataset.iconSrc = fb;
+        this.src = fb;
+      }
+    });
+  }
+
+  function battleIsPvpView(battle) {
+    if (!battle) return false;
+    if (battle.battleMode === 'pvp') return true;
+    var sid = battle.spawnId ? String(battle.spawnId) : '';
+    return sid.indexOf('pvp:') === 0;
+  }
+
+  function applyBattleMobPortrait(imgEl, wrapEl, iconUrl, altText) {
+    if (!imgEl || !wrapEl) return;
+    var src = battleMobIconSrc(iconUrl);
+    if (imgEl.dataset.iconSrc !== src) {
+      imgEl.dataset.iconSrc = src;
+      imgEl.src = src;
+    }
+    imgEl.alt = altText || '';
+    imgEl.title = altText || '';
+    imgEl.hidden = false;
+    wrapEl.classList.add('l2-battle-mob-hp-wrap--has-icon');
+    bindBattleMobIconError(imgEl);
+  }
+
+  function clearBattleMobPortrait(imgEl, wrapEl) {
+    if (imgEl) {
+      imgEl.hidden = true;
+      imgEl.removeAttribute('src');
+      imgEl.alt = '';
+      imgEl.title = '';
+      delete imgEl.dataset.iconSrc;
+    }
+    if (wrapEl) wrapEl.classList.remove('l2-battle-mob-hp-wrap--has-icon');
+  }
+
+  function createBattleMobIconElement(iconUrl, altText, className) {
+    var img = document.createElement('img');
+    img.className = className || 'l2-battle-mob-icon';
+    img.width = className === 'l2-battle-whirlwind-extra__icon' ? 36 : 52;
+    img.height = className === 'l2-battle-whirlwind-extra__icon' ? 36 : 52;
+    img.decoding = 'async';
+    img.dataset.iconSrc = battleMobIconSrc(iconUrl);
+    img.src = img.dataset.iconSrc;
+    img.alt = altText || '';
+    img.title = altText || '';
+    bindBattleMobIconError(img);
+    return img;
+  }
+
   function renderMobAndLog(battle) {
     var title = $('battle-mob-title');
+    var mobIconEl = $('battle-mob-icon');
+    var mobHpWrapEl = $('battle-mob-hp-wrap');
     var hpInner = $('battle-mob-hp-inner');
     var hpVal = $('battle-mob-hp-val');
     var mainMobLbl = document.querySelector(
@@ -1033,6 +1102,7 @@
     var logEl = $('battle-log');
     if (!battle) {
       if (title) title.textContent = '—';
+      clearBattleMobPortrait(mobIconEl, mobHpWrapEl);
       if (hpInner) hpInner.style.width = '0%';
       if (hpVal) hpVal.textContent = '';
       if (mainMobLbl) {
@@ -1061,6 +1131,16 @@
         ' · ур. ' +
         battle.mobLevel +
         (battle.aggressive ? ' · ' + aggL : '');
+    }
+    if (battleIsPvpView(battle)) {
+      clearBattleMobPortrait(mobIconEl, mobHpWrapEl);
+    } else {
+      applyBattleMobPortrait(
+        mobIconEl,
+        mobHpWrapEl,
+        battle.mobIconUrl,
+        battle.mobName || ''
+      );
     }
     renderBuffStrip(battle);
     renderSonicCharges(battle);
@@ -1119,13 +1199,13 @@
           var ex = wx[wi];
           var wrap = document.createElement('div');
           wrap.className = 'l2-battle-whirlwind-extra';
-          var lbl = document.createElement('span');
-          lbl.className = 'l2-battle-whirlwind-extra__name';
-          lbl.textContent =
-            (ex.name && String(ex.name).length > 14
-              ? String(ex.name).slice(0, 12) + '…'
-              : ex.name) || '—';
-          lbl.title = ex.name || '';
+          wrap.appendChild(
+            createBattleMobIconElement(
+              ex.mobIconUrl,
+              ex.name || '',
+              'l2-battle-whirlwind-extra__icon'
+            )
+          );
           var outer = document.createElement('div');
           outer.className =
             'l2-pers-bar-outer l2-battle-bar-outer l2-battle-mob-hp-outer l2-battle-whirlwind-extra__bar';
@@ -1144,7 +1224,6 @@
           pct.classList.add('l2-battle-bar-innertext--pair');
           outer.appendChild(inner);
           outer.appendChild(pct);
-          wrap.appendChild(lbl);
           wrap.appendChild(outer);
           whirlRoot.appendChild(wrap);
         }

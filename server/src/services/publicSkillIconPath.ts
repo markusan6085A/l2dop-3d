@@ -34,6 +34,10 @@ export function resolvePublicSkillIconPath(skillId: number): string | null {
   const base = path.join(resolvePublicRoot(), 'skills');
   if (!fs.existsSync(base) || !fs.statSync(base).isDirectory()) return null;
 
+  /** Канонічні імена артів Interlude (пріоритет над generic skillN.gif). */
+  const canonicalFirst: string[] =
+    id === 1027 ? ['Skill1027_0.jpg', 'skill1027_0.jpg'] : [];
+
   const pad4 = String(id).padStart(4, '0');
   /** l2_1 Triple Slash (Gladiator): канонічний арт `0001.jpg`; `attack.jpg` — лише для кнопки «Удар» у hotbar. */
   const candidates =
@@ -48,6 +52,7 @@ export function resolvePublicSkillIconPath(skillId: number): string | null {
           'attack.png',
         ]
       : [];
+  candidates.push(...canonicalFirst);
   candidates.push(
     /* text-rpg часто кладе «0005.jpg» без префікса skill */
     `${pad4}.jpg`,

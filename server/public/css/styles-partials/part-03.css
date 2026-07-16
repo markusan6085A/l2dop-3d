@@ -919,13 +919,19 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-battle-mob-title {
-  margin: 0 0 10px;
+  margin: 0 0 3px;
   font-family: var(--l2-font-display);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   color: #d94a4a;
   text-align: center;
+  line-height: 1.15;
   text-shadow: 0 1px 2px #000;
+}
+
+.l2-battle-mob-panel:has(.l2-battle-mob-hp-wrap--has-icon) .l2-battle-mob-title {
+  padding-left: 58px;
+  text-align: left;
 }
 
 .l2-battle-buffs {
@@ -980,39 +986,61 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-battle-whirlwind-extra {
-  width: min(220px, 72%);
-  display: flex;
-  flex-direction: row;
+  width: min(260px, 92%);
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  justify-content: flex-start;
-  gap: 4px;
+  gap: 6px;
 }
 
 .l2-battle-whirlwind-extra__name {
-  display: block;
-  width: 72px;
-  min-width: 72px;
-  max-width: 72px;
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-  color: #c9b9a7;
-  line-height: 1.05;
-  margin: 0;
-  padding: 0 1px;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none;
 }
 
 .l2-battle-whirlwind-extra__bar {
-  flex: 1 1 auto;
-  width: auto;
-  max-width: none;
+  grid-column: 2;
+  width: 100%;
   min-width: 88px;
+  max-width: none;
   height: 14px;
+}
+
+/* HP моба: портрет зліва + підпис + смуга в одному рядку */
+.l2-battle-mob-icon {
+  grid-column: 1;
+  grid-row: 1;
+  width: 52px;
+  height: 52px;
+  border-radius: 4px;
+  border: 1px solid rgba(217, 74, 74, 0.55);
+  box-shadow:
+    0 0 6px rgba(0, 0, 0, 0.45),
+    inset 0 0 2px rgba(0, 0, 0, 0.35);
+  object-fit: cover;
+  object-position: center top;
+  image-rendering: pixelated;
+  align-self: center;
+  background: rgba(12, 8, 6, 0.85);
+}
+
+.l2-battle-mob-hp-wrap--has-icon .l2-battle-bar-lbl {
+  grid-column: 2;
+}
+
+.l2-battle-mob-hp-wrap--has-icon .l2-battle-bar-outer {
+  grid-column: 3;
+}
+
+.l2-battle-whirlwind-extra__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 3px;
+  border: 1px solid rgba(217, 74, 74, 0.45);
+  object-fit: cover;
+  object-position: center top;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  background: rgba(12, 8, 6, 0.85);
 }
 
 /* HP моба: підпис + смуга по центру панелі */
@@ -1020,6 +1048,7 @@ button.l2-map-mob-title--tap-full:focus {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  margin-top: -2px;
 }
 
 .l2-battle-bar-row--mob.l2-battle-mob-bars .l2-battle-whirlwind-extras {
@@ -1038,7 +1067,7 @@ button.l2-map-mob-title--tap-full:focus {
 /* Явна ширина блоку HP — на всю панель моба */
 .l2-battle-mob-hp-wrap {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto auto 1fr;
   grid-template-rows: auto auto;
   align-items: center;
   gap: 4px 6px;
@@ -1048,13 +1077,23 @@ button.l2-map-mob-title--tap-full:focus {
   max-width: 100%;
 }
 
-.l2-battle-mob-hp-wrap .l2-battle-bar-lbl {
+.l2-battle-mob-hp-wrap:not(.l2-battle-mob-hp-wrap--has-icon) {
+  grid-template-columns: auto 1fr;
+}
+
+.l2-battle-mob-hp-wrap:not(.l2-battle-mob-hp-wrap--has-icon) .l2-battle-bar-lbl {
   grid-column: 1;
+}
+
+.l2-battle-mob-hp-wrap:not(.l2-battle-mob-hp-wrap--has-icon) .l2-battle-bar-outer {
+  grid-column: 2;
+}
+
+.l2-battle-mob-hp-wrap .l2-battle-bar-lbl {
   grid-row: 1;
 }
 
 .l2-battle-mob-hp-wrap .l2-battle-bar-outer {
-  grid-column: 2;
   grid-row: 1;
   flex: 1 1 auto;
   width: 100%;

@@ -1,14 +1,54 @@
 import { MAX_BATTLE_LOG } from './battle.js';
+import { buildPvpHitLogPair } from './pvpBattleLog.js';
 
 const ATTACKER_CRIT_RE = /^Крит! Ти завдав (\d+) урона\.?$/;
 const ATTACKER_HIT_RE = /^Ти завдав (\d+) урона\.?$/;
+const ATTACKER_PVP_CRIT_RE =
+  /^→ \[([^\]]+)\]: крит! −(\d+) HP(?: \(([^)]+)\))?\.?$/;
+const ATTACKER_PVP_HIT_RE = /^→ \[([^\]]+)\]: −(\d+) HP(?: \(([^)]+)\))?\.?$/;
+const ATTACKER_PVP_MISS_RE = /^→ \[([^\]]+)\]: промах(?: \(([^)]+)\))?\.?$/;
 const VICTIM_CRIT_RE = /^Крит! Ти завдав (\d+) урона\.?$/;
 const VICTIM_HIT_RE = /^Ти завдав (\d+) урона\.?$/;
 
+function stripSkillLogPrefix(line: string): string {
+  return String(line || '')
+    .replace(/^[\u2060\u200B\d]+/, '')
+    .trim();
+}
+
 function mapAttackerLineToVictim(line: string, attackerName: string): string | null {
-  const trimmed = String(line || '').trim();
+  const trimmed = stripSkillLogPrefix(line);
   if (!trimmed) return null;
-  let m = trimmed.match(ATTACKER_CRIT_RE);
+  let m = trimmed.match(ATTACKER_PVP_CRIT_RE);
+  if (m) {
+    return buildPvpHitLogPair({
+      attackerName,
+      targetName: m[1],
+      damage: Number(m[2]),
+      isCrit: true,
+      skillLabelUk: m[3] || null,
+    }).victimLine;
+  }
+  m = trimmed.match(ATTACKER_PVP_HIT_RE);
+  if (m) {
+    return buildPvpHitLogPair({
+      attackerName,
+      targetName: m[1],
+      damage: Number(m[2]),
+      skillLabelUk: m[3] || null,
+    }).victimLine;
+  }
+  m = trimmed.match(ATTACKER_PVP_MISS_RE);
+  if (m) {
+    return buildPvpHitLogPair({
+      attackerName,
+      targetName: m[1],
+      isMiss: true,
+      damage: 0,
+      skillLabelUk: m[2] || null,
+    }).victimLine;
+  }
+  m = trimmed.match(ATTACKER_CRIT_RE);
   if (m) {
     return '[' + attackerName + '] — крит! −' + m[1] + ' HP.';
   }
@@ -79,13 +119,14 @@ export function pvpVictimHitLogLine(args: {
   damage: number;
   isCrit?: boolean;
   isMiss?: boolean;
+  skillLabelUk?: string | null;
 }): string {
-  const name = String(args.attackerName || '—').trim() || '—';
-  if (args.isMiss) return '[' + name + '] промахнувся.';
-  const dmg = Math.max(0, Math.floor(args.damage));
-  if (args.isCrit && dmg > 0) {
-    return '[' + name + '] — крит! −' + dmg + ' HP.';
-  }
-  if (dmg > 0) return '[' + name + '] −' + dmg + ' HP.';
-  return '[' + name + '] промахнувся.';
+  return buildPvpHitLogPair({
+    attackerName: args.attackerName,
+    targetName: '—',
+    damage: args.damage,
+    isCrit: args.isCrit,
+    isMiss: args.isMiss,
+    skillLabelUk: args.skillLabelUk,
+  }).victimLine;
 }

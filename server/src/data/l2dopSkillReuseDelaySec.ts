@@ -29,6 +29,20 @@ export const L2DOP_SKILL_REUSE_DELAY_SEC: Readonly<
   245: 17,
   /** Detect Plant Weakness — відкат 10 с (каст ~1.5 с). */
   104: 10,
+  /** Self Heal — відкат 10 с (каст 5 с). */
+  1216: 10,
+  /** Battle Heal — відкат 3 с (каст 2 с). */
+  1015: 3,
+  /** Group Heal — відкат 25 с (каст 7 с). */
+  1027: 25,
+  /** Wind Strike — відкат 6 с (каст 4 с). */
+  1177: 6,
+  /** Ice Bolt — відкат 8 с (каст 3,1 с). */
+  1184: 8,
+  /** Vampiric Touch — відкат 12 с (каст 3,2 с). */
+  1147: 12,
+  /** Curse: Weakness — відкат 8 с (каст 1,5 с). */
+  1164: 8,
   /** Eye of the Slayer — відкат 3 с (каст 2 с). */
   360: 3,
 };

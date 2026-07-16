@@ -927,31 +927,62 @@ body.l2-app-l2-chrome .l2-char-cat-btn {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
-/* Бій: «Назад на карту» — білий текст, без ref-рамки */
+/* Бій / магістр: «Назад…» — як «Взяти квест на професію» */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc {
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc,
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn {
   appearance: none;
   -webkit-appearance: none;
-  display: inline;
-  border: none !important;
-  border-image: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: #ffffff !important;
-  text-shadow: none !important;
-  text-decoration: none;
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
   width: auto !important;
+  min-width: 140px !important;
+  max-width: 240px !important;
+  margin: 0 auto !important;
+  padding: 7px 14px !important;
+  border: 1px solid #bfa88a !important;
+  border-image: none !important;
+  border-radius: 6px !important;
+  background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
+  background-image: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
+  background-color: transparent !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+  text-shadow: none !important;
+  text-decoration: none !important;
   filter: none !important;
   transform: none !important;
   font-family: var(--l2-font-display);
   font-size: 11px !important;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  line-height: 1.35 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
+  line-height: 1.3 !important;
   cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:focus-visible,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus-visible,
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus-visible,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus-visible {
+  border: 1px solid #bfa88a !important;
+  border-image: none !important;
+  background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
+  color: #fff !important;
+  filter: brightness(1.1) !important;
+  transform: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  outline: none !important;
 }
 
 body.l2-app-l2-chrome .l2-battle-defeat-tocity {
@@ -993,18 +1024,6 @@ body.l2-app-l2-chrome .l2-battle-defeat-tocity:focus {
   box-shadow: none !important;
   border-color: transparent !important;
   border-image-source: url('/ref/222.png') !important;
-}
-
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:hover,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map:focus,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:hover,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus {
-  border: none !important;
-  border-image: none !important;
-  color: #f0f0f0 !important;
-  filter: none !important;
-  transform: none !important;
-  box-shadow: none !important;
 }
 
 /* Перемога: «Продовжити» / «Полювати далі» — лише текст, без рамки */
@@ -2083,41 +2102,6 @@ body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action:focus-visible
   box-shadow: none !important;
 }
 
-/* magisters.html: «Назад до міста» — рамка /ref/989899.png */
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn {
-  --l2s-mag989-slice-y: 24;
-  --l2s-mag989-slice-x: 32;
-  --l2s-mag989-bd-y: 8;
-  --l2s-mag989-bd-x: 12;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  border-width: calc(1px * var(--l2s-mag989-bd-y)) calc(1px * var(--l2s-mag989-bd-x)) !important;
-  border-image-source: url('/ref/989899.png') !important;
-  border-image-slice: var(--l2s-mag989-slice-y) var(--l2s-mag989-slice-x) var(--l2s-mag989-slice-y)
-    var(--l2s-mag989-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-mag989-bd-y)) calc(1px * var(--l2s-mag989-bd-x)) !important;
-  border-image-repeat: stretch !important;
-  border-image-outset: 0 !important;
-  background: transparent !important;
-  background-image: none !important;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
-}
-
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:hover,
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus-visible {
-  border-image-source: url('/ref/989899.png') !important;
-  border-image-slice: var(--l2s-mag989-slice-y) var(--l2s-mag989-slice-x) var(--l2s-mag989-slice-y)
-    var(--l2s-mag989-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-mag989-bd-y)) calc(1px * var(--l2s-mag989-bd-x)) !important;
-  background: transparent !important;
-  transform: none !important;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
-  filter: brightness(1.06) !important;
-}
-
 /* magisters.html: intro — #bfa88a; посилання навчання — зелений текст без рамки */
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-intro p {
   color: #bfa88a !important;
@@ -2170,31 +2154,6 @@ body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link::after {
 body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions {
   align-items: flex-start !important;
   padding-left: 0.35cm;
-}
-
-/* magister.html: «Назад до міста» — така ж рамка /ref/989899.png */
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn {
-  --l2s-mastBack989-slice-y: 24;
-  --l2s-mastBack989-slice-x: 32;
-  --l2s-mastBack989-bd-y: 8;
-  --l2s-mastBack989-bd-x: 12;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  border-width: calc(1px * var(--l2s-mastBack989-bd-y)) calc(1px * var(--l2s-mastBack989-bd-x)) !important;
-  border-image-source: url('/ref/989899.png') !important;
-  border-image-slice: var(--l2s-mastBack989-slice-y) var(--l2s-mastBack989-slice-x) var(--l2s-mastBack989-slice-y)
-    var(--l2s-mastBack989-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-mastBack989-bd-y)) calc(1px * var(--l2s-mastBack989-bd-x)) !important;
-  border-image-repeat: stretch !important;
-}
-
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:hover,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus-visible {
-  border-image-source: url('/ref/989899.png') !important;
-  border-image-slice: var(--l2s-mastBack989-slice-y) var(--l2s-mastBack989-slice-x) var(--l2s-mastBack989-slice-y)
-    var(--l2s-mastBack989-slice-x) fill !important;
-  border-image-width: calc(1px * var(--l2s-mastBack989-bd-y)) calc(1px * var(--l2s-mastBack989-bd-x)) !important;
 }
 
 /* magister.html: блок вибору профи — лише текст-посилання (#bfa88a), без рамок 1512125 */

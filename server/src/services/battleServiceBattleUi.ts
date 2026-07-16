@@ -1,4 +1,5 @@
 import type { BattleActionId, BattleJsonState } from '../domain/battle.js';
+import { isPvpBattleJson } from '../domain/battlePvpContext.js';
 import { ZEALOT_EFFECT_DURATION_MS } from '../domain/battleTypes.js';
 import {
   battleLogSeqFromState,
@@ -37,14 +38,20 @@ import {
   PATK_SPD_BASELINE,
   resolveBattleSkillCooldownSec,
 } from '../data/skillCooldownScaling.js';
+import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
+import { resolveMobIconFromName } from '../utils/mobPublicIcon.js';
 import type { BattleView } from './battleServiceTypes.js';
 import {
   battleBuffLinesUk,
   battleBuffIconsForUi,
   battleMobDebuffIconsForUi,
 } from './battleServiceBattleBuffs.js';
+import { mobIconUrlForSpawn } from './spawnCatalogService.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { cooldownSecForSkillId, type SkillCooldownEntry } from '../data/skillCooldowns.js';
+import { computeCombatStats } from '../data/l2dopCombatFormulas.js';
+import { parseInventory } from '../data/inventory.js';
+import { combatOptsFromRow, type CharacterRow } from './charService.js';
 
 /** Та сама нормалізація профи, що й у `parseSkillsLearnedJson` — інакше зникають бафи/гілкові скіли з `battle.skills`. */
 function effectiveBattleProfession(
@@ -77,6 +84,29 @@ export type SkillCooldownUiContext = {
   cooldownReductionMul?: number;
   learnedSkillRanks?: Record<string, number>;
 };
+
+/** КД хотбару: ті самі combat-модифікатори, що й у `performBattleAction`. */
+export function skillCooldownUiContextFromRow(
+  row: CharacterRow,
+  effLevel: number,
+  learnedEntries?: readonly { battleId: string; level: number }[]
+): SkillCooldownUiContext {
+  const inv = parseInventory(row.inventoryJson);
+  const combat = computeCombatStats(
+    effLevel,
+    row.race,
+    row.classBranch,
+    inv,
+    combatOptsFromRow(row)
+  );
+  return skillCooldownUiContextFromParts(
+    row.classBranch,
+    combat.castSpd,
+    combat.pAtkSpd,
+    learnedEntries,
+    combat.cooldownReductionMul
+  );
+}
 
 export function skillCooldownUiContextFromParts(
   classBranch: string,
@@ -376,6 +406,13 @@ export function stanceBattleActionAllowed(
   return false;
 }
 
+/** Іконка цілі для UI бою — той самий шлях, що `GET /game/map/nearby` / модалка моба. */
+function mobIconUrlForBattleView(spawnId: string, mobName: string): string {
+  const spawn = getWorldSpawnById(spawnId);
+  if (spawn) return mobIconUrlForSpawn(spawn);
+  return resolveMobIconFromName(mobName) ?? '/mobs/1.png';
+}
+
 export function battleViewFromState(
   spawnId: string,
   st: BattleJsonState,
@@ -420,9 +457,14 @@ export function battleViewFromState(
       mergedCd[key] = cd.readyAt;
     }
   }
+  const isPvp = isPvpBattleJson(st);
   return {
     spawnId,
     mobName: spawnMeta.name,
+    battleMode: isPvp ? 'pvp' : 'pve',
+    ...(isPvp
+      ? {}
+      : { mobIconUrl: mobIconUrlForBattleView(spawnId, spawnMeta.name) }),
     mobLevel: spawnMeta.level,
     mobHp: st.mobHp,
     mobMaxHp: st.mobMaxHp,
@@ -461,6 +503,7 @@ export function battleViewFromState(
             name: e.name,
             mobHp: e.mobHp,
             mobMaxHp: e.mobMaxHp,
+            mobIconUrl: mobIconUrlForBattleView(e.spawnId, e.name),
           })),
         }
       : {}),

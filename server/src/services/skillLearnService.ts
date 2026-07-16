@@ -40,6 +40,7 @@ import {
   mysticCatalogEntryMeetsLevel,
   mysticCatalogEntryOfferedAtGludioMagister,
   mysticCatalogEntryVisibleForProfession,
+  mysticCatalogEntryAllowsSkillRank,
   spCostForMysticSkillRankUpgrade,
 } from '../data/humanMysticSkillCatalog.js';
 import { mysticCatalogEntryForRace } from '../data/mysticSkillCatalog.byRace.js';
@@ -57,6 +58,28 @@ import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
 import { mysticDebuffProfileNoteUk } from '../data/l2dopMysticDebuffProfiles.js';
 import { boostHpStatsNoteUk } from '../data/boostHpTables.js';
 import { magicResistanceStatsNoteUk } from '../data/magicResistanceTables.js';
+import { antiMagicStatsNoteUk } from '../data/antiMagicTables.js';
+import { mysticArmorMasteryStatsNoteUk } from '../data/mysticArmorMasteryTables.js';
+import {
+  isMysticStarterWeaponMasteryRank,
+  mysticStarterWeaponMasteryStatsNoteUk,
+} from '../data/mysticStarterWeaponMasteryTables.js';
+import {
+  battleHealStarterStatsNoteUk,
+  isBattleHealStarterRank,
+} from '../data/battleHealTables.js';
+import {
+  groupHealStatsNoteUk,
+  isGroupHealCatalogSkill,
+} from '../data/groupHealTables.js';
+import {
+  iceBoltStatsNoteUk,
+  isIceBoltCatalogSkill,
+} from '../data/iceBoltTables.js';
+import {
+  curseWeaknessStatsNoteUk,
+  isCurseWeaknessCatalogSkill,
+} from '../data/curseWeaknessTables.js';
 import { shieldMasteryStatsNoteUk } from '../data/shieldMasteryTables.js';
 import { fighterPassiveHintUk } from '../data/fighterCommonPassiveSkillDisplay.js';
 import { fastHpRecoveryStatsNoteUk } from '../data/fastHpRecoveryTables.js';
@@ -506,7 +529,7 @@ export async function getMagisterDialogForUser(
     const meetsProfRank = rf
       ? raceFighterCatalogEntryAllowsSkillRank(rf, prof, nextRank)
       : hm
-        ? mysticCatalogEntryVisibleForProfession(hm, prof)
+        ? mysticCatalogEntryAllowsSkillRank(hm, prof, nextRank)
         : catalogEntryAllowsSkillRank(
             o as HumanFighterSkillCatalogEntry,
             prof,
@@ -530,13 +553,14 @@ export async function getMagisterDialogForUser(
     let mysticPower: number | null = mysticRow?.power ?? null;
     if (mysticLike && mysticXml) {
       mysticMp = mysticXml.m;
-      if (
+      const preferXml =
         mysticXml.p !== 0 ||
         mysticLike.category === 'magic_attack' ||
         mysticLike.category === 'physical_attack' ||
-        mysticLike.category === 'heal'
-      ) {
-        mysticPower = mysticXml.p;
+        mysticLike.category === 'heal';
+      if (preferXml) {
+        mysticPower =
+          mysticXml.p !== 0 ? mysticXml.p : (mysticRow?.power ?? null);
       }
     }
     const st = mysticLike
@@ -546,10 +570,27 @@ export async function getMagisterDialogForUser(
           statsNoteUk:
             mysticLike.category === 'debuff' ||
             mysticLike.category === 'magic_attack'
-              ? mysticDebuffProfileNoteUk(mysticLike.l2SkillId)
+              ? mysticLike.l2SkillId === 1177
+                ? 'Магічний урон вітром. Дальність 600, каст 4 с, відкат 6 с.'
+                : isIceBoltCatalogSkill(mysticLike.l2SkillId)
+                  ? iceBoltStatsNoteUk(rankPreview)
+                  : isCurseWeaknessCatalogSkill(mysticLike.l2SkillId)
+                    ? curseWeaknessStatsNoteUk(rankPreview)
+                    : mysticDebuffProfileNoteUk(mysticLike.l2SkillId)
               : mysticLike.kind === 'passive' && mysticLike.l2SkillId === 163
-                ? '×2 швидкість касту в мантії (магічна броня).'
-                : mysticLike.kind === 'passive' && mysticLike.hintUk.trim()
+                ? 'У мантії — нормальна швидкість касту; без броні / light / heavy — −50% (×2 у мантії).'
+                : mysticLike.kind === 'passive' && mysticLike.l2SkillId === 214
+                  ? '+20% регенерації MP у повній мантії (верх і низ).'
+                  : mysticLike.kind === 'battle' && mysticLike.l2SkillId === 1216
+                    ? '+42 HP собі. Каст 5 с, відкат 10 с.'
+                    : mysticLike.kind === 'battle' &&
+                        mysticLike.l2SkillId === 1015 &&
+                        isBattleHealStarterRank(rankPreview)
+                      ? battleHealStarterStatsNoteUk(rankPreview)
+                      : mysticLike.kind === 'battle' &&
+                          isGroupHealCatalogSkill(mysticLike.l2SkillId)
+                        ? groupHealStatsNoteUk(rankPreview)
+                        : mysticLike.kind === 'passive' && mysticLike.hintUk.trim()
                   ? mysticLike.hintUk.replace(/^Пасив:\s*/i, '').trim()
                   : (null as string | null),
         }
@@ -693,6 +734,16 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = swordBluntMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 147 && !mysticLike) {
       st.statsNoteUk = magicResistanceStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 146 && mysticLike) {
+      st.statsNoteUk = antiMagicStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 244 && mysticLike) {
+      st.statsNoteUk = mysticArmorMasteryStatsNoteUk(rankPreview);
+    } else if (
+      o.l2SkillId === 249 &&
+      mysticLike &&
+      isMysticStarterWeaponMasteryRank(rankPreview)
+    ) {
+      st.statsNoteUk = mysticStarterWeaponMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 153 && !mysticLike) {
       st.statsNoteUk = shieldMasteryStatsNoteUk(
         skillLevel >= 1 ? skillLevel : nextRank
@@ -702,11 +753,15 @@ export async function getMagisterDialogForUser(
     } else if (
       mysticLike &&
       (o.l2SkillId === 142 ||
-        isMysticWeaponMasterySkill({
+        (isMysticWeaponMasterySkill({
           l2SkillId: o.l2SkillId,
           nameUk: o.nameUk,
           effectStats: mysticLike.effects.map((fx) => fx.stat),
-        }))
+        }) &&
+          !(
+            o.l2SkillId === 249 &&
+            isMysticStarterWeaponMasteryRank(rankPreview)
+          )))
     ) {
       st.statsNoteUk = weaponMasteryMysticStatsNoteUk(rankPreview);
     }
@@ -897,6 +952,9 @@ export async function learnSkillForUser(
       const currentLv0 = idx >= 0 ? entries[idx]!.level : 0;
       if (currentLv0 >= maxR) throw new Error('skill_already_maxed');
       nextLv = currentLv0 + 1;
+      if (!mysticCatalogEntryAllowsSkillRank(mysticOffer, prof, nextLv)) {
+        throw new Error('skill_wrong_class');
+      }
       const effLevel0 = levelFromTotalExp(char.exp);
       const minForNext = minCharLevelForMysticSkillRank(mysticOffer, nextLv);
       if (

@@ -32,11 +32,17 @@ export interface BattleWhirlwindExtraView {
   name: string;
   mobHp: number;
   mobMaxHp: number;
+  /** Портрет додаткової цілі (Whirlwind тощо) — той самий резолвер, що на мапі. */
+  mobIconUrl?: string;
 }
 
 export interface BattleView {
   spawnId: string;
   mobName: string;
+  /** Портрет цілі в бою — `mobIconUrlForSpawn` / fallback як у списку мобів на мапі. */
+  mobIconUrl?: string;
+  /** PvP — без портрета моба; детальніший лог урону. */
+  battleMode?: 'pvp' | 'pve';
   mobLevel: number;
   mobHp: number;
   mobMaxHp: number;

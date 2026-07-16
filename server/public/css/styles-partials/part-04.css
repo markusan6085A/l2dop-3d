@@ -528,36 +528,51 @@ button.l2-battle-victory-link::-moz-focus-inner {
   margin-top: 12px;
 }
 
-/* «Назад на карту» — лише текст, без рамки */
+/* «Назад на карту» / «Назад до міста» — як «Взяти квест на професію» */
 .l2-battle-back-map,
-.l2-battle-victory-backloc {
-  display: inline-block;
+.l2-battle-victory-backloc,
+.l2-magisters-back .l2-town-btn,
+.l2-magister-back .l2-town-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
   width: auto;
-  max-width: none;
+  min-width: 140px;
+  max-width: 240px;
+  min-height: auto;
   margin-left: auto;
   margin-right: auto;
-  padding: 0;
+  padding: 7px 14px;
   font-family: var(--l2-font-display);
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #bfa88a;
-  cursor: pointer;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
   text-shadow: none;
-  transition: color 0.12s ease;
+  cursor: pointer;
+  border: 1px solid #bfa88a;
+  border-radius: 6px;
+  border-image: none;
+  background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: filter 0.12s ease;
 }
 
 .l2-battle-back-map:hover,
 .l2-battle-back-map:focus,
 .l2-battle-victory-backloc:hover,
-.l2-battle-victory-backloc:focus {
-  color: #d4c4a8;
+.l2-battle-victory-backloc:focus,
+.l2-magisters-back .l2-town-btn:hover,
+.l2-magisters-back .l2-town-btn:focus,
+.l2-magister-back .l2-town-btn:hover,
+.l2-magister-back .l2-town-btn:focus {
+  color: #fff;
   outline: none;
+  filter: brightness(1.1);
 }
 
 .l2-battle-footer-actions {
