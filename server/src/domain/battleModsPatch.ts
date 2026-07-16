@@ -561,6 +561,78 @@ export function applyBattleModsPatch(
       delete next.mobPhysSkillsBlockedIconSkillId;
     }
   }
+  if (patch.mobTouchOfDeathUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.mobTouchOfDeathUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.mobTouchOfDeathUntilMs = Math.floor(v);
+      const sid = jsonFiniteNum(patch.mobTouchOfDeathIconSkillId);
+      next.mobTouchOfDeathIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 342;
+    } else {
+      delete next.mobTouchOfDeathUntilMs;
+      delete next.mobTouchOfDeathIconSkillId;
+    }
+  }
+  if (patch.mobTouchOfDeathDebuffResistPenaltyPct !== undefined) {
+    const v = jsonFiniteNum(patch.mobTouchOfDeathDebuffResistPenaltyPct);
+    if (v !== undefined && v > 0) {
+      next.mobTouchOfDeathDebuffResistPenaltyPct = v;
+    } else {
+      delete next.mobTouchOfDeathDebuffResistPenaltyPct;
+    }
+  }
+  if (patch.mobTouchOfDeathHealReceivedPenaltyPct !== undefined) {
+    const v = jsonFiniteNum(patch.mobTouchOfDeathHealReceivedPenaltyPct);
+    if (v !== undefined && v > 0) {
+      next.mobTouchOfDeathHealReceivedPenaltyPct = v;
+    } else {
+      delete next.mobTouchOfDeathHealReceivedPenaltyPct;
+    }
+  }
+  if (patch.touchOfDeathMobMaxCpBaseline !== undefined) {
+    const v = jsonFiniteNum(patch.touchOfDeathMobMaxCpBaseline);
+    if (v !== undefined && v > 0) {
+      next.touchOfDeathMobMaxCpBaseline = Math.floor(v);
+    } else {
+      delete next.touchOfDeathMobMaxCpBaseline;
+    }
+  }
+  if (patch.playerTouchOfDeathUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.playerTouchOfDeathUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.playerTouchOfDeathUntilMs = Math.floor(v);
+      const sid = jsonFiniteNum(patch.playerTouchOfDeathIconSkillId);
+      next.playerTouchOfDeathIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 342;
+    } else {
+      delete next.playerTouchOfDeathUntilMs;
+      delete next.playerTouchOfDeathIconSkillId;
+    }
+  }
+  if (patch.playerTouchOfDeathDebuffResistPenaltyPct !== undefined) {
+    const v = jsonFiniteNum(patch.playerTouchOfDeathDebuffResistPenaltyPct);
+    if (v !== undefined && v > 0) {
+      next.playerTouchOfDeathDebuffResistPenaltyPct = v;
+    } else {
+      delete next.playerTouchOfDeathDebuffResistPenaltyPct;
+    }
+  }
+  if (patch.playerTouchOfDeathHealReceivedPenaltyPct !== undefined) {
+    const v = jsonFiniteNum(patch.playerTouchOfDeathHealReceivedPenaltyPct);
+    if (v !== undefined && v > 0) {
+      next.playerTouchOfDeathHealReceivedPenaltyPct = v;
+    } else {
+      delete next.playerTouchOfDeathHealReceivedPenaltyPct;
+    }
+  }
+  if (patch.touchOfDeathPlayerMaxCpBaseline !== undefined) {
+    const v = jsonFiniteNum(patch.touchOfDeathPlayerMaxCpBaseline);
+    if (v !== undefined && v > 0) {
+      next.touchOfDeathPlayerMaxCpBaseline = Math.floor(v);
+    } else {
+      delete next.touchOfDeathPlayerMaxCpBaseline;
+    }
+  }
   if (patch.playerPhysSkillsBlockedUntilMs !== undefined) {
     const v = jsonFiniteNum(patch.playerPhysSkillsBlockedUntilMs);
     if (v !== undefined && v > Date.now()) {

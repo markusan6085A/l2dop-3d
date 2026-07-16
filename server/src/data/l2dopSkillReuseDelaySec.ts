@@ -9,6 +9,8 @@
 export const L2DOP_SKILL_REUSE_DELAY_SEC: Readonly<
   Partial<Record<number, number>>
 > = {
+  /** Dash — відкат 25 с (каст 1 с). */
+  4: 25,
   /** War Cry — відкат 180 с (каст 1.5 с). */
   78: 180,
   /** Stun Attack — відкат 13 с на всіх рівнях (каст 1.08 с). */

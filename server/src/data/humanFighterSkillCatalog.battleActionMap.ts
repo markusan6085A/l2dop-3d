@@ -58,6 +58,7 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_357: 'focus_power',
   l2_358: 'bluff',
   l2_28: 'aggression',
+  l2_18: 'hate_aura',
   l2_45: 'divine_heal',
   l2_262: 'holy_blessing',
   l2_69: 'sacrifice',
@@ -122,13 +123,6 @@ export function canonicalBattleIdForAction(
   return CANONICAL_BATTLE_ID_FOR_ACTION[action];
 }
 
-/** Додаткові l2_* → дія (не ламають єдиний canonical id на action). */
-const EXTRA_L2_SKILL_TO_BATTLE_ACTION: Partial<
-  Record<string, BattleActionId>
-> = {
-  l2_18: 'hate_aura',
-};
-
 /**
  * Клієнт / маршрут інколи передають `l2_255` замість `power_smash`.
  * Без цього `battleActionAllowed` відхиляє уміння, а людина-воїн не потрапляє в гілку резолвера (race-каталог для Human = null).
@@ -141,8 +135,7 @@ export function battleActionNamedFromL2IfMapped(
   const mapped =
     CANONICAL_L2_SKILL_TO_BATTLE_ACTION[
       s as keyof typeof CANONICAL_L2_SKILL_TO_BATTLE_ACTION
-    ] ??
-    EXTRA_L2_SKILL_TO_BATTLE_ACTION[s as keyof typeof EXTRA_L2_SKILL_TO_BATTLE_ACTION];
+    ];
   return (mapped ?? action) as BattleActionId;
 }
 

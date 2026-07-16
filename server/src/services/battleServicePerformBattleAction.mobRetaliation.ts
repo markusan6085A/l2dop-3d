@@ -146,6 +146,7 @@ export function applyMobCounterDamage(args: MobCounterDamageArgs): {
     counterDmg = 0;
   }
   const rRefl = jsonFiniteNum(modsForMobCounter?.reflectDamageReturnRatio) ?? 0;
+  /** Reflect Damage (86): лише звичайна ближня автоатака моба, не фіз. скіли. */
   const reflTot = Math.min(0.72, rRefl);
   if (reflTot > 0 && counterDmg > 0 && mobCounter.outcome !== 'miss') {
     const refl = Math.floor(counterDmg * reflTot);

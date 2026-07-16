@@ -329,3 +329,145 @@ export async function applyPvpCpDrainToVictimInTx(
     battleJson: serializeBattleJsonForDb(patch),
   });
 }
+
+/**
+ * PvP: дзеркалить Touch of Death (342) з battleMods атакуючого на жертву.
+ */
+export async function mirrorPvpTouchOfDeathToVictimInTx(
+  tx: Prisma.TransactionClient,
+  args: {
+    victimId: string;
+    attackerId: string;
+    untilMs?: number;
+    iconSkillId?: number;
+    debuffResistPenaltyPct?: number;
+    healReceivedPenaltyPct?: number;
+    maxCpSet?: number;
+    maxCpBaseline?: number;
+    stripAllBuffs?: boolean;
+    nowMs: number;
+  }
+): Promise<void> {
+  const victimId = String(args.victimId || '').trim();
+  const attackerId = String(args.attackerId || '').trim();
+  if (!victimId || !attackerId || victimId === attackerId) return;
+
+  const victim = await tx.character.findFirst({
+    where: { id: victimId },
+    select: { battleJson: true, activeBuffsJson: true },
+  });
+  if (!victim) return;
+
+  const victimBj = parseBattleJson(victim.battleJson);
+  if (
+    !victimBj ||
+    !isPvpBattleJson(victimBj) ||
+    victimBj.pvpTargetCharacterId !== attackerId
+  ) {
+    return;
+  }
+
+  const untilRaw = args.untilMs;
+  const nowMs = args.nowMs;
+  const active =
+    typeof untilRaw === 'number' &&
+    Number.isFinite(untilRaw) &&
+    untilRaw > nowMs;
+
+  const prevMods =
+    victimBj.battleMods && typeof victimBj.battleMods === 'object'
+      ? { ...victimBj.battleMods }
+      : {};
+
+  const victimData: Prisma.CharacterUncheckedUpdateInput = {};
+
+  if (active) {
+    const sid =
+      typeof args.iconSkillId === 'number' &&
+      Number.isFinite(args.iconSkillId) &&
+      args.iconSkillId > 0
+        ? Math.floor(args.iconSkillId)
+        : 342;
+    prevMods.playerTouchOfDeathUntilMs = Math.floor(untilRaw);
+    prevMods.playerTouchOfDeathIconSkillId = sid;
+    const dr = args.debuffResistPenaltyPct;
+    if (typeof dr === 'number' && Number.isFinite(dr) && dr > 0) {
+      prevMods.playerTouchOfDeathDebuffResistPenaltyPct = dr;
+    } else {
+      delete prevMods.playerTouchOfDeathDebuffResistPenaltyPct;
+    }
+    const healPen = args.healReceivedPenaltyPct;
+    if (typeof healPen === 'number' && Number.isFinite(healPen) && healPen > 0) {
+      prevMods.playerTouchOfDeathHealReceivedPenaltyPct = healPen;
+    } else {
+      delete prevMods.playerTouchOfDeathHealReceivedPenaltyPct;
+    }
+    const baseline = args.maxCpBaseline;
+    if (typeof baseline === 'number' && Number.isFinite(baseline) && baseline > 0) {
+      prevMods.touchOfDeathPlayerMaxCpBaseline = Math.floor(baseline);
+    }
+  } else {
+    delete prevMods.playerTouchOfDeathUntilMs;
+    delete prevMods.playerTouchOfDeathIconSkillId;
+    delete prevMods.playerTouchOfDeathDebuffResistPenaltyPct;
+    delete prevMods.playerTouchOfDeathHealReceivedPenaltyPct;
+    delete prevMods.touchOfDeathPlayerMaxCpBaseline;
+  }
+
+  const patch: BattleJsonState = {
+    ...victimBj,
+    ...(Object.keys(prevMods).length > 0
+      ? { battleMods: prevMods }
+      : { battleMods: undefined }),
+  };
+  if (!patch.battleMods || Object.keys(patch.battleMods).length === 0) {
+    delete patch.battleMods;
+  }
+
+  if (active) {
+    const baseline =
+      typeof args.maxCpBaseline === 'number' &&
+      Number.isFinite(args.maxCpBaseline) &&
+      args.maxCpBaseline > 0
+        ? Math.floor(args.maxCpBaseline)
+        : typeof patch.playerMaxCp === 'number' && patch.playerMaxCp > 0
+          ? Math.floor(patch.playerMaxCp)
+          : 0;
+    if (baseline > 0) {
+      patch.playerMaxCp = baseline;
+      if (
+        typeof args.maxCpSet === 'number' &&
+        Number.isFinite(args.maxCpSet) &&
+        args.maxCpSet >= 0
+      ) {
+        patch.playerMaxCp = Math.floor(args.maxCpSet);
+      }
+      const cur =
+        typeof patch.playerCp === 'number'
+          ? Math.max(0, Math.floor(patch.playerCp))
+          : baseline;
+      patch.playerCp = Math.min(cur, patch.playerMaxCp);
+    }
+    const expires = {
+      ...(patch.battleModsExpiresAtMsBySkillId ?? {}),
+      '342': Math.floor(untilRaw as number),
+    };
+    patch.battleModsExpiresAtMsBySkillId = expires;
+  } else {
+    const expires = { ...(patch.battleModsExpiresAtMsBySkillId ?? {}) };
+    delete expires['342'];
+    if (Object.keys(expires).length > 0) {
+      patch.battleModsExpiresAtMsBySkillId = expires;
+    } else {
+      delete patch.battleModsExpiresAtMsBySkillId;
+    }
+  }
+
+  victimData.battleJson = serializeBattleJsonForDb(patch);
+
+  if (args.stripAllBuffs === true) {
+    victimData.activeBuffsJson = [];
+  }
+
+  await persistCharacterFieldsInTx(tx, victimId, victimData);
+}

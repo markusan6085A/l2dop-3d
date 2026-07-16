@@ -17,6 +17,7 @@ import {
 import { battleModsHasPersistableBuffs } from './battleModsPatch.js';
 import { applyRiposteReflectToBattleMods } from './riposteStance.js';
 import { LEGACY_BUFF_STRIP_BY_SKILL_ID } from './legacyBuffStrip.js';
+import { ACCURACY_STANCE_MP_DRAIN_PER_SEC } from '../data/accuracyStanceTables.js';
 import {
   shieldFortressActiveRank,
   shieldFortressMpDrainForIntervalSec,
@@ -118,6 +119,35 @@ export function stanceCount(mods: BattleBattleMods | undefined): number {
   }
   n += activeIconToggleSkillIds(mods).length;
   return n;
+}
+
+/** Сумарна витрата MP/с від активних HF toggle-стійок (256 — 0.2, інші — 0.4). */
+export function hfStanceMpDrainPerSec(mods: BattleBattleMods | undefined): number {
+  if (!mods) return 0;
+  let rate = 0;
+  if (isStanceAccuracyActive(mods)) {
+    rate += ACCURACY_STANCE_MP_DRAIN_PER_SEC;
+  }
+  if (isStanceViciousActive(mods)) rate += STANCE_MP_PER_SEC;
+  if (isStanceParryActive(mods)) rate += STANCE_MP_PER_SEC;
+  if (isFocusAttackActive(mods)) rate += STANCE_MP_PER_SEC;
+  if (jsonBoolLike(mods.aegisStanceActive)) rate += STANCE_MP_PER_SEC;
+  if (mods.raceToggleRanks && typeof mods.raceToggleRanks === 'object') {
+    for (const key of Object.keys(mods.raceToggleRanks)) {
+      if (key !== 'l2_322' && key !== 'l2_335') rate += STANCE_MP_PER_SEC;
+    }
+  }
+  rate += activeIconToggleSkillIds(mods).length * STANCE_MP_PER_SEC;
+  return rate;
+}
+
+export function hfStanceMpDrainForIntervalSec(
+  mods: BattleBattleMods | undefined,
+  dtSec: number
+): number {
+  if (dtSec <= 0) return 0;
+  const rate = hfStanceMpDrainPerSec(mods);
+  return rate > 0 ? Math.floor(dtSec * rate) : 0;
 }
 
 export function stripStances(mods: BattleBattleMods): BattleBattleMods {
@@ -304,11 +334,10 @@ export function tickWorldCombatState(
     }
   }
 
-  const sc = stanceCount(mods);
   const sfRank = shieldFortressActiveRank(undefined, mods.raceToggleRanks);
   const ftRank = fortitudeActiveRank(undefined, mods.raceToggleRanks);
   const stanceDrain =
-    sc > 0 && dtSec > 0 ? Math.floor(dtSec * STANCE_MP_PER_SEC * sc) : 0;
+    dtSec > 0 ? hfStanceMpDrainForIntervalSec(mods, dtSec) : 0;
   const sfDrain =
     sfRank != null
       ? shieldFortressMpDrainForIntervalSec(sfRank, dtSec)
@@ -326,6 +355,7 @@ export function tickWorldCombatState(
       : 0;
   let mp = Math.max(0, Math.floor(state.playerMp - drain + mpRegen));
   mp = Math.min(maxMp, mp);
+  const sc = stanceCount(mods);
   if ((sc > 0 || sfRank != null || ftRank != null) && mp <= 0) {
     mods = stripStances(mods);
   }

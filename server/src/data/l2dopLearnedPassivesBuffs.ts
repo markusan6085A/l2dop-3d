@@ -86,7 +86,7 @@ export function learnedPassivesBuffDelta(
       continue;
     }
 
-    const d = textRpgPassiveDeltaForSkill(row, r, inv);
+    const d = textRpgPassiveDeltaForSkill(row, r, inv, prof);
     if (d) acc = applyBuffDelta(acc, d);
   }
 

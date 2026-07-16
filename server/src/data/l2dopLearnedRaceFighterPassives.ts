@@ -208,6 +208,13 @@ export function learnedRaceFighterPassivesBuffDelta(
       if (patk > 0) acc = applyBuffDelta(acc, { addPatk: patk });
       continue;
     }
+    if (cat.l2SkillId === 208) {
+      if ((equippedWeaponKind(_inv) ?? '') !== 'bow') continue;
+    } else if (cat.l2SkillId === 209) {
+      if ((equippedWeaponKind(_inv) ?? '') !== 'dagger') continue;
+    } else if (cat.l2SkillId === 227) {
+      if (equippedArmorKindForPassives(_inv) !== 'light') continue;
+    }
     const row = cat.levels[r - 1];
     if (!row) continue;
     const power = row.power;

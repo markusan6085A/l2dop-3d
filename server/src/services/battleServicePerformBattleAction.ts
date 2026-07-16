@@ -31,8 +31,7 @@ import { resolveBattleSkillCooldownSec } from '../data/skillCooldownScaling.js';
 import { humanFighterCatalogEntry } from '../data/humanFighterSkillCatalog.js';
 import {
   parseWorldCombatState,
-  stanceCount,
-  STANCE_MP_PER_SEC,
+  hfStanceMpDrainForIntervalSec,
   stripStances,
   tickWorldCombatState,
 } from '../domain/worldCombatState.js';
@@ -81,7 +80,7 @@ import {
 import {
   persistBattleDefeatInTx,
 } from './battleServiceBattleOutcomeTx.js';
-import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, mirrorPvpPhysSkillsBlockToVictimInTx, mirrorPvpStunToVictimInTx } from './battleServicePvpDamage.js';
+import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, mirrorPvpPhysSkillsBlockToVictimInTx, mirrorPvpStunToVictimInTx, mirrorPvpTouchOfDeathToVictimInTx } from './battleServicePvpDamage.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -126,6 +125,10 @@ import {
   clearTouchOfLifeHoT,
   startTouchOfLifeHoT as armTouchOfLifeHoT,
 } from '../domain/touchOfLifeHoT.js';
+import {
+  restoreTouchOfDeathMobCp,
+  restoreTouchOfDeathPlayerCp,
+} from '../domain/battleSkills/touchOfDeathTurn.js';
 import { consumeBowArrowsOnHit } from '../domain/battleBowArrowConsumption.js';
 import {
   isMobUnableToAttackNow,
@@ -417,6 +420,10 @@ export async function performBattleAction(
         if (strip) strip(mods);
         if (sid === 286) stripProvokeDebuffFromExtraMobs(st);
         if (sid === 341) clearTouchOfLifeHoT(st);
+        if (sid === 342) {
+          restoreTouchOfDeathMobCp(st);
+          restoreTouchOfDeathPlayerCp(st);
+        }
         delete nextMap[key];
         anyChange = true;
         const logLine = LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID[sid];
@@ -438,9 +445,8 @@ export async function performBattleAction(
     {
       const lastTick = st.lastStanceTickMs ?? nowMsTurn;
       const dtSec = Math.max(0, (nowMsTurn - lastTick) / 1000);
-      const sc = stanceCount(st.battleMods);
-      if (sc > 0 && dtSec > 0) {
-        const drain = Math.floor(dtSec * STANCE_MP_PER_SEC * sc);
+      if (dtSec > 0) {
+        const drain = hfStanceMpDrainForIntervalSec(st.battleMods, dtSec);
         if (drain > 0) {
           const before = currentMp;
           currentMp = Math.max(0, currentMp - drain);
@@ -624,6 +630,8 @@ export async function performBattleAction(
       weaknessLogLineUk,
       mysticSkillCdUntilPatch,
       mobCpDrain,
+      mobMaxCpSet,
+      touchOfDeathStripAllTargetBuffs,
       activeBuffPatch,
       battleModsExpiresPatch,
       sonicChargesPatch,
@@ -718,6 +726,22 @@ export async function performBattleAction(
         attackerId: char.id,
         blockUntilMs: jsonFiniteNum(st.battleMods?.mobPhysSkillsBlockedUntilMs),
         iconSkillId: jsonFiniteNum(st.battleMods?.mobPhysSkillsBlockedIconSkillId),
+        nowMs: nowMsTurn,
+      });
+      await mirrorPvpTouchOfDeathToVictimInTx(tx, {
+        victimId: st.pvpTargetCharacterId,
+        attackerId: char.id,
+        untilMs: jsonFiniteNum(st.battleMods?.mobTouchOfDeathUntilMs),
+        iconSkillId: jsonFiniteNum(st.battleMods?.mobTouchOfDeathIconSkillId),
+        debuffResistPenaltyPct: jsonFiniteNum(
+          st.battleMods?.mobTouchOfDeathDebuffResistPenaltyPct
+        ),
+        healReceivedPenaltyPct: jsonFiniteNum(
+          st.battleMods?.mobTouchOfDeathHealReceivedPenaltyPct
+        ),
+        maxCpSet: typeof mobMaxCpSet === 'number' ? mobMaxCpSet : undefined,
+        maxCpBaseline: jsonFiniteNum(st.battleMods?.touchOfDeathMobMaxCpBaseline),
+        stripAllBuffs: touchOfDeathStripAllTargetBuffs === true,
         nowMs: nowMsTurn,
       });
     }
@@ -1155,6 +1179,14 @@ export async function performBattleAction(
         });
       }
     }
+    if (typeof mobMaxCpSet === 'number' && Number.isFinite(mobMaxCpSet) && mobMaxCpSet >= 0) {
+      st.mobMaxCp = Math.floor(mobMaxCpSet);
+      const cur =
+        typeof st.mobCp === 'number' && Number.isFinite(st.mobCp)
+          ? Math.max(0, Math.floor(st.mobCp))
+          : st.mobMaxCp;
+      st.mobCp = Math.min(cur, st.mobMaxCp);
+    }
     if (skillLine) {
       const compact = compactBattleSkillLogLineUk(skillLine);
       const skillHit =
@@ -1173,6 +1205,13 @@ export async function performBattleAction(
     const healReceivedPctNow = nextActiveBuffs.some((b) => b.skillId === 341)
       ? TOUCH_OF_LIFE_HEAL_RECEIVED_PCT
       : 0;
+    const todHealPenalty = jsonFiniteNum(
+      st.battleMods?.playerTouchOfDeathHealReceivedPenaltyPct
+    );
+    const healReceivedPctEff =
+      todHealPenalty !== undefined && todHealPenalty > 0
+        ? Math.max(-95, healReceivedPctNow - todHealPenalty)
+        : healReceivedPctNow;
 
     if (
       typeof playerHpCost === 'number' &&
@@ -1194,7 +1233,7 @@ export async function performBattleAction(
       const cap = effectiveBattleMaxHp(maxHpEffAfter, st.battleMods);
       const healRaw = amplifyHealByReceivedPct(
         Math.floor(playerHeal),
-        healReceivedPctNow
+        healReceivedPctEff
       );
       const healed = Math.min(cap - playerHp, healRaw);
       if (healed > 0) {

@@ -12,6 +12,7 @@ import type {
 } from './humanFighterSkillCatalog.types.js';
 import { maxSkillRankForBattleId } from './humanFighterSkillCatalog.learnedRanks.js';
 import { shieldMasteryMaxRankForMappedProfession } from './shieldMasteryTables.js';
+import { lightArmorMasteryMaxRankForProfession } from './lightArmorMasteryTables.js';
 import { majestyMaxRankForMappedProfession } from './majestyTables.js';
 import { ultimateDefenseMaxRankForMappedProfession } from './ultimateDefenseTables.js';
 import { deflectArrowMaxRankForMappedProfession } from './deflectArrowTables.js';
@@ -102,6 +103,13 @@ export function catalogEntryVisibleForProfession(
   if (entry.professionReq == null) return true;
   if (entry.professionReq === 'human_warrior') {
     return isHumanWarriorSubclassProfession(p);
+  }
+  if (entry.professionReq === 'human_warrior_or_treasure_hunter_track') {
+    return (
+      isHumanWarriorSubclassProfession(p) ||
+      p === 'human_treasure_hunter' ||
+      p === 'human_adventurer'
+    );
   }
   if (entry.professionReq === 'human_warrior_or_rogue_track') {
     return (
@@ -291,6 +299,12 @@ export function maxSkillRankForCatalogEntry(
     );
     return Math.min(global, deflectArrowMaxRankForMappedProfession(p));
   }
+  if (c === 'l2_227') {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return Math.min(global, lightArmorMasteryMaxRankForProfession(p));
+  }
   if (c !== 'l2_211') return global;
   const p = mapFighterProfessionToHumanSkillCatalog(
     String(l2Profession || '').trim()
@@ -315,6 +329,102 @@ export function catalogEntryAllowsSkillRank(
       String(l2Profession || '').trim()
     );
     return isHumanGladiatorTrackProfession(p);
+  }
+  if (c === 'l2_4' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_treasure_hunter' || p === 'human_adventurer';
+  }
+  if (c === 'l2_99' && r === 1) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_99' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_hawkeye' || p === 'human_sagittarius';
+  }
+  if (c === 'l2_101' && r <= 3) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_101' && r >= 4) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_hawkeye' || p === 'human_sagittarius';
+  }
+  if (c === 'l2_193' && r <= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_193' && r >= 3) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_treasure_hunter' || p === 'human_adventurer';
+  }
+  if (c === 'l2_137' && r === 1) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_137' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_treasure_hunter' || p === 'human_adventurer';
+  }
+  if (c === 'l2_198' && r === 1) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_198' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_treasure_hunter' || p === 'human_adventurer';
+  }
+  if (c === 'l2_168' && r === 1) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_168' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_treasure_hunter' || p === 'human_adventurer';
+  }
+  if (c === 'l2_256') {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_169' && r === 1) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_rogue';
+  }
+  if (c === 'l2_169' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_treasure_hunter' || p === 'human_adventurer';
   }
   if (c === 'l2_312' && r >= 6) {
     const p = mapFighterProfessionToHumanSkillCatalog(

@@ -11,7 +11,6 @@ import {
   lethalBlowAdvMpAndPower,
   lureMp,
   switchMp,
-  touchOfDeathMpAndPower,
   unlockMp,
 } from '../../data/l2dopHfGapSkillsBattle.js';
 import {
@@ -49,11 +48,17 @@ import {
 } from '../../data/fortitudeTables.js';
 import { resolvePhysicalMirrorTurn } from './physicalMirrorTurn.js';
 import { resolveTouchOfLifeTurn } from './touchOfLifeTurn.js';
+import { resolveTouchOfDeathTurn } from './touchOfDeathTurn.js';
 import { resolveVengeanceTurn } from './vengeanceTurn.js';
 import {
   ironWillMpAtRank,
   ironWillSkillLineUk,
 } from '../../data/ironWillTables.js';
+import {
+  reflectDamageMpAtRank,
+  reflectDamageReflectRatioAtRank,
+  reflectDamageSkillLineUk,
+} from '../../data/reflectDamageTables.js';
 import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import {
@@ -535,6 +540,7 @@ export function resolveHumanFighterGapSkillsTurn(
       assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
     const mpCost = ironWillMpAtRank(rk) ?? 38;
+    const cdPatch = cooldownPatchForSkill(72, ctx);
     return {
       mpCost,
       pDmg: 0,
@@ -542,6 +548,7 @@ export function resolveHumanFighterGapSkillsTurn(
       physOutcome: null,
       magicOutcome: null,
       activeBuffPatch: { skillId: 72, level: rk, action: 'add' },
+      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
     };
   }
 
@@ -698,17 +705,16 @@ export function resolveHumanFighterGapSkillsTurn(
     if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
       assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
-    const REFL = 0.18;
-    const REFL_DURATION_SEC = buffDurationSecForSkillId(86) ?? 60;
+    const ratio = reflectDamageReflectRatioAtRank(rk);
+    const REFL_DURATION_SEC = buffDurationSecForSkillId(86) ?? 1200;
     const cdPatch = cooldownPatchForSkill(86, ctx);
     return {
-      mpCost: 40,
+      mpCost: reflectDamageMpAtRank(rk) ?? 35,
       pDmg: 0,
-      skillLine:
-        'Відбиття шкоди (86, Reflect Damage): частина урону повертається мобу.',
+      skillLine: reflectDamageSkillLineUk(rk),
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { reflectDamageReturnRatio: REFL },
+      battleModsPatch: { reflectDamageReturnRatio: ratio },
       ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
       battleModsExpiresPatch: expiresPatchForSkill(86, REFL_DURATION_SEC),
     };
@@ -827,25 +833,7 @@ export function resolveHumanFighterGapSkillsTurn(
   }
 
   if (action === 'touch_of_death') {
-    reqEntry(action, String(l2Profession));
-    const cd = ctx.st.mysticSkillCdUntil?.['l2_342'];
-    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
-      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
-    }
-    if (!swordOrBlunt(wk)) throw new Error('battle_skill_not_allowed');
-    const row = touchOfDeathMpAndPower(rk);
-    const atk = Math.floor(combat.pAtk * (1.25 + row.power / 400) * profM);
-    const r = rollPhys(atk);
-    const cdPatch = cooldownPatchForSkill(342, ctx);
-    return {
-      mpCost: row.mp,
-      pDmg: r.damage,
-      skillLine: 'Дотик смерті (342, Touch of Death).',
-      physOutcome: r.outcome,
-      magicOutcome: null,
-      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      ...(r.weaknessLogLineUk ? { weaknessLogLineUk: r.weaknessLogLineUk } : {}),
-    };
+    return resolveTouchOfDeathTurn(ctx);
   }
 
   if (action === 'physical_mirror') {

@@ -15,8 +15,8 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   Partial<Record<number, number>>
 > = {
   // ---- Human Fighter → Warrior → Warlord → Dreadnought ----
-  /** Dash (Rogue — для довідки, бо є в каталозі Fighter) */
-  4: 20,
+  /** Dash (Rogue / Treasure Hunter) — 15 с */
+  4: 15,
   /** Detect Insect Weakness — 10 хв */
   75: 600,
   /** War Cry — 5 хв. */
@@ -33,14 +33,14 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   104: 600,
   /** Horror (Dark Avenger/Hell Knight) */
   65: 20,
-  /** Reflect Damage */
-  86: 60,
+  /** Reflect Damage — Dark Avenger / Hell Knight */
+  86: 1200,
   /** Summon Dark Panther (в нашій battle-моделі як тимчасовий бонус). */
   283: 60,
   /** Rage (Warlord-гілка) — сильніший фіз. удар, нижчий P.Def (L2 Interlude ~60с). */
   94: 60,
-  /** Rapid Shot — вища швидкість атаки з луком (L2 Interlude-style self-buff). */
-  99: 60,
+  /** Rapid Shot — вища швидкість атаки з луком (20 хв). */
+  99: 1200,
   /** Howl (Warlord) — дебаф P.Atk моба. */
   116: 30,
   /** Battle Roar (+Max HP / миттєвий хіл) — 10 хв */
@@ -69,6 +69,8 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   350: 300,
   /** Touch of Life */
   341: 120,
+  /** Touch of Death — Hell Knight */
+  342: 120,
   /** Vengeance */
   368: 30,
   // ---- Rogue / Adventurer (для майбутньої гілки, але часто перетинаються) ----

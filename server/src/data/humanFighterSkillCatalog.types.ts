@@ -52,6 +52,8 @@ export interface HumanFighterSkillCatalogEntry {
     | 'human_hell_knight'
     /** Стійки 256/312: воїнська гілка або розбійник. */
     | 'human_warrior_or_rogue_track'
+    /** Warrior або Treasure Hunter / Adventurer (Light Armor Mastery 227). */
+    | 'human_warrior_or_treasure_hunter_track'
     /** Rogue → Treasure Hunter → Adventurer. */
     | 'human_rogue_track'
     /** Treasure Hunter → Adventurer. */

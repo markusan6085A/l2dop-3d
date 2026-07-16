@@ -16,6 +16,7 @@ import {
   effectiveMobWitResistPct,
   scaleLandChancePercentAfterResist,
   witResistPctFromStat,
+  applyTouchOfDeathResistPenalty,
 } from '../controlLandResist.js';
 import type { BattleBattleMods } from '../battle.js';
 import type { BattleSkillResolveContext, BattleSkillTurnResult } from './types.js';
@@ -32,18 +33,22 @@ function shieldSlamRank(ctx: BattleSkillResolveContext): number {
 }
 
 function targetWitResistPct(ctx: BattleSkillResolveContext, isPvp: boolean): number {
+  const nowMs = Date.now();
+  let base: number;
   if (isPvp) {
     const lv =
       typeof ctx.st.pvpTargetLevel === 'number' && ctx.st.pvpTargetLevel >= 1
         ? Math.floor(ctx.st.pvpTargetLevel)
         : ctx.spawnLevel;
     const estWit = 20 + Math.floor(lv * 0.55);
-    return witResistPctFromStat(estWit);
+    base = witResistPctFromStat(estWit);
+  } else {
+    base = effectiveMobWitResistPct({
+      level: ctx.spawnLevel,
+      debuffResistPct: ctx.spawnDebuffResistPct,
+    });
   }
-  return effectiveMobWitResistPct({
-    level: ctx.spawnLevel,
-    debuffResistPct: ctx.spawnDebuffResistPct,
-  });
+  return applyTouchOfDeathResistPenalty(base, ctx.st.battleMods, nowMs);
 }
 
 export function resolveShieldSlamTurn(

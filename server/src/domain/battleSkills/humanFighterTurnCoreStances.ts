@@ -30,6 +30,7 @@ import {
   focusAttackAccuracyFlat,
   focusAttackCritDamagePct,
 } from '../../data/l2dopFocusAttack.js';
+import { ACCURACY_STANCE_MP_ACTIVATION } from '../../data/accuracyStanceTables.js';
 import type { FighterTurnCoreArgs } from './humanFighterTurnCoreArgs.js';
 
 export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): BattleSkillTurnResult | undefined {
@@ -40,17 +41,17 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
       return {
         mpCost: 0,
         pDmg: 0,
-        skillLine: 'Стійка точності вимкнена.',
+        skillLine: 'Точність (Accuracy) вимкнена.',
         physOutcome: null,
         magicOutcome: null,
         battleModsPatch: { stanceAccuracy: false },
       };
     }
     return {
-      mpCost: 0,
+      mpCost: ACCURACY_STANCE_MP_ACTIVATION,
       pDmg: 0,
       skillLine:
-        'Стійка точності: вища точність і більший фіз. урон по мобу.',
+        'Точність (Accuracy): +3 Accuracy, поки аура увімкнена (~0.2 MP/с).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { stanceAccuracy: true },

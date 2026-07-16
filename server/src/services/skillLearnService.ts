@@ -73,6 +73,19 @@ import { shieldFortressStatsNoteUk } from '../data/shieldFortressTables.js';
 import { fortitudeStatsNoteUk } from '../data/fortitudeTables.js';
 import { ironWillStatsNoteUk } from '../data/ironWillTables.js';
 import { finalFortressStatsNoteUk } from '../data/finalFortressTables.js';
+import { reflectDamageStatsNoteUk } from '../data/reflectDamageTables.js';
+import { touchOfDeathStatsNoteUk } from '../data/touchOfDeathTables.js';
+import { dashStatsNoteUk } from '../data/dashTables.js';
+import { rapidShotStatsNoteUk } from '../data/rapidShotTables.js';
+import { stunShotStatsNoteUk } from '../data/stunShotTables.js';
+import { criticalPowerStatsNoteUk } from '../data/criticalPowerTables.js';
+import { criticalChanceStatsNoteUk } from '../data/criticalChanceTables.js';
+import { boostEvasionStatsNoteUk } from '../data/boostEvasionTables.js';
+import { boostAttackSpeedStatsNoteUk } from '../data/boostAttackSpeedTables.js';
+import { accuracyStanceStatsNoteUk } from '../data/accuracyStanceTables.js';
+import { quickStepStatsNoteUk } from '../data/quickStepTables.js';
+import { bowMasteryStatsNoteUk } from '../data/bowMasteryTables.js';
+import { daggerMasteryStatsNoteUk } from '../data/daggerMasteryTables.js';
 import { ultimateDefenseStatsNoteUk } from '../data/ultimateDefenseTables.js';
 import { shieldStunStatsNoteUk } from '../data/shieldStunTables.js';
 import { shieldSlamStatsNoteUk } from '../data/shieldSlamTables.js';
@@ -448,7 +461,7 @@ export async function getMagisterDialogForUser(
     const minForNext =
       mysticLike != null
         ? minCharLevelForMysticSkillRank(mysticLike, nextRank)
-        : minCharLevelForSkillRank(o as HumanFighterSkillCatalogEntry, nextRank);
+        : minCharLevelForSkillRank(o as HumanFighterSkillCatalogEntry, nextRank, prof);
     /** Повний макс. ранг — не показувати в «вивчити» (лише у вкладці вивчених). */
     if (learnedMax) {
       continue;
@@ -553,6 +566,10 @@ export async function getMagisterDialogForUser(
     }
     if (o.l2SkillId === 312 && !mysticLike) {
       st.statsNoteUk = viciousStanceStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 256 && !mysticLike) {
+      st.statsNoteUk = accuracyStanceStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 169 && !mysticLike) {
+      st.statsNoteUk = quickStepStatsNoteUk(rankPreview);
     }
     if (o.l2SkillId === 211) {
       st.statsNoteUk = boostHpStatsNoteUk(rankPreview);
@@ -586,6 +603,24 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = ironWillStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 291 && !mysticLike) {
       st.statsNoteUk = finalFortressStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 86 && !mysticLike) {
+      st.statsNoteUk = reflectDamageStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 342 && !mysticLike) {
+      st.statsNoteUk = touchOfDeathStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 4 && !mysticLike) {
+      st.statsNoteUk = dashStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 99 && !mysticLike) {
+      st.statsNoteUk = rapidShotStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 101 && !mysticLike) {
+      st.statsNoteUk = stunShotStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 193 && !mysticLike) {
+      st.statsNoteUk = criticalPowerStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 137 && !mysticLike) {
+      st.statsNoteUk = criticalChanceStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 198 && !mysticLike) {
+      st.statsNoteUk = boostEvasionStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 168 && !mysticLike) {
+      st.statsNoteUk = boostAttackSpeedStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 92 && !mysticLike) {
       st.statsNoteUk = shieldStunStatsNoteUk(rankPreview, effLevel);
     } else if (o.l2SkillId === 353 && !mysticLike) {
@@ -609,7 +644,11 @@ export async function getMagisterDialogForUser(
     } else if (o.l2SkillId === 232 && !mysticLike) {
       st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview, 232);
     } else if (o.l2SkillId === 227 && !mysticLike) {
-      st.statsNoteUk = lightArmorMasteryStatsNoteUk(rankPreview);
+      st.statsNoteUk = lightArmorMasteryStatsNoteUk(rankPreview, prof);
+    } else if (o.l2SkillId === 208 && !mysticLike) {
+      st.statsNoteUk = bowMasteryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 209 && !mysticLike) {
+      st.statsNoteUk = daggerMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 216 && !mysticLike) {
       st.statsNoteUk = polearmMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 144 && !mysticLike) {
@@ -886,7 +925,7 @@ export async function learnSkillForUser(
       if (currentLv >= maxR) throw new Error('skill_already_maxed');
       nextLv = currentLv + 1;
       const effLevel = levelFromTotalExp(char.exp);
-      const minForNext = minCharLevelForSkillRank(fighterOffer, nextLv);
+      const minForNext = minCharLevelForSkillRank(fighterOffer, nextLv, prof);
       if (
         !HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ &&
         effLevel < minForNext

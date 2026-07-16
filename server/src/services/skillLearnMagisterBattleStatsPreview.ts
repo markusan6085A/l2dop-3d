@@ -11,7 +11,6 @@ import {
   powerSmashMpAndPower,
   powerStrikeMpAndPower,
   stunAttackMpAndPower,
-  stunShotMpAndPower,
   thunderStormMpAndPower,
   wildSweepMpAndPower,
   wildSweepStatsNoteUk,
@@ -22,6 +21,20 @@ import {
   warCryPatkPercentAtRank,
   warCryStatsNoteUk,
 } from '../data/warCryTables.js';
+import {
+  dashMpAtRank,
+  dashRunSpeedFlatAtRank,
+  dashStatsNoteUk,
+} from '../data/dashTables.js';
+import {
+  rapidShotAspdPctAtRank,
+  rapidShotMpAtRank,
+  rapidShotStatsNoteUk,
+} from '../data/rapidShotTables.js';
+import {
+  stunShotMpPowerAtRank,
+  stunShotStatsNoteUk,
+} from '../data/stunShotTables.js';
 import {
   battleRoarMpAtRank,
   battleRoarStatsNoteUk,
@@ -78,12 +91,23 @@ import {
   finalFortressStatsNoteUk,
 } from '../data/finalFortressTables.js';
 import {
+  reflectDamageMpAtRank,
+  reflectDamageReflectPctAtRank,
+  reflectDamageStatsNoteUk,
+} from '../data/reflectDamageTables.js';
+import {
+  touchOfDeathHpCostAtRank,
+  touchOfDeathStatsNoteUk,
+} from '../data/touchOfDeathTables.js';
+import {
   heavyArmorKnightStatsNoteUk,
   heavyArmorWarriorStatsNoteUk,
 } from '../data/heavyArmorMasteryTables.js';
 import {
   swordBluntMasteryStatsNoteUk,
 } from '../data/swordBluntMasteryTables.js';
+import { bowMasteryStatsNoteUk } from '../data/bowMasteryTables.js';
+import { daggerMasteryStatsNoteUk } from '../data/daggerMasteryTables.js';
 import {
   ultimateDefenseMpAtRank,
   ultimateDefenseStatsNoteUk,
@@ -121,6 +145,12 @@ import {
 } from '../data/drainHealthTables.js';
 import { shieldMasteryStatsNoteUk } from '../data/shieldMasteryTables.js';
 import { focusMindStatsNoteUk } from '../data/focusMindTables.js';
+import { criticalPowerStatsNoteUk } from '../data/criticalPowerTables.js';
+import { criticalChanceStatsNoteUk } from '../data/criticalChanceTables.js';
+import { boostEvasionStatsNoteUk } from '../data/boostEvasionTables.js';
+import { boostAttackSpeedStatsNoteUk } from '../data/boostAttackSpeedTables.js';
+import { accuracyStanceStatsNoteUk } from '../data/accuracyStanceTables.js';
+import { quickStepStatsNoteUk } from '../data/quickStepTables.js';
 import { hammerCrushStatsNoteUk } from '../data/hammerCrushTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
 import { fighterPassiveHintUk } from '../data/fighterCommonPassiveSkillDisplay.js';
@@ -146,14 +176,18 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
       return 'Пасив: +P. Atk (flat) зі списом або алебардою. MP у бою не витрачається.';
     case 'l2_144':
       return 'Пасив: +P. Atk (flat) з дуальними мечами. MP у бою не витрачається.';
+    case 'l2_208':
+      return 'Пасив: +P.Atk (flat) з луком. MP у бою не витрачається.';
+    case 'l2_209':
+      return 'Пасив: +P.Atk (flat) з кинджалом. MP у бою не витрачається.';
     case 'l2_227':
-      return 'Пасив: +P. Def (%) і ухилення в легкій броні. MP у бою не витрачається.';
+      return 'Пасив: +P. Def і ухилення в легкій броні. MP у бою не витрачається.';
     case 'l2_231':
       return 'Пасив: +P.Def (%) у важкій броні (Warrior / Warlord). MP у бою не витрачається.';
     case 'l2_232':
       return 'Пасив: +P.Def (flat) у важкій броні (Knight-гілка). MP у бою не витрачається.';
     case 'l2_256':
-      return 'Toggle: точність; MP знімається в такті. У картці — як пасив для зручності.';
+      return accuracyStanceStatsNoteUk(1);
     case 'l2_257':
       return 'Пасив: +P. Atk (flat) з мечем або булавою. MP у бою не витрачається.';
     case 'l2_290':
@@ -170,8 +204,6 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
       return 'Пасивний скіл. Шанс без MP і без reuse; при спрацюванні — повтор одразу (77 лв, 1 р.). MP у бою не витрачається.';
     case 'l2_339':
       return 'Стійка: вищий захист, нижча швидкість/атака; MP знімається, поки активна.';
-    case 'l2_342':
-      return 'Актив: темне прокляття по ворогу (Hell Knight); у бою — заглушка до переносу формул.';
     case 'l2_60':
       return 'Toggle: удавана смерть; MP знімається в такті.';
     case 'l2_992':
@@ -195,15 +227,33 @@ function magisterPassiveCombatNoteUkWithRank(
       return heavyArmorKnightStatsNoteUk(skillRank);
     case 'l2_257':
       return swordBluntMasteryStatsNoteUk(skillRank);
+    case 'l2_208':
+      return bowMasteryStatsNoteUk(skillRank);
+    case 'l2_209':
+      return daggerMasteryStatsNoteUk(skillRank);
     case 'l2_291':
       return finalFortressStatsNoteUk(skillRank);
     case 'l2_191':
       return focusMindStatsNoteUk(skillRank);
+    case 'l2_193':
+      return criticalPowerStatsNoteUk(skillRank);
+    case 'l2_137':
+      return criticalChanceStatsNoteUk(skillRank);
+    case 'l2_198':
+      return boostEvasionStatsNoteUk(skillRank);
+    case 'l2_168':
+      return boostAttackSpeedStatsNoteUk(skillRank);
+    case 'l2_256':
+      return accuracyStanceStatsNoteUk(skillRank);
+    case 'l2_169':
+      return quickStepStatsNoteUk(skillRank);
     case 'l2_217':
       return (
         fighterPassiveHintUk(217) ??
         'Пасив: +P.Atk (flat) з мечем або булавою (Elf / Dark Elf / Orc).'
       );
+    case 'l2_342':
+      return touchOfDeathStatsNoteUk(skillRank);
     default:
       return magisterPassiveCombatNoteUk(b);
   }
@@ -245,6 +295,18 @@ function magisterBattleStatsPreviewCore(
         mp: warCryMpAtRank(skillRank) ?? 10,
         power: warCryPatkPercentAtRank(skillRank),
         statsNoteUk: warCryStatsNoteUk(skillRank),
+      };
+    case 'l2_4':
+      return {
+        mp: dashMpAtRank(skillRank),
+        power: dashRunSpeedFlatAtRank(skillRank),
+        statsNoteUk: dashStatsNoteUk(skillRank),
+      };
+    case 'l2_99':
+      return {
+        mp: rapidShotMpAtRank(skillRank),
+        power: rapidShotAspdPctAtRank(skillRank),
+        statsNoteUk: rapidShotStatsNoteUk(skillRank),
       };
     case 'l2_3':
       row = powerStrikeMpAndPower(
@@ -679,10 +741,9 @@ function magisterBattleStatsPreviewCore(
       };
     case 'l2_86':
       return {
-        mp: 40,
-        power: null,
-        statsNoteUk:
-          'Reflect Damage: частина вхідного урону повертається назад (~60 с).',
+        mp: reflectDamageMpAtRank(skillRank) ?? 35,
+        power: reflectDamageReflectPctAtRank(skillRank),
+        statsNoteUk: reflectDamageStatsNoteUk(skillRank),
       };
     case 'l2_103': {
       const xr = l2dopXmlSkillRow(103, skillRank);
@@ -747,15 +808,12 @@ function magisterBattleStatsPreviewCore(
         power: touchOfLifeHpCostAtRank(skillRank),
         statsNoteUk: touchOfLifeStatsNoteUk(skillRank),
       };
-    case 'l2_342': {
-      const xr = l2dopXmlSkillRow(342, skillRank);
+    case 'l2_342':
       return {
-        mp: xr?.m ?? 86,
-        power: xr?.p ?? 280,
-        statsNoteUk:
-          'Touch of Death: потужний dark-удар з великим кулдауном.',
+        mp: 0,
+        power: touchOfDeathHpCostAtRank(skillRank),
+        statsNoteUk: touchOfDeathStatsNoteUk(skillRank),
       };
-    }
     case 'l2_350':
       return {
         mp: physicalMirrorMpAtRank(skillRank) ?? 71,
@@ -822,36 +880,12 @@ function magisterBattleStatsPreviewCore(
         statsNoteUk:
           'Bluff: короткий дебаф захисту цілі + бонус сили криту (~8 с).',
       };
-    case 'l2_99': {
-      const r = Math.max(1, skillRank);
+    case 'l2_101':
       return {
-        mp: r >= 2 ? 20 : 14,
-        power: null,
-        statsNoteUk:
-          r >= 2
-            ? 'Ранг 2: MP 20, ~+12% швидкості атаки з луком (~60 с, далі кулдаун).'
-            : 'Ранг 1: MP 14, ~+8% (~60 с); другий ранг у магістрі — MP 20, ~+12%.',
+        mp: stunShotMpPowerAtRank(skillRank)?.mp ?? null,
+        power: stunShotMpPowerAtRank(skillRank)?.power ?? null,
+        statsNoteUk: stunShotStatsNoteUk(skillRank),
       };
-    }
-    case 'l2_101': {
-      row = stunShotMpAndPower(skillRank);
-      if (!row) {
-        return {
-          mp: null,
-          power: null,
-          statsNoteUk: 'Гілка розбійника; у бою — лише з луком.',
-        };
-      }
-      const stunPct = Math.min(70, 40 + Math.max(1, skillRank) * 2);
-      return {
-        mp: row.mp,
-        power: row.power,
-        statsNoteUk:
-          'Stun Shot: гарантований урон; шанс оглушення ~' +
-          stunPct +
-          '% (при успіху ціль пропускає контрудар).',
-      };
-    }
     case 'l2_343':
       return {
         mp: 170,

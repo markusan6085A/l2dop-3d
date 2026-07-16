@@ -10,6 +10,7 @@ import {
   type TextRpgHfToggleEffectMod,
   type TextRpgHfToggleRow,
 } from './textRpgHfToggleEffects.generated.js';
+import { accuracyStanceFlatAtRank } from './accuracyStanceTables.js';
 import type { TextRpgEffectMode } from './textRpgSkillEffectTypes.js';
 
 const BY_ID = new Map(
@@ -19,6 +20,9 @@ const BY_ID = new Map(
 export const TEXT_RPG_HF_TOGGLE_SKILL_IDS = new Set(BY_ID.keys());
 
 function powerForToggleLevel(row: TextRpgHfToggleRow, requestedRank: number): number {
+  if (row.l2SkillId === 256) {
+    return accuracyStanceFlatAtRank(requestedRank);
+  }
   const r = Math.max(1, Math.floor(requestedRank));
   const capped = Math.min(r, row.maxLevel);
   let p = row.powerByLevel[capped];

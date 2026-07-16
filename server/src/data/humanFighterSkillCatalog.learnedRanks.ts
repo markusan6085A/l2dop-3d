@@ -44,6 +44,42 @@ import {
   hateAuraSpCostAtRank,
 } from './hateAuraTables.js';
 import {
+  quickStepRequiredLevelAtRank,
+  quickStepSpCostAtRank,
+} from './quickStepTables.js';
+import {
+  accuracyStanceRequiredLevelAtRank,
+  accuracyStanceSpCostAtRank,
+} from './accuracyStanceTables.js';
+import {
+  boostEvasionRequiredLevelAtRank,
+  boostEvasionSpCostAtRank,
+} from './boostEvasionTables.js';
+import {
+  boostAttackSpeedRequiredLevelAtRank,
+  boostAttackSpeedSpCostAtRank,
+} from './boostAttackSpeedTables.js';
+import {
+  criticalPowerRequiredLevelAtRank,
+  criticalPowerSpCostAtRank,
+} from './criticalPowerTables.js';
+import {
+  criticalChanceRequiredLevelAtRank,
+  criticalChanceSpCostAtRank,
+} from './criticalChanceTables.js';
+import {
+  dashRequiredLevelAtRank,
+  dashSpCostAtRank,
+} from './dashTables.js';
+import {
+  rapidShotRequiredLevelAtRank,
+  rapidShotSpCostAtRank,
+} from './rapidShotTables.js';
+import {
+  stunShotRequiredLevelAtRank,
+  stunShotSpCostAtRank,
+} from './stunShotTables.js';
+import {
   divineHealRequiredLevelAtRank,
   divineHealSpCostAtRank,
 } from './divineHealTables.js';
@@ -84,6 +120,23 @@ import {
   touchOfLifeSpCostAtRank,
 } from './touchOfLifeTables.js';
 import {
+  touchOfDeathRequiredLevelAtRank,
+  touchOfDeathSpCostAtRank,
+} from './touchOfDeathTables.js';
+import {
+  bowMasteryRequiredLevelAtRank,
+  bowMasterySpCostAtRank,
+} from './bowMasteryTables.js';
+import {
+  daggerMasteryRequiredLevelAtRank,
+  daggerMasterySpCostAtRank,
+} from './daggerMasteryTables.js';
+import {
+  lightArmorMasteryRogueRequiredLevelAtRank,
+  lightArmorMasteryRogueSpCostAtRank,
+  isLightArmorMasteryRogueFlatProfession,
+} from './lightArmorMasteryTables.js';
+import {
   ironWillRequiredLevelAtRank,
   ironWillSpCostAtRank,
 } from './ironWillTables.js';
@@ -91,6 +144,10 @@ import {
   finalFortressRequiredLevelAtRank,
   finalFortressSpCostAtRank,
 } from './finalFortressTables.js';
+import {
+  reflectDamageRequiredLevelAtRank,
+  reflectDamageSpCostAtRank,
+} from './reflectDamageTables.js';
 import {
   shieldStunRequiredLevelAtRank,
   shieldStunSpCostAtRank,
@@ -139,16 +196,20 @@ export const MAX_SKILL_RANK_BY_BATTLE_ID: Record<string, number> = {
   l2_30: 37,
   l2_51: 1,
   l2_60: 1,
-  l2_101: 3,
+  l2_101: 40,
   l2_111: 2,
   l2_113: 2,
-  l2_137: 1,
-  l2_168: 1,
+  l2_137: 3,
+  l2_168: 3,
   l2_169: 2,
-  l2_208: 15,
-  l2_209: 7,
+  l2_208: 52,
+  l2_209: 45,
+  l2_227: 50,
   l2_221: 1,
   l2_225: 3,
+  l2_193: 6,
+  l2_198: 3,
+  l2_256: 1,
   l2_263: 37,
   l2_344: 1,
   l2_356: 1,
@@ -234,7 +295,8 @@ export function maxSkillRankForBattleId(battleId: string): number {
  */
 export function minCharLevelForSkillRank(
   entry: HumanFighterSkillCatalogEntry,
-  rank: number
+  rank: number,
+  mappedHumanProf?: string
 ): number {
   const r = Math.max(1, Math.floor(rank));
   const c = canonicalBattleSkillId(entry.battleId);
@@ -278,6 +340,42 @@ export function minCharLevelForSkillRank(
     const fromHa = hateAuraRequiredLevelAtRank(r);
     if (fromHa !== undefined) return fromHa;
   }
+  if (c === 'l2_4') {
+    const fromDash = dashRequiredLevelAtRank(r);
+    if (fromDash !== undefined) return fromDash;
+  }
+  if (c === 'l2_99') {
+    const fromRs = rapidShotRequiredLevelAtRank(r);
+    if (fromRs !== undefined) return fromRs;
+  }
+  if (c === 'l2_101') {
+    const fromSs = stunShotRequiredLevelAtRank(r);
+    if (fromSs !== undefined) return fromSs;
+  }
+  if (c === 'l2_193') {
+    const fromCp = criticalPowerRequiredLevelAtRank(r);
+    if (fromCp !== undefined) return fromCp;
+  }
+  if (c === 'l2_137') {
+    const fromCc = criticalChanceRequiredLevelAtRank(r);
+    if (fromCc !== undefined) return fromCc;
+  }
+  if (c === 'l2_198') {
+    const fromBe = boostEvasionRequiredLevelAtRank(r);
+    if (fromBe !== undefined) return fromBe;
+  }
+  if (c === 'l2_168') {
+    const fromBas = boostAttackSpeedRequiredLevelAtRank(r);
+    if (fromBas !== undefined) return fromBas;
+  }
+  if (c === 'l2_256') {
+    const fromAcc = accuracyStanceRequiredLevelAtRank(r);
+    if (fromAcc !== undefined) return fromAcc;
+  }
+  if (c === 'l2_169') {
+    const fromQs = quickStepRequiredLevelAtRank(r);
+    if (fromQs !== undefined) return fromQs;
+  }
   if (c === 'l2_45') {
     const fromHeal = divineHealRequiredLevelAtRank(r);
     if (fromHeal !== undefined) return fromHeal;
@@ -310,6 +408,10 @@ export function minCharLevelForSkillRank(
     const fromFf = finalFortressRequiredLevelAtRank(r);
     if (fromFf !== undefined) return fromFf;
   }
+  if (c === 'l2_86') {
+    const fromRd = reflectDamageRequiredLevelAtRank(r);
+    if (fromRd !== undefined) return fromRd;
+  }
   if (c === 'l2_232') {
     const fromHa = heavyArmorKnightRequiredLevelAtRank(r);
     if (fromHa !== undefined) return fromHa;
@@ -317,6 +419,18 @@ export function minCharLevelForSkillRank(
   if (c === 'l2_257') {
     const fromSb = swordBluntMasteryRequiredLevelAtRank(r);
     if (fromSb !== undefined) return fromSb;
+  }
+  if (c === 'l2_208') {
+    const fromBow = bowMasteryRequiredLevelAtRank(r);
+    if (fromBow !== undefined) return fromBow;
+  }
+  if (c === 'l2_209') {
+    const fromDag = daggerMasteryRequiredLevelAtRank(r);
+    if (fromDag !== undefined) return fromDag;
+  }
+  if (c === 'l2_227' && isLightArmorMasteryRogueFlatProfession(mappedHumanProf)) {
+    const fromRogue = lightArmorMasteryRogueRequiredLevelAtRank(r);
+    if (fromRogue !== undefined) return fromRogue;
   }
   if (c === 'l2_92') {
     const fromShieldStun = shieldStunRequiredLevelAtRank(r);
@@ -329,6 +443,10 @@ export function minCharLevelForSkillRank(
   if (c === 'l2_341') {
     const fromTol = touchOfLifeRequiredLevelAtRank(r);
     if (fromTol !== undefined) return fromTol;
+  }
+  if (c === 'l2_342') {
+    const fromTod = touchOfDeathRequiredLevelAtRank(r);
+    if (fromTod !== undefined) return fromTod;
   }
   if (c === 'l2_350') {
     const fromMirror = physicalMirrorRequiredLevelAtRank(r);
@@ -399,6 +517,42 @@ export function spCostForSkillRankUpgrade(
     const sp = hateAuraSpCostAtRank(r);
     if (sp !== undefined) return sp;
   }
+  if (c === 'l2_4') {
+    const sp = dashSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_99') {
+    const sp = rapidShotSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_101') {
+    const sp = stunShotSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_193') {
+    const sp = criticalPowerSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_137') {
+    const sp = criticalChanceSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_198') {
+    const sp = boostEvasionSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_168') {
+    const sp = boostAttackSpeedSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_256') {
+    const sp = accuracyStanceSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_169') {
+    const sp = quickStepSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
   if (c === 'l2_45') {
     const sp = divineHealSpCostAtRank(r);
     if (sp !== undefined) return sp;
@@ -431,12 +585,28 @@ export function spCostForSkillRankUpgrade(
     const sp = finalFortressSpCostAtRank(r);
     if (sp !== undefined) return sp;
   }
+  if (c === 'l2_86') {
+    const sp = reflectDamageSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
   if (c === 'l2_232') {
     const sp = heavyArmorKnightSpCostAtRank(r);
     if (sp !== undefined) return sp;
   }
   if (c === 'l2_257') {
     const sp = swordBluntMasterySpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_208') {
+    const sp = bowMasterySpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_209') {
+    const sp = daggerMasterySpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_227' && isLightArmorMasteryRogueFlatProfession(mappedHumanProf)) {
+    const sp = lightArmorMasteryRogueSpCostAtRank(r);
     if (sp !== undefined) return sp;
   }
   if (c === 'l2_92') {
@@ -449,6 +619,10 @@ export function spCostForSkillRankUpgrade(
   }
   if (c === 'l2_341') {
     const sp = touchOfLifeSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_342') {
+    const sp = touchOfDeathSpCostAtRank(r);
     if (sp !== undefined) return sp;
   }
   if (c === 'l2_350') {

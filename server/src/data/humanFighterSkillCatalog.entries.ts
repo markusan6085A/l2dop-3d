@@ -14,6 +14,7 @@ import {
   DIVINE_HEAL_COOLDOWN_SEC,
 } from './divineHealTables.js';
 import { FOCUS_MIND_HINT_UK } from './focusMindTables.js';
+import { LIGHT_ARMOR_CATALOG_HINT_UK } from './lightArmorMasteryTables.js';
 import {
   HOLY_BLESSING_COOLDOWN_SEC,
   HOLY_BLESSING_HINT_UK,
@@ -47,9 +48,55 @@ import {
   TOUCH_OF_LIFE_HINT_UK,
 } from './touchOfLifeTables.js';
 import {
+  TOUCH_OF_DEATH_COOLDOWN_SEC,
+  TOUCH_OF_DEATH_HINT_UK,
+} from './touchOfDeathTables.js';
+import {
+  DASH_COOLDOWN_SEC,
+  DASH_HINT_UK,
+} from './dashTables.js';
+import {
+  CRITICAL_POWER_HINT_UK,
+} from './criticalPowerTables.js';
+import {
+  CRITICAL_CHANCE_HINT_UK,
+} from './criticalChanceTables.js';
+import {
+  BOOST_EVASION_HINT_UK,
+} from './boostEvasionTables.js';
+import {
+  BOOST_ATTACK_SPEED_HINT_UK,
+} from './boostAttackSpeedTables.js';
+import {
+  ACCURACY_STANCE_HINT_UK,
+} from './accuracyStanceTables.js';
+import {
+  QUICK_STEP_HINT_UK,
+} from './quickStepTables.js';
+import {
+  RAPID_SHOT_HINT_UK,
+} from './rapidShotTables.js';
+import {
+  STUN_SHOT_COOLDOWN_SEC,
+  STUN_SHOT_HINT_UK,
+} from './stunShotTables.js';
+import {
+  BOW_MASTERY_HINT_UK,
+} from './bowMasteryTables.js';
+import {
+  DAGGER_MASTERY_HINT_UK,
+} from './daggerMasteryTables.js';
+import {
   IRON_WILL_COOLDOWN_SEC,
   IRON_WILL_HINT_UK,
 } from './ironWillTables.js';
+import {
+  FINAL_FORTRESS_HINT_UK,
+} from './finalFortressTables.js';
+import {
+  REFLECT_DAMAGE_COOLDOWN_SEC,
+  REFLECT_DAMAGE_HINT_UK,
+} from './reflectDamageTables.js';
 import { SWORD_BLUNT_MASTERY_HINT_UK } from './swordBluntMasteryTables.js';
 
 //==== Каталог (орієнтир на перший ранг у датапаку; описи — для гравця, українською) ====
@@ -189,11 +236,11 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_227',
     l2SkillId: 227,
     minLevel: 20,
-    spCost: 1900,
+    spCost: 1700,
     nameUk: fighterPassiveNameUk(227)!,
-    hintUk: fighterPassiveHintUk(227)!,
+    hintUk: LIGHT_ARMOR_CATALOG_HINT_UK,
     kind: 'passive',
-    professionReq: 'human_warrior',
+    professionReq: 'human_warrior_or_rogue_track',
   },
   {
     battleId: 'l2_231',
@@ -227,17 +274,6 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
       'Актив: потужний удар по одній цілі. Лише меч або булава (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Відкат: 13 с. Можливий надудар.',
     kind: 'battle',
     professionReq: 'human_warrior',
-  },
-  {
-    battleId: 'l2_256',
-    l2SkillId: 256,
-    minLevel: 24,
-    spCost: 6400,
-    nameUk: 'Точність (Accuracy)',
-    hintUk:
-      'Підвищує точність. Постійно витрачає MP, поки активна.',
-    kind: 'toggle',
-    professionReq: 'human_warrior_or_rogue_track',
   },
   {
     battleId: 'l2_257',
@@ -954,11 +990,11 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_342',
     l2SkillId: 342,
     minLevel: 78,
-    spCost: 32000000,
+    spCost: 32_000_000,
     nameUk: 'Дотик смерті (Touch of Death)',
-    hintUk:
-      'Темна магія по одній цілі: шкода залежить від стану ворога, можливі додаткові негативні ефекти.',
+    hintUk: TOUCH_OF_DEATH_HINT_UK,
     kind: 'battle',
+    cooldownSec: TOUCH_OF_DEATH_COOLDOWN_SEC,
     professionReq: 'human_hell_knight',
   },
   {
@@ -1009,10 +1045,11 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_86',
     l2SkillId: 86,
     minLevel: 40,
-    spCost: 33000,
+    spCost: 33_000,
     nameUk: 'Відбиття шкоди (Reflect Damage)',
-    hintUk: 'Частина вхідного урону повертається на ворога.',
+    hintUk: REFLECT_DAMAGE_HINT_UK,
     kind: 'battle',
+    cooldownSec: REFLECT_DAMAGE_COOLDOWN_SEC,
     professionReq: 'human_dark_avenger_track',
   },
   {
@@ -1051,8 +1088,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 52,
     spCost: 120000,
     nameUk: 'Остання фортеця (Final Fortress)',
-    hintUk:
-      'Пасив: автоматично +P.Def (flat), коли HP <= 20%. 1 р. +116.9 … 11 р. +215.8. Paladin / Phoenix Knight.',
+    hintUk: FINAL_FORTRESS_HINT_UK,
     kind: 'passive',
     professionReq: 'human_paladin_track',
   },
@@ -1063,19 +1099,20 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 20,
     spCost: 3400,
     nameUk: 'Ривок (Dash)',
-    hintUk: 'Швидкий біг на короткий час.',
+    hintUk: DASH_HINT_UK,
     kind: 'battle',
+    cooldownSec: DASH_COOLDOWN_SEC,
     professionReq: 'human_rogue_track',
   },
   {
     battleId: 'l2_101',
     l2SkillId: 101,
-    minLevel: 20,
-    spCost: 3400,
+    minLevel: 36,
+    spCost: 10000,
     nameUk: 'Оглушливий постріл (Stun Shot)',
-    hintUk:
-      'Оглушує й завдає шкоди з лука. Лише з луками. Можливий надудар.',
+    hintUk: STUN_SHOT_HINT_UK,
     kind: 'battle',
+    cooldownSec: STUN_SHOT_COOLDOWN_SEC,
     professionReq: 'human_rogue_track',
   },
   {
@@ -1091,10 +1128,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_137',
     l2SkillId: 137,
-    minLevel: 20,
-    spCost: 31000,
+    minLevel: 28,
+    spCost: 11000,
     nameUk: 'Шанс криту (Critical Chance)',
-    hintUk: 'Пасив: підвищує шанс критичного удару.',
+    hintUk: CRITICAL_CHANCE_HINT_UK,
     kind: 'passive',
     professionReq: 'human_rogue_track',
   },
@@ -1104,17 +1141,17 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 36,
     spCost: 31000,
     nameUk: 'Підсилення швидкості атаки (Boost Attack Speed)',
-    hintUk: 'Пасив: підвищує швидкість атаки.',
+    hintUk: BOOST_ATTACK_SPEED_HINT_UK,
     kind: 'passive',
     professionReq: 'human_rogue_track',
   },
   {
     battleId: 'l2_169',
     l2SkillId: 169,
-    minLevel: 20,
+    minLevel: 28,
     spCost: 11000,
     nameUk: 'Швидкий крок (Quick Step)',
-    hintUk: 'Пасив: підвищує швидкість пересування.',
+    hintUk: QUICK_STEP_HINT_UK,
     kind: 'passive',
     professionReq: 'human_rogue_track',
   },
@@ -1124,7 +1161,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 20,
     spCost: 1100,
     nameUk: 'Майстерність лука (Bow Mastery)',
-    hintUk: 'Пасив: підвищує P. Atk при стрільбі з лука.',
+    hintUk: BOW_MASTERY_HINT_UK,
     kind: 'passive',
     professionReq: 'human_rogue_track',
   },
@@ -1134,7 +1171,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 20,
     spCost: 16000,
     nameUk: 'Майстерність кинжала (Dagger Mastery)',
-    hintUk: 'Пасив: підвищує P. Atk з кинжалом.',
+    hintUk: DAGGER_MASTERY_HINT_UK,
     kind: 'passive',
     professionReq: 'human_rogue_track',
   },
@@ -1146,6 +1183,36 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     nameUk: 'Акробатичний рух (Acrobatic Move)',
     hintUk: 'Пасив: під час бігу підвищує ухилення.',
     kind: 'passive',
+    professionReq: 'human_rogue_track',
+  },
+  {
+    battleId: 'l2_193',
+    l2SkillId: 193,
+    minLevel: 24,
+    spCost: 5900,
+    nameUk: 'Сила критичного удару (Critical Power)',
+    hintUk: CRITICAL_POWER_HINT_UK,
+    kind: 'passive',
+    professionReq: 'human_rogue_track',
+  },
+  {
+    battleId: 'l2_198',
+    l2SkillId: 198,
+    minLevel: 24,
+    spCost: 5900,
+    nameUk: 'Підсилення ухилення (Boost Evasion)',
+    hintUk: BOOST_EVASION_HINT_UK,
+    kind: 'passive',
+    professionReq: 'human_rogue_track',
+  },
+  {
+    battleId: 'l2_256',
+    l2SkillId: 256,
+    minLevel: 24,
+    spCost: 5900,
+    nameUk: 'Точність (Accuracy)',
+    hintUk: ACCURACY_STANCE_HINT_UK,
+    kind: 'toggle',
     professionReq: 'human_rogue_track',
   },
   // ---- Treasure Hunter (2-га профа) ----
@@ -1298,13 +1365,12 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_99',
     l2SkillId: 99,
-    minLevel: 40,
-    spCost: 12000,
+    minLevel: 32,
+    spCost: 18000,
     nameUk: 'Швидкий постріл (Rapid Shot)',
-    hintUk:
-      'Підвищує швидкість стрільби з лука.',
+    hintUk: RAPID_SHOT_HINT_UK,
     kind: 'battle',
-    professionReq: 'human_hawkeye_track',
+    professionReq: 'human_rogue_track',
   },
   {
     battleId: 'l2_171',

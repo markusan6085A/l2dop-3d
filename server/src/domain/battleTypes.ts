@@ -149,6 +149,22 @@ export interface BattleBattleMods {
   /** Shield Slam (353): моб не може використовувати фізичні скіли (контратака) — unix ms. */
   mobPhysSkillsBlockedUntilMs?: number;
   mobPhysSkillsBlockedIconSkillId?: number;
+  /** Touch of Death (342): дебаф на цілі — unix ms. */
+  mobTouchOfDeathUntilMs?: number;
+  mobTouchOfDeathIconSkillId?: number;
+  /** Touch of Death: −% до debuffResist цілі, поки дебаф активний. */
+  mobTouchOfDeathDebuffResistPenaltyPct?: number;
+  /** Touch of Death: −% до ефективності лікування цілі (PvP). */
+  mobTouchOfDeathHealReceivedPenaltyPct?: number;
+  /** Touch of Death: max CP до дебафа (для відновлення після expire). */
+  touchOfDeathMobMaxCpBaseline?: number;
+  /** PvP: Touch of Death на гравці-жертві — unix ms. */
+  playerTouchOfDeathUntilMs?: number;
+  playerTouchOfDeathIconSkillId?: number;
+  playerTouchOfDeathDebuffResistPenaltyPct?: number;
+  playerTouchOfDeathHealReceivedPenaltyPct?: number;
+  /** PvP: max CP жертви до ToD (для відновлення після expire). */
+  touchOfDeathPlayerMaxCpBaseline?: number;
   /** PvP: жертва не може використовувати фізичні скіли — unix ms. */
   playerPhysSkillsBlockedUntilMs?: number;
   playerPhysSkillsBlockedIconSkillId?: number;

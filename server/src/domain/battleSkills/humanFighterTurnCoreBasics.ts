@@ -9,7 +9,6 @@ import {
   powerSmashMpAndPower,
   powerStrikeMpAndPower,
   stunAttackMpAndPower,
-  stunShotMpAndPower,
   thunderStormMpAndPower,
   wildSweepMpAndPower,
   whirlwindMpAndPower,
@@ -20,6 +19,15 @@ import {
   provokePoleResistCutPctAtRank,
   spawnAllowsProvokeAggro,
 } from '../../data/provokeTables.js';
+import {
+  dashMpAtRank,
+  dashRunSpeedFlatAtRank,
+} from '../../data/dashTables.js';
+import {
+  rapidShotAspdMulAtRank,
+  rapidShotAspdPctAtRank,
+  rapidShotMpAtRank,
+} from '../../data/rapidShotTables.js';
 import {
   warCryMpAtRank,
   warCryPatkPercentAtRank,
@@ -38,6 +46,15 @@ import {
   deflectArrowMpAtRank,
   deflectArrowSkillLineUk,
 } from '../../data/deflectArrowTables.js';
+import {
+  STUN_SHOT_BASE_STUN_CHANCE_PCT,
+  STUN_SHOT_L2_SKILL_ID,
+  stunShotMpPowerAtRank,
+  stunShotSkillLineUk,
+  stunShotStunDurationMs,
+} from '../../data/stunShotTables.js';
+import type { BattleBattleMods } from '../battleTypes.js';
+import { jsonFiniteNum } from '../battle.js';
 import { resolveShieldStunTurn } from './shieldStunTurn.js';
 import { resolveShieldSlamTurn } from './shieldSlamTurn.js';
 import {
@@ -54,9 +71,6 @@ import {
   HAMSTRING_SHOT_BASE_CONTROL_CHANCE_PCT,
   HAMSTRING_SHOT_CONTROL_CHANCE_CAP_PCT,
   HAMSTRING_SHOT_CONTROL_PER_RANK_PCT,
-  STUN_SHOT_BASE_STUN_CHANCE_PCT,
-  STUN_SHOT_STUN_CHANCE_CAP_PCT,
-  STUN_SHOT_STUN_PER_RANK_PCT,
   THUNDER_STORM_BASE_STUN_CHANCE_PCT,
   THUNDER_STORM_STUN_CHANCE_CAP_PCT,
   THUNDER_STORM_STUN_PER_RANK_PCT,
@@ -238,22 +252,16 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (legacyBuffOnCd(ctx, 4)) {
       throw new Error('battle_skill_not_allowed');
     }
-    const DASH_MP = [10, 21] as const;
-    const DASH_RUN_FLAT = [40, 66] as const;
-    const r = Math.min(Math.max(1, rank), DASH_MP.length);
-    const idx = r - 1;
-    const dashRow = l2dopXmlSkillRow(4, rank);
+    const runFlat = dashRunSpeedFlatAtRank(rank);
     return {
-      mpCost: dashRow?.m ?? DASH_MP[idx]!,
+      mpCost: dashMpAtRank(rank),
       pDmg: 0,
       skillLine:
-        'Ривок (Dash): бонус до швидкості пересування в цьому бою (+' +
-        (dashRow?.s ?? DASH_RUN_FLAT[idx]) +
-        ').',
+        'Ривок (Dash): +' + runFlat + ' до швидкості пересування на 15 с.',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: {
-        dashRunSpeedFlat: dashRow?.s ?? DASH_RUN_FLAT[idx]!,
+        dashRunSpeedFlat: runFlat,
       },
       ...legacyBuffCdAndExpirePatches(4, ctx),
     };
@@ -267,14 +275,16 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (legacyBuffOnCd(ctx, 99)) {
       throw new Error('battle_skill_not_allowed');
     }
-    const rapidRow = l2dopXmlSkillRow(99, rank);
-    const RAPID_MP = rapidRow?.m ?? (rank >= 2 ? 20 : 14);
-    const RAPID_MUL = rapidRow?.r ?? (rank >= 2 ? 1.12 : 1.08);
+    const aspdPct = rapidShotAspdPctAtRank(rank);
+    const RAPID_MP = rapidShotMpAtRank(rank);
+    const RAPID_MUL = rapidShotAspdMulAtRank(rank);
     return {
       mpCost: RAPID_MP,
       pDmg: 0,
       skillLine:
-        'Швидкий постріл (Rapid Shot): вища швидкість атаки з луком.',
+        'Швидкий постріл (Rapid Shot): +' +
+        aspdPct +
+        '% швидкості атаки з луком.',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { rapidShotAspdMul: RAPID_MUL },
@@ -316,39 +326,46 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (ctx.weaponKind !== 'bow') {
       throw new Error('battle_skill_not_allowed');
     }
-    const ss =
-      l2dopXmlMpPower(101, rank) ?? stunShotMpAndPower(rank);
+    const ss = stunShotMpPowerAtRank(rank);
+    if (!ss) throw new Error('battle_skill_not_allowed');
     const atk = Math.floor(combat.pAtk * (1.07 + ss.power / 420) * profM);
     const r = rollPhys(atk, { forceNoMiss: true });
-    const stunChancePct = Math.min(
-      STUN_SHOT_STUN_CHANCE_CAP_PCT,
-      STUN_SHOT_BASE_STUN_CHANCE_PCT + rank * STUN_SHOT_STUN_PER_RANK_PCT
-    );
+    const nowMs = Date.now();
+    const existingStun = jsonFiniteNum(ctx.st.battleMods?.mobStunUntilMs);
+    const alreadyStunned =
+      existingStun !== undefined && existingStun > nowMs;
     const effStunPct = scaleLandChancePercentAfterResist(
-      stunChancePct,
+      STUN_SHOT_BASE_STUN_CHANCE_PCT,
       effectiveMobStunResistPct({
         level: ctx.spawnLevel,
         stunResistPct: ctx.spawnStunResistPct,
         debuffResistPct: ctx.spawnDebuffResistPct,
       })
     );
-    const appliedStun =
+    let appliedStun = false;
+    let battleModsPatch: Partial<BattleBattleMods> | undefined;
+    if (
+      !alreadyStunned &&
       r.damage > 0 &&
       r.outcome !== 'miss' &&
-      Math.random() * 100 < effStunPct;
+      Math.random() * 100 < effStunPct
+    ) {
+      appliedStun = true;
+      battleModsPatch = {
+        mobStunUntilMs: nowMs + stunShotStunDurationMs(),
+        mobStunIconSkillId: STUN_SHOT_L2_SKILL_ID,
+      };
+    }
     return {
       mpCost: ss.mp,
       pDmg: r.damage,
-      skillLine: appliedStun
-        ? 'Оглушливий постріл (101, Stun Shot): ціль оглушено (~' +
-          Math.round(effStunPct) +
-          '%).'
-        : 'Оглушливий постріл (101, Stun Shot): оглушення не спрацювало (~' +
-          Math.round(effStunPct) +
-          '%).',
+      skillLine: stunShotSkillLineUk(appliedStun, alreadyStunned, effStunPct),
       physOutcome: r.outcome,
       magicOutcome: null,
-      ...(appliedStun ? { skipMobCounterAttackOnce: true } : {}),
+      ...(battleModsPatch ? { battleModsPatch } : {}),
+      ...(appliedStun
+        ? { skipMobCounterAttackOnce: true, mobRetaliationDelayHits: 2 }
+        : {}),
       ...(r.weaknessLogLineUk
         ? { weaknessLogLineUk: r.weaknessLogLineUk }
         : {}),

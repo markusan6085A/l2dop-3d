@@ -124,6 +124,18 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
     delete m.mobPhysSkillsBlockedUntilMs;
     delete m.mobPhysSkillsBlockedIconSkillId;
   },
+  342: (m) => {
+    delete m.mobTouchOfDeathUntilMs;
+    delete m.mobTouchOfDeathIconSkillId;
+    delete m.mobTouchOfDeathDebuffResistPenaltyPct;
+    delete m.mobTouchOfDeathHealReceivedPenaltyPct;
+    delete m.touchOfDeathMobMaxCpBaseline;
+    delete m.playerTouchOfDeathUntilMs;
+    delete m.playerTouchOfDeathIconSkillId;
+    delete m.playerTouchOfDeathDebuffResistPenaltyPct;
+    delete m.playerTouchOfDeathHealReceivedPenaltyPct;
+    delete m.touchOfDeathPlayerMaxCpBaseline;
+  },
   /** Sonic Move (Gladiator/Duelist, +run speed; використовує той самий
    *  `dashRunSpeedFlat`, що й Dash). */
   451: (m) => {
@@ -221,7 +233,7 @@ export const LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID: Readonly<
   322: 'Фортеця щита: час вичерпано.',
   341: 'Дотик життя: захисний ефект вичерпано.',
   350: 'Фізичне дзеркало: час вичерпано.',
-  342: 'Дотик смерті: готовий знову.',
+  342: 'Дотик смерті: ефект на цілі вичерпано.',
   359: 'Око мисливця: час вичерпано.',
   360: 'Око вбивці: час вичерпано.',
   361: 'Shock Blast: ефект вичерпано.',

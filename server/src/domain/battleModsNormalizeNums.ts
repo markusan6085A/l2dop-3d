@@ -220,6 +220,62 @@ export function normalizeBattleModsNumsInPlace(m: BattleBattleMods): void {
     delete m.mobPhysSkillsBlockedUntilMs;
     delete m.mobPhysSkillsBlockedIconSkillId;
   }
+  const todUntil = jsonFiniteNum(m.mobTouchOfDeathUntilMs);
+  if (todUntil !== undefined && todUntil > 0) {
+    m.mobTouchOfDeathUntilMs = Math.floor(todUntil);
+    const sid = jsonFiniteNum(m.mobTouchOfDeathIconSkillId);
+    m.mobTouchOfDeathIconSkillId =
+      sid !== undefined && sid > 0 ? Math.floor(sid) : 342;
+  } else {
+    delete m.mobTouchOfDeathUntilMs;
+    delete m.mobTouchOfDeathIconSkillId;
+  }
+  const todDr = jsonFiniteNum(m.mobTouchOfDeathDebuffResistPenaltyPct);
+  if (todDr !== undefined && todDr > 0) {
+    m.mobTouchOfDeathDebuffResistPenaltyPct = todDr;
+  } else {
+    delete m.mobTouchOfDeathDebuffResistPenaltyPct;
+  }
+  const todHeal = jsonFiniteNum(m.mobTouchOfDeathHealReceivedPenaltyPct);
+  if (todHeal !== undefined && todHeal > 0) {
+    m.mobTouchOfDeathHealReceivedPenaltyPct = todHeal;
+  } else {
+    delete m.mobTouchOfDeathHealReceivedPenaltyPct;
+  }
+  const todCpBase = jsonFiniteNum(m.touchOfDeathMobMaxCpBaseline);
+  if (todCpBase !== undefined && todCpBase > 0) {
+    m.touchOfDeathMobMaxCpBaseline = Math.floor(todCpBase);
+  } else {
+    delete m.touchOfDeathMobMaxCpBaseline;
+  }
+  const playerTodUntil = jsonFiniteNum(m.playerTouchOfDeathUntilMs);
+  if (playerTodUntil !== undefined && playerTodUntil > 0) {
+    m.playerTouchOfDeathUntilMs = Math.floor(playerTodUntil);
+    const sid = jsonFiniteNum(m.playerTouchOfDeathIconSkillId);
+    m.playerTouchOfDeathIconSkillId =
+      sid !== undefined && sid > 0 ? Math.floor(sid) : 342;
+  } else {
+    delete m.playerTouchOfDeathUntilMs;
+    delete m.playerTouchOfDeathIconSkillId;
+  }
+  const playerTodDr = jsonFiniteNum(m.playerTouchOfDeathDebuffResistPenaltyPct);
+  if (playerTodDr !== undefined && playerTodDr > 0) {
+    m.playerTouchOfDeathDebuffResistPenaltyPct = playerTodDr;
+  } else {
+    delete m.playerTouchOfDeathDebuffResistPenaltyPct;
+  }
+  const playerTodHeal = jsonFiniteNum(m.playerTouchOfDeathHealReceivedPenaltyPct);
+  if (playerTodHeal !== undefined && playerTodHeal > 0) {
+    m.playerTouchOfDeathHealReceivedPenaltyPct = playerTodHeal;
+  } else {
+    delete m.playerTouchOfDeathHealReceivedPenaltyPct;
+  }
+  const playerTodCpBase = jsonFiniteNum(m.touchOfDeathPlayerMaxCpBaseline);
+  if (playerTodCpBase !== undefined && playerTodCpBase > 0) {
+    m.touchOfDeathPlayerMaxCpBaseline = Math.floor(playerTodCpBase);
+  } else {
+    delete m.touchOfDeathPlayerMaxCpBaseline;
+  }
   const playerPhysBlockUntil = jsonFiniteNum(m.playerPhysSkillsBlockedUntilMs);
   if (playerPhysBlockUntil !== undefined && playerPhysBlockUntil > 0) {
     m.playerPhysSkillsBlockedUntilMs = Math.floor(playerPhysBlockUntil);

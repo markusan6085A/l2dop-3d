@@ -663,21 +663,8 @@ export function powerSmashMpAndPower(
   return { mp: POWER_SMASH_MP[i]!, power: POWER_SMASH_POW[i]! };
 }
 
-/** Stun Shot · 101 — text-rpg Rogue/Hawkeye Skill_0101 (ранги 1–3 ≈ L2 level 4–6). */
-const STUN_SHOT_MP = [56, 58, 60] as const;
-const STUN_SHOT_POW = [443, 471, 500] as const;
-
-export function stunShotMpAndPower(skillRank: number): {
-  mp: number;
-  power: number;
-} {
-  const r = Math.max(
-    1,
-    Math.min(Math.floor(skillRank), STUN_SHOT_MP.length)
-  );
-  const i = r - 1;
-  return { mp: STUN_SHOT_MP[i]!, power: STUN_SHOT_POW[i]! };
-}
+/** Stun Shot · 101 — Rogue / Hawkeye (`stunShotTables.ts`). */
+export { stunShotMpAndPower } from './stunShotTables.js';
 
 const BASE_FIGHTER_PROFESSION_IDS = new Set([
   'human_fighter',

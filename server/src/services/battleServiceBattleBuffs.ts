@@ -364,6 +364,10 @@ export function battleMobDebuffLinesUk(st: BattleJsonState): string[] {
   if (physBlockUntil !== undefined && physBlockUntil > Date.now()) {
     out.push('Фізичні скіли моба заблоковано (Shield Slam)');
   }
+  const todUntil = jsonFiniteNum(m.mobTouchOfDeathUntilMs);
+  if (todUntil !== undefined && todUntil > Date.now()) {
+    out.push('Дотик смерті (Touch of Death)');
+  }
   return out;
 }
 
@@ -444,6 +448,11 @@ export function battleMobDebuffIconsForUi(
   if (physBlockUntil !== undefined && physBlockUntil > Date.now()) {
     const sid = jsonFiniteNum(m.mobPhysSkillsBlockedIconSkillId) ?? 353;
     pushIcon('mob_debuff_phys_block', sid, 'Фізичні скіли заблоковано');
+  }
+  const todUntil = jsonFiniteNum(m.mobTouchOfDeathUntilMs);
+  if (todUntil !== undefined && todUntil > Date.now()) {
+    const sid = jsonFiniteNum(m.mobTouchOfDeathIconSkillId) ?? 342;
+    pushIcon('mob_debuff_touch_of_death', sid, 'Дотик смерті (Touch of Death)');
   }
   return out;
 }
@@ -552,6 +561,17 @@ export function battleBuffIconsForUi(
       labelUk: 'Фізичні скіли заблоковано',
       buffExpiresAtMs: playerPhysBlockUntil,
       buffDurationTotalMs: Math.max(1000, playerPhysBlockUntil - Date.now()),
+    });
+  }
+  const playerTodUntil = jsonFiniteNum(m.playerTouchOfDeathUntilMs);
+  if (playerTodUntil !== undefined && playerTodUntil > Date.now()) {
+    const psid = jsonFiniteNum(m.playerTouchOfDeathIconSkillId) ?? 342;
+    out.push({
+      key: 'player_debuff_touch_of_death',
+      l2SkillId: psid,
+      labelUk: 'Дотик смерті (Touch of Death)',
+      buffExpiresAtMs: playerTodUntil,
+      buffDurationTotalMs: Math.max(1000, playerTodUntil - Date.now()),
     });
   }
   const wc = jsonFiniteNum(m?.warCryPatkMul ?? st.warCryPatkMul);

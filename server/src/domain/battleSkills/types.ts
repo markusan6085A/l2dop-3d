@@ -91,6 +91,10 @@ export type BattleSkillTurnResult = {
   battleModsExpiresPatch?: Record<string, number>;
   /** Гнів (320): скільки зняти з поточного CP моба (не більше залишку). */
   mobCpDrain?: number;
+  /** Touch of Death (342): новий max CP цілі після −90%. */
+  mobMaxCpSet?: number;
+  /** Touch of Death (342): 25% — зняти всі бафи цілі. */
+  touchOfDeathStripAllTargetBuffs?: boolean;
   /**
    * Уніфікація з out-of-battle: додати/зняти self-buff у `activeBuffsJson` з `expiresAt` із
    * `l2dopBuffDurations`. Ефекти розраховуються через `combatBuffsFromActiveJson`, без

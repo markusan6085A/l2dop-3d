@@ -30,9 +30,19 @@ import {
 import {
   lightArmorMasteryEvasionFlatAtRank,
   lightArmorMasteryPdefPercentAtRank,
+  isLightArmorMasteryRogueFlatProfession,
+  lightArmorMasteryRogueEvasionFlatAtRank,
+  lightArmorMasteryRogueFlatPdefAtRank,
 } from './lightArmorMasteryTables.js';
 import { isSwordOrBluntWeaponKind, swordBluntMasteryPatkFlatAtRank } from './swordBluntMasteryTables.js';
+import { bowMasteryPatkFlatAtRank } from './bowMasteryTables.js';
+import { daggerMasteryPatkFlatAtRank } from './daggerMasteryTables.js';
 import { focusMindMpRegenFlatAtRank } from './focusMindTables.js';
+import { criticalPowerFlatAtRank } from './criticalPowerTables.js';
+import { criticalChancePctAtRank } from './criticalChanceTables.js';
+import { boostEvasionFlatAtRank } from './boostEvasionTables.js';
+import { boostAttackSpeedPctAtRank } from './boostAttackSpeedTables.js';
+import { quickStepSpeedFlatAtRank } from './quickStepTables.js';
 import { magicResistanceMdefFlatAtRank } from './magicResistanceTables.js';
 import { finalFortressPdefFlatAtRank } from './finalFortressTables.js';
 import {
@@ -45,6 +55,21 @@ function powerAtRank(row: TextRpgHfPassiveRow, rank: number): number {
   if (row.l2SkillId === 191) {
     return focusMindMpRegenFlatAtRank(rank);
   }
+  if (row.l2SkillId === 193) {
+    return criticalPowerFlatAtRank(rank);
+  }
+  if (row.l2SkillId === 137) {
+    return criticalChancePctAtRank(rank);
+  }
+  if (row.l2SkillId === 198) {
+    return boostEvasionFlatAtRank(rank);
+  }
+  if (row.l2SkillId === 168) {
+    return boostAttackSpeedPctAtRank(rank);
+  }
+  if (row.l2SkillId === 169) {
+    return quickStepSpeedFlatAtRank(rank);
+  }
   if (row.l2SkillId === 147) {
     return magicResistanceMdefFlatAtRank(rank);
   }
@@ -56,6 +81,12 @@ function powerAtRank(row: TextRpgHfPassiveRow, rank: number): number {
   }
   if (row.l2SkillId === 257) {
     return swordBluntMasteryPatkFlatAtRank(rank);
+  }
+  if (row.l2SkillId === 208) {
+    return bowMasteryPatkFlatAtRank(rank);
+  }
+  if (row.l2SkillId === 209) {
+    return daggerMasteryPatkFlatAtRank(rank);
   }
   if (row.l2SkillId === 291) {
     return finalFortressPdefFlatAtRank(rank);
@@ -87,7 +118,8 @@ function dreadnoughtPlaceholderDelta(
 export function textRpgPassiveDeltaForSkill(
   row: TextRpgHfPassiveRow,
   rank: number,
-  inv: InventoryState
+  inv: InventoryState,
+  l2Profession?: string
 ): Partial<L2dopCombatBuffModifiers> | undefined {
   const id = row.l2SkillId;
   const dPlace = dreadnoughtPlaceholderDelta(row, rank);
@@ -118,11 +150,23 @@ export function textRpgPassiveDeltaForSkill(
   if (reqA === 'heavy' && armorKind !== 'heavy') return undefined;
   if (reqA === 'robe' && armorKind !== 'magic') return undefined;
 
-  if (id === 227 && armorKind !== 'light') return undefined;
-  if (id === 231 && armorKind !== 'heavy') return undefined;
-  if (id === 232 && armorKind !== 'heavy') return undefined;
-
   if (id === 227) {
+    if (armorKind !== 'light') return undefined;
+    if (isLightArmorMasteryRogueFlatProfession(l2Profession)) {
+      const flat = lightArmorMasteryRogueFlatPdefAtRank(rank);
+      const eva = lightArmorMasteryRogueEvasionFlatAtRank(rank);
+      if (flat <= 0 && eva <= 0) return undefined;
+      let acc = neutralCombatBuffs();
+      if (flat > 0) {
+        const pdefDelta = l2dopBuffDeltaFromTextRpgEffect('pDef', 'flat', flat);
+        if (pdefDelta) acc = applyBuffDelta(acc, pdefDelta);
+      }
+      if (eva > 0) {
+        const evaDelta = l2dopBuffDeltaFromTextRpgEffect('evasion', 'flat', eva);
+        if (evaDelta) acc = applyBuffDelta(acc, evaDelta);
+      }
+      return partialCombatBuffDeltaFromNeutral(acc);
+    }
     const pdefPct = lightArmorMasteryPdefPercentAtRank(rank);
     const eva = lightArmorMasteryEvasionFlatAtRank(rank);
     if (pdefPct <= 0 && eva <= 0) return undefined;
@@ -137,6 +181,15 @@ export function textRpgPassiveDeltaForSkill(
     }
     return partialCombatBuffDeltaFromNeutral(acc);
   }
+
+  if (id === 137) {
+    const pct = criticalChancePctAtRank(rank);
+    if (pct <= 0) return undefined;
+    return { addPhysicalCritChancePct: pct };
+  }
+
+  if (id === 231 && armorKind !== 'heavy') return undefined;
+  if (id === 232 && armorKind !== 'heavy') return undefined;
 
   if (id === 232) {
     const flat = heavyArmorKnightFlatPdefAtRank(rank);
