@@ -26,6 +26,8 @@ import {
   isCooldownBlocked,
 } from './humanFighterTurnHelpers.js';
 import { buildRiposteStanceToggleTurn } from '../riposteStance.js';
+import { resolveVengeanceTurn } from './vengeanceTurn.js';
+import { resolveTouchOfLifeTurn } from './touchOfLifeTurn.js';
 
 function mysticCdKey(skillId: number): string {
   return `l2_${skillId}`;
@@ -342,6 +344,14 @@ export function tryResolveFighterRaceCatalogTurn(
       magicOutcome: null,
       playerHeal: heal,
     };
+  }
+
+  if (entry.l2SkillId === 368) {
+    return resolveVengeanceTurn(ctx);
+  }
+
+  if (entry.l2SkillId === 341) {
+    return resolveTouchOfLifeTurn(ctx);
   }
 
   if (entry.category === 'buff' || entry.kind === 'toggle') {

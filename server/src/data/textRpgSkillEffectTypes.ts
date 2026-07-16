@@ -33,6 +33,10 @@ export type TextRpgMappedCombatStat =
   | 'critRate'
   | 'critDamage'
   | 'stunResist'
+  | 'shockResist'
+  | 'paralyzeResist'
   | 'holdResist'
   | 'sleepResist'
-  | 'mentalResist';
+  | 'mentalResist'
+  | 'arrowDef'
+  | 'shieldFortressDefense';

@@ -210,12 +210,49 @@ export function normalizeBattleModsNumsInPlace(m: BattleBattleMods): void {
     delete m.playerStunUntilMs;
     delete m.playerStunIconSkillId;
   }
+  const mobPhysBlockUntil = jsonFiniteNum(m.mobPhysSkillsBlockedUntilMs);
+  if (mobPhysBlockUntil !== undefined && mobPhysBlockUntil > 0) {
+    m.mobPhysSkillsBlockedUntilMs = Math.floor(mobPhysBlockUntil);
+    const sid = jsonFiniteNum(m.mobPhysSkillsBlockedIconSkillId);
+    m.mobPhysSkillsBlockedIconSkillId =
+      sid !== undefined && sid > 0 ? Math.floor(sid) : 353;
+  } else {
+    delete m.mobPhysSkillsBlockedUntilMs;
+    delete m.mobPhysSkillsBlockedIconSkillId;
+  }
+  const playerPhysBlockUntil = jsonFiniteNum(m.playerPhysSkillsBlockedUntilMs);
+  if (playerPhysBlockUntil !== undefined && playerPhysBlockUntil > 0) {
+    m.playerPhysSkillsBlockedUntilMs = Math.floor(playerPhysBlockUntil);
+    const psid = jsonFiniteNum(m.playerPhysSkillsBlockedIconSkillId);
+    m.playerPhysSkillsBlockedIconSkillId =
+      psid !== undefined && psid > 0 ? Math.floor(psid) : 353;
+  } else {
+    delete m.playerPhysSkillsBlockedUntilMs;
+    delete m.playerPhysSkillsBlockedIconSkillId;
+  }
   const rdr = jsonFiniteNum(m.reflectDamageReturnRatio);
   if (rdr !== undefined) m.reflectDamageReturnRatio = rdr;
   else delete m.reflectDamageReturnRatio;
   const pmr = jsonFiniteNum(m.physicalMirrorReflectRatio);
   if (pmr !== undefined) m.physicalMirrorReflectRatio = pmr;
   else delete m.physicalMirrorReflectRatio;
+  const pmPhys = jsonFiniteNum(m.physicalMirrorPhysReflectChancePct);
+  if (pmPhys !== undefined && pmPhys > 0) {
+    m.physicalMirrorPhysReflectChancePct = Math.min(100, Math.floor(pmPhys));
+    const sid = jsonFiniteNum(m.physicalMirrorIconSkillId);
+    m.physicalMirrorIconSkillId =
+      sid !== undefined && sid > 0 ? Math.floor(sid) : 350;
+  } else {
+    delete m.physicalMirrorPhysReflectChancePct;
+    delete m.physicalMirrorMagicReflectChancePct;
+    delete m.physicalMirrorIconSkillId;
+  }
+  const pmMag = jsonFiniteNum(m.physicalMirrorMagicReflectChancePct);
+  if (pmMag !== undefined && pmMag > 0) {
+    m.physicalMirrorMagicReflectChancePct = Math.min(100, Math.floor(pmMag));
+  } else if (pmPhys === undefined || pmPhys <= 0) {
+    delete m.physicalMirrorMagicReflectChancePct;
+  }
   const vim = jsonFiniteNum(m.vengeanceIncomingPhysMul);
   if (vim !== undefined) m.vengeanceIncomingPhysMul = vim;
   else delete m.vengeanceIncomingPhysMul;

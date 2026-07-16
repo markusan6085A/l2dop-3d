@@ -33,8 +33,23 @@ export const TEXT_RPG_HF_BUFF_EFFECTS: readonly TextRpgHfBuffRow[] = [
   {
     l2SkillId: 72,
     maxLevel: 3,
-    effects: [{"stat":"pAtk","mode":"percent"}] as const,
+    effects: [{"stat":"mDef","mode":"percent"}] as const,
     powerByLevel: [0,15,23,30] as const,
+  },
+  {
+    l2SkillId: 322,
+    maxLevel: 6,
+    effects: [{"stat":"shieldFortressDefense","mode":"flat"}] as const,
+    powerByLevel: [0,446,469,491,514,537,560] as const,
+  },
+  {
+    l2SkillId: 335,
+    maxLevel: 1,
+    effects: [
+      {"stat":"shockResist","mode":"percent"},
+      {"stat":"paralyzeResist","mode":"percent"},
+    ] as const,
+    powerByLevel: [0,30] as const,
   },
   {
     l2SkillId: 75,
@@ -105,9 +120,9 @@ export const TEXT_RPG_HF_BUFF_EFFECTS: readonly TextRpgHfBuffRow[] = [
   },
   {
     l2SkillId: 112,
-    maxLevel: 2,
-    effects: [{"stat":"pDef","mode":"percent"}] as const,
-    powerByLevel: [0,16,19] as const,
+    maxLevel: 4,
+    effects: [{"stat":"arrowDef","mode":"percent"}] as const,
+    powerByLevel: [0, 16, 19, 22, 25] as const,
   },
   {
     l2SkillId: 121,

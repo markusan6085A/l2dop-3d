@@ -7,6 +7,12 @@ import { orcMysticCatalogEntry } from './orcMysticSkillCatalog.lookup.js';
 import { mysticCatalogEntryForRace } from './mysticSkillCatalog.byRace.js';
 import { mysticCatalogEntryVisibleForProfession } from './humanMysticSkillCatalog.professionRules.js';
 import { L2DB_SKILL_LEVELS_BY_ID } from './l2dbSkillLevelsById.generated.js';
+import {
+  heavyArmorKnightRequiredLevelAtRank,
+  heavyArmorKnightSpCostAtRank,
+  HEAVY_ARMOR_KNIGHT_MAX_RANK,
+  isHeavyArmorKnightFlatCatalogSkill,
+} from './heavyArmorMasteryTables.js';
 import type {
   HumanMysticSkillCatalogEntry,
 } from './humanMysticSkillCatalog.types.js';
@@ -43,13 +49,32 @@ export function maxMysticSkillRankForBattleId(
     e && e.l2SkillId > 0 ? L2DB_SKILL_LEVELS_BY_ID[e.l2SkillId] : undefined;
   const local = !e || e.levels.length < 1 ? 1 : e.levels.length;
   const remote = l2dbRows && l2dbRows.length >= 1 ? l2dbRows.length : 1;
-  return Math.max(local, remote);
+  let max = Math.max(local, remote);
+  if (
+    e &&
+    isHeavyArmorKnightFlatCatalogSkill(
+      e.l2SkillId,
+      e.effects.map((fx) => ({ stat: fx.stat, mode: fx.mode }))
+    )
+  ) {
+    max = Math.max(max, HEAVY_ARMOR_KNIGHT_MAX_RANK);
+  }
+  return max;
 }
 
 export function minCharLevelForMysticSkillRank(
   entry: HumanMysticSkillCatalogEntry,
   rank: number
 ): number {
+  if (
+    isHeavyArmorKnightFlatCatalogSkill(
+      entry.l2SkillId,
+      entry.effects.map((fx) => ({ stat: fx.stat, mode: fx.mode }))
+    )
+  ) {
+    const fromHa = heavyArmorKnightRequiredLevelAtRank(rank);
+    if (fromHa !== undefined) return fromHa;
+  }
   const r = Math.max(1, Math.floor(rank)) - 1;
   const row = entry.levels[r];
   if (row) return Math.max(1, row.requiredLevel);
@@ -62,6 +87,15 @@ export function spCostForMysticSkillRankUpgrade(
   entry: HumanMysticSkillCatalogEntry,
   targetRank: number
 ): number {
+  if (
+    isHeavyArmorKnightFlatCatalogSkill(
+      entry.l2SkillId,
+      entry.effects.map((fx) => ({ stat: fx.stat, mode: fx.mode }))
+    )
+  ) {
+    const sp = heavyArmorKnightSpCostAtRank(targetRank);
+    if (sp !== undefined) return sp;
+  }
   const r = Math.max(1, Math.floor(targetRank)) - 1;
   const row = entry.levels[r];
   if (row && row.spCost >= 1) return row.spCost;

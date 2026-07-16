@@ -492,6 +492,14 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             messageUk: 'Ти оглушений і не можеш діяти.',
           });
         }
+        if (e instanceof Error && e.message === 'battle_phys_skills_blocked') {
+          return reply.code(400).send({
+            error: e.message,
+            code: 'battle_phys_skills_blocked',
+            reason: 'phys_skills_blocked',
+            messageUk: 'Фізичні скіли заблоковано — не можеш їх використати.',
+          });
+        }
         if (e instanceof Error && e.message === 'mystic_spiritshot_bad_item') {
           return reply.code(400).send({
             error: e.message,

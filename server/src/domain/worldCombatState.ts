@@ -17,6 +17,14 @@ import {
 import { battleModsHasPersistableBuffs } from './battleModsPatch.js';
 import { applyRiposteReflectToBattleMods } from './riposteStance.js';
 import { LEGACY_BUFF_STRIP_BY_SKILL_ID } from './legacyBuffStrip.js';
+import {
+  shieldFortressActiveRank,
+  shieldFortressMpDrainForIntervalSec,
+} from '../data/shieldFortressTables.js';
+import {
+  fortitudeActiveRank,
+  fortitudeMpDrainForIntervalSec,
+} from '../data/fortitudeTables.js';
 import { HUMAN_FIGHTER_SKILL_CATALOG } from '../data/humanFighterSkillCatalog.js';
 import { ELVEN_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/elvenFighterSkillCatalog.generated.js';
 import { DARK_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/darkFighterSkillCatalog.generated.js';
@@ -104,7 +112,9 @@ export function stanceCount(mods: BattleBattleMods | undefined): number {
   if (isFocusAttackActive(mods)) n++;
   if (jsonBoolLike(mods.aegisStanceActive)) n++;
   if (mods.raceToggleRanks && typeof mods.raceToggleRanks === 'object') {
-    n += Object.keys(mods.raceToggleRanks).length;
+    for (const key of Object.keys(mods.raceToggleRanks)) {
+      if (key !== 'l2_322' && key !== 'l2_335') n++;
+    }
   }
   n += activeIconToggleSkillIds(mods).length;
   return n;
@@ -295,8 +305,17 @@ export function tickWorldCombatState(
   }
 
   const sc = stanceCount(mods);
-  const drain =
+  const sfRank = shieldFortressActiveRank(undefined, mods.raceToggleRanks);
+  const ftRank = fortitudeActiveRank(undefined, mods.raceToggleRanks);
+  const stanceDrain =
     sc > 0 && dtSec > 0 ? Math.floor(dtSec * STANCE_MP_PER_SEC * sc) : 0;
+  const sfDrain =
+    sfRank != null
+      ? shieldFortressMpDrainForIntervalSec(sfRank, dtSec)
+      : 0;
+  const ftDrain =
+    ftRank != null ? fortitudeMpDrainForIntervalSec(ftRank, dtSec) : 0;
+  const drain = stanceDrain + sfDrain + ftDrain;
   const regenSec =
     regenMpPerSec > 0
       ? Math.floor(dtSec / WORLD_MP_REGEN_TICK_SEC) * WORLD_MP_REGEN_TICK_SEC
@@ -307,7 +326,7 @@ export function tickWorldCombatState(
       : 0;
   let mp = Math.max(0, Math.floor(state.playerMp - drain + mpRegen));
   mp = Math.min(maxMp, mp);
-  if (sc > 0 && mp <= 0) {
+  if ((sc > 0 || sfRank != null || ftRank != null) && mp <= 0) {
     mods = stripStances(mods);
   }
   const hasSonic =

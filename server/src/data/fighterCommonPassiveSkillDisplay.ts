@@ -27,12 +27,20 @@ export const FIGHTER_COMMON_PASSIVE_UK_BY_L2_ID = {
   231: {
     nameUk: 'Майстерність важкої броні (Heavy Armor Mastery)',
     hintUk:
-      'Пасив: підвищує P. Def (%) у важкій броні (1 р. — +1.9%, 50 р. — +79.3%).',
+      'Пасив: +P.Def (%) у важкій броні (Warrior / Warlord / Orc / Dwarf). ' +
+      '1 р. — +1.9%, 50 р. — +79.3%. Лише важка броня.',
+  },
+  232: {
+    nameUk: 'Майстерність важкої броні (Heavy Armor Mastery)',
+    hintUk:
+      'Пасив: +P.Def (flat) у важкій броні. 1 р. — +17.7 (20 лв), 52 р. — +172.6 (74 лв). ' +
+      'Knight / Temple / Shillien Knight. Лише важка броня.',
   },
   257: {
     nameUk: 'Майстерність меча й булави (Sword / Blunt Mastery)',
     hintUk:
-      'Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +4.5, 43 р. — +122.1). Human Fighter.',
+      'Пасив: +P.Atk (flat) з мечем або булавою. 1 р. — +1.5 (20 лв), 45 р. — +76.4 (74 лв). ' +
+      'Human Knight → Dark Avenger; також Orc / Gladiator.',
   },
   147: {
     nameUk: 'Опір магії (Magic Resistance)',

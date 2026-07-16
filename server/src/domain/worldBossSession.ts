@@ -441,6 +441,34 @@ export function registerWorldBossDamagingHit(
   }
 }
 
+/**
+ * Aggression (28/18): примусово перемикає автоатаку РБ/epic на гравця з таунтом.
+ * Оновлює presence/damage TTL, щоб ціль не скинулась reconcile до наступного тіку.
+ */
+export function registerWorldBossAggressionTaunt(
+  session: WorldBossSessionState,
+  characterId: string,
+  nowMs: number
+): boolean {
+  const id = String(characterId || '').trim();
+  if (!id) return false;
+  const prev = session.participants[id];
+  session.participants[id] = {
+    characterId: id,
+    lastPresenceAtMs: nowMs,
+    lastDamageAtMs: nowMs,
+    totalDamageDealt: prev?.totalDamageDealt ?? 0,
+    firstDamageAtMs: prev?.firstDamageAtMs ?? 0,
+    pendingMobHits: prev?.pendingMobHits,
+  };
+  const prevTarget = session.currentTargetCharacterId;
+  session.currentTargetCharacterId = id;
+  if (prevTarget !== id) {
+    scheduleFirstAggroWorldBossAttack(session, nowMs);
+  }
+  return prevTarget !== id;
+}
+
 /** Хто наніс найбільше урону — отримує дроп/EXP/SP/adena. */
 export function pickWorldBossTopDamageDealer(
   session: WorldBossSessionState

@@ -37,8 +37,14 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
   const sleepUntilGap = jsonFiniteNum(next.mobSleepUntilMs);
   const stunUntilGap = jsonFiniteNum(next.mobStunUntilMs);
   const playerStunUntilGap = jsonFiniteNum(next.playerStunUntilMs);
+  const mobPhysBlockUntilGap = jsonFiniteNum(next.mobPhysSkillsBlockedUntilMs);
+  const playerPhysBlockUntilGap = jsonFiniteNum(
+    next.playerPhysSkillsBlockedUntilMs
+  );
   const rdrGap = jsonFiniteNum(next.reflectDamageReturnRatio);
   const pmrGap = jsonFiniteNum(next.physicalMirrorReflectRatio);
+  const pmPhysGap = jsonFiniteNum(next.physicalMirrorPhysReflectChancePct);
+  const pmMagGap = jsonFiniteNum(next.physicalMirrorMagicReflectChancePct);
   const vimGap = jsonFiniteNum(next.vengeanceIncomingPhysMul);
   const vrrGap = jsonFiniteNum(next.vengeanceReflectRatio);
   const mysPatkGap = jsonFiniteNum(next.mysticPatkBuffMul);
@@ -78,6 +84,8 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
     (blfGap !== undefined && blfGap > 1) ||
     jsonBoolLike(next.silentMoveActive) ||
     jsonBoolLike(next.ultimateEvasionActive) ||
+    jsonBoolLike(next.ultimateDefenseImmobile) ||
+    jsonBoolLike(next.vengeanceImmobile) ||
     jsonBoolLike(next.fakeDeathActive) ||
     (sanGap !== undefined && sanGap > 0 && sanGap < 1) ||
     jsonBoolLike(next.aegisStanceActive) ||
@@ -87,8 +95,13 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
     (sleepUntilGap !== undefined && sleepUntilGap > Date.now()) ||
     (stunUntilGap !== undefined && stunUntilGap > Date.now()) ||
     (playerStunUntilGap !== undefined && playerStunUntilGap > Date.now()) ||
+    (mobPhysBlockUntilGap !== undefined && mobPhysBlockUntilGap > Date.now()) ||
+    (playerPhysBlockUntilGap !== undefined &&
+      playerPhysBlockUntilGap > Date.now()) ||
     (rdrGap !== undefined && rdrGap > 0) ||
     (pmrGap !== undefined && pmrGap > 0) ||
+    (pmPhysGap !== undefined && pmPhysGap > 0) ||
+    (pmMagGap !== undefined && pmMagGap > 0) ||
     (vimGap !== undefined && vimGap > 0 && vimGap < 1) ||
     (vrrGap !== undefined && vrrGap > 0) ||
     (mysPatkGap !== undefined && mysPatkGap > 1) ||
@@ -425,6 +438,14 @@ export function applyBattleModsPatch(
       delete next.ultimateEvasionEvasionFlat;
     }
   }
+  if (patch.ultimateDefenseImmobile !== undefined) {
+    if (patch.ultimateDefenseImmobile) next.ultimateDefenseImmobile = true;
+    else delete next.ultimateDefenseImmobile;
+  }
+  if (patch.vengeanceImmobile !== undefined) {
+    if (patch.vengeanceImmobile) next.vengeanceImmobile = true;
+    else delete next.vengeanceImmobile;
+  }
   if (patch.fakeDeathActive !== undefined) {
     if (patch.fakeDeathActive) next.fakeDeathActive = true;
     else delete next.fakeDeathActive;
@@ -528,6 +549,30 @@ export function applyBattleModsPatch(
       delete next.playerStunIconSkillId;
     }
   }
+  if (patch.mobPhysSkillsBlockedUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.mobPhysSkillsBlockedUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.mobPhysSkillsBlockedUntilMs = Math.floor(v);
+      const sid = jsonFiniteNum(patch.mobPhysSkillsBlockedIconSkillId);
+      next.mobPhysSkillsBlockedIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 353;
+    } else {
+      delete next.mobPhysSkillsBlockedUntilMs;
+      delete next.mobPhysSkillsBlockedIconSkillId;
+    }
+  }
+  if (patch.playerPhysSkillsBlockedUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.playerPhysSkillsBlockedUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.playerPhysSkillsBlockedUntilMs = Math.floor(v);
+      const sid = jsonFiniteNum(patch.playerPhysSkillsBlockedIconSkillId);
+      next.playerPhysSkillsBlockedIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 353;
+    } else {
+      delete next.playerPhysSkillsBlockedUntilMs;
+      delete next.playerPhysSkillsBlockedIconSkillId;
+    }
+  }
   if (patch.reflectDamageReturnRatio !== undefined) {
     const v = jsonFiniteNum(patch.reflectDamageReturnRatio);
     if (v !== undefined && v > 0) next.reflectDamageReturnRatio = v;
@@ -550,6 +595,27 @@ export function applyBattleModsPatch(
     const v = jsonFiniteNum(patch.physicalMirrorReflectRatio);
     if (v !== undefined && v > 0) next.physicalMirrorReflectRatio = v;
     else delete next.physicalMirrorReflectRatio;
+  }
+  if (patch.physicalMirrorPhysReflectChancePct !== undefined) {
+    const v = jsonFiniteNum(patch.physicalMirrorPhysReflectChancePct);
+    if (v !== undefined && v > 0) {
+      next.physicalMirrorPhysReflectChancePct = Math.min(100, Math.floor(v));
+      const sid = jsonFiniteNum(patch.physicalMirrorIconSkillId);
+      next.physicalMirrorIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 350;
+    } else {
+      delete next.physicalMirrorPhysReflectChancePct;
+      delete next.physicalMirrorMagicReflectChancePct;
+      delete next.physicalMirrorIconSkillId;
+    }
+  }
+  if (patch.physicalMirrorMagicReflectChancePct !== undefined) {
+    const v = jsonFiniteNum(patch.physicalMirrorMagicReflectChancePct);
+    if (v !== undefined && v > 0) {
+      next.physicalMirrorMagicReflectChancePct = Math.min(100, Math.floor(v));
+    } else {
+      delete next.physicalMirrorMagicReflectChancePct;
+    }
   }
   if (patch.vengeanceIncomingPhysMul !== undefined) {
     const v = jsonFiniteNum(patch.vengeanceIncomingPhysMul);

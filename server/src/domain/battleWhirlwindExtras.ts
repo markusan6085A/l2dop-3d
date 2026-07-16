@@ -4,6 +4,11 @@ import {
   type MapWorldSpawn,
 } from '../data/mapWorldSpawns.js';
 import {
+  HATE_AURA_EXTRA_MOB_CAP,
+  hateAuraWorldRadius,
+  spawnAllowsHateAuraAggro,
+} from '../data/hateAuraTables.js';
+import {
   provokePoleResistCutPctAtRank,
   provokeWorldRadiusAtRank,
   PROVOKE_EXTRA_MOB_CAP,
@@ -172,6 +177,43 @@ export function ensureProvokeExtraMobs(
     }
     const ex = extraMobFromSpawn(sp);
     ex.mobPoleResistCutPct = poleCut;
+    byBase.set(base, ex);
+    added.push(ex.name);
+  }
+  const merged = [...byBase.values()].slice(0, cap);
+  if (merged.length > 0) st.whirlwindExtras = merged;
+  return added;
+}
+
+/**
+ * Hate Aura (18): підтягує мобів і РБ у радіусі 200; епіки/epic_guard пропускає.
+ */
+export function ensureHateAuraExtraMobs(
+  st: BattleJsonState,
+  worldX: number,
+  worldY: number,
+  primarySpawnId: string
+): string[] {
+  const range = hateAuraWorldRadius();
+  const cap = HATE_AURA_EXTRA_MOB_CAP;
+  const existing = st.whirlwindExtras ?? [];
+  const byBase = new Map<string, WhirlwindExtraMobJson>();
+  for (const ex of existing) {
+    byBase.set(stripSpawnDupSuffix(ex.spawnId), ex);
+  }
+  const picks = pickNearbySpawns(
+    worldX,
+    worldY,
+    primarySpawnId,
+    range,
+    cap,
+    (sp) => spawnAllowsHateAuraAggro(sp.kind)
+  );
+  const added: string[] = [];
+  for (const sp of picks) {
+    const base = stripSpawnDupSuffix(sp.id);
+    if (byBase.has(base)) continue;
+    const ex = extraMobFromSpawn(sp);
     byBase.set(base, ex);
     added.push(ex.name);
   }

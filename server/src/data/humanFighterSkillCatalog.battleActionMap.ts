@@ -57,12 +57,18 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_356: 'focus_chance',
   l2_357: 'focus_power',
   l2_358: 'bluff',
-  l2_18: 'aggression',
+  l2_28: 'aggression',
+  l2_45: 'divine_heal',
+  l2_262: 'holy_blessing',
+  l2_69: 'sacrifice',
   l2_44: 'remedy',
   l2_49: 'holy_strike',
   l2_70: 'drain_health',
+  l2_72: 'iron_will',
   l2_82: 'majesty',
   l2_92: 'shield_stun',
+  l2_110: 'ultimate_defense',
+  l2_112: 'deflect_arrow',
   l2_97: 'sanctuary',
   l2_318: 'aegis_stance',
   l2_65: 'horror',
@@ -72,8 +78,10 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_283: 'summon_dark_panther',
   l2_322: 'shield_fortress',
   l2_341: 'touch_of_life',
+  l2_335: 'fortitude',
   l2_342: 'touch_of_death',
   l2_350: 'physical_mirror',
+  l2_353: 'shield_slam',
   l2_368: 'vengeance',
   /** Zealot (420) — Orc Destroyer / Titan / Tyrant / Grand Khavatari. */
   l2_420: 'zealot',
@@ -114,6 +122,13 @@ export function canonicalBattleIdForAction(
   return CANONICAL_BATTLE_ID_FOR_ACTION[action];
 }
 
+/** Додаткові l2_* → дія (не ламають єдиний canonical id на action). */
+const EXTRA_L2_SKILL_TO_BATTLE_ACTION: Partial<
+  Record<string, BattleActionId>
+> = {
+  l2_18: 'hate_aura',
+};
+
 /**
  * Клієнт / маршрут інколи передають `l2_255` замість `power_smash`.
  * Без цього `battleActionAllowed` відхиляє уміння, а людина-воїн не потрапляє в гілку резолвера (race-каталог для Human = null).
@@ -126,7 +141,8 @@ export function battleActionNamedFromL2IfMapped(
   const mapped =
     CANONICAL_L2_SKILL_TO_BATTLE_ACTION[
       s as keyof typeof CANONICAL_L2_SKILL_TO_BATTLE_ACTION
-    ];
+    ] ??
+    EXTRA_L2_SKILL_TO_BATTLE_ACTION[s as keyof typeof EXTRA_L2_SKILL_TO_BATTLE_ACTION];
   return (mapped ?? action) as BattleActionId;
 }
 
@@ -240,17 +256,31 @@ export function l2SkillIdForBattleActionIcon(action: BattleActionId): number {
     case 'bluff':
       return 358;
     case 'aggression':
+      return 28;
+    case 'hate_aura':
       return 18;
+    case 'divine_heal':
+      return 45;
+    case 'holy_blessing':
+      return 262;
+    case 'sacrifice':
+      return 69;
     case 'remedy':
       return 44;
     case 'holy_strike':
       return 49;
     case 'drain_health':
       return 70;
+    case 'iron_will':
+      return 72;
     case 'majesty':
       return 82;
     case 'shield_stun':
       return 92;
+    case 'ultimate_defense':
+      return 110;
+    case 'deflect_arrow':
+      return 112;
     case 'sanctuary':
       return 97;
     case 'aegis_stance':
@@ -269,10 +299,14 @@ export function l2SkillIdForBattleActionIcon(action: BattleActionId): number {
       return 322;
     case 'touch_of_life':
       return 341;
+    case 'fortitude':
+      return 335;
     case 'touch_of_death':
       return 342;
     case 'physical_mirror':
       return 350;
+    case 'shield_slam':
+      return 353;
     case 'vengeance':
       return 368;
     case 'zealot':

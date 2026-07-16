@@ -389,6 +389,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     magicCritDmgMul: combat.magicCritDmgMul,
     critDmgMul: combat.critDmgMul,
     stunResistPct: combat.stunResistPct,
+    paralyzeResistPct: combat.paralyzeResistPct,
     debuffResistPct: combat.debuffResistPct,
     skillMpCostMul: combat.skillMpCostMul,
     addDebuffLandChancePct: combat.addDebuffLandChancePct,

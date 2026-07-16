@@ -6,8 +6,14 @@ import {
   type BattleJsonState,
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
+import { rollPhysicalMirrorReflect } from '../domain/physicalMirrorReflect.js';
 import type { BattleSpawnMeta } from '../domain/battlePvpContext.js';
 import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
+import {
+  isMobPhysSkillsBlockedNow,
+  isMobSleepingNow,
+  isMobStunnedNow,
+} from '../domain/battleMobControl.js';
 import type { CombatStatsSnapshot } from '../data/l2dopCombatFormulas.js';
 import {
   battleActionSkipsMobHp,
@@ -38,11 +44,10 @@ export function resolveMobShouldCounterAttack(args: MobRetaliationGateArgs): boo
   } = args;
 
   let shouldMobCounterAttack = true;
-  const sleepUntilNow = jsonFiniteNum(st.battleMods?.mobSleepUntilMs);
-  const mobSleepingNow = sleepUntilNow !== undefined && sleepUntilNow > nowMs;
-  const stunUntilNow = jsonFiniteNum(st.battleMods?.mobStunUntilMs);
-  const mobStunnedNow = stunUntilNow !== undefined && stunUntilNow > nowMs;
-  if (mobSleepingNow || mobStunnedNow) {
+  const mobSleepingNow = isMobSleepingNow(st, nowMs);
+  const mobStunnedNow = isMobStunnedNow(st, nowMs);
+  const mobPhysBlockedNow = isMobPhysSkillsBlockedNow(st, nowMs);
+  if (mobSleepingNow || mobStunnedNow || mobPhysBlockedNow) {
     shouldMobCounterAttack = false;
   }
   if (skipMobCounterAttackOnce) {
@@ -66,6 +71,7 @@ export function resolveMobShouldCounterAttack(args: MobRetaliationGateArgs): boo
   if (
     !mobSleepingNow &&
     !mobStunnedNow &&
+    !mobPhysBlockedNow &&
     !battleActionSkipsMobHp(action, race, classBranch)
   ) {
     const curHitsUntil =
@@ -128,28 +134,39 @@ export function applyMobCounterDamage(args: MobCounterDamageArgs): {
     modsForMobCounter,
     { worldBossMode: isSharedWorldBossKind(spawn.kind) }
   );
+  let counterDmg = mobCounter.damage;
+  const mirror = rollPhysicalMirrorReflect(
+    modsForMobCounter,
+    'physical',
+    counterDmg
+  );
+  if (mirror.absorbed && mirror.reflectDamage > 0) {
+    mobHp = Math.max(0, mobHp - mirror.reflectDamage);
+    if (mirror.logLineUk) log.push(mirror.logLineUk);
+    counterDmg = 0;
+  }
   const rRefl = jsonFiniteNum(modsForMobCounter?.reflectDamageReturnRatio) ?? 0;
-  const rMir = jsonFiniteNum(modsForMobCounter?.physicalMirrorReflectRatio) ?? 0;
-  const rVen = jsonFiniteNum(modsForMobCounter?.vengeanceReflectRatio) ?? 0;
-  const reflTot = Math.min(0.72, rRefl + rMir + rVen);
-  if (reflTot > 0 && mobCounter.damage > 0 && mobCounter.outcome !== 'miss') {
-    const refl = Math.floor(mobCounter.damage * reflTot);
+  const reflTot = Math.min(0.72, rRefl);
+  if (reflTot > 0 && counterDmg > 0 && mobCounter.outcome !== 'miss') {
+    const refl = Math.floor(counterDmg * reflTot);
     if (refl > 0) {
       mobHp = Math.max(0, mobHp - refl);
       log.push('Відбиття на моба: −' + refl + ' HP.');
     }
   }
-  playerHp = Math.max(0, playerHp - mobCounter.damage);
+  playerHp = Math.max(0, playerHp - counterDmg);
   playerHp = Math.min(
     effectiveBattleMaxHp(maxHpEffAfter, st.battleMods),
     playerHp
   );
   if (mobCounter.outcome === 'miss') {
     log.push('[' + spawn.name + '] промахнувся.');
-  } else if (mobCounter.outcome === 'crit' && mobCounter.damage > 0) {
-    log.push('[' + spawn.name + '] — крит! −' + mobCounter.damage + ' HP.');
-  } else if (mobCounter.damage > 0) {
-    log.push('[' + spawn.name + '] −' + mobCounter.damage + ' HP.');
+  } else if (mirror.absorbed && mirror.reflectDamage > 0) {
+    // урон уже в mirror.logLineUk; гравець не отримує counterDmg
+  } else if (mobCounter.outcome === 'crit' && counterDmg > 0) {
+    log.push('[' + spawn.name + '] — крит! −' + counterDmg + ' HP.');
+  } else if (counterDmg > 0) {
+    log.push('[' + spawn.name + '] −' + counterDmg + ' HP.');
   }
   return { playerHp, mobHp };
 }

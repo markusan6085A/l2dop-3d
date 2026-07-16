@@ -16,6 +16,7 @@ import { isRiposteStanceActive } from '../domain/riposteStance.js';
 import { warCryPatkPercentAtRank } from '../data/warCryTables.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { buffDurationSecForSkillId } from '../data/l2dopBuffDurations.js';
+import { humanFighterCatalogEntry } from '../data/humanFighterSkillCatalog.lookup.js';
 import type { BattleBuffIcon } from './battleServiceTypes.js';
 
 const MYSTIC_TOGGLE_SKILL_IDS = new Set([336, 337, 338]);
@@ -36,6 +37,11 @@ const ACTIVE_BUFF_LABEL_UK_BY_SKILL_ID: Readonly<Partial<Record<number, string>>
   121: 'Бойовий рик',
   1240: 'Наведення',
   130: 'Азарт бою',
+  72: 'Залізна воля',
+  322: 'Фортеця щита',
+  335: 'Стійкість',
+  110: 'Абсолютний захист',
+  112: 'Відбиття стріли',
   287: 'Левине серце',
   336: 'Таємна мудрість',
   337: 'Таємна сила',
@@ -315,20 +321,17 @@ export function battleBuffLinesUk(
   if (jsonBoolLike(m.aegisStanceActive)) {
     out.push('Стійка егіда');
   }
-  if (jsonFiniteNum(m.shieldFortressPDefMul) !== undefined) {
-    out.push('Фортеця щита');
-  }
   if (jsonFiniteNum(m.reflectDamageReturnRatio) !== undefined && !isRiposteStanceActive(m)) {
     out.push('Відбиття шкоди');
   }
-  if (jsonFiniteNum(m.physicalMirrorReflectRatio) !== undefined) {
-    out.push('Фізичне дзеркало');
+  if (jsonFiniteNum(m.physicalMirrorPhysReflectChancePct) !== undefined) {
+    out.push('Фізичне дзеркало: відбиття скілів');
   }
-  if (
-    jsonFiniteNum(m.vengeanceIncomingPhysMul) !== undefined &&
-    (jsonFiniteNum(m.vengeanceIncomingPhysMul) ?? 1) < 1
-  ) {
-    out.push('Відплата: захист і відбиття');
+  if (activeByIdForLines.has(341)) {
+    out.push('Дотик життя: захист і реген');
+  }
+  if (jsonBoolLike(m.vengeanceImmobile)) {
+    out.push('Відплата: масовий захист');
   }
   return out;
 }
@@ -356,6 +359,10 @@ export function battleMobDebuffLinesUk(st: BattleJsonState): string[] {
   const stunUntil = jsonFiniteNum(m.mobStunUntilMs);
   if (stunUntil !== undefined && stunUntil > Date.now()) {
     out.push('Моб оглушений (Shock/Stun)');
+  }
+  const physBlockUntil = jsonFiniteNum(m.mobPhysSkillsBlockedUntilMs);
+  if (physBlockUntil !== undefined && physBlockUntil > Date.now()) {
+    out.push('Фізичні скіли моба заблоковано (Shield Slam)');
   }
   return out;
 }
@@ -432,6 +439,11 @@ export function battleMobDebuffIconsForUi(
   if (stunUntil !== undefined && stunUntil > Date.now()) {
     const sid = jsonFiniteNum(m.mobStunIconSkillId) ?? 260;
     pushIcon('mob_debuff_stun', sid, 'Оглушення (Shock)');
+  }
+  const physBlockUntil = jsonFiniteNum(m.mobPhysSkillsBlockedUntilMs);
+  if (physBlockUntil !== undefined && physBlockUntil > Date.now()) {
+    const sid = jsonFiniteNum(m.mobPhysSkillsBlockedIconSkillId) ?? 353;
+    pushIcon('mob_debuff_phys_block', sid, 'Фізичні скіли заблоковано');
   }
   return out;
 }
@@ -529,6 +541,17 @@ export function battleBuffIconsForUi(
       labelUk: 'Оглушення (Shock)',
       buffExpiresAtMs: playerStunUntil,
       buffDurationTotalMs: Math.max(1000, playerStunUntil - Date.now()),
+    });
+  }
+  const playerPhysBlockUntil = jsonFiniteNum(m.playerPhysSkillsBlockedUntilMs);
+  if (playerPhysBlockUntil !== undefined && playerPhysBlockUntil > Date.now()) {
+    const psid = jsonFiniteNum(m.playerPhysSkillsBlockedIconSkillId) ?? 353;
+    out.push({
+      key: 'player_debuff_phys_block',
+      l2SkillId: psid,
+      labelUk: 'Фізичні скіли заблоковано',
+      buffExpiresAtMs: playerPhysBlockUntil,
+      buffDurationTotalMs: Math.max(1000, playerPhysBlockUntil - Date.now()),
     });
   }
   const wc = jsonFiniteNum(m?.warCryPatkMul ?? st.warCryPatkMul);
@@ -844,14 +867,6 @@ export function battleBuffIconsForUi(
       isToggle: true,
     });
   }
-  if (jsonFiniteNum(m.shieldFortressPDefMul) !== undefined) {
-    out.push({
-      key: 'shield_fortress',
-      l2SkillId: 322,
-      labelUk: 'Фортеця щита',
-      ...iconDurationExtrasCombined(322, activeByIdForIcons, st),
-    });
-  }
   if (jsonFiniteNum(m.reflectDamageReturnRatio) !== undefined && !isRiposteStanceActive(m)) {
     out.push({
       key: 'reflect_damage',
@@ -860,7 +875,7 @@ export function battleBuffIconsForUi(
       ...iconDurationExtrasCombined(86, activeByIdForIcons, st),
     });
   }
-  if (jsonFiniteNum(m.physicalMirrorReflectRatio) !== undefined) {
+  if (jsonFiniteNum(m.physicalMirrorPhysReflectChancePct) !== undefined) {
     out.push({
       key: 'physical_mirror',
       l2SkillId: 350,
@@ -868,14 +883,11 @@ export function battleBuffIconsForUi(
       ...iconDurationExtrasCombined(350, activeByIdForIcons, st),
     });
   }
-  if (
-    jsonFiniteNum(m.vengeanceIncomingPhysMul) !== undefined &&
-    (jsonFiniteNum(m.vengeanceIncomingPhysMul) ?? 1) < 1
-  ) {
+  if (jsonBoolLike(m.vengeanceImmobile)) {
     out.push({
       key: 'vengeance',
       l2SkillId: 368,
-      labelUk: 'Відплата',
+      labelUk: 'Відплата (Vengeance)',
       ...iconDurationExtrasCombined(368, activeByIdForIcons, st),
     });
   }
@@ -899,7 +911,10 @@ export function battleBuffIconsForUi(
       key: 'active_buff_' + sid,
       l2SkillId: sid,
       labelUk: activeBuffLabelUk(sid),
-      ...(isMysticToggleSkillId(sid) ? { isToggle: true } : {}),
+      ...(isMysticToggleSkillId(sid) ||
+      humanFighterCatalogEntry('l2_' + sid)?.kind === 'toggle'
+        ? { isToggle: true }
+        : {}),
       ...iconDurationExtras(sid, activeByIdForIcons),
     });
   }

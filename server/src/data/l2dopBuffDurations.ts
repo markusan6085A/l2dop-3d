@@ -19,8 +19,6 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   4: 20,
   /** Detect Insect Weakness — 10 хв */
   75: 600,
-  /** Aggression (18) — короткий контроль агро/дебаф. */
-  18: 15,
   /** War Cry — 5 хв. */
   78: 300,
   /** Detect Monster Weakness — 10 хв */
@@ -63,10 +61,14 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   360: 600,
   /** Sanctuary (Paladin/Phoenix) */
   97: 30,
-  /** Shield Fortress */
-  322: 30,
+  /** Ultimate Defense — Knight / Paladin / Dark Avenger */
+  110: 30,
+  /** Deflect Arrow — Knight / Dark Avenger */
+  112: 1200,
   /** Physical Mirror */
-  350: 60,
+  350: 300,
+  /** Touch of Life */
+  341: 120,
   /** Vengeance */
   368: 30,
   // ---- Rogue / Adventurer (для майбутньої гілки, але часто перетинаються) ----

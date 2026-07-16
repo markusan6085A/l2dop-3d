@@ -300,6 +300,7 @@ const TOTEM_PATK60_IDS = [292] as const;
 const TOUCH_DEATH_IDS = [342] as const;
 
 const ULT_DEF_IDS = [110, 5044] as const;
+const VENGEANCE_IDS = [368] as const;
 const ULT_EVA_IDS = [111, 4103] as const;
 
 const WIND_VORTEX_IDS = [1341] as const;
@@ -832,6 +833,13 @@ const ORDERED_BUFF_RULES: Rule[] = [
     apply: (lvl) => ({
       addPdef: l2dopTableAt(L2DOP_UDPDEF, lvl),
       addMdef: l2dopTableAt(L2DOP_UDMDEF, lvl),
+    }),
+  },
+  {
+    ids: VENGEANCE_IDS,
+    apply: () => ({
+      addPdef: 5400,
+      addMdef: 4050,
     }),
   },
   {

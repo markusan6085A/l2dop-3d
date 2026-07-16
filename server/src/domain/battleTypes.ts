@@ -110,6 +110,8 @@ export interface BattleBattleMods {
   silentMoveEvasionFlat?: number;
   ultimateEvasionActive?: boolean;
   ultimateEvasionEvasionFlat?: number;
+  /** Ultimate Defense (110): персонаж не може рухатися. */
+  ultimateDefenseImmobile?: boolean;
   fakeDeathActive?: boolean;
   /** Святилище (97): множник вхідного фіз. урону (<1). */
   sanctuaryIncomingPhysMul?: number;
@@ -144,13 +146,26 @@ export interface BattleBattleMods {
   /** PvP: гравець оглушений (жертва) — unix ms. */
   playerStunUntilMs?: number;
   playerStunIconSkillId?: number;
+  /** Shield Slam (353): моб не може використовувати фізичні скіли (контратака) — unix ms. */
+  mobPhysSkillsBlockedUntilMs?: number;
+  mobPhysSkillsBlockedIconSkillId?: number;
+  /** PvP: жертва не може використовувати фізичні скіли — unix ms. */
+  playerPhysSkillsBlockedUntilMs?: number;
+  playerPhysSkillsBlockedIconSkillId?: number;
   /** Відбиття шкоди (86): частка вхідного урону → назад мобу. */
   reflectDamageReturnRatio?: number;
-  /** Фізичне дзеркало (350). */
+  /** Фізичне дзеркало (350): % шанс відбити фізичний скіл. */
+  physicalMirrorPhysReflectChancePct?: number;
+  /** Фізичне дзеркало (350): % шанс відбити магію. */
+  physicalMirrorMagicReflectChancePct?: number;
+  physicalMirrorIconSkillId?: number;
+  /** @deprecated Стара модель Physical Mirror — знімається при expire 350. */
   physicalMirrorReflectRatio?: number;
-  /** Відплата (368): зниження вхідного фіз. урону. */
+  /** Відплата (368): персонаж не може рухатися під час селф-захисту. */
+  vengeanceImmobile?: boolean;
+  /** @deprecated Стара модель Vengeance — знімається при expire 368. */
   vengeanceIncomingPhysMul?: number;
-  /** Відплата: частка вхідного урону → мобу. */
+  /** @deprecated Стара модель Vengeance — знімається при expire 368. */
   vengeanceReflectRatio?: number;
   //==== Human Mystic — бафи в бою (Might, Acumen, Shield …) ====
   /** Множник P.Atk від магічних бафів (не змішується з War Cry — добуток у кидку). */
@@ -185,6 +200,8 @@ export interface BattlePotionHoTEntry {
   remaining: number;
   perTick: number;
   nextTickAtMs: number;
+  /** Інтервал між імпульсами (мс); за замовчуванням 1000 (зілля). */
+  tickMs?: number;
 }
 
 /** Додаткові «поруч» для AoE (Вихор 36, Sonic Storm 7): той самий фіз. урон, що й по головній цілі. */
@@ -292,6 +309,8 @@ export interface BattleJsonState {
    * Зілля мани в бою: імпульси MP раз на 1 с.
    */
   battlePotionMpHoT?: BattlePotionHoTEntry;
+  /** Touch of Life (341): +250 HP кожні 5 с протягом захисного ефекту. */
+  battleTouchOfLifeHpHoT?: BattlePotionHoTEntry;
   /**
    * Sonic Focus (Gladiator/Duelist, id 8): поточна кількість накопичених зарядів.
    * Додається при касті Sonic Focus; витрачається при касті sonic-скілів
@@ -378,11 +397,19 @@ export type BattleActionId =
   | 'focus_power'
   | 'bluff'
   | 'aggression'
+  | 'hate_aura'
+  | 'divine_heal'
+  | 'holy_blessing'
+  | 'sacrifice'
   | 'remedy'
   | 'holy_strike'
   | 'drain_health'
+  | 'iron_will'
   | 'majesty'
+  | 'ultimate_defense'
+  | 'deflect_arrow'
   | 'shield_stun'
+  | 'shield_slam'
   | 'sanctuary'
   | 'aegis_stance'
   | 'horror'
@@ -392,6 +419,7 @@ export type BattleActionId =
   | 'summon_dark_panther'
   | 'shield_fortress'
   | 'touch_of_life'
+  | 'fortitude'
   | 'touch_of_death'
   | 'physical_mirror'
   | 'vengeance'
@@ -442,8 +470,13 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'thrill_fight',
   'revival',
   'lionheart',
+  'drain_health',
+  'iron_will',
   'majesty',
+  'ultimate_defense',
+  'deflect_arrow',
   'shield_stun',
+  'shield_slam',
   'zealot',
   'eye_hunter',
   'eye_slayer',
@@ -460,6 +493,10 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'focus_power',
   'bluff',
   'aggression',
+  'hate_aura',
+  'divine_heal',
+  'holy_blessing',
+  'sacrifice',
   'remedy',
   'sanctuary',
   'aegis_stance',
@@ -470,6 +507,7 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'physical_mirror',
   'vengeance',
   'touch_of_life',
+  'fortitude',
   /** Sonic-каст: self-buff (charges), без удару по мобу. */
   'sonic_focus',
   /** Sonic-буфер швидкості/захисту. */

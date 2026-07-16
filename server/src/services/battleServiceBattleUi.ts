@@ -27,6 +27,10 @@ import {
   skillIconUrlForClient,
 } from '../data/humanFighterSkillCatalog.js';
 import { fighterCatalogEntryForRace } from '../data/fighterSkillCatalog.byRace.js';
+import {
+  catalogAllowsFighterAction,
+  resolveFighterCatalogBattleId,
+} from '../domain/battleSkills/humanFighterTurnHelpers.js';
 import { mysticCatalogEntryForRace } from '../data/mysticSkillCatalog.byRace.js';
 import {
   CAST_SPD_BASELINE,
@@ -471,6 +475,30 @@ export function battleViewFromState(
   };
 }
 
+/** Вивчений battle/toggle з каталогу (узгоджено з `reqEntry` / gap-резолвером). */
+function learnedFighterCatalogActionAllowed(
+  action: BattleActionId,
+  learnedBattle: string[],
+  prof: string,
+  race: string,
+  classBranch: string
+): boolean {
+  const act = battleActionNamedFromL2IfMapped(action);
+  const canon = resolveFighterCatalogBattleId(act);
+  if (!canon) return false;
+  const learned = new Set(
+    learnedBattle.map((x) => canonicalBattleSkillId(x))
+  );
+  if (!learned.has(canonicalBattleSkillId(canon))) return false;
+  if (!catalogAllowsFighterAction(act, prof, race, classBranch)) return false;
+  const human = humanFighterCatalogEntry(canon);
+  if (human && (human.kind === 'battle' || human.kind === 'toggle')) {
+    return true;
+  }
+  const rf = fighterCatalogEntryForRace(race, classBranch, canon);
+  return rf != null && (rf.kind === 'battle' || rf.kind === 'toggle');
+}
+
 export function battleActionAllowed(
   action: BattleActionId,
   level: number,
@@ -503,6 +531,17 @@ export function battleActionAllowed(
         _race,
         classBranch
       ).some((s) => s.id === act)
+    ) {
+      return true;
+    }
+    if (
+      learnedFighterCatalogActionAllowed(
+        act,
+        learnedBattle,
+        prof,
+        _race,
+        classBranch
+      )
     ) {
       return true;
     }

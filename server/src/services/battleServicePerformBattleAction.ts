@@ -9,11 +9,13 @@ import {
   type BattleActionId,
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
+import { isPhysicalBattleSkillAction } from '../domain/battlePhysicalSkillBlock.js';
 import {
   persistableActiveBuffsFromJson,
   type ActiveBuffEntry,
 } from '../data/l2dopActiveBuffs.js';
 import { activeBuffExpiresAt } from '../data/l2dopBuffDurations.js';
+import { hateAuraBattleLogLineUk } from '../data/hateAuraTables.js';
 import { provokeBattleLogLineUk } from '../data/provokeTables.js';
 import {
   LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID,
@@ -34,6 +36,14 @@ import {
   stripStances,
   tickWorldCombatState,
 } from '../domain/worldCombatState.js';
+import {
+  shieldFortressActiveRank,
+  shieldFortressMpDrainForIntervalSec,
+} from '../data/shieldFortressTables.js';
+import {
+  fortitudeActiveRank,
+  fortitudeMpDrainForIntervalSec,
+} from '../data/fortitudeTables.js';
 import {
   compactBattleSkillLogLineUk,
   formatBattleSkillLogLineForClient,
@@ -59,7 +69,9 @@ import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import {
   isFighterClassBranch,
   resolveL2ProfessionForSkillsRow,
+  equippedWeaponKind,
 } from '../data/l2dopHumanFighterBattleSkills.js';
+import { isPvpBowPhysicalAttack } from '../data/deflectArrowTables.js';
 import { isMysticClassBranch } from '../data/l2dopHumanMysticBattleSkills.js';
 import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
 import {
@@ -69,7 +81,7 @@ import {
 import {
   persistBattleDefeatInTx,
 } from './battleServiceBattleOutcomeTx.js';
-import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, mirrorPvpStunToVictimInTx } from './battleServicePvpDamage.js';
+import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, mirrorPvpPhysSkillsBlockToVictimInTx, mirrorPvpStunToVictimInTx } from './battleServicePvpDamage.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -89,6 +101,7 @@ import {
 import {
   applyPhysDamageToNearbyExtraMobs,
   applyHowlDebuffToNearbyExtraMobs,
+  ensureHateAuraExtraMobs,
   ensureProvokeExtraMobs,
   ensureWhirlwindExtraMobs,
   stripProvokeDebuffFromExtraMobs,
@@ -104,7 +117,19 @@ import {
 import { FIGHTER_PHYSICAL_SOULSHOT_ITEM_IDS } from '../data/fighterPhysicalSoulshot.js';
 import { MYSTIC_BLESSED_SPIRITSHOT_ITEM_IDS } from '../data/mysticBlessedSpiritshot.js';
 import { applyBattlePotionHoTTicks } from '../domain/battleCombatPotions.js';
+import {
+  amplifyHealByReceivedPct,
+  TOUCH_OF_LIFE_HEAL_RECEIVED_PCT,
+} from '../data/touchOfLifeTables.js';
+import {
+  applyTouchOfLifeHoTTicks,
+  clearTouchOfLifeHoT,
+  startTouchOfLifeHoT as armTouchOfLifeHoT,
+} from '../domain/touchOfLifeHoT.js';
 import { consumeBowArrowsOnHit } from '../domain/battleBowArrowConsumption.js';
+import {
+  isMobUnableToAttackNow,
+} from '../domain/battleMobControl.js';
 import {
   applyMobCounterDamage,
   resolveMobShouldCounterAttack,
@@ -122,6 +147,7 @@ import {
   loadWorldBossSessionMobHp,
   recordWorldBossBattlePresenceInTx,
   recordWorldBossDamagingHitInTx,
+  applyWorldBossAggressionTauntInTx,
   isWorldBossAutoAttackDueInTx,
   runWorldBossCombatTickInTx,
   flushWorldBossPendingMobHitsForCharacterInTx,
@@ -295,6 +321,23 @@ export async function performBattleAction(
         delete st.battleMods.playerStunUntilMs;
         delete st.battleMods.playerStunIconSkillId;
       }
+      const mobPhysBlockUntil = jsonFiniteNum(
+        st.battleMods.mobPhysSkillsBlockedUntilMs
+      );
+      if (mobPhysBlockUntil !== undefined && mobPhysBlockUntil <= nowMsTurn) {
+        delete st.battleMods.mobPhysSkillsBlockedUntilMs;
+        delete st.battleMods.mobPhysSkillsBlockedIconSkillId;
+      }
+      const playerPhysBlockUntil = jsonFiniteNum(
+        st.battleMods.playerPhysSkillsBlockedUntilMs
+      );
+      if (
+        playerPhysBlockUntil !== undefined &&
+        playerPhysBlockUntil <= nowMsTurn
+      ) {
+        delete st.battleMods.playerPhysSkillsBlockedUntilMs;
+        delete st.battleMods.playerPhysSkillsBlockedIconSkillId;
+      }
     }
     const playerStunActive = jsonFiniteNum(st.battleMods?.playerStunUntilMs);
     if (
@@ -303,10 +346,21 @@ export async function performBattleAction(
     ) {
       throw new Error('battle_player_stunned');
     }
+    const playerPhysBlockActive = jsonFiniteNum(
+      st.battleMods?.playerPhysSkillsBlockedUntilMs
+    );
+    if (
+      playerPhysBlockActive !== undefined &&
+      playerPhysBlockActive > nowMsTurn &&
+      isPhysicalBattleSkillAction(action, char.classBranch)
+    ) {
+      throw new Error('battle_phys_skills_blocked');
+    }
     const activeBuffsPre = persistableActiveBuffsFromJson(
       (char as CharacterRow).activeBuffsJson,
       nowMsTurn
     );
+    let activeBuffsForTurn = activeBuffsPre.slice();
 
     /**
      * Перед обробкою дії мерджимо постійний `skillCooldownsJson` у
@@ -362,6 +416,7 @@ export async function performBattleAction(
         const strip = LEGACY_BUFF_STRIP_BY_SKILL_ID[sid];
         if (strip) strip(mods);
         if (sid === 286) stripProvokeDebuffFromExtraMobs(st);
+        if (sid === 341) clearTouchOfLifeHoT(st);
         delete nextMap[key];
         anyChange = true;
         const logLine = LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID[sid];
@@ -378,17 +433,13 @@ export async function performBattleAction(
     }
 
     /**
-     * Тогл-стійки в бою витрачають MP за тією ж ставкою, що й у світі
-     * (`STANCE_MP_PER_SEC` на стійку). Тик — від попереднього ходу до поточного;
-     * для першого ходу у бою беремо lower-bound 0, щоб не знімати «за минуле»
-     * (там спрацював `tickWorldCombatState`). Коли MP падає до 0 — стійки слітають
-     * з `st.battleMods`, що прибирає їхні бонуси з наступних кидків/іконок.
+     * Тогл-стійки та Shield Fortress витрачають MP між ходами.
      */
     {
+      const lastTick = st.lastStanceTickMs ?? nowMsTurn;
+      const dtSec = Math.max(0, (nowMsTurn - lastTick) / 1000);
       const sc = stanceCount(st.battleMods);
-      if (sc > 0) {
-        const lastTick = st.lastStanceTickMs ?? nowMsTurn;
-        const dtSec = Math.max(0, (nowMsTurn - lastTick) / 1000);
+      if (sc > 0 && dtSec > 0) {
         const drain = Math.floor(dtSec * STANCE_MP_PER_SEC * sc);
         if (drain > 0) {
           const before = currentMp;
@@ -399,6 +450,40 @@ export async function performBattleAction(
           if (currentMp <= 0 && st.battleMods) {
             st.battleMods = stripStances(st.battleMods);
             log.push('MP вичерпано — toggle-ефекти знято.');
+          }
+        }
+      }
+      const sfRank = shieldFortressActiveRank(activeBuffsForTurn);
+      if (sfRank != null && dtSec > 0 && currentMp > 0) {
+        const sfDrain = shieldFortressMpDrainForIntervalSec(sfRank, dtSec);
+        if (sfDrain > 0) {
+          const before = currentMp;
+          currentMp = Math.max(0, currentMp - sfDrain);
+          if (currentMp !== before) {
+            st.playerMp = currentMp;
+          }
+          if (currentMp <= 0) {
+            activeBuffsForTurn = activeBuffsForTurn.filter(
+              (b) => Math.floor(Number(b.skillId)) !== 322
+            );
+            log.push('MP вичерпано — Фортеця щита вимкнена.');
+          }
+        }
+      }
+      const ftRank = fortitudeActiveRank(activeBuffsForTurn);
+      if (ftRank != null && dtSec > 0 && currentMp > 0) {
+        const ftDrain = fortitudeMpDrainForIntervalSec(ftRank, dtSec);
+        if (ftDrain > 0) {
+          const before = currentMp;
+          currentMp = Math.max(0, currentMp - ftDrain);
+          if (currentMp !== before) {
+            st.playerMp = currentMp;
+          }
+          if (currentMp <= 0) {
+            activeBuffsForTurn = activeBuffsForTurn.filter(
+              (b) => Math.floor(Number(b.skillId)) !== 335
+            );
+            log.push('MP вичерпано — Стійкість вимкнена.');
           }
         }
       }
@@ -431,6 +516,9 @@ export async function performBattleAction(
     }
 
     {
+      const healPctFromTol = activeBuffsForTurn.some((b) => b.skillId === 341)
+        ? TOUCH_OF_LIFE_HEAL_RECEIVED_PCT
+        : 0;
       const ho = applyBattlePotionHoTTicks({
         nowMs: nowMsTurn,
         st,
@@ -442,10 +530,18 @@ export async function performBattleAction(
       });
       playerHp = ho.playerHp;
       currentMp = ho.currentMp;
+      playerHp = applyTouchOfLifeHoTTicks({
+        nowMs: nowMsTurn,
+        st,
+        playerHp,
+        maxHpBattle,
+        healReceivedPct: healPctFromTol,
+        log,
+      });
       st.playerMp = currentMp;
     }
 
-    /** HP-умовні пасиви (Final Frenzy 290) — за поточним HP у бою, не за `char.hp` у БД. */
+    /** HP-умовні пасиви (Final Frenzy 290, Final Fortress 291) — за поточним HP у бою. */
     const combatForTurn = computeCombatStats(
       preLevel,
       char.race,
@@ -504,7 +600,7 @@ export async function performBattleAction(
       mobEva,
       inv,
       learnedSkillLevelByBattleId,
-      activeBuffsPre,
+      activeBuffsPre: activeBuffsForTurn,
       modsForPlayerPhysicalRoll,
       nowMsTurn,
       log,
@@ -535,6 +631,10 @@ export async function performBattleAction(
       skipMobCounterAttackOnce,
       mobRetaliationDelayHits,
       playerHealSourceUk,
+      playerHpCostSourceUk,
+      playerHpCostBeforeHeal,
+      startTouchOfLifeHoT,
+      worldBossTaunt,
     } = resolvedTurn;
 
     let whirlwindExtraHitNames: string[] | undefined;
@@ -613,6 +713,13 @@ export async function performBattleAction(
         iconSkillId: jsonFiniteNum(st.battleMods?.mobStunIconSkillId),
         nowMs: nowMsTurn,
       });
+      await mirrorPvpPhysSkillsBlockToVictimInTx(tx, {
+        victimId: st.pvpTargetCharacterId,
+        attackerId: char.id,
+        blockUntilMs: jsonFiniteNum(st.battleMods?.mobPhysSkillsBlockedUntilMs),
+        iconSkillId: jsonFiniteNum(st.battleMods?.mobPhysSkillsBlockedIconSkillId),
+        nowMs: nowMsTurn,
+      });
     }
 
     applyBattleModsExpiresPatchInPlace(
@@ -632,7 +739,7 @@ export async function performBattleAction(
      * в `st.mysticSkillCdUntil['l2_<id>']`, яке читає хотбар (`battle-hotbar.js` →
      * `applySkillCdOverlay`) — кругова чорна смужка + секунди поверх кнопки скіла.
      */
-    let nextActiveBuffs: ActiveBuffEntry[] = activeBuffsPre.slice();
+    let nextActiveBuffs: ActiveBuffEntry[] = activeBuffsForTurn.slice();
     let activeBuffsChanged = false;
     if (activeBuffPatch) {
       const { skillId, level, action: patchAction } = activeBuffPatch;
@@ -683,6 +790,10 @@ export async function performBattleAction(
         }
       }
       activeBuffsChanged = true;
+    }
+
+    if (startTouchOfLifeHoT) {
+      armTouchOfLifeHoT(st, nowMsTurn);
     }
 
     /**
@@ -747,12 +858,27 @@ export async function performBattleAction(
       damagingPlayerHit &&
       st.pvpTargetCharacterId
     ) {
-      await applyPvpHitToVictimInTx(tx, {
+      const pvpNowMs = Date.now();
+      let mirrorReflectKind: 'physical' | 'magic' | undefined;
+      if (landedMagicHit) {
+        mirrorReflectKind = 'magic';
+      } else if (landedPhysicalHit && action !== 'attack') {
+        mirrorReflectKind = 'physical';
+      }
+      const pvpHit = await applyPvpHitToVictimInTx(tx, {
         victimId: st.pvpTargetCharacterId,
         attackerId: char.id,
         damage: pDmg,
-        nowMs: Date.now(),
+        nowMs: pvpNowMs,
+        isBowAttack: isPvpBowPhysicalAttack(
+          action,
+          equippedWeaponKind(inv)
+        ),
+        mirrorReflectKind,
       });
+      if (pvpHit.mirrorLogLineUk) {
+        log.push(pvpHit.mirrorLogLineUk);
+      }
     }
 
     if (worldBossBattle && damagingPlayerHit) {
@@ -768,6 +894,15 @@ export async function performBattleAction(
         mobHp = ws.mobHp;
         st.mobHp = ws.mobHp;
       }
+    }
+
+    if (worldBossBattle && worldBossTaunt) {
+      await applyWorldBossAggressionTauntInTx(
+        tx,
+        spawn.spawnId,
+        cr.id,
+        Date.now()
+      );
     }
 
     if (landedPhysicalHit && magicOutcome == null) {
@@ -949,6 +1084,20 @@ export async function performBattleAction(
       );
       shockBlastExtraHitNames = applyPhysDamageToNearbyExtraMobs(st, pDmg);
     }
+    if (action === 'hate_aura') {
+      const hateRank = Math.max(
+        1,
+        Math.floor(learnedSkillLevelByBattleId['l2_18'] ?? 1)
+      );
+      const pulled = ensureHateAuraExtraMobs(
+        st,
+        char.worldX,
+        char.worldY,
+        bj.spawnId
+      );
+      const names = [spawn.name, ...pulled];
+      log.push(hateAuraBattleLogLineUk(hateRank, names));
+    }
     if (action === 'provoke') {
       const provokeRank = Math.max(
         1,
@@ -1021,13 +1170,33 @@ export async function performBattleAction(
       }
     }
 
+    const healReceivedPctNow = nextActiveBuffs.some((b) => b.skillId === 341)
+      ? TOUCH_OF_LIFE_HEAL_RECEIVED_PCT
+      : 0;
+
+    if (
+      typeof playerHpCost === 'number' &&
+      Number.isFinite(playerHpCost) &&
+      playerHpCost > 0 &&
+      playerHpCostBeforeHeal
+    ) {
+      const cost = Math.floor(playerHpCost);
+      playerHp = Math.max(1, playerHp - cost);
+      const hpCostLabel = playerHpCostSourceUk ?? 'Touch of Life';
+      log.push('HP: −' + cost + ' (' + hpCostLabel + ').');
+    }
+
     if (
       typeof playerHeal === 'number' &&
       Number.isFinite(playerHeal) &&
       playerHeal > 0
     ) {
       const cap = effectiveBattleMaxHp(maxHpEffAfter, st.battleMods);
-      const healed = Math.min(cap - playerHp, Math.floor(playerHeal));
+      const healRaw = amplifyHealByReceivedPct(
+        Math.floor(playerHeal),
+        healReceivedPctNow
+      );
+      const healed = Math.min(cap - playerHp, healRaw);
       if (healed > 0) {
         playerHp = Math.min(cap, playerHp + healed);
         if (playerHealSourceUk) {
@@ -1039,11 +1208,13 @@ export async function performBattleAction(
     if (
       typeof playerHpCost === 'number' &&
       Number.isFinite(playerHpCost) &&
-      playerHpCost > 0
+      playerHpCost > 0 &&
+      !playerHpCostBeforeHeal
     ) {
       const cost = Math.floor(playerHpCost);
       playerHp = Math.max(1, playerHp - cost);
-      log.push('HP: −' + cost + ' (Zealot).');
+      const hpCostLabel = playerHpCostSourceUk ?? 'Zealot';
+      log.push('HP: −' + cost + ' (' + hpCostLabel + ').');
     }
     const skipDamageFollowupLog =
       pDmg === 0 &&
@@ -1205,7 +1376,8 @@ export async function performBattleAction(
     }
 
     if (worldBossBattle) {
-      if (!damagingPlayerHit) {
+      const mobControlLocked = isMobUnableToAttackNow(st, nowMsTurn);
+      if (!damagingPlayerHit && !mobControlLocked) {
         const tickNowMs = Date.now();
         if (await isWorldBossAutoAttackDueInTx(tx, spawn.spawnId, tickNowMs)) {
           const ws = await runWorldBossCombatTickInTx(
@@ -1248,6 +1420,7 @@ export async function performBattleAction(
       classBranch: char.classBranch,
       skipMobCounterAttackOnce,
       mobRetaliationDelayHits,
+      nowMs: nowMsTurn,
     });
 
     if (!shouldMobCounterAttack) {

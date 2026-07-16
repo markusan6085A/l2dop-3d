@@ -53,6 +53,9 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
     delete m.ultimateEvasionActive;
     delete m.ultimateEvasionEvasionFlat;
   },
+  110: (m) => {
+    delete m.ultimateDefenseImmobile;
+  },
   116: (m) => {
     delete m.mobPatkDebuffMul;
   },
@@ -94,9 +97,12 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
     delete m.shieldFortressPDefMul;
   },
   341: (_m) => {
-    // Touch of Life — одноразовий хіл, полів у battleMods не лишає.
+    // Touch of Life — захист через activeBuffsJson; HoT знімається окремо з battleJson.
   },
   350: (m) => {
+    delete m.physicalMirrorPhysReflectChancePct;
+    delete m.physicalMirrorMagicReflectChancePct;
+    delete m.physicalMirrorIconSkillId;
     delete m.physicalMirrorReflectRatio;
   },
   359: (m) => stripWeaknessKindIfEq(m, 'eye_hunter'),
@@ -110,8 +116,13 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
     }
   },
   368: (m) => {
+    delete m.vengeanceImmobile;
     delete m.vengeanceIncomingPhysMul;
     delete m.vengeanceReflectRatio;
+  },
+  353: (m) => {
+    delete m.mobPhysSkillsBlockedUntilMs;
+    delete m.mobPhysSkillsBlockedIconSkillId;
   },
   /** Sonic Move (Gladiator/Duelist, +run speed; використовує той самий
    *  `dashRunSpeedFlat`, що й Dash). */
@@ -195,6 +206,7 @@ export const LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID: Readonly<
   99: 'Швидкий постріл: час вичерпано.',
   104: 'Вразливість рослин: час вичерпано.',
   111: 'Абсолютне ухилення: час вичерпано.',
+  110: 'Абсолютний захист: час вичерпано.',
   116: 'Звіриний рев: час вичерпано.',
   286: 'Провокація: час вичерпано.',
   139: 'Guts: час вичерпано.',
@@ -207,7 +219,7 @@ export const LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID: Readonly<
   358: 'Блеф: ефект вичерпано.',
   317: 'Зосереджений удар: час вичерпано.',
   322: 'Фортеця щита: час вичерпано.',
-  341: 'Дотик життя: готовий знову.',
+  341: 'Дотик життя: захисний ефект вичерпано.',
   350: 'Фізичне дзеркало: час вичерпано.',
   342: 'Дотик смерті: готовий знову.',
   359: 'Око мисливця: час вичерпано.',

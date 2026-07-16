@@ -26,6 +26,7 @@ function parseBattlePotionHoTField(
   const remaining = jsonFiniteNum(r.remaining);
   const perTick = jsonFiniteNum(r.perTick);
   const nextTickAtMs = jsonFiniteNum(r.nextTickAtMs);
+  const tickMs = jsonFiniteNum(r.tickMs);
   if (
     remaining === undefined ||
     remaining <= 0 ||
@@ -39,6 +40,9 @@ function parseBattlePotionHoTField(
     remaining: Math.floor(remaining),
     perTick: Math.floor(perTick),
     nextTickAtMs: Math.floor(nextTickAtMs),
+    ...(tickMs !== undefined && tickMs > 0
+      ? { tickMs: Math.floor(tickMs) }
+      : {}),
   };
 }
 
@@ -306,6 +310,24 @@ export function parseBattleJson(
           ? Math.floor(playerStunSid)
           : 260;
     }
+    const mobPhysBlockUntil = jsonFiniteNum(bm.mobPhysSkillsBlockedUntilMs);
+    if (mobPhysBlockUntil !== undefined && mobPhysBlockUntil > 0) {
+      next.mobPhysSkillsBlockedUntilMs = Math.floor(mobPhysBlockUntil);
+      const mobPhysSid = jsonFiniteNum(bm.mobPhysSkillsBlockedIconSkillId);
+      next.mobPhysSkillsBlockedIconSkillId =
+        mobPhysSid !== undefined && mobPhysSid > 0
+          ? Math.floor(mobPhysSid)
+          : 353;
+    }
+    const playerPhysBlockUntil = jsonFiniteNum(bm.playerPhysSkillsBlockedUntilMs);
+    if (playerPhysBlockUntil !== undefined && playerPhysBlockUntil > 0) {
+      next.playerPhysSkillsBlockedUntilMs = Math.floor(playerPhysBlockUntil);
+      const playerPhysSid = jsonFiniteNum(bm.playerPhysSkillsBlockedIconSkillId);
+      next.playerPhysSkillsBlockedIconSkillId =
+        playerPhysSid !== undefined && playerPhysSid > 0
+          ? Math.floor(playerPhysSid)
+          : 353;
+    }
     const gapRdr = jsonFiniteNum(bm.reflectDamageReturnRatio);
     if (gapRdr !== undefined && gapRdr > 0) next.reflectDamageReturnRatio = gapRdr;
     const rtRaw = (bm as { raceToggleRanks?: unknown }).raceToggleRanks;
@@ -425,6 +447,8 @@ export function parseBattleJson(
       (sleepUntil !== undefined && sleepUntil > Date.now()) ||
       (stunUntil !== undefined && stunUntil > Date.now()) ||
       (playerStunUntil !== undefined && playerStunUntil > Date.now()) ||
+      (mobPhysBlockUntil !== undefined && mobPhysBlockUntil > Date.now()) ||
+      (playerPhysBlockUntil !== undefined && playerPhysBlockUntil > Date.now()) ||
       (gapRdr !== undefined && gapRdr > 0) ||
       (gapPmr !== undefined && gapPmr > 0) ||
       (gapVin !== undefined && gapVin > 0 && gapVin < 1) ||
@@ -510,6 +534,9 @@ export function parseBattleJson(
   );
   const battlePotionMpHoT = parseBattlePotionHoTField(
     (o as Record<string, unknown>).battlePotionMpHoT
+  );
+  const battleTouchOfLifeHpHoT = parseBattlePotionHoTField(
+    (o as Record<string, unknown>).battleTouchOfLifeHpHoT
   );
 
   const wcRoot = jsonFiniteNum(o.warCryPatkMul ?? o.war_cry_patk_mul);
@@ -649,6 +676,9 @@ export function parseBattleJson(
       : {}),
     ...(battlePotionHpHoT !== undefined ? { battlePotionHpHoT } : {}),
     ...(battlePotionMpHoT !== undefined ? { battlePotionMpHoT } : {}),
+    ...(battleTouchOfLifeHpHoT !== undefined
+      ? { battleTouchOfLifeHpHoT }
+      : {}),
     ...(o.battleMode === 'pvp' ? { battleMode: 'pvp' as const } : {}),
     ...(typeof o.pvpTargetCharacterId === 'string' &&
     o.pvpTargetCharacterId.trim()

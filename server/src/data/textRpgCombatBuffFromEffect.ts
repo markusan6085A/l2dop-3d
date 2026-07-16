@@ -82,12 +82,20 @@ export function l2dopBuffDeltaFromTextRpgEffect(
         return { addCrit: Math.round(power * 0.35) };
       case 'stunResist':
         return { addStunResistPct: power };
+      case 'shockResist':
+        return { addStunResistPct: power };
+      case 'paralyzeResist':
+        return { addParalyzeResistPct: power };
       case 'holdResist':
         return { holdResistMul: m };
       case 'sleepResist':
         return { sleepResistMul: m };
       case 'mentalResist':
         return { mentalResistMul: m };
+      case 'arrowDef':
+        return { addBowDefPct: power };
+      case 'shieldFortressDefense':
+        return { addShieldPDef: power };
       default:
         return null;
     }

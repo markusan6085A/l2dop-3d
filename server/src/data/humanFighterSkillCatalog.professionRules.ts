@@ -13,6 +13,8 @@ import type {
 import { maxSkillRankForBattleId } from './humanFighterSkillCatalog.learnedRanks.js';
 import { shieldMasteryMaxRankForMappedProfession } from './shieldMasteryTables.js';
 import { majestyMaxRankForMappedProfession } from './majestyTables.js';
+import { ultimateDefenseMaxRankForMappedProfession } from './ultimateDefenseTables.js';
+import { deflectArrowMaxRankForMappedProfession } from './deflectArrowTables.js';
 
 /** Warlord або Dreadnought — одна гілка алебарди. */
 export function isHumanWarlordTrackProfession(l2Profession: string): boolean {
@@ -277,6 +279,18 @@ export function maxSkillRankForCatalogEntry(
     );
     return Math.min(global, majestyMaxRankForMappedProfession(p));
   }
+  if (c === 'l2_110') {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return Math.min(global, ultimateDefenseMaxRankForMappedProfession(p));
+  }
+  if (c === 'l2_112') {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return Math.min(global, deflectArrowMaxRankForMappedProfession(p));
+  }
   if (c !== 'l2_211') return global;
   const p = mapFighterProfessionToHumanSkillCatalog(
     String(l2Profession || '').trim()
@@ -332,6 +346,24 @@ export function catalogEntryAllowsSkillRank(
       String(l2Profession || '').trim()
     );
     return p === 'human_paladin' || p === 'human_dark_avenger';
+  }
+  if (c === 'l2_110' && r === 1) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_knight';
+  }
+  if (c === 'l2_110' && r >= 2) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return p === 'human_paladin' || p === 'human_dark_avenger';
+  }
+  if (c === 'l2_112' && r >= 3) {
+    const p = mapFighterProfessionToHumanSkillCatalog(
+      String(l2Profession || '').trim()
+    );
+    return isHumanDarkAvengerTrackProfession(p);
   }
   if (c === 'l2_211') {
     return r <= maxSkillRankForCatalogEntry(entry, l2Profession);

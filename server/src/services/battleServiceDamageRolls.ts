@@ -269,8 +269,6 @@ export function rollMobPhysicalVsPlayer(
     const ae = jsonFiniteNum(mods?.aegisPDefMul);
     if (ae !== undefined && ae > 0) pDefMulEff *= ae;
   }
-  const shf = jsonFiniteNum(mods?.shieldFortressPDefMul);
-  if (shf !== undefined && shf > 1) pDefMulEff *= shf;
   const mysPdef = jsonFiniteNum(mods?.mysticPdefBuffMul);
   if (mysPdef !== undefined && mysPdef > 1) pDefMulEff *= mysPdef;
   const ragePdef = jsonFiniteNum(mods?.rageBattlePdefMul);
@@ -314,12 +312,8 @@ export function rollMobPhysicalVsPlayer(
   });
   let dmg = r.damage;
   const sanIn = jsonFiniteNum(mods?.sanctuaryIncomingPhysMul);
-  const venIn = jsonFiniteNum(mods?.vengeanceIncomingPhysMul);
   if (sanIn !== undefined && sanIn > 0 && sanIn < 1) {
     dmg = Math.max(0, Math.floor(dmg * sanIn));
-  }
-  if (venIn !== undefined && venIn > 0 && venIn < 1) {
-    dmg = Math.max(0, Math.floor(dmg * venIn));
   }
   return { ...r, damage: Math.max(0, dmg) };
 }

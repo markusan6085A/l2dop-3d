@@ -75,6 +75,10 @@ export function learnedPassivesBuffDelta(
     if (row.l2SkillId === 290) {
       if (hpRatio == null || hpRatio > 0.3 + 1e-9) continue;
     }
+    /** Final Fortress (291): +P.Def лише при HP <= 20%. */
+    if (row.l2SkillId === 291) {
+      if (hpRatio == null || hpRatio > 0.2 + 1e-9) continue;
+    }
 
     if (row.l2SkillId === 142) {
       const d = textRpgWeaponMastery142Delta(row, r);

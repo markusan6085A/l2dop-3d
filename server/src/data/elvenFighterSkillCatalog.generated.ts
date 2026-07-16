@@ -5916,7 +5916,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 14000,
     nameUk: "Майстерність важкої броні (Heavy Armor Mastery)",
-    hintUk: "Пасив: підвищує P. Def (%) у важкій броні (1 р. — +1.9%, 50 р. — +79.3%).",
+    hintUk: "Пасив: +P.Def (flat) у важкій броні. 1 р. — +17.7 (20 лв), 52 р. — +172.6 (74 лв). Knight / Temple / Shillien Knight. Лише важка броня.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [

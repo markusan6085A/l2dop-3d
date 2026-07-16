@@ -342,8 +342,14 @@ export interface CombatStatsSnapshot {
   bleedResistMul: number;
   /** Фаза 1: стійкість до станів (CON) + плоскі бонуси; верхня межа 95. */
   stunResistPct: number;
+  /** Fortitude (335) та інші: стійкість до паралічу, 0–95. */
+  paralyzeResistPct: number;
   /** Стійкість до дебафів (MEN) + плоскі бонуси; верхня межа 95. */
   debuffResistPct: number;
+  /** Touch of Life: ефективність отриманого лікування, 0–95. */
+  healReceivedPct: number;
+  /** Touch of Life: стійкість до Cancel, 0–95. */
+  cancelResistPct: number;
   /** Множник витрат MP у бою за скіл (1 = база). */
   skillMpCostMul: number;
   /** Плоский бонус до шансу накладання дебафу/контролю (додається після резисту моба, у % до шансу). */
@@ -402,10 +408,11 @@ export function sumEquippedArmorPDef(
   return sum;
 }
 
-/** Shield P.Def у snapshot: база предмета × Shield Mastery rate (лише з щитом у l2). */
+/** Shield P.Def у snapshot: база предмета × Shield Mastery rate + flat (Shield Fortress). */
 export function equippedShieldPDef(
   eq: InventoryState['eq'],
-  shieldDefenceRatePct: number
+  shieldDefenceRatePct: number,
+  flatBonus: number = 0
 ): number {
   const shSlot = normalizeEqSlot(eq?.l2);
   if (!shSlot) return 0;
@@ -419,7 +426,9 @@ export function equippedShieldPDef(
   if (typeof base !== 'number' || !Number.isFinite(base) || base <= 0) return 0;
   const rate = Math.max(0, Math.min(100, Math.floor(shieldDefenceRatePct)));
   if (rate <= 0) return 0;
-  return Math.floor((base * rate) / 100);
+  const baseDef = Math.floor((base * rate) / 100);
+  const flat = Math.max(0, Math.floor(flatBonus));
+  return Math.max(0, baseDef + flat);
 }
 
 /** Чи екіпований щит у слоті l2 (без урахування Shield Mastery rate). */
@@ -896,6 +905,10 @@ export function computeCombatStats(
     0,
     Math.min(95, stunResistPctFromCon(CON) + B.addStunResistPct)
   );
+  const paralyzeResistPct = Math.max(
+    0,
+    Math.min(95, B.addParalyzeResistPct)
+  );
   const debuffResistPct = Math.max(
     0,
     Math.min(95, debuffResistPctFromMen(MEN) + B.addDebuffResistPct)
@@ -918,7 +931,7 @@ export function computeCombatStats(
     pAtkSpd,
     runSpeed,
     castSpd,
-    shieldPDef: equippedShieldPDef(eq, B.shieldDefenceRatePct),
+    shieldPDef: equippedShieldPDef(eq, B.shieldDefenceRatePct, B.addShieldPDef),
     mCritPct,
     critDmgMul: critDmgMulCombined,
     addCritDmg: B.addCritDmg,
@@ -942,7 +955,10 @@ export function computeCombatStats(
     poisonResistMul: B.poisonResistMul,
     bleedResistMul: B.bleedResistMul,
     stunResistPct,
+    paralyzeResistPct,
     debuffResistPct,
+    healReceivedPct: Math.max(0, Math.min(95, B.addHealReceivedPct)),
+    cancelResistPct: Math.max(0, Math.min(95, B.addCancelResistPct)),
     skillMpCostMul: Math.max(0.5, Math.min(1.25, B.skillMpCostMul)),
     addDebuffLandChancePct: B.addDebuffLandChancePct,
     magicCritDmgMul,

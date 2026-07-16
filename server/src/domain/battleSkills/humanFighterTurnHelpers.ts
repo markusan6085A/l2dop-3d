@@ -11,6 +11,7 @@ import {
   isStanceParryActive,
   isStanceViciousActive,
   isFocusAttackActive,
+  jsonBoolLike,
   jsonFiniteNum,
 } from '../battle.js';
 import type {
@@ -34,6 +35,16 @@ import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.j
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import { sonicChargeRequirementForSkillId } from '../sonicCharges.js';
 import { BattleSkillNotAllowedError } from '../battleSkillNotAllowedError.js';
+
+/** Ultimate Defense (110) та Vengeance (368) — блокують скіли пересування в бою. */
+export function assertPlayerCanMove(ctx: BattleSkillResolveContext): void {
+  if (jsonBoolLike(ctx.st.battleMods?.ultimateDefenseImmobile)) {
+    throw new Error('battle_skill_not_allowed');
+  }
+  if (jsonBoolLike(ctx.st.battleMods?.vengeanceImmobile)) {
+    throw new Error('battle_skill_not_allowed');
+  }
+}
 
 /** Фіксована кількість фіз. ударів (Triple Slash тощо) — сумарна шкода й агрегований outcome. */
 export function rollFixedHitCountPhys(

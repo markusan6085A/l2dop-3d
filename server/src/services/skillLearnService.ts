@@ -60,11 +60,27 @@ import { magicResistanceStatsNoteUk } from '../data/magicResistanceTables.js';
 import { shieldMasteryStatsNoteUk } from '../data/shieldMasteryTables.js';
 import { fighterPassiveHintUk } from '../data/fighterCommonPassiveSkillDisplay.js';
 import { fastHpRecoveryStatsNoteUk } from '../data/fastHpRecoveryTables.js';
+import { focusMindStatsNoteUk } from '../data/focusMindTables.js';
 import { battleRoarStatsNoteUk } from '../data/battleRoarTables.js';
 import { majestyStatsNoteUk } from '../data/majestyTables.js';
+import { deflectArrowStatsNoteUk } from '../data/deflectArrowTables.js';
+import { aggressionStatsNoteUk } from '../data/aggressionTables.js';
+import { hateAuraStatsNoteUk } from '../data/hateAuraTables.js';
+import { divineHealStatsNoteUk } from '../data/divineHealTables.js';
+import { holyBlessingStatsNoteUk } from '../data/holyBlessingTables.js';
+import { sacrificeStatsNoteUk } from '../data/sacrificeTables.js';
+import { shieldFortressStatsNoteUk } from '../data/shieldFortressTables.js';
+import { fortitudeStatsNoteUk } from '../data/fortitudeTables.js';
+import { ironWillStatsNoteUk } from '../data/ironWillTables.js';
+import { finalFortressStatsNoteUk } from '../data/finalFortressTables.js';
+import { ultimateDefenseStatsNoteUk } from '../data/ultimateDefenseTables.js';
 import { shieldStunStatsNoteUk } from '../data/shieldStunTables.js';
+import { shieldSlamStatsNoteUk } from '../data/shieldSlamTables.js';
+import { physicalMirrorStatsNoteUk } from '../data/physicalMirrorTables.js';
+import { vengeanceStatsNoteUk } from '../data/vengeanceTables.js';
 import {
   heavyArmorMasteryStatsNoteUk,
+  isHeavyArmorKnightFlatCatalogSkill,
 } from '../data/heavyArmorMasteryTables.js';
 import {
   lightArmorMasteryStatsNoteUk,
@@ -85,7 +101,10 @@ import {
   swordBluntMasteryStatsNoteUk,
 } from '../data/swordBluntMasteryTables.js';
 import { TEXT_RPG_HF_PASSIVE_EFFECTS } from '../data/textRpgPassiveEffects.generated.js';
-import { magisterBattleStatsPreview } from './skillLearnMagisterBattleStatsPreview.js';
+import {
+  magisterBattleStatsPreview,
+  isGenericPassiveMagisterNoteUk,
+} from './skillLearnMagisterBattleStatsPreview.js';
 import {
   magisterDamageHintUk,
   magisterEstimatedAtkBase,
@@ -520,6 +539,9 @@ export async function getMagisterDialogForUser(
     if (canonBattleId === 'l2_290') {
       st.statsNoteUk = finalFrenzyStatsNoteUk(rankPreview, Math.max(1, snap.pAtk));
     }
+    if (canonBattleId === 'l2_291') {
+      st.statsNoteUk = finalFortressStatsNoteUk(rankPreview, Math.max(1, snap.pDef));
+    }
     if (canonBattleId === 'l2_255' && !mysticLike) {
       st.statsNoteUk = powerSmashStatsNoteUk(rankPreview);
     }
@@ -536,21 +558,63 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = boostHpStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 212) {
       st.statsNoteUk = fastHpRecoveryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 191) {
+      st.statsNoteUk = focusMindStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 121) {
       st.statsNoteUk = battleRoarStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 82) {
       st.statsNoteUk = majestyStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 110) {
+      st.statsNoteUk = ultimateDefenseStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 112) {
+      st.statsNoteUk = deflectArrowStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 28) {
+      st.statsNoteUk = aggressionStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 18 && !mysticLike) {
+      st.statsNoteUk = hateAuraStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 45) {
+      st.statsNoteUk = divineHealStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 262 && !mysticLike) {
+      st.statsNoteUk = holyBlessingStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 69 && !mysticLike) {
+      st.statsNoteUk = sacrificeStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 322 && !mysticLike) {
+      st.statsNoteUk = shieldFortressStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 335 && !mysticLike) {
+      st.statsNoteUk = fortitudeStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 72 && !mysticLike) {
+      st.statsNoteUk = ironWillStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 291 && !mysticLike) {
+      st.statsNoteUk = finalFortressStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 92 && !mysticLike) {
       st.statsNoteUk = shieldStunStatsNoteUk(rankPreview, effLevel);
-    } else if (o.l2SkillId === 231 && !mysticLike) {
-      st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 353 && !mysticLike) {
+      st.statsNoteUk = shieldSlamStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 350 && !mysticLike) {
+      st.statsNoteUk = physicalMirrorStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 368 && !mysticLike) {
+      st.statsNoteUk = vengeanceStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 231) {
+      const passiveEffects =
+        'effects' in o && Array.isArray(o.effects)
+          ? o.effects.map((fx) => ({ stat: fx.stat, mode: fx.mode }))
+          : [];
+      const haNoteId = isHeavyArmorKnightFlatCatalogSkill(
+        o.l2SkillId,
+        passiveEffects
+      )
+        ? 232
+        : 231;
+      st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview, haNoteId);
+    } else if (o.l2SkillId === 232 && !mysticLike) {
+      st.statsNoteUk = heavyArmorMasteryStatsNoteUk(rankPreview, 232);
     } else if (o.l2SkillId === 227 && !mysticLike) {
       st.statsNoteUk = lightArmorMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 216 && !mysticLike) {
       st.statsNoteUk = polearmMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 144 && !mysticLike) {
       st.statsNoteUk = dualWeaponMasteryStatsNoteUk(rankPreview);
-    } else if (o.l2SkillId === 257 && !mysticLike) {
+    } else if (o.l2SkillId === 257) {
       st.statsNoteUk = swordBluntMasteryStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 147 && !mysticLike) {
       st.statsNoteUk = magicResistanceStatsNoteUk(rankPreview);
@@ -610,11 +674,15 @@ export async function getMagisterDialogForUser(
         : undefined;
     const passiveHintUk =
       o.kind === 'passive'
-        ? st.statsNoteUk && st.statsNoteUk.trim()
+        ? st.statsNoteUk &&
+            st.statsNoteUk.trim() &&
+            !isGenericPassiveMagisterNoteUk(st.statsNoteUk)
           ? st.statsNoteUk.trim()
           : commonPassiveHint
             ? commonPassiveHint
-            : o.l2SkillId === 144 && !mysticLike
+            : o.hintUk.trim()
+              ? o.hintUk.trim()
+              : o.l2SkillId === 144 && !mysticLike
               ? DUAL_WEAPON_MASTERY_HINT_UK
               : o.l2SkillId === 142 && !mysticLike
                 ? WEAPON_MASTERY_FIGHTER_HINT_UK
@@ -668,7 +736,10 @@ export async function getMagisterDialogForUser(
       canLearn,
       mpCost: st.mp,
       damagePower: st.power,
-      statsNoteUk: null,
+      statsNoteUk:
+        o.kind === 'passive' && passiveHintUk.trim()
+          ? passiveHintUk.trim()
+          : null,
       damageHintUk: null,
     });
   }

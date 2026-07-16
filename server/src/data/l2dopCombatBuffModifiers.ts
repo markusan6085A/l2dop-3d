@@ -61,8 +61,14 @@ export interface L2dopCombatBuffModifiers {
   bleedResistMul: number;
   /** Плоский доданок до `stunResistPct` після CON (сет-бонуси тощо), у % до стійкості. */
   addStunResistPct: number;
+  /** Fortitude (335): +% стійкості до паралічу. */
+  addParalyzeResistPct: number;
   /** Плоский доданок до `debuffResistPct` після MEN. */
   addDebuffResistPct: number;
+  /** Touch of Life (341): +% стійкості до зняття бафів (Cancel). */
+  addCancelResistPct: number;
+  /** Touch of Life (341): +% ефективності отриманого лікування. */
+  addHealReceivedPct: number;
   /** Плоский доданок до `mCritPct` після WIT/mCritRate (сет мага тощо), у % до шансу маг. крита. */
   addMCritPct: number;
   /**
@@ -78,6 +84,10 @@ export interface L2dopCombatBuffModifiers {
    * Застосовується до shieldPDef у snapshot лише з екіпованим щитом.
    */
   shieldDefenceRatePct: number;
+  /** Shield Fortress (322): плоский додаток до shieldPDef (лише з щитом). */
+  addShieldPDef: number;
+  /** Deflect Arrow (112): % зменшення вхідного фіз. урону від лука/арбалета. */
+  addBowDefPct: number;
 }
 
 const NEUTRAL: L2dopCombatBuffModifiers = {
@@ -122,12 +132,17 @@ const NEUTRAL: L2dopCombatBuffModifiers = {
   poisonResistMul: 1,
   bleedResistMul: 1,
   addStunResistPct: 0,
+  addParalyzeResistPct: 0,
   addDebuffResistPct: 0,
+  addCancelResistPct: 0,
+  addHealReceivedPct: 0,
   addMCritPct: 0,
   skillMpCostMul: 1,
   addDebuffLandChancePct: 0,
   addPhysicalCritChancePct: 0,
   shieldDefenceRatePct: 0,
+  addShieldPDef: 0,
+  addBowDefPct: 0,
 };
 
 export function neutralCombatBuffs(): L2dopCombatBuffModifiers {
@@ -184,7 +199,11 @@ export function applyBuffDelta(
     poisonResistMul: base.poisonResistMul * (d.poisonResistMul ?? 1),
     bleedResistMul: base.bleedResistMul * (d.bleedResistMul ?? 1),
     addStunResistPct: base.addStunResistPct + (d.addStunResistPct ?? 0),
+    addParalyzeResistPct:
+      base.addParalyzeResistPct + (d.addParalyzeResistPct ?? 0),
     addDebuffResistPct: base.addDebuffResistPct + (d.addDebuffResistPct ?? 0),
+    addCancelResistPct: base.addCancelResistPct + (d.addCancelResistPct ?? 0),
+    addHealReceivedPct: base.addHealReceivedPct + (d.addHealReceivedPct ?? 0),
     addMCritPct: base.addMCritPct + (d.addMCritPct ?? 0),
     skillMpCostMul: base.skillMpCostMul * (d.skillMpCostMul ?? 1),
     addDebuffLandChancePct:
@@ -195,6 +214,8 @@ export function applyBuffDelta(
       base.shieldDefenceRatePct,
       d.shieldDefenceRatePct ?? 0
     ),
+    addShieldPDef: base.addShieldPDef + (d.addShieldPDef ?? 0),
+    addBowDefPct: base.addBowDefPct + (d.addBowDefPct ?? 0),
   };
 }
 

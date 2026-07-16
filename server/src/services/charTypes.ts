@@ -139,6 +139,8 @@ export interface CharacterSnapshot {
   magicCritDmgMul: number;
   /** Стійкість до станів (CON), 0–80. */
   stunResistPct: number;
+  /** Стійкість до паралічу (Fortitude тощо), 0–95. */
+  paralyzeResistPct: number;
   /** Стійкість до дебафів (MEN), 0–80. */
   debuffResistPct: number;
   /** Множник витрат MP бойових скілів (сет Demon тощо). */

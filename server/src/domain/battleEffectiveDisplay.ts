@@ -405,8 +405,6 @@ export function effectiveBattlePDefDisplay(
     const ae = jsonFiniteNum(mods?.aegisPDefMul);
     if (ae !== undefined && ae > 0) m *= ae;
   }
-  const sh = jsonFiniteNum(mods?.shieldFortressPDefMul);
-  if (sh !== undefined && sh > 1) m *= sh;
   const mpb = jsonFiniteNum(mods?.mysticPdefBuffMul);
   if (mpb !== undefined && mpb > 1) m *= mpb;
   const rpd = jsonFiniteNum(mods?.rageBattlePdefMul);

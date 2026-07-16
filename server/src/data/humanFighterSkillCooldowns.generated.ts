@@ -31,7 +31,7 @@ export const HUMAN_FIGHTER_L2_COOLDOWN_SEC: Readonly<
   65: 20,
   69: 8,
   70: 15,
-  72: 6,
+  72: 1,
   78: 45,
   80: 3,
   82: 10,

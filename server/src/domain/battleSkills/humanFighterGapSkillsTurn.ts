@@ -12,9 +12,48 @@ import {
   lureMp,
   switchMp,
   touchOfDeathMpAndPower,
-  touchOfLifeMpAndPower,
   unlockMp,
 } from '../../data/l2dopHfGapSkillsBattle.js';
+import {
+  aggressionMpAtRank,
+  aggressionSkillLineUk,
+} from '../../data/aggressionTables.js';
+import {
+  hateAuraMpAtRank,
+  hateAuraSkillLineUk,
+} from '../../data/hateAuraTables.js';
+import {
+  divineHealMpAtRank,
+  divineHealPowerAtRank,
+  divineHealSkillLineUk,
+} from '../../data/divineHealTables.js';
+import {
+  holyBlessingMpAtRank,
+  holyBlessingPowerAtRank,
+  holyBlessingSkillLineUk,
+} from '../../data/holyBlessingTables.js';
+import {
+  sacrificeHpCostAtRank,
+  sacrificePowerAtRank,
+  sacrificeSkillLineUk,
+} from '../../data/sacrificeTables.js';
+import {
+  shieldFortressMpAtRank,
+  shieldFortressSkillLineOffUk,
+  shieldFortressSkillLineUk,
+} from '../../data/shieldFortressTables.js';
+import {
+  fortitudeMpAtRank,
+  fortitudeSkillLineOffUk,
+  fortitudeSkillLineUk,
+} from '../../data/fortitudeTables.js';
+import { resolvePhysicalMirrorTurn } from './physicalMirrorTurn.js';
+import { resolveTouchOfLifeTurn } from './touchOfLifeTurn.js';
+import { resolveVengeanceTurn } from './vengeanceTurn.js';
+import {
+  ironWillMpAtRank,
+  ironWillSkillLineUk,
+} from '../../data/ironWillTables.js';
 import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import {
@@ -23,6 +62,7 @@ import {
 } from '../../data/drainHealthTables.js';
 import { resolveMagicBoltHit } from '../../data/l2dopHitResolution.js';
 import {
+  battleActionNamedFromL2IfMapped,
   canonicalBattleIdForAction,
   catalogEntryVisibleForProfession,
   humanFighterCatalogEntry,
@@ -36,6 +76,7 @@ import type {
   PhysicalRollFn,
 } from './types.js';
 import {
+  assertPlayerCanMove,
   assertSkillCooldownReady,
   isCooldownBlocked,
   scaledSkillCooldownSec,
@@ -71,7 +112,8 @@ function swordOrBlunt(wk: string | undefined): boolean {
 function rank(ctx: BattleSkillResolveContext): number {
   const m = ctx.learnedSkillLevelByBattleId;
   const canon =
-    canonicalBattleIdForAction(ctx.action) ?? String(ctx.action);
+    canonicalBattleIdForAction(battleActionNamedFromL2IfMapped(ctx.action)) ??
+    String(ctx.action);
   if (!m) return 1;
   const v = m[canon];
   return typeof v === 'number' && v >= 1 ? v : 1;
@@ -99,7 +141,8 @@ export function resolveHumanFighterGapSkillsTurn(
   ctx: BattleSkillResolveContext,
   rollPhys: PhysicalRollFn
 ): BattleSkillTurnResult | null {
-  const { action, combat, preLevel, l2Profession } = ctx;
+  const action = battleActionNamedFromL2IfMapped(ctx.action);
+  const { combat, preLevel, l2Profession } = ctx;
   const profM = humanFighterProfessionAtkMult(preLevel, l2Profession);
   const rk = rank(ctx);
   const wk = ctx.weaponKind;
@@ -247,6 +290,7 @@ export function resolveHumanFighterGapSkillsTurn(
 
   if (action === 'silent_move') {
     reqEntry(action, String(l2Profession));
+    assertPlayerCanMove(ctx);
     const on = jsonBoolLike(ctx.st.battleMods?.silentMoveActive);
     if (on) {
       return {
@@ -357,24 +401,147 @@ export function resolveHumanFighterGapSkillsTurn(
   }
 
   if (action === 'aggression') {
+    const learnedRank = ctx.learnedSkillLevelByBattleId?.['l2_28'] ?? 0;
+    if (learnedRank < 1) throw new Error('battle_skill_not_allowed');
+    const entry = humanFighterCatalogEntry('l2_28');
+    if (!entry || !catalogEntryVisibleForProfession(entry, String(l2Profession))) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    if (!ctx.hasEquippedShield) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const cd = ctx.st.mysticSkillCdUntil?.['l2_28'];
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
+    }
+    const rank = learnedRank;
+    const mpCost = aggressionMpAtRank(rank) ?? 20;
+    const cdPatch = cooldownPatchForSkill(28, ctx);
+    return {
+      mpCost,
+      pDmg: 0,
+      skillLine: aggressionSkillLineUk(rank),
+      physOutcome: null,
+      magicOutcome: null,
+      worldBossTaunt: true,
+      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
+    };
+  }
+
+  if (action === 'hate_aura') {
     reqEntry(action, String(l2Profession));
-    if (!swordOrBlunt(wk)) throw new Error('battle_skill_not_allowed');
     const cd = ctx.st.mysticSkillCdUntil?.['l2_18'];
     if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
       assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
-    const AGG_DEBUFF = 0.92;
-    const AGG_DURATION_SEC = buffDurationSecForSkillId(18) ?? 15;
+    const mpCost = hateAuraMpAtRank(rk) ?? 50;
     const cdPatch = cooldownPatchForSkill(18, ctx);
     return {
-      mpCost: 28,
+      mpCost,
       pDmg: 0,
-      skillLine: 'Аура ненависті (18, Aggression): моб слабший.',
+      skillLine: hateAuraSkillLineUk(rk),
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { mobPatkDebuffMul: AGG_DEBUFF },
+      worldBossTaunt: true,
       ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      battleModsExpiresPatch: expiresPatchForSkill(18, AGG_DURATION_SEC),
+    };
+  }
+
+  if (action === 'divine_heal') {
+    reqEntry(action, String(l2Profession));
+    const cd = ctx.st.mysticSkillCdUntil?.['l2_45'];
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
+    }
+    const mpCost = divineHealMpAtRank(rk) ?? 75;
+    const heal = divineHealPowerAtRank(rk);
+    const cdPatch = cooldownPatchForSkill(45, ctx);
+    return {
+      mpCost,
+      pDmg: 0,
+      skillLine: divineHealSkillLineUk(rk),
+      physOutcome: null,
+      magicOutcome: null,
+      playerHeal: Math.max(1, heal),
+      playerHealSourceUk: 'Божественне зцілення',
+      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
+    };
+  }
+
+  if (action === 'holy_blessing') {
+    reqEntry(action, String(l2Profession));
+    const cd = ctx.st.mysticSkillCdUntil?.['l2_262'];
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
+    }
+    const mpCost = holyBlessingMpAtRank(rk) ?? 115;
+    const heal = holyBlessingPowerAtRank(rk);
+    const cdPatch = cooldownPatchForSkill(262, ctx);
+    return {
+      mpCost,
+      pDmg: 0,
+      skillLine: holyBlessingSkillLineUk(rk),
+      physOutcome: null,
+      magicOutcome: null,
+      playerHeal: Math.max(1, heal),
+      playerHealSourceUk: 'Святе благословення',
+      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
+    };
+  }
+
+  if (action === 'sacrifice') {
+    reqEntry(action, String(l2Profession));
+    const cd = ctx.st.mysticSkillCdUntil?.['l2_69'];
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
+    }
+    const hpCost = sacrificeHpCostAtRank(rk);
+    if (ctx.playerHpInBattle <= hpCost) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const heal = sacrificePowerAtRank(rk);
+    const cdPatch = cooldownPatchForSkill(69, ctx);
+    return {
+      mpCost: 0,
+      pDmg: 0,
+      skillLine: sacrificeSkillLineUk(rk),
+      physOutcome: null,
+      magicOutcome: null,
+      playerHeal: Math.max(1, heal),
+      playerHealSourceUk: 'Жертва',
+      playerHpCost: hpCost,
+      playerHpCostSourceUk: 'Жертва',
+      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
+    };
+  }
+
+  if (action === 'iron_will') {
+    reqEntry(action, String(l2Profession));
+    const alreadyOn = (ctx.activeBuffs ?? []).some(
+      (b) => Math.floor(Number(b.skillId)) === 72
+    );
+    if (alreadyOn) {
+      return {
+        mpCost: 0,
+        pDmg: 0,
+        skillLine: 'Залізна воля (72, Iron Will) вимкнено.',
+        physOutcome: null,
+        magicOutcome: null,
+        activeBuffPatch: { skillId: 72, level: rk, action: 'remove' },
+      };
+    }
+    const cd = ctx.st.mysticSkillCdUntil?.['l2_72'];
+    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
+      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
+    }
+    const mpCost = ironWillMpAtRank(rk) ?? 38;
+    return {
+      mpCost,
+      pDmg: 0,
+      skillLine: ironWillSkillLineUk(rk),
+      physOutcome: null,
+      magicOutcome: null,
+      activeBuffPatch: { skillId: 72, level: rk, action: 'add' },
     };
   }
 
@@ -602,45 +769,61 @@ export function resolveHumanFighterGapSkillsTurn(
 
   if (action === 'shield_fortress') {
     reqEntry(action, String(l2Profession));
-    const cd = ctx.st.mysticSkillCdUntil?.['l2_322'];
-    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
-      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
+    const alreadyOn = (ctx.activeBuffs ?? []).some(
+      (b) => Math.floor(Number(b.skillId)) === 322
+    );
+    if (alreadyOn) {
+      return {
+        mpCost: 0,
+        pDmg: 0,
+        skillLine: shieldFortressSkillLineOffUk(),
+        physOutcome: null,
+        magicOutcome: null,
+        activeBuffPatch: { skillId: 322, level: rk, action: 'remove' },
+      };
     }
-    const SHIELD_MUL = 1.14;
-    const SHIELD_DURATION_SEC = buffDurationSecForSkillId(322) ?? 30;
-    const cdPatch = cooldownPatchForSkill(322, ctx);
+    if (ctx.hasEquippedShield !== true) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const mpCost = shieldFortressMpAtRank(rk) ?? 12;
     return {
-      mpCost: 55,
+      mpCost,
       pDmg: 0,
-      skillLine: 'Фортеця щита (322, Shield Fortress): міцніший захист.',
+      skillLine: shieldFortressSkillLineUk(rk),
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { shieldFortressPDefMul: SHIELD_MUL },
-      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      battleModsExpiresPatch: expiresPatchForSkill(322, SHIELD_DURATION_SEC),
+      activeBuffPatch: { skillId: 322, level: rk, action: 'add' },
+    };
+  }
+
+  if (action === 'fortitude') {
+    reqEntry(action, String(l2Profession));
+    const alreadyOn = (ctx.activeBuffs ?? []).some(
+      (b) => Math.floor(Number(b.skillId)) === 335
+    );
+    if (alreadyOn) {
+      return {
+        mpCost: 0,
+        pDmg: 0,
+        skillLine: fortitudeSkillLineOffUk(),
+        physOutcome: null,
+        magicOutcome: null,
+        activeBuffPatch: { skillId: 335, level: rk, action: 'remove' },
+      };
+    }
+    const mpCost = fortitudeMpAtRank(rk) ?? 35;
+    return {
+      mpCost,
+      pDmg: 0,
+      skillLine: fortitudeSkillLineUk(rk),
+      physOutcome: null,
+      magicOutcome: null,
+      activeBuffPatch: { skillId: 335, level: rk, action: 'add' },
     };
   }
 
   if (action === 'touch_of_life') {
-    reqEntry(action, String(l2Profession));
-    const cd = ctx.st.mysticSkillCdUntil?.['l2_341'];
-    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
-      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
-    }
-    const row = touchOfLifeMpAndPower(rk);
-    const heal = Math.floor(
-      ctx.playerMaxHpInBattle * 0.15 + row.power * 0.08
-    );
-    const cdPatch = cooldownPatchForSkill(341, ctx);
-    return {
-      mpCost: row.mp,
-      pDmg: 0,
-      skillLine: 'Дотик життя (341, Touch of Life).',
-      physOutcome: null,
-      magicOutcome: null,
-      playerHeal: Math.max(1, heal),
-      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-    };
+    return resolveTouchOfLifeTurn(ctx);
   }
 
   if (action === 'touch_of_death') {
@@ -666,50 +849,11 @@ export function resolveHumanFighterGapSkillsTurn(
   }
 
   if (action === 'physical_mirror') {
-    reqEntry(action, String(l2Profession));
-    const cd = ctx.st.mysticSkillCdUntil?.['l2_350'];
-    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
-      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
-    }
-    const MIR = 0.22;
-    const MIR_DURATION_SEC = buffDurationSecForSkillId(350) ?? 60;
-    const cdPatch = cooldownPatchForSkill(350, ctx);
-    return {
-      mpCost: 52,
-      pDmg: 0,
-      skillLine:
-        'Фізичне дзеркало (350): відбиває частину ударів у моба.',
-      physOutcome: null,
-      magicOutcome: null,
-      battleModsPatch: { physicalMirrorReflectRatio: MIR },
-      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      battleModsExpiresPatch: expiresPatchForSkill(350, MIR_DURATION_SEC),
-    };
+    return resolvePhysicalMirrorTurn(ctx);
   }
 
   if (action === 'vengeance') {
-    reqEntry(action, String(l2Profession));
-    const cd = ctx.st.mysticSkillCdUntil?.['l2_368'];
-    if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
-      assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
-    }
-    const VIM = 0.88;
-    const VRR = 0.12;
-    const VENGEANCE_DURATION_SEC = buffDurationSecForSkillId(368) ?? 30;
-    const cdPatch = cooldownPatchForSkill(368, ctx);
-    return {
-      mpCost: 48,
-      pDmg: 0,
-      skillLine: 'Відплата (368, Vengeance): менший вхідний урон і відбиття.',
-      physOutcome: null,
-      magicOutcome: null,
-      battleModsPatch: {
-        vengeanceIncomingPhysMul: VIM,
-        vengeanceReflectRatio: VRR,
-      },
-      ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      battleModsExpiresPatch: expiresPatchForSkill(368, VENGEANCE_DURATION_SEC),
-    };
+    return resolveVengeanceTurn(ctx);
   }
 
   return null;

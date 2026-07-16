@@ -24,11 +24,17 @@ import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import {
+  heavyArmorKnightFlatPdefAtRank,
+  heavyArmorWarriorPdefPercentAtRank,
+} from './heavyArmorMasteryTables.js';
+import {
   lightArmorMasteryEvasionFlatAtRank,
   lightArmorMasteryPdefPercentAtRank,
 } from './lightArmorMasteryTables.js';
-import { isSwordOrBluntWeaponKind } from './swordBluntMasteryTables.js';
+import { isSwordOrBluntWeaponKind, swordBluntMasteryPatkFlatAtRank } from './swordBluntMasteryTables.js';
+import { focusMindMpRegenFlatAtRank } from './focusMindTables.js';
 import { magicResistanceMdefFlatAtRank } from './magicResistanceTables.js';
+import { finalFortressPdefFlatAtRank } from './finalFortressTables.js';
 import {
   shieldMasteryDefenceRatePctAtRank,
 } from './shieldMasteryTables.js';
@@ -36,11 +42,23 @@ import type { TextRpgHfPassiveRow } from './textRpgPassiveEffects.generated.js';
 import type { TextRpgEffectMode } from './textRpgSkillEffectTypes.js';
 
 function powerAtRank(row: TextRpgHfPassiveRow, rank: number): number {
+  if (row.l2SkillId === 191) {
+    return focusMindMpRegenFlatAtRank(rank);
+  }
   if (row.l2SkillId === 147) {
     return magicResistanceMdefFlatAtRank(rank);
   }
   if (row.l2SkillId === 153) {
     return shieldMasteryDefenceRatePctAtRank(rank);
+  }
+  if (row.l2SkillId === 232) {
+    return heavyArmorKnightFlatPdefAtRank(rank);
+  }
+  if (row.l2SkillId === 257) {
+    return swordBluntMasteryPatkFlatAtRank(rank);
+  }
+  if (row.l2SkillId === 291) {
+    return finalFortressPdefFlatAtRank(rank);
   }
   const r = Math.max(1, Math.min(row.maxRank, Math.floor(rank)));
   const p = row.powerByRank[r];
@@ -102,6 +120,7 @@ export function textRpgPassiveDeltaForSkill(
 
   if (id === 227 && armorKind !== 'light') return undefined;
   if (id === 231 && armorKind !== 'heavy') return undefined;
+  if (id === 232 && armorKind !== 'heavy') return undefined;
 
   if (id === 227) {
     const pdefPct = lightArmorMasteryPdefPercentAtRank(rank);
@@ -117,6 +136,23 @@ export function textRpgPassiveDeltaForSkill(
       if (evaDelta) acc = applyBuffDelta(acc, evaDelta);
     }
     return partialCombatBuffDeltaFromNeutral(acc);
+  }
+
+  if (id === 232) {
+    const flat = heavyArmorKnightFlatPdefAtRank(rank);
+    if (flat <= 0) return undefined;
+    return l2dopBuffDeltaFromTextRpgEffect('pDef', 'flat', flat) ?? undefined;
+  }
+
+  if (id === 231) {
+    const pdefPct = heavyArmorWarriorPdefPercentAtRank(rank);
+    if (pdefPct <= 0) return undefined;
+    const pdefDelta = l2dopBuffDeltaFromTextRpgEffect(
+      'pDef',
+      'percent',
+      pdefPct
+    );
+    return pdefDelta ?? undefined;
   }
 
   if (id === 216 && !pole) return undefined;

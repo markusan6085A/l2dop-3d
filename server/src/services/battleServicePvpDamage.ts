@@ -1,7 +1,11 @@
 import { Prisma } from '@prisma/client';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
 import type { BattleJsonState } from '../domain/battleTypes.js';
-import { nextPvpAggressorUntilMs } from '../domain/pvpKarma.js';import { parseBattleJson } from './battleServiceParseBattleJson.js';
+import { nextPvpAggressorUntilMs } from '../domain/pvpKarma.js';
+import { deflectArrowIncomingPhysMulFromActiveBuffs } from '../data/deflectArrowTables.js';
+import { rollPhysicalMirrorReflect } from '../domain/physicalMirrorReflect.js';
+import type { PhysicalMirrorReflectKind } from '../domain/physicalMirrorReflect.js';
+import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { persistCharacterFieldsInTx } from './charInternalPersist.js';
 
@@ -13,14 +17,76 @@ export async function applyPvpHitToVictimInTx(
     attackerId: string;
     damage: number;
     nowMs: number;
+    isBowAttack?: boolean;
+    /** Для Physical Mirror (350): фізичний скіл або магія. */
+    mirrorReflectKind?: PhysicalMirrorReflectKind;
   }
-): Promise<void> {
-  const dmg = Math.max(0, Math.floor(args.damage));
-  if (dmg <= 0) return;
+): Promise<{ mirrorLogLineUk?: string }> {
+  let dmg = Math.max(0, Math.floor(args.damage));
+  if (dmg <= 0) return {};
 
   const victimId = String(args.victimId || '').trim();
   const attackerId = String(args.attackerId || '').trim();
-  if (!victimId || !attackerId || victimId === attackerId) return;
+  if (!victimId || !attackerId || victimId === attackerId) return {};
+
+  const victimPre = await tx.character.findFirst({
+    where: { id: victimId },
+    select: { activeBuffsJson: true, battleJson: true },
+  });
+
+  if (args.isBowAttack === true && victimPre) {
+    const mul = deflectArrowIncomingPhysMulFromActiveBuffs(
+      victimPre.activeBuffsJson,
+      args.nowMs
+    );
+    if (mul < 1) {
+      dmg = Math.max(0, Math.floor(dmg * mul));
+    }
+  }
+  if (dmg <= 0) return {};
+
+  let mirrorLogLineUk: string | undefined;
+  const victimBjPre = parseBattleJson(victimPre?.battleJson);
+  const mirrorKind = args.mirrorReflectKind;
+  if (mirrorKind && victimBjPre?.battleMods) {
+    const mirror = rollPhysicalMirrorReflect(
+      victimBjPre.battleMods,
+      mirrorKind,
+      dmg
+    );
+    if (mirror.absorbed && mirror.reflectDamage > 0) {
+      dmg = 0;
+      mirrorLogLineUk = mirror.logLineUk;
+      const atkRows = await tx.$queryRaw<
+        Array<{ hp: number; battleJson: Prisma.JsonValue | null }>
+      >`
+        UPDATE "Character"
+        SET hp = GREATEST(0, hp - ${mirror.reflectDamage})
+        WHERE id = ${attackerId}
+        RETURNING hp, "battleJson"
+      `;
+      const attacker = atkRows[0];
+      if (attacker) {
+        const atkHp = Math.max(0, Math.floor(Number(attacker.hp) || 0));
+        const atkBj = parseBattleJson(attacker.battleJson);
+        if (
+          atkBj &&
+          isPvpBattleJson(atkBj) &&
+          atkBj.pvpTargetCharacterId === victimId
+        ) {
+          await persistCharacterFieldsInTx(tx, attackerId, {
+            battleJson: serializeBattleJsonForDb({
+              ...atkBj,
+              playerHp: atkHp,
+            } as BattleJsonState),
+          });
+        }
+      }
+    }
+  }
+  if (dmg <= 0) {
+    return { ...(mirrorLogLineUk ? { mirrorLogLineUk } : {}) };
+  }
 
   const rows = await tx.$queryRaw<
     Array<{ hp: number; battleJson: Prisma.JsonValue | null }>
@@ -31,7 +97,7 @@ export async function applyPvpHitToVictimInTx(
     RETURNING hp, "battleJson"
   `;
   const victim = rows[0];
-  if (!victim) return;
+  if (!victim) return {};
 
   const newHp = Math.max(0, Math.floor(Number(victim.hp) || 0));
   const victimData: Prisma.CharacterUncheckedUpdateInput = {};
@@ -59,6 +125,7 @@ export async function applyPvpHitToVictimInTx(
   await persistCharacterFieldsInTx(tx, attackerId, {
     pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
   });
+  return { ...(mirrorLogLineUk ? { mirrorLogLineUk } : {}) };
 }
 
 /**
@@ -118,6 +185,80 @@ export async function mirrorPvpStunToVictimInTx(
   } else {
     delete prevMods.playerStunUntilMs;
     delete prevMods.playerStunIconSkillId;
+  }
+
+  const patch: BattleJsonState = {
+    ...victimBj,
+    ...(Object.keys(prevMods).length > 0
+      ? { battleMods: prevMods }
+      : { battleMods: undefined }),
+  };
+  if (!patch.battleMods || Object.keys(patch.battleMods).length === 0) {
+    delete patch.battleMods;
+  }
+
+  await persistCharacterFieldsInTx(tx, victimId, {
+    battleJson: serializeBattleJsonForDb(patch),
+  });
+}
+
+/**
+ * PvP: дзеркалить Shield Slam (353) з battleMods атакуючого на жертву
+ * (`playerPhysSkillsBlockedUntilMs`).
+ */
+export async function mirrorPvpPhysSkillsBlockToVictimInTx(
+  tx: Prisma.TransactionClient,
+  args: {
+    victimId: string;
+    attackerId: string;
+    blockUntilMs?: number;
+    iconSkillId?: number;
+    nowMs: number;
+  }
+): Promise<void> {
+  const victimId = String(args.victimId || '').trim();
+  const attackerId = String(args.attackerId || '').trim();
+  if (!victimId || !attackerId || victimId === attackerId) return;
+
+  const victim = await tx.character.findFirst({
+    where: { id: victimId },
+    select: { battleJson: true },
+  });
+  if (!victim) return;
+
+  const victimBj = parseBattleJson(victim.battleJson);
+  if (
+    !victimBj ||
+    !isPvpBattleJson(victimBj) ||
+    victimBj.pvpTargetCharacterId !== attackerId
+  ) {
+    return;
+  }
+
+  const untilRaw = args.blockUntilMs;
+  const nowMs = args.nowMs;
+  const active =
+    typeof untilRaw === 'number' &&
+    Number.isFinite(untilRaw) &&
+    untilRaw > nowMs;
+
+  const prevMods =
+    victimBj.battleMods && typeof victimBj.battleMods === 'object'
+      ? { ...victimBj.battleMods }
+      : {};
+
+  if (active) {
+    const sid =
+      typeof args.iconSkillId === 'number' &&
+      Number.isFinite(args.iconSkillId) &&
+      args.iconSkillId > 0
+        ? Math.floor(args.iconSkillId)
+        : 353;
+    prevMods.playerPhysSkillsBlockedUntilMs = Math.floor(untilRaw);
+    prevMods.playerPhysSkillsBlockedIconSkillId = sid;
+  } else {
+    delete prevMods.playerPhysSkillsBlockedUntilMs;
+    delete prevMods.playerPhysSkillsBlockedIconSkillId;
   }
 
   const patch: BattleJsonState = {

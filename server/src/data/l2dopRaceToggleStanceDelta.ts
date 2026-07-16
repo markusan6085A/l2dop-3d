@@ -68,8 +68,17 @@ function deltaFromEffect(
   if (stat === 'attackSpeed' && mode === 'flat') return { addAspd: flat };
   if (stat === 'runSpeed' && mode === 'flat') return { addSpeed: flat };
   if (stat === 'accuracy' && mode === 'flat') return { buffAcc: flat };
+  if (stat === 'shockResist' && mode === 'percent') {
+    return { addStunResistPct: flat };
+  }
+  if (stat === 'paralyzeResist' && mode === 'percent') {
+    return { addParalyzeResistPct: flat };
+  }
   if (stat === 'evasion' && mode === 'flat') return { buffEva: flat };
   if (stat === 'pDef' && mode === 'flat') return { addPdef: flat };
+  if (stat === 'shieldFortressDefense' && mode === 'flat') {
+    return { addShieldPDef: flat };
+  }
   if (stat === 'mDef' && mode === 'flat') return { addMdef: flat };
   if (stat === 'pAtk' && mode === 'flat') return { addPatk: flat };
   if (stat === 'mAtk' && mode === 'flat') return { addMatk: flat };

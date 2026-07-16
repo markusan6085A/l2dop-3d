@@ -20,6 +20,78 @@ import {
   majestySpCostAtRank,
 } from './majestyTables.js';
 import {
+  heavyArmorKnightRequiredLevelAtRank,
+  heavyArmorKnightSpCostAtRank,
+} from './heavyArmorMasteryTables.js';
+import {
+  swordBluntMasteryRequiredLevelAtRank,
+  swordBluntMasterySpCostAtRank,
+} from './swordBluntMasteryTables.js';
+import {
+  ultimateDefenseRequiredLevelAtRank,
+  ultimateDefenseSpCostAtRank,
+} from './ultimateDefenseTables.js';
+import {
+  deflectArrowRequiredLevelAtRank,
+  deflectArrowSpCostAtRank,
+} from './deflectArrowTables.js';
+import {
+  aggressionRequiredLevelAtRank,
+  aggressionSpCostAtRank,
+} from './aggressionTables.js';
+import {
+  hateAuraRequiredLevelAtRank,
+  hateAuraSpCostAtRank,
+} from './hateAuraTables.js';
+import {
+  divineHealRequiredLevelAtRank,
+  divineHealSpCostAtRank,
+} from './divineHealTables.js';
+import {
+  focusMindRequiredLevelAtRank,
+  focusMindSpCostAtRank,
+} from './focusMindTables.js';
+import {
+  holyBlessingRequiredLevelAtRank,
+  holyBlessingSpCostAtRank,
+} from './holyBlessingTables.js';
+import {
+  sacrificeRequiredLevelAtRank,
+  sacrificeSpCostAtRank,
+} from './sacrificeTables.js';
+import {
+  shieldFortressRequiredLevelAtRank,
+  shieldFortressSpCostAtRank,
+} from './shieldFortressTables.js';
+import {
+  fortitudeRequiredLevelAtRank,
+  fortitudeSpCostAtRank,
+} from './fortitudeTables.js';
+import {
+  shieldSlamRequiredLevelAtRank,
+  shieldSlamSpCostAtRank,
+} from './shieldSlamTables.js';
+import {
+  physicalMirrorRequiredLevelAtRank,
+  physicalMirrorSpCostAtRank,
+} from './physicalMirrorTables.js';
+import {
+  vengeanceRequiredLevelAtRank,
+  vengeanceSpCostAtRank,
+} from './vengeanceTables.js';
+import {
+  touchOfLifeRequiredLevelAtRank,
+  touchOfLifeSpCostAtRank,
+} from './touchOfLifeTables.js';
+import {
+  ironWillRequiredLevelAtRank,
+  ironWillSpCostAtRank,
+} from './ironWillTables.js';
+import {
+  finalFortressRequiredLevelAtRank,
+  finalFortressSpCostAtRank,
+} from './finalFortressTables.js';
+import {
   shieldStunRequiredLevelAtRank,
   shieldStunSpCostAtRank,
 } from './shieldStunTables.js';
@@ -55,6 +127,11 @@ export const MAX_SKILL_RANK_BY_BATTLE_ID: Record<string, number> = {
   l2_283: 7,
   l2_291: 11,
   l2_322: 6,
+  l2_335: 1,
+  l2_341: 1,
+  l2_353: 1,
+  l2_350: 1,
+  l2_368: 1,
   l2_342: 1,
   l2_4: 2,
   l2_12: 14,
@@ -115,6 +192,28 @@ export const MAX_SKILL_RANK_BY_BATTLE_ID: Record<string, number> = {
   l2_82: 3,
   /** Shield Stun — Knight → Paladin (Interlude, 52 р.). */
   l2_92: 52,
+  /** Ultimate Defense — Knight (1 р.) / Paladin / Dark Avenger (2 р.). */
+  l2_110: 2,
+  /** Deflect Arrow — Knight (2 р.) / Dark Avenger (4 р.). */
+  l2_112: 4,
+  /** Aggression — Human Knight (49 р.). */
+  l2_28: 49,
+  /** Hate Aura — Paladin / Phoenix Knight (37 р.). */
+  l2_18: 37,
+  /** Divine Heal — Human Knight (9 р.). */
+  l2_45: 9,
+  /** Focus Mind — Knight → Dark Avenger (6 р.). */
+  l2_191: 6,
+  /** Holy Blessing — Paladin / Phoenix Knight (37 р.). */
+  l2_262: 37,
+  /** Sacrifice — Paladin / Phoenix Knight (25 р.). */
+  l2_69: 25,
+  /** Iron Will — Paladin / Dark Avenger (3 р.). */
+  l2_72: 3,
+  /** Heavy Armor Mastery (232) — Knight-гілка, flat P.Def, 52 р. */
+  l2_232: 52,
+  /** Sword / Blunt Mastery (257) — Knight → Dark Avenger, 45 р. */
+  l2_257: 45,
 };
 
 export function maxSkillRankForBattleId(battleId: string): number {
@@ -163,9 +262,81 @@ export function minCharLevelForSkillRank(
     const fromMajesty = majestyRequiredLevelAtRank(r);
     if (fromMajesty !== undefined) return fromMajesty;
   }
+  if (c === 'l2_110') {
+    const fromUd = ultimateDefenseRequiredLevelAtRank(r);
+    if (fromUd !== undefined) return fromUd;
+  }
+  if (c === 'l2_112') {
+    const fromDa = deflectArrowRequiredLevelAtRank(r);
+    if (fromDa !== undefined) return fromDa;
+  }
+  if (c === 'l2_28') {
+    const fromAgg = aggressionRequiredLevelAtRank(r);
+    if (fromAgg !== undefined) return fromAgg;
+  }
+  if (c === 'l2_18') {
+    const fromHa = hateAuraRequiredLevelAtRank(r);
+    if (fromHa !== undefined) return fromHa;
+  }
+  if (c === 'l2_45') {
+    const fromHeal = divineHealRequiredLevelAtRank(r);
+    if (fromHeal !== undefined) return fromHeal;
+  }
+  if (c === 'l2_191') {
+    const fromFm = focusMindRequiredLevelAtRank(r);
+    if (fromFm !== undefined) return fromFm;
+  }
+  if (c === 'l2_262') {
+    const fromHb = holyBlessingRequiredLevelAtRank(r);
+    if (fromHb !== undefined) return fromHb;
+  }
+  if (c === 'l2_69') {
+    const fromSac = sacrificeRequiredLevelAtRank(r);
+    if (fromSac !== undefined) return fromSac;
+  }
+  if (c === 'l2_322') {
+    const fromSf = shieldFortressRequiredLevelAtRank(r);
+    if (fromSf !== undefined) return fromSf;
+  }
+  if (c === 'l2_335') {
+    const fromFt = fortitudeRequiredLevelAtRank(r);
+    if (fromFt !== undefined) return fromFt;
+  }
+  if (c === 'l2_72') {
+    const fromIw = ironWillRequiredLevelAtRank(r);
+    if (fromIw !== undefined) return fromIw;
+  }
+  if (c === 'l2_291') {
+    const fromFf = finalFortressRequiredLevelAtRank(r);
+    if (fromFf !== undefined) return fromFf;
+  }
+  if (c === 'l2_232') {
+    const fromHa = heavyArmorKnightRequiredLevelAtRank(r);
+    if (fromHa !== undefined) return fromHa;
+  }
+  if (c === 'l2_257') {
+    const fromSb = swordBluntMasteryRequiredLevelAtRank(r);
+    if (fromSb !== undefined) return fromSb;
+  }
   if (c === 'l2_92') {
     const fromShieldStun = shieldStunRequiredLevelAtRank(r);
     if (fromShieldStun !== undefined) return fromShieldStun;
+  }
+  if (c === 'l2_353') {
+    const fromShieldSlam = shieldSlamRequiredLevelAtRank(r);
+    if (fromShieldSlam !== undefined) return fromShieldSlam;
+  }
+  if (c === 'l2_341') {
+    const fromTol = touchOfLifeRequiredLevelAtRank(r);
+    if (fromTol !== undefined) return fromTol;
+  }
+  if (c === 'l2_350') {
+    const fromMirror = physicalMirrorRequiredLevelAtRank(r);
+    if (fromMirror !== undefined) return fromMirror;
+  }
+  if (c === 'l2_368') {
+    const fromVengeance = vengeanceRequiredLevelAtRank(r);
+    if (fromVengeance !== undefined) return fromVengeance;
   }
   const fromL2db = l2dbMinCharLevelForSkillRank(entry.l2SkillId, r);
   if (fromL2db !== undefined) return fromL2db;
@@ -212,8 +383,80 @@ export function spCostForSkillRankUpgrade(
     const sp = majestySpCostAtRank(r, mappedHumanProf);
     if (sp !== undefined) return sp;
   }
+  if (c === 'l2_110' && mappedHumanProf) {
+    const sp = ultimateDefenseSpCostAtRank(r, mappedHumanProf);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_112') {
+    const sp = deflectArrowSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_28') {
+    const sp = aggressionSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_18') {
+    const sp = hateAuraSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_45') {
+    const sp = divineHealSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_191') {
+    const sp = focusMindSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_262') {
+    const sp = holyBlessingSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_69') {
+    const sp = sacrificeSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_322' && mappedHumanProf) {
+    const sp = shieldFortressSpCostAtRank(r, mappedHumanProf);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_335') {
+    const sp = fortitudeSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_72' && mappedHumanProf) {
+    const sp = ironWillSpCostAtRank(r, mappedHumanProf);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_291') {
+    const sp = finalFortressSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_232') {
+    const sp = heavyArmorKnightSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_257') {
+    const sp = swordBluntMasterySpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
   if (c === 'l2_92') {
     const sp = shieldStunSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_353') {
+    const sp = shieldSlamSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_341') {
+    const sp = touchOfLifeSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_350') {
+    const sp = physicalMirrorSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_368') {
+    const sp = vengeanceSpCostAtRank(r);
     if (sp !== undefined) return sp;
   }
   const fromL2dbSp = l2dbSpCostForSkillRank(

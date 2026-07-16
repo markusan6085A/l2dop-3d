@@ -29,7 +29,17 @@ import {
   majestyMpAtRank,
   majestySkillLineUk,
 } from '../../data/majestyTables.js';
+import {
+  ULTIMATE_DEFENSE_BUFF_DURATION_SEC,
+  ultimateDefenseMpAtRank,
+  ultimateDefenseSkillLineUk,
+} from '../../data/ultimateDefenseTables.js';
+import {
+  deflectArrowMpAtRank,
+  deflectArrowSkillLineUk,
+} from '../../data/deflectArrowTables.js';
 import { resolveShieldStunTurn } from './shieldStunTurn.js';
+import { resolveShieldSlamTurn } from './shieldSlamTurn.js';
 import {
   effectiveMobDebuffResistPct,
   effectiveMobStunResistPct,
@@ -52,6 +62,7 @@ import {
   THUNDER_STORM_STUN_PER_RANK_PCT,
 } from './humanFighterTurnConstants.js';
 import {
+  assertPlayerCanMove,
   assertSkillCooldownReady,
   catalogAllowsFighterAction,
   legacyBuffCdAndExpirePatches,
@@ -222,6 +233,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (!warriorProfOkForSkill(ctx)) {
       throw new Error('battle_skill_not_allowed');
     }
+    assertPlayerCanMove(ctx);
     requireCatalogEntryForAction(action, String(l2Profession));
     if (legacyBuffOnCd(ctx, 4)) {
       throw new Error('battle_skill_not_allowed');
@@ -466,8 +478,67 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     };
   }
 
+  if (action === 'ultimate_defense') {
+    if (
+      !catalogAllowsFighterAction(
+        action,
+        String(l2Profession),
+        ctx.race,
+        ctx.classBranch
+      )
+    ) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const udCd = ctx.st.mysticSkillCdUntil?.['l2_110'];
+    if (typeof udCd === 'number' && Date.now() < udCd) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const udDurationSec = ULTIMATE_DEFENSE_BUFF_DURATION_SEC;
+    return {
+      mpCost: ultimateDefenseMpAtRank(rank) ?? stubMpForCanon('l2_110', rank),
+      pDmg: 0,
+      skillLine: ultimateDefenseSkillLineUk(rank),
+      physOutcome: null,
+      magicOutcome: null,
+      activeBuffPatch: { skillId: 110, level: rank, action: 'add' },
+      battleModsPatch: { ultimateDefenseImmobile: true },
+      battleModsExpiresPatch: {
+        ['110']: Date.now() + Math.floor(udDurationSec * 1000),
+      },
+    };
+  }
+
+  if (action === 'deflect_arrow') {
+    if (
+      !catalogAllowsFighterAction(
+        action,
+        String(l2Profession),
+        ctx.race,
+        ctx.classBranch
+      )
+    ) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const daCd = ctx.st.mysticSkillCdUntil?.['l2_112'];
+    if (typeof daCd === 'number' && Date.now() < daCd) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    return {
+      mpCost: deflectArrowMpAtRank(rank) ?? stubMpForCanon('l2_112', rank),
+      pDmg: 0,
+      skillLine: deflectArrowSkillLineUk(rank),
+      physOutcome: null,
+      magicOutcome: null,
+      activeBuffPatch: { skillId: 112, level: rank, action: 'add' },
+    };
+  }
+
   if (action === 'shield_stun') {
     return resolveShieldStunTurn(ctx);
+  }
+
+  if (action === 'shield_slam') {
+    return resolveShieldSlamTurn(ctx);
   }
 
   if (action === 'stun_attack') {

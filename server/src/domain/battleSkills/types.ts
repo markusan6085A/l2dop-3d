@@ -67,8 +67,14 @@ export type BattleSkillTurnResult = {
   battleModsPatch?: Partial<BattleBattleMods>;
   /** Одноразове зцілення гравця (Відродження). */
   playerHeal?: number;
-  /** Одноразова втрата HP (Zealot 420). */
+  /** Одноразова втрата HP (Zealot 420, Sacrifice 69). */
   playerHpCost?: number;
+  /** Підпис у лог для витрати HP (за замовчуванням — Zealot). */
+  playerHpCostSourceUk?: string;
+  /** Спочатку списати HP, потім застосувати `playerHeal` (Touch of Life 341). */
+  playerHpCostBeforeHeal?: boolean;
+  /** Запустити HoT Дотику життя після касту. */
+  startTouchOfLifeHoT?: boolean;
   /** Рядок про спрацювання вразливості (детект) перед уроном. */
   weaknessLogLineUk?: string;
   /** Оновлення КД мага після касту (`l2_<id>` → unix ms). */
@@ -116,11 +122,11 @@ export type BattleSkillTurnResult = {
    * у `applyStandardFighterCooldown` (напр. коли спрацювала Skill Mastery 330).
    */
   skipStandardCooldown?: boolean;
-  /**
-   * Одноразовий контроль цілі: пропустити контрудар моба в поточному ході
-   * (наприклад Hammer Crush наклав stun).
+  /** Одноразовий контроль цілі: пропустити контрудар моба в поточному ході
    */
   skipMobCounterAttackOnce?: boolean;
+  /** Aggression (28): перемкнути автоатаку world РБ/epic на кастера. */
+  worldBossTaunt?: boolean;
   /**
    * Додаткова затримка контрудару моба (у «хітах до відповіді»): hard-control
    * на кшталт Sleep/Anchor/Fear може відсунути наступний контрудар на кілька

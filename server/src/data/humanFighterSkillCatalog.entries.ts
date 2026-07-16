@@ -6,6 +6,51 @@ import {
   fighterPassiveHintUk,
   fighterPassiveNameUk,
 } from './fighterCommonPassiveSkillDisplay.js';
+import { DEFLECT_ARROW_HINT_UK } from './deflectArrowTables.js';
+import { AGGRESSION_HINT_UK, AGGRESSION_COOLDOWN_SEC } from './aggressionTables.js';
+import { HATE_AURA_HINT_UK, HATE_AURA_COOLDOWN_SEC } from './hateAuraTables.js';
+import {
+  DIVINE_HEAL_HINT_UK,
+  DIVINE_HEAL_COOLDOWN_SEC,
+} from './divineHealTables.js';
+import { FOCUS_MIND_HINT_UK } from './focusMindTables.js';
+import {
+  HOLY_BLESSING_COOLDOWN_SEC,
+  HOLY_BLESSING_HINT_UK,
+} from './holyBlessingTables.js';
+import {
+  SACRIFICE_COOLDOWN_SEC,
+  SACRIFICE_HINT_UK,
+} from './sacrificeTables.js';
+import {
+  SHIELD_FORTRESS_COOLDOWN_SEC,
+  SHIELD_FORTRESS_HINT_UK,
+} from './shieldFortressTables.js';
+import {
+  FORTITUDE_COOLDOWN_SEC,
+  FORTITUDE_HINT_UK,
+} from './fortitudeTables.js';
+import {
+  SHIELD_SLAM_COOLDOWN_SEC,
+  SHIELD_SLAM_HINT_UK,
+} from './shieldSlamTables.js';
+import {
+  PHYSICAL_MIRROR_COOLDOWN_SEC,
+  PHYSICAL_MIRROR_HINT_UK,
+} from './physicalMirrorTables.js';
+import {
+  VENGEANCE_COOLDOWN_SEC,
+  VENGEANCE_HINT_UK,
+} from './vengeanceTables.js';
+import {
+  TOUCH_OF_LIFE_COOLDOWN_SEC,
+  TOUCH_OF_LIFE_HINT_UK,
+} from './touchOfLifeTables.js';
+import {
+  IRON_WILL_COOLDOWN_SEC,
+  IRON_WILL_HINT_UK,
+} from './ironWillTables.js';
+import { SWORD_BLUNT_MASTERY_HINT_UK } from './swordBluntMasteryTables.js';
 
 //==== Каталог (орієнтир на перший ранг у датапаку; описи — для гравця, українською) ====
 
@@ -198,11 +243,11 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_257',
     l2SkillId: 257,
     minLevel: 20,
-    spCost: 3700,
+    spCost: 4700,
     nameUk: fighterPassiveNameUk(257)!,
-    hintUk: fighterPassiveHintUk(257)!,
+    hintUk: SWORD_BLUNT_MASTERY_HINT_UK,
     kind: 'passive',
-    professionReq: 'human_warrior',
+    professionReq: 'human_knight_drain_track',
   },
   {
     battleId: 'l2_287',
@@ -653,22 +698,23 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_28',
     l2SkillId: 28,
     minLevel: 24,
-    spCost: 2900,
+    spCost: 3_300,
     nameUk: 'Агресія (Aggression)',
-    hintUk:
-      'Примушує ціль атакувати вас (загроза). Бойовий скіл лицаря з 24 лвл.',
+    hintUk: AGGRESSION_HINT_UK,
     kind: 'battle',
     professionReq: 'human_knight',
+    cooldownSec: AGGRESSION_COOLDOWN_SEC,
   },
   {
     battleId: 'l2_45',
     l2SkillId: 45,
     minLevel: 28,
-    spCost: 4000,
-    nameUk: 'Зцілення (Heal)',
-    hintUk: 'Відновлює HP собі або союзнику.',
+    spCost: 4_000,
+    nameUk: 'Божественне зцілення (Divine Heal)',
+    hintUk: DIVINE_HEAL_HINT_UK,
     kind: 'battle',
     professionReq: 'human_knight',
+    cooldownSec: DIVINE_HEAL_COOLDOWN_SEC,
   },
   {
     battleId: 'l2_70',
@@ -711,53 +757,45 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_110',
     l2SkillId: 110,
     minLevel: 20,
-    spCost: 4100,
+    spCost: 4700,
     nameUk: 'Абсолютний захист (Ultimate Defense)',
     hintUk:
-      'Миттєво +P.Def / +M.Def і стійкість до дебафів; персонаж не рухається. 2 р. — з 46 лвл.',
+      'Селф-баф: +P.Def / +M.Def на 30 с; персонаж не рухається. ' +
+      '1 р. — Knight (20 лв); 2 р. — Paladin / Dark Avenger (46 лв). Каст 1 с, відкат 10 хв.',
     kind: 'battle',
-    professionReq: 'human_knight',
+    cooldownSec: 600,
+    professionReq: 'human_knight_majesty_track',
   },
   {
     battleId: 'l2_112',
     l2SkillId: 112,
     minLevel: 24,
-    spCost: 8800,
+    spCost: 10_000,
     nameUk: 'Відбиття стріли (Deflect Arrow)',
-    hintUk: 'Селф-баф: захист від атак лука/арбалета. Відкат ~10 с.',
+    hintUk: DEFLECT_ARROW_HINT_UK,
     kind: 'battle',
     cooldownSec: 10,
-    professionReq: 'human_knight',
+    professionReq: 'human_knight_resistance_track',
   },
   {
     battleId: 'l2_191',
     l2SkillId: 191,
     minLevel: 36,
-    spCost: 28000,
+    spCost: 39_000,
     nameUk: 'Зосереджений розум (Focus Mind)',
-    hintUk: 'Пасив: прискорює регенерацію MP.',
+    hintUk: FOCUS_MIND_HINT_UK,
     kind: 'passive',
-    professionReq: 'human_knight',
-  },
-  {
-    battleId: 'l2_217',
-    l2SkillId: 217,
-    minLevel: 20,
-    spCost: 4100,
-    nameUk: fighterPassiveNameUk(217)!,
-    hintUk: fighterPassiveHintUk(217)!,
-    kind: 'passive',
-    professionReq: 'human_knight',
+    professionReq: 'human_knight_drain_track',
   },
   {
     battleId: 'l2_232',
     l2SkillId: 232,
     minLevel: 20,
-    spCost: 1400,
-    nameUk: fighterPassiveNameUk(231)!,
-    hintUk: fighterPassiveHintUk(231)!,
+    spCost: 1500,
+    nameUk: fighterPassiveNameUk(232)!,
+    hintUk: fighterPassiveHintUk(232)!,
     kind: 'passive',
-    professionReq: 'human_knight',
+    professionReq: 'human_knight_majesty_track',
   },
   // ---- Knight / Paladin / Dark Avenger — Magic Resistance (147) ----
   {
@@ -786,12 +824,12 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_18',
     l2SkillId: 18,
     minLevel: 40,
-    spCost: 39000,
-    nameUk: 'Аура ненависті (Aggression)',
-    hintUk:
-      'Тимчасово підвищує загрозу для ворогів навколо, щоб тримати їхню увагу на собі.',
+    spCost: 12_000,
+    nameUk: 'Аура ненависті (Hate Aura)',
+    hintUk: HATE_AURA_HINT_UK,
     kind: 'battle',
     professionReq: 'human_paladin_track',
+    cooldownSec: HATE_AURA_COOLDOWN_SEC,
   },
   {
     battleId: 'l2_44',
@@ -801,6 +839,28 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     nameUk: 'Протиотрута (Remedy)',
     hintUk: 'Знімає отрути з цілі.',
     kind: 'battle',
+    professionReq: 'human_paladin_track',
+  },
+  {
+    battleId: 'l2_262',
+    l2SkillId: 262,
+    minLevel: 40,
+    spCost: 12_000,
+    nameUk: 'Святе благословення (Holy Blessing)',
+    hintUk: HOLY_BLESSING_HINT_UK,
+    kind: 'battle',
+    cooldownSec: HOLY_BLESSING_COOLDOWN_SEC,
+    professionReq: 'human_paladin_track',
+  },
+  {
+    battleId: 'l2_69',
+    l2SkillId: 69,
+    minLevel: 52,
+    spCost: 42_000,
+    nameUk: 'Жертва (Sacrifice)',
+    hintUk: SACRIFICE_HINT_UK,
+    kind: 'battle',
+    cooldownSec: SACRIFICE_COOLDOWN_SEC,
     professionReq: 'human_paladin_track',
   },
   {
@@ -817,12 +877,13 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_72',
     l2SkillId: 72,
-    minLevel: 40,
-    spCost: 39000,
+    minLevel: 43,
+    spCost: 41_000,
     nameUk: 'Залізна воля (Iron Will)',
-    hintUk: 'Пасив: стійкість до ментальних ефектів.',
-    kind: 'passive',
-    professionReq: 'human_paladin_track',
+    hintUk: IRON_WILL_HINT_UK,
+    kind: 'toggle',
+    cooldownSec: IRON_WILL_COOLDOWN_SEC,
+    professionReq: 'human_knight_shield_fortress',
   },
   {
     battleId: 'l2_97',
@@ -858,33 +919,35 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_322',
     l2SkillId: 322,
-    minLevel: 62,
-    spCost: 350000,
+    minLevel: 64,
+    spCost: 370_000,
     nameUk: 'Фортеця щита (Shield Fortress)',
-    hintUk:
-      'Тимчасово різко підвищує захист, поки персонаж з щитом.',
-    kind: 'battle',
+    hintUk: SHIELD_FORTRESS_HINT_UK,
+    kind: 'toggle',
+    cooldownSec: SHIELD_FORTRESS_COOLDOWN_SEC,
     professionReq: 'human_knight_shield_fortress',
   },
   // ---- Phoenix Knight / Hell Knight (спільні id у клієнті L2) ----
   {
     battleId: 'l2_335',
     l2SkillId: 335,
-    minLevel: 77,
-    spCost: 15000000,
+    minLevel: 76,
+    spCost: 10_000_000,
     nameUk: 'Стійкість (Fortitude)',
-    hintUk: 'Пасив: підвищення стійкості до станів.',
-    kind: 'passive',
-    professionReq: 'human_phoenix_or_hell_knight',
+    hintUk: FORTITUDE_HINT_UK,
+    kind: 'toggle',
+    cooldownSec: FORTITUDE_COOLDOWN_SEC,
+    professionReq: 'human_phoenix_knight',
   },
   {
     battleId: 'l2_341',
     l2SkillId: 341,
-    minLevel: 77,
-    spCost: 15000000,
+    minLevel: 78,
+    spCost: 32_000_000,
     nameUk: 'Дотик життя (Touch of Life)',
-    hintUk: 'Миттєве зцілення цілі.',
+    hintUk: TOUCH_OF_LIFE_HINT_UK,
     kind: 'battle',
+    cooldownSec: TOUCH_OF_LIFE_COOLDOWN_SEC,
     professionReq: 'human_phoenix_knight',
   },
   {
@@ -902,21 +965,33 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_350',
     l2SkillId: 350,
     minLevel: 78,
-    spCost: 21000000,
+    spCost: 32_000_000,
     nameUk: 'Фізичне дзеркало (Physical Mirror)',
-    hintUk:
-      'Відбиває частину отриманої фізичної шкоди назад на ворога.',
+    hintUk: PHYSICAL_MIRROR_HINT_UK,
     kind: 'battle',
+    cooldownSec: PHYSICAL_MIRROR_COOLDOWN_SEC,
+    professionReq: 'human_phoenix_or_hell_knight',
+  },
+  {
+    battleId: 'l2_353',
+    l2SkillId: 353,
+    minLevel: 77,
+    spCost: 20_000_000,
+    nameUk: 'Удар щитом (Shield Slam)',
+    hintUk: SHIELD_SLAM_HINT_UK,
+    kind: 'battle',
+    cooldownSec: SHIELD_SLAM_COOLDOWN_SEC,
     professionReq: 'human_phoenix_or_hell_knight',
   },
   {
     battleId: 'l2_368',
     l2SkillId: 368,
-    minLevel: 78,
-    spCost: 21000000,
+    minLevel: 77,
+    spCost: 20_000_000,
     nameUk: 'Відплата (Vengeance)',
-    hintUk: 'Потужний контрудар після захисту.',
+    hintUk: VENGEANCE_HINT_UK,
     kind: 'battle',
+    cooldownSec: VENGEANCE_COOLDOWN_SEC,
     professionReq: 'human_phoenix_or_hell_knight',
   },
   // ---- Dark Avenger (2-га профа темної гілки) ----
@@ -976,9 +1051,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 52,
     spCost: 120000,
     nameUk: 'Остання фортеця (Final Fortress)',
-    hintUk: 'Пасив: більший P. Def при низькому HP.',
+    hintUk:
+      'Пасив: автоматично +P.Def (flat), коли HP <= 20%. 1 р. +116.9 … 11 р. +215.8. Paladin / Phoenix Knight.',
     kind: 'passive',
-    professionReq: 'human_dark_avenger_track',
+    professionReq: 'human_paladin_track',
   },
   // ---- Rogue (1-ша профа гілки розбійника) ----
   {

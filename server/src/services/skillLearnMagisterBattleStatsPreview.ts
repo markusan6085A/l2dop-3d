@@ -31,9 +31,83 @@ import {
   majestyStatsNoteUk,
 } from '../data/majestyTables.js';
 import {
+  deflectArrowMpAtRank,
+  deflectArrowStatsNoteUk,
+} from '../data/deflectArrowTables.js';
+import {
+  aggressionAggroPowerAtRank,
+  aggressionMpAtRank,
+  aggressionStatsNoteUk,
+} from '../data/aggressionTables.js';
+import {
+  hateAuraAggroPowerAtRank,
+  hateAuraMpAtRank,
+  hateAuraStatsNoteUk,
+} from '../data/hateAuraTables.js';
+import {
+  divineHealMpAtRank,
+  divineHealPowerAtRank,
+  divineHealStatsNoteUk,
+} from '../data/divineHealTables.js';
+import {
+  holyBlessingMpAtRank,
+  holyBlessingPowerAtRank,
+  holyBlessingStatsNoteUk,
+} from '../data/holyBlessingTables.js';
+import {
+  sacrificePowerAtRank,
+  sacrificeStatsNoteUk,
+} from '../data/sacrificeTables.js';
+import {
+  shieldFortressMpAtRank,
+  shieldFortressShieldDefAtRank,
+  shieldFortressStatsNoteUk,
+} from '../data/shieldFortressTables.js';
+import {
+  fortitudeMpAtRank,
+  fortitudeStunResistPctAtRank,
+  fortitudeStatsNoteUk,
+} from '../data/fortitudeTables.js';
+import {
+  ironWillMpAtRank,
+  ironWillMdefPctAtRank,
+  ironWillStatsNoteUk,
+} from '../data/ironWillTables.js';
+import {
+  finalFortressPdefFlatAtRank,
+  finalFortressStatsNoteUk,
+} from '../data/finalFortressTables.js';
+import {
+  heavyArmorKnightStatsNoteUk,
+  heavyArmorWarriorStatsNoteUk,
+} from '../data/heavyArmorMasteryTables.js';
+import {
+  swordBluntMasteryStatsNoteUk,
+} from '../data/swordBluntMasteryTables.js';
+import {
+  ultimateDefenseMpAtRank,
+  ultimateDefenseStatsNoteUk,
+} from '../data/ultimateDefenseTables.js';
+import {
   shieldStunMpAtRank,
   shieldStunStatsNoteUk,
 } from '../data/shieldStunTables.js';
+import {
+  shieldSlamMpAtRank,
+  shieldSlamStatsNoteUk,
+} from '../data/shieldSlamTables.js';
+import {
+  physicalMirrorMpAtRank,
+  physicalMirrorStatsNoteUk,
+} from '../data/physicalMirrorTables.js';
+import {
+  touchOfLifeHpCostAtRank,
+  touchOfLifeStatsNoteUk,
+} from '../data/touchOfLifeTables.js';
+import {
+  vengeanceMpAtRank,
+  vengeanceStatsNoteUk,
+} from '../data/vengeanceTables.js';
 import { powerSmashStatsNoteUk } from '../data/powerSmashTables.js';
 import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
 import { tripleSlashStatsNoteUk, sonicBlasterStatsNoteUk, sonicBusterStatsNoteUk, sonicStormStatsNoteUk } from '../data/sonicGladiatorTables.js';
@@ -46,8 +120,10 @@ import {
   drainHealthStatsNoteUk,
 } from '../data/drainHealthTables.js';
 import { shieldMasteryStatsNoteUk } from '../data/shieldMasteryTables.js';
+import { focusMindStatsNoteUk } from '../data/focusMindTables.js';
 import { hammerCrushStatsNoteUk } from '../data/hammerCrushTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
+import { fighterPassiveHintUk } from '../data/fighterCommonPassiveSkillDisplay.js';
 import { applyL2dopXmlMagisterOverlay } from '../data/l2dopXmlMagisterOverlay.js';
 import {
   l2dopXmlMpPower,
@@ -73,13 +149,17 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
     case 'l2_227':
       return 'Пасив: +P. Def (%) і ухилення в легкій броні. MP у бою не витрачається.';
     case 'l2_231':
-      return 'Пасив: +P. Def (%) у важкій броні. MP у бою не витрачається.';
+      return 'Пасив: +P.Def (%) у важкій броні (Warrior / Warlord). MP у бою не витрачається.';
+    case 'l2_232':
+      return 'Пасив: +P.Def (flat) у важкій броні (Knight-гілка). MP у бою не витрачається.';
     case 'l2_256':
       return 'Toggle: точність; MP знімається в такті. У картці — як пасив для зручності.';
     case 'l2_257':
       return 'Пасив: +P. Atk (flat) з мечем або булавою. MP у бою не витрачається.';
     case 'l2_290':
       return 'Пасив: автоматично +P.Atk (flat), коли HP < 30%. 1 р. +32.9 … 13 р. +129.3. MP у бою не витрачається.';
+    case 'l2_291':
+      return 'Пасив: автоматично +P.Def (flat), коли HP <= 20%. 1 р. +116.9 … 11 р. +215.8. MP у бою не витрачається.';
     case 'l2_312':
       return 'Toggle: крит / сила криту; MP ~0.4/с, поки увімкнено (не аура).';
     case 'l2_328':
@@ -103,6 +183,43 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
   }
 }
 
+function magisterPassiveCombatNoteUkWithRank(
+  battleId: string,
+  skillRank: number
+): string | null {
+  const b = canonicalBattleSkillId(battleId);
+  switch (b) {
+    case 'l2_231':
+      return heavyArmorWarriorStatsNoteUk(skillRank);
+    case 'l2_232':
+      return heavyArmorKnightStatsNoteUk(skillRank);
+    case 'l2_257':
+      return swordBluntMasteryStatsNoteUk(skillRank);
+    case 'l2_291':
+      return finalFortressStatsNoteUk(skillRank);
+    case 'l2_191':
+      return focusMindStatsNoteUk(skillRank);
+    case 'l2_217':
+      return (
+        fighterPassiveHintUk(217) ??
+        'Пасив: +P.Atk (flat) з мечем або булавою (Elf / Dark Elf / Orc).'
+      );
+    default:
+      return magisterPassiveCombatNoteUk(b);
+  }
+}
+
+/** Заглушка magister preview — не має перекривати нормальний hintUk пасива. */
+export const GENERIC_PASSIVE_MAGISTER_NOTE_UK =
+  'Пасив — MP у бою не витрачається.';
+
+export function isGenericPassiveMagisterNoteUk(
+  note: string | null | undefined
+): boolean {
+  const t = String(note ?? '').replace(/\s+/g, ' ').trim();
+  return !t || t === GENERIC_PASSIVE_MAGISTER_NOTE_UK;
+}
+
 function magisterBattleStatsPreviewCore(
   battleId: string,
   kind: HumanFighterSkillKind,
@@ -112,11 +229,11 @@ function magisterBattleStatsPreviewCore(
 ): { mp: number | null; power: number | null; statsNoteUk: string | null } {
   const b = canonicalBattleSkillId(battleId);
   if (kind === 'passive' || kind === 'toggle') {
-    const extra = magisterPassiveCombatNoteUk(b);
+    const extra = magisterPassiveCombatNoteUkWithRank(b, skillRank);
     return {
       mp: null,
       power: null,
-      statsNoteUk: extra ?? 'Пасив — MP у бою не витрачається.',
+      statsNoteUk: extra ?? GENERIC_PASSIVE_MAGISTER_NOTE_UK,
     };
   }
   const lv = Math.max(playerLevel, catalogMinLevel);
@@ -417,6 +534,18 @@ function magisterBattleStatsPreviewCore(
         power: null,
         statsNoteUk: majestyStatsNoteUk(skillRank),
       };
+    case 'l2_110':
+      return {
+        mp: ultimateDefenseMpAtRank(skillRank) ?? 19,
+        power: skillRank,
+        statsNoteUk: ultimateDefenseStatsNoteUk(skillRank),
+      };
+    case 'l2_112':
+      return {
+        mp: deflectArrowMpAtRank(skillRank) ?? 22,
+        power: null,
+        statsNoteUk: deflectArrowStatsNoteUk(skillRank),
+      };
     case 'l2_92':
       return {
         mp: shieldStunMpAtRank(skillRank) ?? null,
@@ -499,12 +628,47 @@ function magisterBattleStatsPreviewCore(
         statsNoteUk:
           'Дальній удар; +1 Sonic Focus. Лише дуальний меч.',
       };
+    case 'l2_28':
+      return {
+        mp: aggressionMpAtRank(skillRank),
+        power: aggressionAggroPowerAtRank(skillRank),
+        statsNoteUk: aggressionStatsNoteUk(skillRank),
+      };
     case 'l2_18':
       return {
-        mp: 28,
-        power: null,
-        statsNoteUk:
-          'Aggression: контроль загрози, послаблює атаку моба (~15 с).',
+        mp: hateAuraMpAtRank(skillRank),
+        power: hateAuraAggroPowerAtRank(skillRank),
+        statsNoteUk: hateAuraStatsNoteUk(skillRank),
+      };
+    case 'l2_45':
+      return {
+        mp: divineHealMpAtRank(skillRank),
+        power: divineHealPowerAtRank(skillRank),
+        statsNoteUk: divineHealStatsNoteUk(skillRank),
+      };
+    case 'l2_262':
+      return {
+        mp: holyBlessingMpAtRank(skillRank) ?? 115,
+        power: holyBlessingPowerAtRank(skillRank),
+        statsNoteUk: holyBlessingStatsNoteUk(skillRank),
+      };
+    case 'l2_69':
+      return {
+        mp: 0,
+        power: sacrificePowerAtRank(skillRank),
+        statsNoteUk: sacrificeStatsNoteUk(skillRank),
+      };
+    case 'l2_72':
+      return {
+        mp: ironWillMpAtRank(skillRank) ?? 38,
+        power: ironWillMdefPctAtRank(skillRank),
+        statsNoteUk: ironWillStatsNoteUk(skillRank),
+      };
+    case 'l2_291':
+      return {
+        mp: null,
+        power: finalFortressPdefFlatAtRank(skillRank),
+        statsNoteUk: finalFortressStatsNoteUk(skillRank),
       };
     case 'l2_65':
       return {
@@ -567,20 +731,22 @@ function magisterBattleStatsPreviewCore(
       };
     case 'l2_322':
       return {
-        mp: 55,
-        power: null,
-        statsNoteUk:
-          'Shield Fortress: сильніший захист із щитом (~30 с), далі кулдаун.',
+        mp: shieldFortressMpAtRank(skillRank) ?? 12,
+        power: shieldFortressShieldDefAtRank(skillRank),
+        statsNoteUk: shieldFortressStatsNoteUk(skillRank),
       };
-    case 'l2_341': {
-      const xr = l2dopXmlSkillRow(341, skillRank);
+    case 'l2_335':
       return {
-        mp: xr?.m ?? 48,
-        power: xr?.p ?? 775,
-        statsNoteUk:
-          'Touch of Life: миттєвий self-heal, великий кулдаун.',
+        mp: fortitudeMpAtRank(skillRank) ?? 35,
+        power: fortitudeStunResistPctAtRank(skillRank),
+        statsNoteUk: fortitudeStatsNoteUk(skillRank),
       };
-    }
+    case 'l2_341':
+      return {
+        mp: 0,
+        power: touchOfLifeHpCostAtRank(skillRank),
+        statsNoteUk: touchOfLifeStatsNoteUk(skillRank),
+      };
     case 'l2_342': {
       const xr = l2dopXmlSkillRow(342, skillRank);
       return {
@@ -592,17 +758,21 @@ function magisterBattleStatsPreviewCore(
     }
     case 'l2_350':
       return {
-        mp: 52,
+        mp: physicalMirrorMpAtRank(skillRank) ?? 71,
         power: null,
-        statsNoteUk:
-          'Physical Mirror: відбиває частину фізичної шкоди (~60 с), далі кулдаун.',
+        statsNoteUk: physicalMirrorStatsNoteUk(skillRank),
+      };
+    case 'l2_353':
+      return {
+        mp: shieldSlamMpAtRank(skillRank) ?? 70,
+        power: null,
+        statsNoteUk: shieldSlamStatsNoteUk(skillRank),
       };
     case 'l2_368':
       return {
-        mp: 48,
-        power: null,
-        statsNoteUk:
-          'Vengeance: менший вхідний фіз. урон + відбиття (~30 с), далі кулдаун.',
+        mp: vengeanceMpAtRank(skillRank) ?? 105,
+        power: 3994,
+        statsNoteUk: vengeanceStatsNoteUk(skillRank),
       };
     case 'l2_313': {
       const SNIPE_MP = [28, 29, 30, 31, 32, 33, 34, 34] as const;

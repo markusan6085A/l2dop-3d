@@ -31,6 +31,8 @@ export function effectiveMobDebuffResistPct(spawn: MobSpawnControlResistInput): 
 const MOB_STUN_RESIST_CAP = 50;
 /** Кап резисту моба до маг. дебафів (окремо від INT/matk у формулі land). */
 const MOB_DEBUFF_RESIST_CAP = 55;
+/** Кап синтетичного резисту моба до дебафів, що залежать від WIT (Shield Slam 353). */
+const MOB_WIT_RESIST_CAP = 55;
 
 export function syntheticMobStunResistPct(spawnLevel: number): number {
   const L = Math.max(1, Math.floor(spawnLevel));
@@ -40,6 +42,24 @@ export function syntheticMobStunResistPct(spawnLevel: number): number {
 export function syntheticMobDebuffResistPct(spawnLevel: number): number {
   const L = Math.max(1, Math.floor(spawnLevel));
   return Math.min(MOB_DEBUFF_RESIST_CAP, Math.floor(L * 0.5));
+}
+
+export function syntheticMobWitResistPct(spawnLevel: number): number {
+  const L = Math.max(1, Math.floor(spawnLevel));
+  return Math.min(MOB_WIT_RESIST_CAP, Math.floor(L * 0.48));
+}
+
+/** PvE: WIT-резист цілі для Shield Slam (явний debuffResist або synthetic за рівнем). */
+export function effectiveMobWitResistPct(spawn: MobSpawnControlResistInput): number {
+  const v = spawn.debuffResistPct;
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  return syntheticMobWitResistPct(spawn.level);
+}
+
+/** PvP: резист від стату WIT цілі (база ~20 WIT → 0%). */
+export function witResistPctFromStat(wit: number): number {
+  const W = Math.max(1, Math.floor(wit));
+  return Math.min(MOB_WIT_RESIST_CAP, Math.max(0, Math.floor((W - 20) * 0.8)));
 }
 
 /**

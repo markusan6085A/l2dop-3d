@@ -11,6 +11,10 @@ import { darkFighterCatalogEntry } from './darkFighterSkillCatalog.lookup.js';
 import { orcFighterCatalogEntry } from './orcFighterSkillCatalog.lookup.js';
 import { dwarfFighterCatalogEntry } from './dwarfFighterSkillCatalog.lookup.js';
 import { L2DB_SKILL_LEVELS_BY_ID } from './l2dbSkillLevelsById.generated.js';
+import {
+  HEAVY_ARMOR_KNIGHT_MAX_RANK,
+  isHeavyArmorKnightFlatCatalogSkill,
+} from './heavyArmorMasteryTables.js';
 
 export function fighterCatalogEntryForRace(
   race: string,
@@ -39,5 +43,15 @@ export function maxRaceFighterSkillRankForBattleId(
     e && e.l2SkillId > 0 ? L2DB_SKILL_LEVELS_BY_ID[e.l2SkillId] : undefined;
   const local = !e || e.levels.length < 1 ? 1 : e.levels.length;
   const remote = l2dbRows && l2dbRows.length >= 1 ? l2dbRows.length : 1;
-  return Math.max(local, remote);
+  let max = Math.max(local, remote);
+  if (
+    e &&
+    isHeavyArmorKnightFlatCatalogSkill(
+      e.l2SkillId,
+      e.effects.map((fx) => ({ stat: fx.stat, mode: fx.mode }))
+    )
+  ) {
+    max = Math.max(max, HEAVY_ARMOR_KNIGHT_MAX_RANK);
+  }
+  return max;
 }

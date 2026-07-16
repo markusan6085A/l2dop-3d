@@ -9,7 +9,7 @@
  * броні чи стат-бусти) повністю пропадали з розрахунку статів.
  */
 import type { InventoryState } from './inventory.js';
-import { normalizeEqSlot } from './inventory.js';
+import { equippedArmorKindForPassives, normalizeEqSlot } from './inventory.js';
 import {
   applyBuffDelta,
   neutralCombatBuffs,
@@ -28,8 +28,18 @@ import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import {
+  heavyArmorKnightFlatPdefAtRank,
+  HEAVY_ARMOR_KNIGHT_MAX_RANK,
+  isHeavyArmorKnightFlatCatalogSkill,
+} from './heavyArmorMasteryTables.js';
+import {
   shieldMasteryDefenceRatePctAtRank,
 } from './shieldMasteryTables.js';
+import {
+  isSwordOrBluntWeaponKind,
+  SWORD_BLUNT_MASTERY_MAX_RANK,
+  swordBluntMasteryPatkFlatAtRank,
+} from './swordBluntMasteryTables.js';
 import {
   dualWeaponMasteryPatkFlatAtRank,
 } from './dualWeaponMasteryTables.js';
@@ -167,6 +177,35 @@ export function learnedRaceFighterPassivesBuffDelta(
       if (itemBlocksShieldSlot(wId, wM?.weaponType)) continue;
       const rate = shieldMasteryDefenceRatePctAtRank(r);
       if (rate > 0) acc = applyBuffDelta(acc, { shieldDefenceRatePct: rate });
+      continue;
+    }
+    if (
+      isHeavyArmorKnightFlatCatalogSkill(
+        cat.l2SkillId,
+        cat.effects.map((fx) => ({ stat: fx.stat, mode: fx.mode }))
+      )
+    ) {
+      if (equippedArmorKindForPassives(_inv) !== 'heavy') continue;
+      const r = Math.max(
+        1,
+        Math.min(
+          HEAVY_ARMOR_KNIGHT_MAX_RANK,
+          Math.floor(e.level)
+        )
+      );
+      const flat = heavyArmorKnightFlatPdefAtRank(r);
+      if (flat > 0) acc = applyBuffDelta(acc, { addPdef: flat });
+      continue;
+    }
+    if (cat.l2SkillId === 257) {
+      const wk = equippedWeaponKind(_inv) ?? '';
+      if (!isSwordOrBluntWeaponKind(wk)) continue;
+      const r = Math.max(
+        1,
+        Math.min(SWORD_BLUNT_MASTERY_MAX_RANK, Math.floor(e.level))
+      );
+      const patk = swordBluntMasteryPatkFlatAtRank(r);
+      if (patk > 0) acc = applyBuffDelta(acc, { addPatk: patk });
       continue;
     }
     const row = cat.levels[r - 1];

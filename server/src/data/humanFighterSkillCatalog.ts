@@ -13,6 +13,7 @@
 import type { BattleActionId } from '../domain/battle.js';
 import {
   CANONICAL_L2_SKILL_TO_BATTLE_ACTION,
+  battleActionNamedFromL2IfMapped,
 } from './humanFighterSkillCatalog.battleActionMap.js';
 import { HUMAN_FIGHTER_SKILL_CATALOG } from './humanFighterSkillCatalog.entries.js';
 import { canonicalBattleSkillId } from './humanFighterSkillCatalog.legacyIds.js';
@@ -135,9 +136,10 @@ export function learnedHumanFighterHotbarPickSkills(
         continue;
       }
       if (rf.kind !== 'battle' && rf.kind !== 'toggle') continue;
-      const mapped = CANONICAL_L2_SKILL_TO_BATTLE_ACTION[canon];
+      const mappedAct = battleActionNamedFromL2IfMapped(canon as BattleActionId);
       const action: BattleActionId | undefined =
-        mapped ??
+        (mappedAct !== canon ? mappedAct : undefined) ??
+        CANONICAL_L2_SKILL_TO_BATTLE_ACTION[canon] ??
         (/^l2_\d+$/.test(canon) ? (canon as BattleActionId) : undefined);
       if (!action) continue;
       if (seen.has(action)) continue;
@@ -153,9 +155,10 @@ export function learnedHumanFighterHotbarPickSkills(
     if (!entry) continue;
     if (!catalogEntryVisibleForProfession(entry, l2Profession)) continue;
     if (entry.kind !== 'battle' && entry.kind !== 'toggle') continue;
-    const mappedHum = CANONICAL_L2_SKILL_TO_BATTLE_ACTION[canon];
+    const mappedAct = battleActionNamedFromL2IfMapped(canon as BattleActionId);
     const action: BattleActionId | undefined =
-      mappedHum ??
+      (mappedAct !== canon ? mappedAct : undefined) ??
+      CANONICAL_L2_SKILL_TO_BATTLE_ACTION[canon] ??
       (/^l2_\d+$/.test(canon) ? (canon as BattleActionId) : undefined);
     if (!action) continue;
     if (seen.has(action)) continue;

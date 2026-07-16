@@ -335,8 +335,12 @@ function buildCatalog({ textSubdir, folderProfs, allProfsSet, excludeSkillIds },
       allProfsSet
     );
     const ukRow = uk.get(row.id);
-    const nameUk = ukRow?.nameUk ?? namePick;
-    const hintUk = ukRow?.hintUk ?? nameUk;
+    const isKnightFlatHa =
+      row.id === 231 &&
+      row.effects.some((fx) => fx.stat === 'pDef' && fx.mode === 'flat');
+    const hintUkSource = isKnightFlatHa ? uk.get(232) ?? ukRow : ukRow;
+    const nameUk = hintUkSource?.nameUk ?? ukRow?.nameUk ?? namePick;
+    const hintUk = hintUkSource?.hintUk ?? ukRow?.hintUk ?? nameUk;
     const skipMob = battleActionSkipsMobHp(catPick, kind);
     const primaryFolders = [...row.folders];
     const onlyCommon =

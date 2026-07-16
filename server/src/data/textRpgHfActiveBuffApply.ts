@@ -11,6 +11,7 @@ import {
   type TextRpgHfBuffRow,
 } from './textRpgHfBuffEffects.generated.js';
 import type { TextRpgEffectMode } from './textRpgSkillEffectTypes.js';
+import { touchOfLifeActiveBuffDelta } from './touchOfLifeTables.js';
 
 const BY_ID = new Map(
   TEXT_RPG_HF_BUFF_EFFECTS.map((row) => [row.l2SkillId, row])
@@ -72,6 +73,12 @@ function mergeBuffPartial(
     sleepResistMul: number;
     mentalResistMul: number;
     addStunResistPct: number;
+    addBowDefPct: number;
+    addShieldPDef: number;
+    addParalyzeResistPct: number;
+    addDebuffResistPct: number;
+    addCancelResistPct: number;
+    addHealReceivedPct: number;
   },
   d: Partial<L2dopCombatBuffModifiers>
 ): void {
@@ -100,6 +107,20 @@ function mergeBuffPartial(
   if (d.sleepResistMul != null) acc.sleepResistMul *= d.sleepResistMul;
   if (d.mentalResistMul != null) acc.mentalResistMul *= d.mentalResistMul;
   if (d.addStunResistPct != null) acc.addStunResistPct += d.addStunResistPct;
+  if (d.addBowDefPct != null) acc.addBowDefPct += d.addBowDefPct;
+  if (d.addShieldPDef != null) acc.addShieldPDef += d.addShieldPDef;
+  if (d.addParalyzeResistPct != null) {
+    acc.addParalyzeResistPct += d.addParalyzeResistPct;
+  }
+  if (d.addDebuffResistPct != null) {
+    acc.addDebuffResistPct += d.addDebuffResistPct;
+  }
+  if (d.addCancelResistPct != null) {
+    acc.addCancelResistPct += d.addCancelResistPct;
+  }
+  if (d.addHealReceivedPct != null) {
+    acc.addHealReceivedPct += d.addHealReceivedPct;
+  }
 }
 
 function powerForBuffLevel(row: TextRpgHfBuffRow, requestedLevel: number): number {
@@ -128,6 +149,11 @@ export function textRpgHfActiveBuffDelta(
 ): Partial<L2dopCombatBuffModifiers> | null {
   if (TEXT_RPG_HF_ACTIVE_BUFF_CS1_FALLBACK_IDS.has(skillId)) return null;
   if (!hfBuffBowGuard(skillId, weaponCtx)) return null;
+
+  if (skillId === 341) {
+    void level;
+    return touchOfLifeActiveBuffDelta();
+  }
 
   const row = BY_ID.get(skillId);
   if (!row) return null;
@@ -161,6 +187,12 @@ export function textRpgHfActiveBuffDelta(
     sleepResistMul: 1,
     mentalResistMul: 1,
     addStunResistPct: 0,
+    addBowDefPct: 0,
+    addShieldPDef: 0,
+    addParalyzeResistPct: 0,
+    addDebuffResistPct: 0,
+    addCancelResistPct: 0,
+    addHealReceivedPct: 0,
   };
 
   let any = false;
@@ -203,6 +235,20 @@ export function textRpgHfActiveBuffDelta(
   if (acc.sleepResistMul !== 1) out.sleepResistMul = acc.sleepResistMul;
   if (acc.mentalResistMul !== 1) out.mentalResistMul = acc.mentalResistMul;
   if (acc.addStunResistPct !== 0) out.addStunResistPct = acc.addStunResistPct;
+  if (acc.addBowDefPct !== 0) out.addBowDefPct = acc.addBowDefPct;
+  if (acc.addShieldPDef !== 0) out.addShieldPDef = acc.addShieldPDef;
+  if (acc.addParalyzeResistPct !== 0) {
+    out.addParalyzeResistPct = acc.addParalyzeResistPct;
+  }
+  if (acc.addDebuffResistPct !== 0) {
+    out.addDebuffResistPct = acc.addDebuffResistPct;
+  }
+  if (acc.addCancelResistPct !== 0) {
+    out.addCancelResistPct = acc.addCancelResistPct;
+  }
+  if (acc.addHealReceivedPct !== 0) {
+    out.addHealReceivedPct = acc.addHealReceivedPct;
+  }
 
   return Object.keys(out).length > 0 ? out : null;
 }

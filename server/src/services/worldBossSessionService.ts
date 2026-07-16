@@ -20,6 +20,7 @@ import {
   parseWorldBossSessionState,
   reconcileWorldBossTarget,
   registerWorldBossDamagingHit,
+  registerWorldBossAggressionTaunt,
   isWorldBossAutoAttackDue,
   scheduleNextWorldBossAutoAttack,
   RAID_BOSS_AUTO_ATTACK_MS,
@@ -37,6 +38,7 @@ import { applyMobCounterDamage } from './battleServicePerformBattleAction.mobRet
 import { persistBattleDefeatInTx } from './battleServiceBattleOutcomeTx.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
+import { mobControlResumeAtMs } from '../domain/battleMobControl.js';
 import {
   combatOptsFromRow,
   type CharacterRow,
@@ -369,6 +371,16 @@ async function applyWorldBossAutoAttackInTx(
   const bj = parseBattleJson(target.battleJson);
   if (!bj || bj.spawnId !== session.spawnId) return { targetDefeated: false };
 
+  const resumeAt = mobControlResumeAtMs(bj, nowMs);
+  if (resumeAt !== null) {
+    session.nextMobAutoAttackAtMs = Math.max(
+      session.nextMobAutoAttackAtMs,
+      resumeAt
+    );
+    await saveSession(tx, session);
+    return { targetDefeated: false };
+  }
+
   const spawn = resolveBattleSpawnMeta(bj);
   if (!spawn) return { targetDefeated: false };
 
@@ -519,6 +531,21 @@ export async function recordWorldBossDamagingHitInTx(
   await saveSession(tx, session);
   presenceWriteAtMs.set(presenceWriteKey(spawnId, characterId), nowMs);
   return session;
+}
+
+/** Aggression: перемикає currentTargetCharacterId РБ на кастера таунту. */
+export async function applyWorldBossAggressionTauntInTx(
+  tx: Tx,
+  spawnId: string,
+  characterId: string,
+  nowMs: number
+): Promise<boolean> {
+  const session = await lockSessionRow(tx, spawnId);
+  if (!session || session.mobHp <= 0) return false;
+  const switched = registerWorldBossAggressionTaunt(session, characterId, nowMs);
+  await saveSession(tx, session);
+  presenceWriteAtMs.set(presenceWriteKey(spawnId, characterId), nowMs);
+  return switched;
 }
 
 export async function runAllWorldBossCombatTicks(nowMs: number): Promise<void> {
