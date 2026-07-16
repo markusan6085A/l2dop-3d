@@ -80,6 +80,66 @@ import {
   stunShotSpCostAtRank,
 } from './stunShotTables.js';
 import {
+  backstabRequiredLevelAtRank,
+  backstabSpCostAtRank,
+} from './backstabTables.js';
+import {
+  deadlyBlowRequiredLevelAtRank,
+  deadlyBlowSpCostAtRank,
+} from './deadlyBlowTables.js';
+import {
+  doubleShotRequiredLevelAtRank,
+  doubleShotSpCostAtRank,
+} from './doubleShotTables.js';
+import {
+  burstShotRequiredLevelAtRank,
+  burstShotSpCostAtRank,
+} from './burstShotTables.js';
+import {
+  hawkEyeRequiredLevelAtRank,
+  hawkEyeSpCostAtRank,
+} from './hawkEyeTables.js';
+import {
+  soulOfSagittariusRequiredLevelAtRank,
+  soulOfSagittariusSpCostAtRank,
+} from './soulOfSagittariusTables.js';
+import {
+  snipeRequiredLevelAtRank,
+  snipeSpCostAtRank,
+} from './snipeTables.js';
+import {
+  lethalShotRequiredLevelAtRank,
+  lethalShotSpCostAtRank,
+} from './lethalShotTables.js';
+import {
+  lethalBlowRequiredLevelAtRank,
+  lethalBlowSpCostAtRank,
+} from './lethalBlowTables.js';
+import {
+  bluffRequiredLevelAtRank,
+  bluffSpCostAtRank,
+} from './bluffTables.js';
+import {
+  focusChanceRequiredLevelAtRank,
+  focusChanceSpCostAtRank,
+} from './focusChanceTables.js';
+import {
+  focusPowerRequiredLevelAtRank,
+  focusPowerSpCostAtRank,
+} from './focusPowerTables.js';
+import {
+  skillMasteryRequiredLevelAtRank,
+  skillMasterySpCostAtRank,
+} from './skillMasteryTables.js';
+import {
+  hamstringShotRequiredLevelAtRank,
+  hamstringShotSpCostAtRank,
+} from './hamstringShotTables.js';
+import {
+  focusSkillMasteryRequiredLevelAtRank,
+  focusSkillMasterySpCostAtRank,
+} from './focusSkillMasteryTables.js';
+import {
   divineHealRequiredLevelAtRank,
   divineHealSpCostAtRank,
 } from './divineHealTables.js';
@@ -197,6 +257,14 @@ export const MAX_SKILL_RANK_BY_BATTLE_ID: Record<string, number> = {
   l2_51: 1,
   l2_60: 1,
   l2_101: 40,
+  l2_19: 37,
+  l2_24: 31,
+  l2_131: 3,
+  l2_303: 4,
+  l2_313: 8,
+  l2_343: 1,
+  l2_354: 1,
+  l2_334: 1,
   l2_111: 2,
   l2_113: 2,
   l2_137: 3,
@@ -351,6 +419,66 @@ export function minCharLevelForSkillRank(
   if (c === 'l2_101') {
     const fromSs = stunShotRequiredLevelAtRank(r);
     if (fromSs !== undefined) return fromSs;
+  }
+  if (c === 'l2_30') {
+    const fromBs = backstabRequiredLevelAtRank(r);
+    if (fromBs !== undefined) return fromBs;
+  }
+  if (c === 'l2_263') {
+    const fromDb = deadlyBlowRequiredLevelAtRank(r);
+    if (fromDb !== undefined) return fromDb;
+  }
+  if (c === 'l2_19') {
+    const fromDs = doubleShotRequiredLevelAtRank(r);
+    if (fromDs !== undefined) return fromDs;
+  }
+  if (c === 'l2_24') {
+    const fromBs = burstShotRequiredLevelAtRank(r);
+    if (fromBs !== undefined) return fromBs;
+  }
+  if (c === 'l2_131') {
+    const fromHe = hawkEyeRequiredLevelAtRank(r);
+    if (fromHe !== undefined) return fromHe;
+  }
+  if (c === 'l2_303') {
+    const fromSos = soulOfSagittariusRequiredLevelAtRank(r);
+    if (fromSos !== undefined) return fromSos;
+  }
+  if (c === 'l2_313') {
+    const fromSn = snipeRequiredLevelAtRank(r);
+    if (fromSn !== undefined) return fromSn;
+  }
+  if (c === 'l2_343') {
+    const fromLs = lethalShotRequiredLevelAtRank(r);
+    if (fromLs !== undefined) return fromLs;
+  }
+  if (c === 'l2_344') {
+    const fromLb = lethalBlowRequiredLevelAtRank(r);
+    if (fromLb !== undefined) return fromLb;
+  }
+  if (c === 'l2_358') {
+    const fromBluff = bluffRequiredLevelAtRank(r);
+    if (fromBluff !== undefined) return fromBluff;
+  }
+  if (c === 'l2_356') {
+    const fromFc = focusChanceRequiredLevelAtRank(r);
+    if (fromFc !== undefined) return fromFc;
+  }
+  if (c === 'l2_357') {
+    const fromFp = focusPowerRequiredLevelAtRank(r);
+    if (fromFp !== undefined) return fromFp;
+  }
+  if (c === 'l2_330') {
+    const fromSm = skillMasteryRequiredLevelAtRank(r);
+    if (fromSm !== undefined) return fromSm;
+  }
+  if (c === 'l2_354') {
+    const fromHs = hamstringShotRequiredLevelAtRank(r);
+    if (fromHs !== undefined) return fromHs;
+  }
+  if (c === 'l2_334') {
+    const fromFsm = focusSkillMasteryRequiredLevelAtRank(r);
+    if (fromFsm !== undefined) return fromFsm;
   }
   if (c === 'l2_193') {
     const fromCp = criticalPowerRequiredLevelAtRank(r);
@@ -527,6 +655,66 @@ export function spCostForSkillRankUpgrade(
   }
   if (c === 'l2_101') {
     const sp = stunShotSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_30') {
+    const sp = backstabSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_263') {
+    const sp = deadlyBlowSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_19') {
+    const sp = doubleShotSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_24') {
+    const sp = burstShotSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_131') {
+    const sp = hawkEyeSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_303') {
+    const sp = soulOfSagittariusSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_313') {
+    const sp = snipeSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_343') {
+    const sp = lethalShotSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_344') {
+    const sp = lethalBlowSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_358') {
+    const sp = bluffSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_356') {
+    const sp = focusChanceSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_357') {
+    const sp = focusPowerSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_330') {
+    const sp = skillMasterySpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_354') {
+    const sp = hamstringShotSpCostAtRank(r);
+    if (sp !== undefined) return sp;
+  }
+  if (c === 'l2_334') {
+    const sp = focusSkillMasterySpCostAtRank(r);
     if (sp !== undefined) return sp;
   }
   if (c === 'l2_193') {

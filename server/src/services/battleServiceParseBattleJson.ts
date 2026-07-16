@@ -223,10 +223,10 @@ export function parseBattleJson(
       next.snipeCritRateAdd =
         snCr !== undefined && snCr > 0 ? snCr : 20;
     }
-    const gapFcc = jsonFiniteNum(bm.focusChanceCritRateAdd);
-    if (gapFcc !== undefined && gapFcc > 0) next.focusChanceCritRateAdd = gapFcc;
-    const gapFpm = jsonFiniteNum(bm.focusPowerPatkMul);
-    if (gapFpm !== undefined && gapFpm > 1) next.focusPowerPatkMul = gapFpm;
+    if (jsonBoolLike(bm.focusChanceActive)) next.focusChanceActive = true;
+    const gapFcc = jsonBoolLike(next.focusChanceActive);
+    if (jsonBoolLike(bm.focusPowerActive)) next.focusPowerActive = true;
+    const gapFpm = jsonBoolLike(next.focusPowerActive);
     const gapBlf = jsonFiniteNum(bm.bluffCritDmgMul);
     if (gapBlf !== undefined && gapBlf > 1) next.bluffCritDmgMul = gapBlf;
     if (jsonBoolLike(bm.silentMoveActive)) {
@@ -300,6 +300,17 @@ export function parseBattleJson(
       const stunSid = jsonFiniteNum(bm.mobStunIconSkillId);
       next.mobStunIconSkillId =
         stunSid !== undefined && stunSid > 0 ? Math.floor(stunSid) : 260;
+    }
+    const slowUntil = jsonFiniteNum(bm.mobRunSpeedDebuffUntilMs);
+    if (slowUntil !== undefined && slowUntil > 0) {
+      next.mobRunSpeedDebuffUntilMs = Math.floor(slowUntil);
+      const slowMul = jsonFiniteNum(bm.mobRunSpeedDebuffMul);
+      if (slowMul !== undefined && slowMul > 0 && slowMul < 1) {
+        next.mobRunSpeedDebuffMul = slowMul;
+      }
+      const slowSid = jsonFiniteNum(bm.mobRunSpeedDebuffIconSkillId);
+      next.mobRunSpeedDebuffIconSkillId =
+        slowSid !== undefined && slowSid > 0 ? Math.floor(slowSid) : 354;
     }
     const playerStunUntil = jsonFiniteNum(bm.playerStunUntilMs);
     if (playerStunUntil !== undefined && playerStunUntil > 0) {
@@ -433,8 +444,8 @@ export function parseBattleJson(
       (dashM !== undefined && dashM > 0) ||
       (rshot !== undefined && rshot > 1) ||
       (snPk !== undefined && snPk > 0) ||
-      (gapFcc !== undefined && gapFcc > 0) ||
-      (gapFpm !== undefined && gapFpm > 1) ||
+      gapFcc ||
+      gapFpm ||
       (gapBlf !== undefined && gapBlf > 1) ||
       next.silentMoveActive === true ||
       next.ultimateEvasionActive === true ||

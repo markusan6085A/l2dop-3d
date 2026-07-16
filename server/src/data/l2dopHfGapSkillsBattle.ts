@@ -18,24 +18,8 @@ function lin(
   return Math.round(v1 + ((r - 1) * (vMax - v1)) / (rMax - 1));
 }
 
-/** Удар у спину (30) — Skill_0030, 37 рангів. */
-export function backstabMpAndPower(rank: number): { mp: number; power: number } {
-  return {
-    mp: lin(rank, 37, 53, 111),
-    power: lin(rank, 37, 1107, 5479),
-  };
-}
-
-/** Смертельний удар TH (263) — Skill_0263. */
-export function deadlyBlowThMpAndPower(rank: number): {
-  mp: number;
-  power: number;
-} {
-  return {
-    mp: lin(rank, 37, 36, 75),
-    power: lin(rank, 37, 1107, 5479),
-  };
-}
+export { backstabMpAndPower } from './backstabTables.js';
+export { deadlyBlowThMpAndPower } from './deadlyBlowTables.js';
 
 /** Підміна (12) — Skill_0012, 14 рангів. */
 export function switchMp(rank: number): number {
@@ -52,13 +36,7 @@ export function lureMp(): number {
   return 44;
 }
 
-/** Lethal Blow Adventurer (344) — один ранг у text-rpg. */
-export function lethalBlowAdvMpAndPower(_rank: number): {
-  mp: number;
-  power: number;
-} {
-  return { mp: 85, power: 5773 };
-}
+export { lethalBlowAdvMpAndPower } from './lethalBlowTables.js';
 
 /** Святий удар (49) — наближено. */
 export function holyStrikeMpAndPower(rank: number): {

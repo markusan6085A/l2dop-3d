@@ -29,6 +29,8 @@ import {
 } from '../data/l2dopFocusAttack.js';
 import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
 import { resolveViciousStanceEffectRank } from '../data/viciousStanceTables.js';
+import { applyFocusChanceCritRateStat } from '../data/focusChanceTables.js';
+import { applyFocusPowerCritDmgMul } from '../data/focusPowerTables.js';
 
 /**
  * Анти-оверкіл для ранніх рівнів: synthetic `mobPAtk` з карти проходить через
@@ -68,7 +70,7 @@ export function rollPlayerPhysicalDmg(
   learnedSkillLevelByBattleId?: Record<string, number>,
   /** Як у `toSnapshot` / `resolveDisplayBattleMods` — інакше втрачаються моди з `worldCombatStateJson`. */
   effectiveBattleMods?: BattleBattleMods,
-  options?: { forceNoMiss?: boolean; weaponKind?: string }
+  options?: { forceNoMiss?: boolean; critRateBonus?: number; weaponKind?: string }
 ): {
   damage: number;
   outcome: 'miss' | 'hit' | 'crit';
@@ -194,14 +196,6 @@ export function rollPlayerPhysicalDmg(
   if (snC !== undefined && snC > 0) {
     critRate = Math.min(500, Math.floor(critRate + snC));
   }
-  const fpmOut = jsonFiniteNum(mods?.focusPowerPatkMul);
-  if (fpmOut !== undefined && fpmOut > 1) {
-    atkEff = Math.max(1, Math.floor(atkEff * fpmOut));
-  }
-  const fccOut = jsonFiniteNum(mods?.focusChanceCritRateAdd);
-  if (fccOut !== undefined && fccOut > 0) {
-    critRate = Math.min(500, Math.floor(critRate + fccOut));
-  }
   const blfOut = jsonFiniteNum(mods?.bluffCritDmgMul);
   if (blfOut !== undefined && blfOut > 1) {
     critDmgMul *= blfOut;
@@ -214,6 +208,12 @@ export function rollPlayerPhysicalDmg(
   if (zealCd !== undefined && zealCd > 1) {
     critDmgMul *= zealCd;
   }
+  critDmgMul = applyFocusPowerCritDmgMul(
+    critDmgMul,
+    mods,
+    st,
+    options?.weaponKind
+  );
   let mobPDefEff = st.mobPDef;
   const mtdPlayer = jsonFiniteNum(mods?.mobTargetPDefMul);
   if (mtdPlayer !== undefined && mtdPlayer > 0 && mtdPlayer < 1) {
@@ -236,7 +236,12 @@ export function rollPlayerPhysicalDmg(
     targetPDef: mobPDefEff,
     attackerAccuracy: acc,
     targetEvasion: mobEva,
-    critRateStat: critRate,
+    critRateStat: applyFocusChanceCritRateStat(
+      Math.min(500, Math.floor(critRate + (options?.critRateBonus ?? 0))),
+      mods,
+      st,
+      options?.weaponKind
+    ),
     critDmgMul: critDmgMul,
     addCritDmg,
     allowCrit: true,

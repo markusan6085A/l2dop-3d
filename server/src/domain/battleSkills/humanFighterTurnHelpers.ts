@@ -33,6 +33,17 @@ import { l2dopXmlSkillRow } from '../../data/l2dopXmlSkillLevels.lookup.js';
 import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
 import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
+import {
+  SKILL_MASTERY_BATTLE_ID,
+  SKILL_MASTERY_MELEE_CD_RESET_CHANCE,
+  SKILL_MASTERY_MELEE_DURATION_CHANCE,
+  skillMasteryProcChancePct,
+} from '../../data/skillMasteryTables.js';
+import {
+  FOCUS_SKILL_MASTERY_BATTLE_ID,
+  FOCUS_SKILL_MASTERY_PROC_MUL,
+  focusSkillMasteryActiveRank,
+} from '../../data/focusSkillMasteryTables.js';
 import { sonicChargeRequirementForSkillId } from '../sonicCharges.js';
 import { BattleSkillNotAllowedError } from '../battleSkillNotAllowedError.js';
 
@@ -44,6 +55,9 @@ export function assertPlayerCanMove(ctx: BattleSkillResolveContext): void {
   if (jsonBoolLike(ctx.st.battleMods?.vengeanceImmobile)) {
     throw new Error('battle_skill_not_allowed');
   }
+  if (jsonBoolLike(ctx.st.battleMods?.snipeImmobile)) {
+    throw new Error('battle_skill_not_allowed');
+  }
 }
 
 /** Фіксована кількість фіз. ударів (Triple Slash тощо) — сумарна шкода й агрегований outcome. */
@@ -51,7 +65,7 @@ export function rollFixedHitCountPhys(
   rollPhys: PhysicalRollFn,
   atk: number,
   hitCount: number,
-  options?: { forceNoMiss?: boolean }
+  options?: { forceNoMiss?: boolean; critRateBonus?: number }
 ): {
   damage: number;
   outcome: 'miss' | 'hit' | 'crit';
@@ -195,8 +209,6 @@ const WARRIOR_ACCUM_MIN_ASPD = 400;
 const WARRIOR_ACCUM_MAX_ASPD = 3000;
 const WARRIOR_ACCUM_MAX_ASPD_INTERVAL_SEC = 0.5;
 const WARRIOR_ACCUM_MAX_HITS = 15;
-const DREADNOUGHT_SKILL_MASTERY_CD_RESET_CHANCE = 0.08;
-const DREADNOUGHT_SKILL_MASTERY_DURATION_CHANCE = 0.08;
 function warriorAccumHitsForPAtkSpd(pAtkSpd: number): {
   intervalSec: number;
 } {
@@ -407,30 +419,86 @@ export function legacyBuffCdAndExpirePatches(
   return out;
 }
 
-function dreadnoughtSkillMasteryRank(ctx: BattleSkillResolveContext): number {
-  const p = String(ctx.l2Profession || '').trim();
-  if (p !== 'human_dreadnought') return 0;
-  const rank = ctx.learnedSkillLevelByBattleId?.['l2_330'];
+function skillMasteryRank(ctx: BattleSkillResolveContext): number {
+  const rank = ctx.learnedSkillLevelByBattleId?.[SKILL_MASTERY_BATTLE_ID];
   return typeof rank === 'number' && rank >= 1 ? Math.floor(rank) : 0;
 }
 
-export function maybeApplyDreadnoughtSkillMastery(
+function skillMasteryProfessionOk(l2Profession: string): boolean {
+  const p = String(l2Profession || '').trim();
+  return (
+    p === 'human_dreadnought' ||
+    p === 'human_duelist' ||
+    p === 'human_sagittarius'
+  );
+}
+
+function skillMasteryHasDurationCandidate(
+  result: BattleSkillTurnResult
+): boolean {
+  if (
+    result.battleModsExpiresPatch != null &&
+    Object.keys(result.battleModsExpiresPatch).length > 0
+  ) {
+    return true;
+  }
+  const patch = result.activeBuffPatch;
+  if (patch?.action !== 'add') return false;
+  const sec = buffDurationSecForSkillId(patch.skillId);
+  return typeof sec === 'number' && sec > 0;
+}
+
+function skillMasteryProcChancePctForCtx(
+  ctx: BattleSkillResolveContext,
+  hasDuration: boolean
+): number {
+  const p = String(ctx.l2Profession || '').trim();
+  if (p === 'human_sagittarius') {
+    const rank = skillMasteryRank(ctx);
+    return skillMasteryProcChancePct(ctx.combat.str, rank);
+  }
+  return (
+    (hasDuration
+      ? SKILL_MASTERY_MELEE_DURATION_CHANCE
+      : SKILL_MASTERY_MELEE_CD_RESET_CHANCE) * 100
+  );
+}
+
+/** Skill Mastery (330): reuse reset або ×2 тривалість бафа/дебафа. */
+export function maybeApplySkillMastery(
   ctx: BattleSkillResolveContext,
   result: BattleSkillTurnResult
 ): BattleSkillTurnResult {
-  if (dreadnoughtSkillMasteryRank(ctx) < 1) return result;
+  if (skillMasteryRank(ctx) < 1) return result;
+  if (!skillMasteryProfessionOk(ctx.l2Profession)) return result;
   const battleId = battleIdForCooldownAction(ctx.action);
-  if (!battleId || battleId === 'l2_330') return result;
-  const hasDuration =
-    result.battleModsExpiresPatch != null &&
-    Object.keys(result.battleModsExpiresPatch).length > 0;
+  if (
+    !battleId ||
+    battleId === SKILL_MASTERY_BATTLE_ID ||
+    battleId === FOCUS_SKILL_MASTERY_BATTLE_ID
+  ) {
+    return result;
+  }
+
+  const hasDuration = skillMasteryHasDurationCandidate(result);
   const hasCandidateCd =
-    result.mysticSkillCdUntilPatch?.[battleId] !== undefined || !hasDuration;
+    result.mysticSkillCdUntilPatch?.[battleId] !== undefined ||
+    result.activeBuffPatch?.action === 'add' ||
+    !hasDuration;
   if (!hasDuration && !hasCandidateCd) return result;
-  const procChance = hasDuration
-    ? DREADNOUGHT_SKILL_MASTERY_DURATION_CHANCE
-    : DREADNOUGHT_SKILL_MASTERY_CD_RESET_CHANCE;
-  if (Math.random() >= procChance) return result;
+
+  const procChancePctRaw = skillMasteryProcChancePctForCtx(ctx, hasDuration);
+  const fsmRank = focusSkillMasteryActiveRank(
+    ctx.activeBuffs,
+    ctx.st.battleMods?.raceToggleRanks
+  );
+  const procChancePct =
+    fsmRank != null
+      ? Math.min(100, procChancePctRaw * FOCUS_SKILL_MASTERY_PROC_MUL)
+      : procChancePctRaw;
+  if (procChancePct <= 0 || Math.random() * 100 >= procChancePct) {
+    return result;
+  }
 
   const masteryLine =
     result.skillLine.length > 0
@@ -439,6 +507,24 @@ export function maybeApplyDreadnoughtSkillMastery(
 
   if (hasDuration) {
     const now = Date.now();
+    if (
+      result.activeBuffPatch?.action === 'add' &&
+      (!result.battleModsExpiresPatch ||
+        Object.keys(result.battleModsExpiresPatch).length === 0)
+    ) {
+      const sid = result.activeBuffPatch.skillId;
+      const sec = buffDurationSecForSkillId(sid);
+      if (typeof sec === 'number' && sec > 0) {
+        return {
+          ...result,
+          skillLine: masteryLine,
+          activeBuffPatch: {
+            ...result.activeBuffPatch,
+            expiresAtMs: now + Math.floor(sec * 2 * 1000),
+          },
+        };
+      }
+    }
     const src = result.battleModsExpiresPatch ?? {};
     const nextExp: Record<string, number> = {};
     for (const [sid, until] of Object.entries(src)) {
@@ -466,6 +552,9 @@ export function maybeApplyDreadnoughtSkillMastery(
     skipStandardCooldown: true,
   };
 }
+
+/** @deprecated alias — використовуй `maybeApplySkillMastery`. */
+export const maybeApplyDreadnoughtSkillMastery = maybeApplySkillMastery;
 
 export function requireCatalogEntryForAction(
   action: BattleActionId,

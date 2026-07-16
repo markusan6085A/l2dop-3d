@@ -39,6 +39,10 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   283: 60,
   /** Rage (Warlord-гілка) — сильніший фіз. удар, нижчий P.Def (L2 Interlude ~60с). */
   94: 60,
+  /** Hawk Eye — +Accuracy, −10% P.Def (5 хв). */
+  131: 300,
+  /** Soul of Sagittarius — +Max MP (20 хв). */
+  303: 1200,
   /** Rapid Shot — вища швидкість атаки з луком (20 хв). */
   99: 1200,
   /** Howl (Warlord) — дебаф P.Atk моба. */
@@ -74,14 +78,15 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   /** Vengeance */
   368: 30,
   // ---- Rogue / Adventurer (для майбутньої гілки, але часто перетинаються) ----
-  /** Focus Chance */
-  356: 300,
-  /** Focus Power */
-  357: 300,
+  /** Focus Chance — 2 хв */
+  356: 120,
+  /** Focus Power — 2 хв */
+  357: 120,
   /** Bluff */
-  358: 8,
-  /** Snipe */
-  313: 60,
+  358: 9,
+  /** Snipe — +P.Atk/крит/точність, без руху (2 хв). */
+  313: 120,
+  354: 120,
   // ---- Gladiator / Duelist (sonic-гілка, l2db Interlude) ----
   /** Sonic Move (451) — L2 Interlude: +speed на ~15 с. */
   451: 15,

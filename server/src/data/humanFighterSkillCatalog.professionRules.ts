@@ -136,6 +136,13 @@ export function catalogEntryVisibleForProfession(
   if (entry.professionReq === 'human_dreadnought_or_duelist') {
     return p === 'human_dreadnought' || p === 'human_duelist';
   }
+  if (entry.professionReq === 'human_dreadnought_or_duelist_or_sagittarius') {
+    return (
+      p === 'human_dreadnought' ||
+      p === 'human_duelist' ||
+      p === 'human_sagittarius'
+    );
+  }
   if (entry.professionReq === 'human_dreadnought_or_duelist_or_phoenix_or_hell') {
     return (
       p === 'human_dreadnought' ||

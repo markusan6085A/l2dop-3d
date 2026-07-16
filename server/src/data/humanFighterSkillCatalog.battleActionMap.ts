@@ -13,6 +13,8 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_19: 'double_shot',
   l2_24: 'burst_shot',
   l2_99: 'rapid_shot',
+  l2_131: 'hawk_eye',
+  l2_303: 'soul_of_sagittarius',
   l2_313: 'snipe',
   l2_101: 'stun_shot',
   l2_343: 'lethal_shot',
@@ -80,6 +82,7 @@ export const CANONICAL_L2_SKILL_TO_BATTLE_ACTION: Partial<
   l2_322: 'shield_fortress',
   l2_341: 'touch_of_life',
   l2_335: 'fortitude',
+  l2_334: 'focus_skill_mastery',
   l2_342: 'touch_of_death',
   l2_350: 'physical_mirror',
   l2_353: 'shield_slam',
@@ -164,6 +167,10 @@ export function l2SkillIdForBattleActionIcon(action: BattleActionId): number {
       return 4;
     case 'rapid_shot':
       return 99;
+    case 'hawk_eye':
+      return 131;
+    case 'soul_of_sagittarius':
+      return 303;
     case 'snipe':
       return 313;
     case 'stun_shot':
@@ -294,6 +301,8 @@ export function l2SkillIdForBattleActionIcon(action: BattleActionId): number {
       return 341;
     case 'fortitude':
       return 335;
+    case 'focus_skill_mastery':
+      return 334;
     case 'touch_of_death':
       return 342;
     case 'physical_mirror':

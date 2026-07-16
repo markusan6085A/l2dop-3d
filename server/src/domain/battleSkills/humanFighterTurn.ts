@@ -12,7 +12,7 @@ import type {
 } from './types.js';
 import {
   applyStandardFighterCooldown,
-  maybeApplyDreadnoughtSkillMastery,
+  maybeApplySkillMastery,
 } from './humanFighterTurnHelpers.js';
 import { resolveHumanFighterTurnCore } from './humanFighterTurnCore.js';
 
@@ -20,7 +20,7 @@ export function resolveHumanFighterTurn(
   ctx: BattleSkillResolveContext,
   rollPhys: PhysicalRollFn
 ): BattleSkillTurnResult {
-  const masteryResult = maybeApplyDreadnoughtSkillMastery(
+  const masteryResult = maybeApplySkillMastery(
     ctx,
     resolveHumanFighterTurnCore(ctx, rollPhys)
   );

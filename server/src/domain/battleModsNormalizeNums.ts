@@ -1,6 +1,6 @@
 import type { WeaknessKind } from './mobWeaknessFamily.js';
 import type { BattleBattleMods, WeaknessDetectMap } from './battleTypes.js';
-import { jsonFiniteNum } from './battleModsJson.js';
+import { jsonFiniteNum, jsonBoolLike } from './battleModsJson.js';
 
 /** Нормалізація числових полів `battleMods` після патча (Prisma/JSON). */
 export function normalizeBattleModsNumsInPlace(m: BattleBattleMods): void {
@@ -108,12 +108,10 @@ export function normalizeBattleModsNumsInPlace(m: BattleBattleMods): void {
   const sc = jsonFiniteNum(m.snipeCritRateAdd);
   if (sc !== undefined) m.snipeCritRateAdd = sc;
   else delete m.snipeCritRateAdd;
-  const fcc = jsonFiniteNum(m.focusChanceCritRateAdd);
-  if (fcc !== undefined) m.focusChanceCritRateAdd = fcc;
-  else delete m.focusChanceCritRateAdd;
-  const fpm = jsonFiniteNum(m.focusPowerPatkMul);
-  if (fpm !== undefined) m.focusPowerPatkMul = fpm;
-  else delete m.focusPowerPatkMul;
+  if (jsonBoolLike(m.focusChanceActive)) m.focusChanceActive = true;
+  else delete m.focusChanceActive;
+  if (jsonBoolLike(m.focusPowerActive)) m.focusPowerActive = true;
+  else delete m.focusPowerActive;
   const bcm = jsonFiniteNum(m.bluffCritDmgMul);
   if (bcm !== undefined) m.bluffCritDmgMul = bcm;
   else delete m.bluffCritDmgMul;
@@ -199,6 +197,31 @@ export function normalizeBattleModsNumsInPlace(m: BattleBattleMods): void {
   } else {
     delete m.mobStunUntilMs;
     delete m.mobStunIconSkillId;
+  }
+  const backUntil = jsonFiniteNum(m.mobBackExposedUntilMs);
+  if (backUntil !== undefined && backUntil > 0) {
+    m.mobBackExposedUntilMs = Math.floor(backUntil);
+    const sid = jsonFiniteNum(m.mobBackExposedIconSkillId);
+    m.mobBackExposedIconSkillId =
+      sid !== undefined && sid > 0 ? Math.floor(sid) : 358;
+  } else {
+    delete m.mobBackExposedUntilMs;
+    delete m.mobBackExposedIconSkillId;
+  }
+  const slowUntil = jsonFiniteNum(m.mobRunSpeedDebuffUntilMs);
+  if (slowUntil !== undefined && slowUntil > 0) {
+    m.mobRunSpeedDebuffUntilMs = Math.floor(slowUntil);
+    const mul = jsonFiniteNum(m.mobRunSpeedDebuffMul);
+    if (mul !== undefined && mul > 0 && mul < 1) {
+      m.mobRunSpeedDebuffMul = mul;
+    }
+    const sid = jsonFiniteNum(m.mobRunSpeedDebuffIconSkillId);
+    m.mobRunSpeedDebuffIconSkillId =
+      sid !== undefined && sid > 0 ? Math.floor(sid) : 354;
+  } else {
+    delete m.mobRunSpeedDebuffMul;
+    delete m.mobRunSpeedDebuffUntilMs;
+    delete m.mobRunSpeedDebuffIconSkillId;
   }
   const playerStunUntil = jsonFiniteNum(m.playerStunUntilMs);
   if (playerStunUntil !== undefined && playerStunUntil > 0) {

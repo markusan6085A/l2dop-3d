@@ -3,12 +3,56 @@
  */
 import { humanFighterProfessionAtkMult } from '../../data/l2dopHumanFighterBattleSkills.js';
 import {
-  backstabMpAndPower,
+  backstabDamageAtk,
+  backstabMpPowerAtRank,
+  backstabSkillLineUk,
+  isDaggerWeaponKind,
+  isMobBackExposedForBackstab,
+} from '../../data/backstabTables.js';
+import {
+  deadlyBlowDamageAtk,
+  deadlyBlowMpPowerAtRank,
+  deadlyBlowSkillLineUk,
+  DEADLY_BLOW_CRIT_RATE_BONUS,
+} from '../../data/deadlyBlowTables.js';
+import {
+  bluffMpAtRank,
+  bluffSkillLineUk,
+  bluffStunDurationMs,
+  BLUFF_BASE_STUN_CHANCE_PCT,
+  BLUFF_L2_SKILL_ID,
+  BLUFF_STUN_DURATION_SEC,
+  rollBluffLoseTarget,
+} from '../../data/bluffTables.js';
+import {
+  focusChanceMpAtRank,
+  focusChanceSkillLineUk,
+  FOCUS_CHANCE_DURATION_SEC,
+  FOCUS_CHANCE_L2_SKILL_ID,
+} from '../../data/focusChanceTables.js';
+import {
+  focusPowerMpAtRank,
+  focusPowerSkillLineUk,
+  FOCUS_POWER_DURATION_SEC,
+  FOCUS_POWER_L2_SKILL_ID,
+} from '../../data/focusPowerTables.js';
+import { spawnBlocksHammerCrushStun } from '../../data/hammerCrushTables.js';
+import {
+  effectiveMobStunResistPct,
+  scaleLandChancePercentAfterResist,
+} from '../controlLandResist.js';
+import type { BattleBattleMods } from '../battleTypes.js';
+import {
+  lethalBlowDamageAtk,
+  lethalBlowMpPowerAtRank,
+  lethalBlowSkillLineUk,
+  LETHAL_BLOW_CRIT_RATE_BONUS,
+  rollLethalBlowProc,
+} from '../../data/lethalBlowTables.js';
+import {
   corpsePlagueMpAndPower,
-  deadlyBlowThMpAndPower,
   hamstringDaMpAndPower,
   holyStrikeMpAndPower,
-  lethalBlowAdvMpAndPower,
   lureMp,
   switchMp,
   unlockMp,
@@ -46,6 +90,11 @@ import {
   fortitudeSkillLineOffUk,
   fortitudeSkillLineUk,
 } from '../../data/fortitudeTables.js';
+import {
+  focusSkillMasteryMpAtRank,
+  focusSkillMasterySkillLineOffUk,
+  focusSkillMasterySkillLineUk,
+} from '../../data/focusSkillMasteryTables.js';
 import { resolvePhysicalMirrorTurn } from './physicalMirrorTurn.js';
 import { resolveTouchOfLifeTurn } from './touchOfLifeTurn.js';
 import { resolveTouchOfDeathTurn } from './touchOfDeathTurn.js';
@@ -101,9 +150,6 @@ function reqEntry(
   return entry;
 }
 
-function daggerOk(wk: string | undefined): boolean {
-  return wk === 'dagger' || wk === 'dual';
-}
 
 function swordOrBlunt(wk: string | undefined): boolean {
   return (
@@ -154,14 +200,26 @@ export function resolveHumanFighterGapSkillsTurn(
 
   if (action === 'backstab') {
     reqEntry(action, String(l2Profession));
-    if (!daggerOk(wk)) throw new Error('battle_skill_not_allowed');
-    const row = backstabMpAndPower(rk);
-    const atk = Math.floor(combat.pAtk * (1.22 + row.power / 380) * profM);
+    if (!isDaggerWeaponKind(wk)) throw new Error('battle_skill_not_allowed');
+    const row = backstabMpPowerAtRank(rk);
+    if (!row) throw new Error('battle_skill_not_allowed');
+    const fromBehind = isMobBackExposedForBackstab(ctx);
+    if (!fromBehind) {
+      return {
+        mpCost: 0,
+        pDmg: 0,
+        skillLine: backstabSkillLineUk(false, row.power),
+        physOutcome: null,
+        magicOutcome: null,
+        skipStandardCooldown: true,
+      };
+    }
+    const atk = backstabDamageAtk(combat.pAtk, row.power, profM);
     const r = rollPhys(atk);
     return {
       mpCost: row.mp,
       pDmg: r.damage,
-      skillLine: 'Удар у спину (30, Backstab).',
+      skillLine: backstabSkillLineUk(true, row.power),
       physOutcome: r.outcome,
       magicOutcome: null,
       ...(r.weaknessLogLineUk ? { weaknessLogLineUk: r.weaknessLogLineUk } : {}),
@@ -170,14 +228,15 @@ export function resolveHumanFighterGapSkillsTurn(
 
   if (action === 'deadly_blow_dagger') {
     reqEntry(action, String(l2Profession));
-    if (!daggerOk(wk)) throw new Error('battle_skill_not_allowed');
-    const row = deadlyBlowThMpAndPower(rk);
-    const atk = Math.floor(combat.pAtk * (1.18 + row.power / 400) * profM);
-    const r = rollPhys(atk);
+    if (!isDaggerWeaponKind(wk)) throw new Error('battle_skill_not_allowed');
+    const row = deadlyBlowMpPowerAtRank(rk);
+    if (!row) throw new Error('battle_skill_not_allowed');
+    const atk = deadlyBlowDamageAtk(combat.pAtk, row.power, profM);
+    const r = rollPhys(atk, { critRateBonus: DEADLY_BLOW_CRIT_RATE_BONUS });
     return {
       mpCost: row.mp,
       pDmg: r.damage,
-      skillLine: 'Смертельний удар (263, Deadly Blow).',
+      skillLine: deadlyBlowSkillLineUk(r.outcome, row.power),
       physOutcome: r.outcome,
       magicOutcome: null,
       ...(r.weaknessLogLineUk ? { weaknessLogLineUk: r.weaknessLogLineUk } : {}),
@@ -324,84 +383,133 @@ export function resolveHumanFighterGapSkillsTurn(
 
   if (action === 'lethal_blow_adv') {
     reqEntry(action, String(l2Profession));
-    if (!daggerOk(wk)) throw new Error('battle_skill_not_allowed');
-    const row = lethalBlowAdvMpAndPower(rk);
-    const atk = Math.floor(combat.pAtk * (1.35 + row.power / 900) * profM);
-    const r = rollPhys(atk);
+    if (!isDaggerWeaponKind(wk)) throw new Error('battle_skill_not_allowed');
+    const row = lethalBlowMpPowerAtRank(rk);
+    if (!row) throw new Error('battle_skill_not_allowed');
+    const atk = lethalBlowDamageAtk(combat.pAtk, row.power, profM);
+    const r = rollPhys(atk, { critRateBonus: LETHAL_BLOW_CRIT_RATE_BONUS });
+    const lethalProc =
+      r.outcome !== 'miss' && r.outcome != null && rollLethalBlowProc();
     return {
       mpCost: row.mp,
       pDmg: r.damage,
-      skillLine: 'Смертельний удар (344, Lethal Blow).',
+      skillLine: lethalBlowSkillLineUk(r.outcome, lethalProc),
       physOutcome: r.outcome,
       magicOutcome: null,
+      ...(lethalProc ? { lethalShotProc: true } : {}),
       ...(r.weaknessLogLineUk ? { weaknessLogLineUk: r.weaknessLogLineUk } : {}),
     };
   }
 
   if (action === 'focus_chance') {
     reqEntry(action, String(l2Profession));
+    if (!isDaggerWeaponKind(wk)) throw new Error('battle_skill_not_allowed');
+    const mp = focusChanceMpAtRank(rk);
+    if (mp == null) throw new Error('battle_skill_not_allowed');
     const cd = ctx.st.mysticSkillCdUntil?.['l2_356'];
     if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
       assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
-    const FCC = 35;
-    const FC_DURATION_SEC = buffDurationSecForSkillId(356) ?? 300;
-    const cdPatch = cooldownPatchForSkill(356, ctx);
+    const cdPatch = cooldownPatchForSkill(FOCUS_CHANCE_L2_SKILL_ID, ctx);
     return {
-      mpCost: 42,
+      mpCost: mp,
       pDmg: 0,
-      skillLine: 'Фокус шансу (356): вищий шанс криту.',
+      skillLine: focusChanceSkillLineUk(),
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { focusChanceCritRateAdd: FCC },
+      battleModsPatch: { focusChanceActive: true },
       ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      battleModsExpiresPatch: expiresPatchForSkill(356, FC_DURATION_SEC),
+      battleModsExpiresPatch: expiresPatchForSkill(
+        FOCUS_CHANCE_L2_SKILL_ID,
+        FOCUS_CHANCE_DURATION_SEC
+      ),
     };
   }
 
   if (action === 'focus_power') {
     reqEntry(action, String(l2Profession));
+    if (!isDaggerWeaponKind(wk)) throw new Error('battle_skill_not_allowed');
+    const mp = focusPowerMpAtRank(rk);
+    if (mp == null) throw new Error('battle_skill_not_allowed');
     const cd = ctx.st.mysticSkillCdUntil?.['l2_357'];
     if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
       assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
-    const FPM = 1.12;
-    const FP_DURATION_SEC = buffDurationSecForSkillId(357) ?? 300;
-    const cdPatch = cooldownPatchForSkill(357, ctx);
+    const cdPatch = cooldownPatchForSkill(FOCUS_POWER_L2_SKILL_ID, ctx);
     return {
-      mpCost: 42,
+      mpCost: mp,
       pDmg: 0,
-      skillLine: 'Фокус сили (357): сильніша фізична атака.',
+      skillLine: focusPowerSkillLineUk(),
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { focusPowerPatkMul: FPM },
+      battleModsPatch: { focusPowerActive: true },
       ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      battleModsExpiresPatch: expiresPatchForSkill(357, FP_DURATION_SEC),
+      battleModsExpiresPatch: expiresPatchForSkill(
+        FOCUS_POWER_L2_SKILL_ID,
+        FOCUS_POWER_DURATION_SEC
+      ),
     };
   }
 
   if (action === 'bluff') {
     reqEntry(action, String(l2Profession));
+    if (!isDaggerWeaponKind(wk)) throw new Error('battle_skill_not_allowed');
+    const mp = bluffMpAtRank(rk);
+    if (mp == null) throw new Error('battle_skill_not_allowed');
     const cd = ctx.st.mysticSkillCdUntil?.['l2_358'];
     if (isCooldownBlocked(typeof cd === 'number' ? cd : undefined)) {
       assertSkillCooldownReady(typeof cd === 'number' ? cd : undefined);
     }
-    const BLUFF_PDEF = 0.9;
-    const BLUFF_CRIT = 1.25;
-    const BLUFF_DURATION_SEC = buffDurationSecForSkillId(358) ?? 8;
-    const cdPatch = cooldownPatchForSkill(358, ctx);
+    const nowMs = Date.now();
+    const until = nowMs + bluffStunDurationMs();
+    const existingStun = jsonFiniteNum(ctx.st.battleMods?.mobStunUntilMs);
+    const alreadyStunned =
+      existingStun !== undefined && existingStun > nowMs;
+    const stunBlocked = spawnBlocksHammerCrushStun(ctx.spawnKind);
+    const effStunPct = scaleLandChancePercentAfterResist(
+      BLUFF_BASE_STUN_CHANCE_PCT,
+      effectiveMobStunResistPct({
+        level: ctx.spawnLevel,
+        stunResistPct: ctx.spawnStunResistPct,
+        debuffResistPct: ctx.spawnDebuffResistPct,
+      })
+    );
+    const appliedStun =
+      !stunBlocked &&
+      !alreadyStunned &&
+      Math.random() * 100 < effStunPct;
+    const loseTarget = rollBluffLoseTarget();
+    const battleModsPatch: Partial<BattleBattleMods> = {
+      mobBackExposedUntilMs: until,
+      mobBackExposedIconSkillId: BLUFF_L2_SKILL_ID,
+    };
+    if (appliedStun) {
+      battleModsPatch.mobStunUntilMs = until;
+      battleModsPatch.mobStunIconSkillId = BLUFF_L2_SKILL_ID;
+    }
+    const cdPatch = cooldownPatchForSkill(BLUFF_L2_SKILL_ID, ctx);
     return {
-      mpCost: 48,
+      mpCost: mp,
       pDmg: 0,
-      skillLine: 'Блеф (358): нижчий захист цілі; сильніший крит.',
+      skillLine: bluffSkillLineUk(
+        appliedStun,
+        alreadyStunned,
+        loseTarget,
+        effStunPct,
+        stunBlocked
+      ),
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: {
-        mobTargetPDefMul: BLUFF_PDEF,
-        bluffCritDmgMul: BLUFF_CRIT,
-      },
+      battleModsPatch,
       ...(cdPatch ? { mysticSkillCdUntilPatch: cdPatch } : {}),
-      battleModsExpiresPatch: expiresPatchForSkill(358, BLUFF_DURATION_SEC),
+      battleModsExpiresPatch: expiresPatchForSkill(
+        BLUFF_L2_SKILL_ID,
+        BLUFF_STUN_DURATION_SEC
+      ),
+      ...((appliedStun || loseTarget) && {
+        skipMobCounterAttackOnce: true,
+        mobRetaliationDelayHits: appliedStun ? 2 : 3,
+      }),
     };
   }
 
@@ -825,6 +933,32 @@ export function resolveHumanFighterGapSkillsTurn(
       physOutcome: null,
       magicOutcome: null,
       activeBuffPatch: { skillId: 335, level: rk, action: 'add' },
+    };
+  }
+
+  if (action === 'focus_skill_mastery') {
+    reqEntry(action, String(l2Profession));
+    const alreadyOn = (ctx.activeBuffs ?? []).some(
+      (b) => Math.floor(Number(b.skillId)) === 334
+    );
+    if (alreadyOn) {
+      return {
+        mpCost: 0,
+        pDmg: 0,
+        skillLine: focusSkillMasterySkillLineOffUk(),
+        physOutcome: null,
+        magicOutcome: null,
+        activeBuffPatch: { skillId: 334, level: rk, action: 'remove' },
+      };
+    }
+    const mpCost = focusSkillMasteryMpAtRank(rk) ?? 36;
+    return {
+      mpCost,
+      pDmg: 0,
+      skillLine: focusSkillMasterySkillLineUk(),
+      physOutcome: null,
+      magicOutcome: null,
+      activeBuffPatch: { skillId: 334, level: rk, action: 'add' },
     };
   }
 

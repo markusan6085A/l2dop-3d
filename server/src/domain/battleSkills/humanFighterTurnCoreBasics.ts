@@ -1,9 +1,8 @@
 /**
  * Human fighter turn — базові удари, лук, War Cry, Dash, Roar, POLE/мечі до Provoke (ланцюг з resolveHumanFighterTurnCore).
  */
+import { burstShotMpPowerAtRank } from '../../data/burstShotTables.js';
 import {
-  burstShotMpAndPower,
-  doubleShotMpAndPower,
   mortalBlowMpAndPower,
   powerShotMpAndPower,
   powerSmashMpAndPower,
@@ -13,6 +12,35 @@ import {
   wildSweepMpAndPower,
   whirlwindMpAndPower,
 } from '../../data/l2dopHumanFighterBattleSkills.js';
+import { doubleShotMpPowerAtRank } from '../../data/doubleShotTables.js';
+import {
+  hawkEyeMpAtRank,
+  hawkEyeSkillLineUk,
+} from '../../data/hawkEyeTables.js';
+import {
+  soulOfSagittariusHpCostAtRank,
+  soulOfSagittariusSkillLineUk,
+} from '../../data/soulOfSagittariusTables.js';
+import {
+  snipeMpAtRank,
+  snipeSkillLineUk,
+} from '../../data/snipeTables.js';
+import {
+  lethalShotDamageAtk,
+  lethalShotMpPowerAtRank,
+  lethalShotSkillLineUk,
+  rollLethalShotProc,
+} from '../../data/lethalShotTables.js';
+import {
+  HAMSTRING_SHOT_BASE_LAND_CHANCE_PCT,
+  HAMSTRING_SHOT_L2_SKILL_ID,
+  HAMSTRING_SHOT_RUN_SPEED_MUL,
+  hamstringShotDamageAtk,
+  hamstringShotMpPowerAtRank,
+  hamstringShotSkillLineUk,
+  hamstringShotSlowDurationMs,
+} from '../../data/hamstringShotTables.js';
+import { isPvpBattleJson } from '../battlePvpContext.js';
 import {
   provokeDurationSecAtRank,
   provokeMpAtRank,
@@ -58,9 +86,11 @@ import { jsonFiniteNum } from '../battle.js';
 import { resolveShieldStunTurn } from './shieldStunTurn.js';
 import { resolveShieldSlamTurn } from './shieldSlamTurn.js';
 import {
-  effectiveMobDebuffResistPct,
   effectiveMobStunResistPct,
+  effectiveMobWitResistPct,
   scaleLandChancePercentAfterResist,
+  witResistPctFromStat,
+  applyTouchOfDeathResistPenalty,
 } from '../controlLandResist.js';
 import type { BattleSkillTurnResult } from './types.js';
 import {
@@ -68,9 +98,6 @@ import {
   l2dopXmlSkillRow,
 } from '../../data/l2dopXmlSkillLevels.lookup.js';
 import {
-  HAMSTRING_SHOT_BASE_CONTROL_CHANCE_PCT,
-  HAMSTRING_SHOT_CONTROL_CHANCE_CAP_PCT,
-  HAMSTRING_SHOT_CONTROL_PER_RANK_PCT,
   THUNDER_STORM_BASE_STUN_CHANCE_PCT,
   THUNDER_STORM_STUN_CHANCE_CAP_PCT,
   THUNDER_STORM_STUN_PER_RANK_PCT,
@@ -80,6 +107,7 @@ import {
   assertSkillCooldownReady,
   catalogAllowsFighterAction,
   legacyBuffCdAndExpirePatches,
+  legacyBuffExpiresPatch,
   legacyBuffOnCd,
   requireCatalogEntryForAction,
   rollAccumulatedWarriorAttack,
@@ -177,7 +205,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
       throw new Error('battle_skill_not_allowed');
     }
     const ds =
-      l2dopXmlMpPower(19, rank) ?? doubleShotMpAndPower(preLevel, rank);
+      l2dopXmlMpPower(19, rank) ?? doubleShotMpPowerAtRank(rank);
     if (!ds) throw new Error('battle_skill_not_allowed');
     const atk = Math.floor(combat.pAtk * (1.09 + ds.power / 420) * profM);
     const r = rollPhys(atk);
@@ -201,7 +229,7 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
       throw new Error('battle_skill_not_allowed');
     }
     const bs =
-      l2dopXmlMpPower(24, rank) ?? burstShotMpAndPower(preLevel, rank);
+      l2dopXmlMpPower(24, rank) ?? burstShotMpPowerAtRank(rank);
     if (!bs) throw new Error('battle_skill_not_allowed');
     const atk = Math.floor(combat.pAtk * (1.08 + bs.power / 480) * profM);
     const r = rollPhys(atk);
@@ -292,32 +320,81 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     };
   }
 
+  if (action === 'hawk_eye') {
+    if (
+      !catalogAllowsFighterAction(
+        action,
+        String(l2Profession),
+        ctx.race,
+        ctx.classBranch
+      )
+    ) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const heCd = ctx.st.mysticSkillCdUntil?.['l2_131'];
+    if (typeof heCd === 'number' && Date.now() < heCd) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    return {
+      mpCost: hawkEyeMpAtRank(rank) ?? stubMpForCanon('l2_131', rank),
+      pDmg: 0,
+      skillLine: hawkEyeSkillLineUk(rank),
+      physOutcome: null,
+      magicOutcome: null,
+      activeBuffPatch: { skillId: 131, level: rank, action: 'add' },
+    };
+  }
+
+  if (action === 'soul_of_sagittarius') {
+    if (
+      !catalogAllowsFighterAction(
+        action,
+        String(l2Profession),
+        ctx.race,
+        ctx.classBranch
+      )
+    ) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const sosCd = ctx.st.mysticSkillCdUntil?.['l2_303'];
+    if (typeof sosCd === 'number' && Date.now() < sosCd) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const hpCost = soulOfSagittariusHpCostAtRank(rank);
+    if (ctx.playerHpInBattle <= hpCost) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    return {
+      mpCost: 0,
+      pDmg: 0,
+      skillLine: soulOfSagittariusSkillLineUk(rank),
+      physOutcome: null,
+      magicOutcome: null,
+      playerHpCost: hpCost,
+      playerHpCostSourceUk: 'Дух Стрільця',
+      activeBuffPatch: { skillId: 303, level: rank, action: 'add' },
+    };
+  }
+
   if (action === 'snipe') {
     requireCatalogEntryForAction(action, String(l2Profession));
     if (ctx.weaponKind !== 'bow') {
       throw new Error('battle_skill_not_allowed');
     }
-    if (legacyBuffOnCd(ctx, 313)) {
+    const snCd = ctx.st.mysticSkillCdUntil?.['l2_313'];
+    if (typeof snCd === 'number' && Date.now() < snCd) {
       throw new Error('battle_skill_not_allowed');
     }
-    const SNIPE_MP = [28, 29, 30, 31, 32, 33, 34, 34] as const;
-    const SNIPE_POW = [124, 134, 145, 155, 166, 177, 188, 199] as const;
-    const idx = Math.min(Math.max(1, rank), SNIPE_MP.length) - 1;
-    const snipeRow = l2dopXmlSkillRow(313, rank);
-    const pow = snipeRow?.a ?? SNIPE_POW[idx]!;
+    const expPatch = legacyBuffExpiresPatch(313);
     return {
-      mpCost: snipeRow?.m ?? SNIPE_MP[idx]!,
+      mpCost: snipeMpAtRank(rank) ?? stubMpForCanon('l2_313', rank),
       pDmg: 0,
-      skillLine:
-        'Точний постріл (Snipe): бонус до точності, P.Atk і криту.',
+      skillLine: snipeSkillLineUk(rank),
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: {
-        snipePatkFlat: pow,
-        snipeAccuracyFlat: pow,
-        snipeCritRateAdd: 20,
-      },
-      ...legacyBuffCdAndExpirePatches(313, ctx),
+      activeBuffPatch: { skillId: 313, level: rank, action: 'add' },
+      battleModsPatch: { snipeImmobile: true },
+      ...(expPatch ? { battleModsExpiresPatch: expPatch } : {}),
     };
   }
 
@@ -377,19 +454,19 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (ctx.weaponKind !== 'bow') {
       throw new Error('battle_skill_not_allowed');
     }
-    const lethalXml = l2dopXmlMpPower(343, rank);
-    const LETHAL_MP = lethalXml?.mp ?? 170;
-    const LETHAL_POW = lethalXml?.power ?? 5132;
-    const atk = Math.floor(
-      combat.pAtk * (1.28 + LETHAL_POW / 2200) * profM
-    );
+    const ls = lethalShotMpPowerAtRank(rank);
+    if (!ls) throw new Error('battle_skill_not_allowed');
+    const atk = lethalShotDamageAtk(combat.pAtk, ls.power, profM);
     const r = rollPhys(atk);
+    const lethalProc =
+      r.outcome !== 'miss' && r.outcome != null && rollLethalShotProc();
     return {
-      mpCost: LETHAL_MP,
+      mpCost: ls.mp,
       pDmg: r.damage,
-      skillLine: 'Смертельний постріл (343, Lethal Shot).',
+      skillLine: lethalShotSkillLineUk(lethalProc),
       physOutcome: r.outcome,
       magicOutcome: null,
+      ...(lethalProc ? { lethalShotProc: true } : {}),
       ...(r.weaknessLogLineUk
         ? { weaknessLogLineUk: r.weaknessLogLineUk }
         : {}),
@@ -401,41 +478,58 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (ctx.weaponKind !== 'bow') {
       throw new Error('battle_skill_not_allowed');
     }
-    const hamXml = l2dopXmlMpPower(354, rank);
-    const HS_MP = hamXml?.mp ?? 86;
-    const HS_POW = hamXml?.power ?? 1973;
-    const atk = Math.floor(combat.pAtk * (1.12 + HS_POW / 480) * profM);
+    const hs = hamstringShotMpPowerAtRank(rank);
+    if (!hs) throw new Error('battle_skill_not_allowed');
+    const atk = hamstringShotDamageAtk(combat.pAtk, hs.power, profM);
     const r = rollPhys(atk);
-    const controlChancePct = Math.min(
-      HAMSTRING_SHOT_CONTROL_CHANCE_CAP_PCT,
-      HAMSTRING_SHOT_BASE_CONTROL_CHANCE_PCT +
-        rank * HAMSTRING_SHOT_CONTROL_PER_RANK_PCT
-    );
-    const effControlPct = scaleLandChancePercentAfterResist(
-      controlChancePct,
-      effectiveMobDebuffResistPct({
+    const nowMs = Date.now();
+    const isPvp = isPvpBattleJson(ctx.st);
+    let witResist: number;
+    if (isPvp) {
+      const lv =
+        typeof ctx.st.pvpTargetLevel === 'number' && ctx.st.pvpTargetLevel >= 1
+          ? Math.floor(ctx.st.pvpTargetLevel)
+          : ctx.spawnLevel;
+      witResist = witResistPctFromStat(20 + Math.floor(lv * 0.55));
+    } else {
+      witResist = effectiveMobWitResistPct({
         level: ctx.spawnLevel,
-        stunResistPct: ctx.spawnStunResistPct,
         debuffResistPct: ctx.spawnDebuffResistPct,
-      })
+      });
+    }
+    witResist = applyTouchOfDeathResistPenalty(
+      witResist,
+      ctx.st.battleMods,
+      nowMs
     );
-    const appliedControl =
-      r.damage > 0 &&
-      r.outcome !== 'miss' &&
-      Math.random() * 100 < effControlPct;
+    const effLandPct = scaleLandChancePercentAfterResist(
+      HAMSTRING_SHOT_BASE_LAND_CHANCE_PCT,
+      witResist
+    );
+    const landedHit =
+      r.damage > 0 && r.outcome !== 'miss' && r.outcome != null;
+    const appliedSlow = landedHit && Math.random() * 100 < effLandPct;
+    let battleModsPatch: Partial<BattleBattleMods> | undefined;
+    let battleModsExpiresPatch: Record<string, number> | undefined;
+    if (appliedSlow) {
+      const until = nowMs + hamstringShotSlowDurationMs();
+      battleModsPatch = {
+        mobRunSpeedDebuffMul: HAMSTRING_SHOT_RUN_SPEED_MUL,
+        mobRunSpeedDebuffUntilMs: until,
+        mobRunSpeedDebuffIconSkillId: HAMSTRING_SHOT_L2_SKILL_ID,
+      };
+      battleModsExpiresPatch = {
+        [String(HAMSTRING_SHOT_L2_SKILL_ID)]: until,
+      };
+    }
     return {
-      mpCost: HS_MP,
+      mpCost: hs.mp,
       pDmg: r.damage,
-      skillLine: appliedControl
-        ? 'Постріл у сухожилля (354, Hamstring Shot): ціль сповільнено (~' +
-          Math.round(effControlPct) +
-          '%).'
-        : 'Постріл у сухожилля (354, Hamstring Shot): сповільнення не спрацювало (~' +
-          Math.round(effControlPct) +
-          '%).',
+      skillLine: hamstringShotSkillLineUk(appliedSlow, effLandPct),
       physOutcome: r.outcome,
       magicOutcome: null,
-      ...(appliedControl ? { skipMobCounterAttackOnce: true } : {}),
+      ...(battleModsPatch ? { battleModsPatch } : {}),
+      ...(battleModsExpiresPatch ? { battleModsExpiresPatch } : {}),
       ...(r.weaknessLogLineUk
         ? { weaknessLogLineUk: r.weaknessLogLineUk }
         : {}),

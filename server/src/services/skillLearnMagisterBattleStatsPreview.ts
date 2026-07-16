@@ -36,6 +36,60 @@ import {
   stunShotStatsNoteUk,
 } from '../data/stunShotTables.js';
 import {
+  backstabMpPowerAtRank,
+  backstabStatsNoteUk,
+} from '../data/backstabTables.js';
+import {
+  deadlyBlowMpPowerAtRank,
+  deadlyBlowStatsNoteUk,
+} from '../data/deadlyBlowTables.js';
+import {
+  lethalBlowMpPowerAtRank,
+  lethalBlowStatsNoteUk,
+} from '../data/lethalBlowTables.js';
+import { bluffMpAtRank, bluffStatsNoteUk } from '../data/bluffTables.js';
+import {
+  focusChanceMpAtRank,
+  focusChanceStatsNoteUk,
+} from '../data/focusChanceTables.js';
+import {
+  focusPowerMpAtRank,
+  focusPowerStatsNoteUk,
+} from '../data/focusPowerTables.js';
+import {
+  doubleShotMpPowerAtRank,
+  doubleShotStatsNoteUk,
+} from '../data/doubleShotTables.js';
+import {
+  burstShotMpPowerAtRank,
+  burstShotStatsNoteUk,
+} from '../data/burstShotTables.js';
+import {
+  hawkEyeAccuracyAtRank,
+  hawkEyeMpAtRank,
+  hawkEyeStatsNoteUk,
+} from '../data/hawkEyeTables.js';
+import {
+  soulOfSagittariusMaxMpPctAtRank,
+  soulOfSagittariusStatsNoteUk,
+} from '../data/soulOfSagittariusTables.js';
+import {
+  snipeMpAtRank,
+  snipePatkFlatAtRank,
+  snipeStatsNoteUk,
+} from '../data/snipeTables.js';
+import {
+  lethalShotMpPowerAtRank,
+  lethalShotStatsNoteUk,
+} from '../data/lethalShotTables.js';
+import {
+  skillMasteryStatsNoteUk,
+} from '../data/skillMasteryTables.js';
+import {
+  hamstringShotMpPowerAtRank,
+  hamstringShotStatsNoteUk,
+} from '../data/hamstringShotTables.js';
+import {
   battleRoarMpAtRank,
   battleRoarStatsNoteUk,
 } from '../data/battleRoarTables.js';
@@ -81,6 +135,7 @@ import {
   fortitudeStunResistPctAtRank,
   fortitudeStatsNoteUk,
 } from '../data/fortitudeTables.js';
+import { focusSkillMasteryStatsNoteUk, focusSkillMasteryMpAtRank } from '../data/focusSkillMasteryTables.js';
 import {
   ironWillMpAtRank,
   ironWillMdefPctAtRank,
@@ -201,7 +256,7 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
     case 'l2_329':
       return 'Пасивний скіл. Poison/Bleed/Hold/Sleep/Mental +20 (76 лв, 1 р.). Макс. рівень скіла — 1. MP у бою не витрачається.';
     case 'l2_330':
-      return 'Пасивний скіл. Шанс без MP і без reuse; при спрацюванні — повтор одразу (77 лв, 1 р.). MP у бою не витрачається.';
+      return skillMasteryStatsNoteUk(undefined);
     case 'l2_339':
       return 'Стійка: вищий захист, нижча швидкість/атака; MP знімається, поки активна.';
     case 'l2_60':
@@ -802,6 +857,12 @@ function magisterBattleStatsPreviewCore(
         power: fortitudeStunResistPctAtRank(skillRank),
         statsNoteUk: fortitudeStatsNoteUk(skillRank),
       };
+    case 'l2_334':
+      return {
+        mp: focusSkillMasteryMpAtRank(skillRank) ?? 36,
+        power: null,
+        statsNoteUk: focusSkillMasteryStatsNoteUk(),
+      };
     case 'l2_341':
       return {
         mp: 0,
@@ -832,17 +893,12 @@ function magisterBattleStatsPreviewCore(
         power: 3994,
         statsNoteUk: vengeanceStatsNoteUk(skillRank),
       };
-    case 'l2_313': {
-      const SNIPE_MP = [28, 29, 30, 31, 32, 33, 34, 34] as const;
-      const SNIPE_POW = [124, 134, 145, 155, 166, 177, 188, 199] as const;
-      const idx = Math.min(Math.max(1, skillRank), SNIPE_MP.length) - 1;
+    case 'l2_313':
       return {
-        mp: SNIPE_MP[idx]!,
-        power: SNIPE_POW[idx]!,
-        statsNoteUk:
-          'З луком: бонус до P.Atk і точності, +20 до криту (~60 с, далі кулдаун).',
+        mp: snipeMpAtRank(skillRank),
+        power: snipePatkFlatAtRank(skillRank),
+        statsNoteUk: snipeStatsNoteUk(skillRank),
       };
-    }
     case 'l2_111':
       return {
         mp: 50,
@@ -850,35 +906,29 @@ function magisterBattleStatsPreviewCore(
         statsNoteUk:
           'Ultimate Evasion: різко підвищує ухилення (~30 с), далі довгий кулдаун.',
       };
-    case 'l2_344': {
-      const xr = l2dopXmlSkillRow(344, skillRank);
+    case 'l2_344':
       return {
-        mp: xr?.m ?? 58,
-        power: xr?.p ?? 6856,
-        statsNoteUk:
-          'Lethal Blow: сильний удар кинжалом (Adventurer).',
+        mp: lethalBlowMpPowerAtRank(skillRank)?.mp ?? null,
+        power: lethalBlowMpPowerAtRank(skillRank)?.power ?? null,
+        statsNoteUk: lethalBlowStatsNoteUk(skillRank),
       };
-    }
     case 'l2_356':
       return {
-        mp: 42,
+        mp: focusChanceMpAtRank(skillRank),
         power: null,
-        statsNoteUk:
-          'Focus Chance: тимчасовий бонус шансу криту (~300 с).',
+        statsNoteUk: focusChanceStatsNoteUk(skillRank),
       };
     case 'l2_357':
       return {
-        mp: 42,
+        mp: focusPowerMpAtRank(skillRank),
         power: null,
-        statsNoteUk:
-          'Focus Power: тимчасовий бонус фізичної атаки (~300 с).',
+        statsNoteUk: focusPowerStatsNoteUk(skillRank),
       };
     case 'l2_358':
       return {
-        mp: 48,
+        mp: bluffMpAtRank(skillRank),
         power: null,
-        statsNoteUk:
-          'Bluff: короткий дебаф захисту цілі + бонус сили криту (~8 с).',
+        statsNoteUk: bluffStatsNoteUk(skillRank),
       };
     case 'l2_101':
       return {
@@ -886,24 +936,54 @@ function magisterBattleStatsPreviewCore(
         power: stunShotMpPowerAtRank(skillRank)?.power ?? null,
         statsNoteUk: stunShotStatsNoteUk(skillRank),
       };
+    case 'l2_30':
+      return {
+        mp: backstabMpPowerAtRank(skillRank)?.mp ?? null,
+        power: backstabMpPowerAtRank(skillRank)?.power ?? null,
+        statsNoteUk: backstabStatsNoteUk(skillRank),
+      };
+    case 'l2_263':
+      return {
+        mp: deadlyBlowMpPowerAtRank(skillRank)?.mp ?? null,
+        power: deadlyBlowMpPowerAtRank(skillRank)?.power ?? null,
+        statsNoteUk: deadlyBlowStatsNoteUk(skillRank),
+      };
+    case 'l2_19':
+      return {
+        mp: doubleShotMpPowerAtRank(skillRank)?.mp ?? null,
+        power: doubleShotMpPowerAtRank(skillRank)?.power ?? null,
+        statsNoteUk: doubleShotStatsNoteUk(skillRank),
+      };
+    case 'l2_24':
+      return {
+        mp: burstShotMpPowerAtRank(skillRank)?.mp ?? null,
+        power: burstShotMpPowerAtRank(skillRank)?.power ?? null,
+        statsNoteUk: burstShotStatsNoteUk(skillRank),
+      };
+    case 'l2_131':
+      return {
+        mp: hawkEyeMpAtRank(skillRank),
+        power: hawkEyeAccuracyAtRank(skillRank),
+        statsNoteUk: hawkEyeStatsNoteUk(skillRank),
+      };
+    case 'l2_303':
+      return {
+        mp: 0,
+        power: soulOfSagittariusMaxMpPctAtRank(skillRank),
+        statsNoteUk: soulOfSagittariusStatsNoteUk(skillRank),
+      };
     case 'l2_343':
       return {
-        mp: 170,
-        power: 5132,
-        statsNoteUk: 'Sagittarius; потужний постріл з лука; оверхіт.',
+        mp: lethalShotMpPowerAtRank(skillRank)?.mp ?? 170,
+        power: lethalShotMpPowerAtRank(skillRank)?.power ?? 5132,
+        statsNoteUk: lethalShotStatsNoteUk(skillRank),
       };
     case 'l2_354':
-      {
-        const hamPct = Math.min(70, 45 + Math.max(1, skillRank) * 2);
-        return {
-          mp: 86,
-          power: 1973,
-          statsNoteUk:
-            'Sagittarius; урон і шанс сповільнення ~' +
-            hamPct +
-            '% (контрудар цілі може бути пропущено); потрібен лук.',
-        };
-      }
+      return {
+        mp: hamstringShotMpPowerAtRank(skillRank)?.mp ?? 129,
+        power: hamstringShotMpPowerAtRank(skillRank)?.power ?? 1973,
+        statsNoteUk: hamstringShotStatsNoteUk(skillRank),
+      };
     default: {
       const idM = /^l2_(\d+)$/.exec(b);
       if (!idM) return { mp: null, power: null, statsNoteUk: null };

@@ -71,6 +71,7 @@ import { holyBlessingStatsNoteUk } from '../data/holyBlessingTables.js';
 import { sacrificeStatsNoteUk } from '../data/sacrificeTables.js';
 import { shieldFortressStatsNoteUk } from '../data/shieldFortressTables.js';
 import { fortitudeStatsNoteUk } from '../data/fortitudeTables.js';
+import { focusSkillMasteryStatsNoteUk } from '../data/focusSkillMasteryTables.js';
 import { ironWillStatsNoteUk } from '../data/ironWillTables.js';
 import { finalFortressStatsNoteUk } from '../data/finalFortressTables.js';
 import { reflectDamageStatsNoteUk } from '../data/reflectDamageTables.js';
@@ -78,6 +79,17 @@ import { touchOfDeathStatsNoteUk } from '../data/touchOfDeathTables.js';
 import { dashStatsNoteUk } from '../data/dashTables.js';
 import { rapidShotStatsNoteUk } from '../data/rapidShotTables.js';
 import { stunShotStatsNoteUk } from '../data/stunShotTables.js';
+import { backstabStatsNoteUk } from '../data/backstabTables.js';
+import { deadlyBlowStatsNoteUk } from '../data/deadlyBlowTables.js';
+import { lethalBlowStatsNoteUk } from '../data/lethalBlowTables.js';
+import { bluffStatsNoteUk } from '../data/bluffTables.js';
+import { focusChanceStatsNoteUk } from '../data/focusChanceTables.js';
+import { focusPowerStatsNoteUk } from '../data/focusPowerTables.js';
+import { doubleShotStatsNoteUk } from '../data/doubleShotTables.js';
+import { burstShotStatsNoteUk } from '../data/burstShotTables.js';
+import { hawkEyeStatsNoteUk } from '../data/hawkEyeTables.js';
+import { soulOfSagittariusStatsNoteUk } from '../data/soulOfSagittariusTables.js';
+import { snipeStatsNoteUk } from '../data/snipeTables.js';
 import { criticalPowerStatsNoteUk } from '../data/criticalPowerTables.js';
 import { criticalChanceStatsNoteUk } from '../data/criticalChanceTables.js';
 import { boostEvasionStatsNoteUk } from '../data/boostEvasionTables.js';
@@ -302,7 +314,7 @@ function dreadnoughtSkillStatsNoteUk(args: {
     );
   }
   if (b === 'l2_330') {
-    return 'Пасив (Skill Mastery): шанс proc-ефекту на скілах (рекаст/подовження); шанс росте з рангом.';
+    return 'Пасив (Skill Mastery): шанс скинути reuse або подвоїти тривалість бафа/дебафа; у Sagittarius шанс залежить від STR. MP 0.';
   }
   if (b === 'l2_320') {
     const cpPctByRank = [0, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30] as const;
@@ -599,6 +611,8 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = shieldFortressStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 335 && !mysticLike) {
       st.statsNoteUk = fortitudeStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 334 && !mysticLike) {
+      st.statsNoteUk = focusSkillMasteryStatsNoteUk();
     } else if (o.l2SkillId === 72 && !mysticLike) {
       st.statsNoteUk = ironWillStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 291 && !mysticLike) {
@@ -613,6 +627,28 @@ export async function getMagisterDialogForUser(
       st.statsNoteUk = rapidShotStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 101 && !mysticLike) {
       st.statsNoteUk = stunShotStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 30 && !mysticLike) {
+      st.statsNoteUk = backstabStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 263 && !mysticLike) {
+      st.statsNoteUk = deadlyBlowStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 344 && !mysticLike) {
+      st.statsNoteUk = lethalBlowStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 358 && !mysticLike) {
+      st.statsNoteUk = bluffStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 356 && !mysticLike) {
+      st.statsNoteUk = focusChanceStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 357 && !mysticLike) {
+      st.statsNoteUk = focusPowerStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 19 && !mysticLike) {
+      st.statsNoteUk = doubleShotStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 24 && !mysticLike) {
+      st.statsNoteUk = burstShotStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 131 && !mysticLike) {
+      st.statsNoteUk = hawkEyeStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 303 && !mysticLike) {
+      st.statsNoteUk = soulOfSagittariusStatsNoteUk(rankPreview);
+    } else if (o.l2SkillId === 313 && !mysticLike) {
+      st.statsNoteUk = snipeStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 193 && !mysticLike) {
       st.statsNoteUk = criticalPowerStatsNoteUk(rankPreview);
     } else if (o.l2SkillId === 137 && !mysticLike) {

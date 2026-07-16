@@ -422,31 +422,11 @@ export function powerShotMpAndPower(
   return { mp: POWER_SHOT_MP[i]!, power: POWER_SHOT_POW[i]! };
 }
 
-/** Double Shot (19) — наближено до Power Shot з text-rpg Hawkeye/Skill_0019. */
-export function doubleShotMpAndPower(
-  playerLevel: number,
-  skillRank: number = DEFAULT_SKILL_RANK_CAP
-): { mp: number; power: number } | null {
-  const ps = powerShotMpAndPower(playerLevel, skillRank);
-  if (!ps) return null;
-  return {
-    mp: Math.max(1, Math.ceil(ps.mp * 1.22)),
-    power: Math.floor(ps.power * 1.58),
-  };
-}
+/** Double Shot · 19 — Hawkeye (`doubleShotTables.ts`). */
+export { doubleShotMpAndPower } from './doubleShotTables.js';
 
-/** Burst Shot (24) — AoE у L2; тут один моб, орієнтир Hawkeye/Skill_0024. */
-export function burstShotMpAndPower(
-  playerLevel: number,
-  skillRank: number = DEFAULT_SKILL_RANK_CAP
-): { mp: number; power: number } | null {
-  const ps = powerShotMpAndPower(playerLevel, skillRank);
-  if (!ps) return null;
-  return {
-    mp: Math.max(1, Math.ceil(ps.mp * 1.42)),
-    power: Math.floor(ps.power * 1.12),
-  };
-}
+/** Burst Shot · 24 — Hawkeye (`burstShotTables.ts`). */
+export { burstShotMpAndPower } from './burstShotTables.js';
 
 //==== Stun Attack · id 100 — text-rpg HumanFighter/Warrior/Skill_0100 ====
 const STUN_ATTACK_MAGIC = [

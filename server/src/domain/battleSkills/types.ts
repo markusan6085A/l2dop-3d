@@ -104,6 +104,8 @@ export type BattleSkillTurnResult = {
     skillId: number;
     level: number;
     action: 'add' | 'remove';
+    /** Skill Mastery (330): подвоєна тривалість self-buff. */
+    expiresAtMs?: number;
   };
   /**
    * Gladiator / Duelist sonic charges (Sonic Focus → інші sonic-скіли).
@@ -131,6 +133,8 @@ export type BattleSkillTurnResult = {
   skipMobCounterAttackOnce?: boolean;
   /** Aggression (28): перемкнути автоатаку world РБ/epic на кастера. */
   worldBossTaunt?: boolean;
+  /** Lethal Shot (343): 2% — PvE залишити 1 HP, PvP — 1 CP. */
+  lethalShotProc?: boolean;
   /**
    * Додаткова затримка контрудару моба (у «хітах до відповіді»): hard-control
    * на кшталт Sleep/Anchor/Fear може відсунути наступний контрудар на кілька
@@ -144,7 +148,7 @@ export type BattleSkillTurnResult = {
 /** Фізичний удар по мобу (атака гравця). */
 export type PhysicalRollFn = (
   playerAtk: number,
-  options?: { forceNoMiss?: boolean }
+  options?: { forceNoMiss?: boolean; critRateBonus?: number }
 ) => {
   damage: number;
   outcome: 'miss' | 'hit' | 'crit';

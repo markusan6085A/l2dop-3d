@@ -7,8 +7,6 @@ import {
   HUMAN_FIGHTER_STUN_ATTACK_MIN_LEVEL,
   HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ,
   HUMAN_FIGHTER_WHIRLWIND_MIN_LEVEL,
-  burstShotMpAndPower,
-  doubleShotMpAndPower,
   humanFighterProfessionAtkMult,
   mortalBlowMpAndPower,
   powerShotMpAndPower,
@@ -20,6 +18,28 @@ import {
   wildSweepMpAndPower,
   whirlwindMpAndPower,
 } from '../data/l2dopHumanFighterBattleSkills.js';
+import { doubleShotMpPowerAtRank } from '../data/doubleShotTables.js';
+import { burstShotMpPowerAtRank } from '../data/burstShotTables.js';
+import {
+  lethalShotDamageAtk,
+  lethalShotMpPowerAtRank,
+} from '../data/lethalShotTables.js';
+import {
+  backstabDamageAtk,
+  backstabMpPowerAtRank,
+} from '../data/backstabTables.js';
+import {
+  deadlyBlowDamageAtk,
+  deadlyBlowMpPowerAtRank,
+} from '../data/deadlyBlowTables.js';
+import {
+  lethalBlowDamageAtk,
+  lethalBlowMpPowerAtRank,
+} from '../data/lethalBlowTables.js';
+import {
+  hamstringShotDamageAtk,
+  hamstringShotMpPowerAtRank,
+} from '../data/hamstringShotTables.js';
 import {
   EARTHQUAKE_SKILL_POWER,
   earthquakePhysAtkFromPower,
@@ -113,22 +133,14 @@ export function magisterEstimatedAtkBase(
     case 'l2_19': {
       if (!magisterWarriorPreviewProfOk(prof)) return null;
       const ds =
-        l2dopXmlMpPower(19, skillRank) ??
-        doubleShotMpAndPower(
-          Math.max(lv, HUMAN_FIGHTER_MORTAL_POWERSHOT_MIN_LEVEL),
-          skillRank
-        );
+        l2dopXmlMpPower(19, skillRank) ?? doubleShotMpPowerAtRank(skillRank);
       if (!ds) return null;
       return Math.floor(pAtk * (1.09 + ds.power / 420) * profM);
     }
     case 'l2_24': {
       if (!magisterWarriorPreviewProfOk(prof)) return null;
       const bs =
-        l2dopXmlMpPower(24, skillRank) ??
-        burstShotMpAndPower(
-          Math.max(lv, HUMAN_FIGHTER_MORTAL_POWERSHOT_MIN_LEVEL),
-          skillRank
-        );
+        l2dopXmlMpPower(24, skillRank) ?? burstShotMpPowerAtRank(skillRank);
       if (!bs) return null;
       return Math.floor(pAtk * (1.08 + bs.power / 480) * profM);
     }
@@ -273,17 +285,33 @@ export function magisterEstimatedAtkBase(
       if (!ss) return null;
       return Math.floor(pAtk * (1.07 + ss.power / 420) * profM);
     }
+    case 'l2_30': {
+      if (prof !== 'human_treasure_hunter' && prof !== 'human_adventurer') {
+        return null;
+      }
+      const bs = backstabMpPowerAtRank(skillRank);
+      if (!bs) return null;
+      return backstabDamageAtk(pAtk, bs.power, profM);
+    }
+    case 'l2_263': {
+      if (prof !== 'human_treasure_hunter' && prof !== 'human_adventurer') {
+        return null;
+      }
+      const db = deadlyBlowMpPowerAtRank(skillRank);
+      if (!db) return null;
+      return deadlyBlowDamageAtk(pAtk, db.power, profM);
+    }
     case 'l2_343': {
       if (prof !== 'human_sagittarius') return null;
-      const lt = l2dopXmlMpPower(343, skillRank);
-      const pow = lt?.power ?? 5132;
-      return Math.floor(pAtk * (1.28 + pow / 2200) * profM);
+      const ls = lethalShotMpPowerAtRank(skillRank);
+      if (!ls) return null;
+      return lethalShotDamageAtk(pAtk, ls.power, profM);
     }
     case 'l2_344': {
       if (prof !== 'human_adventurer') return null;
-      const lb = l2dopXmlMpPower(344, skillRank);
-      const pow = lb?.power ?? 6856;
-      return Math.floor(pAtk * (1.35 + pow / 900) * profM);
+      const lb = lethalBlowMpPowerAtRank(skillRank);
+      if (!lb) return null;
+      return lethalBlowDamageAtk(pAtk, lb.power, profM);
     }
     case 'l2_49': {
       if (!magisterWarriorPreviewProfOk(prof)) return null;
@@ -315,9 +343,9 @@ export function magisterEstimatedAtkBase(
     }
     case 'l2_354': {
       if (prof !== 'human_sagittarius') return null;
-      const hm = l2dopXmlMpPower(354, skillRank);
-      const pow = hm?.power ?? 1973;
-      return Math.floor(pAtk * (1.12 + pow / 480) * profM);
+      const hs = hamstringShotMpPowerAtRank(skillRank);
+      if (!hs) return null;
+      return hamstringShotDamageAtk(pAtk, hs.power, profM);
     }
     case 'l2_345': {
       if (prof !== 'human_duelist') return null;

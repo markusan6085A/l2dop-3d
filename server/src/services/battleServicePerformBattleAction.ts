@@ -44,6 +44,10 @@ import {
   fortitudeMpDrainForIntervalSec,
 } from '../data/fortitudeTables.js';
 import {
+  focusSkillMasteryActiveRank,
+  focusSkillMasteryMpDrainForIntervalSec,
+} from '../data/focusSkillMasteryTables.js';
+import {
   compactBattleSkillLogLineUk,
   formatBattleSkillLogLineForClient,
   l2SkillIdForBattleLogLine,
@@ -80,7 +84,7 @@ import {
 import {
   persistBattleDefeatInTx,
 } from './battleServiceBattleOutcomeTx.js';
-import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, mirrorPvpPhysSkillsBlockToVictimInTx, mirrorPvpStunToVictimInTx, mirrorPvpTouchOfDeathToVictimInTx } from './battleServicePvpDamage.js';
+import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx, applyPvpCpSetToVictimInTx, mirrorPvpPhysSkillsBlockToVictimInTx, mirrorPvpStunToVictimInTx, mirrorPvpTouchOfDeathToVictimInTx } from './battleServicePvpDamage.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -319,6 +323,12 @@ export async function performBattleAction(
         delete st.battleMods.mobStunUntilMs;
         delete st.battleMods.mobStunIconSkillId;
       }
+      const slowUntil = jsonFiniteNum(st.battleMods.mobRunSpeedDebuffUntilMs);
+      if (slowUntil !== undefined && slowUntil <= nowMsTurn) {
+        delete st.battleMods.mobRunSpeedDebuffMul;
+        delete st.battleMods.mobRunSpeedDebuffUntilMs;
+        delete st.battleMods.mobRunSpeedDebuffIconSkillId;
+      }
       const playerStunUntil = jsonFiniteNum(st.battleMods.playerStunUntilMs);
       if (playerStunUntil !== undefined && playerStunUntil <= nowMsTurn) {
         delete st.battleMods.playerStunUntilMs;
@@ -493,6 +503,26 @@ export async function performBattleAction(
           }
         }
       }
+      const fsmRank = focusSkillMasteryActiveRank(
+        activeBuffsForTurn,
+        st.battleMods?.raceToggleRanks
+      );
+      if (fsmRank != null && dtSec > 0 && currentMp > 0) {
+        const fsmDrain = focusSkillMasteryMpDrainForIntervalSec(fsmRank, dtSec);
+        if (fsmDrain > 0) {
+          const before = currentMp;
+          currentMp = Math.max(0, currentMp - fsmDrain);
+          if (currentMp !== before) {
+            st.playerMp = currentMp;
+          }
+          if (currentMp <= 0) {
+            activeBuffsForTurn = activeBuffsForTurn.filter(
+              (b) => Math.floor(Number(b.skillId)) !== 334
+            );
+            log.push('MP вичерпано — Фокус майстерності скілів вимкнено.');
+          }
+        }
+      }
       st.lastStanceTickMs = nowMsTurn;
     }
 
@@ -643,6 +673,8 @@ export async function performBattleAction(
       playerHpCostBeforeHeal,
       startTouchOfLifeHoT,
       worldBossTaunt,
+      lethalShotProc,
+      skipStandardCooldown,
     } = resolvedTurn;
 
     let whirlwindExtraHitNames: string[] | undefined;
@@ -771,7 +803,11 @@ export async function performBattleAction(
       if (patchAction === 'remove') {
         nextActiveBuffs = nextActiveBuffs.filter((b) => b.skillId !== skillId);
       } else {
-        const exp = activeBuffExpiresAt(skillId, nowMsTurn);
+        const exp =
+          typeof activeBuffPatch.expiresAtMs === 'number' &&
+          Number.isFinite(activeBuffPatch.expiresAtMs)
+            ? Math.floor(activeBuffPatch.expiresAtMs)
+            : activeBuffExpiresAt(skillId, nowMsTurn);
         const entry: ActiveBuffEntry =
           exp !== undefined
             ? { skillId, level, expiresAt: exp }
@@ -798,7 +834,11 @@ export async function performBattleAction(
                 cooldownReductionMul: combat.cooldownReductionMul,
               })
             : undefined;
-        if (cdSec !== undefined && cdSec > 0) {
+        if (
+          cdSec !== undefined &&
+          cdSec > 0 &&
+          skipStandardCooldown !== true
+        ) {
           nextCooldowns = markSkillCast(
             nextCooldowns,
             skillId,
@@ -876,6 +916,15 @@ export async function performBattleAction(
     const landedMagicHit =
       pDmg > 0 && magicOutcome != null && magicOutcome !== 'miss';
     const damagingPlayerHit = landedPhysicalHit || landedMagicHit;
+
+    if (
+      lethalShotProc === true &&
+      damagingPlayerHit &&
+      !isPvpBattleJson(st)
+    ) {
+      mobHp = 1;
+      st.mobHp = 1;
+    }
 
     if (
       isPvpBattleJson(st) &&
@@ -1176,6 +1225,22 @@ export async function performBattleAction(
           victimId: st.pvpTargetCharacterId,
           attackerId: char.id,
           cpDrain: mobCpDrain,
+        });
+      }
+    }
+    if (
+      lethalShotProc === true &&
+      damagingPlayerHit &&
+      isPvpBattleJson(st)
+    ) {
+      const mmc = st.mobMaxCp ?? mobMaxCpFromMobMaxHp(st.mobMaxHp);
+      st.mobMaxCp = mmc;
+      st.mobCp = 1;
+      if (st.pvpTargetCharacterId) {
+        await applyPvpCpSetToVictimInTx(tx, {
+          victimId: st.pvpTargetCharacterId,
+          attackerId: char.id,
+          cp: 1,
         });
       }
     }

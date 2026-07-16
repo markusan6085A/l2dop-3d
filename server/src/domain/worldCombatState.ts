@@ -26,7 +26,11 @@ import {
   fortitudeActiveRank,
   fortitudeMpDrainForIntervalSec,
 } from '../data/fortitudeTables.js';
-import { HUMAN_FIGHTER_SKILL_CATALOG } from '../data/humanFighterSkillCatalog.js';
+import {
+  focusSkillMasteryActiveRank,
+  focusSkillMasteryMpDrainForIntervalSec,
+} from '../data/focusSkillMasteryTables.js';
+import { HUMAN_FIGHTER_SKILL_CATALOG } from '../data/humanFighterSkillCatalog.entries.js';
 import { ELVEN_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/elvenFighterSkillCatalog.generated.js';
 import { DARK_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/darkFighterSkillCatalog.generated.js';
 import { ORC_FIGHTER_SKILL_CATALOG_GENERATED } from '../data/orcFighterSkillCatalog.generated.js';
@@ -67,21 +71,28 @@ const WORLD_MP_REGEN_TICK_SEC = 2;
  */
 export const STANCE_MP_PER_SEC = 0.4;
 
-const TOGGLE_SKILL_ID_SET: ReadonlySet<number> = new Set(
-  [
-    ...HUMAN_FIGHTER_SKILL_CATALOG,
-    ...ELVEN_FIGHTER_SKILL_CATALOG_GENERATED,
-    ...DARK_FIGHTER_SKILL_CATALOG_GENERATED,
-    ...ORC_FIGHTER_SKILL_CATALOG_GENERATED,
-    ...DWARF_FIGHTER_SKILL_CATALOG_GENERATED,
-    ...HUMAN_MYSTIC_SKILL_CATALOG_GENERATED,
-    ...ELVEN_MYSTIC_SKILL_CATALOG_GENERATED,
-    ...DARK_MYSTIC_SKILL_CATALOG_GENERATED,
-    ...ORC_MYSTIC_SKILL_CATALOG_GENERATED,
-  ]
-    .filter((e) => e.kind === 'toggle')
-    .map((e) => e.l2SkillId)
-);
+let toggleSkillIdSetCache: ReadonlySet<number> | null = null;
+
+/** Toggle l2 id з усіх расових каталогів — lazy, щоб уникнути circular init. */
+function toggleSkillIdSet(): ReadonlySet<number> {
+  if (toggleSkillIdSetCache) return toggleSkillIdSetCache;
+  toggleSkillIdSetCache = new Set(
+    [
+      ...HUMAN_FIGHTER_SKILL_CATALOG,
+      ...ELVEN_FIGHTER_SKILL_CATALOG_GENERATED,
+      ...DARK_FIGHTER_SKILL_CATALOG_GENERATED,
+      ...ORC_FIGHTER_SKILL_CATALOG_GENERATED,
+      ...DWARF_FIGHTER_SKILL_CATALOG_GENERATED,
+      ...HUMAN_MYSTIC_SKILL_CATALOG_GENERATED,
+      ...ELVEN_MYSTIC_SKILL_CATALOG_GENERATED,
+      ...DARK_MYSTIC_SKILL_CATALOG_GENERATED,
+      ...ORC_MYSTIC_SKILL_CATALOG_GENERATED,
+    ]
+      .filter((e) => e.kind === 'toggle')
+      .map((e) => e.l2SkillId)
+  );
+  return toggleSkillIdSetCache;
+}
 
 function activeIconToggleSkillIds(mods: BattleBattleMods): number[] {
   const ids = new Set<number>();
@@ -92,7 +103,7 @@ function activeIconToggleSkillIds(mods: BattleBattleMods): number[] {
         : NaN;
     const mul =
       typeof mulRaw === 'number' && Number.isFinite(mulRaw) ? mulRaw : 1;
-    if (icon > 0 && mul > 1 && TOGGLE_SKILL_ID_SET.has(icon)) {
+    if (icon > 0 && mul > 1 && toggleSkillIdSet().has(icon)) {
       ids.add(icon);
     }
   };
@@ -114,7 +125,7 @@ export function stanceCount(mods: BattleBattleMods | undefined): number {
   if (jsonBoolLike(mods.aegisStanceActive)) n++;
   if (mods.raceToggleRanks && typeof mods.raceToggleRanks === 'object') {
     for (const key of Object.keys(mods.raceToggleRanks)) {
-      if (key !== 'l2_322' && key !== 'l2_335') n++;
+      if (key !== 'l2_322' && key !== 'l2_335' && key !== 'l2_334') n++;
     }
   }
   n += activeIconToggleSkillIds(mods).length;
@@ -134,7 +145,7 @@ export function hfStanceMpDrainPerSec(mods: BattleBattleMods | undefined): numbe
   if (jsonBoolLike(mods.aegisStanceActive)) rate += STANCE_MP_PER_SEC;
   if (mods.raceToggleRanks && typeof mods.raceToggleRanks === 'object') {
     for (const key of Object.keys(mods.raceToggleRanks)) {
-      if (key !== 'l2_322' && key !== 'l2_335') rate += STANCE_MP_PER_SEC;
+      if (key !== 'l2_322' && key !== 'l2_335' && key !== 'l2_334') rate += STANCE_MP_PER_SEC;
     }
   }
   rate += activeIconToggleSkillIds(mods).length * STANCE_MP_PER_SEC;
@@ -223,6 +234,8 @@ function stripMobTargetDebuffsInPlace(m: BattleBattleMods): void {
   delete m.mobSleepIconSkillId;
   delete m.mobStunUntilMs;
   delete m.mobStunIconSkillId;
+  delete m.mobBackExposedUntilMs;
+  delete m.mobBackExposedIconSkillId;
 }
 
 export function parseWorldCombatState(
@@ -336,6 +349,7 @@ export function tickWorldCombatState(
 
   const sfRank = shieldFortressActiveRank(undefined, mods.raceToggleRanks);
   const ftRank = fortitudeActiveRank(undefined, mods.raceToggleRanks);
+  const fsmRank = focusSkillMasteryActiveRank(undefined, mods.raceToggleRanks);
   const stanceDrain =
     dtSec > 0 ? hfStanceMpDrainForIntervalSec(mods, dtSec) : 0;
   const sfDrain =
@@ -344,7 +358,9 @@ export function tickWorldCombatState(
       : 0;
   const ftDrain =
     ftRank != null ? fortitudeMpDrainForIntervalSec(ftRank, dtSec) : 0;
-  const drain = stanceDrain + sfDrain + ftDrain;
+  const fsmDrain =
+    fsmRank != null ? focusSkillMasteryMpDrainForIntervalSec(fsmRank, dtSec) : 0;
+  const drain = stanceDrain + sfDrain + ftDrain + fsmDrain;
   const regenSec =
     regenMpPerSec > 0
       ? Math.floor(dtSec / WORLD_MP_REGEN_TICK_SEC) * WORLD_MP_REGEN_TICK_SEC
@@ -356,7 +372,7 @@ export function tickWorldCombatState(
   let mp = Math.max(0, Math.floor(state.playerMp - drain + mpRegen));
   mp = Math.min(maxMp, mp);
   const sc = stanceCount(mods);
-  if ((sc > 0 || sfRank != null || ftRank != null) && mp <= 0) {
+  if ((sc > 0 || sfRank != null || ftRank != null || fsmRank != null) && mp <= 0) {
     mods = stripStances(mods);
   }
   const hasSonic =

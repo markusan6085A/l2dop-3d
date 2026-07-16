@@ -99,12 +99,15 @@ export interface BattleBattleMods {
   snipeAccuracyFlat?: number;
   snipeCritRateAdd?: number;
   //==== HF gap skills (Treasure Hunter / Adventurer / Knight / DA) — text-rpg орієнтири ====
-  /** Фокус шансу (356): плоский бонус до криту. */
-  focusChanceCritRateAdd?: number;
-  /** Фокус сили (357): множник до outgoing P.Atk. */
-  focusPowerPatkMul?: number;
-  /** Блеф (358): множник до сили криту. */
+  /** Фокус шансу (356): активний баф кинджалом (крит/Blow залежать від напрямку). */
+  focusChanceActive?: boolean;
+  /** Фокус сили (357): активний баф кинджалом (урон критів/Blow залежить від напрямку). */
+  focusPowerActive?: boolean;
+  /** Блеф (358): множник до сили криту. @deprecated — стара модель Bluff. */
   bluffCritDmgMul?: number;
+  /** Bluff (358): ворог розвернутий спиною — unix ms. */
+  mobBackExposedUntilMs?: number;
+  mobBackExposedIconSkillId?: number;
   silentMoveActive?: boolean;
   silentMoveRunFlat?: number;
   silentMoveEvasionFlat?: number;
@@ -143,6 +146,10 @@ export interface BattleBattleMods {
   /** Shock/Stun на мобі (Hammer Crush 260 тощо) — unix ms. */
   mobStunUntilMs?: number;
   mobStunIconSkillId?: number;
+  /** Hamstring Shot (354): множник швидкості пересування моба (<1). */
+  mobRunSpeedDebuffMul?: number;
+  mobRunSpeedDebuffUntilMs?: number;
+  mobRunSpeedDebuffIconSkillId?: number;
   /** PvP: гравець оглушений (жертва) — unix ms. */
   playerStunUntilMs?: number;
   playerStunIconSkillId?: number;
@@ -179,6 +186,8 @@ export interface BattleBattleMods {
   physicalMirrorReflectRatio?: number;
   /** Відплата (368): персонаж не може рухатися під час селф-захисту. */
   vengeanceImmobile?: boolean;
+  /** Snipe (313): персонаж не може рухатися під час точного пострілу. */
+  snipeImmobile?: boolean;
   /** @deprecated Стара модель Vengeance — знімається при expire 368. */
   vengeanceIncomingPhysMul?: number;
   /** @deprecated Стара модель Vengeance — знімається при expire 368. */
@@ -379,6 +388,8 @@ export type BattleActionId =
   | 'dash'
   /** Швидкий постріл (99) — баф швидкості атаки з луком (Hawkeye / Sagittarius). */
   | 'rapid_shot'
+  | 'hawk_eye'
+  | 'soul_of_sagittarius'
   | 'snipe'
   | 'stun_shot'
   | 'lethal_shot'
@@ -436,6 +447,7 @@ export type BattleActionId =
   | 'shield_fortress'
   | 'touch_of_life'
   | 'fortitude'
+  | 'focus_skill_mastery'
   | 'touch_of_death'
   | 'physical_mirror'
   | 'vengeance'
@@ -471,6 +483,8 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'mystic_spiritshot_toggle',
   'dash',
   'rapid_shot',
+  'hawk_eye',
+  'soul_of_sagittarius',
   'snipe',
   'battle_roar',
   'accuracy_stance',
@@ -524,6 +538,7 @@ export const BATTLE_ACTIONS_NO_MOB_HP = new Set<BattleActionId>([
   'vengeance',
   'touch_of_life',
   'fortitude',
+  'focus_skill_mastery',
   /** Sonic-каст: self-buff (charges), без удару по мобу. */
   'sonic_focus',
   /** Sonic-буфер швидкості/захисту. */

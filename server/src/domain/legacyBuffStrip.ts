@@ -79,16 +79,23 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
     delete m.snipePatkFlat;
     delete m.snipeAccuracyFlat;
     delete m.snipeCritRateAdd;
+    delete m.snipeImmobile;
   },
   356: (m) => {
-    delete m.focusChanceCritRateAdd;
+    delete m.focusChanceActive;
   },
   357: (m) => {
-    delete m.focusPowerPatkMul;
+    delete m.focusPowerActive;
   },
   358: (m) => {
+    delete m.mobBackExposedUntilMs;
+    delete m.mobBackExposedIconSkillId;
     delete m.mobTargetPDefMul;
     delete m.bluffCritDmgMul;
+    if (m.mobStunIconSkillId === 358) {
+      delete m.mobStunUntilMs;
+      delete m.mobStunIconSkillId;
+    }
   },
   317: () => {
     /* Focus Attack — toggle через `focusAttackActive`, не timed legacy-баф. */
@@ -123,6 +130,11 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
   353: (m) => {
     delete m.mobPhysSkillsBlockedUntilMs;
     delete m.mobPhysSkillsBlockedIconSkillId;
+  },
+  354: (m) => {
+    delete m.mobRunSpeedDebuffMul;
+    delete m.mobRunSpeedDebuffUntilMs;
+    delete m.mobRunSpeedDebuffIconSkillId;
   },
   342: (m) => {
     delete m.mobTouchOfDeathUntilMs;

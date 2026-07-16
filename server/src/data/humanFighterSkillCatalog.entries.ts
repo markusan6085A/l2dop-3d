@@ -77,9 +77,68 @@ import {
   RAPID_SHOT_HINT_UK,
 } from './rapidShotTables.js';
 import {
+  BACKSTAB_COOLDOWN_SEC,
+  BACKSTAB_HINT_UK,
+} from './backstabTables.js';
+import {
+  DEADLY_BLOW_COOLDOWN_SEC,
+  DEADLY_BLOW_HINT_UK,
+} from './deadlyBlowTables.js';
+import {
+  LETHAL_BLOW_COOLDOWN_SEC,
+  LETHAL_BLOW_HINT_UK,
+} from './lethalBlowTables.js';
+import {
+  BLUFF_COOLDOWN_SEC,
+  BLUFF_HINT_UK,
+} from './bluffTables.js';
+import {
+  FOCUS_CHANCE_COOLDOWN_SEC,
+  FOCUS_CHANCE_HINT_UK,
+} from './focusChanceTables.js';
+import {
+  FOCUS_POWER_COOLDOWN_SEC,
+  FOCUS_POWER_HINT_UK,
+} from './focusPowerTables.js';
+import {
   STUN_SHOT_COOLDOWN_SEC,
   STUN_SHOT_HINT_UK,
 } from './stunShotTables.js';
+import {
+  DOUBLE_SHOT_COOLDOWN_SEC,
+  DOUBLE_SHOT_HINT_UK,
+} from './doubleShotTables.js';
+import {
+  HAWK_EYE_COOLDOWN_SEC,
+  HAWK_EYE_HINT_UK,
+} from './hawkEyeTables.js';
+import {
+  SOUL_OF_SAGITTARIUS_COOLDOWN_SEC,
+  SOUL_OF_SAGITTARIUS_HINT_UK,
+} from './soulOfSagittariusTables.js';
+import {
+  SNIPE_COOLDOWN_SEC,
+  SNIPE_HINT_UK,
+} from './snipeTables.js';
+import {
+  LETHAL_SHOT_COOLDOWN_SEC,
+  LETHAL_SHOT_HINT_UK,
+} from './lethalShotTables.js';
+import {
+  SKILL_MASTERY_HINT_UK,
+} from './skillMasteryTables.js';
+import {
+  HAMSTRING_SHOT_COOLDOWN_SEC,
+  HAMSTRING_SHOT_HINT_UK,
+} from './hamstringShotTables.js';
+import {
+  FOCUS_SKILL_MASTERY_COOLDOWN_SEC,
+  FOCUS_SKILL_MASTERY_HINT_UK,
+} from './focusSkillMasteryTables.js';
+import {
+  BURST_SHOT_COOLDOWN_SEC,
+  BURST_SHOT_HINT_UK,
+} from './burstShotTables.js';
 import {
   BOW_MASTERY_HINT_UK,
 } from './bowMasteryTables.js';
@@ -664,12 +723,11 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     battleId: 'l2_330',
     l2SkillId: 330,
     minLevel: 77,
-    spCost: 15000000,
+    spCost: 20000000,
     nameUk: 'Майстерність скілів (Skill Mastery)',
-    hintUk:
-      'Пасивний скіл. Шанс без витрати MP і без перезарядки (reuse) при активному скілі; при спрацюванні — повтор одразу. 77 лв, 1 р. Макс. рівень скіла — 1.',
+    hintUk: SKILL_MASTERY_HINT_UK,
     kind: 'passive',
-    professionReq: 'human_dreadnought_or_duelist',
+    professionReq: 'human_dreadnought_or_duelist_or_sagittarius',
   },
   {
     battleId: 'l2_339',
@@ -1222,8 +1280,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 40,
     spCost: 12000,
     nameUk: 'Удар у спину (Backstab)',
-    hintUk: 'Удар зі спини кинжалом; оверхіт.',
+    hintUk: BACKSTAB_HINT_UK,
     kind: 'battle',
+    cooldownSec: BACKSTAB_COOLDOWN_SEC,
     professionReq: 'human_treasure_hunter_track',
   },
   {
@@ -1232,8 +1291,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 40,
     spCost: 12000,
     nameUk: 'Смертельний удар (Deadly Blow)',
-    hintUk: 'Потужний удар кинжалом.',
+    hintUk: DEADLY_BLOW_HINT_UK,
     kind: 'battle',
+    cooldownSec: DEADLY_BLOW_COOLDOWN_SEC,
     professionReq: 'human_treasure_hunter_track',
   },
   {
@@ -1304,8 +1364,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 76,
     spCost: 15000000,
     nameUk: 'Смертельний удар (Lethal Blow)',
-    hintUk: 'Потенційно смертельний удар кинжалом.',
+    hintUk: LETHAL_BLOW_HINT_UK,
     kind: 'battle',
+    cooldownSec: LETHAL_BLOW_COOLDOWN_SEC,
     professionReq: 'human_adventurer',
   },
   {
@@ -1314,8 +1375,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 77,
     spCost: 20000000,
     nameUk: 'Блеф (Bluff)',
-    hintUk: 'Обман: ворог оголяє спину; шок.',
+    hintUk: BLUFF_HINT_UK,
     kind: 'battle',
+    cooldownSec: BLUFF_COOLDOWN_SEC,
     professionReq: 'human_adventurer',
   },
   {
@@ -1324,9 +1386,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 78,
     spCost: 21000000,
     nameUk: 'Фокус шансу (Focus Chance)',
-    hintUk:
-      'Баф: підвищує шанс криту й успіх смертельних ударів кинжалом.',
+    hintUk: FOCUS_CHANCE_HINT_UK,
     kind: 'battle',
+    cooldownSec: FOCUS_CHANCE_COOLDOWN_SEC,
     professionReq: 'human_adventurer',
   },
   {
@@ -1335,8 +1397,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 78,
     spCost: 21000000,
     nameUk: 'Фокус сили (Focus Power)',
-    hintUk: 'Баф: сила ударів кинжалом.',
+    hintUk: FOCUS_POWER_HINT_UK,
     kind: 'battle',
+    cooldownSec: FOCUS_POWER_COOLDOWN_SEC,
     professionReq: 'human_adventurer',
   },
   // ---- Hawkeye / Sagittarius (унікальні l2 id; спільні з Rogue не дублюємо) ----
@@ -1346,20 +1409,42 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 40,
     spCost: 16000,
     nameUk: 'Подвійний постріл (Double Shot)',
-    hintUk:
-      'Дві стріли підряд по одній цілі. Лише з луком. Можливий надудар.',
+    hintUk: DOUBLE_SHOT_HINT_UK,
     kind: 'battle',
+    cooldownSec: DOUBLE_SHOT_COOLDOWN_SEC,
+    professionReq: 'human_hawkeye_track',
+  },
+  {
+    battleId: 'l2_131',
+    l2SkillId: 131,
+    minLevel: 40,
+    spCost: 49000,
+    nameUk: 'Око яструба (Hawk Eye)',
+    hintUk: HAWK_EYE_HINT_UK,
+    kind: 'battle',
+    cooldownSec: HAWK_EYE_COOLDOWN_SEC,
+    professionReq: 'human_hawkeye_track',
+  },
+  {
+    battleId: 'l2_303',
+    l2SkillId: 303,
+    minLevel: 46,
+    spCost: 67000,
+    nameUk: 'Дух Стрільця (Soul of Sagittarius)',
+    hintUk: SOUL_OF_SAGITTARIUS_HINT_UK,
+    kind: 'battle',
+    cooldownSec: SOUL_OF_SAGITTARIUS_COOLDOWN_SEC,
     professionReq: 'human_hawkeye_track',
   },
   {
     battleId: 'l2_24',
     l2SkillId: 24,
-    minLevel: 40,
-    spCost: 13000,
+    minLevel: 46,
+    spCost: 22000,
     nameUk: 'Вибуховий залп (Burst Shot)',
-    hintUk:
-      'Постріл з вибухом стріл по площі. Потрібен лук. Можливий надудар.',
+    hintUk: BURST_SHOT_HINT_UK,
     kind: 'battle',
+    cooldownSec: BURST_SHOT_COOLDOWN_SEC,
     professionReq: 'human_hawkeye_track',
   },
   {
@@ -1385,12 +1470,12 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
   {
     battleId: 'l2_313',
     l2SkillId: 313,
-    minLevel: 40,
-    spCost: 12000,
+    minLevel: 60,
+    spCost: 420000,
     nameUk: 'Точний постріл (Snipe)',
-    hintUk:
-      'Самонакладення: точність, сила атаки, дальність і крит; коротко обмежує рух цілі.',
+    hintUk: SNIPE_HINT_UK,
     kind: 'battle',
+    cooldownSec: SNIPE_COOLDOWN_SEC,
     professionReq: 'human_hawkeye_track',
   },
   {
@@ -1430,9 +1515,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     l2SkillId: 334,
     minLevel: 78,
     spCost: 64000000,
-    nameUk: 'Швидкість атаки (Attack Speed)',
-    hintUk: 'Пасив: підвищує швидкість атаки з луком.',
-    kind: 'passive',
+    nameUk: 'Фокус майстерності скілів (Focus Skill Mastery)',
+    hintUk: FOCUS_SKILL_MASTERY_HINT_UK,
+    kind: 'toggle',
+    cooldownSec: FOCUS_SKILL_MASTERY_COOLDOWN_SEC,
     professionReq: 'human_sagittarius',
   },
   {
@@ -1441,8 +1527,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 76,
     spCost: 15000000,
     nameUk: 'Смертельний постріл (Lethal Shot)',
-    hintUk: 'Потужний постріл з лука. Можливий надудар.',
+    hintUk: LETHAL_SHOT_HINT_UK,
     kind: 'battle',
+    cooldownSec: LETHAL_SHOT_COOLDOWN_SEC,
     professionReq: 'human_sagittarius',
   },
   {
@@ -1451,9 +1538,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     minLevel: 77,
     spCost: 20000000,
     nameUk: 'Постріл у сухожилля (Hamstring Shot)',
-    hintUk:
-      'Завдає шкоди й сповільнює ціль. Потрібен лук.',
+    hintUk: HAMSTRING_SHOT_HINT_UK,
     kind: 'battle',
+    cooldownSec: HAMSTRING_SHOT_COOLDOWN_SEC,
     professionReq: 'human_sagittarius',
   },
 ];

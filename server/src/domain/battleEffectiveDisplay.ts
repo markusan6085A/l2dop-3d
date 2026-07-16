@@ -148,8 +148,6 @@ export function effectiveBattlePatkDisplay(
   const stanceM = stancePhysicalPatkMultiplier(mods, accuracyStanceSkillRank);
   const sn = jsonFiniteNum(mods?.snipePatkFlat);
   const snFlat = sn !== undefined && sn > 0 ? Math.floor(sn) : 0;
-  const fpm = jsonFiniteNum(mods?.focusPowerPatkMul);
-  const fpMul = fpm !== undefined && fpm > 1 ? fpm : 1;
   const mys = jsonFiniteNum(mods?.mysticPatkBuffMul);
   const mysMul = mys !== undefined && mys > 1 ? mys : 1;
   /**
@@ -157,13 +155,12 @@ export function effectiveBattlePatkDisplay(
    * Соски мають впливати лише на фактичний кидок урону (`rollPlayerPhysicalDmg`),
    * а не на відображуваний P.Atk у профілі/HUD.
    */
-  /** Як у `rollPlayerPhysicalDmg` (без soulshot у display): WC → Thrill → Rage → Frenzy → баф мага → стійка; далі +Snipe; потім ×Focus Power. Zealot — лише ASPD/біг/точн./крит, не P.Atk. */
+  /** Як у `rollPlayerPhysicalDmg` (без soulshot у display): WC → Thrill → Rage → Frenzy → баф мага → стійка; далі +Snipe. Zealot — лише ASPD/біг/точн./крит, не P.Atk. */
   let atkEff = Math.max(
     1,
     Math.floor(basePatk * wcEff * tfMul * rgMul * fzMul * mysMul * stanceM)
   );
   atkEff = Math.max(1, atkEff + snFlat);
-  atkEff = Math.max(1, Math.floor(atkEff * fpMul));
   return atkEff;
 }
 
@@ -337,10 +334,6 @@ export function effectiveBattleCritRateDisplay(
   const snC = jsonFiniteNum(mods?.snipeCritRateAdd);
   if (snC !== undefined && snC > 0) {
     cr = Math.min(500, Math.floor(cr + snC));
-  }
-  const fcc = jsonFiniteNum(mods?.focusChanceCritRateAdd);
-  if (fcc !== undefined && fcc > 0) {
-    cr = Math.min(500, Math.floor(cr + fcc));
   }
   const zCr = jsonFiniteNum(mods?.zealotCritRateAdd);
   if (zCr !== undefined && zCr > 0) {

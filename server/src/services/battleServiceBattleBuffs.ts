@@ -12,11 +12,23 @@ import {
   type BattleJsonState,
 } from '../domain/battle.js';
 import type { WeaknessKind } from '../domain/mobWeaknessFamily.js';
+import {
+  focusChanceBuffLineUk,
+  resolveFocusChanceAttackPosition,
+} from '../data/focusChanceTables.js';
+import {
+  focusPowerBuffLineUk,
+} from '../data/focusPowerTables.js';
 import { isRiposteStanceActive } from '../domain/riposteStance.js';
 import { warCryPatkPercentAtRank } from '../data/warCryTables.js';
 import type { ActiveBuffEntry } from '../data/l2dopActiveBuffs.js';
 import { buffDurationSecForSkillId } from '../data/l2dopBuffDurations.js';
 import { humanFighterCatalogEntry } from '../data/humanFighterSkillCatalog.lookup.js';
+import {
+  SNIPE_ACCURACY_FLAT,
+  SNIPE_CRIT_RATE_PCT,
+  snipePatkFlatAtRank,
+} from '../data/snipeTables.js';
 import type { BattleBuffIcon } from './battleServiceTypes.js';
 
 const MYSTIC_TOGGLE_SKILL_IDS = new Set([336, 337, 338]);
@@ -35,11 +47,15 @@ const ACTIVE_BUFF_LABEL_UK_BY_SKILL_ID: Readonly<Partial<Record<number, string>>
   1086: 'Швидкість',
   1204: 'Хода вітру',
   121: 'Бойовий рик',
+  131: 'Око яструба',
+  303: 'Дух Стрільця',
+  313: 'Точний постріл',
   1240: 'Наведення',
   130: 'Азарт бою',
   72: 'Залізна воля',
   322: 'Фортеця щита',
   335: 'Стійкість',
+  334: 'Фокус майстерності скілів',
   110: 'Абсолютний захист',
   112: 'Відбиття стріли',
   287: 'Левине серце',
@@ -175,14 +191,17 @@ export function battleBuffLinesUk(
       'Швидкий постріл: ×' + rspd.toFixed(2) + ' до швидкості атаки з луком'
     );
   }
-  const snp = jsonFiniteNum(m.snipePatkFlat);
-  if (snp !== undefined && snp > 0) {
+  const snActive = activeByIdForLines.has(313);
+  if (snActive || jsonBoolLike(m.snipeImmobile)) {
+    const snLvl = activeByIdForLines.get(313)?.level ?? 1;
     out.push(
       'Точний постріл: +' +
-        Math.floor(snp) +
-        ' до P.Atk / точності, +' +
-        (jsonFiniteNum(m.snipeCritRateAdd) ?? 20) +
-        ' до шансу криту'
+        snipePatkFlatAtRank(snLvl) +
+        ' P.Atk, +' +
+        SNIPE_CRIT_RATE_PCT +
+        '% крит, +' +
+        SNIPE_ACCURACY_FLAT +
+        ' точність (без руху)'
     );
   }
   const br = jsonFiniteNum(m.battleRoarMaxHpMul);
@@ -291,11 +310,11 @@ export function battleBuffLinesUk(
     );
   }
   // Моб-цільові дебафи не показуємо в рядку бафів гравця.
-  if (jsonFiniteNum(m.focusChanceCritRateAdd) !== undefined) {
-    out.push('Фокус шансу: бонус до криту');
+  if (jsonBoolLike(m.focusChanceActive)) {
+    out.push(focusChanceBuffLineUk(resolveFocusChanceAttackPosition(st)));
   }
-  if (jsonFiniteNum(m.focusPowerPatkMul) !== undefined) {
-    out.push('Фокус сили: сильніша атака');
+  if (jsonBoolLike(m.focusPowerActive)) {
+    out.push(focusPowerBuffLineUk(resolveFocusChanceAttackPosition(st)));
   }
   if (jsonBoolLike(m.silentMoveActive)) {
     out.push('Безшумний рух');
@@ -359,6 +378,10 @@ export function battleMobDebuffLinesUk(st: BattleJsonState): string[] {
   const stunUntil = jsonFiniteNum(m.mobStunUntilMs);
   if (stunUntil !== undefined && stunUntil > Date.now()) {
     out.push('Моб оглушений (Shock/Stun)');
+  }
+  const slowUntil = jsonFiniteNum(m.mobRunSpeedDebuffUntilMs);
+  if (slowUntil !== undefined && slowUntil > Date.now()) {
+    out.push('Швидкість пересування моба знижено (Hamstring Shot)');
   }
   const physBlockUntil = jsonFiniteNum(m.mobPhysSkillsBlockedUntilMs);
   if (physBlockUntil !== undefined && physBlockUntil > Date.now()) {
@@ -443,6 +466,11 @@ export function battleMobDebuffIconsForUi(
   if (stunUntil !== undefined && stunUntil > Date.now()) {
     const sid = jsonFiniteNum(m.mobStunIconSkillId) ?? 260;
     pushIcon('mob_debuff_stun', sid, 'Оглушення (Shock)');
+  }
+  const slowUntil = jsonFiniteNum(m.mobRunSpeedDebuffUntilMs);
+  if (slowUntil !== undefined && slowUntil > Date.now()) {
+    const sid = jsonFiniteNum(m.mobRunSpeedDebuffIconSkillId) ?? 354;
+    pushIcon('mob_debuff_slow', sid, 'Сповільнення (Hamstring Shot)');
   }
   const physBlockUntil = jsonFiniteNum(m.mobPhysSkillsBlockedUntilMs);
   if (physBlockUntil !== undefined && physBlockUntil > Date.now()) {
@@ -636,8 +664,8 @@ export function battleBuffIconsForUi(
       ...iconDurationExtrasCombined(99, activeByIdForIcons, st),
     });
   }
-  const snIcon = jsonFiniteNum(m.snipePatkFlat);
-  if (snIcon !== undefined && snIcon > 0) {
+  const snActiveIcon = activeByIdForIcons.has(313);
+  if (snActiveIcon || jsonBoolLike(m.snipeImmobile)) {
     out.push({
       key: 'snipe',
       l2SkillId: 313,
@@ -828,7 +856,7 @@ export function battleBuffIconsForUi(
     });
   }
   // Моб-цільові дебафи не рендеримо в смузі бафів гравця.
-  if (jsonFiniteNum(m.focusChanceCritRateAdd) !== undefined) {
+  if (jsonBoolLike(m.focusChanceActive)) {
     out.push({
       key: 'focus_chance',
       l2SkillId: 356,
@@ -836,7 +864,7 @@ export function battleBuffIconsForUi(
       ...iconDurationExtrasCombined(356, activeByIdForIcons, st),
     });
   }
-  if (jsonFiniteNum(m.focusPowerPatkMul) !== undefined) {
+  if (jsonBoolLike(m.focusPowerActive)) {
     out.push({
       key: 'focus_power',
       l2SkillId: 357,

@@ -62,6 +62,8 @@ export function normalizeBattleModsFromJson(m: BattleBattleMods): void {
   if (jsonBoolLike(m.silentMoveActive)) m.silentMoveActive = true;
   if (jsonBoolLike(m.ultimateEvasionActive)) m.ultimateEvasionActive = true;
   if (jsonBoolLike(m.fakeDeathActive)) m.fakeDeathActive = true;
+  if (jsonBoolLike(m.focusChanceActive)) m.focusChanceActive = true;
+  if (jsonBoolLike(m.focusPowerActive)) m.focusPowerActive = true;
   if (jsonBoolLike(m.aegisStanceActive)) m.aegisStanceActive = true;
   const vr = jsonFiniteNum(m.viciousStanceSkillRank);
   if (vr !== undefined && vr >= 1) {

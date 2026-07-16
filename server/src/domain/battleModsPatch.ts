@@ -27,8 +27,8 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
   const dashN = jsonFiniteNum(next.dashRunSpeedFlat);
   const rsN = jsonFiniteNum(next.rapidShotAspdMul);
   const snN = jsonFiniteNum(next.snipePatkFlat);
-  const fccGap = jsonFiniteNum(next.focusChanceCritRateAdd);
-  const fpmGap = jsonFiniteNum(next.focusPowerPatkMul);
+  const fccGap = jsonBoolLike(next.focusChanceActive);
+  const fpmGap = jsonBoolLike(next.focusPowerActive);
   const blfGap = jsonFiniteNum(next.bluffCritDmgMul);
   const sanGap = jsonFiniteNum(next.sanctuaryIncomingPhysMul);
   const shGap = jsonFiniteNum(next.shieldFortressPDefMul);
@@ -79,8 +79,8 @@ export function battleModsHasPersistableBuffs(next: BattleBattleMods): boolean {
     (dashN !== undefined && dashN > 0) ||
     (rsN !== undefined && rsN > 1) ||
     (snN !== undefined && snN > 0) ||
-    (fccGap !== undefined && fccGap > 0) ||
-    (fpmGap !== undefined && fpmGap > 1) ||
+    fccGap ||
+    fpmGap ||
     (blfGap !== undefined && blfGap > 1) ||
     jsonBoolLike(next.silentMoveActive) ||
     jsonBoolLike(next.ultimateEvasionActive) ||
@@ -367,15 +367,13 @@ export function applyBattleModsPatch(
       delete next.snipeCritRateAdd;
     }
   }
-  if (patch.focusChanceCritRateAdd !== undefined) {
-    const v = jsonFiniteNum(patch.focusChanceCritRateAdd);
-    if (v !== undefined && v > 0) next.focusChanceCritRateAdd = v;
-    else delete next.focusChanceCritRateAdd;
+  if (patch.focusChanceActive !== undefined) {
+    if (patch.focusChanceActive) next.focusChanceActive = true;
+    else delete next.focusChanceActive;
   }
-  if (patch.focusPowerPatkMul !== undefined) {
-    const v = jsonFiniteNum(patch.focusPowerPatkMul);
-    if (v !== undefined && v > 1) next.focusPowerPatkMul = v;
-    else delete next.focusPowerPatkMul;
+  if (patch.focusPowerActive !== undefined) {
+    if (patch.focusPowerActive) next.focusPowerActive = true;
+    else delete next.focusPowerActive;
   }
   if (patch.bluffCritDmgMul !== undefined) {
     const v = jsonFiniteNum(patch.bluffCritDmgMul);
@@ -445,6 +443,10 @@ export function applyBattleModsPatch(
   if (patch.vengeanceImmobile !== undefined) {
     if (patch.vengeanceImmobile) next.vengeanceImmobile = true;
     else delete next.vengeanceImmobile;
+  }
+  if (patch.snipeImmobile !== undefined) {
+    if (patch.snipeImmobile) next.snipeImmobile = true;
+    else delete next.snipeImmobile;
   }
   if (patch.fakeDeathActive !== undefined) {
     if (patch.fakeDeathActive) next.fakeDeathActive = true;
@@ -535,6 +537,35 @@ export function applyBattleModsPatch(
     } else {
       delete next.mobStunUntilMs;
       delete next.mobStunIconSkillId;
+    }
+  }
+  if (patch.mobBackExposedUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.mobBackExposedUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.mobBackExposedUntilMs = Math.floor(v);
+      const sid = jsonFiniteNum(patch.mobBackExposedIconSkillId);
+      next.mobBackExposedIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 358;
+    } else {
+      delete next.mobBackExposedUntilMs;
+      delete next.mobBackExposedIconSkillId;
+    }
+  }
+  if (patch.mobRunSpeedDebuffUntilMs !== undefined) {
+    const v = jsonFiniteNum(patch.mobRunSpeedDebuffUntilMs);
+    if (v !== undefined && v > Date.now()) {
+      next.mobRunSpeedDebuffUntilMs = Math.floor(v);
+      const mul = jsonFiniteNum(patch.mobRunSpeedDebuffMul);
+      if (mul !== undefined && mul > 0 && mul < 1) {
+        next.mobRunSpeedDebuffMul = mul;
+      }
+      const sid = jsonFiniteNum(patch.mobRunSpeedDebuffIconSkillId);
+      next.mobRunSpeedDebuffIconSkillId =
+        sid !== undefined && sid > 0 ? Math.floor(sid) : 354;
+    } else {
+      delete next.mobRunSpeedDebuffMul;
+      delete next.mobRunSpeedDebuffUntilMs;
+      delete next.mobRunSpeedDebuffIconSkillId;
     }
   }
   if (patch.playerStunUntilMs !== undefined) {

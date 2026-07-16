@@ -26,6 +26,8 @@ export interface HumanFighterSkillCatalogEntry {
     | 'human_duelist'
     | 'human_dreadnought'
     | 'human_dreadnought_or_duelist'
+    /** Dreadnought, Duelist або Sagittarius (Skill Mastery 330). */
+    | 'human_dreadnought_or_duelist_or_sagittarius'
     /** Dreadnought, Duelist, Phoenix або Hell Knight (328–329, Parry 339 тощо). */
     | 'human_dreadnought_or_duelist_or_phoenix_or_hell'
     /** Паладин і фінал гілки лицаря (Paladin → Phoenix Knight). */

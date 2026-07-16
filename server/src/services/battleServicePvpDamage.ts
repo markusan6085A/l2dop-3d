@@ -276,6 +276,53 @@ export async function mirrorPvpPhysSkillsBlockToVictimInTx(
   });
 }
 
+/** Lethal Shot (343): CP жертви PvP = фіксоване значення (зазвичай 1). */
+export async function applyPvpCpSetToVictimInTx(
+  tx: Prisma.TransactionClient,
+  args: {
+    victimId: string;
+    attackerId: string;
+    cp: number;
+  }
+): Promise<void> {
+  const cp = Math.max(0, Math.floor(args.cp));
+  const victimId = String(args.victimId || '').trim();
+  const attackerId = String(args.attackerId || '').trim();
+  if (!victimId || !attackerId || victimId === attackerId) return;
+
+  const victim = await tx.character.findFirst({
+    where: { id: victimId },
+    select: { battleJson: true },
+  });
+  if (!victim) return;
+
+  const victimBj = parseBattleJson(victim.battleJson);
+  if (
+    !victimBj ||
+    !isPvpBattleJson(victimBj) ||
+    victimBj.pvpTargetCharacterId !== attackerId
+  ) {
+    return;
+  }
+
+  const maxCp =
+    typeof victimBj.playerMaxCp === 'number' && victimBj.playerMaxCp > 0
+      ? Math.floor(victimBj.playerMaxCp)
+      : typeof victimBj.mobMaxCp === 'number' && victimBj.mobMaxCp > 0
+        ? Math.floor(victimBj.mobMaxCp)
+        : 0;
+  const nextCp = maxCp > 0 ? Math.min(maxCp, cp) : cp;
+
+  const patch: BattleJsonState = {
+    ...victimBj,
+    playerCp: nextCp,
+    ...(maxCp > 0 ? { playerMaxCp: maxCp } : {}),
+  };
+  await persistCharacterFieldsInTx(tx, victimId, {
+    battleJson: serializeBattleJsonForDb(patch),
+  });
+}
+
 /** Wrath (320): знімає CP у жертви PvP, якщо вона в mutual-бою з атакуючим. */
 export async function applyPvpCpDrainToVictimInTx(
   tx: Prisma.TransactionClient,
