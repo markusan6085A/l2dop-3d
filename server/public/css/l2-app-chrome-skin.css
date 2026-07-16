@@ -1646,9 +1646,13 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:fo
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd {
   border-radius: 3px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
-  color: #e53935;
+  color: #ff2222 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  -webkit-text-fill-color: #ff2222;
+  z-index: 4;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd--on {
@@ -1657,10 +1661,27 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd__long {
   z-index: 2;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   line-height: 1;
-  color: #e53935;
+  color: #ff2222 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  -webkit-text-fill-color: #ff2222;
+}
+
+body.l2-app-l2-chrome.l2-page-battle
+  .l2-battle-hotbar
+  .l2-battle-hotbar-slot--warn
+  .l2-battle-hotbar-slot-cd,
+body.l2-app-l2-chrome.l2-page-battle
+  .l2-battle-hotbar
+  .l2-battle-hotbar-slot--warn
+  .l2-battle-hotbar-slot-cd__long {
+  opacity: 1 !important;
+  filter: none !important;
+  color: #ff2222 !important;
+  -webkit-text-fill-color: #ff2222;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd__short {

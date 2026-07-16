@@ -1037,6 +1037,9 @@
       setCdOverlayVisible(cdRoot, true);
       longEl.textContent = String(Math.max(1, Math.ceil(remMs / 1000)));
       longEl.hidden = false;
+      longEl.style.color = '#ff2222';
+      longEl.style.webkitTextFillColor = '#ff2222';
+      cdRoot.style.color = '#ff2222';
       return true;
     }
 
