@@ -1577,9 +1577,15 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:fo
   outline: none;
 }
 
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar__grid {
+  grid-template-columns: repeat(7, 30.7px);
+  gap: 5px;
+  max-width: calc(7 * 30.7px + 6 * 5px);
+}
+
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-iconwrap {
-  width: 32.3px;
-  height: 32.3px;
+  width: 30.7px;
+  height: 30.7px;
   margin: 0;
 }
 
@@ -1618,10 +1624,10 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-log-wrap::before {
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-img {
   display: block;
-  width: 32.3px;
-  height: 32.3px;
-  max-width: 32.3px;
-  max-height: 32.3px;
+  width: 30.7px;
+  height: 30.7px;
+  max-width: 30.7px;
+  max-height: 30.7px;
   margin: 0;
   object-fit: contain;
   box-sizing: border-box;
@@ -1640,9 +1646,9 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot:fo
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd {
   border-radius: 3px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  color: #e53935;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd--on {
@@ -1651,20 +1657,22 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd__long {
   z-index: 2;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 800;
   line-height: 1;
+  color: #e53935;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot-cd__short {
-  border-radius: 3px;
+  display: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar .l2-battle-hotbar-slot--empty {
   box-sizing: border-box;
-  width: 32.3px;
-  height: 32.3px;
-  min-width: 32.3px;
-  min-height: 32.3px;
+  width: 30.7px;
+  height: 30.7px;
+  min-width: 30.7px;
+  min-height: 30.7px;
   border: 1px solid #bfa88a !important;
   border-radius: 3px;
   background: transparent !important;

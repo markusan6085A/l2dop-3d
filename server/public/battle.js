@@ -1518,6 +1518,8 @@
         }
         if (delta.mysticSkillCdUntil) {
           battle.mysticSkillCdUntil = delta.mysticSkillCdUntil;
+        } else if (Object.prototype.hasOwnProperty.call(delta, 'mysticSkillCdUntil')) {
+          delete battle.mysticSkillCdUntil;
         }
         if (Object.prototype.hasOwnProperty.call(delta, 'battleMods')) {
           if (
@@ -2195,7 +2197,14 @@
         try {
           res = await performBattleActionWithResync(act);
         } catch (e) {
+          if (
+            battleHotbar &&
+            typeof battleHotbar.abortPendingSkillCd === 'function'
+          ) {
+            battleHotbar.abortPendingSkillCd(act, battle);
+          }
           showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
+          refreshUI();
           return;
         }
         if (!res || res._err) {
@@ -2209,21 +2218,49 @@
           }
           var parsedErrBody = await parseErrorBodySafe(res);
           if (!res) {
+            if (
+              battleHotbar &&
+              typeof battleHotbar.abortPendingSkillCd === 'function'
+            ) {
+              battleHotbar.abortPendingSkillCd(act, battle);
+            }
             showBattleToast(tr('battle_toast_no_response', 'Немає відповіді від сервера.'));
+            refreshUI();
             return;
           }
           if (res._err) {
-            if (await handleBattleActionError(res, parsedErrBody)) return;
+            if (await handleBattleActionError(res, parsedErrBody)) {
+              if (
+                battleHotbar &&
+                typeof battleHotbar.abortPendingSkillCd === 'function'
+              ) {
+                battleHotbar.abortPendingSkillCd(act, battle);
+              }
+              refreshUI();
+              return;
+            }
             if (
               parsedErrBody &&
               parsedErrBody.reason === 'cooldown' &&
-              battleHotbar &&
-              typeof battleHotbar.notifySkillUsed === 'function'
+              battleHotbar
             ) {
-              await syncBattleFromServerFull();
-              battleHotbar.notifySkillUsed(act, battle);
+              if (typeof battleHotbar.abortPendingSkillCd === 'function') {
+                battleHotbar.abortPendingSkillCd(act, battle);
+              }
+              if (typeof battleHotbar.notifySkillUsed === 'function') {
+                await syncBattleFromServerFull();
+                battleHotbar.notifySkillUsed(act, battle);
+              }
               refreshUI();
+              return;
             }
+            if (
+              battleHotbar &&
+              typeof battleHotbar.abortPendingSkillCd === 'function'
+            ) {
+              battleHotbar.abortPendingSkillCd(act, battle);
+            }
+            refreshUI();
             return;
           }
         }

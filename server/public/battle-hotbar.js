@@ -715,8 +715,8 @@
     return out;
   }
 
-  /** Запас на межі КД: UI «готово» лише коли лишилось ≤ 0.2с (сервер ще тримає КД). */
-  var SKILL_CD_UI_RESERVE_MS = 200;
+  /** Запас на межі КД: узгоджено з сервером `COOLDOWN_READY_GRACE_MS` (50 ms). */
+  var SKILL_CD_UI_GRACE_MS = 50;
 
   /**
    * @param {{ container: HTMLElement, getBattle: function(): object, getCharacter: function(): object, setCharacter: function(c: object): void, onBattleAction: function(actionId: string): void, onFighterSoulshotToggle?: function(itemId: number): void, onMysticSpiritshotToggle?: function(itemId: number): void, onBattlePotionUse?: function(itemId: number): void, getToken: function(): string|null, showToast: function(msg: string): void }} opts
@@ -730,9 +730,11 @@
     var slotsLoadedRevision = null;
     var cdTimer = null;
     var equipInFlight = false;
-    /** Локальний КД (optimistic + дзеркало сервера), ключі як у `mysticSkillCdUntil`. */
+    /** Локальний КД (optimistic in-flight), ключі як у `mysticSkillCdUntil`. */
     var localCdUntil = Object.create(null);
-    /** Фіксована тривалість поточного КД для conic-sweep (не перераховувати кожен tick). */
+    /** Ключі з optimistic prime до відповіді сервера. */
+    var pendingSkillCdKeys = Object.create(null);
+    /** Фіксована тривалість поточного КД для sweep (legacy; sweep вимкнено). */
     var localCdDuration = Object.create(null);
 
     function cdTrackKey(aid, rowL2) {
@@ -820,6 +822,14 @@
       );
     }
 
+    function clearPendingSkillCd(aid, rowL2) {
+      delete pendingSkillCdKeys[cdTrackKey(aid, rowL2)];
+    }
+
+    function markPendingSkillCd(aid, rowL2) {
+      pendingSkillCdKeys[cdTrackKey(aid, rowL2)] = true;
+    }
+
     function mergedCdMap(battle) {
       var out = Object.create(null);
       var srv = battle && battle.mysticSkillCdUntil;
@@ -830,12 +840,15 @@
           if (typeof sv === 'number' && Number.isFinite(sv)) out[sk] = sv;
         }
       }
-      /** Локальний optimistic — лише якщо довший за сервер (ще не прийшов delta). */
+      /** Optimistic in-flight — лише якщо сервер ще не віддав ключ. */
       for (var lk in localCdUntil) {
         if (!Object.prototype.hasOwnProperty.call(localCdUntil, lk)) continue;
+        if (Object.prototype.hasOwnProperty.call(out, lk)) continue;
+        if (!pendingSkillCdKeys[lk]) continue;
         var lv = localCdUntil[lk];
-        if (typeof lv !== 'number' || !Number.isFinite(lv)) continue;
-        if (typeof out[lk] !== 'number' || lv > out[lk]) out[lk] = lv;
+        if (typeof lv === 'number' && Number.isFinite(lv) && lv > Date.now()) {
+          out[lk] = lv;
+        }
       }
       return out;
     }
@@ -850,8 +863,19 @@
         if (typeof v !== 'number' || !Number.isFinite(v)) continue;
         if (v > now) {
           localCdUntil[k] = v;
+          delete pendingSkillCdKeys[k];
         } else if (Object.prototype.hasOwnProperty.call(localCdUntil, k)) {
           delete localCdUntil[k];
+          delete pendingSkillCdKeys[k];
+        }
+      }
+      /** Сервер — джерело правди: прибрати застарілі локальні l2_* без in-flight. */
+      for (var lk in localCdUntil) {
+        if (!Object.prototype.hasOwnProperty.call(localCdUntil, lk)) continue;
+        if (pendingSkillCdKeys[lk]) continue;
+        if (!Object.prototype.hasOwnProperty.call(srv, lk)) {
+          delete localCdUntil[lk];
+          delete localCdDuration[lk];
         }
       }
     }
@@ -901,13 +925,18 @@
       }
       var now = Date.now();
       var remMs = until - now;
-      if (remMs <= 0) {
+      if (remMs <= SKILL_CD_UI_GRACE_MS) {
         clearCdDurationForAction(aid, rowL2);
         return null;
       }
       var trackKey = cdTrackKey(aid, rowL2);
       var cdMs = ensureCdDuration(trackKey, until, cdSec, now);
-      return { until: until, cdMs: cdMs };
+      return { until: until, cdMs: cdMs, remMs: remMs };
+    }
+
+    /** Чи скіл заблокований КД (сервер + in-flight optimistic). */
+    function isSkillOnCooldown(battle, actionId) {
+      return skillCooldownMeta(battle, actionId) != null;
     }
 
     function setCdOverlayVisible(cdRoot, visible) {
@@ -927,7 +956,9 @@
       if (!battle) return;
       var info = cdInfoForAction(battle, actionId);
       if (info.cdSec == null || info.cdSec <= 0) return;
-      stampLocalCd(info.aid, info.rowL2, Date.now() + info.cdSec * 1000);
+      var untilMs = Date.now() + info.cdSec * 1000;
+      markPendingSkillCd(info.aid, info.rowL2);
+      stampLocalCd(info.aid, info.rowL2, untilMs);
       var box = opts.container;
       var existing = box && box.querySelector('.l2-battle-hotbar');
       if (existing) {
@@ -937,12 +968,27 @@
       }
     }
 
+    /** Скасувати optimistic КД (помилка / cooldown від сервера). */
+    function abortPendingSkillCd(actionId, battleOpt) {
+      var battle = battleOpt || opts.getBattle();
+      if (!battle) return;
+      var info = cdInfoForAction(battle, actionId);
+      var trackKey = cdTrackKey(info.aid, info.rowL2);
+      delete pendingSkillCdKeys[trackKey];
+      delete localCdUntil[info.aid];
+      if (typeof info.rowL2 === 'number' && info.rowL2 > 0) {
+        delete localCdUntil['l2_' + Math.floor(info.rowL2)];
+      }
+      clearCdDurationForAction(info.aid, info.rowL2);
+    }
+
     /** Після успішної дії — синхронізувати КД із snapshot бою. */
     function notifySkillUsed(actionId, battleOpt) {
       var battle = battleOpt || opts.getBattle();
       if (!battle) return;
       syncLocalCdFromBattle(battle);
       var info = cdInfoForAction(battle, actionId);
+      clearPendingSkillCd(info.aid, info.rowL2);
       var until = mysticCdUntilForAction(
         mergedCdMap(battle),
         info.aid,
@@ -961,51 +1007,36 @@
     }
 
     /**
-     * КД на панелі скілів як у text-rpg `SkillCooldownLayer`:
-     * **Conic sweep** на всю тривалість — темний сектор показує, скільки ще
-     * лишилось. Іконка скіла не глушиться чорним фоном: дарк-оверлей лише
-     * на «невиконаній» частині сектора. Коли rem=0 — оверлей ховається,
-     * іконка стає звичайного кольору.
+     * КД на панелі: лише червоні цифри секунд (без conic/sweep обводки).
      */
     function applySkillCdOverlay(cdRoot, meta, tnow) {
       if (!cdRoot) return false;
       var shortEl = cdRoot.querySelector('.l2-battle-hotbar-slot-cd__short');
       var longEl = cdRoot.querySelector('.l2-battle-hotbar-slot-cd__long');
       if (!shortEl || !longEl) return false;
+      shortEl.style.background = '';
+      shortEl.hidden = true;
       if (
         !meta ||
         typeof meta.until !== 'number' ||
-        !Number.isFinite(meta.until) ||
-        typeof meta.cdMs !== 'number' ||
-        meta.cdMs <= 0
+        !Number.isFinite(meta.until)
       ) {
         setCdOverlayVisible(cdRoot, false);
+        longEl.textContent = '';
         return false;
       }
-      var remMs = meta.until - tnow;
-      if (remMs <= 0) {
+      var remMs =
+        typeof meta.remMs === 'number' && Number.isFinite(meta.remMs)
+          ? meta.remMs
+          : meta.until - tnow;
+      if (remMs <= SKILL_CD_UI_GRACE_MS) {
         setCdOverlayVisible(cdRoot, false);
-        shortEl.style.background = '';
+        longEl.textContent = '';
         return false;
       }
       setCdOverlayVisible(cdRoot, true);
-      var cdMs = meta.cdMs > 0 ? meta.cdMs : remMs;
-      var frac = Math.min(1, Math.max(0, remMs / cdMs));
-      var deg = 360 * frac;
-      shortEl.style.background =
-        'conic-gradient(from 0deg at 50% 50%, rgba(0,0,0,0.55) ' +
-        deg +
-        'deg, transparent ' +
-        deg +
-        'deg)';
-      shortEl.hidden = false;
-      /* Цілі секунди; останні 0.2с — sweep до нуля, цифру ховаємо. */
-      if (remMs > SKILL_CD_UI_RESERVE_MS) {
-        longEl.textContent = String(Math.max(1, Math.ceil(remMs / 1000)));
-        longEl.hidden = false;
-      } else {
-        longEl.hidden = true;
-      }
+      longEl.textContent = String(Math.max(1, Math.ceil(remMs / 1000)));
+      longEl.hidden = false;
       return true;
     }
 
@@ -1366,7 +1397,18 @@
         }
         btn.title = labelForBattleAction(battle, slot.a);
         btn.addEventListener('click', function () {
-          opts.onBattleAction(canonicalBattleActionId(slot.a));
+          var actNow = canonicalBattleActionId(slot.a);
+          var battleNow = opts.getBattle();
+          if (battleNow && isSkillOnCooldown(battleNow, actNow)) {
+            if (typeof opts.showToast === 'function') {
+              opts.showToast('Скіл на перезарядці.');
+            }
+            return;
+          }
+          if (typeof primeSkillCd === 'function') {
+            primeSkillCd(actNow);
+          }
+          opts.onBattleAction(actNow);
         });
       } else if (slot.k === 'i') {
         var imgI = document.createElement('img');
@@ -1794,6 +1836,7 @@
       lastRenderKey = '';
       localCdUntil = Object.create(null);
       localCdDuration = Object.create(null);
+      pendingSkillCdKeys = Object.create(null);
       setHotbarPersistCtx(null);
     }
 
@@ -1815,6 +1858,8 @@
       destroy: destroy,
       primeSkillCd: primeSkillCd,
       notifySkillUsed: notifySkillUsed,
+      abortPendingSkillCd: abortPendingSkillCd,
+      isSkillOnCooldown: isSkillOnCooldown,
     };
   }
 

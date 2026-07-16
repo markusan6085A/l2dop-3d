@@ -733,7 +733,7 @@ export function resolveHumanMysticTurn(
   const mysticSkillCdUntilPatch: Record<string, number> = {};
   if (typeof cdSec === 'number' && cdSec > 0) {
     mysticSkillCdUntilPatch[mysticCdKey(entry.l2SkillId)] =
-      Date.now() + cdSec * 1000;
+      Date.now() + Math.ceil(cdSec * 1000);
   }
 
   const skillLine = entry.nameUk + '.';

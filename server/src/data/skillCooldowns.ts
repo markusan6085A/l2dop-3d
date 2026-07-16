@@ -85,7 +85,7 @@ export function markSkillCast(
   cooldownSec: number,
   nowMs: number
 ): SkillCooldownEntry[] {
-  const readyAt = nowMs + Math.max(0, Math.floor(cooldownSec * 1000));
+  const readyAt = nowMs + Math.max(0, Math.ceil(cooldownSec * 1000));
   const out: SkillCooldownEntry[] = [];
   let replaced = false;
   for (const c of cooldowns) {

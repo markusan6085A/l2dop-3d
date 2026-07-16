@@ -1137,10 +1137,10 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-battle-skill-slot {
   box-sizing: border-box;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
   padding: 2px;
   font-weight: 700;
   font-size: 8px;
@@ -1185,11 +1185,11 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-battle-hotbar__grid {
   display: grid;
-  grid-template-columns: repeat(7, 36px);
-  gap: 8px;
+  grid-template-columns: repeat(7, 34px);
+  gap: 5px;
   justify-content: center;
   width: 100%;
-  max-width: calc(7 * 36px + 6 * 8px);
+  max-width: calc(7 * 34px + 6 * 5px);
   margin: 0 auto 6px;
 }
 
@@ -1204,10 +1204,10 @@ button.l2-map-mob-title--tap-full:focus {
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
   padding: 0;
   cursor: pointer;
   border: 2px solid rgba(60, 45, 25, 0.9);
@@ -1261,9 +1261,7 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 /*
- * Як text-rpg SkillCooldownLayer: єдиний conic sweep на всю тривалість КД —
- * темний сектор показує «ще не готово», решта іконки лишається видимою.
- * У центрі — число секунд для довгого КД (>=1s). На фініші (<1s) — лише звужуваний сектор.
+ * КД на іконці: лише червоні цифри секунд (без sweep/обводки).
  */
 .l2-battle-hotbar-slot-cd {
   position: absolute;
@@ -1271,35 +1269,35 @@ button.l2-map-mob-title--tap-full:focus {
   z-index: 2;
   pointer-events: none;
   border-radius: 4px;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: #fff;
-  font-weight: 700;
+  color: #e53935;
+  font-weight: 800;
   font-size: 11px;
   line-height: 1;
   text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.95),
-    0 0 3px rgba(0, 0, 0, 0.85);
+    0 0 2px rgba(0, 0, 0, 0.95),
+    0 1px 2px rgba(0, 0, 0, 0.95);
 }
 
 .l2-battle-hotbar-slot-cd__short {
-  position: absolute;
-  inset: 0;
-  border-radius: 4px;
+  display: none !important;
 }
 
 .l2-battle-hotbar-slot-cd__long {
   position: relative;
   z-index: 1;
+  color: #e53935;
+  font-weight: 800;
 }
 
 .l2-battle-hotbar-slot-img {
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 25px;
+  height: 25px;
   margin: 0;
   object-fit: cover;
   border-radius: 4px;
