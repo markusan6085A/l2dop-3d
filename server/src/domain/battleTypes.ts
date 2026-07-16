@@ -363,6 +363,7 @@ export type MysticL2BattleActionId = `l2_${string}`;
 
 /** Базові дії (інші раси / гілки). Людина-воїн: див. l2dopHumanFighterBattleSkills. */
 export type BattleActionId =
+  | 'auto_hunt'
   | 'attack'
   | 'power'
   | 'bolt'

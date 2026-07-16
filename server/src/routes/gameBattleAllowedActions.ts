@@ -2,6 +2,7 @@ import type { BattleActionId } from '../domain/battle.js';
 
 /** Іменовані дії POST /game/battle/action (+ окремі l2_* магів / расового fighter із нормалізацією клієнта). */
 export const GAME_BATTLE_NAMED_ALLOWED_ACTIONS: readonly BattleActionId[] = [
+  'auto_hunt',
   'attack',
   'power',
   'bolt',

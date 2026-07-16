@@ -11,6 +11,7 @@ import {
 } from '../domain/battleHuntChain.js';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import { startBattleInTx } from './battleServiceSession.js';
+import { performBattleActionInTx } from './battleServicePerformBattleAction.js';
 
 const HUNT_START_RETRYABLE = new Set([
   'mob_on_respawn',
@@ -46,7 +47,8 @@ export async function startHuntContinueBattle(
   excludeSpawnId?: string,
   levelTolerance?: number,
   preferredSpawnId?: string,
-  targetLevel?: number
+  targetLevel?: number,
+  autoFight?: boolean
 ) {
   const tol = Math.max(
     0,
@@ -81,11 +83,20 @@ export async function startHuntContinueBattle(
     let lastRetryable: string | null = null;
     for (const cand of candidates) {
       try {
-        return await startBattleInTx(
+        const started = await startBattleInTx(
           tx,
           userId,
           cand.spawnId,
           expectedRevision
+        );
+        if (!autoFight) {
+          return started;
+        }
+        return performBattleActionInTx(
+          tx,
+          userId,
+          'auto_hunt',
+          started.character.revision
         );
       } catch (e) {
         if (e instanceof GameConflictError) throw e;

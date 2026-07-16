@@ -52,7 +52,10 @@ import {
   formatBattleSkillLogLineForClient,
   l2SkillIdForBattleLogLine,
 } from '../domain/battleLogFormat.js';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
+import { AUTO_HUNT_MAX_TURNS } from '../domain/battleAutoHunt.js';
+import { resolveAutoHuntPrimaryAction } from './battleServiceAutoHunt.js';
 import {
   gameConflictFromCharacter,
   combatOptsFromRow,
@@ -178,7 +181,8 @@ function catalogEntryCategory(entry: unknown): string | null | undefined {
   return typeof c === 'string' ? c : undefined;
 }
 
-export async function performBattleAction(
+export async function performBattleActionInTx(
+  tx: Prisma.TransactionClient,
   userId: string,
   action: BattleActionId,
   expectedRevision: number,
@@ -188,7 +192,6 @@ export async function performBattleAction(
     battlePotionItemId?: number;
   }
 ): Promise<BattleActionResponse> {
-  return prisma.$transaction(async (tx) => {
     let char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -254,6 +257,22 @@ export async function performBattleAction(
     for (const e of learnedEntries) {
       if (e.level >= 1) learnedSkillLevelByBattleId[e.battleId] = e.level;
     }
+
+    const autoHuntMode = action === 'auto_hunt';
+    let autoHuntTurn = 0;
+    if (autoHuntMode) {
+      const primary = resolveAutoHuntPrimaryAction({
+        level: preLevel,
+        race: char.race,
+        classBranch: char.classBranch,
+        learnedBattle,
+        l2Profession: profAct,
+        inv,
+      });
+      if (!primary) throw new Error('battle_auto_hunt_no_action');
+      action = primary;
+    }
+
     if (
       !battleActionAllowed(
         action,
@@ -270,6 +289,9 @@ export async function performBattleAction(
 
     let st = { ...bj };
     const worldBossBattle = isSharedWorldBossKind(spawn.kind);
+    if (autoHuntMode && (isPvpBattleJson(bj) || worldBossBattle)) {
+      throw new Error('battle_auto_hunt_not_allowed');
+    }
     if (worldBossBattle) {
       const presenceMs = Date.now();
       await recordWorldBossBattlePresenceInTx(
@@ -300,6 +322,14 @@ export async function performBattleAction(
 
     const mobEva = mobEvasionForBattle(st, spawn.level);
     const maxHpBattle = effectiveBattleMaxHp(maxHpEff, st.battleMods);
+    const autoHuntInitialLogLen = log.length;
+
+    while (true) {
+      autoHuntTurn++;
+      if (autoHuntMode && autoHuntTurn > AUTO_HUNT_MAX_TURNS) {
+        throw new Error('battle_auto_hunt_cap');
+      }
+
     /** Ті самі `battleMods`, що й у профілі (`toSnapshot`): злиття battleJson + worldCombatStateJson. */
     const wTickForBattleMods = tickWorldCombatState(
       parseWorldCombatState((char as CharacterRow).worldCombatStateJson),
@@ -358,6 +388,9 @@ export async function performBattleAction(
       playerStunActive !== undefined &&
       playerStunActive > nowMsTurn
     ) {
+      if (autoHuntMode) {
+        break;
+      }
       throw new Error('battle_player_stunned');
     }
     const playerPhysBlockActive = jsonFiniteNum(
@@ -694,6 +727,9 @@ export async function performBattleAction(
         : Math.max(1, Math.round(mpCost * combat.skillMpCostMul));
 
     if (currentMp < mpCostEff) {
+      if (autoHuntMode) {
+        break;
+      }
       throw new Error('battle_low_mp');
     }
     currentMp -= mpCostEff;
@@ -1477,7 +1513,10 @@ export async function performBattleAction(
         (!!battleModsPatch && Object.keys(battleModsPatch).length > 0),
     };
 
-    const logLinesAdded = Math.max(0, log.length - initialLogLen);
+    const logLinesAdded = Math.max(
+      0,
+      log.length - (autoHuntMode ? autoHuntInitialLogLen : initialLogLen)
+    );
 
     if (mobHp <= 0) {
       const victory = await resolveMobDeadVictoryInTx(tx, {
@@ -1548,12 +1587,15 @@ export async function performBattleAction(
     });
 
     if (!shouldMobCounterAttack) {
-      return persistBattleContinueFromTurn(
-        tx,
-        continueBase,
-        persistSide,
-        logLinesAdded
-      );
+      if (!autoHuntMode) {
+        return persistBattleContinueFromTurn(
+          tx,
+          continueBase,
+          persistSide,
+          logLinesAdded
+        );
+      }
+      continue;
     }
 
     const countered = applyMobCounterDamage({
@@ -1584,11 +1626,73 @@ export async function performBattleAction(
       return wrapBattleDefeatAsDelta(d);
     }
 
-    return persistBattleContinueFromTurn(
-      tx,
-      { ...continueBase, playerHp, mobHp },
-      persistSide,
-      logLinesAdded
-    );
-  });
+    if (!autoHuntMode) {
+      return persistBattleContinueFromTurn(
+        tx,
+        { ...continueBase, playerHp, mobHp },
+        persistSide,
+        logLinesAdded
+      );
+    }
+    continue;
+    }
+
+    if (autoHuntMode) {
+      const logLinesAddedPartial = Math.max(0, log.length - autoHuntInitialLogLen);
+      const partialNowMs = Date.now();
+      const continueBasePartial: BattleContinueTurnBase = {
+        userId,
+        expectedRevision,
+        char: char as CharacterRow,
+        bj,
+        spawn,
+        preLevel,
+        learnedBattle,
+        profAct,
+        inv,
+        st,
+        playerHp,
+        mobHp,
+        log,
+        maxMpEff,
+      };
+      const persistSidePartial: BattleTurnPersistSide = {
+        activeBuffsChanged: false,
+        nextActiveBuffs: persistableActiveBuffsFromJson(
+          (char as CharacterRow).activeBuffsJson,
+          partialNowMs
+        ),
+        cooldownsChanged: false,
+        nextCooldowns: parseSkillCooldowns(
+          (char as CharacterRow).skillCooldownsJson,
+          partialNowMs
+        ),
+        inventoryDirty: false,
+        inv,
+        hotbarStale: false,
+      };
+      return persistBattleContinueFromTurn(
+        tx,
+        continueBasePartial,
+        persistSidePartial,
+        logLinesAddedPartial
+      );
+    }
+
+    throw new Error('battle_turn_unreachable');
+}
+
+export async function performBattleAction(
+  userId: string,
+  action: BattleActionId,
+  expectedRevision: number,
+  opts?: {
+    fighterSoulshotItemId?: number;
+    mysticSpiritshotItemId?: number;
+    battlePotionItemId?: number;
+  }
+): Promise<BattleActionResponse> {
+  return prisma.$transaction((tx) =>
+    performBattleActionInTx(tx, userId, action, expectedRevision, opts)
+  );
 }
