@@ -578,7 +578,7 @@ export async function getMagisterDialogForUser(
                     ? curseWeaknessStatsNoteUk(rankPreview)
                     : mysticDebuffProfileNoteUk(mysticLike.l2SkillId)
               : mysticLike.kind === 'passive' && mysticLike.l2SkillId === 163
-                ? 'У мантії — нормальна швидкість касту; без броні / light / heavy — −50% (×2 у мантії).'
+                ? 'У повній мантії — ×2 швидкість касту; без мантії / light / heavy — −50%.'
                 : mysticLike.kind === 'passive' && mysticLike.l2SkillId === 214
                   ? '+20% регенерації MP у повній мантії (верх і низ).'
                   : mysticLike.kind === 'battle' && mysticLike.l2SkillId === 1216

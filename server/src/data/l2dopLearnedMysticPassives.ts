@@ -17,6 +17,7 @@ import {
   MYSTIC_MANA_RECOVERY_ROBE_MP_REGEN_MUL,
   MYSTIC_SPELLCRAFT_L2_SKILL_ID,
   MYSTIC_SPELLCRAFT_NON_ROBE_CAST_MUL,
+  MYSTIC_SPELLCRAFT_ROBE_CAST_MUL,
 } from './l2dopHumanMysticBattleSkills.js';
 import {
   antiMagicMdefFlatAtRank,
@@ -151,9 +152,13 @@ export function learnedMysticPassivesBuffDelta(
     ) {
       continue;
     }
-    /** Spellcraft: без повної мантії каст на 50% повільніший (light / heavy / без броні). */
+    /** Spellcraft: у мантії (magic верх+низ) ×2 каст; без мантії / light / heavy — −50%. */
     if (cat.l2SkillId === MYSTIC_SPELLCRAFT_L2_SKILL_ID) {
-      if (armorKind !== 'magic') {
+      if (armorKind === 'magic') {
+        acc = applyBuffDelta(acc, {
+          buffCast: MYSTIC_SPELLCRAFT_ROBE_CAST_MUL,
+        });
+      } else {
         acc = applyBuffDelta(acc, {
           buffCast: MYSTIC_SPELLCRAFT_NON_ROBE_CAST_MUL,
         });

@@ -73,7 +73,7 @@ export function enrichLearnedSkillsForSnapshot(
     );
     const hintUk =
       mystic && cat.l2SkillId === MYSTIC_SPELLCRAFT_L2_SKILL_ID
-        ? 'Пасив: у мантії — нормальна швидкість касту; без броні / light / heavy — −50%.'
+        ? 'Пасив: у повній мантії (magic) — ×2 швидкість касту; без мантії / light / heavy — −50%.'
         : cat.hintUk;
     return {
       ...e,

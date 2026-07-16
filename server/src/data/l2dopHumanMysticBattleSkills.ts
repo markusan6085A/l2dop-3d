@@ -4,8 +4,9 @@
 import type { BattleActionId } from '../domain/battle.js';
 import { learnedMysticHotbarPickSkills } from './humanMysticSkillCatalog.js';
 
-/** Spellcraft (l2_163): у повній мантії — нормальна швидкість касту; без броні / light / heavy — −50%. */
+/** Spellcraft (l2_163): у повній мантії (magic) — ×2 швидкість касту; без неї — −50%. */
 export const MYSTIC_SPELLCRAFT_L2_SKILL_ID = 163;
+export const MYSTIC_SPELLCRAFT_ROBE_CAST_MUL = 2;
 export const MYSTIC_SPELLCRAFT_NON_ROBE_CAST_MUL = 0.5;
 
 /** Mana Recovery (l2_214): +20% регенерації MP у повній мантії (верх + низ). */
