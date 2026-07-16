@@ -297,6 +297,7 @@
     var expEl = $('character-exp');
     var spEl = $('character-sp');
     var profEl = $('character-profession');
+    var powerEl = $('character-hero-power');
 
     if (levelEl) levelEl.textContent = c && c.level != null ? fmtInt(c.level) : '—';
     if (adenaEl) adenaEl.textContent = c && c.adena != null ? fmtNum(c.adena) : '0';
@@ -304,6 +305,12 @@
     if (expEl) expEl.textContent = c && c.exp != null ? fmtNum(c.exp) : '0';
     if (spEl) spEl.textContent = c && c.sp != null ? fmtInt(c.sp) : '0';
     if (profEl) profEl.textContent = professionLabel(c);
+    if (powerEl) {
+      var pw = c && c.heroPower != null ? Number(c.heroPower) : 1000;
+      powerEl.textContent = Number.isFinite(pw)
+        ? String(Math.trunc(pw)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f')
+        : '1\u202f000';
+    }
   }
 
   function applySocial(c) {

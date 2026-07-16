@@ -38,6 +38,10 @@ model Character {
   mobsKilled Int      @default(0)
   /** PvP-карма (PK). Змивається мобами (−15 за kill). */
   karma      Int      @default(0)
+  /** Перемоги над іншими гравцями (PvP). */
+  pvpWins    Int      @default(0)
+  /** Участь у перемозі над рейд-босом (≥1 урон по босу). */
+  raidBossKills Int   @default(0)
   /** До якого часу (epoch ms) нік агресора фіолетовий після удару в PvP. */
   pvpAggressorUntilMs BigInt @default(0)
   /** Очікувана поразка в PvP (жертва ще не натиснула «В місто»). */

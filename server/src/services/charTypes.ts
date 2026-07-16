@@ -27,6 +27,10 @@ export interface CharacterRow {
   mobsKilled: number;
   /** PvP-карма (PK). */
   karma: number;
+  /** Перемоги в PvP. */
+  pvpWins: number;
+  /** Участь у перемозі над рейд-босом. */
+  raidBossKills: number;
   /** До якого часу (epoch ms) нік агресора фіолетовий. */
   pvpAggressorUntilMs: bigint;
   pvpPendingDefeatJson: Prisma.JsonValue | null;
@@ -218,4 +222,6 @@ export interface CharacterSnapshot {
   dailyQuests: DailyQuestsSnapshot;
   /** Coin of Luck у сумці (item 4037). */
   coinOfLuck: number;
+  /** Мощ героя (формула на сервері). */
+  heroPower: number;
 }

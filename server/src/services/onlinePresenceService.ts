@@ -1,15 +1,19 @@
 import { MAP_TOWNS } from '../data/mapLocalities.js';
 import { prisma } from '../lib/prisma.js';
+import { HERO_POWER_BASE } from '../domain/heroPower.js';
+import { resolveHeroPowerFromCharacterRow } from './charSnapshotLogic.js';
+import type { CharacterRow } from './charTypes.js';
 
 /** Активність за останні N хв — вважаємо «в онлайні». */
 const ONLINE_TTL_MS = 10 * 60 * 1000;
 
-export type OnlineSortMode = 'level' | 'name';
+export type OnlineSortMode = 'level' | 'name' | 'power';
 
 type PresenceEntry = {
   characterId: string;
   name: string;
   level: number;
+  heroPower: number;
   cityId: string;
   cityLabelUk: string;
   cityLabelEn: string;
@@ -31,13 +35,18 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true, name: true, level: true, cityId: true },
   });
   const labels = resolveCityLabels(row?.cityId ?? '');
+  const heroRow = row as CharacterRow | null;
+  const heroPower =
+    heroRow != null
+      ? resolveHeroPowerFromCharacterRow(heroRow)
+      : HERO_POWER_BASE;
   return {
     characterId: row?.id?.trim() || '',
     name: row?.name?.trim() || '—',
     level: row?.level != null ? Number(row.level) : 1,
+    heroPower,
     cityId: row?.cityId?.trim() || '',
     cityLabelUk: labels.cityLabelUk,
     cityLabelEn: labels.cityLabelEn,
@@ -57,6 +66,7 @@ export type OnlinePresencePlayer = {
   characterId: string;
   name: string;
   level: number;
+  heroPower: number;
   cityId: string;
   cityLabelUk: string;
   cityLabelEn: string;
@@ -84,6 +94,14 @@ function sortPlayers(
     out.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
     return out;
   }
+  if (sort === 'power') {
+    out.sort((a, b) => {
+      const dp = b.heroPower - a.heroPower;
+      if (dp !== 0) return dp;
+      return a.name.localeCompare(b.name, 'uk');
+    });
+    return out;
+  }
   out.sort((a, b) => {
     const dl = b.level - a.level;
     if (dl !== 0) return dl;
@@ -105,6 +123,10 @@ export function getOnlinePresenceSnapshot(
         characterId: entry.characterId,
         name: entry.name,
         level: entry.level,
+        heroPower:
+          typeof entry.heroPower === 'number' && Number.isFinite(entry.heroPower)
+            ? entry.heroPower
+            : HERO_POWER_BASE,
         cityId: entry.cityId,
         cityLabelUk: entry.cityLabelUk,
         cityLabelEn: entry.cityLabelEn,

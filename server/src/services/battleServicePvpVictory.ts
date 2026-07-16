@@ -181,6 +181,7 @@ export async function persistPvpVictoryInTx(
       data: {
         hp: Math.max(0, Math.floor(playerHp)),
         karma: nextKarma,
+        pvpWins: Math.max(0, Math.floor(Number(char.pvpWins) || 0)) + 1,
         battleJson: Prisma.JsonNull,
         worldCombatStateJson: worldLeave
           ? (JSON.parse(JSON.stringify(worldLeave)) as Prisma.InputJsonValue)

@@ -183,6 +183,26 @@ body.l2-app-l2-chrome.l2-page-character .l2-char-equip-frame--hero-only {
   width: 300px;
 }
 
+body.l2-app-l2-chrome.l2-page-character .l2-character-hero-power {
+  width: 100%;
+  max-width: 300px;
+  margin: 8px auto 0;
+  padding: 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-hero-power__label {
+  color: #fff;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-character .l2-character-hero-power__val {
+  color: #bfa88a;
+  font-weight: 700;
+}
+
 body.l2-app-l2-chrome.l2-page-character {
   --l2-hero-starter-h: 76.7%;
   --l2-hero-starter-w: 80.9%;

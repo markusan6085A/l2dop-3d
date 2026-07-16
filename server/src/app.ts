@@ -85,7 +85,7 @@ export async function buildApp() {
   }
 
   /** Явна віддача нових HTML-сторінок (разом із fastifyStatic). */
-  for (const page of ['daily-quests.html'] as const) {
+  for (const page of ['daily-quests.html', 'ratings.html'] as const) {
     app.get('/' + page, async (_request, reply) => {
       const filePath = path.join(publicDir, page);
       if (!fs.existsSync(filePath)) {

@@ -23,22 +23,40 @@
     });
   }
 
+  function normalizeSort(sort) {
+    if (sort === 'name' || sort === 'power') return sort;
+    return 'level';
+  }
+
   function setSortActive(sort) {
-    currentSort = sort === 'name' ? 'name' : 'level';
+    currentSort = normalizeSort(sort);
     var levelBtn = $('online-sort-level');
     var nameBtn = $('online-sort-name');
+    var powerBtn = $('online-sort-power');
     if (levelBtn) {
       levelBtn.classList.toggle('l2-online-sort__btn--active', currentSort === 'level');
     }
     if (nameBtn) {
       nameBtn.classList.toggle('l2-online-sort__btn--active', currentSort === 'name');
     }
+    if (powerBtn) {
+      powerBtn.classList.toggle('l2-online-sort__btn--active', currentSort === 'power');
+    }
   }
 
   function sortPlayersClient(players, sort) {
+    var mode = normalizeSort(sort);
     var out = (players || []).slice();
-    if (sort === 'name') {
+    if (mode === 'name') {
       out.sort(function (a, b) {
+        return String(a.name || '').localeCompare(String(b.name || ''), 'uk');
+      });
+      return out;
+    }
+    if (mode === 'power') {
+      out.sort(function (a, b) {
+        var dp = Number(b.heroPower || 0) - Number(a.heroPower || 0);
+        if (dp !== 0) return dp;
         return String(a.name || '').localeCompare(String(b.name || ''), 'uk');
       });
       return out;
@@ -49,6 +67,12 @@
       return String(a.name || '').localeCompare(String(b.name || ''), 'uk');
     });
     return out;
+  }
+
+  function formatHeroPower(p) {
+    var n = p && p.heroPower != null ? Number(p.heroPower) : NaN;
+    if (!Number.isFinite(n) || n < 0) return '0';
+    return String(Math.floor(n));
   }
 
   function renderPlayers(players) {
@@ -72,6 +96,12 @@
       var p = rows[i];
       var item = document.createElement('article');
       item.className = 'l2-online-player';
+
+      var main = document.createElement('div');
+      main.className = 'l2-online-player__main';
+
+      var left = document.createElement('div');
+      left.className = 'l2-online-player__left';
 
       var row = document.createElement('div');
       row.className = 'l2-online-player__row';
@@ -100,14 +130,21 @@
 
       row.appendChild(img);
       row.appendChild(nick);
-      item.appendChild(row);
+      left.appendChild(row);
 
       var city = document.createElement('p');
       city.className = 'l2-online-player__city';
       var cityLabel = p.cityLabelEn || p.cityLabelUk || p.cityId || '—';
       city.textContent = 'у ' + cityLabel;
-      item.appendChild(city);
+      left.appendChild(city);
 
+      var power = document.createElement('span');
+      power.className = 'l2-online-player__power';
+      power.textContent = formatHeroPower(p);
+
+      main.appendChild(left);
+      main.appendChild(power);
+      item.appendChild(main);
       listEl.appendChild(item);
     }
 
@@ -157,6 +194,18 @@
     }
   }
 
+  function bindSortButton(btn, sort) {
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      setSortActive(sort);
+      if (lastPayload && lastPayload.players) {
+        renderPlayers(lastPayload.players);
+      } else {
+        loadOnline(sort);
+      }
+    });
+  }
+
   async function init() {
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({});
@@ -170,28 +219,9 @@
 
     setSortActive('level');
 
-    var levelBtn = $('online-sort-level');
-    var nameBtn = $('online-sort-name');
-    if (levelBtn) {
-      levelBtn.addEventListener('click', function () {
-        setSortActive('level');
-        if (lastPayload && lastPayload.players) {
-          renderPlayers(lastPayload.players);
-        } else {
-          loadOnline('level');
-        }
-      });
-    }
-    if (nameBtn) {
-      nameBtn.addEventListener('click', function () {
-        setSortActive('name');
-        if (lastPayload && lastPayload.players) {
-          renderPlayers(lastPayload.players);
-        } else {
-          loadOnline('name');
-        }
-      });
-    }
+    bindSortButton($('online-sort-level'), 'level');
+    bindSortButton($('online-sort-name'), 'name');
+    bindSortButton($('online-sort-power'), 'power');
 
     var r = await fetch('/character', {
       headers: { Authorization: 'Bearer ' + token },

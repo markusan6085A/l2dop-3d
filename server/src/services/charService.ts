@@ -10,6 +10,7 @@ export {
 } from './charConflict.js';
 export {
   combatOptsFromRow,
+  resolveHeroPowerFromCharacterRow,
   toSnapshot,
 } from './charSnapshotLogic.js';
 export { applyPassiveHpRegen, applyPassiveHpRegenPure } from './charPassiveRegen.js';

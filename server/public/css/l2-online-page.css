@@ -46,14 +46,14 @@ body.l2-app-l2-chrome.l2-page-online .l2-online-sort__btn {
   font: inherit;
   font-size: inherit;
   line-height: inherit;
-  color: #fff;
+  color: #bfa88a;
   cursor: pointer;
   text-decoration: underline;
   -webkit-tap-highlight-color: transparent;
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-online-sort__btn--active {
-  color: #f5ecd0;
+  color: #bfa88a;
   text-decoration: none;
   font-weight: 700;
 }
@@ -66,8 +66,16 @@ body.l2-app-l2-chrome.l2-page-online .l2-online-clan-filter {
   color: #c8c0b0;
 }
 
-body.l2-app-l2-chrome.l2-page-online .l2-online-col-head {
+body.l2-app-l2-chrome.l2-page-online .l2-online-col-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin: 0 0 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-col-head {
+  margin: 0;
   padding: 0;
   font-size: 12px;
   font-weight: 700;
@@ -75,10 +83,28 @@ body.l2-app-l2-chrome.l2-page-online .l2-online-col-head {
   color: #8a8a8a;
 }
 
+body.l2-app-l2-chrome.l2-page-online .l2-online-col-head--power {
+  flex-shrink: 0;
+  min-width: 48px;
+  text-align: right;
+}
+
 body.l2-app-l2-chrome.l2-page-online .l2-online-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__left {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-online-player__row {
@@ -101,12 +127,22 @@ body.l2-app-l2-chrome.l2-page-online .l2-online-player__nick {
   color: var(--l2-nick-color);
 }
 
+body.l2-app-l2-chrome.l2-page-online .l2-online-player__power {
+  flex-shrink: 0;
+  min-width: 48px;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #bfa88a;
+  text-align: right;
+}
+
 body.l2-app-l2-chrome.l2-page-online .l2-online-player__city {
   margin: 2px 0 0 20px;
   padding: 0;
   font-size: 11px;
   line-height: 1.3;
-  color: #9a9488;
+  color: #fff;
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-online-empty {

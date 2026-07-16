@@ -7,7 +7,10 @@ import {
 } from '../services/onlinePresenceService.js';
 
 function parseOnlineSort(raw: unknown): OnlineSortMode {
-  return String(raw || '').trim() === 'name' ? 'name' : 'level';
+  const s = String(raw || '').trim();
+  if (s === 'name') return 'name';
+  if (s === 'power') return 'power';
+  return 'level';
 }
 
 export function registerGameOnlineRoutes(app: FastifyInstance): void {

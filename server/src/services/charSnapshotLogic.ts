@@ -79,6 +79,11 @@ import {
 } from '../domain/humanFighterFirstProfessionQuest.js';
 import { dailyQuestsSnapshot } from '../domain/dailyQuests.js';
 import { COIN_OF_LUCK_ITEM_ID } from '../domain/dailyQuestRewards.js';
+import {
+  computeHeroPower,
+  heroPowerStatBonusPercent,
+  learnedSkillCountForHeroPower,
+} from '../domain/heroPower.js';
 import type {
   ActiveBuffSnapshotEntry,
   CharacterRow,
@@ -138,6 +143,47 @@ function parseLearnedBattleSkills(
  */
 export function combatOptsFromRow(row: CharacterRow): ComputeCombatStatsOptions {
   return computeCombatStatsOptionsForCharacter(row);
+}
+
+/** Мощ героя для списку онлайн та інших легких read-path. */
+export function resolveHeroPowerFromCharacterRow(row: CharacterRow): number {
+  const inv = parseInventory(row.inventoryJson);
+  const effectiveLevel = levelFromTotalExp(row.exp);
+  const combat = computeCombatStats(
+    effectiveLevel,
+    row.race,
+    row.classBranch,
+    inv,
+    combatOptsFromRow(row)
+  );
+  const l2ProfResolved = resolveL2ProfessionForSkillsRow(row);
+  const learnedDetail = enrichLearnedSkillsForSnapshot(
+    filterLearnedSkillEntriesForCharacter(
+      normalizeLearnedSkillsJson(row.skillsLearnedJson),
+      row.race,
+      row.classBranch,
+      l2ProfResolved
+    ),
+    row.race,
+    row.classBranch
+  );
+  return computeHeroPower({
+    level: effectiveLevel,
+    learnedSkillCount: learnedSkillCountForHeroPower(learnedDetail),
+    str: combat.str,
+    int: combat.int,
+    dex: combat.dex,
+    wit: combat.wit,
+    con: combat.con,
+    men: combat.men,
+    statBonusPercent: heroPowerStatBonusPercent(
+      effectiveLevel,
+      row.race,
+      row.classBranch,
+      inv,
+      combatOptsFromRow(row)
+    ),
+  });
 }
 
 /** Max HP з урахуванням Battle Roar у бою (`battleJson`) або поза боєм (`worldCombatStateJson`). */
@@ -357,10 +403,10 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
         ? String(row.profileStatus).trim()
         : null,
     karma: Math.max(0, Math.floor(Number(row.karma) || 0)),
-    pk: 0,
+    pk: Math.max(0, Math.floor(Number(row.karma) || 0)),
     recommendations: 0,
     recommendationsLeft: 0,
-    pvpWins: 0,
+    pvpWins: Math.max(0, Math.floor(Number(row.pvpWins) || 0)),
     pvpLosses: 0,
     revision: row.revision,
     lastUpdate: row.lastUpdate.toISOString(),
@@ -484,5 +530,22 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     })(),
     dailyQuests: dailyQuestsSnapshot(row.dailyQuestsJson, Date.now()),
     coinOfLuck: countBagQty(inv, COIN_OF_LUCK_ITEM_ID),
+    heroPower: computeHeroPower({
+      level: effectiveLevel,
+      learnedSkillCount: learnedSkillCountForHeroPower(learnedDetail),
+      str: combat.str,
+      int: combat.int,
+      dex: combat.dex,
+      wit: combat.wit,
+      con: combat.con,
+      men: combat.men,
+      statBonusPercent: heroPowerStatBonusPercent(
+        effectiveLevel,
+        row.race,
+        row.classBranch,
+        inv,
+        combatOptsFromRow(row)
+      ),
+    }),
   };
 }

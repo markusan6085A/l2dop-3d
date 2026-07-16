@@ -3,6 +3,7 @@ import { registerGameBattleRoutes } from './gameBattleRoutes.js';
 import { registerGameIconRoutes } from './gameIconRoutes.js';
 import { registerGameChatRoutes } from './gameChatRoutes.js';
 import { registerGameOnlineRoutes } from './gameOnlineRoutes.js';
+import { registerGameRatingsRoutes } from './gameRatingsRoutes.js';
 import { registerGamePlayerRoutes } from './gamePlayerRoutes.js';
 import { registerGameResourceCraftRoutes } from './gameResourceCraftRoutes.js';
 import { registerGameWorldRoutes } from './gameWorldRoutes.js';
@@ -13,6 +14,7 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
   registerGameBattleRoutes(app);
   registerGameResourceCraftRoutes(app);
   registerGameOnlineRoutes(app);
+  registerGameRatingsRoutes(app);
   registerGameChatRoutes(app);
   registerGamePlayerRoutes(app);
 };

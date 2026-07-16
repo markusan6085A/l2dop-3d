@@ -35,6 +35,7 @@ import {
   tryClaimWorldBossLootInTx,
 } from './worldBossSessionService.js';
 import { creditDailyQuestRaidBossParticipationInTx } from './dailyQuestProgressService.js';
+import { creditRaidBossKillInTx } from './ratingsStatsService.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -233,6 +234,7 @@ export async function resolveWorldBossVictoryInTx(
     const participant = session.participants[pid];
     if (participant && participant.totalDamageDealt > 0) {
       await creditDailyQuestRaidBossParticipationInTx(tx, pid, nowMs);
+      await creditRaidBossKillInTx(tx, pid);
     }
   }
 
