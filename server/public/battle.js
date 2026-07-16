@@ -2171,65 +2171,6 @@
       return true;
     }
 
-    async function runAutoHunt() {
-      await runWithBattleActionLock(async function () {
-        var vicRoot = $('battle-victory-root');
-        var defRoot = $('battle-defeat-root');
-        if (
-          (vicRoot && !vicRoot.hidden) ||
-          (defRoot && !defRoot.hidden)
-        ) {
-          return;
-        }
-        if (!battle) {
-          if (await syncBattleFromServer()) return;
-          return;
-        }
-        if (battle.spawnId && String(battle.spawnId).indexOf('pvp:') === 0) {
-          showBattleToast(tr('battle_auto_hunt_pvp', 'Авто-полювання недоступне в PvP.'));
-          return;
-        }
-        var res;
-        try {
-          res = await performBattleActionWithResync('auto_hunt');
-        } catch (eAuto) {
-          showBattleToast(tr('battle_toast_network', 'Збій мережі або сервера.'));
-          refreshUI();
-          return;
-        }
-        if (!res || res._err) {
-          if (res && res._err) {
-            var parsedAutoErr = await parseActionErrorBodySafe(res);
-            if (!(await handleBattleActionError(res, parsedAutoErr))) {
-              showBattleToast(
-                battleErrorMessageUk(
-                  parsedAutoErr,
-                  tr('battle_auto_hunt_fail', 'Авто-полювання не вдалося.')
-                )
-              );
-            }
-          }
-          refreshUI();
-          return;
-        }
-        var autoOutcome = applyBattleMutationResult(res);
-        if (autoOutcome === 'victory') {
-          await handleVictoryOutcome(res.victory);
-          return;
-        }
-        if (autoOutcome === 'defeat') {
-          renderPlayerBars(character);
-          showDefeatScreen(res.defeat || (character && character.pveDefeat));
-          return;
-        }
-        if (autoOutcome === 'pvp_defeat') return;
-        refreshUI();
-        if (!battle) {
-          stopBattleSyncPoll();
-        }
-      });
-    }
-
     async function runSkill(action) {
       await runWithBattleActionLock(async function () {
         var vicRoot = $('battle-victory-root');
@@ -2845,14 +2786,6 @@
       back.addEventListener('click', function (e) {
         e.preventDefault();
         goToMap();
-      });
-    }
-
-    var autoHuntBtn = $('battle-auto-hunt');
-    if (autoHuntBtn) {
-      autoHuntBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        runAutoHunt();
       });
     }
 

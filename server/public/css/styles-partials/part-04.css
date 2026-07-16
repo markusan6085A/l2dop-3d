@@ -530,7 +530,6 @@ button.l2-battle-victory-link::-moz-focus-inner {
 
 /* «Назад на карту» / «Назад до міста» — як «Взяти квест на професію» */
 .l2-battle-back-map,
-.l2-battle-auto-hunt,
 .l2-battle-victory-backloc,
 .l2-magisters-back .l2-town-btn,
 .l2-magister-back .l2-town-btn {
@@ -565,8 +564,6 @@ button.l2-battle-victory-link::-moz-focus-inner {
 
 .l2-battle-back-map:hover,
 .l2-battle-back-map:focus,
-.l2-battle-auto-hunt:hover,
-.l2-battle-auto-hunt:focus,
 .l2-battle-victory-backloc:hover,
 .l2-battle-victory-backloc:focus,
 .l2-magisters-back .l2-town-btn:hover,
@@ -580,9 +577,7 @@ button.l2-battle-victory-link::-moz-focus-inner {
 
 .l2-battle-footer-actions {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
   margin-top: 12px;
 }
 

@@ -54,8 +54,10 @@ import {
 } from '../domain/battleLogFormat.js';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
-import { AUTO_HUNT_MAX_TURNS } from '../domain/battleAutoHunt.js';
-import { resolveAutoHuntPrimaryAction } from './battleServiceAutoHunt.js';
+import {
+  assertBasicAttackCooldownReady,
+  basicAttackCooldownPatch,
+} from '../domain/battleBasicAttackCooldown.js';
 import {
   gameConflictFromCharacter,
   combatOptsFromRow,
@@ -257,22 +259,6 @@ export async function performBattleActionInTx(
     for (const e of learnedEntries) {
       if (e.level >= 1) learnedSkillLevelByBattleId[e.battleId] = e.level;
     }
-
-    const autoHuntMode = action === 'auto_hunt';
-    let autoHuntTurn = 0;
-    if (autoHuntMode) {
-      const primary = resolveAutoHuntPrimaryAction({
-        level: preLevel,
-        race: char.race,
-        classBranch: char.classBranch,
-        learnedBattle,
-        l2Profession: profAct,
-        inv,
-      });
-      if (!primary) throw new Error('battle_auto_hunt_no_action');
-      action = primary;
-    }
-
     if (
       !battleActionAllowed(
         action,
@@ -289,9 +275,6 @@ export async function performBattleActionInTx(
 
     let st = { ...bj };
     const worldBossBattle = isSharedWorldBossKind(spawn.kind);
-    if (autoHuntMode && (isPvpBattleJson(bj) || worldBossBattle)) {
-      throw new Error('battle_auto_hunt_not_allowed');
-    }
     if (worldBossBattle) {
       const presenceMs = Date.now();
       await recordWorldBossBattlePresenceInTx(
@@ -322,14 +305,6 @@ export async function performBattleActionInTx(
 
     const mobEva = mobEvasionForBattle(st, spawn.level);
     const maxHpBattle = effectiveBattleMaxHp(maxHpEff, st.battleMods);
-    const autoHuntInitialLogLen = log.length;
-
-    while (true) {
-      autoHuntTurn++;
-      if (autoHuntMode && autoHuntTurn > AUTO_HUNT_MAX_TURNS) {
-        throw new Error('battle_auto_hunt_cap');
-      }
-
     /** Ті самі `battleMods`, що й у профілі (`toSnapshot`): злиття battleJson + worldCombatStateJson. */
     const wTickForBattleMods = tickWorldCombatState(
       parseWorldCombatState((char as CharacterRow).worldCombatStateJson),
@@ -388,9 +363,6 @@ export async function performBattleActionInTx(
       playerStunActive !== undefined &&
       playerStunActive > nowMsTurn
     ) {
-      if (autoHuntMode) {
-        break;
-      }
       throw new Error('battle_player_stunned');
     }
     const playerPhysBlockActive = jsonFiniteNum(
@@ -650,6 +622,8 @@ export async function performBattleActionInTx(
       }
     }
 
+    assertBasicAttackCooldownReady(st, action, nowMsTurn);
+
     const turnResolved = executeBattleTurnResolve({
       action,
       preLevel,
@@ -727,9 +701,6 @@ export async function performBattleActionInTx(
         : Math.max(1, Math.round(mpCost * combat.skillMpCostMul));
 
     if (currentMp < mpCostEff) {
-      if (autoHuntMode) {
-        break;
-      }
       throw new Error('battle_low_mp');
     }
     currentMp -= mpCostEff;
@@ -746,6 +717,19 @@ export async function performBattleActionInTx(
         ...(st.mysticSkillCdUntil ?? {}),
         ...mysticSkillCdUntilPatch,
       };
+    }
+    {
+      const basicCdPatch = basicAttackCooldownPatch(action, nowMsTurn);
+      if (basicCdPatch) {
+        st.mysticSkillCdUntil = {
+          ...(st.mysticSkillCdUntil ?? {}),
+          ...basicCdPatch,
+        };
+        mysticSkillCdUntilPatch = {
+          ...(mysticSkillCdUntilPatch ?? {}),
+          ...basicCdPatch,
+        };
+      }
     }
 
     /**
@@ -1513,10 +1497,7 @@ export async function performBattleActionInTx(
         (!!battleModsPatch && Object.keys(battleModsPatch).length > 0),
     };
 
-    const logLinesAdded = Math.max(
-      0,
-      log.length - (autoHuntMode ? autoHuntInitialLogLen : initialLogLen)
-    );
+    const logLinesAdded = Math.max(0, log.length - initialLogLen);
 
     if (mobHp <= 0) {
       const victory = await resolveMobDeadVictoryInTx(tx, {
@@ -1587,15 +1568,12 @@ export async function performBattleActionInTx(
     });
 
     if (!shouldMobCounterAttack) {
-      if (!autoHuntMode) {
-        return persistBattleContinueFromTurn(
-          tx,
-          continueBase,
-          persistSide,
-          logLinesAdded
-        );
-      }
-      continue;
+      return persistBattleContinueFromTurn(
+        tx,
+        continueBase,
+        persistSide,
+        logLinesAdded
+      );
     }
 
     const countered = applyMobCounterDamage({
@@ -1626,60 +1604,12 @@ export async function performBattleActionInTx(
       return wrapBattleDefeatAsDelta(d);
     }
 
-    if (!autoHuntMode) {
-      return persistBattleContinueFromTurn(
-        tx,
-        { ...continueBase, playerHp, mobHp },
-        persistSide,
-        logLinesAdded
-      );
-    }
-    continue;
-    }
-
-    if (autoHuntMode) {
-      const logLinesAddedPartial = Math.max(0, log.length - autoHuntInitialLogLen);
-      const partialNowMs = Date.now();
-      const continueBasePartial: BattleContinueTurnBase = {
-        userId,
-        expectedRevision,
-        char: char as CharacterRow,
-        bj,
-        spawn,
-        preLevel,
-        learnedBattle,
-        profAct,
-        inv,
-        st,
-        playerHp,
-        mobHp,
-        log,
-        maxMpEff,
-      };
-      const persistSidePartial: BattleTurnPersistSide = {
-        activeBuffsChanged: false,
-        nextActiveBuffs: persistableActiveBuffsFromJson(
-          (char as CharacterRow).activeBuffsJson,
-          partialNowMs
-        ),
-        cooldownsChanged: false,
-        nextCooldowns: parseSkillCooldowns(
-          (char as CharacterRow).skillCooldownsJson,
-          partialNowMs
-        ),
-        inventoryDirty: false,
-        inv,
-        hotbarStale: false,
-      };
-      return persistBattleContinueFromTurn(
-        tx,
-        continueBasePartial,
-        persistSidePartial,
-        logLinesAddedPartial
-      );
-    }
-
-    throw new Error('battle_turn_unreachable');
+    return persistBattleContinueFromTurn(
+      tx,
+      { ...continueBase, playerHp, mobHp },
+      persistSide,
+      logLinesAdded
+    );
 }
 
 export async function performBattleAction(

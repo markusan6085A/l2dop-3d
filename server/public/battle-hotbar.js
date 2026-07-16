@@ -800,6 +800,7 @@
         }
       }
       if (cdSec == null && aid === 'zealot') cdSec = 900;
+      if (cdSec == null && (aid === 'attack' || aid === 'bolt')) cdSec = 0.5;
       return { aid: aid, cdSec: cdSec, rowL2: rowL2 };
     }
 

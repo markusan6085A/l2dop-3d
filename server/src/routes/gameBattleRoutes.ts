@@ -611,24 +611,6 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             messageUk: 'Zealot ще на перезарядці — зачекай, поки минуть секунди КД.',
           });
         }
-        if (e instanceof Error && e.message === 'battle_auto_hunt_not_allowed') {
-          return reply.code(400).send({
-            error: e.message,
-            messageUk: 'Авто-полювання недоступне в PvP та проти raid/epic.',
-          });
-        }
-        if (e instanceof Error && e.message === 'battle_auto_hunt_no_action') {
-          return reply.code(400).send({
-            error: e.message,
-            messageUk: 'Немає базової атаки для авто-полювання.',
-          });
-        }
-        if (e instanceof Error && e.message === 'battle_auto_hunt_cap') {
-          return reply.code(400).send({
-            error: e.message,
-            messageUk: 'Авто-полювання зупинено — занадто довгий бій.',
-          });
-        }
         if (e instanceof Error && e.message === 'battle_low_mp') {
           return reply.code(400).send({
             error: e.message,

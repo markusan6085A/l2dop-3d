@@ -1,4 +1,5 @@
 import type { BattleActionId, BattleJsonState } from '../domain/battle.js';
+import { BASIC_ATTACK_COOLDOWN_SEC } from '../domain/battleBasicAttackCooldown.js';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
 import { ZEALOT_EFFECT_DURATION_MS } from '../domain/battleTypes.js';
 import {
@@ -304,6 +305,7 @@ export function battleSkillBarForChar(
         labelUk: 'Атака',
         l2SkillId: l2SkillIdForBattleActionIcon('attack'),
         iconUrl: '/skills/attack.jpg',
+        cooldownSec: BASIC_ATTACK_COOLDOWN_SEC,
       },
     ];
     const seen = new Set<BattleActionId>(['attack']);
@@ -342,6 +344,9 @@ export function battleSkillBarForChar(
         labelUk: s.labelUk,
         l2SkillId: l2Id,
         iconUrl: skillIconUrlForClient(l2Id),
+        ...(s.id === 'attack' || s.id === 'bolt'
+          ? { cooldownSec: BASIC_ATTACK_COOLDOWN_SEC }
+          : {}),
       };
     })
   );
