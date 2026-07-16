@@ -145,7 +145,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 14000,
     nameUk: "Вихор (Whirlwind)",
-    hintUk: "Стабільний AoE-спам: б’є головну ціль і ще до 2 поруч. Лише зі списом/алебардою. Кулдаун 6 с.",
+    hintUk: "Масова фіз. атака навколо: головна ціль + до 3 поруч (разом до 4). Лише спис/алебарда; over-hit/крит. 37 р., з 40 лвл.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -485,7 +485,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 20,
     spCost: 1200,
     nameUk: "Приголомшувальний удар (Stun Attack)",
-    hintUk: "Сильний удар: оглушує ціль і завдає шкоди. Поки діє попередній ефект — повторно не накладається. Тільки з булавами. Можливий надудар.",
+    hintUk: "Актив: урон + оглушення по одній цілі. Лише булава (1 р. — MP 20 / power 36, 15 р. — MP 34 / power 131). Відкат: 13 с. Повторне оглушення не накладається, поки діє ефект. Можливий надудар.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -1187,7 +1187,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 43,
     spCost: 46000,
     nameUk: "Підсилення HP (Boost HP)",
-    hintUk: "Пасив: збільшує максимальне HP.",
+    hintUk: "Пасив: збільшує максимальне HP (1 р. — +60, 10 р. — +480). Однакова таблиця для всіх класів.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -1260,79 +1260,12 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     hideAtBaseFighterUntilFirstProf: false
   },
   {
-    battleId: "l2_121",
-    l2SkillId: 121,
-    minLevel: 28,
-    spCost: 11000,
-    nameUk: "Бойовий рик (Battle Roar)",
-    hintUk: "Миттєво відновлює HP і збільшує максимальний запас HP на 10 хвилин.",
-    kind: "battle",
-    category: "buff",
-    visibleForProfessions: [
-      "dwarf_artisan",
-      "dwarf_scavenger"
-    ],
-    levels: [
-      {
-        level: 1,
-        requiredLevel: 28,
-        spCost: 11000,
-        mpCost: 13,
-        power: 10
-      },
-      {
-        level: 2,
-        requiredLevel: 40,
-        spCost: 33000,
-        mpCost: 18,
-        power: 15
-      },
-      {
-        level: 3,
-        requiredLevel: 49,
-        spCost: 82000,
-        mpCost: 22,
-        power: 20
-      },
-      {
-        level: 4,
-        requiredLevel: 58,
-        spCost: 173000,
-        mpCost: 27,
-        power: 25
-      },
-      {
-        level: 5,
-        requiredLevel: 64,
-        spCost: 400000,
-        mpCost: 30,
-        power: 30
-      },
-      {
-        level: 6,
-        requiredLevel: 70,
-        spCost: 720000,
-        mpCost: 33,
-        power: 35
-      }
-    ],
-    effects: [
-      {
-        stat: "maxHp",
-        mode: "multiplier"
-      }
-    ],
-    cooldownSec: 600,
-    skipMobHp: true,
-    hideAtBaseFighterUntilFirstProf: false
-  },
-  {
     battleId: "l2_212",
     l2SkillId: 212,
     minLevel: 40,
     spCost: 43000,
     nameUk: "Швидке відновлення HP (Fast HP Recovery)",
-    hintUk: "Пасив: підвищує відновлення HP.",
+    hintUk: "Пасив: +HP/тік (1 р. — +1.1, 2 р. — +1.6, 3 р. — +1.7, 4 р. — +2.1, 5 р. — +2.6, 6 р. — +2.7, 7 р. — +3.4, 8 р. — +4.0).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -1696,7 +1629,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 14000,
     nameUk: "Майстерність легкої броні (Light Armor Mastery)",
-    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).",
+    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% P. Def / +3 ухил., 50 р. — +81.3% / +6).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -2308,7 +2241,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 20,
     spCost: 1200,
     nameUk: "Дикий розмах (Wild Sweep)",
-    hintUk: "Завдає шкоди кільком суперникам. Лише зі списом або алебардами. Можливий надудар.",
+    hintUk: "Актив: фіз. атака кільком суперникам попереду в зоні удару. Лише спис або алебарда (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Відкат: 17 с. Можливий надудар.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -2993,7 +2926,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 66,
     spCost: 390000,
     nameUk: "Гнів (Wrath)",
-    hintUk: "Зона як «поруч» на карті (r≈26000): фіз. урон і зняття частки max CP цілей — 7% (1 р.) … 30% (10 р.). Лише спис або алебарда.",
+    hintUk: "Активний удар (спис/алебарда, Warlord 74+): фіз. урон і зняття % max CP цілі — 7% (1 р.) … 30% (10 р.). У PvP знімає CP суперника; у PvE — CP моба. Кулдаун 120 с.",
     kind: "battle",
     category: "debuff",
     visibleForProfessions: [
@@ -3154,21 +3087,6 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         stat: "bleedResist",
         mode: "percent",
         value: 20
-      },
-      {
-        stat: "holdResist",
-        mode: "percent",
-        value: 20
-      },
-      {
-        stat: "sleepResist",
-        mode: "percent",
-        value: 20
-      },
-      {
-        stat: "mentalResist",
-        mode: "percent",
-        value: 20
       }
     ],
     cooldownSec: null,
@@ -3261,8 +3179,8 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     l2SkillId: 340,
     minLevel: 77,
     spCost: 13000000,
-    nameUk: "Riposte Stance",
-    hintUk: "Riposte Stance",
+    nameUk: "Стійка відбиття (Riposte Stance)",
+    hintUk: "Toggle: 30% відбиття ближнього урону; −20% Atk.Spd., −10% Run Speed, −4 Accuracy; постійна витрата MP. 1 р., з 77 лвл. Duelist.",
     kind: "toggle",
     category: "toggle",
     visibleForProfessions: [
@@ -3317,7 +3235,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 78,
     spCost: 32000000,
     nameUk: "Землетрус (Earthquake)",
-    hintUk: "На себе, r≈150: фіз. сила 4040, скидає таргет; можливий оверхit. Лише спис/алебарда. 78 лв, 1 р., 87 MP, КД 30 с.",
+    hintUk: "На себе, r≈150: фіз. удар силою 4040 (можливий оверхит), скидає таргет цілей. Лише спис/алебарда. 78 лв, 1 р., 87 MP, КД 30 с. Dreadnought.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [

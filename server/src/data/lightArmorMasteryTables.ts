@@ -33,8 +33,9 @@ export function lightArmorMasteryEvasionFlatAtRank(rank: number): number {
   return LIGHT_ARMOR_EVASION_FLAT_BY_RANK[r] ?? 0;
 }
 
-export const LIGHT_ARMOR_MASTERY_HINT_UK =
-  'Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% P. Def / +3 ухил., 50 р. — +81.3% / +6).';
+import { fighterPassiveHintUk } from './fighterCommonPassiveSkillDisplay.js';
+
+export const LIGHT_ARMOR_MASTERY_HINT_UK = fighterPassiveHintUk(227)!;
 
 /** Текст для магістра / UI на конкретному рівні скіла (лише воїни-файтери). */
 export function lightArmorMasteryStatsNoteUk(rank: number): string {

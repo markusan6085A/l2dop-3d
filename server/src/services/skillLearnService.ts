@@ -56,18 +56,16 @@ import {
 import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
 import { mysticDebuffProfileNoteUk } from '../data/l2dopMysticDebuffProfiles.js';
 import { boostHpStatsNoteUk } from '../data/boostHpTables.js';
+import { fighterPassiveHintUk } from '../data/fighterCommonPassiveSkillDisplay.js';
 import { fastHpRecoveryStatsNoteUk } from '../data/fastHpRecoveryTables.js';
 import { battleRoarStatsNoteUk } from '../data/battleRoarTables.js';
 import {
-  HEAVY_ARMOR_MASTERY_HINT_UK,
   heavyArmorMasteryStatsNoteUk,
 } from '../data/heavyArmorMasteryTables.js';
 import {
-  LIGHT_ARMOR_MASTERY_HINT_UK,
   lightArmorMasteryStatsNoteUk,
 } from '../data/lightArmorMasteryTables.js';
 import {
-  POLEARM_MASTERY_HINT_UK,
   polearmMasteryStatsNoteUk,
 } from '../data/polearmMasteryTables.js';
 import {
@@ -80,7 +78,6 @@ import {
 import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
 import { viciousStanceStatsNoteUk } from '../data/viciousStanceTables.js';
 import {
-  SWORD_BLUNT_MASTERY_HINT_UK,
   swordBluntMasteryStatsNoteUk,
 } from '../data/swordBluntMasteryTables.js';
 import { TEXT_RPG_HF_PASSIVE_EFFECTS } from '../data/textRpgPassiveEffects.generated.js';
@@ -593,35 +590,33 @@ export async function getMagisterDialogForUser(
           rankPreview
         );
     const l2dbHint = L2DB_SKILL_HINT_UK_BY_ID[o.l2SkillId];
+    const commonPassiveHint =
+      o.kind === 'passive' && !mysticLike
+        ? fighterPassiveHintUk(o.l2SkillId)
+        : undefined;
     const passiveHintUk =
       o.kind === 'passive'
         ? st.statsNoteUk && st.statsNoteUk.trim()
           ? st.statsNoteUk.trim()
-          : o.l2SkillId === 231 && !mysticLike
-            ? HEAVY_ARMOR_MASTERY_HINT_UK
-            : o.l2SkillId === 227 && !mysticLike
-              ? LIGHT_ARMOR_MASTERY_HINT_UK
-            : o.l2SkillId === 216 && !mysticLike
-              ? POLEARM_MASTERY_HINT_UK
+          : commonPassiveHint
+            ? commonPassiveHint
             : o.l2SkillId === 144 && !mysticLike
               ? DUAL_WEAPON_MASTERY_HINT_UK
-            : o.l2SkillId === 257 && !mysticLike
-              ? SWORD_BLUNT_MASTERY_HINT_UK
-            : o.l2SkillId === 142 && !mysticLike
-            ? WEAPON_MASTERY_FIGHTER_HINT_UK
-            : mysticLike &&
-                (o.l2SkillId === 142 ||
-                  isMysticWeaponMasterySkill({
-                    l2SkillId: o.l2SkillId,
-                    nameUk: o.nameUk,
-                    effectStats: mysticLike.effects.map((fx) => fx.stat),
-                  }))
-              ? WEAPON_MASTERY_MYSTIC_HINT_UK
-              : mysticLike && mysticLike.hintUk.trim()
-                ? mysticLike.hintUk.trim()
-                : l2dbHint && l2dbHint.trim()
-                  ? l2dbHint.trim()
-                  : o.hintUk.trim()
+              : o.l2SkillId === 142 && !mysticLike
+                ? WEAPON_MASTERY_FIGHTER_HINT_UK
+                : mysticLike &&
+                    (o.l2SkillId === 142 ||
+                      isMysticWeaponMasterySkill({
+                        l2SkillId: o.l2SkillId,
+                        nameUk: o.nameUk,
+                        effectStats: mysticLike.effects.map((fx) => fx.stat),
+                      }))
+                  ? WEAPON_MASTERY_MYSTIC_HINT_UK
+                  : mysticLike && mysticLike.hintUk.trim()
+                    ? mysticLike.hintUk.trim()
+                    : l2dbHint && l2dbHint.trim()
+                      ? l2dbHint.trim()
+                      : o.hintUk.trim()
         : '';
     const compactHintUk =
       o.kind === 'passive'

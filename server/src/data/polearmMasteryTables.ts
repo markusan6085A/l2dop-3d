@@ -19,8 +19,9 @@ export function polearmMasteryPatkFlatAtRank(rank: number): number {
   return typeof p === 'number' && Number.isFinite(p) ? p : 0;
 }
 
-export const POLEARM_MASTERY_HINT_UK =
-  'Пасив: +P. Atk (flat) зі списом або алебардою (1 р. — +4.5, 43 р. — +122.1).';
+import { fighterPassiveHintUk } from './fighterCommonPassiveSkillDisplay.js';
+
+export const POLEARM_MASTERY_HINT_UK = fighterPassiveHintUk(216)!;
 
 /** Текст для магістра / UI на конкретному рівні скіла (лише воїни-файтери). */
 export function polearmMasteryStatsNoteUk(rank: number): string {

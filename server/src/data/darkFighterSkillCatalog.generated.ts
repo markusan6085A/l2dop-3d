@@ -3201,7 +3201,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 40,
     spCost: 14000,
     nameUk: "Майстерність дуального меча (Dual Weapon Mastery)",
-    hintUk: "Пасив: підвищує ефективність ударів дуальним мечем.",
+    hintUk: "Пасив: +P. Atk (flat) з дуальними мечами. Пакети рангів (Interlude): 40 лвл — 1–3 р., 43 — 4–6, 46 — 7–9, 49 — 10–12, 52 — 13–15, 55 — 16–18, 58 — 19–21, 60 — 22–23, 62 — 24, 64 — 25–27, 66 — 28–29, 68 — 30–31, 70 — 32–33, 72 — 34–35, 74 — 36–37 р.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -4514,8 +4514,8 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 217,
     minLevel: 40,
     spCost: 10000,
-    nameUk: "Sword Blunt Mastery",
-    hintUk: "Sword Blunt Mastery",
+    nameUk: "Майстерність меча й булави (Sword / Blunt Mastery)",
+    hintUk: "Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +1.5, 8 р. — +11.1). Elf / Dark Elf / Orc.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -5130,7 +5130,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 40,
     spCost: 11000,
     nameUk: "Майстерність легкої броні (Light Armor Mastery)",
-    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).",
+    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% P. Def / +3 ухил., 50 р. — +81.3% / +6).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -6610,7 +6610,7 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     minLevel: 40,
     spCost: 33000,
     nameUk: "Жорстка стійка (Vicious Stance)",
-    hintUk: "Підвищує силу критичного удару. Постійно витрачає MP, поки активна.",
+    hintUk: "Toggle (не аура): крит / сила криту, поки увімкнено. MP ~0.4/с. 1 р. — +12 крит, +35% сила криту; 6 р. — +139 flat; 20 р. — +609 flat.",
     kind: "toggle",
     category: "toggle",
     visibleForProfessions: [
@@ -7032,18 +7032,6 @@ export const DARK_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
       },
       {
         stat: "bleedResist",
-        mode: "multiplier"
-      },
-      {
-        stat: "holdResist",
-        mode: "multiplier"
-      },
-      {
-        stat: "sleepResist",
-        mode: "multiplier"
-      },
-      {
-        stat: "mentalResist",
         mode: "multiplier"
       }
     ],

@@ -5206,8 +5206,8 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     l2SkillId: 217,
     minLevel: 40,
     spCost: 16000,
-    nameUk: "Sword Blunt Mastery",
-    hintUk: "Sword Blunt Mastery",
+    nameUk: "Майстерність меча й булави (Sword / Blunt Mastery)",
+    hintUk: "Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +1.5, 8 р. — +11.1). Elf / Dark Elf / Orc.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -5569,7 +5569,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 9000,
     nameUk: "Майстерність легкої броні (Light Armor Mastery)",
-    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).",
+    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% P. Def / +3 ухил., 50 р. — +81.3% / +6).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -7096,7 +7096,7 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 40,
     spCost: 28000,
     nameUk: "Жорстка стійка (Vicious Stance)",
-    hintUk: "Підвищує силу критичного удару. Постійно витрачає MP, поки активна.",
+    hintUk: "Toggle (не аура): крит / сила криту, поки увімкнено. MP ~0.4/с. 1 р. — +12 крит, +35% сила криту; 6 р. — +139 flat; 20 р. — +609 flat.",
     kind: "toggle",
     category: "toggle",
     visibleForProfessions: [
@@ -7548,21 +7548,6 @@ export const ELVEN_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
       },
       {
         stat: "bleedResist",
-        mode: "percent",
-        value: 20
-      },
-      {
-        stat: "holdResist",
-        mode: "percent",
-        value: 20
-      },
-      {
-        stat: "sleepResist",
-        mode: "percent",
-        value: 20
-      },
-      {
-        stat: "mentalResist",
         mode: "percent",
         value: 20
       }

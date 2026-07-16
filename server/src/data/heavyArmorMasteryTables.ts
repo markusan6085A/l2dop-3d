@@ -19,8 +19,9 @@ export function heavyArmorMasteryPdefPercentAtRank(rank: number): number {
   return typeof p === 'number' && Number.isFinite(p) ? p : 0;
 }
 
-export const HEAVY_ARMOR_MASTERY_HINT_UK =
-  'Пасив: підвищує P. Def (%) у важкій броні (1 р. — +1.9%, 50 р. — +79.3%).';
+import { fighterPassiveHintUk } from './fighterCommonPassiveSkillDisplay.js';
+
+export const HEAVY_ARMOR_MASTERY_HINT_UK = fighterPassiveHintUk(231)!;
 
 /** Текст для магістра / UI на конкретному рівні скіла (лише воїни-файтери). */
 export function heavyArmorMasteryStatsNoteUk(rank: number): string {

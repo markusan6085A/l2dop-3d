@@ -29,8 +29,9 @@ export function swordBluntMasteryPatkFlatAtRank(rank: number): number {
   return typeof p === 'number' && Number.isFinite(p) ? p : 0;
 }
 
-export const SWORD_BLUNT_MASTERY_HINT_UK =
-  'Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +4.5, 43 р. — +122.1).';
+import { fighterPassiveHintUk } from './fighterCommonPassiveSkillDisplay.js';
+
+export const SWORD_BLUNT_MASTERY_HINT_UK = fighterPassiveHintUk(257)!;
 
 /** Текст для магістра / UI на конкретному рівні скіла (лише воїни-файтери). */
 export function swordBluntMasteryStatsNoteUk(rank: number): string {

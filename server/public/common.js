@@ -814,10 +814,9 @@
       if (!r.ok) return null;
       var j = await r.json();
       lastSnapshot = j.character;
-      if (!sessionCatalogMerged) {
-        await ensureCatalogHintsLoaded(t);
-      }
-      if (j.character && typeof global.L2.applyHudFromSnapshot === 'function') {
+      // catalog-hints (~150–400 KB) — лише на екранах інвентаря/магазину;
+      // char/craft/warehouse/sell-items/battle викликають L2.fetchCatalogHints() окремо.
+      if (typeof global.L2.applyHudFromSnapshot === 'function') {
         global.L2.applyHudFromSnapshot(j.character);
       }
       return lastSnapshot;

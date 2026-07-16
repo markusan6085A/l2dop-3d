@@ -737,7 +737,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 11000,
     nameUk: "Вихор (Whirlwind)",
-    hintUk: "Стабільний AoE-спам: б’є головну ціль і ще до 2 поруч. Лише зі списом/алебардою. Кулдаун 6 с.",
+    hintUk: "Масова фіз. атака навколо: головна ціль + до 3 поруч (разом до 4). Лише спис/алебарда; over-hit/крит. 37 р., з 40 лвл.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -1650,7 +1650,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 20,
     spCost: 1100,
     nameUk: "Приголомшувальний удар (Stun Attack)",
-    hintUk: "Сильний удар: оглушує ціль і завдає шкоди. Поки діє попередній ефект — повторно не накладається. Тільки з булавами. Можливий надудар.",
+    hintUk: "Актив: урон + оглушення по одній цілі. Лише булава (1 р. — MP 20 / power 36, 15 р. — MP 34 / power 131). Відкат: 13 с. Повторне оглушення не накладається, поки діє ефект. Можливий надудар.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -1965,13 +1965,6 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       "orc_titan"
     ],
     levels: [
-      {
-        level: 1,
-        requiredLevel: 28,
-        spCost: 11000,
-        mpCost: 13,
-        power: 10
-      },
       {
         level: 2,
         requiredLevel: 40,
@@ -2982,7 +2975,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 43,
     spCost: 38000,
     nameUk: "Підсилення HP (Boost HP)",
-    hintUk: "Пасив: збільшує максимальне HP.",
+    hintUk: "Пасив: збільшує максимальне HP (1 р. — +60, 10 р. — +480). Однакова таблиця для всіх класів.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3057,7 +3050,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 33000,
     nameUk: "Швидке відновлення HP (Fast HP Recovery)",
-    hintUk: "Пасив: підвищує відновлення HP.",
+    hintUk: "Пасив: +HP/тік (1 р. — +1.1, 2 р. — +1.6, 3 р. — +1.7, 4 р. — +2.1, 5 р. — +2.6, 6 р. — +2.7, 7 р. — +3.4, 8 р. — +4.0).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3414,8 +3407,8 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     l2SkillId: 217,
     minLevel: 40,
     spCost: 11000,
-    nameUk: "Sword Blunt Mastery",
-    hintUk: "Sword Blunt Mastery",
+    nameUk: "Майстерність меча й булави (Sword / Blunt Mastery)",
+    hintUk: "Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +1.5, 8 р. — +11.1). Elf / Dark Elf / Orc.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3770,7 +3763,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 11000,
     nameUk: "Майстерність легкої броні (Light Armor Mastery)",
-    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).",
+    hintUk: "Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% P. Def / +3 ухил., 50 р. — +81.3% / +6).",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -4348,7 +4341,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 20,
     spCost: 1100,
     nameUk: "Дикий розмах (Wild Sweep)",
-    hintUk: "Завдає шкоди кільком суперникам. Лише зі списом або алебардами. Можливий надудар.",
+    hintUk: "Актив: фіз. атака кільком суперникам попереду в зоні удару. Лише спис або алебарда (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Відкат: 17 с. Можливий надудар.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -4474,7 +4467,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 20,
     spCost: 1100,
     nameUk: "Розгром (Power Smash)",
-    hintUk: "Потужний удар, що влучає в одну ціль. Лише з булавою або мечем. Можливий надудар.",
+    hintUk: "Актив: потужний удар по одній цілі. Лише меч або булава (1 р. — MP 22 / power 90, 15 р. — MP 37 / power 326). Відкат: 13 с. Можливий надудар.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -5797,7 +5790,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 49,
     spCost: 82000,
     nameUk: "Левине серце (Lionheart)",
-    hintUk: "Тимчасово сильно підвищує стійкість до сну, паралічу, утримання, оглушення та ослаблювальних атак.",
+    hintUk: "Актив: +40% стійкості до шоку, сну, утримання (Root) та паралічу на 1 хв (1 р., з 36 лвл).",
     kind: "battle",
     category: "buff",
     visibleForProfessions: [
@@ -6058,7 +6051,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 40,
     spCost: 33000,
     nameUk: "Жорстка стійка (Vicious Stance)",
-    hintUk: "Підвищує силу критичного удару. Постійно витрачає MP, поки активна.",
+    hintUk: "Toggle (не аура): крит / сила криту, поки увімкнено. MP ~0.4/с. 1 р. — +12 крит, +35% сила криту; 6 р. — +139 flat; 20 р. — +609 flat.",
     kind: "toggle",
     category: "toggle",
     visibleForProfessions: [
@@ -6360,7 +6353,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 66,
     spCost: 290000,
     nameUk: "Гнів (Wrath)",
-    hintUk: "Зона як «поруч» на карті (r≈26000): фіз. урон і зняття частки max CP цілей — 7% (1 р.) … 30% (10 р.). Лише спис або алебарда.",
+    hintUk: "Активний удар (спис/алебарда, Warlord 74+): фіз. урон і зняття % max CP цілі — 7% (1 р.) … 30% (10 р.). У PvP знімає CP суперника; у PvE — CP моба. Кулдаун 120 с.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [
@@ -6519,18 +6512,6 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
       {
         stat: "bleedResist",
         mode: "multiplier"
-      },
-      {
-        stat: "holdResist",
-        mode: "multiplier"
-      },
-      {
-        stat: "sleepResist",
-        mode: "multiplier"
-      },
-      {
-        stat: "mentalResist",
-        mode: "multiplier"
       }
     ],
     cooldownSec: null,
@@ -6658,8 +6639,8 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     l2SkillId: 340,
     minLevel: 77,
     spCost: 20000000,
-    nameUk: "Riposte Stance",
-    hintUk: "Riposte Stance",
+    nameUk: "Стійка відбиття (Riposte Stance)",
+    hintUk: "Toggle: 30% відбиття ближнього урону; −20% Atk.Spd., −10% Run Speed, −4 Accuracy; постійна витрата MP. 1 р., з 77 лвл. Duelist.",
     kind: "toggle",
     category: "toggle",
     visibleForProfessions: [
@@ -6739,7 +6720,7 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
     minLevel: 78,
     spCost: 32000000,
     nameUk: "Землетрус (Earthquake)",
-    hintUk: "На себе, r≈150: фіз. сила 4040, скидає таргет; можливий оверхit. Лише спис/алебарда. 78 лв, 1 р., 87 MP, КД 30 с.",
+    hintUk: "На себе, r≈150: фіз. удар силою 4040 (можливий оверхит), скидає таргет цілей. Лише спис/алебарда. 78 лв, 1 р., 87 MP, КД 30 с. Dreadnought.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [

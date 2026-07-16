@@ -25,6 +25,10 @@ const TEXT_RPG_ROOT = path.resolve(
 );
 const OUT_DIR = path.join(__dirname, '..', 'src', 'data');
 const HF_ENTRIES = path.join(OUT_DIR, 'humanFighterSkillCatalog.entries.ts');
+const COMMON_PASSIVE_DISPLAY = path.join(
+  OUT_DIR,
+  'fighterCommonPassiveSkillDisplay.ts'
+);
 
 const BASE_FIGHTER_MIN_LEVEL = 20;
 
@@ -222,8 +226,24 @@ function mergeProfSets(folders, folderProfs, allProfs) {
   return [...acc].sort();
 }
 
-function loadHumanFighterUkHints() {
+function loadCommonPassiveUkHints() {
   const byId = new Map();
+  if (!fs.existsSync(COMMON_PASSIVE_DISPLAY)) return byId;
+  const s = fs.readFileSync(COMMON_PASSIVE_DISPLAY, 'utf8');
+  const re =
+    /(\d+):\s*\{\s*nameUk:\s*'([^']*)',\s*hintUk:\s*(?:'([^']*)'|\n\s*'([^']*)')/g;
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    byId.set(Number(m[1]), {
+      nameUk: m[2],
+      hintUk: m[3] || m[4] || m[2],
+    });
+  }
+  return byId;
+}
+
+function loadHumanFighterUkHints() {
+  const byId = loadCommonPassiveUkHints();
   if (!fs.existsSync(HF_ENTRIES)) return byId;
   const s = fs.readFileSync(HF_ENTRIES, 'utf8');
   const parts = s.split(/\n  \},\n/);
@@ -238,7 +258,7 @@ function loadHumanFighterUkHints() {
     if (hint1 && !b.includes('hintUk:\n')) hint = hint1[1];
     else if (hint2) hint = hint2[1];
     else if (hint1) hint = hint1[1];
-    if (nameM) {
+    if (nameM && !byId.has(id)) {
       byId.set(id, { nameUk: nameM[1], hintUk: hint || nameM[1] });
     }
   }

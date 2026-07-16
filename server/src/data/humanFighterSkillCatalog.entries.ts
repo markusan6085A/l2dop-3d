@@ -2,6 +2,10 @@
  * Масив каталогу HF — винесено з humanFighterSkillCatalog.ts.
  */
 import type { HumanFighterSkillCatalogEntry } from './humanFighterSkillCatalog.types.js';
+import {
+  fighterPassiveHintUk,
+  fighterPassiveNameUk,
+} from './fighterCommonPassiveSkillDisplay.js';
 
 //==== Каталог (орієнтир на перший ранг у датапаку; описи — для гравця, українською) ====
 
@@ -110,8 +114,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     l2SkillId: 211,
     minLevel: 20,
     spCost: 3700,
-    nameUk: 'Підсилення HP (Boost HP)',
-    hintUk: 'Пасив: збільшує максимальне HP.',
+    nameUk: fighterPassiveNameUk(211)!,
+    hintUk: fighterPassiveHintUk(211)!,
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -131,9 +135,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     l2SkillId: 216,
     minLevel: 20,
     spCost: 3700,
-    nameUk: 'Майстерність древка (Polearm Mastery)',
-    hintUk:
-      'Пасив: +P. Atk (flat) зі списом або алебардою (1 р. — +4.5, 43 р. — +122.1).',
+    nameUk: fighterPassiveNameUk(216)!,
+    hintUk: fighterPassiveHintUk(216)!,
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -142,9 +145,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     l2SkillId: 227,
     minLevel: 20,
     spCost: 1900,
-    nameUk: 'Майстерність легкої броні (Light Armor Mastery)',
-    hintUk:
-      'Пасив: +P. Def (%) і ухилення в легкій броні (1 р. — +4.2% / +3 ухил., 50 р. — +81.3% / +6).',
+    nameUk: fighterPassiveNameUk(227)!,
+    hintUk: fighterPassiveHintUk(227)!,
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -153,9 +155,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     l2SkillId: 231,
     minLevel: 20,
     spCost: 1900,
-    nameUk: 'Майстерність важкої броні (Heavy Armor Mastery)',
-    hintUk:
-      'Пасив: підвищує P. Def (%) у важкій броні (1 р. — +1.9%, 50 р. — +79.3%).',
+    nameUk: fighterPassiveNameUk(231)!,
+    hintUk: fighterPassiveHintUk(231)!,
     kind: 'passive',
     professionReq: 'human_warrior',
   },
@@ -198,9 +199,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     l2SkillId: 257,
     minLevel: 20,
     spCost: 3700,
-    nameUk: 'Майстерність меча й булави (Sword / Blunt Mastery)',
-    hintUk:
-      'Пасив: +P. Atk (flat) з мечем або булавою (1 р. — +4.5, 43 р. — +122.1).',
+    nameUk: fighterPassiveNameUk(257)!,
+    hintUk: fighterPassiveHintUk(257)!,
     kind: 'passive',
     professionReq: 'human_warrior',
   },
