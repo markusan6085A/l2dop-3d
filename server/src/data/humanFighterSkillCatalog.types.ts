@@ -26,8 +26,8 @@ export interface HumanFighterSkillCatalogEntry {
     | 'human_duelist'
     | 'human_dreadnought'
     | 'human_dreadnought_or_duelist'
-    /** Dreadnought, Phoenix або Hell Knight (Wisdom / Health 328–329). */
-    | 'human_dreadnought_or_phoenix_or_hell'
+    /** Dreadnought, Duelist, Phoenix або Hell Knight (328–329, Parry 339 тощо). */
+    | 'human_dreadnought_or_duelist_or_phoenix_or_hell'
     /** Паладин і фінал гілки лицаря (Paladin → Phoenix Knight). */
     | 'human_paladin_track'
     /** Темний месник і фінал темної гілки (Dark Avenger → Hell Knight). */
@@ -40,8 +40,6 @@ export interface HumanFighterSkillCatalogEntry {
     | 'human_phoenix_knight'
     /** Лише Hell Knight (3-тя профа темної гілки). */
     | 'human_hell_knight'
-    /** Parry 339: Dreadnought, Duelist, Phoenix або Hell Knight. */
-    | 'human_dreadnought_or_duelist_or_phoenix_or_hell'
     /** Стійки 256/312: воїнська гілка або розбійник. */
     | 'human_warrior_or_rogue_track'
     /** Rogue → Treasure Hunter → Adventurer. */

@@ -8,6 +8,7 @@ import {
   isStanceAccuracyActive,
   isStanceParryActive,
   isStanceViciousActive,
+  isFocusAttackActive,
   jsonBoolLike,
   migrateBattleModsStancesFromLegacy,
   normalizeBattleModsFromJson,
@@ -100,6 +101,7 @@ export function stanceCount(mods: BattleBattleMods | undefined): number {
   if (isStanceAccuracyActive(mods)) n++;
   if (isStanceViciousActive(mods)) n++;
   if (isStanceParryActive(mods)) n++;
+  if (isFocusAttackActive(mods)) n++;
   if (jsonBoolLike(mods.aegisStanceActive)) n++;
   if (mods.raceToggleRanks && typeof mods.raceToggleRanks === 'object') {
     n += Object.keys(mods.raceToggleRanks).length;
@@ -114,6 +116,7 @@ export function stripStances(mods: BattleBattleMods): BattleBattleMods {
   delete o.stanceVicious;
   delete o.viciousStanceSkillRank;
   delete o.stanceParry;
+  delete o.focusAttackActive;
   delete o.aegisStanceActive;
   delete o.aegisPDefMul;
   delete o.aegisMDefMul;

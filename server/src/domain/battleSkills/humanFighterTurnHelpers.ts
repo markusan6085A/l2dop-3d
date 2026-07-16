@@ -10,6 +10,7 @@ import {
   isStanceAccuracyActive,
   isStanceParryActive,
   isStanceViciousActive,
+  isFocusAttackActive,
   jsonFiniteNum,
 } from '../battle.js';
 import type {
@@ -501,7 +502,7 @@ const STUB_SKILL_MP: Record<string, number> = {
   l2_75: 14,
   l2_80: 24,
   l2_87: 18,
-  l2_88: 27,
+  l2_88: 30,
   l2_104: 21,
   l2_116: 29,
   l2_121: 18,
@@ -511,9 +512,9 @@ const STUB_SKILL_MP: Record<string, number> = {
   l2_317: 18,
   l2_320: 73,
   l2_347: 87,
-  l2_359: 70,
+  l2_359: 33,
   l2_360: 71,
-  l2_361: 65,
+  l2_361: 53,
   l2_345: 5,
   l2_420: 106,
   l2_94: 25,
@@ -612,6 +613,7 @@ export function applyStandardFighterCooldown(
     ((battleId === 'l2_256' && isStanceAccuracyActive(ctx.st.battleMods)) ||
       (battleId === 'l2_312' && isStanceViciousActive(ctx.st.battleMods)) ||
       (battleId === 'l2_339' && isStanceParryActive(ctx.st.battleMods)) ||
+      (battleId === 'l2_317' && isFocusAttackActive(ctx.st.battleMods)) ||
       (battleId === 'l2_318' && ctx.st.battleMods?.aegisStanceActive === true));
   if (isCooldownBlocked(until) && !toggleAlreadyOn) {
     assertSkillCooldownReady(until);

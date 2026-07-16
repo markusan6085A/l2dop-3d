@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
-import { nextPvpAggressorUntilMs } from '../domain/pvpKarma.js';
-import { parseBattleJson } from './battleServiceParseBattleJson.js';
+import type { BattleJsonState } from '../domain/battleTypes.js';
+import { nextPvpAggressorUntilMs } from '../domain/pvpKarma.js';import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { persistCharacterFieldsInTx } from './charInternalPersist.js';
 
@@ -58,5 +58,59 @@ export async function applyPvpHitToVictimInTx(
 
   await persistCharacterFieldsInTx(tx, attackerId, {
     pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
+  });
+}
+
+/** Wrath (320): знімає CP у жертви PvP, якщо вона в mutual-бою з атакуючим. */
+export async function applyPvpCpDrainToVictimInTx(
+  tx: Prisma.TransactionClient,
+  args: {
+    victimId: string;
+    attackerId: string;
+    cpDrain: number;
+  }
+): Promise<void> {
+  const drain = Math.max(0, Math.floor(args.cpDrain));
+  if (drain <= 0) return;
+
+  const victimId = String(args.victimId || '').trim();
+  const attackerId = String(args.attackerId || '').trim();
+  if (!victimId || !attackerId || victimId === attackerId) return;
+
+  const victim = await tx.character.findFirst({
+    where: { id: victimId },
+    select: { battleJson: true },
+  });
+  if (!victim) return;
+
+  const victimBj = parseBattleJson(victim.battleJson);
+  if (
+    !victimBj ||
+    !isPvpBattleJson(victimBj) ||
+    victimBj.pvpTargetCharacterId !== attackerId
+  ) {
+    return;
+  }
+
+  const maxCp =
+    typeof victimBj.playerMaxCp === 'number' && victimBj.playerMaxCp > 0
+      ? Math.floor(victimBj.playerMaxCp)
+      : typeof victimBj.mobMaxCp === 'number' && victimBj.mobMaxCp > 0
+        ? Math.floor(victimBj.mobMaxCp)
+        : 0;
+  const cur =
+    typeof victimBj.playerCp === 'number'
+      ? Math.max(0, Math.floor(victimBj.playerCp))
+      : maxCp;
+  const nextCp = Math.max(0, cur - drain);
+  if (nextCp === cur) return;
+
+  const patch: BattleJsonState = {
+    ...victimBj,
+    playerCp: nextCp,
+    ...(maxCp > 0 ? { playerMaxCp: maxCp } : {}),
+  };
+  await persistCharacterFieldsInTx(tx, victimId, {
+    battleJson: serializeBattleJsonForDb(patch),
   });
 }

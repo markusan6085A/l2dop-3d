@@ -215,7 +215,7 @@ export function battleBuffLinesUk(
     out.push('Стійка парування');
   }
   if (isFocusAttackActive(m)) {
-    out.push('Зосереджений удар (сила криту)');
+    out.push('Зосереджений удар: +точність і сила криту (toggle)');
   }
   const wd = getWeaknessDetectMap(m);
   for (const kindStr of Object.keys(wd)) {
@@ -226,8 +226,11 @@ export function battleBuffLinesUk(
     }
   }
   const tf = jsonFiniteNum(m.thrillFightPatkMul);
-  if ((tf !== undefined && tf > 1) || activeByIdForLines.has(130)) {
-    out.push('Азарт бою: +ASPD');
+  const tfActive = activeByIdForLines.get(130);
+  if ((tf !== undefined && tf > 1) || tfActive) {
+    const tfLvl = tfActive?.level ?? 1;
+    const aspdPct = Math.max(1, Math.floor(tfLvl)) >= 2 ? 10 : 5;
+    out.push('Азарт бою: −20% біг; +' + aspdPct + '% ASPD');
   }
   const rgAtk = jsonFiniteNum(m.rageBattlePatkMul);
   const rgDef = jsonFiniteNum(m.rageBattlePdefMul);
@@ -436,7 +439,7 @@ export function battleMobDebuffIconsForUi(
 function weaknessDetectBuffLineUk(kind: WeaknessKind, mul: number): string {
   const labels: Record<WeaknessKind, string> = {
     insect: 'комахи',
-    monster: 'монстрів',
+    monster: 'Monster/Beast',
     animal: 'звірів',
     plant: 'рослин',
     dragon: 'драконів',
@@ -453,7 +456,7 @@ function weaknessDetectBuffLineUk(kind: WeaknessKind, mul: number): string {
 function weaknessDetectIconLabelUk(kind: WeaknessKind): string {
   const labels: Record<WeaknessKind, string> = {
     insect: 'Детект: комахи',
-    monster: 'Детект: монстри',
+    monster: 'Детект: Monster/Beast',
     animal: 'Детект: звірі',
     plant: 'Детект: рослини',
     dragon: 'Детект: дракони',
@@ -700,7 +703,7 @@ export function battleBuffIconsForUi(
       key: 'focus_attack',
       l2SkillId: 317,
       labelUk: 'Зосереджений удар',
-      ...iconDurationExtrasCombined(317, activeByIdForIcons, st),
+      isToggle: true,
     });
   }
   const wdIcons = getWeaknessDetectMap(m);
@@ -719,10 +722,12 @@ export function battleBuffIconsForUi(
   const tf = jsonFiniteNum(m.thrillFightPatkMul);
   const tfActive = activeByIdForIcons.get(130);
   if ((tf !== undefined && tf > 1) || tfActive) {
+    const tfLvl = tfActive?.level ?? 1;
+    const aspdPct = Math.max(1, Math.floor(tfLvl)) >= 2 ? 10 : 5;
     out.push({
       key: 'thrill_fight',
       l2SkillId: 130,
-      labelUk: 'Азарт бою',
+      labelUk: 'Азарт бою: −20% біг; +' + aspdPct + '% ASPD',
       ...iconDurationExtrasCombined(130, activeByIdForIcons, st),
     });
   }

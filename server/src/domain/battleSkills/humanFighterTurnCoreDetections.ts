@@ -1,7 +1,7 @@
 /**
  * Human fighter turn — детекти слабкості, Howl, Hammer, Shock Blast (ланцюг з resolveHumanFighterTurnCore).
  */
-import { jsonFiniteNum } from '../battle.js';
+import { jsonFiniteNum, type BattleBattleMods } from '../battle.js';
 import { ZEALOT_EFFECT_DURATION_MS } from '../battleTypes.js';
 import type { BattleSkillTurnResult } from './types.js';
 import { fighterCatalogEntryForRace } from '../../data/fighterSkillCatalog.byRace.js';
@@ -13,16 +13,22 @@ import {
   effectiveMobStunResistPct,
   scaleLandChancePercentAfterResist,
 } from '../controlLandResist.js';
-
-import { SHOCK_BLAST_PDEF_DEBUFF_MS } from './humanFighterTurnConstants.js';
 import {
-  EARTHQUAKE_BASE_STUN_CHANCE_PCT,
-  EARTHQUAKE_STUN_CHANCE_CAP_PCT,
-  EARTHQUAKE_STUN_PER_RANK_PCT,
-  SHOCK_STOMP_BASE_STUN_CHANCE_PCT,
-  SHOCK_STOMP_STUN_CHANCE_CAP_PCT,
-  SHOCK_STOMP_STUN_PER_RANK_PCT,
-} from './humanFighterTurnConstants.js';
+  EARTHQUAKE_SKILL_POWER,
+  earthquakePhysAtkFromPower,
+} from '../../data/earthquakeSkillConstants.js';
+import { spawnBlocksHammerCrushStun } from '../../data/hammerCrushTables.js';
+import { l2dopXmlMpPower } from '../../data/l2dopXmlSkillLevels.lookup.js';
+import {
+  SHOCK_BLAST_BASE_STUN_CHANCE_PCT,
+  SHOCK_BLAST_DEF_DEBUFF_MUL,
+  SHOCK_BLAST_SKILL_POWER,
+  SHOCK_BLAST_STUN_DURATION_MS,
+} from '../../data/shockBlastSkillConstants.js';
+
+import {
+  HOWL_MOB_PATK_DEBUFF_MUL,
+} from '../battleWhirlwindExtras.js';
 import {
   assertSkillCooldownReady,
   catalogAllowsFighterAction,
@@ -59,7 +65,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
   }
 
   if (action === 'detect_monster_weakness') {
-    if (!warlordOrGladiatorTier2(String(l2Profession))) {
+    if (!warlordBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
@@ -70,7 +76,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_80', rank),
       pDmg: 0,
       skillLine:
-        'Вразливість монстрів: +30% P.Atk проти монстрів (10 хв).',
+        'Вразливість монстрів: +30% P.Atk проти Monster/Beast (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'monster', weaknessPatkMul: 1.3 },
@@ -98,7 +104,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
   }
 
   if (action === 'detect_dragon_weakness') {
-    if (!warlordOrGladiatorTier2(String(l2Profession))) {
+    if (!warlordBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
@@ -106,12 +112,12 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       throw new Error('battle_skill_not_allowed');
     }
     return {
-      mpCost: stubMpForCanon('l2_88', rank),
+      mpCost: 30,
       pDmg: 0,
-      skillLine: 'Вразливість драконів: +30% P.Atk проти драконів (10 хв).',
+      skillLine: 'Вразливість драконів: +30% P.Atk проти Dragon (10 хв).',
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { weaknessKind: 'dragon', weaknessPatkMul: 1.35 },
+      battleModsPatch: { weaknessKind: 'dragon', weaknessPatkMul: 1.3 },
       ...legacyBuffCdAndExpirePatches(88, ctx),
     };
   }
@@ -137,27 +143,27 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
   }
 
   if (action === 'howl') {
-    if (!warlordOrGladiatorTier2(String(l2Profession))) {
+    if (!warlordBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
     if (legacyBuffOnCd(ctx, 116)) {
       throw new Error('battle_skill_not_allowed');
     }
-    const HOWL_MOB_PATK = 0.77;
     return {
       mpCost: stubMpForCanon('l2_116', rank),
       pDmg: 0,
-      skillLine: 'Звіриний рев: слабший удар моба (~−23% його P.Atk), 120 с.',
+      skillLine:
+        'Звіриний рев (Howl): −23% P.Atk ворогів у радіусі бою на 30 с.',
       physOutcome: null,
       magicOutcome: null,
-      battleModsPatch: { mobPatkDebuffMul: HOWL_MOB_PATK },
+      battleModsPatch: { mobPatkDebuffMul: HOWL_MOB_PATK_DEBUFF_MUL },
       ...legacyBuffCdAndExpirePatches(116, ctx),
     };
   }
 
   if (action === 'thrill_fight') {
-    if (!warlordOrGladiatorTier2(String(l2Profession))) {
+    if (!warlordBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
@@ -168,14 +174,18 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
     if (typeof tfCd === 'number' && Date.now() < tfCd) {
       throw new Error('battle_skill_not_allowed');
     }
+    const tfRank = Math.max(1, Math.min(2, Math.floor(rank)));
+    const aspdPct = tfRank >= 2 ? 10 : 5;
     return {
-      mpCost: stubMpForCanon('l2_130', rank),
+      mpCost: stubMpForCanon('l2_130', tfRank),
       pDmg: 0,
       skillLine:
-        'Азарт бою: +ASPD (L2 Interlude тривалість).',
+        'Азарт бою (Thrill Fight): −20% Run Speed; +' +
+        aspdPct +
+        '% Attack Speed; 5 хв.',
       physOutcome: null,
       magicOutcome: null,
-      activeBuffPatch: { skillId: 130, level: rank, action: 'add' },
+      activeBuffPatch: { skillId: 130, level: tfRank, action: 'add' },
     };
   }
 
@@ -295,7 +305,7 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_359', rank),
       pDmg: 0,
       skillLine:
-        'Око мисливця: +30% P.Atk проти комах, рослин і тварин (10 хв).',
+        'Око мисливця: +30% P.Atk проти Animal, Plant та Insect (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'eye_hunter', weaknessPatkMul: 1.3 },
@@ -316,38 +326,11 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       mpCost: stubMpForCanon('l2_360', rank),
       pDmg: 0,
       skillLine:
-        'Око вбивці: +30% P.Atk проти звірів, драконів, гігантів і магічних істот (10 хв).',
+        'Око вбивці (Eye of the Slayer): +30% P.Atk проти Beast, Magic Creature, Giant та Dragon (10 хв).',
       physOutcome: null,
       magicOutcome: null,
       battleModsPatch: { weaknessKind: 'eye_slayer', weaknessPatkMul: 1.3 },
       ...legacyBuffCdAndExpirePatches(360, ctx),
-    };
-  }
-
-  if (action === 'focus_attack') {
-    if (!warlordBranchProfession(String(l2Profession))) {
-      throw new Error('battle_skill_not_allowed');
-    }
-    if (ctx.weaponKind !== 'pole') {
-      throw new Error('battle_skill_not_allowed');
-    }
-    requireCatalogEntryForAction(action, String(l2Profession));
-    /**
-     * Не-тогл: повторний каст оновлює `expiresAt` у `battleModsExpiresAtMsBySkillId["317"]`.
-     * Поки активний CD (L2 Interlude: CD=12 с, duration=30 с) — refresh заблокований:
-     * `legacyBuffOnCd` кидає `battle_skill_not_allowed`. `legacyBuffCdAndExpirePatches`
-     * повертає одночасно CD і експірацію, CD персистимо через `mysticSkillCdUntilPatch`.
-     */
-    const cdUntil = ctx.st.mysticSkillCdUntil?.['l2_317'];
-    assertSkillCooldownReady(cdUntil);
-    return {
-      mpCost: stubMpForCanon('l2_317', rank),
-      pDmg: 0,
-      skillLine: 'Точність древка зросла. Шанс критичного удару підвищено.',
-      physOutcome: null,
-      magicOutcome: null,
-      battleModsPatch: { focusAttackActive: true },
-      ...legacyBuffCdAndExpirePatches(317, ctx),
     };
   }
 
@@ -400,38 +383,27 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
-    const atk = Math.floor(combat.pAtk * 1.18 * profM);
-    const r = rollPhys(atk, { forceNoMiss: true });
-    const baseShockPct = Math.min(
-      EARTHQUAKE_STUN_CHANCE_CAP_PCT,
-      EARTHQUAKE_BASE_STUN_CHANCE_PCT +
-        Math.max(1, rank) * EARTHQUAKE_STUN_PER_RANK_PCT
-    );
-    const effShockPct = scaleLandChancePercentAfterResist(
-      baseShockPct,
-      effectiveMobStunResistPct({
-        level: ctx.spawnLevel,
-        stunResistPct: ctx.spawnStunResistPct,
-        debuffResistPct: ctx.spawnDebuffResistPct,
-      })
-    );
-    const appliedShock =
-      r.damage > 0 &&
-      r.outcome !== 'miss' &&
-      Math.random() * 100 < effShockPct;
+    const eq =
+      l2dopXmlMpPower(347, rank) ?? { mp: 87, power: EARTHQUAKE_SKILL_POWER };
+    const atk = earthquakePhysAtkFromPower(combat.pAtk, eq.power, profM);
+    const r = rollPhys(atk);
+    const landed = r.damage > 0 && r.outcome !== 'miss';
     return {
-      mpCost: stubMpForCanon('l2_347', rank),
+      mpCost: eq.mp,
       pDmg: r.damage,
-      skillLine: appliedShock
-        ? 'Землетрус (347, Earthquake): AoE-удар по площі, ціль шоковано (~' +
-          Math.round(effShockPct) +
-          '%).'
-        : 'Землетрус (347, Earthquake): AoE-удар по площі; шок не спрацював (~' +
-          Math.round(effShockPct) +
-          '%).',
+      skillLine:
+        'Землетрус (Earthquake): сила ' +
+        eq.power +
+        ', r≈150 навколо себе' +
+        (landed ? '; цілі втратили таргет.' : '.'),
       physOutcome: r.outcome,
       magicOutcome: null,
-      ...(appliedShock ? { skipMobCounterAttackOnce: true } : {}),
+      ...(landed
+        ? {
+            skipMobCounterAttackOnce: true,
+            mobRetaliationDelayHits: 2,
+          }
+        : {}),
       ...(r.weaknessLogLineUk
         ? { weaknessLogLineUk: r.weaknessLogLineUk }
         : {}),
@@ -446,42 +418,71 @@ export function tryResolveHumanFighterTurnDetections(a: FighterTurnCoreArgs): Ba
       throw new Error('battle_skill_not_allowed');
     }
     requireCatalogEntryForAction(action, String(l2Profession));
-    const atk = Math.floor(combat.pAtk * 0.92 * profM);
-    const r = rollPhys(atk, { forceNoMiss: true });
-    const baseShockPct = Math.min(
-      SHOCK_STOMP_STUN_CHANCE_CAP_PCT,
-      SHOCK_STOMP_BASE_STUN_CHANCE_PCT +
-        Math.max(1, rank) * SHOCK_STOMP_STUN_PER_RANK_PCT
-    );
-    const effShockPct = scaleLandChancePercentAfterResist(
-      baseShockPct,
-      effectiveMobStunResistPct({
-        level: ctx.spawnLevel,
-        stunResistPct: ctx.spawnStunResistPct,
-        debuffResistPct: ctx.spawnDebuffResistPct,
-      })
-    );
-    const appliedShock =
-      r.damage > 0 &&
-      r.outcome !== 'miss' &&
-      Math.random() * 100 < effShockPct;
+    const sb =
+      l2dopXmlMpPower(361, rank) ?? {
+        mp: 53,
+        power: SHOCK_BLAST_SKILL_POWER,
+      };
+    const atk = earthquakePhysAtkFromPower(combat.pAtk, sb.power, profM);
+    const r = rollPhys(atk);
+    const landed = r.damage > 0 && r.outcome !== 'miss';
+    const stunBlocked = spawnBlocksHammerCrushStun(ctx.spawnKind);
+    let appliedStun = false;
+    let battleModsPatch: Partial<BattleBattleMods> | undefined;
+    let battleModsExpiresPatch: Record<string, number> | undefined;
+
+    if (landed && !stunBlocked) {
+      const effStunPct = scaleLandChancePercentAfterResist(
+        SHOCK_BLAST_BASE_STUN_CHANCE_PCT,
+        effectiveMobStunResistPct({
+          level: ctx.spawnLevel,
+          stunResistPct: ctx.spawnStunResistPct,
+          debuffResistPct: ctx.spawnDebuffResistPct,
+        })
+      );
+      appliedStun = Math.random() * 100 < effStunPct;
+      if (appliedStun) {
+        const until = Date.now() + SHOCK_BLAST_STUN_DURATION_MS;
+        battleModsPatch = {
+          mobStunUntilMs: until,
+          mobStunIconSkillId: 361,
+          mobTargetPDefMul: SHOCK_BLAST_DEF_DEBUFF_MUL,
+          mobTargetMDefMul: SHOCK_BLAST_DEF_DEBUFF_MUL,
+          mobTargetPDefDebuffIconSkillId: 361,
+          mobTargetMDefDebuffIconSkillId: 361,
+        };
+        battleModsExpiresPatch = { '361': until };
+      }
+    }
+
+    let skillLine =
+      'Ударний імпульс (Shock Blast): сила ' +
+      sb.power +
+      ', r≈150 навколо цілі';
+    if (stunBlocked && landed) {
+      skillLine += '; урон завдано, стун не діє на РБ/епіків.';
+    } else if (appliedStun) {
+      skillLine += '; ціль оглушена ~9 с (−30% P.Def/M.Def, таргет знято).';
+    } else if (landed) {
+      skillLine += '; стун не спрацював, таргет знято.';
+    } else {
+      skillLine += '.';
+    }
+
     return {
-      mpCost: stubMpForCanon('l2_361', rank),
+      mpCost: sb.mp,
       pDmg: r.damage,
-      skillLine: appliedShock
-        ? 'Ударний тупіт (361, Shock Stomp): контрольний AoE-удар, ціль шоковано (~' +
-          Math.round(effShockPct) +
-          '%).'
-        : 'Ударний тупіт (361, Shock Stomp): контрольний AoE-удар; шок не спрацював (~' +
-          Math.round(effShockPct) +
-          '%).',
+      skillLine,
       physOutcome: r.outcome,
       magicOutcome: null,
-      battleModsPatch: { mobTargetPDefMul: 0.88 },
-      battleModsExpiresPatch: {
-        '361': Date.now() + SHOCK_BLAST_PDEF_DEBUFF_MS,
-      },
-      ...(appliedShock ? { skipMobCounterAttackOnce: true } : {}),
+      ...(battleModsPatch ? { battleModsPatch } : {}),
+      ...(battleModsExpiresPatch ? { battleModsExpiresPatch } : {}),
+      ...(landed
+        ? {
+            skipMobCounterAttackOnce: true,
+            mobRetaliationDelayHits: 2,
+          }
+        : {}),
       ...(r.weaknessLogLineUk
         ? { weaknessLogLineUk: r.weaknessLogLineUk }
         : {}),

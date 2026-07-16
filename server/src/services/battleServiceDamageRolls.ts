@@ -23,6 +23,7 @@ import {
 import { computeCombatStats } from '../data/l2dopCombatFormulas.js';
 import {
   focusAttackCritDmgMultiplier,
+  focusAttackAccuracyFlat,
   focusAttackRankFromLearnedMap,
   viciousStanceRankFromLearnedMap,
 } from '../data/l2dopFocusAttack.js';
@@ -67,7 +68,7 @@ export function rollPlayerPhysicalDmg(
   learnedSkillLevelByBattleId?: Record<string, number>,
   /** Як у `toSnapshot` / `resolveDisplayBattleMods` — інакше втрачаються моди з `worldCombatStateJson`. */
   effectiveBattleMods?: BattleBattleMods,
-  options?: { forceNoMiss?: boolean }
+  options?: { forceNoMiss?: boolean; weaponKind?: string }
 ): {
   damage: number;
   outcome: 'miss' | 'hit' | 'crit';
@@ -153,6 +154,7 @@ export function rollPlayerPhysicalDmg(
   if (isFocusAttackActive(mods)) {
     const fr = focusAttackRankFromLearnedMap(learnedSkillLevelByBattleId);
     critDmgMul *= focusAttackCritDmgMultiplier(fr);
+    acc = Math.max(0, Math.floor(acc + focusAttackAccuracyFlat(fr)));
   }
   if (isStanceViciousActive(mods)) {
     const rk = resolveViciousStanceEffectRank(
@@ -216,6 +218,18 @@ export function rollPlayerPhysicalDmg(
   const mtdPlayer = jsonFiniteNum(mods?.mobTargetPDefMul);
   if (mtdPlayer !== undefined && mtdPlayer > 0 && mtdPlayer < 1) {
     mobPDefEff = Math.max(1, Math.floor(mobPDefEff * mtdPlayer));
+  }
+  const poleCut = jsonFiniteNum(mods?.mobPoleResistCutPct);
+  if (
+    options?.weaponKind === 'pole' &&
+    poleCut !== undefined &&
+    poleCut > 0 &&
+    poleCut < 100
+  ) {
+    mobPDefEff = Math.max(
+      1,
+      Math.floor(mobPDefEff * (1 - poleCut / 100))
+    );
   }
   const hit = resolvePhysicalHit({
     attackerAtk: atkEff,

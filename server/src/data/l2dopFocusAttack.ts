@@ -10,8 +10,20 @@ import { textRpgHfBuffPowerAtSkillLevel } from './textRpgHfBuffPower.js';
 
 const FOCUS_L2_SKILL_ID = 317;
 
+/** Interlude: +2 … +6 flat Accuracy за рангом 1–5. */
+const FOCUS_ATTACK_ACCURACY_BY_RANK = [0, 2, 3, 4, 5, 6] as const;
+
 export function clampSkillRank15(rank: number): number {
   return Math.max(1, Math.min(5, Math.floor(rank)));
+}
+
+export function focusAttackAccuracyFlat(rank: number): number {
+  const r = clampSkillRank15(rank);
+  return FOCUS_ATTACK_ACCURACY_BY_RANK[r] ?? 0;
+}
+
+export function focusAttackCritDamagePct(rank: number): number {
+  return textRpgHfBuffPowerAtSkillLevel(FOCUS_L2_SKILL_ID, clampSkillRank15(rank));
 }
 
 /** Жорстка стійка (312): Interlude — до 20 рівнів (l2db); у бою — text-rpg `textRpgHfToggleBattleApply`. */

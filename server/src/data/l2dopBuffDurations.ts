@@ -42,11 +42,11 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   /** Rapid Shot — вища швидкість атаки з луком (L2 Interlude-style self-buff). */
   99: 60,
   /** Howl (Warlord) — дебаф P.Atk моба. */
-  116: 120,
+  116: 30,
   /** Battle Roar (+Max HP / миттєвий хіл) — 10 хв */
   121: 600,
-  /** Thrill Fight */
-  130: 600,
+  /** Thrill Fight — 5 хв (Interlude `time="300"`). */
+  130: 300,
   /** Guts — міцніший P.Def. */
   139: 60,
   /** Ultimate Evasion (Treasure Hunter/Adventurer) */
@@ -55,8 +55,6 @@ export const L2DOP_BUFF_DURATION_SEC_BY_SKILL_ID: Readonly<
   176: 30,
   /** Lionheart (антистани) */
   287: 60,
-  /** Focus Attack (полеарм +accuracy/+crit) */
-  317: 30,
   /** Eye of the Hunter — 10 хв */
   359: 600,
   /** Eye of the Slayer — 10 хв */

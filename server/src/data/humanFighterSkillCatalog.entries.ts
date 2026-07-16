@@ -406,7 +406,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     nameUk: 'Вихор (Whirlwind)',
     cooldownSec: 6,
     hintUk:
-      'Стабільний AoE-спам: б’є головну ціль і ще до 2 поруч. Лише зі списом/алебардою. Кулдаун 6 с.',
+      'Масова фіз. атака навколо: головна ціль + до 3 поруч (разом до 4). Лише спис/алебарда; over-hit/крит. 37 р., з 40 лвл.',
     kind: 'battle',
     professionReq: 'human_warlord',
   },
@@ -417,7 +417,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 13000,
     nameUk: 'Грозова буря (Thunder Storm)',
     hintUk:
-      'Потужний burst AoE-удар зі шансом шоку/оглушення. Лише зі списом/алебардою.',
+      'Потужний burst AoE навколо: головна + до 3 поруч (до 4). На 37 р. Power 1735; шок ~50%. Лише спис/алебарда; Warlord.',
     kind: 'battle',
     professionReq: 'human_warlord',
   },
@@ -428,9 +428,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 150000,
     nameUk: 'Вразливість монстрів (Detect Monster Weakness)',
     hintUk:
-      'Тимчасово підвищує фізичну атаку проти монстрів.',
+      'Актив: +30% P.Atk проти Monster/Beast на 10 хв (1 р., 52 лвл). MP 24; відкат 3 с. Warlord.',
     kind: 'battle',
-    professionReq: 'human_warlord_shared',
+    professionReq: 'human_warlord',
+    cooldownSec: 3,
   },
   {
     battleId: 'l2_87',
@@ -450,9 +451,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 210000,
     nameUk: 'Вразливість драконів (Detect Dragon Weakness)',
     hintUk:
-      'Тимчасово підвищує фізичну атаку проти драконів.',
+      'Актив: +30% P.Atk проти Dragon на 10 хв (1 р., 58 лвл). MP 30; відкат 3 с. Warlord.',
     kind: 'battle',
-    professionReq: 'human_warlord_shared',
+    professionReq: 'human_warlord',
+    cooldownSec: 3,
   },
   {
     battleId: 'l2_104',
@@ -472,9 +474,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 46000,
     nameUk: 'Звіриний рев (Howl)',
     hintUk:
-      'Миттєво знижує фізичну атаку найближчих ворогів.',
+      'Актив: −23% P.Atk ворогів у радіусі бою (як моби на карті) на 30 с. MP 29…53 за рангом. Warlord; з 43 лвл.',
     kind: 'battle',
-    professionReq: 'human_warlord_shared',
+    professionReq: 'human_warlord',
   },
   {
     battleId: 'l2_121',
@@ -494,9 +496,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 55000,
     nameUk: 'Азарт бою (Thrill Fight)',
     hintUk:
-      'Тимчасово знижує швидкість пересування, але підвищує швидкість атаки.',
+      'Актив: −20% Run Speed; +5% / +10% Attack Speed на 5 хв (1–2 р., з 46 / 55 лвл). MP 21 / 25. Warlord.',
     kind: 'battle',
-    professionReq: 'human_warlord_shared',
+    professionReq: 'human_warlord',
   },
   {
     battleId: 'l2_181',
@@ -516,7 +518,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 46000,
     nameUk: 'Провокація масова (Provoke)',
     hintUk:
-      'Притягує увагу монстрів довкола до тебе.',
+      'Провокація: агро мобів і РБ у радіусі (500/700/900 → масштаб на карті); 10/15/20 с; −10/−15/−20% опору до списів. Епіки — ні. Warlord.',
     kind: 'battle',
     professionReq: 'human_warlord',
   },
@@ -527,7 +529,7 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 46000,
     nameUk: 'Остання лютість (Final Frenzy)',
     hintUk:
-      'Пасив: автоматично +P.Atk, коли HP < 30% (1 р. з 43 лвл, макс. 14 р.). Gladiator / Warlord.',
+      'Пасив: автоматично +P.Atk (flat), коли HP < 30%. 1 р. +32.9 … 13 р. +129.3 (макс. 14 р.). Gladiator / Warlord.',
     kind: 'passive',
     professionReq: 'human_warlord_shared',
   },
@@ -538,8 +540,8 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 39000,
     nameUk: 'Зосереджений удар (Focus Attack)',
     hintUk:
-      'Тимчасово підвищує точність і силу криту проти однієї цілі. Лише зі списом або алебардами.',
-    kind: 'battle',
+      'Toggle (спис/алебарда): лише 1 ціль; +Accuracy та +Critical Damage за рангом (1 р. +2/+10% … 5 р. +6/+30%). MP ~0.4/с.',
+    kind: 'toggle',
     professionReq: 'human_warlord',
   },
   {
@@ -549,9 +551,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 350000,
     nameUk: 'Гнів (Wrath)',
     hintUk:
-      'Зона як «поруч» на карті (r≈26000): фіз. урон і зняття частки max CP цілей — 7% (1 р.) … 30% (10 р.). Лише спис або алебарда.',
+      'Активний удар (спис/алебарда, Warlord 74+): фіз. урон і зняття % max CP цілі — 7% (1 р.) … 30% (10 р.). У PvP знімає CP суперника; у PvE — CP моба. Кулдаун 120 с.',
     kind: 'battle',
     professionReq: 'human_warlord',
+    cooldownSec: 120,
   },
   // ---- Dreadnought (3-тя профа) — набір як l2db.ru/skills/dreadnought/_/interlude ----
   {
@@ -561,9 +564,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 12000000,
     nameUk: 'Мудрість (Wisdom)',
     hintUk:
-      'Пасив: підвищує стійкість до утримання, сну та ментальних ефектів.',
+      'Пасивний скіл. Збільшує опір до Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.',
     kind: 'passive',
-    professionReq: 'human_dreadnought_or_phoenix_or_hell',
+    professionReq: 'human_dreadnought_or_duelist_or_phoenix_or_hell',
   },
   {
     battleId: 'l2_329',
@@ -572,9 +575,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 12000000,
     nameUk: 'Здоров’я (Health)',
     hintUk:
-      'Пасив: підвищує стійкість до отрути та кровотечі.',
+      'Пасивний скіл. Збільшує опір до Poison, Bleed, Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Poison +20, Bleed +20, Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.',
     kind: 'passive',
-    professionReq: 'human_dreadnought_or_phoenix_or_hell',
+    professionReq: 'human_dreadnought_or_duelist_or_phoenix_or_hell',
   },
   {
     battleId: 'l2_330',
@@ -583,9 +586,9 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 15000000,
     nameUk: 'Майстерність скілів (Skill Mastery)',
     hintUk:
-      'Пасив: шанс повторно застосувати вміння або подовжити ефект.',
+      'Пасивний скіл. Шанс без витрати MP і без перезарядки (reuse) при активному скілі; при спрацюванні — повтор одразу. 77 лв, 1 р. Макс. рівень скіла — 1.',
     kind: 'passive',
-    professionReq: 'human_dreadnought',
+    professionReq: 'human_dreadnought_or_duelist',
   },
   {
     battleId: 'l2_339',
@@ -605,9 +608,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 21000000,
     nameUk: 'Землетрус (Earthquake)',
     hintUk:
-      'Масовий удар по землі з шансом шоку/оглушення. Добрий opener проти пачки мобів. Лише зі списом/алебардою.',
+      'На себе, r≈150: фіз. удар силою 4040 (можливий оверхит), скидає таргет цілей. Лише спис/алебарда. 78 лв, 1 р., 87 MP, КД 30 с. Dreadnought.',
     kind: 'battle',
     professionReq: 'human_dreadnought',
+    cooldownSec: 30,
   },
   {
     battleId: 'l2_359',
@@ -616,9 +620,10 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 15000000,
     nameUk: 'Око мисливця (Eye of the Hunter)',
     hintUk:
-      'Актив: +30% P.Atk проти Insect, Plant та Animal на 10 хв (1 р., з 77 лвл). 70 MP. Duelist / Dreadnought.',
+      'Активний баф (1 р., 77 лв). +30% P.Atk проти Animal, Plant та Insect на 10 хв. 33 MP. Макс. рівень скіла — 1. Dreadnought / Duelist.',
     kind: 'battle',
     professionReq: 'human_dreadnought_or_duelist',
+    cooldownSec: 2,
   },
   {
     battleId: 'l2_360',
@@ -627,18 +632,19 @@ export const HUMAN_FIGHTER_SKILL_CATALOG: HumanFighterSkillCatalogEntry[] = [
     spCost: 21000000,
     nameUk: 'Око вбивці (Eye of the Slayer)',
     hintUk:
-      'Актив: +30% P.Atk проти Beast, Magic Creature, Giant та Dragon на 10 хв (1 р., з 78 лвл). 71 MP. Duelist / Dreadnought.',
+      'Активний баф (1 р., 78 лв). +30% P.Atk проти Beast, Magic Creature, Giant та Dragon на 10 хв. 71 MP, каст 2 с, відкат 3 с. Dreadnought / Duelist.',
     kind: 'battle',
     professionReq: 'human_dreadnought_or_duelist',
+    cooldownSec: 3,
   },
   {
     battleId: 'l2_361',
     l2SkillId: 361,
     minLevel: 77,
     spCost: 15000000,
-    nameUk: 'Ударний тупіт (Shock Stomp)',
+    nameUk: 'Ударний імпульс (Shock Blast)',
     hintUk:
-      'Control-скіл: нижча шкода, але вищий шанс шоку/оглушення + тимчасове зниження P.Def цілі. Лише зі списом/алебардою.',
+      'AoE по ворогах r≈150 навколо цілі (дальність 500): сила 1973, стан ~9 с (40% + CON цілі), −30% P.Def/M.Def, скидає таргет. Лише спис/алебарда. Можливий оверхit.',
     kind: 'battle',
     professionReq: 'human_dreadnought',
   },

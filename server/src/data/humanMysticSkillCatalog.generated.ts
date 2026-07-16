@@ -2444,8 +2444,8 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 328,
     minLevel: 76,
     spCost: 12000000,
-    nameUk: "Мудрість",
-    hintUk: "Пасив: підвищує WIT.",
+    nameUk: "Мудрість (Wisdom)",
+    hintUk: "Пасивний скіл. Збільшує опір до Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -2488,8 +2488,8 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 329,
     minLevel: 76,
     spCost: 10000000,
-    nameUk: "Здоров’я",
-    hintUk: "Пасив: підвищує CON.",
+    nameUk: "Здоров’я (Health)",
+    hintUk: "Пасивний скіл. Збільшує опір до Poison, Bleed, Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Poison +20, Bleed +20, Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -2516,6 +2516,21 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
         stat: "bleedResist",
         mode: "percent",
         value: 20
+      },
+      {
+        stat: "holdResist",
+        mode: "percent",
+        value: 20
+      },
+      {
+        stat: "sleepResist",
+        mode: "percent",
+        value: 20
+      },
+      {
+        stat: "mentalResist",
+        mode: "percent",
+        value: 20
       }
     ],
     cooldownSec: null,
@@ -2526,8 +2541,8 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     l2SkillId: 330,
     minLevel: 77,
     spCost: 15000000,
-    nameUk: "Майстерність умінь",
-    hintUk: "Пасив: підсилює ефективність пасивних умінь.",
+    nameUk: "Майстерність скілів (Skill Mastery)",
+    hintUk: "Пасивний скіл. Шанс без витрати MP і без перезарядки (reuse) при активному скілі; при спрацюванні — повтор одразу. 77 лв, 1 р. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3634,6 +3649,21 @@ export const HUMAN_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCata
     effects: [
       {
         stat: "bleedResist",
+        mode: "percent",
+        value: 20
+      },
+      {
+        stat: "holdResist",
+        mode: "percent",
+        value: 20
+      },
+      {
+        stat: "sleepResist",
+        mode: "percent",
+        value: 20
+      },
+      {
+        stat: "mentalResist",
         mode: "percent",
         value: 20
       }

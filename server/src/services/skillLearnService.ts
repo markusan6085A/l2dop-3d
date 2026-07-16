@@ -285,22 +285,24 @@ function dreadnoughtSkillStatsNoteUk(args: {
   if (b === 'l2_347') {
     const p = args.power != null ? Math.max(0, Math.floor(args.power)) : null;
     return p != null
-      ? 'Лише спис/алебарда. Поточний ранг: AoE-удар, сила ' + p + ', шанс шоку ~24-32%.'
-      : 'Лише спис/алебарда. Поточний ранг: AoE-удар по площі, шанс шоку ~24-32%.';
+      ? 'Лише спис/алебарда. r≈150, сила ' +
+          p +
+          '; скидає таргет; можливий оверхit.'
+      : 'Лише спис/алебарда. r≈150, AoE-удар; скидає таргет цілей.';
   }
   if (b === 'l2_361') {
     const p = args.power != null ? Math.max(0, Math.floor(args.power)) : null;
     return p != null
-      ? 'Лише спис/алебарда. Поточний ранг: control-удар, сила ' +
+      ? 'Лише спис/алебарда. r≈150 навколо цілі, сила ' +
           p +
-          ', шанс шоку ~55-70% + дебаф P.Def.'
-      : 'Лише спис/алебарда. Поточний ранг: control-удар з шансом шоку ~55-70% + дебаф P.Def.';
+          '; стан ~9 с (40%); −30% P.Def/M.Def; скидає таргет; можливий оверхit.'
+      : 'Лише спис/алебарда. r≈150, AoE-удар; стан ~9 с; −30% P.Def/M.Def; скидає таргет.';
   }
   if (b === 'l2_359') {
-    return 'Поточний ранг: +30% P.Atk проти Insect/Plant/Animal на 10 хв.';
+    return 'Поточний ранг: +30% P.Atk проти Animal/Plant/Insect на 10 хв (33 MP).';
   }
   if (b === 'l2_360') {
-    return 'Поточний ранг: +30% P.Atk проти Beast/Magic Creature/Giant/Dragon на 10 хв.';
+    return 'Поточний ранг: +30% P.Atk проти Beast/Magic Creature/Giant/Dragon на 10 хв (71 MP, каст 2 с, відкат 3 с).';
   }
   if (b === 'l2_340') {
     return 'Поточний ранг: toggle — 30% відбиття ближнього урону; −20% Atk.Spd., −10% Run Speed, −4 Accuracy.';

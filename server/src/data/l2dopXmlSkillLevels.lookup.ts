@@ -35,5 +35,8 @@ export function l2dopXmlMpPower(
 ): { mp: number; power: number } | undefined {
   const row = l2dopXmlSkillRow(l2SkillId, rank1Based);
   if (!row) return undefined;
-  return { mp: row.m, power: row.p };
+  const power = Math.floor(Number(row.p) || 0);
+  /** power=0 у згенерованих рядках — немає валідної сили удару; дозволяє fallback text-rpg таблиці. */
+  if (power <= 0) return undefined;
+  return { mp: row.m, power };
 }

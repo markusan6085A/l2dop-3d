@@ -10,7 +10,6 @@ import {
   powerShotMpAndPower,
   powerSmashMpAndPower,
   powerStrikeMpAndPower,
-  provokeMpAndPower,
   stunAttackMpAndPower,
   stunShotMpAndPower,
   thunderStormMpAndPower,
@@ -30,10 +29,18 @@ import {
 import { powerSmashStatsNoteUk } from '../data/powerSmashTables.js';
 import { stunAttackStatsNoteUk } from '../data/stunAttackTables.js';
 import { tripleSlashStatsNoteUk, sonicBlasterStatsNoteUk, sonicBusterStatsNoteUk, sonicStormStatsNoteUk } from '../data/sonicGladiatorTables.js';
+import {
+  provokeMpAtRank,
+  provokePoleResistCutPctAtRank,
+  provokeStatsNoteUk,
+} from '../data/provokeTables.js';
 import { hammerCrushStatsNoteUk } from '../data/hammerCrushTables.js';
 import { canonicalBattleSkillId } from '../data/humanFighterSkillCatalog.js';
 import { applyL2dopXmlMagisterOverlay } from '../data/l2dopXmlMagisterOverlay.js';
-import { l2dopXmlSkillRow } from '../data/l2dopXmlSkillLevels.lookup.js';
+import {
+  l2dopXmlMpPower,
+  l2dopXmlSkillRow,
+} from '../data/l2dopXmlSkillLevels.lookup.js';
 function magisterPassiveCombatNoteUk(battleId: string): string | null {
   const b = canonicalBattleSkillId(battleId);
   switch (b) {
@@ -60,15 +67,15 @@ function magisterPassiveCombatNoteUk(battleId: string): string | null {
     case 'l2_257':
       return 'Пасив: +P. Atk (flat) з мечем або булавою. MP у бою не витрачається.';
     case 'l2_290':
-      return 'Пасив: автоматично +P.Atk (flat), коли HP < 30%. Макс. 14 р. MP у бою не витрачається.';
+      return 'Пасив: автоматично +P.Atk (flat), коли HP < 30%. 1 р. +32.9 … 13 р. +129.3. MP у бою не витрачається.';
     case 'l2_312':
       return 'Toggle: крит / сила криту; MP ~0.4/с, поки увімкнено (не аура).';
     case 'l2_328':
-      return 'Пасив: стійкість до утримання, сну та ментальних ефектів. MP у бою не витрачається.';
+      return 'Пасивний скіл. Hold/Sleep/Mental +20 (76 лв, 1 р.). Макс. рівень скіла — 1. MP у бою не витрачається.';
     case 'l2_329':
-      return 'Пасив: стійкість до отрути та кровотечі. MP у бою не витрачається.';
+      return 'Пасивний скіл. Poison/Bleed/Hold/Sleep/Mental +20 (76 лв, 1 р.). Макс. рівень скіла — 1. MP у бою не витрачається.';
     case 'l2_330':
-      return 'Пасив: шанс повторного застосування скілу або подвоєння тривалості ефекту. MP у бою не витрачається.';
+      return 'Пасивний скіл. Шанс без MP і без reuse; при спрацюванні — повтор одразу (77 лв, 1 р.). MP у бою не витрачається.';
     case 'l2_339':
       return 'Стійка: вищий захист, нижча швидкість/атака; MP знімається, поки активна.';
     case 'l2_342':
@@ -196,39 +203,48 @@ function magisterBattleStatsPreviewCore(
           mp: null,
           power: null,
           statsNoteUk:
-            'Whirlwind: стабільний AoE-спам. Warlord; з ' +
+            'Масова атака навколо. Warlord; з ' +
             HUMAN_FIGHTER_WHIRLWIND_MIN_LEVEL +
-            ' р.; алебарда/спис у бою.',
-        };
-      }
-      break;
-    }
-    case 'l2_48':
-      row = thunderStormMpAndPower(
-        Math.max(lv, HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL),
-        skillRank
-      );
-      if (!row) {
-        return {
-          mp: null,
-          power: null,
-          statsNoteUk: 'Thunder Storm: burst AoE + шанс шоку. Warlord; алебарда/спис у бою.',
-        };
-      }
-      break;
-    case 'l2_286':
-      row = provokeMpAndPower(lv, skillRank);
-      if (!row) {
-        return {
-          mp: null,
-          power: null,
-          statsNoteUk: 'З 43 р., клас Warlord.',
+            ' лвл; спис/алебарда.',
         };
       }
       return {
         mp: row.mp,
-        power: null,
-        statsNoteUk: 'Масова провокація/контроль агро; прямий урон у бою не наносить.',
+        power: row.power,
+        statsNoteUk:
+          'Масова атака: головна + до 3 поруч (до 4). Спис/алебарда; Power ' +
+          row.power +
+          '.',
+      };
+    }
+    case 'l2_48': {
+      const tlv = Math.max(lv, HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL);
+      const ts =
+        l2dopXmlMpPower(48, skillRank) ?? thunderStormMpAndPower(tlv, skillRank);
+      if (!ts) {
+        return {
+          mp: null,
+          power: null,
+          statsNoteUk:
+            'Burst AoE + шок ~50%. Warlord; спис/алебарда; з ' +
+            HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL +
+            ' лвл.',
+        };
+      }
+      return {
+        mp: ts.mp,
+        power: ts.power,
+        statsNoteUk:
+          'Burst AoE: головна + до 3 поруч (до 4); шок ~50%. Спис/алебарда; Power ' +
+          ts.power +
+          '.',
+      };
+    }
+    case 'l2_286':
+      return {
+        mp: provokeMpAtRank(skillRank),
+        power: provokePoleResistCutPctAtRank(skillRank),
+        statsNoteUk: provokeStatsNoteUk(skillRank),
       };
     case 'l2_1': {
       const xr = l2dopXmlSkillRow(1, skillRank);
@@ -336,11 +352,21 @@ function magisterBattleStatsPreviewCore(
           '+40% стійкості до шоку, сну, утримання (Root) та паралічу; 60 с.',
       };
     case 'l2_80':
-      return { mp: 24, power: null, statsNoteUk: 'Проти монстрів: ~+30% P. Atk, ~10 хв.' };
+      return {
+        mp: 24,
+        power: 30,
+        statsNoteUk:
+          '+30% P.Atk проти Monster/Beast на 10 хв. 1 р., 52 лвл; відкат 3 с. Warlord.',
+      };
     case 'l2_87':
       return { mp: 18, power: null, statsNoteUk: 'Проти тварин: ~+30% P. Atk, ~10 хв.' };
     case 'l2_88':
-      return { mp: 27, power: null, statsNoteUk: 'Проти драконів: ~+30% P. Atk, ~10 хв.' };
+      return {
+        mp: 30,
+        power: 30,
+        statsNoteUk:
+          '+30% P.Atk проти Dragon на 10 хв. 1 р., 58 лвл; MP 30; відкат 3 с. Warlord.',
+      };
     case 'l2_104':
       return {
         mp: 21,
@@ -348,37 +374,47 @@ function magisterBattleStatsPreviewCore(
         statsNoteUk:
           'Проти Plant: +30% P.Atk на 10 хв. 1 р., 21 MP, відкат 10 с.',
       };
-    case 'l2_116':
+    case 'l2_116': {
+      const howlMp = l2dopXmlMpPower(116, skillRank);
       return {
-        mp: 29,
+        mp: howlMp?.mp ?? 29,
         power: 23,
-        statsNoteUk: 'Дебаф P. Atk ворогів навколо ~23% на ~15 с.',
+        statsNoteUk:
+          'Дебаф −23% P.Atk ворогів у радіусі бою (як моби на карті) на 30 с. Warlord.',
       };
+    }
     case 'l2_121':
       return {
         mp: battleRoarMpAtRank(skillRank) ?? 18,
         power: null,
         statsNoteUk: battleRoarStatsNoteUk(skillRank),
       };
-    case 'l2_130':
+    case 'l2_130': {
+      const tfMp = l2dopXmlMpPower(130, skillRank);
+      const tfRank = Math.max(1, Math.min(2, Math.floor(skillRank)));
+      const aspdPct = tfRank >= 2 ? 10 : 5;
       return {
-        mp: 21,
-        power: 5,
-        statsNoteUk: 'Менша швидкість бігу, вища швидкість атаки (~5% на 1 р.).',
+        mp: tfMp?.mp ?? (tfRank >= 2 ? 25 : 21),
+        power: aspdPct,
+        statsNoteUk:
+          '−20% Run Speed; +' +
+          aspdPct +
+          '% Attack Speed на 5 хв. Warlord; 46 / 55 лвл.',
       };
+    }
     case 'l2_317':
       return {
         mp: 18,
         power: null,
         statsNoteUk:
-          'Баф точності та криту по одній цілі; коп’є/алебарда.',
+          'Toggle (спис/алебарда): 1 ціль; +2…+6 Acc і +10…+30% Crit Dmg за рангом.',
       };
     case 'l2_320':
       return {
         mp: 73,
         power: null,
         statsNoteUk:
-          'Зона r≈26000 (як «поруч» на карті). З max CP цілей: 7–10–12–15–17–20–22–25–27–30% (рівні 1–10). Коп’є/алебарда.',
+          'Фіз. урон + зняття max CP цілі: 7–30% (рівні 1–10). PvP — CP гравця; PvE — CP моба. Спис/алебарда; кулдаун 120 с.',
       };
     case 'l2_181':
       return {
@@ -392,28 +428,28 @@ function magisterBattleStatsPreviewCore(
         mp: 87,
         power: 4040,
         statsNoteUk:
-          'Earthquake: AoE-удар по площі + шанс шоку (~24-32% залежно від рангу). Лише спис/алебарда.',
+          'На себе, r≈150: фіз. сила 4040, скидає таргет; можливий оверхit/крит. Спис/алебарда; 78 лв, 1 р.',
       };
     case 'l2_359':
       return {
-        mp: 70,
+        mp: 33,
         power: null,
         statsNoteUk:
-          'Проти Insect, Plant, Animal: +30% P.Atk на 10 хв. 1 р., 70 MP.',
+          'Активний баф: +30% P.Atk проти Animal, Plant, Insect на 10 хв. 77 лв, 1 р., 33 MP. Макс. рівень — 1.',
       };
     case 'l2_360':
       return {
         mp: 71,
         power: null,
         statsNoteUk:
-          'Проти Beast, Magic Creature, Giant, Dragon: +30% P.Atk на 10 хв. 1 р., 71 MP.',
+          'Активний баф: +30% P.Atk протi Beast, Magic Creature, Giant, Dragon на 10 хв. 78 лв, 1 р., 71 MP, каст 2 с, відкат 3 с.',
       };
     case 'l2_361':
       return {
-        mp: 65,
+        mp: 53,
         power: 1973,
         statsNoteUk:
-          'Shock Stomp: контрольний AoE-скіл (нижчий урон, вищий шанс шоку ~55-70%) + дебаф P.Def. Лише спис/алебарда.',
+          'Shock Blast: r≈150 навколо цілі, сила 1973, стан ~9 с (40%), −30% P.Def/M.Def, скидає таргет. Лише спис/алебарда.',
       };
     case 'l2_340':
       return {

@@ -22,7 +22,8 @@ export const TEXT_RPG_HF_ACTIVE_BUFF_SKILL_IDS = new Set(BY_ID.keys());
  * Різні `value` на ефект у text-rpg — поки cs1 (`l2dopActiveBuffs`); не «власник» text-rpg.
  * Потім прибрати id з цього Set і з cs1-правила.
  */
-export const TEXT_RPG_HF_ACTIVE_BUFF_CS1_FALLBACK_IDS = new Set([313]);
+/** Thrill Fight (130): text-rpg рядок має лише atkSpeed; runSpeed −20% — у cs1 (`L2DOP_THRILLFIGHT`). */
+export const TEXT_RPG_HF_ACTIVE_BUFF_CS1_FALLBACK_IDS = new Set([130, 313]);
 
 /** Чи цей id обробляється лише з text-rpg (без cs1/rawdata для активного бафа). */
 export function textRpgHfOwnsActiveBuffSkillId(skillId: number): boolean {

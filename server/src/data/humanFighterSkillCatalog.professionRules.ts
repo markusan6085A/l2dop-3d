@@ -132,13 +132,6 @@ export function catalogEntryVisibleForProfession(
       p === 'human_hell_knight'
     );
   }
-  if (entry.professionReq === 'human_dreadnought_or_phoenix_or_hell') {
-    return (
-      p === 'human_dreadnought' ||
-      p === 'human_phoenix_knight' ||
-      p === 'human_hell_knight'
-    );
-  }
   if (entry.professionReq === 'human_paladin_track') {
     return isHumanPaladinTrackProfession(p);
   }

@@ -214,6 +214,7 @@ export function executeBattleTurnResolve(
             modsForPlayerPhysicalRoll,
             {
               ...(options ?? {}),
+              weaponKind: equippedWeaponKind(inv),
               forceNoMiss:
                 options?.forceNoMiss ??
                 (isFighterClassBranch(classBranch) &&

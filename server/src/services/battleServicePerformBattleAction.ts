@@ -14,6 +14,7 @@ import {
   type ActiveBuffEntry,
 } from '../data/l2dopActiveBuffs.js';
 import { activeBuffExpiresAt } from '../data/l2dopBuffDurations.js';
+import { provokeBattleLogLineUk } from '../data/provokeTables.js';
 import {
   LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID,
   LEGACY_BUFF_STRIP_BY_SKILL_ID,
@@ -67,7 +68,7 @@ import {
 import {
   persistBattleDefeatInTx,
 } from './battleServiceBattleOutcomeTx.js';
-import { applyPvpHitToVictimInTx } from './battleServicePvpDamage.js';
+import { applyPvpHitToVictimInTx, applyPvpCpDrainToVictimInTx } from './battleServicePvpDamage.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mobEvasionForBattle,
@@ -77,8 +78,23 @@ import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
+  EARTHQUAKE_EXTRA_MOB_CAP,
+  earthquakeWorldRadius,
+} from '../data/earthquakeSkillConstants.js';
+import {
+  SHOCK_BLAST_EXTRA_MOB_CAP,
+  shockBlastWorldRadius,
+} from '../data/shockBlastSkillConstants.js';
+import {
   applyPhysDamageToNearbyExtraMobs,
+  applyHowlDebuffToNearbyExtraMobs,
+  ensureProvokeExtraMobs,
   ensureWhirlwindExtraMobs,
+  stripProvokeDebuffFromExtraMobs,
+  HOWL_EXTRA_MOB_CAP,
+  SONIC_STORM_EXTRA_MOB_CAP,
+  THUNDER_STORM_EXTRA_MOB_CAP,
+  WHIRLWIND_EXTRA_MOB_CAP,
 } from '../domain/battleWhirlwindExtras.js';
 import {
   applyNearbyExtraMobKillLoot,
@@ -332,6 +348,7 @@ export async function performBattleAction(
         }
         const strip = LEGACY_BUFF_STRIP_BY_SKILL_ID[sid];
         if (strip) strip(mods);
+        if (sid === 286) stripProvokeDebuffFromExtraMobs(st);
         delete nextMap[key];
         anyChange = true;
         const logLine = LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID[sid];
@@ -480,6 +497,11 @@ export async function performBattleAction(
       mobRetaliationDelayHits,
       playerHealSourceUk,
     } = resolvedTurn;
+
+    let whirlwindExtraHitNames: string[] | undefined;
+    let thunderStormExtraHitNames: string[] | undefined;
+    let earthquakeExtraHitNames: string[] | undefined;
+    let shockBlastExtraHitNames: string[] | undefined;
 
     if (battleActionSkipsMobHp(action, char.race, char.classBranch)) {
       pDmg = 0;
@@ -832,9 +854,10 @@ export async function performBattleAction(
         st,
         char.worldX,
         char.worldY,
-        bj.spawnId
+        bj.spawnId,
+        WHIRLWIND_EXTRA_MOB_CAP
       );
-      applyPhysDamageToNearbyExtraMobs(st, pDmg);
+      whirlwindExtraHitNames = applyPhysDamageToNearbyExtraMobs(st, pDmg);
       /** Після Вихору наступна базова автоатака також cleave'ить по додаткових цілях. */
       st.whirlwindNextAutoCleaveHits = 1;
     }
@@ -843,7 +866,8 @@ export async function performBattleAction(
         st,
         char.worldX,
         char.worldY,
-        bj.spawnId
+        bj.spawnId,
+        SONIC_STORM_EXTRA_MOB_CAP
       );
       const extraHits = applyPhysDamageToNearbyExtraMobs(st, pDmg);
       if (extraHits.length > 0) {
@@ -854,20 +878,66 @@ export async function performBattleAction(
         );
       }
     }
-    if (action === 'provoke') {
+    if (action === 'thunder_storm' && pDmg > 0) {
       ensureWhirlwindExtraMobs(
         st,
         char.worldX,
         char.worldY,
-        bj.spawnId
+        bj.spawnId,
+        THUNDER_STORM_EXTRA_MOB_CAP
       );
-      if (st.whirlwindExtras && st.whirlwindExtras.length > 0) {
-        log.push(
-          'У бій втягнуто: ' +
-            st.whirlwindExtras.map((e) => e.name).join(', ') +
-            '.'
-        );
-      }
+      thunderStormExtraHitNames = applyPhysDamageToNearbyExtraMobs(st, pDmg);
+    }
+    if (action === 'earthquake' && pDmg > 0) {
+      ensureWhirlwindExtraMobs(
+        st,
+        char.worldX,
+        char.worldY,
+        bj.spawnId,
+        EARTHQUAKE_EXTRA_MOB_CAP,
+        earthquakeWorldRadius()
+      );
+      earthquakeExtraHitNames = applyPhysDamageToNearbyExtraMobs(st, pDmg);
+    }
+    if (action === 'shock_blast' && pDmg > 0) {
+      ensureWhirlwindExtraMobs(
+        st,
+        char.worldX,
+        char.worldY,
+        bj.spawnId,
+        SHOCK_BLAST_EXTRA_MOB_CAP,
+        shockBlastWorldRadius()
+      );
+      shockBlastExtraHitNames = applyPhysDamageToNearbyExtraMobs(st, pDmg);
+    }
+    if (action === 'provoke') {
+      const provokeRank = Math.max(
+        1,
+        Math.floor(learnedSkillLevelByBattleId['l2_286'] ?? 1)
+      );
+      const pulled = ensureProvokeExtraMobs(
+        st,
+        char.worldX,
+        char.worldY,
+        bj.spawnId,
+        provokeRank
+      );
+      const names = [spawn.name, ...pulled];
+      log.push(provokeBattleLogLineUk(provokeRank, names));
+    }
+    if (action === 'howl') {
+      ensureWhirlwindExtraMobs(
+        st,
+        char.worldX,
+        char.worldY,
+        bj.spawnId,
+        HOWL_EXTRA_MOB_CAP
+      );
+      const howlExtraNames = applyHowlDebuffToNearbyExtraMobs(st);
+      const names = [spawn.name, ...howlExtraNames];
+      log.push(
+        'Звіриний рев ослабив P.Atk (−23%, 30 с): ' + names.join(', ') + '.'
+      );
     }
     if (
       action === 'attack' &&
@@ -889,6 +959,13 @@ export async function performBattleAction(
       st.mobMaxCp = mmc;
       const cur = st.mobCp !== undefined ? st.mobCp : mmc;
       st.mobCp = Math.max(0, cur - mobCpDrain);
+      if (isPvpBattleJson(st) && st.pvpTargetCharacterId) {
+        await applyPvpCpDrainToVictimInTx(tx, {
+          victimId: st.pvpTargetCharacterId,
+          attackerId: char.id,
+          cpDrain: mobCpDrain,
+        });
+      }
     }
     if (skillLine) {
       const compact = compactBattleSkillLogLineUk(skillLine);
@@ -955,16 +1032,49 @@ export async function performBattleAction(
     }
     if (
       action === 'whirlwind' &&
-      pDmg > 0 &&
-      st.whirlwindExtras &&
-      st.whirlwindExtras.length > 0
+      whirlwindExtraHitNames &&
+      whirlwindExtraHitNames.length > 0 &&
+      pDmg > 0
     ) {
       log.push(
-        'Древко розсікло ворогів поруч: ' +
-          st.whirlwindExtras
-            .filter((e) => e.mobHp > 0)
-            .map((e) => e.name + ' −' + pDmg)
-            .join(', ') +
+        'Вихор вразив ворогів поруч: ' +
+          whirlwindExtraHitNames.map((n) => n + ' −' + pDmg).join(', ') +
+          '.'
+      );
+    }
+    if (
+      action === 'thunder_storm' &&
+      thunderStormExtraHitNames &&
+      thunderStormExtraHitNames.length > 0 &&
+      pDmg > 0
+    ) {
+      log.push(
+        'Грозова буря вразила ворогів поруч: ' +
+          thunderStormExtraHitNames.map((n) => n + ' −' + pDmg).join(', ') +
+          '.'
+      );
+    }
+    if (
+      action === 'earthquake' &&
+      earthquakeExtraHitNames &&
+      earthquakeExtraHitNames.length > 0 &&
+      pDmg > 0
+    ) {
+      log.push(
+        'Землетрус вразив ворогів поруч: ' +
+          earthquakeExtraHitNames.map((n) => n + ' −' + pDmg).join(', ') +
+          '.'
+      );
+    }
+    if (
+      action === 'shock_blast' &&
+      shockBlastExtraHitNames &&
+      shockBlastExtraHitNames.length > 0 &&
+      pDmg > 0
+    ) {
+      log.push(
+        'Ударний імпульс вразив ворогів поруч: ' +
+          shockBlastExtraHitNames.map((n) => n + ' −' + pDmg).join(', ') +
           '.'
       );
     }

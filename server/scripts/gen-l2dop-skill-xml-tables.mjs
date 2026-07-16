@@ -89,7 +89,9 @@ function parseSkillBlock(block) {
 
   const tables = extractTables(block);
   const mpRef = getSet(block, 'mpConsume');
-  const powRef = getSet(block, 'power');
+  /** Thunder Storm (48) та інші PDAM без `<set name="power">` — таблиця `#power` у XML. */
+  const powRef =
+    getSet(block, 'power') ?? (tables['#power']?.length ? '#power' : null);
 
   let n = declared;
   if (n == null || n < 1) {
@@ -100,14 +102,14 @@ function parseSkillBlock(block) {
         ? tables[powRef]
         : powRef
           ? [Number(powRef)]
-          : [];
+          : tables['#power'] ?? [];
     n = Math.max(mpArr.length, powArr.length, 1);
   }
 
   const rows = [];
   for (let i = 0; i < n; i++) {
     const m = Math.floor(resolveVal(mpRef, tables, i, n));
-    const p = resolveVal(powRef, tables, i, n);
+    const p = Math.floor(resolveVal(powRef, tables, i, n));
     const row = { m, p };
     const pAtk = tables['#pAtk'];
     if (pAtk && pAtk.length) {

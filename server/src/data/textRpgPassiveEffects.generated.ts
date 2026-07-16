@@ -319,7 +319,7 @@ export const TEXT_RPG_HF_PASSIVE_EFFECTS: readonly TextRpgHfPassiveRow[] = [
     requiresArmor: null,
     requiresWeapon: null,
     maxRank: 14,
-    powerByRank: [0,32.9,39.4,46.6,54.6,63.3,72.7,79.3,86.1,93.1,100.2,107.5,114.8,122.1,129.3] as const,
+    powerByRank: [0,32.9,39.4,46.6,54.6,63.3,72.7,82.8,93.6,100.8,107.5,114.8,122.1,129.3,129.3] as const,
   },
   {
     battleId: "l2_291",
@@ -346,7 +346,7 @@ export const TEXT_RPG_HF_PASSIVE_EFFECTS: readonly TextRpgHfPassiveRow[] = [
   {
     battleId: "l2_329",
     l2SkillId: 329,
-    effectPairs: [{"stat":"poisonResist","mode":"percent"},{"stat":"bleedResist","mode":"percent"}] as const,
+    effectPairs: [{"stat":"poisonResist","mode":"percent"},{"stat":"bleedResist","mode":"percent"},{"stat":"holdResist","mode":"percent"},{"stat":"sleepResist","mode":"percent"},{"stat":"mentalResist","mode":"percent"}] as const,
     stat: "poisonResist",
     mode: "percent",
     requiresArmor: null,

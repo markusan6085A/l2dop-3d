@@ -1236,6 +1236,7 @@
         if (battleModTruthy(bm.stanceVicious)) out[312] = true;
         if (battleModTruthy(bm.stanceParry)) out[339] = true;
         if (battleModTruthy(bm.aegisStanceActive)) out[318] = true;
+        if (battleModTruthy(bm.focusAttackActive)) out[317] = true;
         if (isRiposteStanceActiveBm(bm)) out[340] = true;
       }
       var icons = battle && battle.battleBuffIcons;

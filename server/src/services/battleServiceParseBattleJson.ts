@@ -655,5 +655,13 @@ export function parseBattleJson(
     ...(o.pvpVictimFoughtBack === true
       ? { pvpVictimFoughtBack: true as const }
       : {}),
+    ...(typeof o.playerCp === 'number' && Number.isFinite(o.playerCp) && o.playerCp >= 0
+      ? { playerCp: Math.floor(o.playerCp) }
+      : {}),
+    ...(typeof o.playerMaxCp === 'number' &&
+    Number.isFinite(o.playerMaxCp) &&
+    o.playerMaxCp >= 0
+      ? { playerMaxCp: Math.floor(o.playerMaxCp) }
+      : {}),
   };
 }

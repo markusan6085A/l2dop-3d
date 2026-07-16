@@ -105,3 +105,11 @@ export function readBattlePlayerMp(raw: unknown): number | null {
   if (typeof o.playerMp !== 'number' || !Number.isFinite(o.playerMp)) return null;
   return o.playerMp;
 }
+
+/** CP гравця в PvP-бою з battleJson (якщо є). */
+export function readBattlePlayerCp(raw: unknown): number | null {
+  if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.playerCp !== 'number' || !Number.isFinite(o.playerCp)) return null;
+  return Math.max(0, Math.floor(o.playerCp));
+}

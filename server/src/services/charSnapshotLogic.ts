@@ -39,6 +39,7 @@ import {
   isStanceViciousActive,
   jsonFiniteNum,
   readBattlePlayerMp,
+  readBattlePlayerCp,
   type BattleBattleMods,
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
@@ -261,7 +262,8 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     row.battleJson,
     worldTicked?.battleMods,
     accuracyStanceRank,
-    parryStanceRank
+    parryStanceRank,
+    focusAttackRank
   );
   const pAtkSpd = effectiveBattlePAtkSpdDisplay(
     combat.pAtkSpd,
@@ -303,7 +305,11 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
   );
   const maxCp = Math.max(0, Math.floor(vit.maxCp * combat.buffMaxCpMul));
   /** У PvE урон по HP не знімає CP. Зниження CP — лише для ПК (окремий стан, коли з’явиться). */
-  const cp = maxCp;
+  const battleCp = readBattlePlayerCp(row.battleJson);
+  const cp =
+    battleCp != null
+      ? Math.min(maxCp, Math.max(0, Math.floor(battleCp)))
+      : maxCp;
   const battleMp = readBattlePlayerMp(row.battleJson);
   const mp =
     battleMp != null

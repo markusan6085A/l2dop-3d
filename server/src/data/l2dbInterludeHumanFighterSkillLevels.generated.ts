@@ -150,7 +150,7 @@ export const INTERLUDE_HF_MIN_CHAR_LEVEL_BY_RANK: Record<string, readonly number
   "l2_3": [0,5,5,5,10,10,10,15,15,15] as const,
   "l2_312": [0,20,24,28,32,36,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68] as const,
   "l2_313": [0,40,42,44,46,48,50,52,54] as const,
-  "l2_317": [0,40,43,46,49,52] as const,
+  "l2_317": [0,40,49,58,66,74] as const,
   "l2_320": [0,66,66,68,68,70,70,72,72,74,74] as const,
   "l2_323": [0,40] as const,
   "l2_324": [0,40] as const,

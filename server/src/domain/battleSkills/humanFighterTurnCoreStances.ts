@@ -20,10 +20,16 @@ import {
   catalogAllowsFighterAction,
   legacyBuffExpiresPatch,
   legacyBuffOnCd,
+  requireCatalogEntryForAction,
   skillRankForCurrentAction,
   stubMpForCanon,
+  warlordBranchProfession,
 } from './humanFighterTurnHelpers.js';
 import { buildRiposteStanceToggleTurn } from '../riposteStance.js';
+import {
+  focusAttackAccuracyFlat,
+  focusAttackCritDamagePct,
+} from '../../data/l2dopFocusAttack.js';
 import type { FighterTurnCoreArgs } from './humanFighterTurnCoreArgs.js';
 
 export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): BattleSkillTurnResult | undefined {
@@ -113,6 +119,43 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
       throw new Error('battle_skill_not_allowed');
     }
     return buildRiposteStanceToggleTurn(ctx, skillRankForCurrentAction(ctx));
+  }
+
+  if (action === 'focus_attack') {
+    if (!warlordBranchProfession(String(l2Profession))) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    if (ctx.weaponKind !== 'pole') {
+      throw new Error('battle_skill_not_allowed');
+    }
+    requireCatalogEntryForAction(action, String(l2Profession));
+    const rank = skillRankForCurrentAction(ctx);
+    const on = ctx.st.battleMods?.focusAttackActive === true;
+    if (on) {
+      return {
+        mpCost: 0,
+        pDmg: 0,
+        skillLine: 'Зосереджений удар (Focus Attack) вимкнено.',
+        physOutcome: null,
+        magicOutcome: null,
+        battleModsPatch: { focusAttackActive: false },
+      };
+    }
+    const acc = focusAttackAccuracyFlat(rank);
+    const critPct = focusAttackCritDamagePct(rank);
+    return {
+      mpCost: 0,
+      pDmg: 0,
+      skillLine:
+        'Зосереджений удар: +' +
+        acc +
+        ' точності, +' +
+        critPct +
+        '% сила криту (1 ціль, спис/алебарда).',
+      physOutcome: null,
+      magicOutcome: null,
+      battleModsPatch: { focusAttackActive: true },
+    };
   }
 
   if (action === 'l2_94') {

@@ -213,6 +213,14 @@ export function applyBattleModsPatch(
       delete next.mobPatkDebuffIconSkillIds;
     }
   }
+  if (patch.mobPoleResistCutPct !== undefined) {
+    const pc = jsonFiniteNum(patch.mobPoleResistCutPct);
+    if (pc !== undefined && pc > 0 && pc < 100) {
+      next.mobPoleResistCutPct = pc;
+    } else {
+      delete next.mobPoleResistCutPct;
+    }
+  }
   if (patch.thrillFightPatkMul !== undefined) {
     const tf = jsonFiniteNum(patch.thrillFightPatkMul);
     if (tf !== undefined && tf > 1) {

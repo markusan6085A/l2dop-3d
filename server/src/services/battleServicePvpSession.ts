@@ -55,11 +55,13 @@ function opponentCombatFromRow(row: CharacterRow) {
     combat.men
   );
   const maxHp = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
+  const maxCp = Math.max(0, Math.floor(vit.maxCp * combat.buffMaxCpMul));
   const hp = Math.max(0, Math.min(maxHp, row.hp));
   return {
     effLv,
     maxHp,
     hp,
+    maxCp,
     pAtk: combat.pAtk,
     pDef: combat.pDef,
     mAtk: combat.mAtk,
@@ -93,7 +95,30 @@ export async function refreshPvpOpponentHpForCharacterInTx(
   if (!targetRow) return char;
 
   const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow);
-  if (bj.mobHp === opp.hp && bj.mobMaxHp === opp.maxHp) {
+  let oppCp = opp.maxCp;
+  const tgtBj = parseBattleJson(targetRow.battleJson);
+  if (
+    tgtBj &&
+    isPvpBattleJson(tgtBj) &&
+    tgtBj.pvpTargetCharacterId === char.id &&
+    typeof tgtBj.playerCp === 'number'
+  ) {
+    oppCp = Math.max(0, Math.floor(tgtBj.playerCp));
+  }
+  const oppMaxCp =
+    tgtBj &&
+    isPvpBattleJson(tgtBj) &&
+    tgtBj.pvpTargetCharacterId === char.id &&
+    typeof tgtBj.playerMaxCp === 'number'
+      ? Math.max(0, Math.floor(tgtBj.playerMaxCp))
+      : opp.maxCp;
+
+  if (
+    bj.mobHp === opp.hp &&
+    bj.mobMaxHp === opp.maxHp &&
+    (bj.mobCp ?? oppMaxCp) === oppCp &&
+    (bj.mobMaxCp ?? oppMaxCp) === oppMaxCp
+  ) {
     return char;
   }
 
@@ -101,6 +126,8 @@ export async function refreshPvpOpponentHpForCharacterInTx(
     ...bj,
     mobHp: opp.hp,
     mobMaxHp: opp.maxHp,
+    mobCp: oppCp,
+    mobMaxCp: oppMaxCp,
     mobPAtk: opp.pAtk,
     mobPDef: opp.pDef,
     mobMAtk: opp.mAtk,
@@ -290,6 +317,7 @@ export async function startPvpBattleInTx(
 
   const nowStartMs = Date.now();
   const spawnId = pvpSpawnIdForCharacter(targetId);
+  const atkMaxCp = Math.max(0, Math.floor(vit0.maxCp * combat0.buffMaxCpMul));
   const st: BattleJsonState = {
     spawnId,
     battleMode: 'pvp',
@@ -299,6 +327,10 @@ export async function startPvpBattleInTx(
     pvpIsAggressor: !defenderCounter,
     mobHp: opp.hp,
     mobMaxHp: opp.maxHp,
+    mobCp: opp.maxCp,
+    mobMaxCp: opp.maxCp,
+    playerCp: atkMaxCp,
+    playerMaxCp: atkMaxCp,
     mobPAtk: opp.pAtk,
     mobPDef: opp.pDef,
     mobMAtk: opp.mAtk,

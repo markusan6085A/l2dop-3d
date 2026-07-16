@@ -56,6 +56,9 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
   116: (m) => {
     delete m.mobPatkDebuffMul;
   },
+  286: (m) => {
+    delete m.mobPoleResistCutPct;
+  },
   139: (m) => {
     delete m.gutsBattlePdefMul;
   },
@@ -84,8 +87,8 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
     delete m.mobTargetPDefMul;
     delete m.bluffCritDmgMul;
   },
-  317: (m) => {
-    delete m.focusAttackActive;
+  317: () => {
+    /* Focus Attack — toggle через `focusAttackActive`, не timed legacy-баф. */
   },
   322: (m) => {
     delete m.shieldFortressPDefMul;
@@ -100,6 +103,11 @@ export const LEGACY_BUFF_STRIP_BY_SKILL_ID: Readonly<
   360: (m) => stripWeaknessKindIfEq(m, 'eye_slayer'),
   361: (m) => {
     delete m.mobTargetPDefMul;
+    delete m.mobTargetMDefMul;
+    if (m.mobStunIconSkillId === 361) {
+      delete m.mobStunUntilMs;
+      delete m.mobStunIconSkillId;
+    }
   },
   368: (m) => {
     delete m.vengeanceIncomingPhysMul;
@@ -188,6 +196,7 @@ export const LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID: Readonly<
   104: 'Вразливість рослин: час вичерпано.',
   111: 'Абсолютне ухилення: час вичерпано.',
   116: 'Звіриний рев: час вичерпано.',
+  286: 'Провокація: час вичерпано.',
   139: 'Guts: час вичерпано.',
   176: 'Frenzy: час вичерпано.',
   287: 'Левине серце: час вичерпано.',
@@ -203,7 +212,7 @@ export const LEGACY_BUFF_EXPIRE_LOG_BY_SKILL_ID: Readonly<
   342: 'Дотик смерті: готовий знову.',
   359: 'Око мисливця: час вичерпано.',
   360: 'Око вбивці: час вичерпано.',
-  361: 'Ударний імпульс: захист цілі відновлено.',
+  361: 'Shock Blast: ефект вичерпано.',
   368: 'Відплата: час вичерпано.',
   442: 'Звуковий захист: час вичерпано.',
   451: 'Звуковий ривок: час вичерпано.',

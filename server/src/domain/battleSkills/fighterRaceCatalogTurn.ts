@@ -275,12 +275,24 @@ export function tryResolveFighterRaceCatalogTurn(
       Math.floor(pAtkEff * (1.06 + skillPower / 450) * profM)
     );
     const r = rollPhys(atk);
+    const landed = r.damage > 0 && r.outcome !== 'miss';
+    const eqTargetBreak = entry.l2SkillId === 347 && landed;
     return {
       mpCost,
       pDmg: r.damage,
-      skillLine,
+      skillLine:
+        entry.l2SkillId === 347
+          ? entry.nameUk +
+            ': сила ' +
+            skillPower +
+            ', r≈150' +
+            (landed ? '; цілі втратили таргет.' : '.')
+          : skillLine,
       physOutcome: r.outcome,
       magicOutcome: null,
+      ...(eqTargetBreak
+        ? { skipMobCounterAttackOnce: true, mobRetaliationDelayHits: 2 }
+        : {}),
       ...(r.weaknessLogLineUk ? { weaknessLogLineUk: r.weaknessLogLineUk } : {}),
     };
   }

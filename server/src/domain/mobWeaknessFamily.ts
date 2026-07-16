@@ -93,7 +93,7 @@ export function weaknessMatchesKind(
   const f = inferMobWeaknessFamilyFromName(spawnName);
   switch (kind) {
     case 'monster':
-      return true;
+      return f === 'beast' || f === 'default';
     case 'insect':
       return f === 'insect';
     case 'animal':
@@ -117,7 +117,7 @@ export function weaknessMatchesKind(
 }
 
 /**
- * Рядок у лог бою, коли вразливість реально множить урон (не для «monster» — універсальний баф без окремого рядка).
+ * Рядок у лог бою, коли вразливість реально множить урон.
  */
 export function formatWeaknessBattleLogUk(
   kind: WeaknessKind,
@@ -138,7 +138,7 @@ export function formatWeaknessBattleLogUk(
     case 'eye_slayer':
       return `(Око вбивці: +${pct}% урону!)`;
     case 'monster':
-      return `(Вразливість монстрів: +${pct}% урону!)`;
+      return `(Вразливість Monster/Beast: +${pct}% урону!)`;
     default: {
       const _k: never = kind;
       return _k;

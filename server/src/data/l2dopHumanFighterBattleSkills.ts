@@ -16,6 +16,7 @@ import {
   isMysticClassBranch,
 } from './l2dopHumanMysticBattleSkills.js';
 import { mapFighterProfessionToHumanSkillCatalog } from './fighterProfessionHumanCatalogMap.js';
+import { provokeMpAtRank } from './provokeTables.js';
 
 /** Тип зброї в l1 (для Whirlwind — лише `pole`). */
 function equippedRightHandSlot(inv: InventoryState) {
@@ -557,10 +558,11 @@ const THUNDER_STORM_MP = [
   40, 41, 43, 43, 44, 45, 47, 48, 49, 51, 52, 54, 55, 55, 56, 58, 59, 61, 62,
   63, 65, 66, 68, 68, 69, 70, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82, 83,
 ] as const;
+/** Interlude `#power` (skill 48), floor — fallback якщо XML недоступний. */
 const THUNDER_STORM_POW = [
-  123, 131, 139, 148, 157, 166, 175, 185, 196, 206, 217, 229, 241, 253, 266,
-  279, 292, 306, 320, 334, 349, 364, 379, 395, 410, 426, 443, 459, 475, 492,
-  509, 526, 542, 559, 576, 593, 609,
+  351, 373, 396, 420, 445, 471, 499, 527, 557, 587, 619, 652, 686, 720, 756,
+  794, 832, 871, 911, 952, 993, 1036, 1080, 1124, 1169, 1214, 1261, 1307, 1354,
+  1402, 1449, 1497, 1545, 1593, 1641, 1688, 1735,
 ] as const;
 
 export function thunderStormMpAndPower(
@@ -581,25 +583,13 @@ export function thunderStormMpAndPower(
   return { mp: THUNDER_STORM_MP[i]!, power: THUNDER_STORM_POW[i]! };
 }
 
-//==== Provoke · id 286 — text-rpg Warlord/skill_0286 ====
-const PROVOKE_MP = [57, 75, 83] as const;
-const PROVOKE_MIN_LV = [43, 55, 60] as const;
-
+//==== Provoke · id 286 — Interlude Warlord ====
 export function provokeMpAndPower(
-  playerLevel: number,
+  _playerLevel: number,
   skillRank: number = DEFAULT_SKILL_RANK_CAP
 ): { mp: number; power: number } | null {
-  if (!HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ && playerLevel < PROVOKE_MIN_LV[0]!) {
-    return null;
-  }
-  const lv = HUMAN_FIGHTER_TEST_SKIP_SKILL_LEVEL_REQ
-    ? Math.max(playerLevel, PROVOKE_MIN_LV[0]!)
-    : playerLevel;
-  let idx = 0;
-  if (lv >= PROVOKE_MIN_LV[2]!) idx = 2;
-  else if (lv >= PROVOKE_MIN_LV[1]!) idx = 1;
-  idx = clampSkillTableIndex(idx, skillRank, PROVOKE_MP.length);
-  return { mp: PROVOKE_MP[idx]!, power: 95 + idx * 12 };
+  const rank = Math.max(1, Math.min(3, Math.floor(skillRank)));
+  return { mp: provokeMpAtRank(rank), power: 0 };
 }
 
 //==== Wild Sweep · 245 — text-rpg Warrior/Skill_0245 ====

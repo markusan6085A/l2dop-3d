@@ -46,6 +46,15 @@ export function applyL2dopXmlMagisterOverlay(
     case 'l2_320':
       out.power = null;
       break;
+    case 'l2_88':
+      out.mp = 30;
+      break;
+    case 'l2_359':
+      out.mp = 33;
+      break;
+    case 'l2_360':
+      out.mp = 71;
+      break;
     case 'l2_99':
       out.power =
         xr.r != null ? Math.round((xr.r - 1) * 100) : base.power;

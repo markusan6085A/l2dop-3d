@@ -3,6 +3,12 @@ import {
   stripSpawnDupSuffix,
   type MapWorldSpawn,
 } from '../data/mapWorldSpawns.js';
+import {
+  provokePoleResistCutPctAtRank,
+  provokeWorldRadiusAtRank,
+  PROVOKE_EXTRA_MOB_CAP,
+  spawnAllowsProvokeAggro,
+} from '../data/provokeTables.js';
 import { mobCombatFromSpawn } from './battleMobSpawn.js';
 import {
   BATTLE_RANGE,
@@ -10,15 +16,29 @@ import {
   type WhirlwindExtraMobJson,
 } from './battleTypes.js';
 
-function pickTwoNearbySpawnsForWhirlwind(
+/** Додаткових цілей для Whirlwind: головна + ці = до 4. */
+export const WHIRLWIND_EXTRA_MOB_CAP = 3;
+/** Додаткових цілей для Sonic Storm: головна + ці = до 3. */
+export const SONIC_STORM_EXTRA_MOB_CAP = 2;
+/** Додаткових цілей для Thunder Storm (TARGET_AURA): головна + ці = до 4. */
+export const THUNDER_STORM_EXTRA_MOB_CAP = 3;
+/** Howl (116): додаткові цілі в `BATTLE_RANGE` (радіус як у мобів на карті). */
+export const HOWL_EXTRA_MOB_CAP = 20;
+/** Howl: −23% P.Atk ворога (Interlude mul 0.77). */
+export const HOWL_MOB_PATK_DEBUFF_MUL = 0.77;
+
+function pickNearbySpawns(
   worldX: number,
   worldY: number,
   primarySpawnId: string,
-  range: number
+  range: number,
+  extraCap: number,
+  filter?: (sp: MapWorldSpawn) => boolean
 ): MapWorldSpawn[] {
   const primaryBase = stripSpawnDupSuffix(primarySpawnId);
   const bestByBase = new Map<string, { sp: MapWorldSpawn; d: number }>();
   for (const sp of MAP_WORLD_SPAWNS) {
+    if (filter && !filter(sp)) continue;
     const base = stripSpawnDupSuffix(sp.id);
     if (base === primaryBase) continue;
     const d = Math.hypot(sp.worldX - worldX, sp.worldY - worldY);
@@ -28,7 +48,7 @@ function pickTwoNearbySpawnsForWhirlwind(
   }
   return [...bestByBase.values()]
     .sort((a, b) => a.d - b.d)
-    .slice(0, 2)
+    .slice(0, Math.max(0, Math.floor(extraCap)))
     .map((x) => x.sp);
 }
 
@@ -47,25 +67,49 @@ function extraMobFromSpawn(sp: MapWorldSpawn): WhirlwindExtraMobJson {
   };
 }
 
-/** Фіксує до 2 додаткових цілей при першому успішному Вихорі в цьому бою. */
+/** Фіксує додаткові цілі поруч (до `extraCap`) при першому AoE-удары в бою. */
 export function ensureWhirlwindExtraMobs(
   st: BattleJsonState,
   worldX: number,
   worldY: number,
-  primarySpawnId: string
+  primarySpawnId: string,
+  extraCap: number = WHIRLWIND_EXTRA_MOB_CAP,
+  range: number = BATTLE_RANGE
 ): void {
-  if (st.whirlwindExtras && st.whirlwindExtras.length > 0) return;
-  const picks = pickTwoNearbySpawnsForWhirlwind(
+  const cap = Math.max(0, Math.floor(extraCap));
+  const existing = st.whirlwindExtras ?? [];
+  if (existing.length >= cap) return;
+  const haveIds = new Set(existing.map((e) => stripSpawnDupSuffix(e.spawnId)));
+  const picks = pickNearbySpawns(
     worldX,
     worldY,
     primarySpawnId,
-    BATTLE_RANGE
-  );
-  st.whirlwindExtras = picks.map(extraMobFromSpawn);
+    range,
+    cap
+  ).filter((sp) => !haveIds.has(stripSpawnDupSuffix(sp.id)));
+  const merged = [...existing];
+  for (const sp of picks) {
+    if (merged.length >= cap) break;
+    merged.push(extraMobFromSpawn(sp));
+  }
+  if (merged.length > 0) st.whirlwindExtras = merged;
 }
 
-/** Максимум додаткових цілей поруч (головна + ці = до 3 цілей для Sonic Storm / Вихор). */
-export const NEARBY_EXTRA_MOB_CAP = 2;
+/** Howl: знижує P.Atk додаткових мобів у `whirlwindExtras` (головна — через `battleMods`). */
+export function applyHowlDebuffToNearbyExtraMobs(
+  st: BattleJsonState,
+  debuffMul: number = HOWL_MOB_PATK_DEBUFF_MUL
+): string[] {
+  if (!st.whirlwindExtras?.length || debuffMul <= 0 || debuffMul >= 1) {
+    return [];
+  }
+  const hit: string[] = [];
+  for (const ex of st.whirlwindExtras) {
+    ex.mobPatkDebuffMul = debuffMul;
+    hit.push(ex.name);
+  }
+  return hit;
+}
 
 /**
  * Той самий фіз. урон по `whirlwindExtras`, що вже нараховано по головній цілі.
@@ -90,4 +134,55 @@ export function applyPhysDamageToNearbyExtraMobs(
     }
   }
   return hit;
+}
+
+/**
+ * Provoke (286): підтягує мобів і РБ у радіусі за рангом; епіки/epic_guard пропускає.
+ */
+export function ensureProvokeExtraMobs(
+  st: BattleJsonState,
+  worldX: number,
+  worldY: number,
+  primarySpawnId: string,
+  skillRank: number
+): string[] {
+  const range = provokeWorldRadiusAtRank(skillRank);
+  const poleCut = provokePoleResistCutPctAtRank(skillRank);
+  const cap = PROVOKE_EXTRA_MOB_CAP;
+  const existing = st.whirlwindExtras ?? [];
+  const byBase = new Map<string, WhirlwindExtraMobJson>();
+  for (const ex of existing) {
+    byBase.set(stripSpawnDupSuffix(ex.spawnId), ex);
+  }
+  const picks = pickNearbySpawns(
+    worldX,
+    worldY,
+    primarySpawnId,
+    range,
+    cap,
+    (sp) => spawnAllowsProvokeAggro(sp.kind)
+  );
+  const added: string[] = [];
+  for (const sp of picks) {
+    const base = stripSpawnDupSuffix(sp.id);
+    const prev = byBase.get(base);
+    if (prev) {
+      prev.mobPoleResistCutPct = poleCut;
+      continue;
+    }
+    const ex = extraMobFromSpawn(sp);
+    ex.mobPoleResistCutPct = poleCut;
+    byBase.set(base, ex);
+    added.push(ex.name);
+  }
+  const merged = [...byBase.values()].slice(0, cap);
+  if (merged.length > 0) st.whirlwindExtras = merged;
+  return added;
+}
+
+export function stripProvokeDebuffFromExtraMobs(st: BattleJsonState): void {
+  if (!st.whirlwindExtras?.length) return;
+  for (const ex of st.whirlwindExtras) {
+    delete ex.mobPoleResistCutPct;
+  }
 }

@@ -19,4 +19,6 @@ export const L2DOP_SKILL_REUSE_DELAY_SEC: Readonly<
   245: 17,
   /** Detect Plant Weakness — відкат 10 с (каст ~1.5 с). */
   104: 10,
+  /** Eye of the Slayer — відкат 3 с (каст 2 с). */
+  360: 3,
 };

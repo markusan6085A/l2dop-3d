@@ -20,6 +20,13 @@ import {
   wildSweepMpAndPower,
   whirlwindMpAndPower,
 } from '../data/l2dopHumanFighterBattleSkills.js';
+import {
+  EARTHQUAKE_SKILL_POWER,
+  earthquakePhysAtkFromPower,
+} from '../data/earthquakeSkillConstants.js';
+import {
+  SHOCK_BLAST_SKILL_POWER,
+} from '../data/shockBlastSkillConstants.js';
 import { l2dopXmlMpPower } from '../data/l2dopXmlSkillLevels.lookup.js';
 import {
   canonicalBattleSkillId,
@@ -190,11 +197,22 @@ export function magisterEstimatedAtkBase(
     }
     case 'l2_347': {
       if (prof !== 'human_dreadnought') return null;
-      return Math.floor(pAtk * 1.18 * profM);
+      const eq =
+        l2dopXmlMpPower(347, skillRank) ?? {
+          mp: 87,
+          power: EARTHQUAKE_SKILL_POWER,
+        };
+      return earthquakePhysAtkFromPower(
+        pAtk,
+        eq.power,
+        profM
+      );
     }
     case 'l2_361': {
       if (prof !== 'human_dreadnought') return null;
-      return Math.floor(pAtk * 1.14 * profM);
+      const sb = l2dopXmlMpPower(361, skillRank);
+      const pow = sb?.power ?? SHOCK_BLAST_SKILL_POWER;
+      return earthquakePhysAtkFromPower(pAtk, pow, profM);
     }
     case 'l2_1': {
       if (!isHumanGladiatorTrackProfession(prof)) return null;
@@ -313,45 +331,10 @@ export function magisterEstimatedAtkBase(
 }
 
 export function magisterDamageHintUk(
-  battleId: string,
-  estimatedAtk: number | null,
+  _battleId: string,
+  _estimatedAtk: number | null,
   _power: number | null
 ): string | null {
-  if (estimatedAtk == null) return null;
-  const b = canonicalBattleSkillId(battleId);
-  let s = '(до захисту): ~' + estimatedAtk + '.';
-  if (b === 'l2_36' || b === 'l2_48' || b === 'l2_245' || b === 'l2_347' || b === 'l2_361') {
-    s += ' У бою потрібні алебарда або спис (древко).';
-  }
-  if (b === 'l2_56' || b === 'l2_101' || b === 'l2_343' || b === 'l2_354') {
-    s += ' У бою потрібен лук.';
-  }
-  if (b === 'l2_100') {
-    s += ' У бою потрібна булава (тупе).';
-  }
-  if (b === 'l2_255') {
-    s += ' У бою потрібен меч або булава.';
-  }
-  if (b === 'l2_49' || b === 'l2_342') {
-    s += ' У бою потрібен меч або булава.';
-  }
-  if (b === 'l2_127') {
-    s += ' У бою потрібен меч або булава.';
-  }
-  if (b === 'l2_344') {
-    s += ' У бою потрібен кинжал.';
-  }
-  if (b === 'l2_1') {
-    s += ' У бою потрібен дуальний меч. Орієнтир — сумарно за 3 удари (до захисту).';
-  }
-  if (b === 'l2_5' || b === 'l2_261' || b === 'l2_345') {
-    s += ' У бою потрібен дуальний меч.';
-  }
-  if (b === 'l2_260') {
-    s += ' У бою потрібна булава.';
-  }
-  if (b === 'l2_6' || b === 'l2_7' || b === 'l2_9' || b === 'l2_190') {
-    s += ' У бою потрібен меч, булава або дуальний меч.';
-  }
-  return s;
+  /** Орієнтир «(до захисту): ~N» у магістрі вимкнено — лише `hintUk` / `statsNoteUk`. */
+  return null;
 }

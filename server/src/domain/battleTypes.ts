@@ -54,6 +54,8 @@ export interface BattleBattleMods {
   weaknessDetects?: WeaknessDetectMap;
   /** Howl (116): множник до P.Atk моба (напр. 0.77). */
   mobPatkDebuffMul?: number;
+  /** Provoke (286): зниження опору цілі до списів/алебарди (%), більший урон від pole. */
+  mobPoleResistCutPct?: number;
   /** Thrill Fight (130): трохи сильніші атаки. */
   thrillFightPatkMul?: number;
   /** Rage (94, орк Destroyer/Raider/Titan): множник P.Atk у бою. */
@@ -84,7 +86,7 @@ export interface BattleBattleMods {
   /** Lionheart (287): +стійкості до шоку/сну/утримання/паралічу через `activeBuffsJson`. */
   lionheartIncomingPhysMul?: number;
   /**
-   * Focus Attack (317): сила криту (text-rpg critDamage %). Тривалість 30 с
+   * Focus Attack (317): toggle — +Accuracy flat і +Critical Damage % за рангом (polearm).
    * (L2 Interlude) — зберігається в `st.battleModsExpiresAtMsBySkillId["317"]`.
    */
   focusAttackActive?: boolean;
@@ -193,6 +195,10 @@ export interface WhirlwindExtraMobJson {
   mobMAtk: number;
   mobMDef: number;
   mobEvasion: number;
+  /** Howl (116): множник P.Atk цього додаткового моба (0.77 = −23%). */
+  mobPatkDebuffMul?: number;
+  /** Provoke (286): −% опору до списів для цієї додаткової цілі. */
+  mobPoleResistCutPct?: number;
   /** Лут/EXP уже видано (щоб не дублювати при наступних ударах). */
   lootGranted?: boolean;
 }
@@ -216,9 +222,15 @@ export interface BattleJsonState {
   mobMDef: number;
   /** Ухилення для формули попадання (l2dop sqrt(DEX)*6+LVL). У старих збереженнях перераховуємо з рівня спавну). */
   mobEvasion?: number;
+  /** Howl (116): множник P.Atk цього додаткового моба (0.77 = −23%). */
+  mobPatkDebuffMul?: number;
   log: string[];
   /** MP у цьому бою (l2dop skills mpConsume). Якщо немає — трактуємо як повний пул у старих збереженнях. */
   playerMp?: number;
+  /** PvP: поточний CP гравця в бою (Wrath знімає CP). */
+  playerCp?: number;
+  /** PvP: max CP гравця на старті бою. */
+  playerMaxCp?: number;
   /** Бафи скілів / стійки — джерело істини для множників у `rollPlayerPhysicalDmg` та ліміту HP. */
   battleMods?: BattleBattleMods;
   /**

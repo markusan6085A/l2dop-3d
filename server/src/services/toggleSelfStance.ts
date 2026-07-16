@@ -66,6 +66,7 @@ const HF_STANCE_BY_SKILL_ID: Record<
 > = {
   256: { flag: 'stanceAccuracy' },
   312: { flag: 'stanceVicious', rankField: 'viciousStanceSkillRank' },
+  317: { flag: 'focusAttackActive' },
   364: { flag: 'stanceParry' },
 };
 

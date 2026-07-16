@@ -1,4 +1,5 @@
 import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
+import { focusAttackAccuracyFlat } from '../data/l2dopFocusAttack.js';
 import type { BattleBattleMods } from './battleTypes.js';
 import {
   jsonFiniteNum,
@@ -6,6 +7,7 @@ import {
   isStanceAccuracyActive,
   isStanceViciousActive,
   isStanceParryActive,
+  isFocusAttackActive,
   normalizeBattleModsFromJson,
   migrateBattleModsStancesFromLegacy,
   stripExpiredZealotFromBattleMods,
@@ -191,7 +193,9 @@ export function effectiveBattleAccuracyDisplay(
   /** Ранг l2_256 (стійка точності). */
   accuracyStanceSkillRank?: number,
   /** Ранг l2_339 (стійка парування). */
-  parryStanceSkillRank: number = 1
+  parryStanceSkillRank: number = 1,
+  /** Ранг l2_317 (Focus Attack). */
+  focusAttackSkillRank: number = 1
 ): number {
   const mods = resolveDisplayBattleMods(rawBattleJson, worldBattleMods);
   let acc = baseAccuracy;
@@ -227,6 +231,12 @@ export function effectiveBattleAccuracyDisplay(
   }
   if (isRiposteStanceActive(mods)) {
     acc = Math.max(0, Math.floor(acc + RIPOSTE_ACCURACY_FLAT));
+  }
+  if (isFocusAttackActive(mods)) {
+    acc = Math.max(
+      0,
+      Math.floor(acc + focusAttackAccuracyFlat(focusAttackSkillRank))
+    );
   }
   return acc;
 }

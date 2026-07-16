@@ -3085,7 +3085,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 76,
     spCost: 10000000,
     nameUk: "Мудрість (Wisdom)",
-    hintUk: "Пасив: підвищує стійкість до утримання, сну та ментальних ефектів.",
+    hintUk: "Пасивний скіл. Збільшує опір до Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3128,7 +3128,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 76,
     spCost: 10000000,
     nameUk: "Здоров’я (Health)",
-    hintUk: "Пасив: підвищує стійкість до отрути та кровотечі.",
+    hintUk: "Пасивний скіл. Збільшує опір до Poison, Bleed, Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Poison +20, Bleed +20, Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3154,6 +3154,21 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
         stat: "bleedResist",
         mode: "percent",
         value: 20
+      },
+      {
+        stat: "holdResist",
+        mode: "percent",
+        value: 20
+      },
+      {
+        stat: "sleepResist",
+        mode: "percent",
+        value: 20
+      },
+      {
+        stat: "mentalResist",
+        mode: "percent",
+        value: 20
       }
     ],
     cooldownSec: null,
@@ -3166,7 +3181,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 77,
     spCost: 13000000,
     nameUk: "Майстерність скілів (Skill Mastery)",
-    hintUk: "Пасив: шанс повторно застосувати вміння або подовжити ефект.",
+    hintUk: "Пасивний скіл. Шанс без витрати MP і без перезарядки (reuse) при активному скілі; при спрацюванні — повтор одразу. 77 лв, 1 р. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -3302,7 +3317,7 @@ export const DWARF_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCat
     minLevel: 78,
     spCost: 32000000,
     nameUk: "Землетрус (Earthquake)",
-    hintUk: "Масовий удар по землі з шансом шоку/оглушення. Добрий opener проти пачки мобів. Лише зі списом/алебардою.",
+    hintUk: "На себе, r≈150: фіз. сила 4040, скидає таргет; можливий оверхit. Лише спис/алебарда. 78 лв, 1 р., 87 MP, КД 30 с.",
     kind: "battle",
     category: "physical_attack",
     visibleForProfessions: [

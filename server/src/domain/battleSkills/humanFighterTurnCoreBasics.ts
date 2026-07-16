@@ -8,13 +8,18 @@ import {
   powerShotMpAndPower,
   powerSmashMpAndPower,
   powerStrikeMpAndPower,
-  provokeMpAndPower,
   stunAttackMpAndPower,
   stunShotMpAndPower,
   thunderStormMpAndPower,
   wildSweepMpAndPower,
   whirlwindMpAndPower,
 } from '../../data/l2dopHumanFighterBattleSkills.js';
+import {
+  provokeDurationSecAtRank,
+  provokeMpAtRank,
+  provokePoleResistCutPctAtRank,
+  spawnAllowsProvokeAggro,
+} from '../../data/provokeTables.js';
 import {
   warCryMpAtRank,
   warCryPatkPercentAtRank,
@@ -518,7 +523,8 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     return {
       mpCost: ww.mp,
       pDmg: r.damage,
-      skillLine: 'Вихор розсік ворогів поруч.',
+      skillLine:
+        'Вихор (Whirlwind): power ' + ww.power + '; до 4 цілей (головна + 3 поруч).',
       physOutcome: r.outcome,
       magicOutcome: null,
       ...(r.weaknessLogLineUk
@@ -559,13 +565,13 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     return {
       mpCost: ts.mp,
       pDmg: r.damage,
-      skillLine: appliedStun
-        ? 'Грозова буря (48, Thunder Storm): потужний AoE-вибух, ціль шоковано (~' +
-          Math.round(effStunPct) +
-          '%).'
-        : 'Грозова буря (48, Thunder Storm): потужний AoE-вибух; шок не спрацював (~' +
-          Math.round(effStunPct) +
-          '%).',
+      skillLine:
+        'Грозова буря (Thunder Storm): power ' +
+        ts.power +
+        '; до 4 цілей (головна + 3 поруч)' +
+        (appliedStun
+          ? '; ціль шоковано (~' + Math.round(effStunPct) + '%).'
+          : '; шок не спрацював (~' + Math.round(effStunPct) + '%).'),
       physOutcome: r.outcome,
       magicOutcome: null,
       ...(appliedStun ? { skipMobCounterAttackOnce: true } : {}),
@@ -579,15 +585,31 @@ export function tryResolveHumanFighterTurnBasics(a: FighterTurnCoreArgs): Battle
     if (!warlordBranchProfession(String(l2Profession))) {
       throw new Error('battle_skill_not_allowed');
     }
-    const pr =
-      l2dopXmlMpPower(286, rank) ?? provokeMpAndPower(preLevel, rank);
-    if (!pr) throw new Error('battle_skill_not_allowed');
+    requireCatalogEntryForAction(action, String(l2Profession));
+    if (legacyBuffOnCd(ctx, 286)) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    if (!spawnAllowsProvokeAggro(ctx.spawnKind)) {
+      throw new Error('battle_skill_not_allowed');
+    }
+    const mp = provokeMpAtRank(rank);
+    const poleCut = provokePoleResistCutPctAtRank(rank);
+    const durSec = provokeDurationSecAtRank(rank);
+    const cdPatches = legacyBuffCdAndExpirePatches(286, ctx);
     return {
-      mpCost: pr.mp,
+      mpCost: mp,
       pDmg: 0,
-      skillLine: 'Масова провокація привернула ворогів поруч.',
+      skillLine:
+        'Провокація (Provoke): агро мобів і РБ у радіусі; епіки не зачіпає.',
       physOutcome: null,
       magicOutcome: null,
+      battleModsPatch: { mobPoleResistCutPct: poleCut },
+      battleModsExpiresPatch: {
+        '286': Date.now() + Math.floor(durSec * 1000),
+      },
+      ...(cdPatches.mysticSkillCdUntilPatch
+        ? { mysticSkillCdUntilPatch: cdPatches.mysticSkillCdUntilPatch }
+        : {}),
     };
   }
   return undefined;

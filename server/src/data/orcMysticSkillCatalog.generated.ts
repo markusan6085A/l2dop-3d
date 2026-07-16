@@ -1464,8 +1464,8 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
     l2SkillId: 328,
     minLevel: 76,
     spCost: 10000000,
-    nameUk: "Мудрість",
-    hintUk: "Пасив: підвищує WIT.",
+    nameUk: "Мудрість (Wisdom)",
+    hintUk: "Пасивний скіл. Збільшує опір до Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -1503,8 +1503,8 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
     l2SkillId: 329,
     minLevel: 76,
     spCost: 10000000,
-    nameUk: "Здоров’я",
-    hintUk: "Пасив: підвищує CON.",
+    nameUk: "Здоров’я (Health)",
+    hintUk: "Пасивний скіл. Збільшує опір до Poison, Bleed, Hold, Sleep та Mental ефектів. 76 лв, 1 р.: Poison +20, Bleed +20, Hold +20, Sleep +20, Mental +20. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
@@ -1528,6 +1528,18 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
       {
         stat: "bleedResist",
         mode: "multiplier"
+      },
+      {
+        stat: "holdResist",
+        mode: "multiplier"
+      },
+      {
+        stat: "sleepResist",
+        mode: "multiplier"
+      },
+      {
+        stat: "mentalResist",
+        mode: "multiplier"
       }
     ],
     cooldownSec: null,
@@ -1538,8 +1550,8 @@ export const ORC_MYSTIC_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatalo
     l2SkillId: 331,
     minLevel: 77,
     spCost: 13000000,
-    nameUk: "Майстерність умінь",
-    hintUk: "Пасив: підвищує майстерність умінь (Skill Mastery).",
+    nameUk: "Майстерність скілів (Skill Mastery)",
+    hintUk: "Пасивний скіл. Шанс без витрати MP і без перезарядки (reuse) при активному скілі; при спрацюванні — повтор одразу. 77 лв, 1 р. Макс. рівень скіла — 1.",
     kind: "passive",
     category: "passive",
     visibleForProfessions: [
