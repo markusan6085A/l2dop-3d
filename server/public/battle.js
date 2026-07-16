@@ -1313,8 +1313,7 @@
     expectedRevision,
     excludeSpawnId,
     preferredSpawnId,
-    targetLevel,
-    autoFight
+    targetLevel
   ) {
     var body = {
       expectedRevision: expectedRevision,
@@ -1324,7 +1323,6 @@
     if (typeof targetLevel === 'number' && targetLevel >= 1) {
       body.targetLevel = Math.floor(targetLevel);
     }
-    if (autoFight) body.autoFight = true;
     return fetchJson('/game/battle/hunt-continue', {
       method: 'POST',
       headers: {
@@ -2058,8 +2056,7 @@
         latestCharacterRevision(),
         excludeSpawnId,
         preferredSpawnId,
-        targetLevel,
-        true
+        targetLevel
       );
       if (st && st._err === 409) {
         var huntConflict = await parseActionErrorBodySafe(st);
@@ -2082,28 +2079,8 @@
           latestCharacterRevision(),
           excludeSpawnId,
           preferredSpawnId,
-          targetLevel,
-          true
+          targetLevel
         );
-      }
-      if (st && !st._err && (st.kind === 'delta' || st.kind === 'full')) {
-        var huntOutcome = applyBattleMutationResult(st);
-        if (huntOutcome === 'victory') {
-          await handleVictoryOutcome(st.victory);
-          return true;
-        }
-        if (huntOutcome === 'defeat') {
-          renderPlayerBars(character);
-          showDefeatScreen(st.defeat || (character && character.pveDefeat));
-          return true;
-        }
-        if (huntOutcome === 'pvp_defeat') return true;
-        if (st.battle && st.battle.spawnId) {
-          applyHuntContinueResult(st);
-          return true;
-        }
-        refreshUI();
-        return !!battle;
       }
       if (st && !st._err && st.battle && st.battle.spawnId) {
         applyHuntContinueResult(st);

@@ -243,11 +243,6 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         typeof rawTargetLevel === 'number' && Number.isFinite(rawTargetLevel)
           ? Math.max(1, Math.floor(rawTargetLevel))
           : undefined;
-      const autoFight =
-        b.autoFight === true ||
-        b.autoFight === 'true' ||
-        b.autoFight === 1 ||
-        b.autoFight === '1';
       try {
         const result = await startHuntContinueBattle(
           userId,
@@ -255,24 +250,15 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           excludeSpawnId,
           levelTolerance,
           preferredSpawnId,
-          targetLevel,
-          autoFight
+          targetLevel
         );
-        const resultRevision =
-          'kind' in result && result.kind === 'delta'
-            ? result.revision
-            : result.character.revision;
-        const resultCharId =
-          'kind' in result && result.kind === 'delta'
-            ? result.characterId
-            : result.character.id;
         await logRouteMutation(
           request,
-          autoFight ? 'battle_hunt_continue_auto' : 'battle_hunt_continue',
+          'battle_hunt_continue',
           er,
           'ok',
-          resultRevision,
-          resultCharId,
+          result.character.revision,
+          result.character.id,
           'battle-mutation'
         );
         return reply.send(result);
@@ -316,24 +302,6 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           return reply.code(400).send({
             error: 'battle_hunt_no_live_targets',
             messageUk: 'Усі цілі поруч на респавні. Зачекай кілька секунд.',
-          });
-        }
-        if (e instanceof Error && e.message === 'battle_auto_hunt_not_allowed') {
-          return reply.code(400).send({
-            error: e.message,
-            messageUk: 'Авто-полювання недоступне в PvP та проти raid/epic.',
-          });
-        }
-        if (e instanceof Error && e.message === 'battle_auto_hunt_no_action') {
-          return reply.code(400).send({
-            error: e.message,
-            messageUk: 'Немає базової атаки для авто-полювання.',
-          });
-        }
-        if (e instanceof Error && e.message === 'battle_auto_hunt_cap') {
-          return reply.code(400).send({
-            error: e.message,
-            messageUk: 'Авто-полювання зупинено — занадто довгий бій.',
           });
         }
         await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
