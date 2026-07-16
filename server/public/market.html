@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="page_market_title">Ринок — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260716itemColors3" />
+    <link rel="stylesheet" href="/css/l2-item-colors.css?v=20260716itemColors3" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260716marketNick1" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260711cityMiruTone1" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260717marketModal2" />
+    <style>
+      .l2-market-root {
+        padding: 8px 10px 14px;
+      }
+      .l2-market-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0 0 10px;
+      }
+      .l2-market-banner {
+        display: block;
+        flex: 0 0 auto;
+        width: 93px;
+        max-width: 93px;
+        height: auto;
+        margin: 0;
+        border-radius: 4px;
+      }
+      .l2-market-text {
+        flex: 1;
+        min-width: 0;
+      }
+      .l2-market-title {
+        margin: 0 0 4px;
+        font-size: 14px;
+        line-height: 1.35;
+        font-weight: 600;
+        color: #bfa88a;
+      }
+      .l2-market-desc {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #fff;
+      }
+      .l2-market-link {
+        display: block;
+        margin: 0 0 10px;
+        padding: 0;
+        color: #fff;
+        font-size: 14px;
+        line-height: 1.45;
+        text-decoration: underline;
+      }
+      .l2-market-link:hover,
+      .l2-market-link:focus {
+        color: #fff;
+      }
+      .l2-market-divider {
+        margin: 0 -10px 10px;
+        border: 0;
+        border-top: 1px solid rgba(100, 80, 52, 0.55);
+      }
+      .l2-market-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 10px;
+        width: 100%;
+      }
+      .l2-market-actions .l2-magister-profession-confirm-btn,
+      .l2-market-actions .l2-market-my-lots-btn {
+        flex: 0 1 auto;
+        max-width: none;
+        text-decoration: none;
+        border-color: #6b543f;
+      }
+      .l2-market-my-lots-btn.l2-market-my-lots-btn--active {
+        filter: brightness(1.12);
+        box-shadow: inset 0 0 0 1px rgba(191, 168, 138, 0.35);
+      }
+      .l2-market-row--mine {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .l2-market-row__main {
+        flex: 1;
+        min-width: 0;
+      }
+      .l2-market-cancel {
+        flex: 0 0 auto;
+        color: #c9a88a;
+        font-weight: 400;
+        text-decoration: underline;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .l2-market-cancel:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      .l2-market-msg {
+        margin: 0 0 8px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #c9a88a;
+      }
+      .l2-market-list {
+        margin: 0;
+        padding: 0;
+      }
+      .l2-market-list .l2-market-row:not(:last-child) {
+        border-bottom: 1px solid rgba(100, 80, 52, 0.45);
+        padding-bottom: 6px;
+      }
+      .l2-market-row {
+        margin: 0 0 6px;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #fff;
+        text-align: left;
+      }
+      .l2-market-buy {
+        color: var(--l2-market-buy, #8f7a5e);
+        font-weight: 400;
+        text-decoration: underline;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font: inherit;
+      }
+      .l2-market-buy:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      .l2-market-row .l2-market-seller,
+      .l2-market-row .l2-hud-nick.l2-market-seller {
+        font-size: 11px;
+      }
+      .l2-market-item-ico {
+        width: 20px;
+        height: 20px;
+        vertical-align: -4px;
+        margin: 0 2px;
+        object-fit: contain;
+      }
+      .l2-market-item-name {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .l2-market-empty {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #a89a70;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-market-root">
+          <div class="l2-chrome-nav-column l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="market-load-err" hidden></p>
+
+            <section id="market-content" hidden>
+              <div class="l2-market-head">
+                <img
+                  class="l2-market-banner"
+                  src="/assets/bank.jpg"
+                  alt=""
+                  width="93"
+                  height="40"
+                  decoding="async"
+                />
+                <div class="l2-market-text">
+                  <p class="l2-market-title">Ринок</p>
+                  <p class="l2-market-desc">Купуйте та продавайте предмети іншим гравцям.</p>
+                </div>
+              </div>
+
+              <a class="l2-market-link" href="/market-coin-of-luck.html">Ринок Coin of Luck:</a>
+
+              <hr class="l2-market-divider" />
+
+              <nav class="l2-market-actions l2-magister-profession-detail__actions" aria-label="Ринок">
+                <a class="l2-magister-profession-confirm-btn" href="/market-sell.html?v=20260716marketSell3">
+                  Продати речі
+                </a>
+                <button
+                  type="button"
+                  class="l2-magister-profession-confirm-btn l2-market-my-lots-btn"
+                  id="market-my-lots-btn"
+                >
+                  Мої лоти
+                </button>
+                <a class="l2-magister-profession-confirm-btn" href="/market-buy.html">Купити речі</a>
+              </nav>
+
+              <hr class="l2-market-divider" />
+
+              <p class="l2-market-msg" id="market-msg" hidden aria-live="polite"></p>
+
+              <div id="market-list" class="l2-market-list" aria-label="Предмети на продаж"></div>
+              <p class="l2-market-empty" id="market-empty" hidden>Поки що немає оголошень.</p>
+
+              <div id="l2-foot-links"></div>
+            </section>
+
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260712wapBars16"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260709miruNav9"></script>
+    <script src="/armor-set-bonuses-ui.js?v=5"></script>
+    <script src="/item-stats-modal.js?v=20260717marketModal2"></script>
+    <script src="/market.js?v=20260717marketBuyConfirm1"></script>
+  </body>
+</html>

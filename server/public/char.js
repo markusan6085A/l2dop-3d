@@ -993,7 +993,10 @@
       var mid = document.createElement('div');
       mid.className = 'l2-char-bag-row-text';
       var label = document.createElement('span');
-      label.className = 'l2-char-bag-name';
+      label.className =
+        window.L2 && typeof L2.itemNameClassNames === 'function'
+          ? L2.itemNameClassNames(st.itemId, 'l2-char-bag-name')
+          : 'l2-char-bag-name';
       var nameLine = itemDisplayName(st.itemId) + bagQtySuffix(st.itemId, st.qty);
       if (en > 0) nameLine += ' +' + en;
       label.textContent = nameLine;
@@ -1543,6 +1546,9 @@
     var armorSetsEl = $('char-bag-modal-armor-sets');
     if (!ov || !title || !statsEl || !qtyEl || !equipBtn) return;
     title.textContent = itemDisplayName(itemId);
+    if (window.L2 && typeof L2.decorateItemNameEl === 'function') {
+      L2.decorateItemNameEl(title, itemId, 'l2-gm-modal-title');
+    }
     if (gradeEl) gradeEl.textContent = gradeLabelForItem(itemId);
     if (kind) kind.textContent = slotKindUk(itemId);
     if (icon) setItemIconSrc(icon, itemId);

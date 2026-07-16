@@ -2980,7 +2980,8 @@ body.l2-app-l2-chrome .l2-char-name-bracket,
 body.l2-app-l2-chrome .l2-character-panel__nick,
 body.l2-app-l2-chrome .l2-player-panel__headline,
 body.l2-app-l2-chrome .l2-chat-msg__nick,
-body.l2-app-l2-chrome .l2-online-player__nick {
+body.l2-app-l2-chrome .l2-online-player__nick,
+body.l2-app-l2-chrome .l2-market-row .l2-hud-nick {
   color: var(--l2-nick-color) !important;
   text-shadow: var(--l2-nick-shadow) !important;
 }

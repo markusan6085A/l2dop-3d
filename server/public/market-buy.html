@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Купити речі — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260711cityMiruTone1" />
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711shopSubTabsRow1" />
+    <style>
+      .l2-market-buy-root {
+        padding: 8px 10px 14px;
+      }
+      .l2-market-buy-title {
+        margin: 0 0 10px;
+        font-size: 14px;
+        line-height: 1.35;
+        font-weight: 600;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-market-buy-root">
+          <div class="l2-chrome-nav-column l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="market-buy-load-err" hidden></p>
+
+            <section id="market-buy-content" hidden>
+              <p class="l2-market-buy-title">Купити речі</p>
+
+              <div id="l2-foot-links"></div>
+            </section>
+
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260712wapBars16"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260709miruNav9"></script>
+    <script src="/market-buy.js"></script>
+  </body>
+</html>

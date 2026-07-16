@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ринок Coin of Luck — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260501nav7" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260711cityMiruTone1" />
+    <style>
+      .l2-market-col-root {
+        padding: 8px 10px 14px;
+        text-align: left;
+      }
+      .l2-market-col-heading {
+        margin: 0 0 4px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.35;
+        font-weight: 600;
+        color: #bfa88a;
+      }
+      .l2-market-col-lead {
+        margin: 0 0 8px;
+        text-align: left;
+        font-size: 13px;
+        line-height: 1.4;
+        color: #fff;
+      }
+      .l2-market-col-divider {
+        margin: 0 -10px 8px;
+        border: 0;
+        border-top: 1px solid rgba(100, 80, 52, 0.55);
+      }
+      .l2-market-col-banner-wrap {
+        margin: 0 0 8px;
+        text-align: left;
+      }
+      .l2-market-col-banner {
+        display: block;
+        width: 140px;
+        max-width: 140px;
+        height: auto;
+        margin: 0;
+        border-radius: 4px;
+      }
+      .l2-market-col-tabs {
+        margin: 0 0 8px;
+        text-align: left;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #fff;
+      }
+      .l2-market-col-tabs a {
+        color: #bfa88a;
+        text-decoration: underline;
+      }
+      .l2-market-col-tabs span {
+        color: #fff;
+        font-weight: 400;
+      }
+      .l2-market-col-list {
+        margin: 0 0 10px;
+      }
+      .l2-market-col-row {
+        margin: 0 0 6px;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #fff;
+        text-align: left;
+      }
+      .l2-market-col-buy {
+        color: #e8c86a;
+        font-weight: 400;
+        text-decoration: underline;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font: inherit;
+      }
+      .l2-market-col-buy:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      .l2-market-col-coin-ico {
+        width: 16px;
+        height: 16px;
+        vertical-align: -3px;
+        margin: 0 2px;
+        object-fit: contain;
+      }
+      .l2-market-col-empty {
+        margin: 0 0 8px;
+        text-align: left;
+        color: #a89a70;
+        font-size: 13px;
+      }
+      .l2-market-col-actions {
+        margin: 8px 0 0;
+        text-align: left;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .l2-market-col-actions a,
+      .l2-market-col-actions button {
+        color: #bfa88a;
+        text-decoration: underline;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+      .l2-market-col-msg {
+        margin: 8px 0 0;
+        text-align: left;
+        font-size: 12px;
+        color: #c9bc8c;
+        min-height: 1.2em;
+      }
+    </style>
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-market-col-root">
+          <div class="l2-chrome-nav-column l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="market-col-load-err" hidden></p>
+
+            <section id="market-col-content" hidden>
+              <p class="l2-market-col-heading">Ринок Coin of Luck</p>
+              <p class="l2-market-col-lead">Обери в кого купити Coin of Luck!</p>
+
+              <div class="l2-market-col-banner-wrap">
+                <img
+                  class="l2-market-col-banner"
+                  src="/assets/bank.jpg"
+                  alt=""
+                  width="140"
+                  height="60"
+                  decoding="async"
+                />
+              </div>
+
+              <nav class="l2-market-col-tabs" aria-label="Coin of Luck">
+                Coin of Luck:
+                <span>Купити</span>
+                <span aria-hidden="true">|</span>
+                <a href="/market-coin-sell.html">Продати</a>
+              </nav>
+
+              <div id="market-col-list" class="l2-market-col-list"></div>
+              <p class="l2-market-col-empty" id="market-col-empty" hidden>
+                Поки що немає оголошень.
+              </p>
+
+              <div class="l2-market-col-actions">
+                <a href="/market-coin-sell.html">Продати Coin of Luck</a><br />
+                <button type="button" id="market-col-order-btn">Замовити Coin of Luck</button>
+              </div>
+
+              <p class="l2-market-col-msg" id="market-col-msg" aria-live="polite"></p>
+
+              <div id="l2-foot-links"></div>
+            </section>
+
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260712wapBars16"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260709miruNav9"></script>
+    <script src="/market-coin-of-luck.js?v=20260717marketBuyConfirm1"></script>
+  </body>
+</html>

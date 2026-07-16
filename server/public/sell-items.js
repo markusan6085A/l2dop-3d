@@ -808,7 +808,10 @@
     var body = document.createElement('div');
     body.className = 'l2-sell-items-row__body';
     var name = document.createElement('div');
-    name.className = 'l2-sell-items-row__name';
+    name.className =
+      window.L2 && typeof L2.itemNameClassNames === 'function'
+        ? L2.itemNameClassNames(stack.itemId, 'l2-sell-items-row__name')
+        : 'l2-sell-items-row__name';
     var label = itemDisplayName(stack.itemId);
     if (stack.enchant > 0) label += ' +' + stack.enchant;
     if (stack.qty > 1) label += ' ×' + stack.qty;

@@ -8,19 +8,7 @@ body.l2-app-l2-chrome.l2-page-gm-shop {
   --l2-gm-shop-tab-sep: #6a6358;
   --l2-gm-shop-tab-font: 11px;
   --l2-gm-shop-tab-gap: 5px;
-  --l2-gm-shop-stat-patk: #c41818;
-  --l2-gm-shop-stat-matk: #1e7ae8;
-  --l2-gm-shop-stat-speed: #9a9488;
-  --l2-gm-shop-stat-crit: #b060d0;
-  --l2-gm-shop-stat-pdef: #c41818;
-  --l2-gm-shop-stat-pdef-shield: #9a9488;
-  --l2-gm-shop-stat-shield-block: #5dbd5d;
-  --l2-gm-shop-stat-shield-def: #c41818;
-  --l2-gm-shop-stat-mdef: #1e7ae8;
-  --l2-gm-shop-stat-hpmax: #c41818;
-  --l2-gm-shop-stat-mpmax: #5ec8f0;
-  --l2-gm-shop-stat-val: #fff;
-  --l2-gm-shop-price-gold: #d4a020;
+  --l2-gm-shop-price-gold: var(--l2-item-price-gold);
   --l2-gm-shop-weapon-tab: #ffba00;
   --l2-gm-shop-weapon-tab-active: #ffd040;
 }
@@ -215,22 +203,22 @@ body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tab--acti
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='NG'] {
-  color: #b8b0a4 !important;
+  color: var(--l2-item-grade-ng) !important;
 }
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='D'] {
-  color: #6a9a6a !important;
+  color: var(--l2-item-grade-d) !important;
 }
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='C'] {
-  color: #6a8aaa !important;
+  color: var(--l2-item-grade-c) !important;
 }
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='B'] {
-  color: #aa8a6a !important;
+  color: var(--l2-item-grade-b) !important;
 }
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='A'] {
-  color: #c87840 !important;
+  color: var(--l2-item-grade-a) !important;
 }
 body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount .l2-drops-shop-tablist--grades .l2-drops-shop-tab[data-grade='S'] {
-  color: #d4a020 !important;
+  color: var(--l2-item-grade-s) !important;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row button.l2-gm-shop-buy:not(:disabled) {
@@ -293,66 +281,6 @@ body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row-stat {
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-sep,
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-sep {
   color: var(--l2-gm-shop-tab-sep);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--patk,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--patk {
-  color: var(--l2-gm-shop-stat-patk);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--matk,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--matk {
-  color: var(--l2-gm-shop-stat-matk);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--speed,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--speed {
-  color: var(--l2-gm-shop-stat-speed);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--crit,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--crit {
-  color: var(--l2-gm-shop-stat-crit);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--pdef,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--pdef {
-  color: var(--l2-gm-shop-stat-pdef);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--pdef-shield,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--pdef-shield {
-  color: var(--l2-gm-shop-stat-pdef-shield);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--shield-block,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--shield-block {
-  color: var(--l2-gm-shop-stat-shield-block);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--shield-def,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--shield-def {
-  color: var(--l2-gm-shop-stat-shield-def);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--mdef,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--mdef {
-  color: var(--l2-gm-shop-stat-mdef);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--hpmax,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--hpmax {
-  color: var(--l2-gm-shop-stat-hpmax);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-lbl--mpmax,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-lbl--mpmax {
-  color: var(--l2-gm-shop-stat-mpmax);
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-val,
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-item-stat-val {
-  color: var(--l2-gm-shop-stat-val);
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-pager--arrow {
@@ -440,54 +368,6 @@ body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-moda
 
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__hint {
   color: var(--l2-gm-shop-price-gold) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--patk {
-  color: var(--l2-gm-shop-stat-patk) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--matk {
-  color: var(--l2-gm-shop-stat-matk) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--speed {
-  color: var(--l2-gm-shop-stat-speed) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--crit {
-  color: var(--l2-gm-shop-stat-crit) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--pdef {
-  color: var(--l2-gm-shop-stat-pdef) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--pdef-shield {
-  color: var(--l2-gm-shop-stat-pdef-shield) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--shield-block {
-  color: var(--l2-gm-shop-stat-shield-block) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--shield-def {
-  color: var(--l2-gm-shop-stat-shield-def) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--mdef {
-  color: var(--l2-gm-shop-stat-mdef) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--hpmax {
-  color: var(--l2-gm-shop-stat-hpmax) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-lbl--mpmax {
-  color: var(--l2-gm-shop-stat-mpmax) !important;
-}
-
-body.l2-app-l2-chrome.l2-page-gm-shop .l2-drops-stats-modal__panel .l2-item-stat-val {
-  color: var(--l2-gm-shop-stat-val) !important;
 }
 
 /* gm-shop: червона кнопка «Продати речі» під стрілками */

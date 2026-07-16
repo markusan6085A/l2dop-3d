@@ -621,6 +621,9 @@
     var ico = modal.querySelector('.l2-drops-stats-modal__ico');
 
     titleEl.textContent = it.nameUk || it.shopKey || '';
+    if (window.L2 && typeof L2.decorateItemNameEl === 'function') {
+      L2.decorateItemNameEl(titleEl, it.itemId, 'l2-drops-stats-modal__title');
+    }
     if (ico) {
       ico.src = resolveShopItemIcon(it);
       ico.onerror = function () {
@@ -867,7 +870,10 @@
         var main = document.createElement('div');
         main.className = 'l2-gm-shop-row-main';
         var nameEl = document.createElement('div');
-        nameEl.className = 'l2-gm-shop-name';
+        nameEl.className =
+          window.L2 && typeof L2.itemNameClassNames === 'function'
+            ? L2.itemNameClassNames(it.itemId, 'l2-gm-shop-name')
+            : 'l2-gm-shop-name';
         nameEl.textContent = it.nameUk || it.shopKey;
         main.appendChild(nameEl);
         if (it.statsPreview && it.statsPreview.lines && it.statsPreview.lines.length) {

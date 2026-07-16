@@ -141,6 +141,7 @@
     city_aria_services: { uk: 'Місто', ru: 'Город' },
     page_city_title: { uk: 'Місто — L2WAP', ru: 'Город — L2WAP' },
     page_warehouse_title: { uk: 'Склад — L2WAP', ru: 'Склад — L2WAP' },
+    page_market_title: { uk: 'Ринок — L2WAP', ru: 'Рынок — L2WAP' },
     warehouse_intro: {
       uk: 'Вітаю! Тут можна зберігати речі, щоб інвентар не переповнювався.',
       ru: 'Привет! Здесь можно хранить вещи, чтобы инвентарь не переполнялся.',

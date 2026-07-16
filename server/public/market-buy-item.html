@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html lang="uk">
+
+  <head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Підтвердження покупки — L2WAP</title>
+
+    <link rel="stylesheet" href="/styles.css?v=20260716itemColors3" />
+
+    <link rel="stylesheet" href="/css/l2-item-colors.css?v=20260716itemColors3" />
+
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
+
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260711cityMiruTone1" />
+
+    <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711shopSubTabsRow1" />
+
+    <style>
+
+      .l2-market-buy-item-root {
+
+        padding: 8px 10px 14px;
+
+      }
+
+      .l2-market-buy-item-title {
+
+        margin: 0 0 10px;
+
+        font-size: 14px;
+
+        line-height: 1.35;
+
+        font-weight: 600;
+
+        color: #fff;
+
+      }
+
+      .l2-market-buy-item-divider {
+
+        margin: 10px -10px;
+
+        border: 0;
+
+        border-top: 1px solid rgba(100, 80, 52, 0.45);
+
+      }
+
+      .l2-market-buy-item-qty-row {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        margin: 8px 0 0;
+
+      }
+
+      .l2-market-buy-item-qty-row[hidden] {
+
+        display: none !important;
+
+      }
+
+      .l2-market-buy-item-label {
+
+        font-size: 13px;
+
+        color: #fff;
+
+        white-space: nowrap;
+
+      }
+
+      .l2-market-buy-item-input {
+
+        box-sizing: border-box;
+
+        width: 72px;
+
+        max-width: 72px;
+
+        margin: 0;
+
+        padding: 2px 4px;
+
+        border: 1px solid #888;
+
+        border-radius: 0;
+
+        background: #fff;
+
+        color: #111;
+
+        font: inherit;
+
+        font-size: 12px;
+
+        line-height: 1.35;
+
+      }
+
+      .l2-market-buy-item-price {
+
+        margin: 0;
+
+        font-size: 13px;
+
+        line-height: 1.45;
+
+        color: #fff;
+
+      }
+
+      .l2-market-buy-item-seller {
+
+        margin: 0 0 8px;
+
+        font-size: 12px;
+
+        line-height: 1.4;
+
+        color: #a89a70;
+
+      }
+
+      .l2-market-buy-item-actions {
+
+        margin: 10px 0 0;
+
+      }
+
+      .l2-market-buy-item-actions .l2-magister-profession-confirm-btn {
+
+        border-color: #6b543f;
+
+      }
+
+      .l2-market-buy-item-msg {
+
+        margin: 8px 0 0;
+
+        font-size: 12px;
+
+        color: #c9bc8c;
+
+        min-height: 1.2em;
+
+      }
+
+    </style>
+
+  </head>
+
+  <body
+
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+
+  >
+
+    <div class="l2-shell">
+
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+
+        <div class="l2-outer-sframe" aria-hidden="true">
+
+          <div class="l2-outer-sframe__g">
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+
+              <img
+
+                class="l2-outer-sframe__cap-tl-img"
+
+                src="/ref/19.png"
+
+                alt=""
+
+                width="28"
+
+                height="52"
+
+                decoding="async"
+
+              />
+
+            </span>
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+
+          </div>
+
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+
+            <img
+
+              class="l2-outer-sframe__cap-tr-img"
+
+              src="/ref/18.png"
+
+              alt=""
+
+              width="28"
+
+              height="52"
+
+              decoding="async"
+
+            />
+
+          </div>
+
+        </div>
+
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+
+          <img
+
+            class="l2-game-chrome-crest__img"
+
+            src="/ref/2.png"
+
+            alt=""
+
+            width="40"
+
+            height="40"
+
+            decoding="async"
+
+          />
+
+        </div>
+
+        <div class="l2-screen-inner l2-market-buy-item-root">
+
+          <div class="l2-chrome-nav-column l2-townlive-column">
+
+            <div id="l2-hud-panel-mount"></div>
+
+            <div id="l2-nav-top"></div>
+
+
+
+            <p class="err" id="market-buy-item-load-err" hidden></p>
+
+
+
+            <section id="market-buy-item-content" hidden>
+
+              <p class="l2-market-buy-item-title">Підтвердження покупки</p>
+
+
+
+              <div id="market-buy-item-preview" class="l2-char-bag-list"></div>
+
+              <div class="l2-market-buy-item-qty-row" id="market-buy-item-qty-row" hidden>
+                <label class="l2-market-buy-item-label" for="market-buy-item-qty">Кількість</label>
+                <input
+                  class="l2-market-buy-item-input"
+                  id="market-buy-item-qty"
+                  type="number"
+                  min="1"
+                  step="1"
+                  inputmode="numeric"
+                  autocomplete="off"
+                />
+              </div>
+
+              <hr class="l2-market-buy-item-divider" />
+
+
+
+              <p class="l2-market-buy-item-seller" id="market-buy-item-seller"></p>
+
+              <p class="l2-market-buy-item-price" id="market-buy-item-price"></p>
+
+
+
+              <hr class="l2-market-buy-item-divider" />
+
+
+
+              <div class="l2-market-buy-item-actions">
+
+                <button
+
+                  type="button"
+
+                  class="l2-magister-profession-confirm-btn"
+
+                  id="market-buy-item-submit"
+
+                >
+
+                  Купити
+
+                </button>
+
+              </div>
+
+
+
+              <p class="l2-market-buy-item-msg" id="market-buy-item-msg" aria-live="polite"></p>
+
+
+
+              <div id="l2-foot-links"></div>
+
+            </section>
+
+
+
+            <div id="l2-nav-bottom"></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <script src="/common.js?v=20260712wapBars16"></script>
+
+    <script src="/ui-i18n.js"></script>
+
+    <script src="/l2-nav.js?v=20260709miruNav9"></script>
+
+    <script src="/market-listing-buy.js?v=20260717marketBuyQty1"></script>
+
+    <script src="/market-buy-item.js?v=20260717marketBuyQty1"></script>
+
+  </body>
+
+</html>
+
+

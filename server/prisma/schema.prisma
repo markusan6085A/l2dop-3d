@@ -106,8 +106,25 @@ model Character {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastUpdate DateTime @updatedAt
   chatMessages ChatMessage[]
+  marketListings MarketListing[]
 
   @@index([userId, lastUpdate(sort: Desc)])
+}
+
+model MarketListing {
+  id                String    @id @default(uuid())
+  sellerCharacterId String
+  sellerCharacter   Character @relation(fields: [sellerCharacterId], references: [id], onDelete: Cascade)
+  sellerName        String
+  itemId            Int
+  qty               Int
+  enchant           Int       @default(0)
+  priceAdena        BigInt    @default(0)
+  priceCoinOfLuck   Int       @default(0)
+  createdAt         DateTime  @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([sellerCharacterId])
 }
 
 model ChatMessage {

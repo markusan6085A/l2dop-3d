@@ -243,6 +243,27 @@
     itemSlotById: {},
     /** NG | D | C | B | A | S — з GET /character/catalog-hints itemGradeHints + gearCatalog */
     itemGradeById: {},
+    itemGradeSlugForId: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return '';
+      var g = global.L2.itemGradeById && global.L2.itemGradeById[id];
+      if (g == null || String(g).trim() === '') return '';
+      return String(g).trim().toLowerCase();
+    },
+    itemNameClassNames: function (itemId, baseClass) {
+      var base =
+        baseClass != null && String(baseClass).trim() !== ''
+          ? String(baseClass).trim()
+          : 'l2-item-name';
+      var slug = global.L2.itemGradeSlugForId(itemId);
+      if (!slug) return base;
+      return base + ' l2-item-name--grade-' + slug;
+    },
+    decorateItemNameEl: function (el, itemId, baseClass) {
+      if (!el) return el;
+      el.className = global.L2.itemNameClassNames(itemId, baseClass || el.className);
+      return el;
+    },
     /** Тип зброї (рядок каталогу) — для фільтра сумки */
     itemWeaponTypeById: {},
     /** Тип броні (heavy/light/magic) — з каталогу */

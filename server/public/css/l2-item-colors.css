@@ -1,0 +1,163 @@
+/**
+ * Єдине джерело кольорів предметів (назва по грейду + підписи статів).
+ * Змінюй змінні тут — оновиться сумка, ринок, GM-shop, sell-items тощо.
+ */
+body.l2-app-l2-chrome {
+  --l2-item-name-default: #bfa88a;
+  --l2-item-name-hover: #d4c4a8;
+  --l2-item-grade-ng: #b8b0a4;
+  --l2-item-grade-d: #6a9a6a;
+  --l2-item-grade-c: #6a8aaa;
+  --l2-item-grade-b: #aa8a6a;
+  --l2-item-grade-a: #c87840;
+  --l2-item-grade-s: #d4a020;
+
+  --l2-item-stat-patk: #c41818;
+  --l2-item-stat-matk: #1e7ae8;
+  --l2-item-stat-speed: #9a9488;
+  --l2-item-stat-crit: #b060d0;
+  --l2-item-stat-pdef: #c41818;
+  --l2-item-stat-pdef-shield: #9a9488;
+  --l2-item-stat-shield-block: #5dbd5d;
+  --l2-item-stat-shield-def: #c41818;
+  --l2-item-stat-mdef: #1e7ae8;
+  --l2-item-stat-hpmax: #c41818;
+  --l2-item-stat-mpmax: #5ec8f0;
+  --l2-item-stat-default: #fff;
+  --l2-item-stat-val: #fff;
+  --l2-item-stat-plain: #fff;
+  --l2-item-stat-sep: #6a6358;
+
+  --l2-market-sell-tab: #bfa88a;
+  --l2-market-sell-tab-shield: #8f7a5e;
+  --l2-market-buy: #8f7a5e;
+  --l2-item-price-gold: #d4a020;
+}
+
+.l2-market-sell-root a.l2-char-bag-name {
+  color: var(--l2-item-name-default);
+}
+
+.l2-market-sell-root a.l2-char-bag-name.l2-item-name--grade-ng {
+  color: var(--l2-item-grade-ng);
+}
+
+.l2-market-sell-root a.l2-char-bag-name.l2-item-name--grade-d {
+  color: var(--l2-item-grade-d);
+}
+
+.l2-market-sell-root a.l2-char-bag-name.l2-item-name--grade-c {
+  color: var(--l2-item-grade-c);
+}
+
+.l2-market-sell-root a.l2-char-bag-name.l2-item-name--grade-b {
+  color: var(--l2-item-grade-b);
+}
+
+.l2-market-sell-root a.l2-char-bag-name.l2-item-name--grade-a {
+  color: var(--l2-item-grade-a);
+}
+
+.l2-market-sell-root a.l2-char-bag-name.l2-item-name--grade-s {
+  color: var(--l2-item-grade-s);
+}
+
+.l2-char-bag-name,
+.l2-gm-shop-name,
+.l2-sell-items-row__name,
+.l2-gm-modal-title,
+.l2-drops-stats-modal__title,
+.l2-item-name {
+  color: var(--l2-item-name-default);
+}
+
+.l2-item-name--grade-ng {
+  color: var(--l2-item-grade-ng);
+}
+
+.l2-item-name--grade-d {
+  color: var(--l2-item-grade-d);
+}
+
+.l2-item-name--grade-c {
+  color: var(--l2-item-grade-c);
+}
+
+.l2-item-name--grade-b {
+  color: var(--l2-item-grade-b);
+}
+
+.l2-item-name--grade-a {
+  color: var(--l2-item-grade-a);
+}
+
+.l2-item-name--grade-s {
+  color: var(--l2-item-grade-s);
+}
+
+a.l2-char-bag-name:hover,
+a.l2-char-bag-name:focus,
+a.l2-char-bag-name:focus-visible {
+  color: var(--l2-item-name-hover);
+}
+
+.l2-item-stat-lbl--patk {
+  color: var(--l2-item-stat-patk);
+}
+
+.l2-item-stat-lbl--matk {
+  color: var(--l2-item-stat-matk);
+}
+
+.l2-item-stat-lbl--speed {
+  color: var(--l2-item-stat-speed);
+}
+
+.l2-item-stat-lbl--crit {
+  color: var(--l2-item-stat-crit);
+}
+
+.l2-item-stat-lbl--pdef {
+  color: var(--l2-item-stat-pdef);
+}
+
+.l2-item-stat-lbl--pdef-shield {
+  color: var(--l2-item-stat-pdef-shield);
+}
+
+.l2-item-stat-lbl--shield-block {
+  color: var(--l2-item-stat-shield-block);
+}
+
+.l2-item-stat-lbl--shield-def {
+  color: var(--l2-item-stat-shield-def);
+}
+
+.l2-item-stat-lbl--mdef {
+  color: var(--l2-item-stat-mdef);
+}
+
+.l2-item-stat-lbl--hpmax {
+  color: var(--l2-item-stat-hpmax);
+}
+
+.l2-item-stat-lbl--mpmax {
+  color: var(--l2-item-stat-mpmax);
+}
+
+.l2-item-stat-lbl--default {
+  color: var(--l2-item-stat-default);
+}
+
+.l2-item-stat-val {
+  color: var(--l2-item-stat-val);
+  font-variant-numeric: tabular-nums;
+}
+
+.l2-item-stat-plain {
+  color: var(--l2-item-stat-plain);
+}
+
+.l2-item-stat-sep {
+  color: var(--l2-item-stat-sep);
+}
