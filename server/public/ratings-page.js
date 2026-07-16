@@ -40,12 +40,6 @@
       if (cat.id === activeType) btn.classList.add('l2-ratings-cat--active');
       btn.dataset.type = cat.id;
       btn.textContent = cat.labelUk;
-      if (cat.hintUk) {
-        var hint = document.createElement('span');
-        hint.className = 'l2-ratings-cat-hint';
-        hint.textContent = ' — ' + cat.hintUk;
-        btn.appendChild(hint);
-      }
       btn.addEventListener('click', function () {
         var t = this.dataset.type || 'level';
         currentType = t;

@@ -9,11 +9,19 @@ export const RATINGS_PAGE_SIZE = 15;
 export type RatingsType =
   | 'level'
   | 'power'
+  | 'exp'
   | 'pvp'
   | 'pk'
-  | 'raid_boss'
+  | 'bosses'
   | 'wealth'
-  | 'clans';
+  | 'clans'
+  | 'activity'
+  | 'victories'
+  | 'damage'
+  | 'arena';
+
+type RatingsStubType = 'clans' | 'damage' | 'arena';
+type RatingsScoredType = Exclude<RatingsType, RatingsStubType>;
 
 export type RatingsRow = {
   rank: number;
@@ -47,53 +55,89 @@ export type RatingsSnapshot = {
 };
 
 const TYPE_META: Record<
-  Exclude<RatingsType, 'clans'>,
+  RatingsScoredType,
   { titleUk: string; valueColumnUk: string; valueLabelUk: string }
 > = {
   level: {
-    titleUk: 'Рейтинг за рівнем',
-    valueColumnUk: 'EXP',
-    valueLabelUk: 'EXP',
+    titleUk: 'Рівень',
+    valueColumnUk: 'Рівень',
+    valueLabelUk: 'Рівень',
   },
   power: {
-    titleUk: 'Рейтинг за бойовою силою',
+    titleUk: 'Сила',
     valueColumnUk: 'Мощ',
     valueLabelUk: 'Мощ',
   },
+  exp: {
+    titleUk: 'Досвід',
+    valueColumnUk: 'EXP',
+    valueLabelUk: 'EXP',
+  },
   pvp: {
-    titleUk: 'Рейтинг PvP',
+    titleUk: 'PvP',
     valueColumnUk: 'Перемоги',
     valueLabelUk: 'Перемоги',
   },
   pk: {
-    titleUk: 'Рейтинг PK',
+    titleUk: 'PK',
     valueColumnUk: 'PK',
     valueLabelUk: 'PK',
   },
-  raid_boss: {
-    titleUk: 'Рейтинг рейд-босів',
-    valueColumnUk: 'Участь',
-    valueLabelUk: 'Участь',
+  bosses: {
+    titleUk: 'Боси',
+    valueColumnUk: 'Боси',
+    valueLabelUk: 'Боси',
   },
   wealth: {
-    titleUk: 'Рейтинг за багатством',
+    titleUk: 'Багатство',
     valueColumnUk: 'Adena',
     valueLabelUk: 'Adena',
+  },
+  activity: {
+    titleUk: 'Активність',
+    valueColumnUk: 'Очки',
+    valueLabelUk: 'Очки',
+  },
+  victories: {
+    titleUk: 'Перемоги',
+    valueColumnUk: 'Перемоги',
+    valueLabelUk: 'Перемоги',
+  },
+};
+
+const STUB_META: Record<RatingsStubType, { titleUk: string; messageUk: string }> = {
+  clans: {
+    titleUk: 'Клани',
+    messageUk: 'Клани з’являться пізніше.',
+  },
+  damage: {
+    titleUk: 'Шкода',
+    messageUk: 'Рейтинг шкоди з’явиться пізніше.',
+  },
+  arena: {
+    titleUk: 'Арена',
+    messageUk: 'Рейтинг арени з’явиться пізніше.',
   },
 };
 
 function parseRatingsType(raw: unknown): RatingsType {
   const s = String(raw || '').trim();
-  if (
-    s === 'power' ||
-    s === 'pvp' ||
-    s === 'pk' ||
-    s === 'raid_boss' ||
-    s === 'wealth' ||
-    s === 'clans'
-  ) {
-    return s;
-  }
+  if (s === 'raid_boss') return 'bosses';
+  const allowed: RatingsType[] = [
+    'level',
+    'power',
+    'exp',
+    'pvp',
+    'pk',
+    'bosses',
+    'wealth',
+    'clans',
+    'activity',
+    'victories',
+    'damage',
+    'arena',
+  ];
+  if ((allowed as string[]).includes(s)) return s as RatingsType;
   return 'level';
 }
 
@@ -107,6 +151,10 @@ function fmtBigIntSpaces(v: bigint): string {
   return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
+function intField(row: CharacterRow, key: keyof CharacterRow): number {
+  return Math.max(0, Math.floor(Number(row[key]) || 0));
+}
+
 type ScoredEntry = {
   row: CharacterRow;
   level: number;
@@ -116,11 +164,21 @@ type ScoredEntry = {
   value: string;
 };
 
-function scoreEntry(row: CharacterRow, type: Exclude<RatingsType, 'clans'>): ScoredEntry {
+function scoreEntry(row: CharacterRow, type: RatingsScoredType): ScoredEntry {
   const level = levelFromTotalExp(row.exp);
   const expSeg = expSegmentForLevelBar(row.exp);
 
   if (type === 'level') {
+    return {
+      row,
+      level,
+      expPct: expSeg.pct,
+      sortKey: row.exp,
+      sortNum: level,
+      value: String(level),
+    };
+  }
+  if (type === 'exp') {
     return {
       row,
       level,
@@ -142,7 +200,7 @@ function scoreEntry(row: CharacterRow, type: Exclude<RatingsType, 'clans'>): Sco
     };
   }
   if (type === 'pvp') {
-    const wins = Math.max(0, Math.floor(Number(row.pvpWins) || 0));
+    const wins = intField(row, 'pvpWins');
     return {
       row,
       level,
@@ -153,7 +211,7 @@ function scoreEntry(row: CharacterRow, type: Exclude<RatingsType, 'clans'>): Sco
     };
   }
   if (type === 'pk') {
-    const pk = Math.max(0, Math.floor(Number(row.karma) || 0));
+    const pk = intField(row, 'karma');
     return {
       row,
       level,
@@ -163,8 +221,8 @@ function scoreEntry(row: CharacterRow, type: Exclude<RatingsType, 'clans'>): Sco
       value: String(pk),
     };
   }
-  if (type === 'raid_boss') {
-    const rb = Math.max(0, Math.floor(Number(row.raidBossKills) || 0));
+  if (type === 'bosses') {
+    const rb = intField(row, 'raidBossKills');
     return {
       row,
       level,
@@ -172,6 +230,31 @@ function scoreEntry(row: CharacterRow, type: Exclude<RatingsType, 'clans'>): Sco
       sortKey: 0n,
       sortNum: rb,
       value: String(rb),
+    };
+  }
+  if (type === 'activity') {
+    const score =
+      intField(row, 'mobsKilled') +
+      intField(row, 'pvpWins') +
+      intField(row, 'raidBossKills');
+    return {
+      row,
+      level,
+      expPct: expSeg.pct,
+      sortKey: 0n,
+      sortNum: score,
+      value: String(score),
+    };
+  }
+  if (type === 'victories') {
+    const wins = intField(row, 'mobsKilled');
+    return {
+      row,
+      level,
+      expPct: expSeg.pct,
+      sortKey: 0n,
+      sortNum: wins,
+      value: String(wins),
     };
   }
   const adena = row.adena >= 0n ? row.adena : 0n;
@@ -186,10 +269,11 @@ function scoreEntry(row: CharacterRow, type: Exclude<RatingsType, 'clans'>): Sco
 }
 
 function compareEntries(a: ScoredEntry, b: ScoredEntry, type: RatingsType): number {
-  if (type === 'level' || type === 'wealth') {
-    if (a.sortKey !== b.sortKey) {
-      return a.sortKey > b.sortKey ? -1 : 1;
-    }
+  if (type === 'level') {
+    if (a.sortNum !== b.sortNum) return b.sortNum - a.sortNum;
+    if (a.sortKey !== b.sortKey) return a.sortKey > b.sortKey ? -1 : 1;
+  } else if (type === 'exp' || type === 'wealth') {
+    if (a.sortKey !== b.sortKey) return a.sortKey > b.sortKey ? -1 : 1;
   } else if (a.sortNum !== b.sortNum) {
     return b.sortNum - a.sortNum;
   }
@@ -211,6 +295,29 @@ function findViewerEntry(
   return null;
 }
 
+function viewerValueForType(
+  type: RatingsScoredType,
+  entry: ScoredEntry
+): { value: string; valueLabelUk: string } {
+  const meta = TYPE_META[type];
+  if (type === 'level') {
+    return {
+      value: String(Math.round(entry.expPct)) + '%',
+      valueLabelUk: 'EXP',
+    };
+  }
+  if (type === 'exp') {
+    return {
+      value: String(Math.round(entry.expPct)) + '%',
+      valueLabelUk: 'EXP',
+    };
+  }
+  return {
+    value: entry.value,
+    valueLabelUk: meta.valueLabelUk,
+  };
+}
+
 export async function getRatingsSnapshot(args: {
   userId: string;
   typeRaw: unknown;
@@ -219,11 +326,12 @@ export async function getRatingsSnapshot(args: {
   const type = parseRatingsType(args.typeRaw);
   const page = parsePage(args.pageRaw);
 
-  if (type === 'clans') {
+  if (type === 'clans' || type === 'damage' || type === 'arena') {
+    const stub = STUB_META[type];
     return {
       type,
-      titleUk: 'Рейтинг кланів',
-      valueColumnUk: 'Очки',
+      titleUk: stub.titleUk,
+      valueColumnUk: '—',
       page: 1,
       pageSize: RATINGS_PAGE_SIZE,
       totalPages: 0,
@@ -231,7 +339,7 @@ export async function getRatingsSnapshot(args: {
       rows: [],
       viewer: null,
       stub: true,
-      stubMessageUk: 'Клани з’являться пізніше.',
+      stubMessageUk: stub.messageUk,
     };
   }
 
@@ -268,11 +376,7 @@ export async function getRatingsSnapshot(args: {
         rank: viewerHit.rank,
         level: viewerHit.entry.level,
         expPct: viewerHit.entry.expPct,
-        value:
-          type === 'level'
-            ? String(Math.round(viewerHit.entry.expPct)) + '%'
-            : viewerHit.entry.value,
-        valueLabelUk: type === 'level' ? 'EXP' : meta.valueLabelUk,
+        ...viewerValueForType(type, viewerHit.entry),
       }
     : null;
 
