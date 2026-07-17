@@ -1,11 +1,11 @@
-import { MAMMON_MERCHANT_ROTATION_MS } from '../domain/mammonMerchantRotation.js';
 import { ensureMammonSpawnNews } from './serverNewsService.js';
 
-/** Перевірка ротації Маммона для стрічки «Новости» (раз на хвилину). */
+/** Перевірка ротації Маммона для стрічки «Новости» (раз на 15 хв). Нові гравці — одразу при register. */
+const MAMMON_NEWS_TICK_MS = 15 * 60 * 1000;
+
 export function startMammonNewsLoop(): void {
-  const tickMs = Math.min(60_000, MAMMON_MERCHANT_ROTATION_MS);
   void ensureMammonSpawnNews().catch(() => {});
   setInterval(() => {
     void ensureMammonSpawnNews().catch(() => {});
-  }, tickMs);
+  }, MAMMON_NEWS_TICK_MS);
 }

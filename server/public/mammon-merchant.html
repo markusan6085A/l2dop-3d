@@ -30,7 +30,7 @@
         font-size: 15px;
         line-height: 1.35;
         font-weight: 600;
-        color: #f0e6b8;
+        color: #fff;
       }
       .l2-mammon-merchant-sub {
         margin: 4px 0 0;
@@ -38,33 +38,26 @@
         line-height: 1.4;
         color: #a89a70;
       }
-      .l2-mammon-merchant-panel {
-        margin: 0 0 10px;
-        padding: 10px;
-        background: #1d1c1a;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-      }
-      .l2-mammon-merchant-panel__label {
-        margin: 0 0 4px;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #8a8478;
-      }
-      .l2-mammon-merchant-panel__value {
-        margin: 0;
-        font-size: 13px;
-        line-height: 1.4;
-        color: #ece6d0;
-      }
-      .l2-mammon-merchant-note {
-        margin: 10px 0 0;
-        font-size: 12px;
-        line-height: 1.45;
-        color: #a89a70;
-      }
       .l2-mammon-merchant-back {
-        margin-top: 12px;
+        margin: 12px 0 0;
+        padding: 0;
+      }
+      .l2-mammon-merchant-back__link {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #bfa88a;
+        text-decoration: none;
+      }
+      .l2-mammon-merchant-back__link:hover,
+      .l2-mammon-merchant-back__link:focus {
+        color: #bfa88a;
+        text-decoration: underline;
+        outline: none;
       }
     </style>
   </head>
@@ -121,32 +114,15 @@
 
           <section class="l2-menu-panel" aria-label="Торговець Маммона">
             <div class="l2-mammon-merchant-head">
-              <img id="mammon-merchant-icon" src="/icons/drops/other.svg" width="40" height="40" alt="" />
+              <img id="mammon-merchant-icon" src="/nps/38.png" width="40" height="40" alt="" />
               <div>
                 <h1 class="l2-mammon-merchant-title" id="mammon-merchant-title">Merchant of Mammon</h1>
                 <p class="l2-mammon-merchant-sub" id="mammon-merchant-sub">Торговець Маммона</p>
               </div>
             </div>
 
-            <div class="l2-mammon-merchant-panel">
-              <p class="l2-mammon-merchant-panel__label">Зараз у некрополі</p>
-              <p class="l2-mammon-merchant-panel__value" id="mammon-merchant-location">—</p>
-            </div>
-
-            <div class="l2-mammon-merchant-panel">
-              <p class="l2-mammon-merchant-panel__label">Наступна локація</p>
-              <p class="l2-mammon-merchant-panel__value" id="mammon-merchant-next">—</p>
-              <p class="l2-mammon-merchant-panel__value" id="mammon-merchant-timer" style="margin-top: 6px; color: #a89a70">
-                —
-              </p>
-            </div>
-
-            <p class="l2-mammon-merchant-note" id="mammon-merchant-shop-note">
-              Магазин (Ancient Adena, заточки) — незабаром.
-            </p>
-
-            <p class="l2-mammon-merchant-back l2-teleport-panel__back">
-              <a class="l2-town-btn l2-menu-btn-4187" href="/map.html">До карти</a>
+            <p class="l2-mammon-merchant-back">
+              <a class="l2-mammon-merchant-back__link" href="/map.html">&lt;&lt;&lt; До карти</a>
             </p>
           </section>
 
@@ -158,6 +134,6 @@
     <script src="/common.js?v=20260717mammonMerchant1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/mammon-merchant.js?v=20260717mammonMerchant1"></script>
+    <script src="/mammon-merchant.js?v=20260717mammonMerchant3"></script>
   </body>
 </html>

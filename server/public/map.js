@@ -692,7 +692,7 @@
   function appendNpcRow(listEl, npc) {
     if (!listEl || !npc) return;
     var li = document.createElement('li');
-    li.className = 'l2-map-mob-item l2-map-mob-item--battle';
+    li.className = 'l2-map-mob-item l2-map-mob-item--npc';
     var a = document.createElement('a');
     a.className = 'l2-map-mob-link l2-map-mob-link--npc';
     a.href = '/mammon-merchant.html';
@@ -709,6 +709,8 @@
       return;
     }
     listEl.dataset.l2NpcListSig = sig;
+    listEl.classList.add('l2-map-mob-list--npc');
+    delete listEl.dataset.l2AroundSig;
     listEl.innerHTML = '';
     if (npc) {
       appendNpcRow(listEl, npc);
@@ -834,6 +836,8 @@
 
   function renderAround(around, listEl, pagerEl, prevBtn, nextBtn, indEl, page, setPage, playerLevel) {
     if (!around || !listEl) return;
+    listEl.classList.remove('l2-map-mob-list--npc');
+    delete listEl.dataset.l2NpcListSig;
     var spawns = around.nearbySpawns || [];
     var total = spawns.length;
     var pages = Math.max(1, Math.ceil(total / MOBS_PER_PAGE));
@@ -969,27 +973,25 @@
       }
     }
 
-    function setListMode(mode) {
+    function reloadWithListMode(mode) {
       if (mode !== 'npc' && mode !== 'mobs') return;
-      listMode = mode;
-      applyListModeUi();
       try {
-        sessionStorage.setItem(MAP_LIST_MODE_KEY, listMode);
+        sessionStorage.setItem(MAP_LIST_MODE_KEY, mode);
       } catch (eSave) {
         /* ignore */
       }
-      paintMain(false);
+      window.location.reload();
     }
 
     applyListModeUi();
     if (listModeNpcBtn) {
       listModeNpcBtn.addEventListener('click', function () {
-        setListMode('npc');
+        reloadWithListMode('npc');
       });
     }
     if (listModeMobsBtn) {
       listModeMobsBtn.addEventListener('click', function () {
-        setListMode('mobs');
+        reloadWithListMode('mobs');
       });
     }
 
@@ -1282,7 +1284,15 @@
 
     if (content) content.hidden = false;
     if (errEl) errEl.hidden = true;
-    renderAroundSkeleton($('map-mob-list'));
+    if (listMode === 'npc') {
+      var npcListEl = $('map-mob-list');
+      if (npcListEl) {
+        npcListEl.innerHTML = '';
+        npcListEl.classList.add('l2-map-mob-list--npc');
+      }
+    } else {
+      renderAroundSkeleton($('map-mob-list'));
+    }
     if (c) paintMain(false);
 
     var freshSnapshot = await snapshotPromise;

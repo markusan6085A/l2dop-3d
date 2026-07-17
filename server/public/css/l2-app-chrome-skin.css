@@ -2044,9 +2044,10 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 6px;
   margin: 0;
-  padding: 6px 10px;
+  padding: 2px 8px;
+  min-height: 0;
   background-color: #eceae4 !important;
   border-top: 1px solid rgba(255, 255, 255, 0.35);
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
@@ -2054,20 +2055,20 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode {
 
 body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode__sep {
   color: #8a8478;
-  font-size: 13px;
+  font-size: 11px;
   line-height: 1;
   user-select: none;
 }
 
 body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode__btn {
   margin: 0;
-  padding: 2px 4px;
+  padding: 0 2px;
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.2;
   color: #5c564c;
   cursor: pointer;
 }
@@ -2104,8 +2105,46 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-npc-pin {
   z-index: 4;
 }
 
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-list--npc {
+  min-height: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-item--npc {
+  padding: 0;
+  border: 0;
+  cursor: default;
+  background: transparent !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-item--npc:hover,
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-item--npc:focus {
+  background: transparent !important;
+}
+
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-link--npc {
-  color: #e8d48a !important;
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  color: #bfa88a !important;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-link--npc:hover,
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-link--npc:focus,
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-link--npc:focus-visible {
+  color: #bfa88a !important;
+  background: transparent !important;
+  text-decoration: underline;
+  outline: none;
 }
 
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-item--npc-sub {

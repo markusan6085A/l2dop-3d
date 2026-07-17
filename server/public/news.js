@@ -44,7 +44,8 @@
     var html = '';
     if (entry.kind === 'mammon_spawn') {
       html =
-        'Торговець Маммона з\'явився у <span class="l2-news-item__loc">' +
+        '<span class="l2-news-item__mammon">Торговець Маммона</span>' +
+        '<span class="l2-news-item__mammon-tail"> з\'явився у ' +
         escapeHtml(entry.locationEn || '—') +
         '</span> <span class="l2-news-item__ago">' +
         escapeHtml(ago) +
