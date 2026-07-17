@@ -363,6 +363,36 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
   return inv;
 }
 
+/**
+ * Sanitize інвентаря для snapshot / мутацій: без дубля одягненого в stacks,
+ * міграція `_sk`, стартова мантія магів (tunic/stockings).
+ */
+export function applyInventoryReadPatches(
+  invRaw: InventoryState,
+  classBranch: string
+): { inv: InventoryState; changed: boolean } {
+  let inv = stripEquippedFromStacks(invRaw);
+  let changed =
+    JSON.stringify(invRaw.stacks) !== JSON.stringify(inv.stacks) ||
+    JSON.stringify(invRaw.eq) !== JSON.stringify(inv.eq);
+
+  if (needsStarterKitMigration(inv)) {
+    const migrated = migrateInventoryToSk2(inv);
+    if (JSON.stringify(migrated) !== JSON.stringify(inv)) {
+      inv = migrated;
+      changed = true;
+    }
+  }
+
+  const robePatch = ensureMysticRobeStarterPieces(inv, classBranch);
+  if (robePatch.changed) {
+    inv = robePatch.inv;
+    changed = true;
+  }
+
+  return { inv, changed };
+}
+
 /** Одягнене не лишається в stacks (антидубль у snapshot / UI). */
 export function stripEquippedFromStacks(inv: InventoryState): InventoryState {
   const stacks = inv.stacks.map((s) => ({ ...s }));

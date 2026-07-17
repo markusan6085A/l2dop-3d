@@ -146,6 +146,19 @@ export async function cancelMarketListing(
       throw new Error('not_your_listing');
     }
 
+    const deleted = await tx.marketListing.deleteMany({
+      where: {
+        id,
+        sellerCharacterId: char.id,
+        qty: listing.qty,
+      },
+    });
+    if (deleted.count !== 1) throw new Error('listing_not_found');
+
+    const returnQty = listing.qty;
+    const returnItemId = listing.itemId;
+    const returnEnchant = listing.enchant;
+
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,
@@ -155,9 +168,9 @@ export async function cancelMarketListing(
         const inv = parseInventory(base.inventoryJson);
         const nextInv = addEnchantedToBag(
           inv,
-          listing.itemId,
-          listing.qty,
-          listing.enchant
+          returnItemId,
+          returnQty,
+          returnEnchant
         );
         return {
           changed: true,
@@ -168,11 +181,6 @@ export async function cancelMarketListing(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-
-    const deleted = await tx.marketListing.deleteMany({
-      where: { id, sellerCharacterId: char.id },
-    });
-    if (deleted.count !== 1) throw new Error('listing_not_found');
 
     return { character: toSnapshot(result.character as CharacterRow) };
   });

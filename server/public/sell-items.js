@@ -576,21 +576,32 @@
         return r.json().then(function (j) {
           if (!r.ok) {
             setMsg((j && j.messageUk) || 'Не вдалося продати.');
+            if (j && j.error === 'shop_sell_not_in_bag') {
+              return refetchSellCharacter().then(function (fresh) {
+                if (fresh) {
+                  applySnapshotFromServer(fresh);
+                  clampSellListPage();
+                }
+              });
+            }
             return null;
           }
-          return resolveCharacterAfterSell(j && j.character ? j.character : null).then(
-            function (fresh) {
-              refreshPageAfterSell(fresh, stack, qty, total);
-            }
-          );
+          if (j && j.character) {
+            refreshPageAfterSell(j.character, stack, qty, total);
+            return j.character;
+          }
+          return resolveCharacterAfterSell(null).then(function (fresh) {
+            refreshPageAfterSell(fresh, stack, qty, total);
+          });
         });
       })
       .catch(function () {
         setMsg('Помилка мережі.');
       })
       .finally(function () {
-        releaseSellLock();
         setModalSellBusy(okBtn, false);
+        if (!sellInFlight) return;
+        releaseSellLock();
         paint();
       });
   }

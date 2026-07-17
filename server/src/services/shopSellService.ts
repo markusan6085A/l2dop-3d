@@ -1,8 +1,9 @@
 import { prisma } from '../lib/prisma.js';
 import {
-  parseInventory,
+  applyInventoryReadPatches,
+  parseInventoryRaw,
   removeEnchantedFromBag,
-  type InventoryState,
+  stripEquippedFromStacks,
 } from '../data/inventory.js';
 import type { Prisma } from '@prisma/client';
 import { toSnapshot } from './charSnapshotLogic.js';
@@ -10,6 +11,7 @@ import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { applyCharacterReadView } from './charReadView.js';
 import { gameConflictFromMutation } from './charConflict.js';
 import { loadDropsShopOverrides } from './dropsShopService.js';
 import { dropsGmPurchaseByShopKeyLower } from '../domain/dropsShopGmItemIdByShopKey.js';
@@ -198,17 +200,20 @@ export async function applyShopSell(
       char.id,
       expectedRevision,
       (current) => {
-        const base = resolveMapMovement(applyPassiveHpRegen(current as CharacterRow));
-        const inv = parseInventory(base.inventoryJson) as InventoryState;
-        const src = inv.stacks.find(
+        const row = current as CharacterRow;
+        const base = resolveMapMovement(applyPassiveHpRegen(row));
+        const invRaw = parseInventoryRaw(base.inventoryJson);
+        const patched = applyInventoryReadPatches(invRaw, base.classBranch);
+        const bagView = stripEquippedFromStacks(patched.inv);
+        const src = bagView.stacks.find(
           (s) => s.itemId === itemId && normEnchant(s.enchant) === enchant
         );
         if (!src || src.qty < qty) throw new Error('shop_sell_not_in_bag');
 
-        const nextInv = removeEnchantedFromBag(inv, itemId, qty, enchant);
+        const nextInv = removeEnchantedFromBag(patched.inv, itemId, qty, enchant);
         const nextAdena = BigInt(base.adena) + BigInt(totalSell);
         const invChanged =
-          JSON.stringify(nextInv) !== JSON.stringify(parseInventory(current.inventoryJson));
+          JSON.stringify(nextInv) !== JSON.stringify(parseInventoryRaw(current.inventoryJson));
         const changed =
           base.hp !== current.hp ||
           base.worldX !== current.worldX ||
@@ -240,6 +245,6 @@ export async function applyShopSell(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return toSnapshot(applyCharacterReadView(result.character as CharacterRow));
   });
 }

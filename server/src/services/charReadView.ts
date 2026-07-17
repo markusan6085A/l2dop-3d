@@ -1,10 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import {
   parseInventoryRaw,
-  stripEquippedFromStacks,
-  needsStarterKitMigration,
-  migrateInventoryToSk2,
-  ensureMysticRobeStarterPieces,
+  applyInventoryReadPatches,
 } from '../data/inventory.js';
 import { resolveMapMovementPatch } from '../domain/mapMovement.js';
 import { computePassiveHpRegenPatch } from './charPassiveRegen.js';
@@ -27,18 +24,9 @@ export function applyCharacterReadView(
 ): CharacterRow {
   let invJsonForShadow = row.inventoryJson;
   const invRaw = parseInventoryRaw(row.inventoryJson);
-  let inv = stripEquippedFromStacks(invRaw);
-  if (JSON.stringify(invRaw.stacks) !== JSON.stringify(inv.stacks)) {
-    invJsonForShadow = inv as unknown as Prisma.JsonValue;
-  }
-  if (needsStarterKitMigration(inv)) {
-    inv = migrateInventoryToSk2(inv);
-    invJsonForShadow = inv as unknown as Prisma.JsonValue;
-  }
-  const robePatch = ensureMysticRobeStarterPieces(inv, row.classBranch);
-  if (robePatch.changed) {
-    inv = robePatch.inv;
-    invJsonForShadow = robePatch.inv as unknown as Prisma.JsonValue;
+  const patched = applyInventoryReadPatches(invRaw, row.classBranch);
+  if (patched.changed) {
+    invJsonForShadow = patched.inv as unknown as Prisma.JsonValue;
   }
 
   const prof = resolveL2ProfessionForSkillsRow(row);

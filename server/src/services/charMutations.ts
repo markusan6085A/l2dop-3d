@@ -14,6 +14,7 @@ import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyCharacterReadView } from './charReadView.js';
+import { ensureInventoryReadPatchesRow } from './charInventorySanitize.js';
 
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
@@ -108,7 +109,8 @@ export async function getSnapshotForUser(
     orderBy: { lastUpdate: 'desc' },
   });
   if (!row) return null;
-  return toSnapshot(applyCharacterReadView(row as CharacterRow));
+  const sanitized = await ensureInventoryReadPatchesRow(row as CharacterRow);
+  return toSnapshot(applyCharacterReadView(sanitized));
 }
 
 export async function applyEquipFromBag(
