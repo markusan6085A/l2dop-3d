@@ -108,7 +108,7 @@ import {
   reflectDamageReflectRatioAtRank,
   reflectDamageSkillLineUk,
 } from '../../data/reflectDamageTables.js';
-import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
+import { cooldownSecForSkillId, skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import {
   DRAIN_HEALTH_ABSORB_PCT,
@@ -178,7 +178,7 @@ function cooldownPatchForSkill(
   const rawCd = cooldownSecForSkillId(skillId);
   const cdSec = scaledSkillCooldownSec(ctx, rawCd, catalogEntry);
   if (cdSec <= 0) return undefined;
-  return { ['l2_' + skillId]: Date.now() + Math.floor(cdSec * 1000) };
+  return { ['l2_' + skillId]: skillCooldownReadyAtMs(Date.now(), cdSec) };
 }
 
 function expiresPatchForSkill(

@@ -12,6 +12,7 @@ import { mysticCatalogEntryForRace } from '../../data/mysticSkillCatalog.byRace.
 import { mysticCatalogEntryVisibleForProfession } from '../../data/humanMysticSkillCatalog.js';
 import { l2dopXmlMpPower } from '../../data/l2dopXmlSkillLevels.lookup.js';
 import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.js';
+import { skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 import {
   effectiveMobStunResistPct,
   scaleLandChancePercentAfterResist,
@@ -147,7 +148,7 @@ export function resolveHammerCrushTurn(
   const mysticSkillCdUntilPatch: Record<string, number> = {};
   if (cdSec > 0) {
     mysticSkillCdUntilPatch[HAMMER_CRUSH_BATTLE_ID] =
-      Date.now() + Math.floor(cdSec * 1000);
+      skillCooldownReadyAtMs(Date.now(), cdSec);
   }
 
   return {

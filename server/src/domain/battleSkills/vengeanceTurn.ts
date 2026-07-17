@@ -20,7 +20,7 @@ import {
   scaledSkillCooldownSec,
   skillRankForCurrentAction,
 } from './humanFighterTurnHelpers.js';
-import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
+import { cooldownSecForSkillId, skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 
 function vengeanceRank(ctx: BattleSkillResolveContext): number {
   const fromMap = ctx.learnedSkillLevelByBattleId?.[VENGEANCE_BATTLE_ID];
@@ -64,7 +64,7 @@ function vengeanceCooldownPatch(
   );
   if (cdSec <= 0) return undefined;
   return {
-    ['l2_' + VENGEANCE_L2_SKILL_ID]: Date.now() + Math.floor(cdSec * 1000),
+    ['l2_' + VENGEANCE_L2_SKILL_ID]: skillCooldownReadyAtMs(Date.now(), cdSec),
   };
 }
 

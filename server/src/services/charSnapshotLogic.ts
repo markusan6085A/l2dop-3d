@@ -70,7 +70,10 @@ import {
 } from '../data/humanFighterSkillCatalog.js';
 import { filterLearnedSkillEntriesForCharacter } from '../data/charLearnedSkillsFilter.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
-import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+import {
+  parseSkillCooldowns,
+  skillCooldownDisplaySec,
+} from '../data/skillCooldowns.js';
 import { buildCastableSelfBuffs } from '../data/castableSelfBuffs.js';
 import { isHumanFighter } from '../data/l2dopHumanFighterBattleSkills.js';
 import {
@@ -117,7 +120,7 @@ function buildSkillCooldownsSnapshot(
   return cds.map((c) => ({
     skillId: c.skillId,
     readyAt: c.readyAt,
-    remainingSec: Math.max(0, Math.ceil((c.readyAt - nowMs) / 1000)),
+    remainingSec: skillCooldownDisplaySec(c.readyAt - nowMs),
   }));
 }
 

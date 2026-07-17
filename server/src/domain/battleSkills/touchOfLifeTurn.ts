@@ -20,7 +20,7 @@ import {
   scaledSkillCooldownSec,
   skillRankForCurrentAction,
 } from './humanFighterTurnHelpers.js';
-import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
+import { cooldownSecForSkillId, skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 
 function touchOfLifeRank(ctx: BattleSkillResolveContext): number {
   const fromMap = ctx.learnedSkillLevelByBattleId?.[TOUCH_OF_LIFE_BATTLE_ID];
@@ -64,7 +64,7 @@ function touchOfLifeCooldownPatch(
   );
   if (cdSec <= 0) return undefined;
   return {
-    ['l2_' + TOUCH_OF_LIFE_L2_SKILL_ID]: Date.now() + Math.floor(cdSec * 1000),
+    ['l2_' + TOUCH_OF_LIFE_L2_SKILL_ID]: skillCooldownReadyAtMs(Date.now(), cdSec),
   };
 }
 

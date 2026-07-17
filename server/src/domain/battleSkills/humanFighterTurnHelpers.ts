@@ -30,7 +30,7 @@ import type { HumanFighterSkillCatalogEntry } from '../../data/humanFighterSkill
 import { fighterCatalogEntryForRace } from '../../data/fighterSkillCatalog.byRace.js';
 import { raceFighterCatalogEntryVisibleForProfession } from '../../data/raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from '../../data/l2dopXmlSkillLevels.lookup.js';
-import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
+import { cooldownSecForSkillId, skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.js';
 import { buffDurationSecForSkillId } from '../../data/l2dopBuffDurations.js';
 import {
@@ -411,7 +411,7 @@ export function legacyBuffCdAndExpirePatches(
   const cdSec = scaledSkillCooldownSec(ctx, rawCd, entry);
   if (cdSec > 0) {
     out.mysticSkillCdUntilPatch = {
-      ['l2_' + skillId]: nowMs + Math.floor(cdSec * 1000),
+      ['l2_' + skillId]: skillCooldownReadyAtMs(nowMs, cdSec),
     };
   }
   const exp = legacyBuffExpiresPatch(skillId);
@@ -723,7 +723,7 @@ export function applyStandardFighterCooldown(
     ...result,
     mysticSkillCdUntilPatch: {
       ...(result.mysticSkillCdUntilPatch ?? {}),
-      [battleId]: Date.now() + cdSec * 1000,
+      [battleId]: skillCooldownReadyAtMs(Date.now(), cdSec),
     },
   };
 }

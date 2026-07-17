@@ -35,7 +35,7 @@ import { resolveBattleSkillCooldownSec } from '../../data/skillCooldownScaling.j
 import {
   effectiveCastSpdForCooldown,
 } from './humanFighterTurnHelpers.js';
-import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
+import { cooldownSecForSkillId, skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 import {
   MYSTIC_SELF_HEAL_L2_SKILL_ID,
   MYSTIC_SELF_HEAL_POWER,
@@ -733,7 +733,7 @@ export function resolveHumanMysticTurn(
   const mysticSkillCdUntilPatch: Record<string, number> = {};
   if (typeof cdSec === 'number' && cdSec > 0) {
     mysticSkillCdUntilPatch[mysticCdKey(entry.l2SkillId)] =
-      Date.now() + Math.ceil(cdSec * 1000);
+      skillCooldownReadyAtMs(Date.now(), cdSec);
   }
 
   const skillLine = entry.nameUk + '.';

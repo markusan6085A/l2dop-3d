@@ -25,6 +25,7 @@ import {
   cooldownSecForSkillId,
   markSkillCast,
   parseSkillCooldowns,
+  skillCooldownReadyAtMs,
   type SkillCooldownEntry,
 } from '../data/skillCooldowns.js';
 import { resolveBattleSkillCooldownSec } from '../data/skillCooldownScaling.js';
@@ -873,7 +874,7 @@ export async function performBattleActionInTx(
             cdSec,
             nowMsTurn
           );
-          const readyAt = nowMsTurn + Math.floor(cdSec * 1000);
+          const readyAt = skillCooldownReadyAtMs(nowMsTurn, cdSec);
           st.mysticSkillCdUntil = {
             ...(st.mysticSkillCdUntil ?? {}),
             ['l2_' + skillId]: readyAt,

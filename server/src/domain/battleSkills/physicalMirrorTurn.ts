@@ -19,7 +19,7 @@ import {
   skillRankForCurrentAction,
 } from './humanFighterTurnHelpers.js';
 import { humanFighterCatalogEntry } from '../../data/humanFighterSkillCatalog.lookup.js';
-import { cooldownSecForSkillId } from '../../data/skillCooldowns.js';
+import { cooldownSecForSkillId, skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 
 function physicalMirrorRank(ctx: BattleSkillResolveContext): number {
   const fromMap = ctx.learnedSkillLevelByBattleId?.[PHYSICAL_MIRROR_BATTLE_ID];
@@ -35,7 +35,7 @@ function physicalMirrorCooldownPatch(
   const cdSec = scaledSkillCooldownSec(ctx, rawCd, entry ?? undefined);
   if (cdSec <= 0) return undefined;
   return {
-    ['l2_' + PHYSICAL_MIRROR_L2_SKILL_ID]: Date.now() + Math.floor(cdSec * 1000),
+    ['l2_' + PHYSICAL_MIRROR_L2_SKILL_ID]: skillCooldownReadyAtMs(Date.now(), cdSec),
   };
 }
 

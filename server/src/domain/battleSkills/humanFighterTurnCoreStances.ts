@@ -15,6 +15,7 @@ import {
   L2DOP_FRENZY2HSACC,
   l2dopTableAt,
 } from '../../data/l2dopRawdataBuffTables.js';
+import { skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
 
 import {
   catalogAllowsFighterAction,
@@ -198,7 +199,7 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
         rageBattlePdefMul: RAGE_PDEF_MUL,
       },
       ...(cdSec != null
-        ? { mysticSkillCdUntilPatch: { l2_94: now + cdSec * 1000 } }
+        ? { mysticSkillCdUntilPatch: { l2_94: skillCooldownReadyAtMs(now, cdSec) } }
         : {}),
       ...(expPatch ? { battleModsExpiresPatch: expPatch } : {}),
     };
@@ -259,7 +260,7 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
       magicOutcome: null,
       battleModsPatch: patch,
       ...(cdSec != null
-        ? { mysticSkillCdUntilPatch: { l2_176: now + cdSec * 1000 } }
+        ? { mysticSkillCdUntilPatch: { l2_176: skillCooldownReadyAtMs(now, cdSec) } }
         : {}),
       ...(expPatch ? { battleModsExpiresPatch: expPatch } : {}),
     };
@@ -300,7 +301,7 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
       magicOutcome: null,
       battleModsPatch: { gutsBattlePdefMul: GUTS_PDEF_MUL },
       ...(cdSec != null
-        ? { mysticSkillCdUntilPatch: { l2_139: now + cdSec * 1000 } }
+        ? { mysticSkillCdUntilPatch: { l2_139: skillCooldownReadyAtMs(now, cdSec) } }
         : {}),
       ...(expPatch ? { battleModsExpiresPatch: expPatch } : {}),
     };

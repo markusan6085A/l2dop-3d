@@ -718,6 +718,26 @@
   /** Запас на межі КД: узгоджено з сервером `COOLDOWN_READY_GRACE_MS` (50 ms). */
   var SKILL_CD_UI_GRACE_MS = 50;
 
+  /** Тривалість КД у мс — як `skillCooldownDurationMs` на сервері. */
+  function skillCooldownDurationMs(cdSec) {
+    if (typeof cdSec !== 'number' || !Number.isFinite(cdSec) || cdSec <= 0) {
+      return 0;
+    }
+    return Math.max(0, Math.round(cdSec * 1000));
+  }
+
+  /** Секунди для overlay: floor, щоб 4.67 с показувало 4, а не 5→4. */
+  function skillCooldownDisplaySec(remainingMs) {
+    if (
+      typeof remainingMs !== 'number' ||
+      !Number.isFinite(remainingMs) ||
+      remainingMs <= 0
+    ) {
+      return 0;
+    }
+    return Math.max(1, Math.floor(remainingMs / 1000));
+  }
+
   /**
    * @param {{ container: HTMLElement, getBattle: function(): object, getCharacter: function(): object, setCharacter: function(c: object): void, onBattleAction: function(actionId: string): void, onFighterSoulshotToggle?: function(itemId: number): void, onMysticSpiritshotToggle?: function(itemId: number): void, onBattlePotionUse?: function(itemId: number): void, getToken: function(): string|null, showToast: function(msg: string): void }} opts
    */
@@ -957,7 +977,7 @@
       if (!battle) return;
       var info = cdInfoForAction(battle, actionId);
       if (info.cdSec == null || info.cdSec <= 0) return;
-      var untilMs = Date.now() + info.cdSec * 1000;
+      var untilMs = Date.now() + skillCooldownDurationMs(info.cdSec);
       markPendingSkillCd(info.aid, info.rowL2);
       stampLocalCd(info.aid, info.rowL2, untilMs);
       var box = opts.container;
@@ -1036,7 +1056,7 @@
         return false;
       }
       setCdOverlayVisible(cdRoot, true);
-      longEl.textContent = String(Math.max(1, Math.ceil(remMs / 1000)));
+      longEl.textContent = String(skillCooldownDisplaySec(remMs));
       longEl.hidden = false;
       longEl.style.color = '#ff2222';
       longEl.style.webkitTextFillColor = '#ff2222';

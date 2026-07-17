@@ -15,6 +15,26 @@ export type SkillCooldownEntry = {
   readyAt: number;
 };
 
+/** Тривалість КД у мс — єдине округлення для in-battle / persist / optimistic UI. */
+export function skillCooldownDurationMs(cdSec: number): number {
+  if (!Number.isFinite(cdSec) || cdSec <= 0) return 0;
+  return Math.max(0, Math.round(cdSec * 1000));
+}
+
+/** `readyAt` (epoch ms) після касту скіла. */
+export function skillCooldownReadyAtMs(nowMs: number, cdSec: number): number {
+  return nowMs + skillCooldownDurationMs(cdSec);
+}
+
+/**
+ * Секунди для UI-лічильника: floor, щоб 4.67 с показувало 4, а не 5→4.
+ * Для rem < 1 с повертає 1, поки ще не минув grace на клієнті.
+ */
+export function skillCooldownDisplaySec(remainingMs: number): number {
+  if (!Number.isFinite(remainingMs) || remainingMs <= 0) return 0;
+  return Math.max(1, Math.floor(remainingMs / 1000));
+}
+
 function toFiniteNum(v: unknown): number | undefined {
   if (typeof v === 'number' && Number.isFinite(v)) return v;
   if (typeof v === 'string') {
@@ -69,7 +89,7 @@ export function skillRemainingSec(
 ): number {
   for (const c of cooldowns) {
     if (c.skillId === skillId) {
-      return Math.max(0, Math.ceil((c.readyAt - nowMs) / 1000));
+      return skillCooldownDisplaySec(c.readyAt - nowMs);
     }
   }
   return 0;
@@ -85,7 +105,7 @@ export function markSkillCast(
   cooldownSec: number,
   nowMs: number
 ): SkillCooldownEntry[] {
-  const readyAt = nowMs + Math.max(0, Math.ceil(cooldownSec * 1000));
+  const readyAt = skillCooldownReadyAtMs(nowMs, cooldownSec);
   const out: SkillCooldownEntry[] = [];
   let replaced = false;
   for (const c of cooldowns) {
