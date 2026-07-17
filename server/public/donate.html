@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260717perf2"></script>
+    <script src="/common.js?v=20260717snap1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260717perf2"></script>
     <script>
@@ -95,19 +95,25 @@
         if (!t || !window.L2) {
           if (window.L2 && typeof L2.clearHudPanel === 'function') L2.clearHudPanel();
         } else {
-          fetch('/character', { headers: { Authorization: 'Bearer ' + t } })
-            .then(function (r) {
-              if (r.status === 401) return null;
-              return r.json();
-            })
-            .then(function (j) {
-              if (!j || !j.character) return;
-              if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
-              if (typeof L2.applyHudFromSnapshot === 'function') {
-                L2.applyHudFromSnapshot(j.character);
-              }
-            })
-            .catch(function () {});
+          var cached =
+            typeof L2.renderCharacterFromCache === 'function'
+              ? L2.renderCharacterFromCache()
+              : null;
+          if (typeof L2.resyncCharacterWhenRequired === 'function') {
+            L2.resyncCharacterWhenRequired()
+              .then(function (snapshot) {
+                if (!snapshot) return;
+                if (
+                  !cached ||
+                  Number(snapshot.revision) !== Number(cached.revision)
+                ) {
+                  if (typeof L2.applyMutationSnapshot === 'function') {
+                    L2.applyMutationSnapshot(snapshot);
+                  }
+                }
+              })
+              .catch(function () {});
+          }
         }
       })();
     </script>

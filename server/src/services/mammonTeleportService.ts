@@ -11,7 +11,7 @@ import {
 import { gameConflictFromMutation } from './charConflict.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
-import { toSnapshot } from './charSnapshotLogic.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { getMammonBlacksmithState } from './mammonBlacksmithService.js';
@@ -145,6 +145,6 @@ export async function performMammonTeleport(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
   });
 }

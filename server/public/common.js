@@ -80,6 +80,54 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
+  var APP_DATA_VERSION = '20260717-3';
+  var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
+
+  function resetCatalogSessionState() {
+    sessionCatalogMerged = false;
+    sessionCatalogFetchPromise = null;
+    knownCatalogVersion = null;
+    craftBookCache = null;
+    craftBookFetchPromise = null;
+  }
+
+  function clearPersonalClientCaches() {
+    lastSnapshot = null;
+    resetCatalogSessionState();
+    try {
+      sessionStorage.removeItem(SESSION_SNAPSHOT_CACHE_KEY);
+      sessionStorage.removeItem('l2-map-snapshot-cache-v1');
+      sessionStorage.removeItem(ONLINE_COUNT_CACHE_KEY);
+      sessionStorage.removeItem(ITEM_ICON_HINTS_CACHE_KEY);
+      localStorage.removeItem(CATALOG_HINTS_LS_KEY);
+      localStorage.removeItem(CRAFT_BOOK_LS_KEY);
+    } catch (eClear) {
+      /* ignore */
+    }
+  }
+
+  function invalidateOldClientCaches() {
+    try {
+      var stored = localStorage.getItem(APP_DATA_VERSION_KEY);
+      if (stored === APP_DATA_VERSION) return;
+      localStorage.removeItem(CATALOG_HINTS_LS_KEY);
+      localStorage.removeItem(CRAFT_BOOK_LS_KEY);
+      sessionStorage.removeItem(SESSION_SNAPSHOT_CACHE_KEY);
+      sessionStorage.removeItem('l2-map-snapshot-cache-v1');
+      resetCatalogSessionState();
+      lastSnapshot = null;
+      localStorage.setItem(APP_DATA_VERSION_KEY, APP_DATA_VERSION);
+    } catch (eInv) {
+      /* ignore */
+    }
+  }
+
+  invalidateOldClientCaches();
+
+  function getSnapshotRevision(snapshot) {
+    var revision = Number(snapshot && snapshot.revision);
+    return Number.isFinite(revision) ? revision : null;
+  }
 
   function rememberCatalogVersion(version) {
     if (version == null || String(version).trim() === '') return;
@@ -1114,13 +1162,7 @@
     },
     /** Скинути in-memory snapshot і sessionStorage-кеші персонажа (logout / новий акаунт). */
     clearSessionCharacterCache: function () {
-      lastSnapshot = null;
-      try {
-        sessionStorage.removeItem('l2-char-snapshot-cache-v1');
-        sessionStorage.removeItem('l2-map-snapshot-cache-v1');
-      } catch (e) {
-        /* ignore */
-      }
+      clearPersonalClientCaches();
     },
     setToken: function (t) {
       try {
@@ -1231,6 +1273,25 @@
     },
     applyCharacterSnapshot: function (snapshot, applyScreenSpecific) {
       if (!snapshot) return null;
+
+      var current = lastSnapshot || global.L2.getCachedCharacter();
+      var incomingRevision = getSnapshotRevision(snapshot);
+      var currentRevision = getSnapshotRevision(current);
+      var sameCharacter =
+        !current ||
+        !current.id ||
+        !snapshot.id ||
+        String(current.id) === String(snapshot.id);
+
+      if (
+        sameCharacter &&
+        incomingRevision !== null &&
+        currentRevision !== null &&
+        incomingRevision < currentRevision
+      ) {
+        return current;
+      }
+
       lastSnapshot = snapshot;
       global.L2.writeSessionSnapshotCache(
         SESSION_SNAPSHOT_CACHE_KEY,
@@ -1249,6 +1310,18 @@
         global.L2ChatReplyNotify.applyFromSnapshot(snapshot);
       }
       return snapshot;
+    },
+    /** Ключ для dedupe renderAll на char та інших екранах. */
+    getSnapshotRenderKey: function (snapshot) {
+      var rev = getSnapshotRevision(snapshot);
+      if (rev === null) rev = 0;
+      var catVer = String(
+        (snapshot && snapshot.catalogVersion) ||
+          knownCatalogVersion ||
+          ''
+      );
+      var hintsReady = sessionCatalogMerged ? 1 : 0;
+      return String(rev) + ':' + catVer + ':' + hintsReady;
     },
     resyncCharacterAfterConflict: async function (applyScreenSpecific, conflictPayload) {
       var snap =

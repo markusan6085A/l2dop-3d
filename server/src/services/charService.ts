@@ -13,6 +13,10 @@ export {
   resolveHeroPowerFromCharacterRow,
   toSnapshot,
 } from './charSnapshotLogic.js';
+export {
+  buildCharacterClientSnapshot,
+  toClientSnapshot,
+} from './charClientSnapshot.js';
 export { applyPassiveHpRegen, applyPassiveHpRegenPure } from './charPassiveRegen.js';
 export { ensureSanitizedSkillsLearnedRow, ensureMysticStarterSkillsRow } from './charSkillsSanitize.js';
 export {

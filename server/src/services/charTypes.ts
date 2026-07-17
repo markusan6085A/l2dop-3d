@@ -232,4 +232,8 @@ export interface CharacterSnapshot {
   heroPower: number;
   /** Непрочитані відповіді в чаті (replyToCharacterId = цей герой). */
   chatUnreadReplyCount?: number;
+  /** Версія catalog-hints (інвалідація клієнтського кешу каталогу). */
+  catalogVersion?: string;
+  /** Версія книги крафту ресурсів. */
+  bookVersion?: string;
 }

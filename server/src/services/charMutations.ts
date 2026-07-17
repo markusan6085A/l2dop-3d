@@ -11,7 +11,7 @@ import {
 } from './charConflict.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
-import { toClientSnapshot } from './charClientSnapshot.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyCharacterReadView } from './charReadView.js';
@@ -126,7 +126,7 @@ export async function getSnapshotForUser(
       }
 
       const sanitized = await ensureInventoryReadPatchesRow(row);
-      return toClientSnapshot(applyCharacterReadView(sanitized), userId);
+      return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId);
     });
   }
 
@@ -136,7 +136,7 @@ export async function getSnapshotForUser(
   });
   if (!row) return null;
   const sanitized = await ensureInventoryReadPatchesRow(row as CharacterRow);
-  return toClientSnapshot(applyCharacterReadView(sanitized), userId);
+  return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId);
 }
 
 export async function applyEquipFromBag(
@@ -181,7 +181,7 @@ export async function applyEquipFromBag(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
   });
 }
 
@@ -226,7 +226,6 @@ export async function applyUnequip(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
   });
 }
-

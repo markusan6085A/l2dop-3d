@@ -10,7 +10,7 @@ import { resolveMapMovement } from '../domain/mapMovement.js';
 import { prisma } from '../lib/prisma.js';
 import { gameConflictFromMutation } from './charConflict.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
-import { toSnapshot } from './charSnapshotLogic.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
@@ -103,7 +103,7 @@ async function transferWarehouse(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
   });
 }
 

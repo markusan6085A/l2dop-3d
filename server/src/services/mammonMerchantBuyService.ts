@@ -10,7 +10,7 @@ import { isWithinMapNearbyHeroRadius } from '../domain/mapNearbyRadius.js';
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
-  toSnapshot,
+  buildCharacterClientSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
@@ -84,7 +84,7 @@ export async function performMammonMerchantBuy(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
   });
 }
 

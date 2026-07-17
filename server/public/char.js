@@ -158,6 +158,41 @@
 
   var revision = 0;
   var charPageReady = false;
+  var lastRenderedCharKey = null;
+
+  function measureRender(name, fn) {
+    var start = performance.now();
+    try {
+      return fn();
+    } finally {
+      console.log(
+        '[perf]',
+        name,
+        Math.round((performance.now() - start) * 10) / 10,
+        'ms'
+      );
+    }
+  }
+
+  function logDomIconCounts() {
+    console.log({
+      itemIcons: document.querySelectorAll('img[src*="/game/item-icon/"]').length,
+      bagIcons: document.querySelectorAll('.l2-char-bag-icon').length,
+      equipSlots: document.querySelectorAll('[data-l2-slot]').length,
+    });
+  }
+
+  function renderAllIfChanged(c) {
+    if (!c) return;
+    var renderKey =
+      window.L2 && typeof L2.getSnapshotRenderKey === 'function'
+        ? L2.getSnapshotRenderKey(c)
+        : String(c.revision != null ? c.revision : 0);
+    if (renderKey === lastRenderedCharKey) return;
+    lastRenderedCharKey = renderKey;
+    renderAll(c);
+    logDomIconCounts();
+  }
   var equipRequestInFlight = false;
   var warehouseDepositInFlight = false;
 
@@ -1081,9 +1116,15 @@
 
   function renderAll(c) {
     var inv = c.inventory || defaultInventory();
-    renderBag(inv);
-    renderHeroPortrait(c);
-    renderEquipSlots(inv);
+    measureRender('renderBag', function () {
+      renderBag(inv);
+    });
+    measureRender('renderHeroPortrait', function () {
+      renderHeroPortrait(c);
+    });
+    measureRender('renderEquipSlots', function () {
+      renderEquipSlots(inv);
+    });
     var wcur = $('char-w-cur');
     var wmax = $('char-w-max');
     if (wcur) wcur.textContent = String(stubWeight(inv));
@@ -1148,14 +1189,14 @@
       var c = out.character;
       if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
         L2.applyMutationSnapshot(c, function (snap) {
-          renderAll(snap);
+          renderAllIfChanged(snap);
         });
       } else {
         window.L2.setLastSnapshot(c);
         if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(c);
         }
-        renderAll(c);
+        renderAllIfChanged(c);
       }
     } catch (_e) {
       var stubNet = $('char-stub-msg');
@@ -1221,14 +1262,14 @@
       var c = out.character;
       if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
         L2.applyMutationSnapshot(c, function (snap) {
-          renderAll(snap);
+          renderAllIfChanged(snap);
         });
       } else {
         window.L2.setLastSnapshot(c);
         if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(c);
         }
-        renderAll(c);
+        renderAllIfChanged(c);
       }
       if (noticeOk) {
         noticeOk.hidden = false;
@@ -1290,17 +1331,17 @@
       var c = out.character;
       if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
         L2.applyMutationSnapshot(c, function (snap) {
-          renderAll(snap);
+          renderAllIfChanged(snap);
         });
       } else if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
         L2.applyCharacterSnapshot(c);
-        renderAll(c);
+        renderAllIfChanged(c);
       } else {
         window.L2.setLastSnapshot(c);
         if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(c);
         }
-        renderAll(c);
+        renderAllIfChanged(c);
       }
       var stubOk = $('char-stub-msg');
       if (stubOk) {
@@ -1369,14 +1410,14 @@
       var c = out.character;
       if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
         L2.applyMutationSnapshot(c, function (snap) {
-          renderAll(snap);
+          renderAllIfChanged(snap);
         });
       } else {
         window.L2.setLastSnapshot(c);
         if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(c);
         }
-        renderAll(c);
+        renderAllIfChanged(c);
       }
     } catch (_e) {
       var stubNet = $('char-stub-msg');
@@ -1405,7 +1446,7 @@
       if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
         L2.applyMutationSnapshot(snap);
       }
-      renderAll(snap);
+      renderAllIfChanged(snap);
       var stub = $('char-stub-msg');
       if (stub) {
         stub.hidden = false;
@@ -1884,7 +1925,7 @@
       if (nbCached && cached.name != null && cached.level != null) {
         nbCached.textContent = String(cached.name) + '[' + String(cached.level) + ']';
       }
-      renderAll(cached);
+      renderAllIfChanged(cached);
     }
 
     var hintsPromise =
@@ -1918,19 +1959,24 @@
       nb.textContent = String(snap.name) + '[' + String(snap.level) + ']';
     }
 
-    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+    if (
+      window.L2 &&
+      typeof L2.applyMutationSnapshot === 'function' &&
+      (!cached ||
+        Number(snap.revision) !== Number(cached.revision))
+    ) {
       L2.applyMutationSnapshot(snap);
     }
 
     if (errEl) errEl.hidden = true;
     if (content) content.hidden = false;
 
-    renderAll(snap);
+    renderAllIfChanged(snap);
 
     hintsPromise.then(function () {
       var latest =
         window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
-      if (latest) renderAll(latest);
+      if (latest) renderAllIfChanged(latest);
     });
 
     charPageReady = true;
@@ -1946,7 +1992,7 @@
         if (typeof L2.applyMutationSnapshot === 'function') {
           L2.applyMutationSnapshot(fresh);
         }
-        renderAll(fresh);
+        renderAllIfChanged(fresh);
       });
     }
   });

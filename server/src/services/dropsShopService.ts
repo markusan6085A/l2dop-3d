@@ -14,7 +14,7 @@ import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
 import { DROPS_SHOP_RESOURCE_ROWS } from '../data/dropsShopResourcesCatalog.js';
 import { prisma } from '../lib/prisma.js';
-import { toSnapshot } from './charSnapshotLogic.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { addItemToBag, parseInventory } from '../data/inventory.js';
 import type { Prisma } from '@prisma/client';
@@ -561,6 +561,6 @@ export async function applyDropsShopPurchase(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
   });
 }
