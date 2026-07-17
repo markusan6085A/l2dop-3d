@@ -236,4 +236,6 @@ export interface CharacterSnapshot {
   catalogVersion?: string;
   /** Версія книги крафту ресурсів. */
   bookVersion?: string;
+  /** Час формування snapshot на сервері (ms) — tie-break при однаковому revision. */
+  snapshotGeneratedAt?: number;
 }

@@ -158,9 +158,17 @@
 
   var revision = 0;
   var charPageReady = false;
-  var lastRenderedCharKey = null;
+  var lastFullRenderKey = null;
+  var lastCharStatsKey = null;
+  var PERF_DEBUG = false;
+  try {
+    PERF_DEBUG = localStorage.getItem('l2.perfDebug') === '1';
+  } catch (ePerfFlag) {
+    PERF_DEBUG = false;
+  }
 
   function measureRender(name, fn) {
+    if (!PERF_DEBUG) return fn();
     var start = performance.now();
     try {
       return fn();
@@ -175,6 +183,7 @@
   }
 
   function logDomIconCounts() {
+    if (!PERF_DEBUG) return;
     console.log({
       itemIcons: document.querySelectorAll('img[src*="/game/item-icon/"]').length,
       bagIcons: document.querySelectorAll('.l2-char-bag-icon').length,
@@ -182,16 +191,52 @@
     });
   }
 
+  function getCharFullRenderKey(c) {
+    var rev = c && c.revision != null ? Number(c.revision) : 0;
+    var catalogKey =
+      window.L2 && typeof L2.getSnapshotCatalogRenderKey === 'function'
+        ? L2.getSnapshotCatalogRenderKey(c)
+        : '';
+    return String(rev) + ':' + catalogKey;
+  }
+
+  function getCharStatsKey(c) {
+    return [
+      c.adena != null ? String(c.adena) : '',
+      c.exp != null ? String(c.exp) : '',
+      c.sp != null ? String(c.sp) : '',
+    ].join(':');
+  }
+
+  function renderCharStats(c) {
+    if ($('char-adena')) $('char-adena').textContent = c.adena != null ? String(c.adena) : '0';
+    if ($('char-exp')) $('char-exp').textContent = c.exp != null ? String(c.exp) : '0';
+    if ($('char-sp')) $('char-sp').textContent = c.sp != null ? String(c.sp) : '0';
+    revision = c.revision != null ? Number(c.revision) : 0;
+    writeCachedCharSnapshot(c);
+  }
+
   function renderAllIfChanged(c) {
     if (!c) return;
-    var renderKey =
-      window.L2 && typeof L2.getSnapshotRenderKey === 'function'
-        ? L2.getSnapshotRenderKey(c)
-        : String(c.revision != null ? c.revision : 0);
-    if (renderKey === lastRenderedCharKey) return;
-    lastRenderedCharKey = renderKey;
-    renderAll(c);
-    logDomIconCounts();
+    var fullKey = getCharFullRenderKey(c);
+    var statsKey = getCharStatsKey(c);
+
+    if (fullKey !== lastFullRenderKey) {
+      lastFullRenderKey = fullKey;
+      lastCharStatsKey = statsKey;
+      measureRender('renderAll', function () {
+        renderAll(c);
+      });
+      logDomIconCounts();
+      return;
+    }
+
+    if (statsKey !== lastCharStatsKey) {
+      lastCharStatsKey = statsKey;
+      measureRender('renderCharStats', function () {
+        renderCharStats(c);
+      });
+    }
   }
   var equipRequestInFlight = false;
   var warehouseDepositInFlight = false;
@@ -1129,13 +1174,7 @@
     var wmax = $('char-w-max');
     if (wcur) wcur.textContent = String(stubWeight(inv));
     if (wmax) wmax.textContent = '80';
-
-    if ($('char-adena')) $('char-adena').textContent = c.adena != null ? String(c.adena) : '0';
-    if ($('char-exp')) $('char-exp').textContent = c.exp != null ? String(c.exp) : '0';
-    if ($('char-sp')) $('char-sp').textContent = c.sp != null ? String(c.sp) : '0';
-
-    revision = c.revision != null ? Number(c.revision) : 0;
-    writeCachedCharSnapshot(c);
+    renderCharStats(c);
   }
 
 

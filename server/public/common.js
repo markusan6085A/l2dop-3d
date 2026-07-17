@@ -80,7 +80,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260717-3';
+  var APP_DATA_VERSION = '20260717-4';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -127,6 +127,47 @@
   function getSnapshotRevision(snapshot) {
     var revision = Number(snapshot && snapshot.revision);
     return Number.isFinite(revision) ? revision : null;
+  }
+
+  function getSnapshotGeneratedAt(snapshot) {
+    var ts = Number(snapshot && snapshot.snapshotGeneratedAt);
+    return Number.isFinite(ts) ? ts : null;
+  }
+
+  function shouldRejectIncomingSnapshot(current, snapshot) {
+    if (!snapshot) return true;
+    if (!current) return false;
+    var sameCharacter =
+      !current.id ||
+      !snapshot.id ||
+      String(current.id) === String(snapshot.id);
+    if (!sameCharacter) return false;
+
+    var incomingRevision = getSnapshotRevision(snapshot);
+    var currentRevision = getSnapshotRevision(current);
+    if (
+      incomingRevision !== null &&
+      currentRevision !== null &&
+      incomingRevision < currentRevision
+    ) {
+      return true;
+    }
+    if (
+      incomingRevision !== null &&
+      currentRevision !== null &&
+      incomingRevision === currentRevision
+    ) {
+      var incomingAt = getSnapshotGeneratedAt(snapshot);
+      var currentAt = getSnapshotGeneratedAt(current);
+      if (
+        incomingAt !== null &&
+        currentAt !== null &&
+        incomingAt < currentAt
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   function rememberCatalogVersion(version) {
@@ -1203,18 +1244,11 @@
           }
           if (!r.ok) return null;
           var j = await r.json();
-          if (j && j.catalogVersion) {
+          if (!j || !j.character) return null;
+          if (j.catalogVersion) {
             rememberCatalogVersion(j.catalogVersion);
           }
-          lastSnapshot = j.character;
-          global.L2.writeSessionSnapshotCache(
-            SESSION_SNAPSHOT_CACHE_KEY,
-            j.character
-          );
-          if (typeof global.L2.applyHudFromSnapshot === 'function') {
-            global.L2.applyHudFromSnapshot(j.character);
-          }
-          return lastSnapshot;
+          return global.L2.applyCharacterSnapshot(j.character);
         } finally {
           snapshotFetchInFlight = null;
         }
@@ -1275,20 +1309,7 @@
       if (!snapshot) return null;
 
       var current = lastSnapshot || global.L2.getCachedCharacter();
-      var incomingRevision = getSnapshotRevision(snapshot);
-      var currentRevision = getSnapshotRevision(current);
-      var sameCharacter =
-        !current ||
-        !current.id ||
-        !snapshot.id ||
-        String(current.id) === String(snapshot.id);
-
-      if (
-        sameCharacter &&
-        incomingRevision !== null &&
-        currentRevision !== null &&
-        incomingRevision < currentRevision
-      ) {
+      if (shouldRejectIncomingSnapshot(current, snapshot)) {
         return current;
       }
 
@@ -1311,17 +1332,23 @@
       }
       return snapshot;
     },
-    /** Ключ для dedupe renderAll на char та інших екранах. */
-    getSnapshotRenderKey: function (snapshot) {
-      var rev = getSnapshotRevision(snapshot);
-      if (rev === null) rev = 0;
+    /** Ключ catalog/hints для dedupe renderAll (revision окремо). */
+    getSnapshotCatalogRenderKey: function (snapshot) {
       var catVer = String(
         (snapshot && snapshot.catalogVersion) ||
           knownCatalogVersion ||
           ''
       );
       var hintsReady = sessionCatalogMerged ? 1 : 0;
-      return String(rev) + ':' + catVer + ':' + hintsReady;
+      return catVer + ':' + hintsReady;
+    },
+    /** @deprecated — використовуй getSnapshotCatalogRenderKey + revision окремо */
+    getSnapshotRenderKey: function (snapshot) {
+      var rev = getSnapshotRevision(snapshot);
+      if (rev === null) rev = 0;
+      return (
+        String(rev) + ':' + global.L2.getSnapshotCatalogRenderKey(snapshot)
+      );
     },
     resyncCharacterAfterConflict: async function (applyScreenSpecific, conflictPayload) {
       var snap =

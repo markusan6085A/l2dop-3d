@@ -104,6 +104,7 @@ import {
 } from './battleServiceDamageRolls.js';
 import { battleActionAllowed } from './battleServiceBattleUi.js';
 import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
+import { enrichPartialClientSnapshot } from './charClientSnapshot.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
@@ -1661,7 +1662,14 @@ export async function performBattleAction(
     battlePotionItemId?: number;
   }
 ): Promise<BattleActionResponse> {
-  return prisma.$transaction((tx) =>
+  const result = await prisma.$transaction((tx) =>
     performBattleActionInTx(tx, userId, action, expectedRevision, opts)
   );
+  if (result.kind === 'full' && result.character) {
+    result.character = await enrichPartialClientSnapshot(
+      result.character,
+      userId
+    );
+  }
+  return result;
 }

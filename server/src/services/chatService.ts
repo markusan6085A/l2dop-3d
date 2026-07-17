@@ -202,17 +202,23 @@ export async function deleteChatMessage(
   await prisma.chatMessage.delete({ where: { id: messageId } });
 }
 
-export async function getUnreadReplyCount(userId: string): Promise<number> {
-  const char = await characterForUser(userId);
-  if (!char) return 0;
-
+export async function getUnreadReplyCountForCharacter(
+  characterId: string,
+  chatRepliesReadAt: Date | null
+): Promise<number> {
   return prisma.chatMessage.count({
     where: {
       channel: 'all',
-      replyToCharacterId: char.id,
-      createdAt: { gt: char.chatRepliesReadAt },
+      replyToCharacterId: characterId,
+      createdAt: { gt: chatRepliesReadAt ?? new Date(0) },
     },
   });
+}
+
+export async function getUnreadReplyCount(userId: string): Promise<number> {
+  const char = await characterForUser(userId);
+  if (!char) return 0;
+  return getUnreadReplyCountForCharacter(char.id, char.chatRepliesReadAt);
 }
 
 export async function markChatRepliesRead(userId: string): Promise<void> {

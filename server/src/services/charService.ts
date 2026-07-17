@@ -15,6 +15,7 @@ export {
 } from './charSnapshotLogic.js';
 export {
   buildCharacterClientSnapshot,
+  enrichPartialClientSnapshot,
   toClientSnapshot,
 } from './charClientSnapshot.js';
 export { applyPassiveHpRegen, applyPassiveHpRegenPure } from './charPassiveRegen.js';

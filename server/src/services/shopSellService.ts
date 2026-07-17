@@ -187,7 +187,7 @@ export async function applyShopSell(
   const totalSell = resolveSellTotalAdena(itemId, qty);
   if (totalSell == null || totalSell <= 0) throw new Error('shop_sell_not_sellable');
 
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -242,9 +242,7 @@ export async function applyShopSell(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return buildCharacterClientSnapshot(
-      applyCharacterReadView(result.character as CharacterRow),
-      userId
-    );
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(applyCharacterReadView(row), userId);
 }

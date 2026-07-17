@@ -509,7 +509,7 @@ export async function applyDropsShopPurchase(
     qty = q;
   }
 
-  return prisma.$transaction(async (tx) => {
+  const characterRow = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -561,6 +561,7 @@ export async function applyDropsShopPurchase(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(characterRow, userId);
 }

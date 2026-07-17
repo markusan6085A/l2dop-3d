@@ -24,7 +24,7 @@ import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   combatOptsFromRow,
   gameConflictFromMutation,
-  buildCharacterClientSnapshot,
+  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
@@ -113,7 +113,7 @@ async function persistWorldBossBattleEndInTx(
     })
   );
   if (!result.ok) throw gameConflictFromMutation(result);
-  return buildCharacterClientSnapshot(result.character as CharacterRow, char.userId);
+  return toSnapshot(result.character as CharacterRow);
 }
 
 async function resolveLootRecipientNameInTx(

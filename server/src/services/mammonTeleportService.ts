@@ -80,7 +80,7 @@ export async function performMammonTeleport(
   const wy = coords.wy;
   const fee = BigInt(MAMMON_TELEPORT_ADENA_COST);
 
-  return prisma.$transaction(async (trx) => {
+  const row = await prisma.$transaction(async (trx) => {
     const char = (await trx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -145,6 +145,7 @@ export async function performMammonTeleport(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

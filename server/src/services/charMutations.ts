@@ -145,7 +145,7 @@ export async function applyEquipFromBag(
   expectedRevision: number,
   enchant: number = 0
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -181,8 +181,9 @@ export async function applyEquipFromBag(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function applyUnequip(
@@ -190,7 +191,7 @@ export async function applyUnequip(
   slot: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -226,6 +227,7 @@ export async function applyUnequip(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

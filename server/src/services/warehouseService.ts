@@ -61,7 +61,7 @@ async function transferWarehouse(
   if (!Number.isFinite(itemId) || itemId <= 0) throw new Error('invalid_item');
   const enchant = normEnchant(input.enchant);
 
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -103,8 +103,9 @@ async function transferWarehouse(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return buildCharacterClientSnapshot(result.character as CharacterRow, userId);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export function applyWarehouseWithdraw(
