@@ -147,6 +147,14 @@
       L2.mergeCraftResourceIconHints(j);
     }
 
+    if (window.L2 && typeof L2.claimWorldMapSession === 'function') {
+      c = await L2.claimWorldMapSession();
+      if (!c) {
+        window.location.href = '/';
+        return;
+      }
+    }
+
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
       L2.applyHudFromSnapshot(c);
     }
@@ -161,13 +169,21 @@
     if (document.hidden) return;
     var t = localStorage.getItem('token');
     if (!t || !window.L2 || typeof L2.fetchSnapshot !== 'function') return;
-    L2.fetchSnapshot().then(function (snap) {
-      if (!snap) return;
-      if (typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(snap);
-      }
-      applyCityLocation(snap);
-    });
+    L2.fetchSnapshot()
+      .then(function (snap) {
+        if (!snap) return null;
+        if (typeof L2.claimWorldMapSession === 'function') {
+          return L2.claimWorldMapSession();
+        }
+        return snap;
+      })
+      .then(function (snap) {
+        if (!snap) return;
+        if (typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(snap);
+        }
+        applyCityLocation(snap);
+      });
   });
 
   init();

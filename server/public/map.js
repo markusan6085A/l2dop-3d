@@ -1086,7 +1086,12 @@
       writeCachedMapSnapshot(c);
     }
 
-    var snapshotPromise = loadSnapshot();
+    var snapshotPromise = loadSnapshot().then(async function (snap) {
+      if (window.L2 && typeof L2.claimWorldMapSession === 'function') {
+        return await L2.claimWorldMapSession();
+      }
+      return snap;
+    });
     var syncPromise = loadMapSync();
 
     var aroundData = { nearbySpawns: [], nearbyHeroes: [] };

@@ -7,6 +7,9 @@ import type { FirstProfessionQuestSnapshot } from '../domain/humanFighterFirstPr
 import type { DailyQuestsSnapshot } from '../domain/dailyQuests.js';
 import type { BattleHotbarSlot } from '../domain/battleHotbar.js';
 
+/** Активна сесія Seven Signs подземелля (null — на світовій карті / у місті). */
+export type ActiveDungeonId = string | null;
+
 /** Рядок Character з БД (Prisma XOR інколи «губить» Json у create/update — тут явно). */
 export interface CharacterRow {
   id: string;
@@ -119,6 +122,8 @@ export interface CharacterSnapshot {
   pvpLosses: number;
   revision: number;
   lastUpdate: string;
+  /** `dungeonStateJson.dungeonId` або null — для синхрону map/city ↔ dungeon між пристроями. */
+  activeDungeonId: ActiveDungeonId;
   inventory: InventoryState;
   /** Склад у місті (лише stacks; екіпу немає). */
   warehouse: WarehouseSnapshot;

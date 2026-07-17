@@ -805,6 +805,19 @@
           if (typeof L2.applyHudFromSnapshot === 'function') {
             L2.applyHudFromSnapshot(charJ.character);
           }
+          var activeDid = charJ.character.activeDungeonId || null;
+          if (!activeDid || activeDid !== dungeonId) {
+            if (activeDid && activeDid !== dungeonId) {
+              window.location.replace(
+                '/dungeon.html?dungeonId=' + encodeURIComponent(activeDid)
+              );
+              return;
+            }
+            await resyncAndLeaveDungeon(
+              'Персонаж уже не в подземеллі — переходимо на карту.'
+            );
+            return;
+          }
         }
       }
     } catch (eChar) {

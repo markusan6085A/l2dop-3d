@@ -93,6 +93,7 @@ import type {
   CharacterSnapshot,
   SkillCooldownSnapshotEntry,
 } from './charTypes.js';
+import { parseDungeonStateJson } from '../domain/dungeonState.js';
 
 function buildActiveBuffsSnapshot(
   raw: Prisma.JsonValue | null,
@@ -413,6 +414,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     pvpLosses: 0,
     revision: row.revision,
     lastUpdate: row.lastUpdate.toISOString(),
+    activeDungeonId: parseDungeonStateJson(row.dungeonStateJson)?.dungeonId ?? null,
     inventory: inv,
     warehouse: wh,
     pAtk,

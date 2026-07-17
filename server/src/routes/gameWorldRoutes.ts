@@ -28,6 +28,7 @@ import {
   performDungeonEnter,
   performDungeonMove,
 } from '../services/dungeonMoveService.js';
+import { performDungeonLeave } from '../services/dungeonLeaveService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { listSevenSignsDungeonsForMenu } from '../services/sevenSignsDungeonListService.js';
@@ -197,6 +198,58 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
         await logRouteMutation(
           request,
           'dungeon_enter',
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
+    }
+  );
+
+  app.post(
+    '/dungeon/leave',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      try {
+        const character = await performDungeonLeave(userId, er);
+        await logRouteMutation(
+          request,
+          'dungeon_leave',
+          er,
+          'ok',
+          character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            'dungeon_leave',
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        await logRouteMutation(
+          request,
+          'dungeon_leave',
           er,
           'error',
           undefined,
