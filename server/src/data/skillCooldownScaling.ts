@@ -3,7 +3,7 @@
  *
  * Базові припущення (узгоджено з `computeCombatStats`):
  * - castSpd: 100..2000, baseline 600
- * - pAtkSpd: 100..1500, baseline 600
+ * - pAtkSpd: 100..1500, baseline 600 (379 на зброї ≈ 600 після мапінгу)
  */
 import { isMysticClassBranch } from './l2dopHumanMysticBattleSkills.js';
 import { L2DOP_SKILL_REUSE_DELAY_SEC } from './l2dopSkillReuseDelaySec.js';
@@ -17,7 +17,6 @@ export const MYSTIC_CD_FLOOR_SEC = 0.3;
 export const PATK_SPD_BASELINE = 600;
 export const PATK_SPD_MIN = 100;
 export const PATK_SPD_MAX = 1500;
-export const FIGHTER_CD_MAX_REDUCTION = 0.6;
 export const FIGHTER_CD_FLOOR_SEC = 0.5;
 
 function clampSpeed(
@@ -66,22 +65,7 @@ export function scaleMysticCooldownByCastSpeed(
   return roundSkillCdSec(scaled, MYSTIC_CD_FLOOR_SEC);
 }
 
-/** Лінійно 0% при baseline pAtkSpd → 60% при max pAtkSpd. */
-export function fighterAttackSpeedCooldownReduction(pAtkSpd: number): number {
-  const spd = clampSpeed(
-    pAtkSpd,
-    PATK_SPD_MIN,
-    PATK_SPD_MAX,
-    PATK_SPD_BASELINE
-  );
-  if (spd <= PATK_SPD_BASELINE) return 0;
-  const span = PATK_SPD_MAX - PATK_SPD_BASELINE;
-  if (span <= 0) return 0;
-  const t = (spd - PATK_SPD_BASELINE) / span;
-  return FIGHTER_CD_MAX_REDUCTION * Math.min(1, Math.max(0, t));
-}
-
-/** Базовий CD воїна зменшується до −60% при max pAtkSpd. */
+/** Базовий CD воїна: base × (600 / pAtkSpd), як у магів з castSpd. */
 export function scaleFighterCooldownByAttackSpeed(
   baseCdSec: number,
   pAtkSpd: number
@@ -90,8 +74,13 @@ export function scaleFighterCooldownByAttackSpeed(
     typeof baseCdSec === 'number' && Number.isFinite(baseCdSec) && baseCdSec > 0
       ? baseCdSec
       : 3;
-  const reduction = fighterAttackSpeedCooldownReduction(pAtkSpd);
-  const scaled = base * (1 - reduction);
+  const spd = clampSpeed(
+    pAtkSpd,
+    PATK_SPD_MIN,
+    PATK_SPD_MAX,
+    PATK_SPD_BASELINE
+  );
+  const scaled = base * (PATK_SPD_BASELINE / spd);
   return roundSkillCdSec(scaled, FIGHTER_CD_FLOOR_SEC);
 }
 
@@ -142,7 +131,7 @@ export type BattleSkillCooldownResolveInput = {
  * - mystic + Interlude reuse (`L2DOP_SKILL_REUSE_DELAY_SEC` / `cooldownSec`) — база @ castSpd 600,
  *   далі `scaleMysticCooldownByCastSpeed` (вищий castSpd → коротший відкат)
  * - mystic без fixed reuse — fallback cast-база або magic_attack 4–7 с @ 600
- * - fighter: фіксований reboot з l2db/XML (без aspd)
+ * - fighter + fixed reuse: base @ pAtkSpd 600, швидша зброя → коротший CD
  */
 export function resolveBattleSkillCooldownSec(
   input: BattleSkillCooldownResolveInput
@@ -168,12 +157,13 @@ export function resolveBattleSkillCooldownSec(
   const hasFixedBase =
     typeof rawBase === 'number' && Number.isFinite(rawBase) && rawBase > 0;
 
-  /** Воїн: фіксований reuse з XML/каталогу, без cast/aspd. */
+  /** Воїн: fixed reuse з XML, масштабується від pAtkSpd (швидкість зброї). */
   if (hasFixedBase && !isMystic) {
+    const cd = scaleFighterCooldownByAttackSpeed(rawBase!, input.pAtkSpd);
     return applyCooldownReductionMul(
-      roundSkillCdSec(rawBase!, 0),
+      cd,
       input.cooldownReductionMul,
-      0
+      FIGHTER_CD_FLOOR_SEC
     );
   }
 

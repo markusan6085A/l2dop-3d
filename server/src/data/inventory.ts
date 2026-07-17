@@ -5,10 +5,11 @@ import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
 /**
  * Версія стартового набору в сумці; піднімаємо при зміні складу старту.
- * v7 — маг: Devotion tunic/stockings + auto-equip мантії (Spellcraft).
+ * v8 — воїн: auto-equip Club + Devotion helmet/gloves; заряд душі (без spiritshot).
+ * v7 — маг: Devotion tunic/stockings + auto-equip мантії; blessed spiritshot (без soulshot).
  * v6 — Club + Rod + Devotion helmet/gloves, зілля, обидва заряди; лише при register.
  */
-export const STARTER_KIT_VERSION = 7;
+export const STARTER_KIT_VERSION = 8;
 
 /** Стартова адена нового героя. */
 export const STARTER_ADENA = 50_000;
@@ -29,19 +30,92 @@ const STARTER_MYSTIC_SPIRITSHOT_ID = 3947;
 const STARTER_POTION_QTY = 50;
 const STARTER_SHOT_QTY = 1000;
 
-/** Стартова сумка (тільки create character). */
-const STARTER_BAG_STACKS: ReadonlyArray<{ itemId: number; qty: number }> = [
-  { itemId: STARTER_WEAPON_PHYS_ID, qty: 1 },
-  { itemId: STARTER_WEAPON_MAGIC_ID, qty: 1 },
-  { itemId: STARTER_DEVOTION_HELMET_ID, qty: 1 },
-  { itemId: STARTER_DEVOTION_GLOVES_ID, qty: 1 },
-  { itemId: STARTER_LESSER_HEALING_ID, qty: STARTER_POTION_QTY },
-  { itemId: STARTER_MANA_SMALL_ID, qty: STARTER_POTION_QTY },
-  { itemId: STARTER_FIGHTER_SOULSHOT_ID, qty: STARTER_SHOT_QTY },
-  { itemId: STARTER_MYSTIC_SPIRITSHOT_ID, qty: STARTER_SHOT_QTY },
-];
+export type StarterClassBranch = 'fighter' | 'mystic';
 
-const MAX_ENCHANT = 20;
+/** Стартова сумка (лише register); заряд — за гілкою (воїн soulshot, маг spiritshot). */
+function buildStarterBagStacks(classBranch: StarterClassBranch): BagStack[] {
+  const stacks: BagStack[] = [
+    { itemId: STARTER_WEAPON_PHYS_ID, qty: 1 },
+    { itemId: STARTER_WEAPON_MAGIC_ID, qty: 1 },
+    { itemId: STARTER_DEVOTION_HELMET_ID, qty: 1 },
+    { itemId: STARTER_DEVOTION_GLOVES_ID, qty: 1 },
+    { itemId: STARTER_LESSER_HEALING_ID, qty: STARTER_POTION_QTY },
+    { itemId: STARTER_MANA_SMALL_ID, qty: STARTER_POTION_QTY },
+  ];
+  if (classBranch === 'mystic') {
+    stacks.push({ itemId: STARTER_MYSTIC_SPIRITSHOT_ID, qty: STARTER_SHOT_QTY });
+  } else {
+    stacks.push({ itemId: STARTER_FIGHTER_SOULSHOT_ID, qty: STARTER_SHOT_QTY });
+  }
+  return stacks;
+}
+
+function starterEqForBranch(
+  classBranch: StarterClassBranch
+): Partial<Record<string, EqSlotValue>> {
+  if (classBranch === 'mystic') {
+    return {
+      l1: STARTER_WEAPON_MAGIC_ID,
+      l3: STARTER_DEVOTION_TUNIC_ID,
+      l4: STARTER_DEVOTION_STOCKINGS_ID,
+      lh: STARTER_DEVOTION_HELMET_ID,
+      lg: STARTER_DEVOTION_GLOVES_ID,
+    };
+  }
+  return {
+    l1: STARTER_WEAPON_PHYS_ID,
+    lh: STARTER_DEVOTION_HELMET_ID,
+    lg: STARTER_DEVOTION_GLOVES_ID,
+  };
+}
+
+function equippedItemIds(eq: Partial<Record<string, EqSlotValue>>): Set<number> {
+  return new Set(
+    Object.values(eq).map((v) =>
+      typeof v === 'number' ? v : Number((v as { itemId: number }).itemId)
+    )
+  );
+}
+
+/** Зведення стартового набору для аудиту / smoke. */
+export function describeStarterKit(classBranch: StarterClassBranch): {
+  classBranch: StarterClassBranch;
+  sk: number;
+  equipped: Array<{ slot: string; itemId: number }>;
+  bagStacks: BagStack[];
+  bagSnapshotStacks: BagStack[];
+} {
+  const raw = starterInventory(classBranch);
+  const snap = parseInventory(raw);
+  const equipped = Object.entries(raw.eq || {}).flatMap(([slot, v]) => {
+    const n = normalizeEqSlot(v as EqSlotValue);
+    return n ? [{ slot, itemId: n.itemId }] : [];
+  });
+  return {
+    classBranch,
+    sk: STARTER_KIT_VERSION,
+    equipped,
+    bagStacks: raw.stacks.map((s) => ({ ...s })),
+    bagSnapshotStacks: snap.stacks.map((s) => ({ ...s })),
+  };
+}
+
+/** Стартова сумка нового героя (лише register). */
+export function starterInventory(classBranch?: StarterClassBranch): InventoryState {
+  const branch: StarterClassBranch = classBranch === 'mystic' ? 'mystic' : 'fighter';
+  const eq = starterEqForBranch(branch);
+  const equippedIds = equippedItemIds(eq);
+  const stacks = buildStarterBagStacks(branch)
+    .filter((row) => !equippedIds.has(row.itemId))
+    .map((row) => ({ ...row }));
+  return {
+    v: 1,
+    _sk: STARTER_KIT_VERSION,
+    ...(branch === 'mystic' ? { _mysticRobePatch: 1 } : {}),
+    stacks,
+    eq,
+  };
+}
 
 function normEnchant(e: unknown): number {
   if (e == null) return 0;
@@ -137,45 +211,7 @@ export function emptyInventory(): InventoryState {
   return { v: 1, stacks: [], eq: {} };
 }
 
-export type StarterClassBranch = 'fighter' | 'mystic';
-
-/** Стартова сумка нового героя (лише register). */
-export function starterInventory(classBranch?: StarterClassBranch): InventoryState {
-  if (classBranch !== 'mystic') {
-    return {
-      v: 1,
-      _sk: STARTER_KIT_VERSION,
-      stacks: STARTER_BAG_STACKS.map((row) => ({ ...row })),
-      eq: {},
-    };
-  }
-  const eq: Partial<Record<string, EqSlotValue>> = {
-    l1: STARTER_WEAPON_MAGIC_ID,
-    l3: STARTER_DEVOTION_TUNIC_ID,
-    l4: STARTER_DEVOTION_STOCKINGS_ID,
-    lh: STARTER_DEVOTION_HELMET_ID,
-    lg: STARTER_DEVOTION_GLOVES_ID,
-  };
-  const equippedIds = new Set(
-    Object.values(eq).map((v) =>
-      typeof v === 'number' ? v : Number((v as { itemId: number }).itemId)
-    )
-  );
-  const extraStacks: BagStack[] = [
-    { itemId: STARTER_DEVOTION_TUNIC_ID, qty: 1 },
-    { itemId: STARTER_DEVOTION_STOCKINGS_ID, qty: 1 },
-  ];
-  const stacks = [...STARTER_BAG_STACKS, ...extraStacks]
-    .filter((row) => !equippedIds.has(row.itemId))
-    .map((row) => ({ ...row }));
-  return {
-    v: 1,
-    _sk: STARTER_KIT_VERSION,
-    _mysticRobePatch: 1,
-    stacks,
-    eq,
-  };
-}
+const MAX_ENCHANT = 20;
 
 /**
  * Старі маги без мантії: один раз додати tunic/stockings у сумку й одягнути, якщо слоти порожні.

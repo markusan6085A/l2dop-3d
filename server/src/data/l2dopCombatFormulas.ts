@@ -21,6 +21,7 @@ import {
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import { dropsShieldPatchForEquipped } from './l2dopDropsShieldPatches.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
+import { combatSpeedFromWeaponAtkSpd } from '../domain/weaponCombatSpeed.js';
 import {
   applyBuffDelta,
   neutralCombatBuffs,
@@ -535,7 +536,7 @@ function weaponEquipCombatBonus(eq: InventoryState['eq']): {
   castSpd?: number;
   mCritPct?: number;
 } {
-  const slot = normalizeEqSlot(eq.rhand);
+  const slot = normalizeEqSlot(eq.l1);
   if (!slot) return {};
   const m = ITEM_CATALOG[slot.itemId];
   if (!m) return {};
@@ -802,6 +803,7 @@ export function computeCombatStats(
   let mdef2 = Math.floor(mdef);
 
   const motion = weaponMotionParams(wId);
+  const weaponCombatSpd = combatSpeedFromWeaponAtkSpd(motion.wpnSpd);
   const ShieldEvasion = 0;
 
   /** Balance pass 1: краща прив’язка попадання до DEX (sim miss ~35% → ціль 20–25%). */
@@ -837,7 +839,8 @@ export function computeCombatStats(
   if (finalcritical2 > 500) finalcritical2 = 500;
   if (finalcritical2 < 0) finalcritical2 = 0;
 
-  const atkspd = motion.wpnSpd * M.dexAtkSpeedMul * B.buffAspd + B.addAspd;
+  const atkspd =
+    weaponCombatSpd * M.dexAtkSpeedMul * B.buffAspd + B.addAspd;
   const pAtkSpd = Math.max(100, Math.min(1500, Math.floor(atkspd)));
 
   const baseRun: Record<L2dopRaceCode, number> = {
@@ -860,6 +863,15 @@ export function computeCombatStats(
     100,
     Math.min(2000, Math.floor(castingspd * 1.25))
   );
+  if (mysticBranch) {
+    castSpd = Math.max(
+      100,
+      Math.min(
+        2000,
+        Math.floor(castSpd * (weaponCombatSpd / 600))
+      )
+    );
+  }
 
   let mCritPct = magicCritChancePct(WIT);
   mCritPct = Math.min(
