@@ -132,6 +132,9 @@
   }
 
   function itemDisplayName(id) {
+    if (window.L2 && typeof L2.itemDisplayNameWithGrade === 'function') {
+      return L2.itemDisplayNameWithGrade(id);
+    }
     var map = window.L2 && L2.itemNameById;
     if (!map) return '#' + id;
     var n = map[id] != null ? map[id] : map[String(id)];

@@ -27,6 +27,9 @@
   }
 
   function itemDisplayName(id) {
+    if (window.L2 && typeof L2.itemDisplayNameWithGrade === 'function') {
+      return L2.itemDisplayNameWithGrade(id);
+    }
     var n = window.L2 && L2.itemNameById && L2.itemNameById[id];
     return n != null ? n : '#' + id;
   }

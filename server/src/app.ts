@@ -106,12 +106,16 @@ export async function buildApp() {
       const rel = normalized.includes('/public/')
         ? normalized.slice(normalized.indexOf('/public/') + '/public'.length)
         : normalized;
-      if (/\.html$/i.test(rel) || /\/sw\.js$/i.test(rel)) {
+      if (
+        /\.html$/i.test(rel) ||
+        /\/sw\.js$/i.test(rel) ||
+        /\.(css|js)$/i.test(rel)
+      ) {
         res.setHeader('Cache-Control', 'no-cache, must-revalidate');
         return;
       }
       if (
-        /^\/(assets|icons|ref|characters|mobs|css|js|skills)\//.test(rel) ||
+        /^\/(assets|icons|ref|characters|mobs|skills)\//.test(rel) ||
         /\.(jpg|jpeg|png|gif|webp|svg|woff2?|ico)$/i.test(rel)
       ) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');

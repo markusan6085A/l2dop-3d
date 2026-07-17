@@ -247,8 +247,61 @@
       var id = normalizePositiveInt(itemId);
       if (id <= 0) return '';
       var g = global.L2.itemGradeById && global.L2.itemGradeById[id];
+      if (g == null || String(g).trim() === '') {
+        g =
+          global.L2.itemGradeById &&
+          global.L2.itemGradeById[String(id)];
+      }
       if (g == null || String(g).trim() === '') return '';
       return String(g).trim().toLowerCase();
+    },
+    /** NG | D | C | B | A | S для підпису в UI. */
+    itemGradeLabelForId: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return '';
+      var g = global.L2.itemGradeById && global.L2.itemGradeById[id];
+      if (g == null || String(g).trim() === '') {
+        g =
+          global.L2.itemGradeById &&
+          global.L2.itemGradeById[String(id)];
+      }
+      if (g == null || String(g).trim() === '') return '';
+      return String(g).trim().toUpperCase();
+    },
+    itemNameAlreadyShowsGrade: function (name, gradeLabel) {
+      if (!gradeLabel) return true;
+      var n = String(name || '');
+      if (!n.trim()) return false;
+      var g = String(gradeLabel).trim();
+      if (!g) return true;
+      var esc = g.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(
+        '(?:\\[\\s*' +
+          esc +
+          '\\s*\\]|\\(\\s*' +
+          esc +
+          '\\s*\\)|\\b' +
+          esc +
+          '-grade\\b)',
+        'i'
+      ).test(n);
+    },
+    /** Назва предмета з грейдом: «Devotion Boots [NG]». */
+    itemDisplayNameWithGrade: function (itemId, baseNameOpt) {
+      var id = normalizePositiveInt(itemId);
+      var name =
+        baseNameOpt != null && String(baseNameOpt).trim() !== ''
+          ? String(baseNameOpt).trim()
+          : (function () {
+              var map = global.L2.itemNameById;
+              if (!map || id <= 0) return id > 0 ? '#' + id : '';
+              var n = map[id] != null ? map[id] : map[String(id)];
+              if (n != null && String(n).trim() !== '') return String(n).trim();
+              return '#' + id;
+            })();
+      var grade = global.L2.itemGradeLabelForId(id);
+      if (!grade || global.L2.itemNameAlreadyShowsGrade(name, grade)) return name;
+      return name + ' [' + grade + ']';
     },
     itemNameClassNames: function (itemId, baseClass) {
       var base =

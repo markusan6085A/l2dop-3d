@@ -2,19 +2,21 @@
  * Service Worker: cache-first для статики (фото, ref, css, js).
  * HTML і API — завжди мережа (сервер = джерело правди).
  */
-var GAME_CACHE_VERSION = '20260716profQuestFrame1';
+var GAME_CACHE_VERSION = '20260717itemGrade2';
 var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
+/** Лише безверсійні іконки/рамки — JS/CSS з ?v= не precache (інакше застрягає старий UI). */
 var PRECACHE_URLS = [
-  '/styles.css',
-  '/common.js',
-  '/ui-i18n.js',
-  '/l2-nav.js',
   '/icons/drops/other.svg',
   '/ref/2.png',
   '/ref/18.png',
   '/ref/19.png',
 ];
+
+function hasVersionQuery(url) {
+  var v = url.searchParams.get('v');
+  return v != null && String(v).trim() !== '';
+}
 
 function isLiveDataPath(pathname) {
   return (
@@ -141,8 +143,7 @@ self.addEventListener('fetch', function (event) {
 
   event.respondWith(
     caches.open(STATIC_CACHE).then(function (cache) {
-      return cacheLookup(cache, event.request).then(function (cached) {
-        if (cached) return cached;
+      function fetchAndMaybeCache() {
         return fetch(event.request).then(function (response) {
           if (shouldCacheResponse(response)) {
             return cacheStore(cache, event.request, response).then(function () {
@@ -151,6 +152,18 @@ self.addEventListener('fetch', function (event) {
           }
           return response;
         });
+      }
+
+      /** ?v= — завжди мережа першою, щоб bump версії реально оновлював CSS/JS на проді. */
+      if (hasVersionQuery(url)) {
+        return fetchAndMaybeCache().catch(function () {
+          return cacheLookup(cache, event.request);
+        });
+      }
+
+      return cacheLookup(cache, event.request).then(function (cached) {
+        if (cached) return cached;
+        return fetchAndMaybeCache();
       });
     })
   );
