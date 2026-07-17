@@ -44,6 +44,10 @@ import {
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
 import {
+  applyClanHallPassiveFlat,
+  resolveClanHallPassiveBonus,
+} from '../domain/clanHall.js';
+import {
   isRiposteStanceActive,
   RIPOSTE_REFLECT_PCT,
 } from '../domain/riposteStance.js';
@@ -277,9 +281,14 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     combat.regenMp
   );
   const maxHpBase = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
+  const clanHallPassive = resolveClanHallPassiveBonus(row.clan ?? null);
+  const maxHpBaseWithClan = applyClanHallPassiveFlat(
+    { pAtk: 0, mAtk: 0, pDef: 0, mDef: 0, maxHp: maxHpBase },
+    clanHallPassive
+  ).maxHp;
   const maxHp = effectiveMaxHpWithBattleRoar(
     row,
-    maxHpBase,
+    maxHpBaseWithClan,
     worldTicked?.battleMods
   );
   const hp = Math.min(Math.max(0, row.hp), maxHp);
@@ -355,6 +364,21 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     row.battleJson,
     worldTicked?.battleMods
   );
+  const clanHallStatFlats = applyClanHallPassiveFlat(
+    {
+      pAtk,
+      mAtk,
+      pDef,
+      mDef,
+      maxHp: 0,
+    },
+    clanHallPassive
+  );
+  const pAtkOut = clanHallStatFlats.pAtk;
+  const mAtkOut = clanHallStatFlats.mAtk;
+  const pDefOut = clanHallStatFlats.pDef;
+  const mDefOut = clanHallStatFlats.mDef;
+  const maxHpOut = maxHp;
   const maxCp = Math.max(0, Math.floor(vit.maxCp * combat.buffMaxCpMul));
   /** У PvE урон по HP не знімає CP. Зниження CP — лише для ПК (окремий стан, коли з’явиться). */
   const battleCp = readBattlePlayerCp(row.battleJson);
@@ -385,7 +409,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     name: row.name,
     level: effectiveLevel,
     hp,
-    maxHp,
+    maxHp: maxHpOut,
     cp,
     maxCp,
     mp,
@@ -417,10 +441,10 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     activeDungeonId: parseDungeonStateJson(row.dungeonStateJson)?.dungeonId ?? null,
     inventory: inv,
     warehouse: wh,
-    pAtk,
-    pDef,
-    mAtk,
-    mDef,
+    pAtk: pAtkOut,
+    pDef: pDefOut,
+    mAtk: mAtkOut,
+    mDef: mDefOut,
     str: combat.str,
     int: combat.int,
     dex: combat.dex,

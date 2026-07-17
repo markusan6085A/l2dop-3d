@@ -9,6 +9,8 @@ import {
   type BattleActionId,
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
+import { applyClanHallPassiveFlat } from '../domain/clanHall.js';
+import { fetchClanHallPassiveBonusInTx } from './clanHallService.js';
 import { isPhysicalBattleSkillAction } from '../domain/battlePhysicalSkillBlock.js';
 import {
   persistableActiveBuffsFromJson,
@@ -239,13 +241,29 @@ export async function performBattleActionInTx(
     const cr = char as CharacterRow;
     const charRowAtTurnOpen = cr;
     /** Профільні боїві стати (+ світові бафи). Не змішувати з `st.battleMods` — вони лише в кидках урону. */
-    const combat = computeCombatStats(
+    let combat = computeCombatStats(
       preLevel,
       char.race,
       char.classBranch,
       inv,
       combatOptsFromRow(cr)
     );
+    const clanHallPassive = await fetchClanHallPassiveBonusInTx(tx, cr.clanId);
+    if (clanHallPassive) {
+      combat = {
+        ...combat,
+        ...applyClanHallPassiveFlat(
+          {
+            pAtk: combat.pAtk,
+            mAtk: combat.mAtk,
+            pDef: combat.pDef,
+            mDef: combat.mDef,
+            maxHp: 0,
+          },
+          clanHallPassive
+        ),
+      };
+    }
     const vit = computeVitals(
       preLevel,
       char.race,
@@ -253,7 +271,7 @@ export async function performBattleActionInTx(
       combat.con,
       combat.men
     );
-    const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
+    const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat) + (clanHallPassive?.maxHp ?? 0);
     const maxMpEff = effectiveMaxMpWithJewelFlat(vit.maxMp, combat);
 
     const profAct = resolveL2ProfessionForSkillsRow(cr);
@@ -905,14 +923,32 @@ export async function performBattleActionInTx(
         activeBuffsJson:
           nextActiveBuffs as unknown as CharacterRow['activeBuffsJson'],
       };
-      const combat2 = computeCombatStats(
+      const combat2Raw = computeCombatStats(
         preLevel,
         char.race,
         char.classBranch,
         inv,
         combatOptsFromRow(crPatched)
       );
-      maxHpEffAfter = effectiveMaxHpWithJewelFlat(vit.maxHp, combat2);
+      let combat2 = combat2Raw;
+      if (clanHallPassive) {
+        combat2 = {
+          ...combat2Raw,
+          ...applyClanHallPassiveFlat(
+            {
+              pAtk: combat2Raw.pAtk,
+              mAtk: combat2Raw.mAtk,
+              pDef: combat2Raw.pDef,
+              mDef: combat2Raw.mDef,
+              maxHp: 0,
+            },
+            clanHallPassive
+          ),
+        };
+      }
+      maxHpEffAfter =
+        effectiveMaxHpWithJewelFlat(vit.maxHp, combat2) +
+        (clanHallPassive?.maxHp ?? 0);
       const prevMaxWithBattleMods = effectiveBattleMaxHp(
         maxHpEff,
         st.battleMods

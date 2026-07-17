@@ -1,7 +1,10 @@
 import { prisma } from '../lib/prisma.js';
+import type { Prisma } from '@prisma/client';
 import {
   CLAN_HALL_BLESSING_COST_ADENA,
   buildClanHallView,
+  resolveClanHallPassiveBonus,
+  type ClanHallBuffRow,
   type ClanHallView,
 } from '../domain/clanHall.js';
 import { gameConflictFromMutation } from './charConflict.js';
@@ -13,6 +16,11 @@ export type ClanHallPurchaseResult = {
   character: CharacterSnapshot;
   hall: ClanHallView;
 };
+
+const CLAN_HALL_CLAN_SELECT = {
+  hallBlessingAt: true,
+  level: true,
+} as const;
 
 async function loadHallStateForUser(userId: string): Promise<{
   clanId: string | null;
@@ -26,7 +34,7 @@ async function loadHallStateForUser(userId: string): Promise<{
     select: {
       clanId: true,
       clanRole: true,
-      clan: { select: { hallBlessingAt: true, level: true } },
+      clan: { select: CLAN_HALL_CLAN_SELECT },
     },
   });
   if (!char) return null;
@@ -36,6 +44,30 @@ async function loadHallStateForUser(userId: string): Promise<{
     hallBlessingAt: char.clan?.hallBlessingAt ?? null,
     clanLevel: char.clan?.level ?? 1,
   };
+}
+
+/** Пасивний бонус клану за clanId (для бою / snapshot). */
+export async function fetchClanHallPassiveBonusByClanId(
+  clanId: string | null | undefined
+): Promise<ClanHallBuffRow | null> {
+  if (!clanId) return null;
+  const clan = await prisma.clan.findUnique({
+    where: { id: clanId },
+    select: CLAN_HALL_CLAN_SELECT,
+  });
+  return resolveClanHallPassiveBonus(clan);
+}
+
+export async function fetchClanHallPassiveBonusInTx(
+  tx: Prisma.TransactionClient,
+  clanId: string | null | undefined
+): Promise<ClanHallBuffRow | null> {
+  if (!clanId) return null;
+  const clan = await tx.clan.findUnique({
+    where: { id: clanId },
+    select: CLAN_HALL_CLAN_SELECT,
+  });
+  return resolveClanHallPassiveBonus(clan);
 }
 
 /** null — персонаж не в клані. */
@@ -65,7 +97,7 @@ export async function purchaseClanHallBlessingForUser(
 
     const clan = await tx.clan.findUnique({
       where: { id: char.clanId },
-      select: { id: true, hallBlessingAt: true, level: true },
+      select: { id: true, ...CLAN_HALL_CLAN_SELECT },
     });
     if (!clan) throw new Error('clan_hall_not_in_clan');
     if (clan.hallBlessingAt != null) throw new Error('clan_hall_already_owned');
@@ -98,19 +130,23 @@ export async function purchaseClanHallBlessingForUser(
     );
     if (!result.ok) throw gameConflictFromMutation(result);
 
-    await tx.clan.update({
+    const updatedClan = await tx.clan.update({
       where: { id: clan.id },
       data: { hallBlessingAt: new Date() },
+      select: CLAN_HALL_CLAN_SELECT,
     });
 
     const fresh = (await tx.character.findUnique({
       where: { id: char.id },
+      include: {
+        clan: { select: { name: true, ...CLAN_HALL_CLAN_SELECT } },
+      },
     })) as CharacterRow | null;
     if (!fresh) throw new Error('no_character');
 
     return {
       character: await buildCharacterClientSnapshot(fresh, userId),
-      hall: buildClanHallView(true, false, clan.level),
+      hall: buildClanHallView(true, false, updatedClan.level),
     };
   });
 }

@@ -73,7 +73,7 @@ export interface CharacterRow {
   clanId: string | null;
   clanRole: string | null;
   /** Якщо завантажено з include clan. */
-  clan?: { name: string } | null;
+  clan?: { name: string; hallBlessingAt?: Date | null; level?: number } | null;
 }
 
 /** Активний баф у снепшоті (для UI): з урахуванням `expiresAt` (L2 abnormalTime). */
