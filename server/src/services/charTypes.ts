@@ -230,4 +230,6 @@ export interface CharacterSnapshot {
   coinOfLuck: number;
   /** Мощ героя (формула на сервері). */
   heroPower: number;
+  /** Непрочитані відповіді в чаті (replyToCharacterId = цей герой). */
+  chatUnreadReplyCount?: number;
 }

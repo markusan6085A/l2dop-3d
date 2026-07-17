@@ -1242,6 +1242,12 @@
       if (typeof applyScreenSpecific === 'function') {
         applyScreenSpecific(snapshot);
       }
+      if (
+        global.L2ChatReplyNotify &&
+        typeof global.L2ChatReplyNotify.applyFromSnapshot === 'function'
+      ) {
+        global.L2ChatReplyNotify.applyFromSnapshot(snapshot);
+      }
       return snapshot;
     },
     resyncCharacterAfterConflict: async function (applyScreenSpecific, conflictPayload) {
@@ -1953,7 +1959,7 @@
     /* ignore */
   }
 
-  var CHAT_REPLY_NOTIFY_VER = '20260717chatFixed1';
+  var CHAT_REPLY_NOTIFY_VER = '20260717chatSnap1';
   var ONLINE_FOOT_ASSET_VER = '20260717perf2';
   var GAME_HELPER_ASSET_VER = '20260717perf2';
 

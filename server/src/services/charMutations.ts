@@ -11,6 +11,7 @@ import {
 } from './charConflict.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
+import { toClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyCharacterReadView } from './charReadView.js';
@@ -125,7 +126,7 @@ export async function getSnapshotForUser(
       }
 
       const sanitized = await ensureInventoryReadPatchesRow(row);
-      return toSnapshot(applyCharacterReadView(sanitized));
+      return toClientSnapshot(applyCharacterReadView(sanitized), userId);
     });
   }
 
@@ -135,7 +136,7 @@ export async function getSnapshotForUser(
   });
   if (!row) return null;
   const sanitized = await ensureInventoryReadPatchesRow(row as CharacterRow);
-  return toSnapshot(applyCharacterReadView(sanitized));
+  return toClientSnapshot(applyCharacterReadView(sanitized), userId);
 }
 
 export async function applyEquipFromBag(

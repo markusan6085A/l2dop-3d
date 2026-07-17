@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
-    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260717chatFixed1" />
+    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260717chatNews1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-chat l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -62,8 +62,7 @@
 
             <p class="err" id="chat-load-err" hidden></p>
 
-            <section class="l2-chat-panel" id="chat-content" aria-label="Чат">
-              <div class="l2-chat-compose">
+            <section class="l2-chat-panel" id="chat-content" aria-label="Чат" hidden>
               <div class="l2-chat-tabs" role="tablist" aria-label="Канали чату">
                 <div class="l2-chat-tabs__main">
                   <button type="button" class="l2-chat-tabs__btn l2-chat-tabs__btn--active" data-channel="all" id="chat-tab-all">
@@ -125,13 +124,10 @@
                   </button>
                 </nav>
               </div>
-              </div>
 
               <p class="l2-city-stub-msg" id="chat-stub-msg" hidden></p>
 
-              <div class="l2-chat-list" id="chat-messages" aria-live="polite">
-                <p class="l2-chat-empty" id="chat-loading-hint">Завантаження…</p>
-              </div>
+              <div class="l2-chat-list" id="chat-messages" aria-live="polite"></div>
 
               <nav class="l2-chat-pages" id="chat-pages" aria-label="Сторінки чату" hidden></nav>
             </section>
@@ -146,6 +142,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260717perf2"></script>
     <script src="/chatSmiles.js?v=20260711chatOrig5"></script>
-    <script src="/chat.js?v=20260717chatFixed1"></script>
+    <script src="/chat.js?v=20260711chatSmile16"></script>
   </body>
 </html>

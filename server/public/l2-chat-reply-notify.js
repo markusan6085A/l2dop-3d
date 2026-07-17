@@ -70,7 +70,11 @@
     }
 
     var now = Date.now();
-    if (!opts.force && now - lastRefreshAt < MIN_REFRESH_GAP_MS) {
+    if (
+      !opts.force &&
+      !opts.afterSnapshot &&
+      now - lastRefreshAt < MIN_REFRESH_GAP_MS
+    ) {
       if (!refreshDebounceTimer) {
         refreshDebounceTimer = setTimeout(function () {
           refreshDebounceTimer = null;
@@ -108,6 +112,22 @@
           fetchUnreadCount(link);
         }
       });
+  }
+
+  function applyFromSnapshot(snapshot) {
+    if (document.body && document.body.classList.contains('l2-page-chat')) {
+      setCount(null, 0);
+      return;
+    }
+    if (
+      snapshot &&
+      snapshot.chatUnreadReplyCount != null &&
+      Number.isFinite(Number(snapshot.chatUnreadReplyCount))
+    ) {
+      setCount(null, Number(snapshot.chatUnreadReplyCount));
+      return;
+    }
+    fetchUnreadCount(null, { force: true, afterSnapshot: true });
   }
 
   function refreshCount(linkEl) {
@@ -166,5 +186,6 @@
   global.L2ChatReplyNotify = {
     mount: mount,
     refreshCount: refreshCount,
+    applyFromSnapshot: applyFromSnapshot,
   };
 })(window);

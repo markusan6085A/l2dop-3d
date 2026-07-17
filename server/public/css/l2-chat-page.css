@@ -1,6 +1,5 @@
 /**
  * chat.html — WAP-чат (Заг | Торг | Мій).
- * Фіксований viewport: HUD + нижнє меню на місці, скрол лише в #chat-messages.
  */
 body.l2-app-l2-chrome.l2-page-chat.l2-nav-minimal {
   --l2s-content-edge-pad: 0.25cm;
@@ -8,51 +7,10 @@ body.l2-app-l2-chrome.l2-page-chat.l2-nav-minimal {
   --l2-chat-smile-side-pad: 1cm;
 }
 
-html body.l2-app-l2-chrome.l2-page-chat {
-  height: 100%;
-  overflow: hidden;
-}
-
-html body.l2-app-l2-chrome.l2-page-chat .l2-shell,
-html body.l2-app-l2-chrome.l2-page-chat .l2-screen.l2-outer-sframe-host,
-html body.l2-app-l2-chrome.l2-page-chat .l2-screen-inner.l2-chat-root,
-html body.l2-app-l2-chrome.l2-page-chat .l2-chrome-nav-column {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: 100dvh;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-html body.l2-app-l2-chrome.l2-page-chat.l2-nav-minimal .l2-screen.l2-outer-sframe-host {
-  height: 100dvh !important;
-  min-height: 100dvh !important;
-  max-height: 100dvh !important;
-}
-
-html body.l2-app-l2-chrome.l2-page-chat #l2-hud-panel-mount,
-html body.l2-app-l2-chrome.l2-page-chat #l2-nav-bottom {
-  flex-shrink: 0;
-}
-
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-panel {
   margin-top: 0.5cm;
   padding: 0 0.25cm;
   box-sizing: border-box;
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-}
-
-body.l2-app-l2-chrome.l2-page-chat .l2-chat-compose {
-  flex-shrink: 0;
-  position: relative;
-  z-index: 2;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs {
@@ -188,13 +146,9 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-list {
   display: flex;
   flex-direction: column;
   gap: 0;
-  flex: 1 1 auto;
-  min-height: 0;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible;
   box-sizing: border-box;
 }
 
@@ -206,6 +160,27 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty {
   color: #c8c0b0;
 }
 
+body.l2-app-l2-chrome.l2-page-chat .l2-screen-inner,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-root,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-panel {
+  overflow: visible !important;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-panel,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-list,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__head,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
+  overflow: visible !important;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg {
+  margin: 0;
+  padding: 0 0 2px;
+  border-bottom: 0;
+  overflow: visible;
+}
+
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
   margin: 0;
   padding: 0 0 2px;
@@ -214,21 +189,7 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__text {
   min-height: 0;
   color: #fff;
   word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-body.l2-app-l2-chrome.l2-page-chat .l2-chat-pages {
-  flex-shrink: 0;
-}
-
-body.l2-app-l2-chrome.l2-page-chat .l2-city-stub-msg {
-  flex-shrink: 0;
-}
-
-body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg {
-  margin: 0;
-  padding: 0 0 2px;
-  border-bottom: 0;
+  overflow: visible;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-smile {
@@ -319,18 +280,10 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-msg__delete:focus {
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 6;
-  margin: 0;
+  margin: 0 0 10px;
   padding: 4px var(--l2-chat-smile-side-pad, 1cm) 8px;
   overflow: hidden;
   box-sizing: border-box;
-  background: rgba(12, 10, 8, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-smiles__grid {
