@@ -11,6 +11,8 @@ const MARKET_ERRORS: Record<string, string> = {
   cannot_buy_own_listing: 'Не можна купити власний лот.',
   not_enough_adena: 'Недостатньо адени.',
   not_enough_coin: 'Недостатньо Coin of Luck.',
+  coin_luck_use_coin_market:
+    'Coin of Luck продають лише на ринку Coin of Luck.',
   no_character: 'Персонаж не знайдений.',
 };
 

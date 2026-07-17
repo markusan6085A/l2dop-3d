@@ -25,8 +25,6 @@ import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 
-const TOWN_RESTORE_FREE_MAX_LEVEL = 40;
-const TOWN_RESTORE_FEE_ADENA = 140000n;
 const WORLD_TTL_MS = 30 * 60 * 1000;
 
 export interface TownRestoreResult {
@@ -93,11 +91,6 @@ export async function applyTownRestoreVitals(
         }
 
         const level = levelFromTotalExp(base.exp);
-        const fee =
-          level <= TOWN_RESTORE_FREE_MAX_LEVEL ? 0n : TOWN_RESTORE_FEE_ADENA;
-        if (fee > 0n && base.adena < fee) {
-          throw new Error('town_restore_not_enough_adena');
-        }
 
         const inv = parseInventory(base.inventoryJson);
         const combat = computeCombatStats(
@@ -135,18 +128,14 @@ export async function applyTownRestoreVitals(
             ? Math.min(maxMp, Math.max(0, Math.floor(worldTicked.playerMp)))
             : maxMp;
         const alreadyFull = base.hp >= maxHp && curMp >= maxMp;
-        if (alreadyFull && fee === 0n) {
+        if (alreadyFull) {
           return { changed: false };
-        }
-        if (alreadyFull && fee > 0n) {
-          throw new Error('town_restore_already_full');
         }
 
         const changed =
           base.hp !== nextHp ||
           JSON.stringify(base.worldCombatStateJson ?? null) !==
-            JSON.stringify(nextWorldJson) ||
-          fee > 0n;
+            JSON.stringify(nextWorldJson);
         if (!changed) {
           return { changed: false };
         }
@@ -157,7 +146,6 @@ export async function applyTownRestoreVitals(
             hp: nextHp,
             worldCombatStateJson:
               nextWorldJson as unknown as Prisma.InputJsonValue,
-            ...(fee > 0n ? { adena: { decrement: fee } } : {}),
           },
         };
       }
@@ -165,13 +153,9 @@ export async function applyTownRestoreVitals(
     if (!result.ok) throw gameConflictFromMutation(result);
 
     const nextRow = result.character as CharacterRow;
-    const fee =
-      levelFromTotalExp(nextRow.exp) <= TOWN_RESTORE_FREE_MAX_LEVEL
-        ? 0n
-        : TOWN_RESTORE_FEE_ADENA;
     return {
       character: toSnapshot(nextRow),
-      feeAdena: String(fee),
+      feeAdena: '0',
     };
   });
 }

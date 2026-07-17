@@ -41,6 +41,10 @@ import { dropsShopGearCatalogExtras } from './dropsShopGearCatalogExtras.js';
 import { authorGiftGearCatalogExtras, mergeAuthorGiftItems } from './itemsCatalogAuthorGifts.js';
 import { starterGearCatalogExtras } from './starterGearCatalogExtras.js';
 import {
+  COIN_OF_LUCK_ICON_URL,
+  COIN_OF_LUCK_ITEM_ID,
+} from '../domain/dailyQuestRewards.js';
+import {
   ancientAdenaItemMetaForCatalog,
   ancientAdenaNamesUkForClient,
 } from './ancientAdenaItem.js';
@@ -547,6 +551,16 @@ export interface GearCatalogRow {
   };
 }
 
+function coinOfLuckGearCatalogExtra(): GearCatalogRow {
+  return {
+    itemId: COIN_OF_LUCK_ITEM_ID,
+    nameUk: 'Coin of Luck',
+    iconUrl: COIN_OF_LUCK_ICON_URL,
+    slot: 'consumable',
+    stats: {},
+  };
+}
+
 /** Для GET /character — підписи й іконки в сумці без окремого запиту. */
 export function listGearCatalogForClient(): GearCatalogRow[] {
   const rows: GearCatalogRow[] = [];
@@ -609,6 +623,9 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
     if (seen.has(extra.itemId)) continue;
     seen.add(extra.itemId);
     rows.push(extra);
+  }
+  if (!seen.has(COIN_OF_LUCK_ITEM_ID)) {
+    rows.push(coinOfLuckGearCatalogExtra());
   }
   return rows;
 }

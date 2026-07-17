@@ -87,6 +87,9 @@ function listingToView(row: {
 
 export async function listActiveMarketListings(): Promise<MarketListingView[]> {
   const rows = await prisma.marketListing.findMany({
+    where: {
+      itemId: { not: COIN_OF_LUCK_ITEM_ID },
+    },
     orderBy: { createdAt: 'desc' },
     take: 200,
   });
@@ -405,6 +408,11 @@ export async function createMarketListing(
   );
   if (priceAdena <= 0n && priceCoinOfLuck <= 0) {
     throw new Error('price_required');
+  }
+  if (itemId === COIN_OF_LUCK_ITEM_ID) {
+    if (priceAdena <= 0n || priceCoinOfLuck > 0) {
+      throw new Error('coin_luck_use_coin_market');
+    }
   }
 
   return prisma.$transaction(async (tx) => {

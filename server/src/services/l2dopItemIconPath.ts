@@ -5,6 +5,10 @@ import {
   craftResourceIconRelUrl,
 } from '../data/resourceCraftIconFileNames.js';
 import { sealStoneIconUrlForItemId } from '../data/sevenSignsSealStoneItems.js';
+import {
+  COIN_OF_LUCK_ICON_URL,
+  COIN_OF_LUCK_ITEM_ID,
+} from '../domain/dailyQuestRewards.js';
 
 function publicDirCandidates(relParts: string[]): string[] {
   const cwd = process.cwd();
@@ -78,6 +82,12 @@ export function resolveItemIconPublicUrl(itemId: number): string {
       publicDirCandidates(['assets', 'l2dop', 'etc_adena_i00.png']),
     );
     if (adena) return '/assets/l2dop/etc_adena_i00.png';
+  }
+  if (itemId === COIN_OF_LUCK_ITEM_ID) {
+    const coin = firstExistingPath(
+      publicDirCandidates(['assets', 'assets', 'photo_2026-07-05_12-52-57.jpg']),
+    );
+    if (coin) return COIN_OF_LUCK_ICON_URL;
   }
   const sealStoneUrl = sealStoneIconUrlForItemId(itemId);
   if (sealStoneUrl) return sealStoneUrl;

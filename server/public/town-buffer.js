@@ -181,11 +181,7 @@
         renderFee(Number(j.character.level || 1));
       }
       var fee = j && j.feeAdena != null ? String(j.feeAdena) : '0';
-      if (fee === '0') {
-        setMsg('HP, MP і CP відновлено безкоштовно.');
-      } else {
-        setMsg('HP, MP і CP відновлено. Списано ' + fee + ' адени.');
-      }
+      setMsg('HP, MP і CP відновлено.');
     } finally {
       restoreInFlight = false;
     }

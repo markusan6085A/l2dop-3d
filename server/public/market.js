@@ -6,6 +6,9 @@
   var cancelInFlight = false;
   var authToken = '';
   var myCharName = '';
+  var COIN_OF_LUCK_ITEM_ID = 4037;
+  var COIN_OF_LUCK_ICON_URL =
+    '/assets/assets/photo_2026-07-05_12-52-57.jpg';
 
   function $(id) {
     return document.getElementById(id);
@@ -29,11 +32,15 @@
   }
 
   function itemIconUrlForId(id) {
+    var fallback =
+      Number(id) === COIN_OF_LUCK_ITEM_ID
+        ? COIN_OF_LUCK_ICON_URL
+        : '/icons/drops/other.svg';
     if (window.L2 && typeof L2.resolveItemIconUrl === 'function') {
-      return L2.resolveItemIconUrl(id, '/icons/drops/other.svg');
+      return L2.resolveItemIconUrl(id, fallback);
     }
     if (id > 0) return '/game/item-icon/' + id;
-    return '/icons/drops/other.svg';
+    return fallback;
   }
 
   function setItemIconSrc(img, itemId) {
@@ -229,7 +236,11 @@
     if (!root) return;
     root.innerHTML = '';
 
-    if (!Array.isArray(listings) || listings.length === 0) {
+    var visible = (Array.isArray(listings) ? listings : []).filter(function (entry) {
+      return Number(entry && entry.itemId) !== COIN_OF_LUCK_ITEM_ID;
+    });
+
+    if (visible.length === 0) {
       if (empty) {
         empty.hidden = false;
         empty.textContent = mineMode
@@ -240,7 +251,7 @@
     }
     if (empty) empty.hidden = true;
 
-    listings.forEach(function (entry) {
+    visible.forEach(function (entry) {
       var row = document.createElement('p');
       row.className = mineMode ? 'l2-market-row l2-market-row--mine' : 'l2-market-row';
 

@@ -50,7 +50,7 @@
       .l2-town-buffer-actions {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         gap: 6px;
       }
       .l2-town-buffer-fee {
@@ -58,6 +58,8 @@
         font-size: 12px;
         color: #fff;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+        text-align: left;
+        width: 100%;
       }
       .l2-town-buffer-text-btn {
         margin: 0;
@@ -73,26 +75,14 @@
         -webkit-tap-highlight-color: transparent;
       }
       .l2-town-buffer-text-btn--apply {
-        display: inline-block;
-        padding: 8px 18px;
-        border: 1px solid rgba(70, 175, 75, 0.7);
-        border-radius: 6px;
-        background: linear-gradient(180deg, #2d6f2d 0%, #1d4f1d 55%, #123512 100%);
-        color: #5ce85c !important;
-        font-family: var(--l2-font-display, 'Lora', Georgia, serif);
-        font-size: 12px;
+        color: #5ce85c;
         font-weight: 700;
-        letter-spacing: 0.04em;
-        text-decoration: none !important;
-        text-align: center;
-        box-shadow: inset 0 1px 0 rgba(200, 255, 200, 0.14);
-        transition: filter 0.12s ease;
-        text-shadow: none;
+        text-decoration: underline;
       }
       .l2-town-buffer-text-btn--apply:hover:not(:disabled),
       .l2-town-buffer-text-btn--apply:focus-visible:not(:disabled) {
-        filter: brightness(1.1);
         outline: none;
+        filter: brightness(1.12);
         color: #7eff7e !important;
       }
       .l2-town-buffer-text-btn--restore {
@@ -133,8 +123,9 @@
         font-size: 12px;
         color: #b8a888;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
-        text-align: center;
+        text-align: left;
         line-height: 1.35;
+        width: 100%;
       }
     </style>
   </head>
@@ -186,6 +177,6 @@
     <script src="/common.js?v=20260712wapBars16"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/town-buffer.js?v=20260711bufferText1"></script>
+    <script src="/town-buffer.js?v=20260717townBufferUi1"></script>
   </body>
 </html>

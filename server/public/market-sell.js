@@ -5,6 +5,7 @@
   var PAGE_SIZE = 15;
   var currentPage = 0;
   var activeCat = 'all';
+  var COIN_OF_LUCK_ITEM_ID = 4037;
 
   var CAT_TABS = [
     ['all', 'Все'],
@@ -84,7 +85,9 @@
     if (!snap || !snap.inventory || !Array.isArray(snap.inventory.stacks)) {
       return [];
     }
-    return snap.inventory.stacks.slice();
+    return snap.inventory.stacks.filter(function (st) {
+      return Number(st && st.itemId) !== COIN_OF_LUCK_ITEM_ID;
+    });
   }
 
   function stackMatchesCat(st) {
