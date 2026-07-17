@@ -1564,7 +1564,14 @@
         }
         if (delta.revision != null && character) {
           character.revision = delta.revision;
+        }
+        if (character) {
+          if (delta.characterHp != null) character.hp = delta.characterHp;
+          if (delta.characterMp != null) character.mp = delta.characterMp;
+          if (delta.characterMaxHp != null) character.maxHp = delta.characterMaxHp;
+          if (delta.characterMaxMp != null) character.maxMp = delta.characterMaxMp;
           if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+          if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
         }
         return false;
       }

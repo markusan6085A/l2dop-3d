@@ -20,6 +20,8 @@ import { prisma } from '../lib/prisma.js';
 import { getNearbyHeroesForMap } from './mapNearbyHeroesService.js';
 import { buildMapNearbySpawnViews } from './mapNearbySpawnsQuery.js';
 import { applyCharacterReadView } from './charReadView.js';
+import { ensureClanHallOnRow } from './charClientSnapshot.js';
+import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow } from './charTypes.js';
 import {
   findPvpIncomingForCharacter,
@@ -52,7 +54,9 @@ export interface CharacterMapStatePayload {
   name: string;
 }
 
-function mapStateFromRow(row: CharacterRow): CharacterMapStatePayload {
+async function mapStateFromRow(row: CharacterRow): Promise<CharacterMapStatePayload> {
+  const rowReady = await ensureClanHallOnRow(row);
+  const snap = toSnapshot(rowReady);
   const expSeg = expSegmentForLevelBar(row.exp);
   return {
     id: row.id,
@@ -62,8 +66,8 @@ function mapStateFromRow(row: CharacterRow): CharacterMapStatePayload {
     targetX: row.targetX,
     targetY: row.targetY,
     level: levelFromTotalExp(row.exp),
-    hp: row.hp,
-    maxHp: row.maxHp,
+    hp: snap.hp,
+    maxHp: snap.maxHp,
     expBarCur: expSeg.cur.toString(),
     expBarMax: expSeg.max.toString(),
     expBarPct: expSeg.pct,
@@ -78,6 +82,7 @@ export async function getCharacterMapStateForUser(
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
+    include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
   });
   if (!row) return null;
   return mapStateFromRow(applyCharacterReadView(row as CharacterRow));

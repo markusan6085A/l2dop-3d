@@ -563,7 +563,29 @@
         lastSnapshot = partial;
         return lastSnapshot;
       }
-      lastSnapshot = Object.assign({}, lastSnapshot, partial);
+      var keys = [
+        'id',
+        'revision',
+        'worldX',
+        'worldY',
+        'targetX',
+        'targetY',
+        'level',
+        'hp',
+        'maxHp',
+        'expBarCur',
+        'expBarMax',
+        'expBarPct',
+        'name',
+      ];
+      var patch = {};
+      for (var ki = 0; ki < keys.length; ki++) {
+        var k = keys[ki];
+        if (Object.prototype.hasOwnProperty.call(partial, k)) {
+          patch[k] = partial[k];
+        }
+      }
+      lastSnapshot = Object.assign({}, lastSnapshot, patch);
       return lastSnapshot;
     },
 

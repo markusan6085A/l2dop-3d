@@ -1420,6 +1420,9 @@
       if (window.L2 && typeof L2.setLastSnapshot === 'function') {
         L2.setLastSnapshot(c);
       }
+      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+        L2.applyHudFromSnapshot(c);
+      }
       if (handlePveDefeatRedirect(null, c)) return;
     }
 

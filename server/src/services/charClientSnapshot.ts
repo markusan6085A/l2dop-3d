@@ -36,17 +36,25 @@ function attachClientSnapshotMeta(
   };
 }
 
-async function ensureClanHallOnRow(row: CharacterRow): Promise<CharacterRow> {
+async function ensureClanHallOnRow(
+  row: CharacterRow,
+  tx?: import('@prisma/client').Prisma.TransactionClient
+): Promise<CharacterRow> {
   if (!row.clanId) return row;
   const needsFetch =
     !row.clan ||
     row.clan.hallBlessingAt === undefined ||
     row.clan.level === undefined;
   if (!needsFetch) return row;
-  const clan = await prisma.clan.findUnique({
-    where: { id: row.clanId },
-    select: { name: true, hallBlessingAt: true, level: true },
-  });
+  const clan = tx
+    ? await tx.clan.findUnique({
+        where: { id: row.clanId },
+        select: { name: true, hallBlessingAt: true, level: true },
+      })
+    : await prisma.clan.findUnique({
+        where: { id: row.clanId },
+        select: { name: true, hallBlessingAt: true, level: true },
+      });
   if (!clan) return row;
   return {
     ...row,
@@ -56,6 +64,15 @@ async function ensureClanHallOnRow(row: CharacterRow): Promise<CharacterRow> {
       level: clan.level,
     },
   };
+}
+
+export { ensureClanHallOnRow };
+
+/** Snapshot з гарантованим clan-hall (read-path). */
+export async function toSnapshotWithClanHall(
+  row: CharacterRow
+): Promise<CharacterSnapshot> {
+  return toSnapshot(await ensureClanHallOnRow(row));
 }
 
 /** Єдиний client snapshot для GET і POST. Після commit транзакції. */

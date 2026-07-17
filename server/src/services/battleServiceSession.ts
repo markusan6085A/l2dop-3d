@@ -35,6 +35,7 @@ import {
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { buildCharacterClientSnapshot, ensureClanHallOnRow } from './charClientSnapshot.js';
 import {
   computeCombatStats,
   effectiveMaxMpWithJewelFlat,
@@ -95,12 +96,13 @@ export async function startBattleInTx(
   const char = await tx.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
+    include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
   });
   if (!char) throw new Error('no_character');
   if (parsePvePendingDefeat((char as CharacterRow).pvePendingDefeatJson)) {
     throw new Error('pve_defeat_pending');
   }
-  const cr0 = char as CharacterRow;
+  const cr0 = await ensureClanHallOnRow(char as CharacterRow, tx);
   const base = resolveMapMovement(applyPassiveHpRegen(cr0));
 
   const dungeonMob = getDungeonMobSpawnById(spawnId);
@@ -289,7 +291,8 @@ export async function startBattleInTx(
   );
   if (!result.ok) throw gameConflictFromMutation(result);
   const row = result.character as CharacterRow;
-  const snap = toSnapshot(row);
+  const rowReady = await ensureClanHallOnRow(row, tx);
+  const snap = toSnapshot(rowReady);
   const crSt = base;
   const prof0 =
     typeof crSt.l2Profession === 'string' && crSt.l2Profession.trim()
@@ -350,10 +353,11 @@ export async function getBattleState(
   let row = (await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
+    include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
   })) as CharacterRow | null;
   if (!row) return null;
   row = applyCharacterReadView(row);
-  const snap = toSnapshot(row as CharacterRow);
+  const snap = await buildCharacterClientSnapshot(row as CharacterRow, userId);
   const pvpIncoming = await findPvpIncomingForCharacter(snap.id);
   if (snap.pveDefeat || snap.pvpDefeat) {
     return { character: snap, battle: null, pvpIncoming };

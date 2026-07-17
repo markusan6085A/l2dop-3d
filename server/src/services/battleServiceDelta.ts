@@ -92,6 +92,15 @@ export function buildBattleSyncResponse(args: {
       outcome: null,
       battleEnded: false,
       mysticSkillCdUntil: args.mysticSkillCdUntil,
+      ...battleVitalsPayload({
+        row: args.row,
+        st: args.st,
+        maxHpEff: args.maxHpEff,
+        maxHpNoClan: args.maxHpNoClan,
+        clanHallBonus: args.clanHallBonus,
+        maxMpEff: args.maxMpEff,
+        playerMp: args.playerMp,
+      }),
     };
   }
 

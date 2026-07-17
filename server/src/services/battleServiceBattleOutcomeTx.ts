@@ -46,6 +46,7 @@ import {
   computeCharacterVitalsBundle,
   resolveClanHallBonusInTx,
 } from './characterClanHallVitals.js';
+import { ensureClanHallOnRow } from './charClientSnapshot.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import {
   clearMobSpawnHpEntry,
@@ -270,7 +271,7 @@ export async function persistBattleVictoryInTx(
     huntSameLevelRemaining,
   };
   return {
-    character: toSnapshot(row as CharacterRow),
+    character: toSnapshot(await ensureClanHallOnRow(row as CharacterRow, tx)),
     victory,
   };
 }
@@ -367,7 +368,7 @@ export async function persistBattleDefeatInTx(
     nearestTeleportId: near.teleportId,
   };
   return {
-    character: toSnapshot(crLost),
+    character: toSnapshot(await ensureClanHallOnRow(crLost as CharacterRow, tx)),
     defeat,
   };
 }

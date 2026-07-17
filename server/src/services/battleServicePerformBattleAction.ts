@@ -107,7 +107,7 @@ import {
 } from './battleServiceDamageRolls.js';
 import { battleActionAllowed } from './battleServiceBattleUi.js';
 import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
-import { enrichPartialClientSnapshot } from './charClientSnapshot.js';
+import { enrichPartialClientSnapshot, ensureClanHallOnRow } from './charClientSnapshot.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
@@ -223,7 +223,9 @@ export async function performBattleActionInTx(
 
     const bj = parseBattleJson((char as CharacterRow).battleJson);
     if (!bj) {
-      const snapAfterFlush = toSnapshot(char as CharacterRow);
+      const snapAfterFlush = toSnapshot(
+        await ensureClanHallOnRow(char as CharacterRow, tx)
+      );
       if (snapAfterFlush.pveDefeat) {
         return wrapBattleDefeatAsDelta({
           character: snapAfterFlush,
