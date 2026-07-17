@@ -66,10 +66,14 @@
   }
 
   var lastSnapshot = null;
+  var snapshotFetchInFlight = null;
   var sessionCatalogMerged = false;
   var sessionCatalogFetchPromise = null;
   var hudFirstFillDone = false;
   var SESSION_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
+  var ONLINE_COUNT_CACHE_KEY = 'l2-online-count-cache-v1';
+  var SNAPSHOT_FRESH_MS = 30000;
+  var ONLINE_COUNT_FRESH_MS = 45000;
   var ITEM_ICON_HINTS_CACHE_KEY = 'l2-item-icon-hints-v1';
   var itemIconHintsPersistTimer = null;
 
@@ -909,10 +913,57 @@
           JSON.stringify({
             tokenSig: global.L2.tokenSessionSig(tok),
             snapshot: snapshot,
+            fetchedAt: Date.now(),
           })
         );
       } catch (e) {
         /* ignore quota */
+      }
+    },
+    readSessionSnapshotFetchedAt: function (key) {
+      try {
+        var tok = global.L2.token();
+        if (!tok) return null;
+        var raw = sessionStorage.getItem(key || SESSION_SNAPSHOT_CACHE_KEY);
+        if (!raw) return null;
+        var j = JSON.parse(raw);
+        if (!j || typeof j !== 'object') return null;
+        if (j.tokenSig !== global.L2.tokenSessionSig(tok)) return null;
+        return typeof j.fetchedAt === 'number' ? j.fetchedAt : null;
+      } catch (e) {
+        return null;
+      }
+    },
+    readOnlineCountCache: function () {
+      try {
+        var tok = global.L2.token();
+        if (!tok) return null;
+        var raw = sessionStorage.getItem(ONLINE_COUNT_CACHE_KEY);
+        if (!raw) return null;
+        var j = JSON.parse(raw);
+        if (!j || typeof j !== 'object') return null;
+        if (j.tokenSig !== global.L2.tokenSessionSig(tok)) return null;
+        if (typeof j.fetchedAt !== 'number') return null;
+        if (Date.now() - j.fetchedAt > ONLINE_COUNT_FRESH_MS) return null;
+        return typeof j.count === 'number' ? j.count : null;
+      } catch (e) {
+        return null;
+      }
+    },
+    writeOnlineCountCache: function (count) {
+      try {
+        var tok = global.L2.token();
+        if (!tok) return;
+        sessionStorage.setItem(
+          ONLINE_COUNT_CACHE_KEY,
+          JSON.stringify({
+            tokenSig: global.L2.tokenSessionSig(tok),
+            count: Number(count),
+            fetchedAt: Date.now(),
+          })
+        );
+      } catch (e) {
+        /* ignore */
       }
     },
     /** Скинути in-memory snapshot і sessionStorage-кеші персонажа (logout / новий акаунт). */
@@ -945,31 +996,63 @@
         lastSnapshot = null;
         return null;
       }
+      if (snapshotFetchInFlight) {
+        return snapshotFetchInFlight;
+      }
       var claimWorld =
         opts && (opts.claimWorld === true || opts.claimWorld === 1);
       var url = claimWorld ? '/character?claimWorld=1' : '/character';
-      var r = await fetch(url, {
-        headers: { Authorization: 'Bearer ' + t },
-        cache: 'no-store',
-      });
-      if (r.status === 401) {
-        global.L2.setToken(null);
-        lastSnapshot = null;
-        return null;
+      snapshotFetchInFlight = (async function () {
+        try {
+          var r = await fetch(url, {
+            headers: { Authorization: 'Bearer ' + t },
+            cache: 'no-store',
+          });
+          if (r.status === 401) {
+            global.L2.setToken(null);
+            lastSnapshot = null;
+            return null;
+          }
+          if (!r.ok) return null;
+          var j = await r.json();
+          lastSnapshot = j.character;
+          global.L2.writeSessionSnapshotCache(
+            SESSION_SNAPSHOT_CACHE_KEY,
+            j.character
+          );
+          if (typeof global.L2.applyHudFromSnapshot === 'function') {
+            global.L2.applyHudFromSnapshot(j.character);
+          }
+          return lastSnapshot;
+        } finally {
+          snapshotFetchInFlight = null;
+        }
+      })();
+      return snapshotFetchInFlight;
+    },
+    /** Snapshot з кешу, якщо свіжий; інакше один deduped fetch. */
+    ensureCharacterSnapshot: async function (opts) {
+      opts = opts || {};
+      var force = opts.force === true;
+      var claimWorld =
+        opts.claimWorld === true || opts.claimWorld === 1;
+      var maxAgeMs =
+        opts.maxAgeMs != null ? Number(opts.maxAgeMs) : SNAPSHOT_FRESH_MS;
+      if (!force && !claimWorld) {
+        var cached = global.L2.getSessionSnapshotOrNull();
+        var fetchedAt = global.L2.readSessionSnapshotFetchedAt(
+          SESSION_SNAPSHOT_CACHE_KEY
+        );
+        if (
+          cached &&
+          fetchedAt != null &&
+          Date.now() - fetchedAt < maxAgeMs
+        ) {
+          lastSnapshot = cached;
+          return cached;
+        }
       }
-      if (!r.ok) return null;
-      var j = await r.json();
-      lastSnapshot = j.character;
-      global.L2.writeSessionSnapshotCache(
-        SESSION_SNAPSHOT_CACHE_KEY,
-        j.character
-      );
-      // catalog-hints (~150–400 KB) — лише на екранах інвентаря/магазину;
-      // char/craft/warehouse/sell-items/battle викликають L2.fetchCatalogHints() окремо.
-      if (typeof global.L2.applyHudFromSnapshot === 'function') {
-        global.L2.applyHudFromSnapshot(j.character);
-      }
-      return lastSnapshot;
+      return global.L2.fetchSnapshot(opts);
     },
     fetchCatalogHints: async function () {
       var t = global.L2.token();
@@ -1707,6 +1790,8 @@
   function bootstrapChatReplyNotify() {
     if (typeof document === 'undefined' || !document.body) return;
     if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+    if (document.body.classList.contains('l2-page-battle')) return;
+    if (document.body.classList.contains('l2-page-chat')) return;
 
     if (!document.getElementById('l2-chat-reply-notify-css')) {
       var cssReply = document.createElement('link');
@@ -1738,11 +1823,25 @@
     (document.head || document.documentElement).appendChild(scriptReply);
   }
 
+  function shouldBootstrapGameHelper() {
+    if (typeof document === 'undefined' || !document.body) return false;
+    if (!document.body.classList.contains('l2-app-l2-chrome')) return false;
+    if (document.body.classList.contains('l2-page-auth')) return false;
+    if (document.body.classList.contains('l2-page-battle')) return false;
+    if (!getHudPanelForHelperBootstrap()) return false;
+    try {
+      var step = localStorage.getItem('l2-helper-step');
+      if (step === 'learn') step = 'learn5';
+      if (step) return true;
+      if (localStorage.getItem('l2-helper-buffer-tip') === '1') return true;
+    } catch (e) {
+      /* ignore */
+    }
+    return false;
+  }
+
   function bootstrapGameHelper() {
-    if (typeof document === 'undefined' || !document.body) return;
-    if (!document.body.classList.contains('l2-app-l2-chrome')) return;
-    if (document.body.classList.contains('l2-page-auth')) return;
-    if (!getHudPanelForHelperBootstrap()) return;
+    if (!shouldBootstrapGameHelper()) return;
 
     if (!document.getElementById('l2-game-helper-css')) {
       var cssHelper = document.createElement('link');
@@ -1785,6 +1884,7 @@
     if (typeof document === 'undefined' || !document.body) return;
     if (!document.body.classList.contains('l2-app-l2-chrome')) return;
     if (document.body.classList.contains('l2-page-online')) return;
+    if (document.body.classList.contains('l2-page-battle')) return;
 
     if (!document.getElementById('l2-online-foot-css')) {
       var css = document.createElement('link');
@@ -1825,9 +1925,16 @@
         global.L2.hydrateCharacterFromSessionCache();
       }
       loadItemIconHintsFromSession();
-      bootstrapGameHelper();
-      bootstrapOnlineFoot();
-      bootstrapChatReplyNotify();
+      function runDeferredChromeBootstraps() {
+        bootstrapGameHelper();
+        bootstrapOnlineFoot();
+        bootstrapChatReplyNotify();
+      }
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(runDeferredChromeBootstraps, { timeout: 2200 });
+      } else {
+        setTimeout(runDeferredChromeBootstraps, 1200);
+      }
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', runHudMount);

@@ -13,19 +13,9 @@
       return;
     }
 
-    fetch('/character', { headers: { Authorization: 'Bearer ' + t } })
-      .then(function (r) {
-        if (r.status === 401) return null;
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j || !j.character) return;
-        if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
-        if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(j.character);
-        }
-      })
-      .catch(function () {});
+    if (window.L2 && typeof L2.ensureCharacterSnapshot === 'function') {
+      L2.ensureCharacterSnapshot().catch(function () {});
+    }
   }
 
   if (document.readyState === 'loading') {

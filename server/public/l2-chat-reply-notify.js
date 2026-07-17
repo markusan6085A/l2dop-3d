@@ -9,7 +9,8 @@
   var refreshQueued = false;
   var refreshDebounceTimer = null;
   var lastRefreshAt = 0;
-  var POLL_MS = 20000;
+  var POLL_MS = 60000;
+  var INITIAL_FETCH_DELAY_MS = 2500;
   var MIN_REFRESH_GAP_MS = 8000;
 
   function authToken() {
@@ -50,6 +51,10 @@
 
     if (document.body && document.body.classList.contains('l2-page-chat')) {
       setCount(link, 0);
+      return;
+    }
+
+    if (document.hidden) {
       return;
     }
 
@@ -113,6 +118,7 @@
     if (pollStarted) return;
     pollStarted = true;
     pollTimer = setInterval(function () {
+      if (document.hidden) return;
       fetchUnreadCount();
     }, POLL_MS);
 
@@ -150,7 +156,9 @@
       link.href = '/chat.html';
       link.hidden = true;
       hudAnchor.insertAdjacentElement('afterend', link);
-      fetchUnreadCount(link);
+      setTimeout(function () {
+        fetchUnreadCount(link);
+      }, INITIAL_FETCH_DELAY_MS);
       ensurePoll(link);
     } else if (link.previousElementSibling !== hudAnchor) {
       hudAnchor.insertAdjacentElement('afterend', link);

@@ -98,20 +98,26 @@
     var mammonState = null;
 
     try {
-      var rChar = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + t },
-        cache: 'no-store',
-      });
-      if (rChar.ok) {
-        var jChar = await rChar.json();
-        if (jChar && jChar.character) {
-          if (global.L2.setLastSnapshot) global.L2.setLastSnapshot(jChar.character);
-          if (typeof global.L2.applyHudFromSnapshot === 'function') {
-            global.L2.applyHudFromSnapshot(jChar.character);
-          }
-          playerX = jChar.character.worldX;
-          playerY = jChar.character.worldY;
+      var snap = null;
+      if (global.L2 && typeof global.L2.ensureCharacterSnapshot === 'function') {
+        snap = await global.L2.ensureCharacterSnapshot();
+      } else {
+        var rChar = await fetch('/character', {
+          headers: { Authorization: 'Bearer ' + t },
+          cache: 'no-store',
+        });
+        if (rChar.ok) {
+          var jChar = await rChar.json();
+          snap = jChar && jChar.character ? jChar.character : null;
         }
+      }
+      if (snap) {
+        if (global.L2.setLastSnapshot) global.L2.setLastSnapshot(snap);
+        if (typeof global.L2.applyHudFromSnapshot === 'function') {
+          global.L2.applyHudFromSnapshot(snap);
+        }
+        playerX = snap.worldX;
+        playerY = snap.worldY;
       }
     } catch (eChar) {
       /* ignore */

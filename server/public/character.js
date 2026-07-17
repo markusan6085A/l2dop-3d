@@ -90,32 +90,7 @@
       setOnlineStatusText(false, c.lastUpdate);
       return;
     }
-
-    var charId = c.id != null ? String(c.id) : '';
-    var isOnline = false;
-    try {
-      var r = await fetch('/game/online?sort=level', {
-        headers: { Authorization: 'Bearer ' + token },
-      });
-      if (r.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return;
-      }
-      if (r.ok) {
-        var j = await r.json();
-        var players = j && j.players ? j.players : [];
-        for (var i = 0; i < players.length; i++) {
-          if (String(players[i].characterId || '') === charId) {
-            isOnline = true;
-            break;
-          }
-        }
-      }
-    } catch (_e) {
-      /* fallback — lastUpdate */
-    }
-    setOnlineStatusText(isOnline, c.lastUpdate);
+    setOnlineStatusText(true, c.lastUpdate);
   }
 
   function formatRegisteredUk(iso) {
@@ -395,28 +370,39 @@
     var contentEl = $('character-content');
 
     try {
-      var r = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + token },
-      });
-      if (r.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return;
+      var c = null;
+      if (window.L2 && typeof L2.ensureCharacterSnapshot === 'function') {
+        c = await L2.ensureCharacterSnapshot();
+      } else {
+        var r = await fetch('/character', {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return;
+        }
+        if (!r.ok) {
+          if (errEl) {
+            errEl.hidden = false;
+            errEl.textContent = 'Не вдалося завантажити персонажа.';
+          }
+          return;
+        }
+        var j = await r.json();
+        c = j.character;
       }
-      if (!r.ok) {
+      if (!c) {
         if (errEl) {
           errEl.hidden = false;
           errEl.textContent = 'Не вдалося завантажити персонажа.';
         }
         return;
       }
-
-      var j = await r.json();
-      var c = j.character;
-      if (c && typeof L2.setLastSnapshot === 'function') {
+      if (typeof L2.setLastSnapshot === 'function') {
         L2.setLastSnapshot(c);
       }
-      if (c && typeof L2.applyHudFromSnapshot === 'function') {
+      if (typeof L2.applyHudFromSnapshot === 'function') {
         L2.applyHudFromSnapshot(c);
       }
       applyProfile(c);

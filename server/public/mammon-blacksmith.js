@@ -20,20 +20,9 @@
   async function loadCharacterHud() {
     var t = localStorage.getItem('token');
     if (!t || !window.L2) return;
-
-    fetch('/character', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' })
-      .then(function (r) {
-        if (r.status === 401) return null;
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j || !j.character) return;
-        if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
-        if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(j.character);
-        }
-      })
-      .catch(function () {});
+    if (typeof L2.ensureCharacterSnapshot === 'function') {
+      L2.ensureCharacterSnapshot().catch(function () {});
+    }
   }
 
   async function init() {

@@ -37,6 +37,13 @@
       return;
     }
 
+    if (global.L2 && typeof global.L2.readOnlineCountCache === 'function') {
+      var cached = global.L2.readOnlineCountCache();
+      if (cached != null) {
+        link.textContent = 'Онлайн: ' + String(Math.max(0, Math.floor(cached)));
+      }
+    }
+
     if (refreshInFlight) return;
     var now = Date.now();
     if (now - lastRefreshAt < MIN_REFRESH_GAP_MS) return;
@@ -58,6 +65,9 @@
       .then(function (j) {
         if (!j) return;
         var n = j.count != null ? Number(j.count) : 0;
+        if (global.L2 && typeof global.L2.writeOnlineCountCache === 'function') {
+          global.L2.writeOnlineCountCache(n);
+        }
         link.textContent =
           'Онлайн: ' + (Number.isFinite(n) ? String(Math.max(0, Math.floor(n))) : '—');
       })
