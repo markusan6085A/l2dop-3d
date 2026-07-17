@@ -1,92 +1,454 @@
 <!DOCTYPE html>
+
 <html lang="uk">
+
   <head>
+
     <meta charset="utf-8" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title data-i18n="page_clan_my_title">Мій клан — L2WAP</title>
+
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
+
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
-    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans3" />
+
+    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans7" />
+
   </head>
+
   <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-clan-my l2-page-has-fixed-nav l2-app-l2-chrome">
+
     <div class="l2-shell">
+
       <div class="l2-screen l2-outer-sframe-host">
+
         <div class="l2-outer-sframe" aria-hidden="true">
+
           <div class="l2-outer-sframe__g">
+
             <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+
               <img
+
                 class="l2-outer-sframe__cap-tl-img"
+
                 src="/ref/19.png"
+
                 alt=""
+
                 width="28"
+
                 height="52"
+
                 decoding="async"
+
               />
+
             </span>
+
             <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+
             <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+
             <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+
             <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+
             <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+
             <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+
             <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+
           </div>
+
           <div class="l2-outer-sframe__cap-tr" role="presentation">
+
             <img
+
               class="l2-outer-sframe__cap-tr-img"
+
               src="/ref/18.png"
+
               alt=""
+
               width="28"
+
               height="52"
+
               decoding="async"
+
             />
+
           </div>
+
         </div>
+
         <div class="l2-game-chrome-crest" aria-hidden="true">
+
           <img
+
             class="l2-game-chrome-crest__img"
+
             src="/ref/2.png"
+
             alt=""
+
             width="40"
+
             height="40"
+
             decoding="async"
+
           />
+
         </div>
+
         <div class="l2-screen-inner l2-city-root">
+
           <div class="l2-townlive-column">
+
             <div id="l2-hud-panel-mount"></div>
+
+
 
             <div id="l2-nav-top"></div>
 
+
+
             <p class="err" id="clan-my-err" hidden></p>
 
+            <p class="l2-city-stub-msg" id="clan-my-stub-msg" hidden></p>
+
+
+
             <section
+
               class="l2-clans-main"
+
               data-i18n-attr="aria-label:clan_my_section_aria"
+
               aria-label="Мій клан"
+
             >
-              <div class="l2-clans-intro">
-                <p id="clan-my-title" class="l2-clans-my-title">—</p>
-                <p id="clan-my-role" class="l2-clans-my-role" hidden></p>
+
+              <div id="clan-my-empty" class="l2-clan-my-empty" hidden>
+
+                <p data-i18n="clan_my_not_in_clan">Ти ще не в клані.</p>
+
               </div>
-              <p class="l2-clans-back">
-                <a class="l2-clans-back__link" href="/clans.html" data-i18n="clans_back_list"
-                  >&lt;&lt; Назад до кланів</a
-                >
-              </p>
+
+
+
+              <div id="clan-my-panel" class="l2-clan-my-panel" hidden>
+
+                <div class="l2-clan-my-block">
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label" data-i18n="clan_my_label_clan">Клан:</span>
+
+                    <span id="clan-my-name" class="l2-clan-my-val l2-clan-my-val--name">—</span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label" data-i18n="clan_my_label_founded">Заснований:</span>
+
+                    <span id="clan-my-founded" class="l2-clan-my-val l2-clan-my-val--date">—</span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label" data-i18n="clan_my_label_level">Рівень:</span>
+
+                    <span id="clan-my-level" class="l2-clan-my-val">—</span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label" data-i18n="clan_my_leader">Лідер клану:</span>
+
+                    <span id="clan-my-leader" class="l2-clan-my-val">—</span>
+
+                  </p>
+
+                </div>
+
+
+
+                <hr class="l2-clans-divider" aria-hidden="true" />
+
+
+
+                <div class="l2-clan-my-row l2-clan-my-row--announce">
+                  <button type="button" id="clan-my-announce-toggle" class="l2-clan-my-announce-btn" hidden>
+                    <span class="l2-clan-my-label l2-clan-my-label--announce" data-i18n="clan_my_label_announce"
+                      >Оголошення:</span
+                    >
+                  </button>
+                  <span
+                    id="clan-my-announce-label-read"
+                    class="l2-clan-my-label l2-clan-my-label--announce"
+                    data-i18n="clan_my_label_announce"
+                    hidden
+                    >Оголошення:</span
+                  >
+                  <span id="clan-my-announce" class="l2-clan-my-val">—</span>
+                </div>
+                <div id="clan-my-announce-edit-wrap" class="l2-clan-my-announce-edit" hidden>
+                  <textarea
+                    id="clan-my-announce-input"
+                    class="l2-clan-my-announce-input"
+                    rows="1"
+                    maxlength="300"
+                    data-i18n-attr="placeholder:clan_my_announce_ph"
+                    placeholder="Напиши оголошення для клану…"
+                  ></textarea>
+                  <button type="button" id="clan-my-announce-submit" class="l2-clan-my-announce-submit">
+                    <span data-i18n="clan_my_announce_submit">Написати</span>
+                  </button>
+                </div>
+
+
+
+                <hr class="l2-clans-divider" aria-hidden="true" />
+
+
+
+                <div class="l2-clan-my-block">
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label l2-clan-my-label--white" data-i18n="clan_my_label_reputation"
+
+                      >Репутація:</span
+
+                    >
+
+                    <span id="clan-my-reputation" class="l2-clan-my-val l2-clan-my-val--white">0</span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label l2-clan-my-label--white" data-i18n="clan_my_label_rating"
+
+                      >Рейтинг:</span
+
+                    >
+
+                    <span id="clan-my-rating" class="l2-clan-my-val l2-clan-my-val--white">—</span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label l2-clan-my-label--white" data-i18n="clan_my_label_skill_pts"
+
+                      >Очки вмінь:</span
+
+                    >
+
+                    <span id="clan-my-skill-pts" class="l2-clan-my-val l2-clan-my-val--pink">0</span>
+
+                  </p>
+
+                </div>
+
+
+
+                <hr class="l2-clans-divider" aria-hidden="true" />
+
+
+
+                <div class="l2-clan-my-block">
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label l2-clan-my-label--white" data-i18n="clan_my_label_adena"
+
+                      >Адена:</span
+
+                    >
+
+                    <span id="clan-my-adena" class="l2-clan-my-val l2-clan-my-val--white">0</span>
+
+                    <span class="l2-clan-my-inline-links">
+
+                      (<button type="button" class="l2-clan-my-link" data-stub="clan_my_stub_deposit_adena">
+
+                        <span data-i18n="clan_my_link_deposit">поповнити</span></button
+
+                      >,
+
+                      <button type="button" class="l2-clan-my-link" data-stub="clan_my_stub_withdraw_adena">
+
+                        <span data-i18n="clan_my_link_withdraw">взяти</span></button
+
+                      >)
+
+                    </span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label l2-clan-my-label--white" data-i18n="clan_my_label_luck"
+
+                      >Монет Удачі:</span
+
+                    >
+
+                    <span id="clan-my-luck" class="l2-clan-my-val l2-clan-my-val--white">0</span>
+
+                    <span class="l2-clan-my-inline-links">
+
+                      (<button type="button" class="l2-clan-my-link" data-stub="clan_my_stub_deposit_luck">
+
+                        <span data-i18n="clan_my_link_deposit">поповнити</span></button
+
+                      >,
+
+                      <button type="button" class="l2-clan-my-link" data-stub="clan_my_stub_withdraw_luck">
+
+                        <span data-i18n="clan_my_link_withdraw">взяти</span></button
+
+                      >)
+
+                    </span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <button type="button" class="l2-clan-my-link l2-clan-my-link--solo" data-stub="clan_my_stub_history">
+
+                      <span data-i18n="clan_my_link_history">Історія клану</span>
+
+                    </button>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <button type="button" class="l2-clan-my-link l2-clan-my-link--solo" data-stub="clan_my_stub_members">
+
+                      <span data-i18n="clan_my_link_members">Учасники:</span>
+
+                    </button>
+
+                    <span id="clan-my-members" class="l2-clan-my-val l2-clan-my-val--white">0</span>
+
+                  </p>
+
+                  <p class="l2-clan-my-row">
+
+                    <span class="l2-clan-my-label l2-clan-my-label--white" data-i18n="clan_my_label_warehouse"
+
+                      >Склад:</span
+
+                    >
+
+                    <button type="button" class="l2-clan-my-link" data-stub="clan_my_stub_wh_deposit">
+
+                      <span data-i18n="clan_my_link_wh_deposit">покласти речі</span></button
+
+                    >
+
+                    /
+
+                    <button type="button" class="l2-clan-my-link" data-stub="clan_my_stub_wh_withdraw">
+
+                      <span data-i18n="clan_my_link_wh_withdraw">взяти</span>
+
+                    </button>
+
+                  </p>
+
+                </div>
+
+
+
+                <hr class="l2-clans-divider" aria-hidden="true" />
+
+
+
+                <nav class="l2-clan-my-nav" aria-label="Кланові розділи">
+
+                  <button type="button" class="l2-clan-my-nav-link" data-stub="clan_my_stub_quests">
+
+                    <span data-i18n="clan_my_nav_quests">Кланові завдання</span>
+
+                  </button>
+
+                  <button type="button" class="l2-clan-my-nav-link" data-stub="clan_my_stub_castles">
+
+                    <span data-i18n="clan_my_nav_castles">Замки клану</span>
+
+                  </button>
+
+                  <button type="button" class="l2-clan-my-nav-link" data-stub="clan_my_stub_dungeons">
+
+                    <span data-i18n="clan_my_nav_dungeons">Підземелля драконів</span>
+
+                  </button>
+
+                  <button type="button" class="l2-clan-my-nav-link" data-stub="clan_my_stub_hall">
+
+                    <span data-i18n="clan_my_nav_hall">КланХолл</span>
+
+                  </button>
+
+                </nav>
+
+
+
+                <hr class="l2-clans-divider" aria-hidden="true" />
+
+
+
+                <div class="l2-clan-my-chat">
+
+                  <p class="l2-clan-my-chat-title" data-i18n="clan_my_chat_title">Чат клану:</p>
+
+                </div>
+
+              </div>
             </section>
 
+
+
             <div id="l2-foot-links"></div>
+
             <div id="l2-nav-bottom"></div>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
 
+
+
     <script src="/common.js?v=20260717perf2"></script>
-    <script src="/ui-i18n.js?v=20260718clans3"></script>
+
+    <script src="/ui-i18n.js?v=20260718clans7"></script>
+
     <script src="/l2-nav.js?v=20260718clans3"></script>
-    <script src="/clan-my.js?v=20260718clans3"></script>
+
+    <script src="/clan-my.js?v=20260718clans7"></script>
+
   </body>
+
 </html>
+

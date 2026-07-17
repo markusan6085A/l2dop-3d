@@ -38,6 +38,14 @@ const CLAN_CREATE_ERRORS: Record<string, { status: number; messageUk: string }> 
     status: 400,
     messageUk: 'Неможливо створити клан під час бою.',
   },
+  clan_announcement_length: {
+    status: 400,
+    messageUk: 'Оголошення занадто довге (макс. 300 символів).',
+  },
+  clan_announcement_forbidden: {
+    status: 403,
+    messageUk: 'Редагувати оголошення може лише лідер клану.',
+  },
 };
 
 export function sendClanCreateError(

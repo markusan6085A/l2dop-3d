@@ -251,3 +251,190 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back__link:focus-visible {
   border: 0 !important;
   box-shadow: none !important;
 }
+
+/* clan-my.html — повна картка клану */
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-panel {
+  padding-left: 2px;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-empty p {
+  margin: 0;
+  padding-left: 2px;
+  font-size: 12px;
+  color: #9a8468;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-block {
+  margin: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-row {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-row--announce {
+  margin: 0 0 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-label {
+  color: #bfa88a;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-label--announce {
+  color: #7eb8d4;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-label--white {
+  color: #e8e0d4;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-val {
+  color: #e8e0d4;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-val--name {
+  color: #fff;
+  font-weight: 700;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-val--date {
+  color: #7eb8d4;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-val--white {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-val--pink {
+  color: #e878a8;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-inline-links {
+  color: #9a8468;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-link,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #c9a855;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-link--solo {
+  margin-right: 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-link:hover,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-link:focus,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-link:focus-visible,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav-link:hover,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav-link:focus,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav-link:focus-visible {
+  color: #e0bc62;
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav-link {
+  color: #d4923a;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat {
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-city-stub-msg {
+  margin: 0 0 8px;
+  padding-left: 2px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-btn:hover .l2-clan-my-label--announce,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-btn:focus .l2-clan-my-label--announce,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-btn:focus-visible .l2-clan-my-label--announce {
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-edit {
+  margin: 2px 0 6px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-input {
+  box-sizing: border-box;
+  width: min(100%, 280px);
+  min-height: 28px;
+  height: 28px;
+  padding: 4px 8px;
+  border: 1px solid #5c4a36;
+  border-radius: 4px;
+  background: #fff;
+  color: #1a1208;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  line-height: 1.35;
+  resize: none;
+  overflow: hidden;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-submit {
+  display: block;
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  line-height: 1.35;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-submit:hover,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-submit:focus,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-submit:focus-visible {
+  color: #f0f0f0;
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+  text-decoration: none;
+}
