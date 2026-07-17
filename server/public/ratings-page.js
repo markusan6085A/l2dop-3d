@@ -252,22 +252,15 @@
     readQuery();
     renderCategories(currentType);
 
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + token },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    if (r.ok) {
-      var j = await r.json();
-      if (j.character && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(j.character);
-      }
-      if (j.character && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(j.character);
-      }
+    var c =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : null;
+    if (c && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c);
     }
 
     await loadRatings();

@@ -12,6 +12,7 @@
   var replyTarget = null;
   var smilesOpen = false;
   var smilesPage = 0;
+  var smilesRendered = false;
   var SMILE_COLS = 8;
   var SMILE_ROWS = 3;
   var SMILE_PAGE_SIZE = SMILE_COLS * SMILE_ROWS;
@@ -209,6 +210,10 @@
     if (btn) btn.setAttribute('aria-expanded', smilesOpen ? 'true' : 'false');
     if (smilesOpen) {
       smilesPage = 0;
+      if (!smilesRendered) {
+        smilesRendered = true;
+        wireSmilesPager();
+      }
       renderSmilesPickerPage();
     }
   }
@@ -644,9 +649,6 @@
       smilesBtn.addEventListener('click', toggleSmilesPanel);
     }
 
-    renderSmilesPickerPage();
-    wireSmilesPager();
-
     var input = $('chat-input');
     if (input) {
       input.addEventListener('keydown', function (e) {
@@ -671,24 +673,18 @@
       return;
     }
 
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + token },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    if (r.ok) {
-      var j = await r.json();
-      if (j.character) {
-        myCharacterId = j.character.id != null ? String(j.character.id) : '';
-      }
-      if (j.character && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(j.character);
-      }
-      if (j.character && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(j.character);
+
+    var snap =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : null;
+    if (snap && snap.id != null) {
+      myCharacterId = String(snap.id);
+      if (typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(snap);
       }
     }
 

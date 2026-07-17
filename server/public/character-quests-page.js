@@ -7,21 +7,13 @@
   }
 
   async function fetchSnapshot() {
-    var t = localStorage.getItem('token');
-    if (!t) return null;
-    if (window.L2 && typeof L2.fetchSnapshot === 'function') {
-      return L2.fetchSnapshot();
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-      cache: 'no-store',
-    });
-    if (r.status === 401) return null;
-    if (!r.ok) return null;
-    var j = await r.json().catch(function () {
-      return null;
-    });
-    return j && j.character ? j.character : null;
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      return L2.resyncCharacterWhenRequired();
+    }
+    return null;
   }
 
   async function init() {

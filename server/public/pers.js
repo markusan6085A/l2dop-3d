@@ -157,44 +157,14 @@
       }
     }
 
-    if (needReRender) {
-      refetchCharacter().catch(function () { /* ігноруємо, наступний тік спробує знову */ });
+    if (needReRender && LAST_SNAPSHOT) {
+      renderBuffs(LAST_SNAPSHOT);
     }
   }
 
   function startBuffsTick() {
     if (BUFFS_TICK_TIMER) clearInterval(BUFFS_TICK_TIMER);
     BUFFS_TICK_TIMER = setInterval(tickBuffs, 250);
-  }
-
-  async function refetchCharacter() {
-    var t = localStorage.getItem('token');
-    if (!t) return null;
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-    if (!r.ok) return null;
-    var j = await r.json();
-    if (!j || !j.character) return null;
-    var snapshot = j.character;
-    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
-      L2.applyCharacterSnapshot(snapshot);
-    } else {
-      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(snapshot);
-      }
-      applyBarsFromSnapshot(snapshot);
-    }
-    renderBuffs(snapshot);
-    return snapshot;
-  }
-
-  function applyBarsFromSnapshot(c) {
-    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
-      L2.applyCharacterSnapshot(c);
-    } else if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-      L2.applyHudFromSnapshot(c);
-    }
   }
 
   async function init() {
@@ -244,48 +214,27 @@
       return;
     }
 
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    if (!r.ok) {
-      var perr =
-        window.L2 && L2.tr
-          ? L2.tr('pers_load_fail')
-          : 'Не вдалося завантажити персонажа.';
-      try {
-        var pej = await r.json();
-        if (pej && pej.messageUk) perr = pej.messageUk;
-      } catch (ePe) {
-        /* ignore */
-      }
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent = perr;
-      }
-      return;
-    }
-
-    var j = await r.json();
-    var c = j.character;
+    var c =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : null;
     if (!c || typeof c !== 'object') {
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent =
           window.L2 && L2.tr
-            ? L2.tr('pers_bad_json')
-            : 'Некоректна відповідь сервера (немає даних героя).';
+            ? L2.tr('pers_load_fail')
+            : 'Не вдалося завантажити персонажа.';
       }
       return;
     }
 
     try {
-    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-      L2.applyHudFromSnapshot(c);
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c);
     }
 
     var num = function (v, d) {
@@ -382,18 +331,8 @@
       }
     }
 
-    if (window.L2 && typeof window.L2.setLastSnapshot === 'function') {
-      window.L2.setLastSnapshot(c);
-    }
-    if (
-      j.gearCatalog &&
-      window.L2 &&
-      typeof window.L2.mergeGearCatalog === 'function'
-    ) {
-      window.L2.mergeGearCatalog(j.gearCatalog);
-    }
-    if (window.L2 && typeof window.L2.mergeCraftResourceIconHints === 'function') {
-      window.L2.mergeCraftResourceIconHints(j);
+    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+      await L2.fetchCatalogHints();
     }
 
     var cityEl = $('pers-city');

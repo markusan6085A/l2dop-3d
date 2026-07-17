@@ -789,33 +789,27 @@
     if (shouldEnter && dungeonId) stripEnterFromUrl(dungeonId);
 
     try {
-      var charR = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + t },
-        cache: 'no-store',
-      });
-      if (charR.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return;
+      if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+        L2.renderCharacterFromCache();
       }
-      if (charR.ok) {
-        var charJ = await charR.json();
-        if (charJ && charJ.character) {
-          if (L2.setLastSnapshot) L2.setLastSnapshot(charJ.character);
-          if (typeof L2.applyHudFromSnapshot === 'function') {
-            L2.applyHudFromSnapshot(charJ.character);
-          }
-          var activeDid =
-            charJ.character.activeDungeonId != null &&
-            String(charJ.character.activeDungeonId).trim() !== ''
-              ? String(charJ.character.activeDungeonId).trim()
-              : null;
-          if (activeDid && activeDid !== dungeonId) {
-            window.location.replace(
-              '/dungeon.html?dungeonId=' + encodeURIComponent(activeDid)
-            );
-            return;
-          }
+      var c =
+        window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? await L2.resyncCharacterWhenRequired()
+          : null;
+      if (c) {
+        if (typeof L2.applyMutationSnapshot === 'function') {
+          L2.applyMutationSnapshot(c);
+        }
+        var activeDid =
+          c.activeDungeonId != null &&
+          String(c.activeDungeonId).trim() !== ''
+            ? String(c.activeDungeonId).trim()
+            : null;
+        if (activeDid && activeDid !== dungeonId) {
+          window.location.replace(
+            '/dungeon.html?dungeonId=' + encodeURIComponent(activeDid)
+          );
+          return;
         }
       }
     } catch (eChar) {

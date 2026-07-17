@@ -108,26 +108,20 @@
 
     setHudLoading();
 
-    var r = await fetch('/character?claimWorld=1', {
-      headers: { Authorization: 'Bearer ' + t },
-      cache: 'no-store',
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    if (!r.ok) {
+    var c =
+      window.L2 && typeof L2.claimWorldMapSession === 'function'
+        ? await L2.claimWorldMapSession()
+        : window.L2 && typeof L2.fetchSnapshot === 'function'
+          ? await L2.fetchSnapshot({ claimWorld: true })
+          : null;
+    if (!c) {
       var errMsg =
         window.L2 && L2.tr
           ? L2.tr('city_load_hero_fail')
           : 'Не вдалося завантажити героя.';
-      try {
-        var errJson = await r.json();
-        if (errJson && errJson.messageUk) errMsg = errJson.messageUk;
-      } catch (eJson) {
-        /* ignore */
-      }
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = errMsg;
@@ -137,19 +131,11 @@
       if (wapBottom) wapBottom.hidden = true;
       return;
     }
-
-    var j = await r.json();
-    var c = j.character;
-    window.L2.setLastSnapshot(c);
-    if (j.gearCatalog && window.L2 && typeof L2.mergeGearCatalog === 'function') {
-      L2.mergeGearCatalog(j.gearCatalog);
+    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+      await L2.fetchCatalogHints();
     }
-    if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
-      L2.mergeCraftResourceIconHints(j);
-    }
-
-    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-      L2.applyHudFromSnapshot(c);
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c);
     }
     applyCityLocation(c);
 

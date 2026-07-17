@@ -55,21 +55,18 @@
       return;
     }
 
-    fetch('/character', { headers: { Authorization: 'Bearer ' + t } })
-      .then(function (r) {
-        if (r.status === 401) return null;
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j || !j.character) {
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
+    }
+    (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+      ? L2.resyncCharacterWhenRequired()
+      : Promise.resolve(null))
+      .then(function (c) {
+        if (!c) {
           wireCraftForCharacter(null);
           return;
         }
-        if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
-        if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(j.character);
-        }
-        wireCraftForCharacter(j.character);
+        wireCraftForCharacter(c);
       })
       .catch(function () {
         wireCraftForCharacter(null);

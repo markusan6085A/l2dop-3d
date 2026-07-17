@@ -25,9 +25,11 @@ import { findPvpIncomingForCharacter } from '../services/pvpIncomingService.js';
 import { getCharacterMapStateForUser } from '../services/charMapStateService.js';
 import { getMagisterDialogForUser } from '../services/skillLearnService.js';
 import { characterDbErrorPayload } from './characterRouteErrors.js';
+import { CHARACTER_CATALOG_VERSION } from '../data/characterCatalogVersion.js';
 
 function buildCharacterCatalogHints() {
   return {
+    catalogVersion: CHARACTER_CATALOG_VERSION,
     gearCatalog: listGearCatalogForClient(),
     /** Підписи предметів англійською (зброя, броня, дроп, ресурси). */
     itemNamesEn: itemNamesEnForClient(),
@@ -77,6 +79,7 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         }
         return reply.send({
           character,
+          catalogVersion: CHARACTER_CATALOG_VERSION,
           pvpIncoming: await findPvpIncomingForCharacter(character.id),
         });
       } catch (err) {

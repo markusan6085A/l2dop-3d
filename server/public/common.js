@@ -72,10 +72,89 @@
   var hudFirstFillDone = false;
   var SESSION_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
   var ONLINE_COUNT_CACHE_KEY = 'l2-online-count-cache-v1';
-  var SNAPSHOT_FRESH_MS = 30000;
-  var ONLINE_COUNT_FRESH_MS = 45000;
+  var CATALOG_HINTS_LS_KEY = 'l2-catalog-hints-v1';
+  var CRAFT_BOOK_LS_KEY = 'l2-craft-book-v1';
   var ITEM_ICON_HINTS_CACHE_KEY = 'l2-item-icon-hints-v1';
   var itemIconHintsPersistTimer = null;
+  var knownCatalogVersion = null;
+  var craftBookCache = null;
+  var craftBookFetchPromise = null;
+  var ONLINE_COUNT_FRESH_MS = 45000;
+
+  function rememberCatalogVersion(version) {
+    if (version == null || String(version).trim() === '') return;
+    knownCatalogVersion = String(version).trim();
+  }
+
+  function readCatalogHintsFromLocalStorage() {
+    try {
+      var tok = global.L2 && global.L2.token ? global.L2.token() : null;
+      if (!tok) return null;
+      var raw = localStorage.getItem(CATALOG_HINTS_LS_KEY);
+      if (!raw) return null;
+      var j = JSON.parse(raw);
+      if (!j || typeof j !== 'object') return null;
+      if (j.tokenSig !== global.L2.tokenSessionSig(tok)) return null;
+      if (!j.catalogVersion || !j.payload) return null;
+      return j;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeCatalogHintsToLocalStorage(catalogVersion, payload) {
+    try {
+      var tok = global.L2.token();
+      if (!tok || !payload) return;
+      localStorage.setItem(
+        CATALOG_HINTS_LS_KEY,
+        JSON.stringify({
+          tokenSig: global.L2.tokenSessionSig(tok),
+          catalogVersion: String(catalogVersion),
+          payload: payload,
+        })
+      );
+      rememberCatalogVersion(catalogVersion);
+    } catch (e) {
+      /* ignore quota */
+    }
+  }
+
+  function hydrateCatalogHintsFromLocalStorage() {
+    if (sessionCatalogMerged) return true;
+    var cached = readCatalogHintsFromLocalStorage();
+    if (!cached || !cached.payload) return false;
+    mergeCharacterCatalogHints(cached.payload);
+    rememberCatalogVersion(cached.catalogVersion);
+    return sessionCatalogMerged;
+  }
+
+  function readCraftBookFromLocalStorage() {
+    try {
+      var raw = localStorage.getItem(CRAFT_BOOK_LS_KEY);
+      if (!raw) return null;
+      var j = JSON.parse(raw);
+      if (!j || typeof j !== 'object' || !j.bookVersion || !j.tiers) return null;
+      return j;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeCraftBookToLocalStorage(bookVersion, tiers) {
+    try {
+      if (!bookVersion || !tiers) return;
+      localStorage.setItem(
+        CRAFT_BOOK_LS_KEY,
+        JSON.stringify({
+          bookVersion: String(bookVersion),
+          tiers: tiers,
+        })
+      );
+    } catch (e) {
+      /* ignore */
+    }
+  }
 
   function loadItemIconHintsFromSession() {
     try {
@@ -204,12 +283,17 @@
     }
   }
 
-  async function ensureCatalogHintsLoaded(token) {
+  async function ensureCatalogHintsLoaded(token, opts) {
+    opts = opts || {};
     if (!token) return false;
-    if (sessionCatalogMerged) return true;
+    if (sessionCatalogMerged && !opts.force) return true;
+    if (!opts.force && hydrateCatalogHintsFromLocalStorage()) {
+      return true;
+    }
     if (sessionCatalogFetchPromise) return sessionCatalogFetchPromise;
     sessionCatalogFetchPromise = fetch('/character/catalog-hints', {
       headers: { Authorization: 'Bearer ' + token },
+      cache: 'no-store',
     })
       .then(function (r) {
         if (r.status === 401) {
@@ -220,11 +304,30 @@
         return r.json();
       })
       .then(function (j) {
-        if (j) mergeCharacterCatalogHints(j);
+        if (!j) return sessionCatalogMerged;
+        var ver = j.catalogVersion;
+        var cached = readCatalogHintsFromLocalStorage();
+        if (
+          !opts.force &&
+          ver &&
+          cached &&
+          cached.catalogVersion === String(ver) &&
+          cached.payload
+        ) {
+          sessionCatalogMerged = false;
+          mergeCharacterCatalogHints(cached.payload);
+          rememberCatalogVersion(ver);
+          return sessionCatalogMerged;
+        }
+        sessionCatalogMerged = false;
+        mergeCharacterCatalogHints(j);
+        if (ver) {
+          writeCatalogHintsToLocalStorage(ver, j);
+        }
         return sessionCatalogMerged;
       })
       .catch(function () {
-        return false;
+        return hydrateCatalogHintsFromLocalStorage();
       })
       .finally(function () {
         sessionCatalogFetchPromise = null;
@@ -270,6 +373,49 @@
     },
     setLastSnapshot: function (s) {
       lastSnapshot = s;
+      if (s && typeof s === 'object') {
+        global.L2.writeSessionSnapshotCache(SESSION_SNAPSHOT_CACHE_KEY, s);
+      }
+    },
+    /** Поточний snapshot з memory або sessionStorage (без мережі). */
+    getCachedCharacter: function () {
+      return global.L2.getSessionSnapshotOrNull();
+    },
+    setCachedCharacter: function (snapshot) {
+      if (!snapshot) return null;
+      lastSnapshot = snapshot;
+      global.L2.writeSessionSnapshotCache(
+        SESSION_SNAPSHOT_CACHE_KEY,
+        snapshot
+      );
+      return snapshot;
+    },
+    clearCachedCharacter: function () {
+      return global.L2.clearSessionCharacterCache();
+    },
+    /** Після мутації: snapshot з відповіді сервера — єдине джерело правди. */
+    applyMutationSnapshot: function (snapshot, applyScreenSpecific) {
+      return global.L2.applyCharacterSnapshot(snapshot, applyScreenSpecific);
+    },
+    /** Одразу малює HUD/бари з кешу; повертає snapshot або null. */
+    renderCharacterFromCache: function () {
+      return global.L2.hydrateCharacterFromSessionCache();
+    },
+    /**
+     * GET /character лише якщо немає кешу, force, claimWorld або resync після 409.
+     * Навігація між сторінками — без мережі.
+     */
+    resyncCharacterWhenRequired: async function (opts) {
+      opts = opts || {};
+      if (opts.force === true || opts.claimWorld === true || opts.claimWorld === 1) {
+        return global.L2.fetchSnapshot(opts);
+      }
+      var cached = global.L2.getCachedCharacter();
+      if (cached) {
+        lastSnapshot = cached;
+        return cached;
+      }
+      return global.L2.fetchSnapshot(opts);
     },
     /** Екран PvE-поразки (РБ/моб) — battle.html з кнопкою «Повернутися в місто». */
     redirectToPveDefeatScreen: function (snapshot) {
@@ -1015,6 +1161,9 @@
           }
           if (!r.ok) return null;
           var j = await r.json();
+          if (j && j.catalogVersion) {
+            rememberCatalogVersion(j.catalogVersion);
+          }
           lastSnapshot = j.character;
           global.L2.writeSessionSnapshotCache(
             SESSION_SNAPSHOT_CACHE_KEY,
@@ -1030,34 +1179,55 @@
       })();
       return snapshotFetchInFlight;
     },
-    /** Snapshot з кешу, якщо свіжий; інакше один deduped fetch. */
+    /** @deprecated — використовуй resyncCharacterWhenRequired */
     ensureCharacterSnapshot: async function (opts) {
-      opts = opts || {};
-      var force = opts.force === true;
-      var claimWorld =
-        opts.claimWorld === true || opts.claimWorld === 1;
-      var maxAgeMs =
-        opts.maxAgeMs != null ? Number(opts.maxAgeMs) : SNAPSHOT_FRESH_MS;
-      if (!force && !claimWorld) {
-        var cached = global.L2.getSessionSnapshotOrNull();
-        var fetchedAt = global.L2.readSessionSnapshotFetchedAt(
-          SESSION_SNAPSHOT_CACHE_KEY
-        );
-        if (
-          cached &&
-          fetchedAt != null &&
-          Date.now() - fetchedAt < maxAgeMs
-        ) {
-          lastSnapshot = cached;
-          return cached;
-        }
-      }
-      return global.L2.fetchSnapshot(opts);
+      return global.L2.resyncCharacterWhenRequired(opts);
     },
-    fetchCatalogHints: async function () {
+    fetchCatalogHints: async function (opts) {
       var t = global.L2.token();
       if (!t) return false;
-      return ensureCatalogHintsLoaded(t);
+      return ensureCatalogHintsLoaded(t, opts || {});
+    },
+    fetchCraftBook: async function (opts) {
+      opts = opts || {};
+      if (craftBookCache && !opts.force) return craftBookCache;
+      if (!opts.force) {
+        var lsBook = readCraftBookFromLocalStorage();
+        if (lsBook && lsBook.tiers) {
+          craftBookCache = lsBook;
+          return craftBookCache;
+        }
+      }
+      if (craftBookFetchPromise) return craftBookFetchPromise;
+      var t = global.L2.token();
+      if (!t) return null;
+      craftBookFetchPromise = fetch('/game/resource-craft/book', {
+        headers: { Authorization: 'Bearer ' + t },
+        cache: 'no-store',
+      })
+        .then(function (r) {
+          if (r.status === 401) {
+            global.L2.setToken(null);
+            return null;
+          }
+          if (!r.ok) return null;
+          return r.json();
+        })
+        .then(function (j) {
+          if (!j || !Array.isArray(j.tiers)) return null;
+          craftBookCache = j;
+          if (j.bookVersion) {
+            writeCraftBookToLocalStorage(j.bookVersion, j.tiers);
+          }
+          return craftBookCache;
+        })
+        .catch(function () {
+          return readCraftBookFromLocalStorage();
+        })
+        .finally(function () {
+          craftBookFetchPromise = null;
+        });
+      return craftBookFetchPromise;
     },
     applyCharacterSnapshot: function (snapshot, applyScreenSpecific) {
       if (!snapshot) return null;
@@ -1925,6 +2095,7 @@
         global.L2.hydrateCharacterFromSessionCache();
       }
       loadItemIconHintsFromSession();
+      hydrateCatalogHintsFromLocalStorage();
       function runDeferredChromeBootstraps() {
         bootstrapGameHelper();
         bootstrapOnlineFoot();

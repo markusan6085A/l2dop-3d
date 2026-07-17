@@ -68,16 +68,17 @@
   }
 
   async function refreshCharacterSnapshot() {
-    var t = localStorage.getItem('token');
-    if (!t) return;
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-    if (!r.ok) return;
-    var j = await r.json().catch(function () {
-      return {};
-    });
-    if (j.character) applyMagisterSnapshot(j.character);
+    if (window.L2 && typeof L2.getCachedCharacter === 'function') {
+      var cached = L2.getCachedCharacter();
+      if (cached) {
+        applyMagisterSnapshot(cached);
+        return;
+      }
+    }
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      var c = await L2.resyncCharacterWhenRequired();
+      if (c) applyMagisterSnapshot(c);
+    }
   }
 
   function setMagisterSkillIconFrameOuter(frame, logicalW, logicalH) {

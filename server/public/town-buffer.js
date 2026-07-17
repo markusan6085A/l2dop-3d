@@ -18,18 +18,13 @@
   }
 
   async function loadCharacter() {
-    var t = localStorage.getItem('token');
-    if (!t) return null;
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return null;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    if (!r.ok) return { _err: true, raw: r };
-    return await r.json();
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      return L2.resyncCharacterWhenRequired();
+    }
+    return null;
   }
 
   function renderBuffRow() {
@@ -84,13 +79,20 @@
         body: JSON.stringify({ expectedRevision: snap.revision }),
       });
       if (r.status === 409) {
-        var fresh = await loadCharacter();
-        if (fresh && fresh.character && window.L2) {
-          L2.setLastSnapshot(fresh.character);
-          if (typeof L2.applyHudFromSnapshot === 'function') {
-            L2.applyHudFromSnapshot(fresh.character);
+        if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+          try {
+            var conflictBody = {};
+            try {
+              conflictBody = await r.json();
+            } catch (e409) {
+              conflictBody = {};
+            }
+            await L2.resyncCharacterAfterConflict(function (fresh) {
+              renderFee(Number(fresh.level || 1));
+            }, conflictBody);
+          } catch (eResync) {
+            /* ignore */
           }
-          renderFee(Number(fresh.character.level || 1));
         }
         setMsg('Конфлікт ревізії: синхронізовано, натисни ще раз.');
         return;
@@ -109,15 +111,13 @@
         );
         return;
       }
-      if (j.character && window.L2) {
-        L2.setLastSnapshot(j.character);
-        if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(j.character);
-        }
-        if (typeof L2.syncGameHelper === 'function') {
-          L2.syncGameHelper(j.character);
-        }
-        renderFee(Number(j.character.level || 1));
+      if (j.character && window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(j.character, function (fresh) {
+          if (typeof L2.syncGameHelper === 'function') {
+            L2.syncGameHelper(fresh);
+          }
+          renderFee(Number(fresh.level || 1));
+        });
       }
       var fee = j && j.feeAdena != null ? String(j.feeAdena) : '0';
       if (fee === '0') {
@@ -148,13 +148,20 @@
         body: JSON.stringify({ expectedRevision: snap.revision }),
       });
       if (r.status === 409) {
-        var fresh = await loadCharacter();
-        if (fresh && fresh.character && window.L2) {
-          L2.setLastSnapshot(fresh.character);
-          if (typeof L2.applyHudFromSnapshot === 'function') {
-            L2.applyHudFromSnapshot(fresh.character);
+        if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+          try {
+            var conflictBody = {};
+            try {
+              conflictBody = await r.json();
+            } catch (e409) {
+              conflictBody = {};
+            }
+            await L2.resyncCharacterAfterConflict(function (fresh) {
+              renderFee(Number(fresh.level || 1));
+            }, conflictBody);
+          } catch (eResync) {
+            /* ignore */
           }
-          renderFee(Number(fresh.character.level || 1));
         }
         setMsg('Конфлікт ревізії: синхронізовано, натисни ще раз.');
         return;
@@ -173,12 +180,10 @@
         );
         return;
       }
-      if (j.character && window.L2) {
-        L2.setLastSnapshot(j.character);
-        if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(j.character);
-        }
-        renderFee(Number(j.character.level || 1));
+      if (j.character && window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(j.character, function (fresh) {
+          renderFee(Number(fresh.level || 1));
+        });
       }
       var fee = j && j.feeAdena != null ? String(j.feeAdena) : '0';
       setMsg('HP, MP і CP відновлено.');
@@ -206,25 +211,24 @@
       return;
     }
 
-    var j = await loadCharacter();
-    if (!j || j._err || !j.character) {
+    var c = await loadCharacter();
+    if (!c) {
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = 'Не вдалося завантажити персонажа.';
       }
       return;
     }
-    var c = j.character;
-    if (window.L2) {
-      L2.setLastSnapshot(c);
-      if (typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
-      }
-      if (typeof L2.syncGameHelper === 'function') {
-        L2.syncGameHelper(c);
-      }
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c, function (fresh) {
+        if (typeof L2.syncGameHelper === 'function') {
+          L2.syncGameHelper(fresh);
+        }
+        renderFee(Number(fresh.level || 1));
+      });
+    } else {
+      renderFee(Number(c.level || 1));
     }
-    renderFee(Number(c.level || 1));
     if (card) card.hidden = false;
     if (errEl) errEl.hidden = true;
 

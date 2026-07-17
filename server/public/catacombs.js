@@ -152,18 +152,15 @@
     try {
       var tok = localStorage.getItem('token');
       if (tok) {
-        var charR = await fetch('/character', {
-          headers: authHeaders(),
-          cache: 'no-store',
-        });
-        if (charR.ok) {
-          var charJ = await charR.json();
-          if (charJ && charJ.character) {
-            if (L2.setLastSnapshot) L2.setLastSnapshot(charJ.character);
-            if (typeof L2.applyHudFromSnapshot === 'function') {
-              L2.applyHudFromSnapshot(charJ.character);
-            }
-          }
+        if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+          L2.renderCharacterFromCache();
+        }
+        var c =
+          window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+            ? await L2.resyncCharacterWhenRequired()
+            : null;
+        if (c && typeof L2.applyMutationSnapshot === 'function') {
+          L2.applyMutationSnapshot(c);
         }
       }
     } catch (eChar) {

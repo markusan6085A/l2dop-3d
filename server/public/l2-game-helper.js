@@ -599,14 +599,9 @@
     if (!t) return;
     var snap = L2.lastSnapshot ? L2.lastSnapshot() : null;
     if (!snap || snap.revision == null) {
-      var rc = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + t },
-        cache: 'no-store',
-      });
-      if (!rc.ok) return;
-      var jc = await rc.json();
-      snap = jc.character;
-      if (snap && L2.setLastSnapshot) L2.setLastSnapshot(snap);
+      if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+        snap = await L2.resyncCharacterWhenRequired();
+      }
     }
     if (!snap || String(snap.cityId || '') === GLUDIO_CITY_ID) return;
 
@@ -626,16 +621,18 @@
 
     var r = await postTp(snap.revision);
     if (r.status === 409) {
-      var rf = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + t },
-        cache: 'no-store',
-      });
-      if (rf.ok) {
-        var jf = await rf.json();
-        if (jf.character) {
-          snap = jf.character;
-          if (L2.setLastSnapshot) L2.setLastSnapshot(snap);
-          r = await postTp(snap.revision);
+      if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+        try {
+          var conflictBody = {};
+          try {
+            conflictBody = await r.json();
+          } catch (e409) {
+            conflictBody = {};
+          }
+          snap = await L2.resyncCharacterAfterConflict(null, conflictBody);
+          if (snap) r = await postTp(snap.revision);
+        } catch (eResync) {
+          /* ignore */
         }
       }
     }

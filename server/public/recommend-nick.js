@@ -217,29 +217,22 @@
     var errEl = $('recommend-nick-err');
 
     try {
-      var r = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + token },
-      });
-      if (r.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return;
+      if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+        L2.renderCharacterFromCache();
       }
-      if (!r.ok) {
+      var c =
+        window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? await L2.resyncCharacterWhenRequired()
+          : null;
+      if (!c) {
         if (errEl) {
           errEl.hidden = false;
           errEl.textContent = 'Не вдалося завантажити персонажа.';
         }
         return;
       }
-
-      var j = await r.json();
-      var c = j.character;
-      if (c && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(c);
-      }
-      if (c && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
+      if (typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c);
       }
 
       if (isRecommend) {

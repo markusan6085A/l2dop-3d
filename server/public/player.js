@@ -175,22 +175,15 @@
     }
 
     try {
-      var selfRes = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + token },
-      });
-      if (selfRes.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return;
+      if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+        L2.renderCharacterFromCache();
       }
-      if (selfRes.ok) {
-        var selfJson = await selfRes.json();
-        if (selfJson.character && typeof L2.setLastSnapshot === 'function') {
-          L2.setLastSnapshot(selfJson.character);
-        }
-        if (selfJson.character && typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(selfJson.character);
-        }
+      var selfChar =
+        window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? await L2.resyncCharacterWhenRequired()
+          : null;
+      if (selfChar && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(selfChar);
       }
 
       var r = await fetch(apiUrl, {

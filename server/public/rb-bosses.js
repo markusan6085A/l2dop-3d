@@ -352,15 +352,18 @@
       window.location.href = '/';
       return;
     }
-    fetch('/character', { headers: authHeaders() })
-      .then(function (r) {
-        if (r.status === 401) return null;
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j || !j.character) return;
-        if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
-        if (L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(j.character);
+    (function () {
+      if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+        L2.renderCharacterFromCache();
+      }
+      return window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? L2.resyncCharacterWhenRequired()
+        : Promise.resolve(null);
+    })()
+      .then(function (c) {
+        if (c && typeof L2.applyMutationSnapshot === 'function') {
+          L2.applyMutationSnapshot(c);
+        }
       })
       .finally(function () {
         loadPage(readPageFromUrl());

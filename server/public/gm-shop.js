@@ -1696,16 +1696,14 @@
     renderShopSkeleton(mount);
 
     Promise.all([
-      fetch('/character', {
-        headers: { Authorization: 'Bearer ' + t },
-      }).then(function (r) {
-        if (r.status === 401) {
-          localStorage.removeItem('token');
-          window.location.href = '/';
-          return null;
+      (function () {
+        if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+          L2.renderCharacterFromCache();
         }
-        return r.ok ? r.json() : null;
-      }),
+        return window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? L2.resyncCharacterWhenRequired()
+          : Promise.resolve(null);
+      })(),
       fetch('/game/drops-shop', {
         headers: { Authorization: 'Bearer ' + t },
       }).then(function (r) {
@@ -1718,13 +1716,12 @@
       }),
     ])
       .then(function (pairs) {
-        var jChar = pairs[0];
+        var snap = pairs[0];
         var shop = pairs[1];
-        if (!jChar || !jChar.character) {
+        if (!snap) {
           setMsg(msgEl, 'Не вдалося завантажити персонажа.');
           return;
         }
-        var snap = jChar.character;
         if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
           L2.applyCharacterSnapshot(snap, function (s) {
             syncMeta(metaEl, s);

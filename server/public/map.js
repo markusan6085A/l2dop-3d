@@ -379,6 +379,9 @@
   async function loadSnapshot() {
     var t = localStorage.getItem('token');
     if (!t) return null;
+    if (window.L2 && typeof L2.fetchSnapshot === 'function') {
+      return L2.fetchSnapshot({ claimWorld: true });
+    }
     var r = await fetch('/character?claimWorld=1', {
       headers: { Authorization: 'Bearer ' + t },
       cache: 'no-store',

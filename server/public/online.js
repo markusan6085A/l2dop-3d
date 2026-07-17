@@ -223,22 +223,16 @@
     bindSortButton($('online-sort-name'), 'name');
     bindSortButton($('online-sort-power'), 'power');
 
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + token },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
+    }
+    var c =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : null;
+    if (!c) {
       window.location.href = '/';
       return;
-    }
-    if (r.ok) {
-      var j = await r.json();
-      if (j.character && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(j.character);
-      }
-      if (j.character && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(j.character);
-      }
     }
 
     var content = $('online-content');

@@ -13,8 +13,11 @@
       return;
     }
 
-    if (window.L2 && typeof L2.ensureCharacterSnapshot === 'function') {
-      L2.ensureCharacterSnapshot().catch(function () {});
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
+    }
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      L2.resyncCharacterWhenRequired().catch(function () {});
     }
   }
 

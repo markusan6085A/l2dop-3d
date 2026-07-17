@@ -450,22 +450,10 @@
   }
 
   function refetchSellCharacter() {
-    var token = localStorage.getItem('token');
-    if (!token) return Promise.resolve(null);
-    return fetch('/character', {
-      headers: { Authorization: 'Bearer ' + token },
-    })
-      .then(function (r) {
-        if (r.status === 401) {
-          localStorage.removeItem('token');
-          window.location.href = '/';
-          return null;
-        }
-        return r.ok ? r.json() : null;
-      })
-      .then(function (j) {
-        return j && j.character ? j.character : null;
-      });
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      return L2.resyncCharacterWhenRequired();
+    }
+    return Promise.resolve(null);
   }
 
   function releaseSellLock() {
@@ -979,16 +967,14 @@
     }
 
     Promise.all([
-      fetch('/character', {
-        headers: { Authorization: 'Bearer ' + token },
-      }).then(function (r) {
-        if (r.status === 401) {
-          localStorage.removeItem('token');
-          window.location.href = '/';
-          return null;
+      (function () {
+        if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+          L2.renderCharacterFromCache();
         }
-        return r.ok ? r.json() : null;
-      }),
+        return window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? L2.resyncCharacterWhenRequired()
+          : Promise.resolve(null);
+      })(),
       fetch('/game/shop/sell/prices', {
         headers: { Authorization: 'Bearer ' + token },
       }).then(function (r) {
@@ -1001,14 +987,14 @@
       }),
     ])
       .then(function (pair) {
-        var jChar = pair[0];
+        var snap = pair[0];
         var pricesResp = pair[1];
-        if (!jChar || !jChar.character) {
+        if (!snap) {
           setMsg('Не вдалося завантажити персонажа.');
           return;
         }
         sellPrices = (pricesResp && pricesResp.prices) || {};
-        applySnapshotFromServer(jChar.character);
+        applySnapshotFromServer(snap);
         var hintsReady =
           window.L2 && typeof L2.fetchCatalogHints === 'function'
             ? L2.fetchCatalogHints()

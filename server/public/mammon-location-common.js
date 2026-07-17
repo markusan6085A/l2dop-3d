@@ -99,23 +99,13 @@
 
     try {
       var snap = null;
-      if (global.L2 && typeof global.L2.ensureCharacterSnapshot === 'function') {
-        snap = await global.L2.ensureCharacterSnapshot();
-      } else {
-        var rChar = await fetch('/character', {
-          headers: { Authorization: 'Bearer ' + t },
-          cache: 'no-store',
-        });
-        if (rChar.ok) {
-          var jChar = await rChar.json();
-          snap = jChar && jChar.character ? jChar.character : null;
-        }
+      if (global.L2 && typeof global.L2.renderCharacterFromCache === 'function') {
+        global.L2.renderCharacterFromCache();
+      }
+      if (global.L2 && typeof global.L2.resyncCharacterWhenRequired === 'function') {
+        snap = await global.L2.resyncCharacterWhenRequired();
       }
       if (snap) {
-        if (global.L2.setLastSnapshot) global.L2.setLastSnapshot(snap);
-        if (typeof global.L2.applyHudFromSnapshot === 'function') {
-          global.L2.applyHudFromSnapshot(snap);
-        }
         playerX = snap.worldX;
         playerY = snap.worldY;
       }

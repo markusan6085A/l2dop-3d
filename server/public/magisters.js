@@ -114,26 +114,18 @@
       return;
     }
 
-    var rCh = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-    if (rCh.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    if (!rCh.ok) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent =
-          window.L2 && L2.tr ? L2.tr('city_load_hero_fail') : 'Не вдалося завантажити героя.';
-      }
-      if (main) main.hidden = true;
-      return;
+    var cHero =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : null;
+    var c = cHero;
+    var jCh = { character: cHero };
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c);
     }
-    var jCh = await rCh.json();
-    var c = jCh.character;
-    if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(c);
     updateHeroLine(c);
 
     var rTown = await fetch('/character/town', {

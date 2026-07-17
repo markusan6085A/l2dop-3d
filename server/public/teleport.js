@@ -552,29 +552,19 @@
   }
 
   async function resyncCharacter(errEl) {
-    var t = localStorage.getItem('token');
-    if (!t || !window.L2) return null;
+    if (!window.L2) return null;
     try {
-      var rr = await fetch('/character', {
-        headers: { Authorization: 'Bearer ' + t },
-      });
-      if (rr.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return null;
+      var c =
+        typeof L2.fetchSnapshot === 'function'
+          ? await L2.fetchSnapshot({ force: true })
+          : null;
+      if (!c) return null;
+      if (typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c);
       }
-      if (!rr.ok) return null;
-      var jj = await rr.json();
-      if (!jj || !jj.character) return null;
-      if (typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(jj.character);
-      }
-      if (typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(jj.character);
-      }
-      applyCurrentLocation(jj.character);
-      writeCachedTeleportSnapshot(jj.character);
-      return jj.character;
+      applyCurrentLocation(c);
+      writeCachedTeleportSnapshot(c);
+      return c;
     } catch (_e) {
       if (errEl) {
         errEl.hidden = false;
@@ -721,43 +711,28 @@
       applyCurrentLocation(cached);
     }
 
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + t },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-
-    if (!r.ok) {
+    var c =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : null;
+    if (!c) {
       var errMsg = 'Не вдалося завантажити героя.';
-      try {
-        var errJson = await r.json();
-        if (errJson && errJson.messageUk) errMsg = errJson.messageUk;
-      } catch (_e2) {
-        /* ignore */
-      }
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = errMsg;
       }
       return;
     }
-
-    var j = await r.json();
-    var c = j.character;
-    window.L2.setLastSnapshot(c);
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c);
+    }
     writeCachedTeleportSnapshot(c);
-    if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-      L2.applyHudFromSnapshot(c);
-    }
     applyCurrentLocation(c);
-    if (j.gearCatalog && window.L2 && typeof L2.mergeGearCatalog === 'function') {
-      L2.mergeGearCatalog(j.gearCatalog);
-    }
-    if (window.L2 && typeof L2.mergeCraftResourceIconHints === 'function') {
-      L2.mergeCraftResourceIconHints(j);
+    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+      await L2.fetchCatalogHints();
     }
 
     await loadAvailableTeleportIds(t);

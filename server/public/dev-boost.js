@@ -37,22 +37,22 @@
       if (cur) cur.textContent = 'Увійди в гру.';
       return Promise.resolve(null);
     }
-    return fetch('/character', { headers: { Authorization: 'Bearer ' + t } })
-      .then(function (r) {
-        if (r.status === 401) {
-          if (cur) cur.textContent = 'Потрібен вхід.';
-          return null;
-        }
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j || !j.character) {
+    return (function () {
+      if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+        L2.renderCharacterFromCache();
+      }
+      return window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? L2.resyncCharacterWhenRequired()
+        : Promise.resolve(null);
+    })()
+      .then(function (ch) {
+        if (!ch) {
           if (cur) cur.textContent = 'Немає персонажа.';
           return null;
         }
-        var ch = j.character;
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(ch);
-        if (typeof L2.applyHudFromSnapshot === 'function') L2.applyHudFromSnapshot(ch);
+        if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+          L2.applyMutationSnapshot(ch);
+        }
         if (cur) cur.textContent = fmtCurrent(ch);
         return ch;
       })

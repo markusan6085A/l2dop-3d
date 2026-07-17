@@ -370,28 +370,13 @@
     var contentEl = $('character-content');
 
     try {
-      var c = null;
-      if (window.L2 && typeof L2.ensureCharacterSnapshot === 'function') {
-        c = await L2.ensureCharacterSnapshot();
-      } else {
-        var r = await fetch('/character', {
-          headers: { Authorization: 'Bearer ' + token },
-        });
-        if (r.status === 401) {
-          localStorage.removeItem('token');
-          window.location.href = '/';
-          return;
-        }
-        if (!r.ok) {
-          if (errEl) {
-            errEl.hidden = false;
-            errEl.textContent = 'Не вдалося завантажити персонажа.';
-          }
-          return;
-        }
-        var j = await r.json();
-        c = j.character;
+      if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+        L2.renderCharacterFromCache();
       }
+      var c =
+        window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? await L2.resyncCharacterWhenRequired()
+          : null;
       if (!c) {
         if (errEl) {
           errEl.hidden = false;
@@ -399,11 +384,8 @@
         }
         return;
       }
-      if (typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(c);
-      }
-      if (typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
+      if (typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c);
       }
       applyProfile(c);
       applyStats(c);

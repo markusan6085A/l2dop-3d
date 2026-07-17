@@ -614,20 +614,26 @@
 
   function loadCraftBookForChar(token) {
     if (!token || craftBookIndex) return Promise.resolve();
-    return fetch('/game/resource-craft/book', {
-      headers: { Authorization: 'Bearer ' + token },
-    })
-      .then(function (r) {
-        if (!r.ok) return null;
-        return r.json();
+    if (!window.L2 || typeof L2.fetchCraftBook !== 'function') {
+      return fetch('/game/resource-craft/book', {
+        headers: { Authorization: 'Bearer ' + token },
       })
+        .then(function (r) {
+          if (!r.ok) return null;
+          return r.json();
+        })
+        .then(function (j) {
+          if (!j || !Array.isArray(j.tiers)) return;
+          craftBookIndex = buildCraftBookIndex(j.tiers);
+        })
+        .catch(function () {});
+    }
+    return L2.fetchCraftBook()
       .then(function (j) {
         if (!j || !Array.isArray(j.tiers)) return;
         craftBookIndex = buildCraftBookIndex(j.tiers);
       })
-      .catch(function () {
-        /* ignore */
-      });
+      .catch(function () {});
   }
 
   function normalizedItemGradeKey(itemId) {
@@ -1091,19 +1097,6 @@
     writeCachedCharSnapshot(c);
   }
 
-  async function fetchCharacterSnapshotFast(token) {
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + token },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return null;
-    }
-    if (!r.ok) return null;
-    var j = await r.json();
-    return j && j.character ? j.character : null;
-  }
 
   async function apiEquip(itemId, enchant) {
     if (equipRequestInFlight) return;
@@ -1153,11 +1146,17 @@
       }
       var out = await r.json();
       var c = out.character;
-      window.L2.setLastSnapshot(c);
-      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c, function (snap) {
+          renderAll(snap);
+        });
+      } else {
+        window.L2.setLastSnapshot(c);
+        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
+        renderAll(c);
       }
-      renderAll(c);
     } catch (_e) {
       var stubNet = $('char-stub-msg');
       if (stubNet) {
@@ -1220,11 +1219,17 @@
       }
       var out = await r.json();
       var c = out.character;
-      window.L2.setLastSnapshot(c);
-      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c, function (snap) {
+          renderAll(snap);
+        });
+      } else {
+        window.L2.setLastSnapshot(c);
+        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
+        renderAll(c);
       }
-      renderAll(c);
       if (noticeOk) {
         noticeOk.hidden = false;
         noticeOk.textContent = 'Предмет на складі.';
@@ -1283,15 +1288,20 @@
       }
       var out = await r.json();
       var c = out.character;
-      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c, function (snap) {
+          renderAll(snap);
+        });
+      } else if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
         L2.applyCharacterSnapshot(c);
+        renderAll(c);
       } else {
         window.L2.setLastSnapshot(c);
         if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
           L2.applyHudFromSnapshot(c);
         }
+        renderAll(c);
       }
-      renderAll(c);
       var stubOk = $('char-stub-msg');
       if (stubOk) {
         stubOk.hidden = false;
@@ -1357,11 +1367,17 @@
       }
       var out = await r.json();
       var c = out.character;
-      window.L2.setLastSnapshot(c);
-      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c, function (snap) {
+          renderAll(snap);
+        });
+      } else {
+        window.L2.setLastSnapshot(c);
+        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
+        renderAll(c);
       }
-      renderAll(c);
     } catch (_e) {
       var stubNet = $('char-stub-msg');
       if (stubNet) {
@@ -1378,13 +1394,16 @@
     try {
       var snap =
         window.L2 && typeof L2.fetchSnapshot === 'function'
-          ? await L2.fetchSnapshot()
+          ? await L2.fetchSnapshot({ force: true })
           : null;
       if (!snap) {
         if (!localStorage.getItem('token')) {
           window.location.href = '/';
         }
         return;
+      }
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(snap);
       }
       renderAll(snap);
       var stub = $('char-stub-msg');
@@ -1846,8 +1865,16 @@
 
     loadCraftBookForChar(t);
 
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
+    }
+
     var cached =
-      window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+      window.L2 && typeof L2.getCachedCharacter === 'function'
+        ? L2.getCachedCharacter()
+        : window.L2 && typeof L2.lastSnapshot === 'function'
+          ? L2.lastSnapshot()
+          : null;
     if (!cached) cached = readCachedCharSnapshot();
     if (!cached) {
       renderBagSkeleton();
@@ -1856,11 +1883,6 @@
       var nbCached = $('char-name-bracket');
       if (nbCached && cached.name != null && cached.level != null) {
         nbCached.textContent = String(cached.name) + '[' + String(cached.level) + ']';
-      }
-      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
-        L2.applyCharacterSnapshot(cached);
-      } else if (window.L2 && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(cached);
       }
       renderAll(cached);
     }
@@ -1872,7 +1894,10 @@
           })
         : Promise.resolve(false);
 
-    var snap = await fetchCharacterSnapshotFast(t);
+    var snap =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : cached;
     if (!snap) {
       if (!cached) {
         if (content) content.hidden = true;
@@ -1893,11 +1918,8 @@
       nb.textContent = String(snap.name) + '[' + String(snap.level) + ']';
     }
 
-    if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
-      L2.applyCharacterSnapshot(snap);
-    } else {
-      if (window.L2 && typeof L2.setLastSnapshot === 'function') L2.setLastSnapshot(snap);
-      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') L2.applyHudFromSnapshot(snap);
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(snap);
     }
 
     if (errEl) errEl.hidden = true;
@@ -1918,18 +1940,15 @@
     if (!charPageReady || !ev.persisted) return;
     var t = localStorage.getItem('token');
     if (!t) return;
-    fetchCharacterSnapshotFast(t).then(function (fresh) {
-      if (!fresh) return;
-      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
-        L2.applyCharacterSnapshot(fresh);
-      } else if (window.L2 && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(fresh);
-        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(fresh);
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      L2.resyncCharacterWhenRequired().then(function (fresh) {
+        if (!fresh) return;
+        if (typeof L2.applyMutationSnapshot === 'function') {
+          L2.applyMutationSnapshot(fresh);
         }
-      }
-      renderAll(fresh);
-    });
+        renderAll(fresh);
+      });
+    }
   });
 
   init();

@@ -6,12 +6,17 @@ import {
   getResourceCraftBook,
   performResourceCraft,
 } from '../services/resourceCraftService.js';
+import { RESOURCE_CRAFT_BOOK_VERSION } from '../data/characterCatalogVersion.js';
 
 export function registerGameResourceCraftRoutes(app: FastifyInstance): void {
   app.get(
     '/resource-craft/book',
     { preHandler: requireAuth },
-    async (_request, reply) => reply.send(getResourceCraftBook())
+    async (_request, reply) =>
+      reply.send({
+        bookVersion: RESOURCE_CRAFT_BOOK_VERSION,
+        ...getResourceCraftBook(),
+      })
   );
 
   app.post(

@@ -449,20 +449,14 @@
     var namesUk = {};
 
     Promise.all([
-      window.L2 && typeof L2.fetchSnapshot === 'function'
-        ? L2.fetchSnapshot()
-        : fetch('/character', { headers: { Authorization: 'Bearer ' + t } })
-            .then(function (r) {
-              if (r.status === 401) {
-                localStorage.removeItem('token');
-                window.location.href = '/';
-                return null;
-              }
-              return r.ok ? r.json() : null;
-            })
-            .then(function (j) {
-              return j && j.character ? j.character : null;
-            }),
+      (function () {
+        if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+          L2.renderCharacterFromCache();
+        }
+        return window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? L2.resyncCharacterWhenRequired()
+          : Promise.resolve(null);
+      })(),
       window.L2 && typeof L2.fetchCatalogHints === 'function'
         ? L2.fetchCatalogHints()
         : Promise.resolve(false),
@@ -478,24 +472,19 @@
           window.L2 && L2.itemNameById && typeof L2.itemNameById === 'object'
             ? L2.itemNameById
             : {};
-        if (L2.setLastSnapshot) L2.setLastSnapshot(snap);
-        if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(snap);
+        if (typeof L2.applyMutationSnapshot === 'function') {
+          L2.applyMutationSnapshot(snap);
         }
         var ok = typeof L2.canOpenCraft === 'function' && L2.canOpenCraft(snap);
         showGate(!!ok);
         if (!ok) return null;
-        return fetch('/game/resource-craft/book', {
-          headers: { Authorization: 'Bearer ' + t },
-        });
-      })
-      .then(function (r) {
-        if (!r) return;
-        if (!r.ok) {
-          showErr('Не вдалося завантажити рецепти.');
-          return;
-        }
-        return r.json();
+        return window.L2 && typeof L2.fetchCraftBook === 'function'
+          ? L2.fetchCraftBook()
+          : fetch('/game/resource-craft/book', {
+              headers: { Authorization: 'Bearer ' + t },
+            }).then(function (r) {
+              return r.ok ? r.json() : null;
+            });
       })
       .then(function (book) {
         if (!book || !charJson || !book.tiers) return;

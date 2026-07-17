@@ -343,38 +343,28 @@
       return;
     }
 
-    var r = await fetch('/character', {
-      headers: { Authorization: 'Bearer ' + authToken },
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    if (!r.ok) {
+    var c =
+      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+        ? await L2.resyncCharacterWhenRequired()
+        : null;
+    if (!c) {
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = 'Не вдалося завантажити героя.';
       }
       return;
     }
-
-    var j = await r.json();
-    var c = j.character;
     myCharName = c && c.name != null ? String(c.name) : '';
     if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
       try {
         await L2.fetchCatalogHints();
       } catch (_) {}
     }
-    if (window.L2) {
-      L2.setLastSnapshot(c);
-      if (j.gearCatalog && typeof L2.mergeGearCatalog === 'function') {
-        L2.mergeGearCatalog(j.gearCatalog);
-      }
-      if (typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
-      }
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c);
     }
 
     if (content) content.removeAttribute('hidden');
