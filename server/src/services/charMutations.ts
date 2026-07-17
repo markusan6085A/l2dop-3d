@@ -118,13 +118,14 @@ export async function getSnapshotForUser(
 
       let row = char;
       if (row.dungeonStateJson != null) {
-        row = (await trx.character.update({
+        const updated = (await trx.character.update({
           where: { id: row.id },
           data: {
             dungeonStateJson: Prisma.JsonNull,
             revision: { increment: 1 },
           },
         })) as CharacterRow;
+        row = row.clan ? { ...updated, clan: row.clan } : updated;
       }
 
       const sanitized = await ensureInventoryReadPatchesRow(row);

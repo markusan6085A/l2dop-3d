@@ -81,6 +81,12 @@
         font-size: 13px;
         line-height: 1.45;
       }
+      .l2-pers-clan-bonus {
+        margin: 4px 0 8px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #6ecf6e;
+      }
     </style>
   </head>
   <body class="l2-body l2-page-city l2-page-pers l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal">
@@ -157,6 +163,12 @@
                   <td class="l2-pers-td-v" id="pers-col-battle-b"></td>
                 </tr>
               </table>
+
+              <div id="pers-clan-bonus-block" hidden>
+                <hr class="l2-pers-rule" />
+                <h2 class="l2-pers-section-title">Бонус клана</h2>
+                <p class="l2-pers-clan-bonus" id="pers-clan-bonus-text"></p>
+              </div>
 
               <hr class="l2-pers-rule" />
 
@@ -255,6 +267,6 @@
     <script src="/common.js?v=20260717perf2"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260717perf2"></script>
-    <script src="/pers.js"></script>
+    <script src="/pers.js?v=20260718clans14"></script>
   </body>
 </html>

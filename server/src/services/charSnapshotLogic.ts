@@ -579,5 +579,16 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     clanId: row.clanId ?? null,
     clanName: row.clan?.name ?? null,
     clanRole: row.clanRole ?? null,
+    clanHallBonus: clanHallPassive
+      ? {
+          active: true,
+          clanLevel: clanHallPassive.level,
+          pAtk: clanHallPassive.pAtk,
+          mAtk: clanHallPassive.mAtk,
+          pDef: clanHallPassive.pDef,
+          mDef: clanHallPassive.mDef,
+          maxHp: clanHallPassive.maxHp,
+        }
+      : null,
   };
 }

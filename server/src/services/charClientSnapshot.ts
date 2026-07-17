@@ -4,6 +4,7 @@ import {
 } from '../data/characterCatalogVersion.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { toSnapshot } from './charSnapshotLogic.js';
+import { prisma } from '../lib/prisma.js';
 import {
   getUnreadReplyCount,
   getUnreadReplyCountForCharacter,
@@ -35,6 +36,28 @@ function attachClientSnapshotMeta(
   };
 }
 
+async function ensureClanHallOnRow(row: CharacterRow): Promise<CharacterRow> {
+  if (!row.clanId) return row;
+  const needsFetch =
+    !row.clan ||
+    row.clan.hallBlessingAt === undefined ||
+    row.clan.level === undefined;
+  if (!needsFetch) return row;
+  const clan = await prisma.clan.findUnique({
+    where: { id: row.clanId },
+    select: { name: true, hallBlessingAt: true, level: true },
+  });
+  if (!clan) return row;
+  return {
+    ...row,
+    clan: {
+      name: clan.name,
+      hallBlessingAt: clan.hallBlessingAt,
+      level: clan.level,
+    },
+  };
+}
+
 /** Єдиний client snapshot для GET і POST. Після commit транзакції. */
 export async function buildCharacterClientSnapshot(
   row: CharacterRow,
@@ -42,7 +65,8 @@ export async function buildCharacterClientSnapshot(
   extras?: Partial<CharacterSnapshot>,
   opts?: ClientSnapshotEnrichOpts
 ): Promise<CharacterSnapshot> {
-  const snap = toSnapshot(row);
+  const rowReady = await ensureClanHallOnRow(row);
+  const snap = toSnapshot(rowReady);
   const chatUnreadReplyCount = await getUnreadReplyCountForCharacter(
     row.id,
     row.chatRepliesReadAt ?? null

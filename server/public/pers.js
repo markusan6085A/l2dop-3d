@@ -259,6 +259,34 @@
     setBrLines($('pers-col-battle-a'), battleA);
     setBrLines($('pers-col-battle-b'), battleB);
 
+    (function renderClanBonus() {
+      var block = $('pers-clan-bonus-block');
+      var text = $('pers-clan-bonus-text');
+      if (!block || !text) return;
+      var b = c && c.clanHallBonus;
+      if (!b || !b.active) {
+        block.hidden = true;
+        return;
+      }
+      block.hidden = false;
+      text.innerHTML =
+        'Рівень клану ' +
+        String(b.clanLevel) +
+        ' (Клан-хол):<br>' +
+        'P.Atk +' +
+        String(b.pAtk) +
+        ', M.Atk +' +
+        String(b.mAtk) +
+        '<br>' +
+        'P.Def +' +
+        String(b.pDef) +
+        ', M.Def +' +
+        String(b.mDef) +
+        '<br>' +
+        'Макс. HP +' +
+        String(b.maxHp);
+    })();
+
     function setOne(id, v) {
       var el = $(id);
       if (el) el.textContent = String(v);

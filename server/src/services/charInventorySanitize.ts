@@ -31,8 +31,10 @@ export async function ensureInventoryReadPatchesRow(
       })
     );
     if (!result.ok) {
-      return (result.character as CharacterRow | null) ?? row;
+      const fallback = (result.character as CharacterRow | null) ?? row;
+      return row.clan ? { ...fallback, clan: row.clan } : fallback;
     }
-    return result.character as CharacterRow;
+    const updated = result.character as CharacterRow;
+    return row.clan ? { ...updated, clan: row.clan } : updated;
   });
 }

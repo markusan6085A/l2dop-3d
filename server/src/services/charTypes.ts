@@ -251,4 +251,16 @@ export interface CharacterSnapshot {
   clanName?: string | null;
   /** leader | member | null */
   clanRole?: string | null;
+  /** Пасивний бонус Клан-холу (для UI профілю). */
+  clanHallBonus?: ClanHallBonusSnapshot | null;
 }
+
+export type ClanHallBonusSnapshot = {
+  active: boolean;
+  clanLevel: number;
+  pAtk: number;
+  mAtk: number;
+  pDef: number;
+  mDef: number;
+  maxHp: number;
+};
