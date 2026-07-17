@@ -50,6 +50,14 @@
         '</span> <span class="l2-news-item__ago">' +
         escapeHtml(ago) +
         '</span>';
+    } else if (entry.kind === 'mammon_blacksmith_spawn') {
+      html =
+        '<span class="l2-news-item__mammon">Коваль Маммона</span>' +
+        '<span class="l2-news-item__mammon-tail"> з\'явився у ' +
+        escapeHtml(entry.locationEn || '—') +
+        '</span> <span class="l2-news-item__ago">' +
+        escapeHtml(ago) +
+        '</span>';
     } else if (entry.kind === 'player_join') {
       html =
         'У грі з\'явився новий гравець: <span class="l2-news-item__nick">' +

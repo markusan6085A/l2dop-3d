@@ -152,7 +152,7 @@ model WorldBossSession {
 /** Глобальні новини сервера (Новости в чаті). */
 model ServerNewsEntry {
   id         String   @id @default(uuid())
-  /** mammon_spawn | player_join */
+  /** mammon_spawn | mammon_blacksmith_spawn | player_join */
   kind       String
   locationEn String?
   playerName String?

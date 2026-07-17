@@ -6,11 +6,16 @@ import {
   mapSyncHasChanges,
   mobSpawnHpPersonalSig,
 } from '../domain/mapSyncVersion.js';
-import { mammonMerchantRotationSig } from '../domain/mammonMerchantRotation.js';
+import { isWithinMapNearbyHeroRadius } from '../domain/mapNearbyRadius.js';
+import { mammonRotationSig } from '../domain/mammonRotationSync.js';
 import {
   getMammonMerchantState,
   type MammonMerchantStatePayload,
 } from './mammonMerchantService.js';
+import {
+  getMammonBlacksmithState,
+  type MammonBlacksmithStatePayload,
+} from './mammonBlacksmithService.js';
 import { prisma } from '../lib/prisma.js';
 import { getNearbyHeroesForMap } from './mapNearbyHeroesService.js';
 import { buildMapNearbySpawnViews } from './mapNearbySpawnsQuery.js';
@@ -81,7 +86,8 @@ export interface MapSyncPayload {
   mammonRotationSig: string;
   revision: number;
   mapState: CharacterMapStatePayload;
-  mammonMerchant: MammonMerchantStatePayload;
+  mammonMerchant: MammonMerchantStatePayload | null;
+  mammonBlacksmith: MammonBlacksmithStatePayload | null;
   around: ReturnType<typeof resolveMapLocality> & {
     nearbySpawns: ReturnType<typeof buildMapNearbySpawnViews>['listEntries'];
     nearbyHeroes: Awaited<ReturnType<typeof getNearbyHeroesForMap>>;
@@ -102,6 +108,22 @@ export type MapSyncQuery = {
   mammonRotationSig?: string;
   revision?: number;
 };
+
+function mammonStateIfNearby<
+  T extends { current: { worldX: number; worldY: number } },
+>(state: T, playerX: number, playerY: number): T | null {
+  if (
+    !isWithinMapNearbyHeroRadius(
+      playerX,
+      playerY,
+      state.current.worldX,
+      state.current.worldY
+    )
+  ) {
+    return null;
+  }
+  return state;
+}
 
 /** Один poll для map.html: позиція + околиці + маркери (один spatial-запит). */
 export async function getMapSyncForUser(
@@ -131,8 +153,17 @@ export async function getMapSyncForUser(
   const nowMs = Date.now();
   const mobSpawnHpJson = row.mobSpawnHpJson;
   const personalMapSig = mobSpawnHpPersonalSig(mobSpawnHpJson, nowMs);
-  const mammonRotationSigVal = mammonMerchantRotationSig(nowMs);
-  const mammonMerchant = getMammonMerchantState(nowMs);
+  const mammonRotationSigVal = mammonRotationSig(nowMs);
+  const mammonMerchant = mammonStateIfNearby(
+    getMammonMerchantState(nowMs),
+    mapState.worldX,
+    mapState.worldY
+  );
+  const mammonBlacksmith = mammonStateIfNearby(
+    getMammonBlacksmithState(nowMs),
+    mapState.worldX,
+    mapState.worldY
+  );
   const changed = mapSyncHasChanges({
     clientMapCatalogVersion: query.mapCatalogVersion,
     clientPersonalMapSig: query.personalMapSig,
@@ -178,6 +209,7 @@ export async function getMapSyncForUser(
       revision: mapState.revision,
       mapState,
       mammonMerchant,
+      mammonBlacksmith,
       around: {
         ...locality,
         nearbySpawns: [],
@@ -205,6 +237,7 @@ export async function getMapSyncForUser(
     revision: mapState.revision,
     mapState,
     mammonMerchant,
+    mammonBlacksmith,
     around: {
       ...locality,
       nearbySpawns: listEntries,

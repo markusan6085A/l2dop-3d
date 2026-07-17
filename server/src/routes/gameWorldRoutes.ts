@@ -20,6 +20,7 @@ import { getMapAroundForUser, resolvedWorldPositionFromCharacterRow } from '../s
 import { getMapWorldSpawnsNearPlayer } from '../services/mapSpawnsService.js';
 import { getMapSyncForUser } from '../services/charMapStateService.js';
 import { getMammonMerchantState } from '../services/mammonMerchantService.js';
+import { getMammonBlacksmithState } from '../services/mammonBlacksmithService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { prisma } from '../lib/prisma.js';
@@ -69,6 +70,14 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     { preHandler: requireAuth },
     async (_request, reply) => {
       return reply.send({ mammonMerchant: getMammonMerchantState() });
+    }
+  );
+
+  app.get(
+    '/mammon/blacksmith',
+    { preHandler: requireAuth },
+    async (_request, reply) => {
+      return reply.send({ mammonBlacksmith: getMammonBlacksmithState() });
     }
   );
 

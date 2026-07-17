@@ -2,9 +2,13 @@ import {
   MAMMON_MERCHANT_ROTATION_MS,
   resolveMammonMerchantRotation,
 } from '../domain/mammonMerchantRotation.js';
+import { resolveMammonBlacksmithRotation } from '../domain/mammonBlacksmithRotation.js';
 import { prisma } from '../lib/prisma.js';
 
-export type ServerNewsKind = 'mammon_spawn' | 'player_join';
+export type ServerNewsKind =
+  | 'mammon_spawn'
+  | 'mammon_blacksmith_spawn'
+  | 'player_join';
 
 export interface ServerNewsEntryDto {
   id: string;
@@ -23,7 +27,8 @@ export interface ServerNewsListResult {
 
 const PAGE_SIZE = 20;
 const MAX_STORED_ENTRIES = 200;
-const META_MAMMON_ROTATION_SLOT = 'mammon_news_rotation_slot';
+const META_MAMMON_MERCHANT_ROTATION_SLOT = 'mammon_merchant_news_rotation_slot';
+const META_MAMMON_BLACKSMITH_ROTATION_SLOT = 'mammon_blacksmith_news_rotation_slot';
 
 function toDto(row: {
   id: string;
@@ -32,8 +37,9 @@ function toDto(row: {
   playerName: string | null;
   createdAt: Date;
 }): ServerNewsEntryDto {
-  const kind: ServerNewsKind =
-    row.kind === 'player_join' ? 'player_join' : 'mammon_spawn';
+  let kind: ServerNewsKind = 'mammon_spawn';
+  if (row.kind === 'player_join') kind = 'player_join';
+  else if (row.kind === 'mammon_blacksmith_spawn') kind = 'mammon_blacksmith_spawn';
   return {
     id: row.id,
     kind,
@@ -69,14 +75,12 @@ export async function postPlayerJoinNews(playerName: string): Promise<void> {
 }
 
 /** Одна новина на кожен 4-годинний слот ротації Торговця Маммона. */
-export async function ensureMammonSpawnNews(
+export async function ensureMammonMerchantSpawnNews(
   nowMs: number = Date.now()
 ): Promise<void> {
-  const rotationSlot = String(
-    Math.floor(nowMs / MAMMON_MERCHANT_ROTATION_MS)
-  );
+  const rotationSlot = String(Math.floor(nowMs / MAMMON_MERCHANT_ROTATION_MS));
   const meta = await prisma.serverMeta.findUnique({
-    where: { key: META_MAMMON_ROTATION_SLOT },
+    where: { key: META_MAMMON_MERCHANT_ROTATION_SLOT },
   });
   if (meta?.value === rotationSlot) return;
 
@@ -88,11 +92,43 @@ export async function ensureMammonSpawnNews(
     },
   });
   await prisma.serverMeta.upsert({
-    where: { key: META_MAMMON_ROTATION_SLOT },
-    create: { key: META_MAMMON_ROTATION_SLOT, value: rotationSlot },
+    where: { key: META_MAMMON_MERCHANT_ROTATION_SLOT },
+    create: { key: META_MAMMON_MERCHANT_ROTATION_SLOT, value: rotationSlot },
     update: { value: rotationSlot },
   });
   await pruneOldEntries();
+}
+
+/** Одна новина на кожен 4-годинний слот ротації Коваля Маммона. */
+export async function ensureMammonBlacksmithSpawnNews(
+  nowMs: number = Date.now()
+): Promise<void> {
+  const rotationSlot = String(Math.floor(nowMs / MAMMON_MERCHANT_ROTATION_MS));
+  const meta = await prisma.serverMeta.findUnique({
+    where: { key: META_MAMMON_BLACKSMITH_ROTATION_SLOT },
+  });
+  if (meta?.value === rotationSlot) return;
+
+  const rot = resolveMammonBlacksmithRotation(nowMs);
+  await prisma.serverNewsEntry.create({
+    data: {
+      kind: 'mammon_blacksmith_spawn',
+      locationEn: rot.current.labelEn,
+    },
+  });
+  await prisma.serverMeta.upsert({
+    where: { key: META_MAMMON_BLACKSMITH_ROTATION_SLOT },
+    create: { key: META_MAMMON_BLACKSMITH_ROTATION_SLOT, value: rotationSlot },
+    update: { value: rotationSlot },
+  });
+  await pruneOldEntries();
+}
+
+export async function ensureMammonSpawnNews(
+  nowMs: number = Date.now()
+): Promise<void> {
+  await ensureMammonMerchantSpawnNews(nowMs);
+  await ensureMammonBlacksmithSpawnNews(nowMs);
 }
 
 export async function listServerNews(
