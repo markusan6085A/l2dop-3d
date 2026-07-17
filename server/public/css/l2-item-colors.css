@@ -12,6 +12,10 @@ body.l2-app-l2-chrome {
   --l2-item-grade-a: #c87840;
   --l2-item-grade-s: #d4a020;
 
+  --l2-item-seal-green: #5dbd5d;
+  --l2-item-seal-blue: #3399ff;
+  --l2-item-seal-red: #e83838;
+
   --l2-item-stat-patk: #c41818;
   --l2-item-stat-matk: #1e7ae8;
   --l2-item-stat-speed: #9a9488;
@@ -93,6 +97,18 @@ body.l2-app-l2-chrome {
 
 .l2-item-name--grade-s {
   color: var(--l2-item-grade-s);
+}
+
+.l2-item-name--seal-green {
+  color: var(--l2-item-seal-green);
+}
+
+.l2-item-name--seal-blue {
+  color: var(--l2-item-seal-blue);
+}
+
+.l2-item-name--seal-red {
+  color: var(--l2-item-seal-red);
 }
 
 a.l2-char-bag-name:hover,

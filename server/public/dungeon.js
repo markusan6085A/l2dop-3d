@@ -2,8 +2,11 @@
  * Подземелля Seven Signs — карта зверху, рух по коридорах (клік → біг по сірих зонах).
  */
 (function () {
-  var DUNGEON_POLL_IDLE_MS = 1000;
+  var DUNGEON_POLL_IDLE_MS = 5000;
   var DUNGEON_POLL_MOVE_MS = 1000;
+  var DUNGEON_POLL_HIDDEN_MS = 30000;
+  /** Як DUNGEON_NEARBY_RADIUS_PX — єдиний червоний радіус: моби + гравці. */
+  var DUNGEON_NEARBY_RADIUS_PX = 70;
   var MAP_SCALE_MIN = 0.45;
   var MAP_SCALE_MAX = 2.75;
   var MAP_SCALE_STEP = 0.15;
@@ -52,14 +55,41 @@
     var scaleY = rect.height / img.naturalHeight;
     var px = mapX * scaleX;
     var py = mapY * scaleY;
-    viewport.scrollLeft = Math.max(0, px - viewport.clientWidth * 0.5);
-    viewport.scrollTop = Math.max(0, py - viewport.clientHeight * 0.5);
+    var sl = px - viewport.clientWidth * 0.5;
+    var st = py - viewport.clientHeight * 0.5;
+    viewport.scrollLeft = Math.max(
+      0,
+      Math.min(sl, viewport.scrollWidth - viewport.clientWidth)
+    );
+    viewport.scrollTop = Math.max(
+      0,
+      Math.min(st, viewport.scrollHeight - viewport.clientHeight)
+    );
   }
 
-  function renderPlayer(dungeon, img, dot, moveTarget) {
+  function placeDungeonRadiusCircle(img, el, mapX, mapY, radiusPx) {
+    if (!img || !el || !img.naturalWidth || !radiusPx) return;
+    var lx = (mapX / img.naturalWidth) * 100;
+    var ly = (mapY / img.naturalHeight) * 100;
+    var wPct = ((radiusPx * 2) / img.naturalWidth) * 100;
+    var hPct = ((radiusPx * 2) / img.naturalHeight) * 100;
+    el.style.left = lx + '%';
+    el.style.top = ly + '%';
+    el.style.width = wPct + '%';
+    el.style.height = hPct + '%';
+  }
+
+  function renderPlayer(dungeon, img, dot, moveTarget, nearbyRadiusEl) {
     if (!dungeon || !dungeon.player) return;
     var p = dungeon.player;
     placeMapPixelDot(img, dot, p.mapX, p.mapY);
+    placeDungeonRadiusCircle(
+      img,
+      nearbyRadiusEl,
+      p.mapX,
+      p.mapY,
+      DUNGEON_NEARBY_RADIUS_PX
+    );
     if (moveTarget) {
       if (p.mapMoving && p.targetMapX && p.targetMapY) {
         moveTarget.hidden = false;
@@ -69,6 +99,120 @@
         moveTarget.hidden = true;
         moveTarget.setAttribute('aria-hidden', 'true');
       }
+    }
+  }
+
+  function heroNickHex(h) {
+    if (h.pvpNickColor === 'pk') return '#e85840';
+    if (h.pvpNickColor === 'aggressor') return '#a060d8';
+    return '#bfa88a';
+  }
+
+  function heroLevelPart(h) {
+    var lv = Number(h.level);
+    return Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
+  }
+
+  function compactHeroSig(heroes) {
+    if (!heroes || !heroes.length) return '0';
+    var parts = [];
+    for (var i = 0; i < heroes.length; i++) {
+      var h = heroes[i];
+      parts.push(
+        String(h.characterId || '') +
+          ':' +
+          String(h.mapX != null ? h.mapX : '') +
+          ':' +
+          String(h.mapY != null ? h.mapY : '') +
+          ':' +
+          String(h.distance != null ? h.distance : '')
+      );
+    }
+    return String(heroes.length) + '|' + parts.join(',');
+  }
+
+  function renderDungeonHeroMarkers(img, layer, heroes) {
+    if (!layer) return;
+    var sig = compactHeroSig(heroes);
+    if (layer.dataset.l2HeroMarkerSig === sig) return;
+    layer.dataset.l2HeroMarkerSig = sig;
+    layer.innerHTML = '';
+    if (!img || !img.naturalWidth || !heroes || !heroes.length) return;
+    for (var hj = 0; hj < heroes.length; hj++) {
+      var h = heroes[hj];
+      var lx = (h.mapX / img.naturalWidth) * 100;
+      var ly = (h.mapY / img.naturalHeight) * 100;
+      var pin = document.createElement('div');
+      pin.className = 'l2-map-hero-pin';
+      if (h.pvpNickColor === 'pk') pin.className += ' l2-map-hero-pin--pk';
+      else if (h.pvpNickColor === 'aggressor') {
+        pin.className += ' l2-map-hero-pin--aggressor';
+      }
+      pin.style.left = lx + '%';
+      pin.style.top = ly + '%';
+      var title = (h.name || '—') + heroLevelPart(h);
+      pin.setAttribute('aria-label', title);
+      pin.title = title;
+      pin.dataset.characterId = h.characterId || '';
+      pin.dataset.heroName = h.name || '';
+      layer.appendChild(pin);
+    }
+  }
+
+  function renderDungeonHeroList(listEl, sectionEl, heroes, onPkClick) {
+    if (!listEl) return;
+    var sig = compactHeroSig(heroes);
+    if (listEl.dataset.l2HeroListSig === sig) {
+      if (sectionEl) sectionEl.hidden = !heroes || !heroes.length;
+      return;
+    }
+    listEl.dataset.l2HeroListSig = sig;
+    listEl.innerHTML = '';
+    if (sectionEl) sectionEl.hidden = !heroes || !heroes.length;
+    if (!heroes || !heroes.length) return;
+    for (var hi = 0; hi < heroes.length; hi++) {
+      var h = heroes[hi];
+      var li = document.createElement('li');
+      li.className = 'l2-map-hero-item';
+      var main = document.createElement('div');
+      main.className = 'l2-map-hero-item__main';
+      main.style.setProperty('--l2-map-hero-nick-color', heroNickHex(h) || '#bfa88a');
+      var nameLink = document.createElement('a');
+      nameLink.className = 'l2-map-hero-name-link';
+      if (h.pvpNickColor === 'pk') nameLink.classList.add('l2-pvp-nick--pk');
+      else if (h.pvpNickColor === 'aggressor') {
+        nameLink.classList.add('l2-pvp-nick--aggressor');
+      }
+      nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+      nameLink.textContent = h.name || '—';
+      var levelSpan = document.createElement('span');
+      levelSpan.className = 'l2-map-hero-level';
+      levelSpan.textContent = heroLevelPart(h);
+      var pkBtn = document.createElement('button');
+      pkBtn.type = 'button';
+      pkBtn.className = 'l2-map-hero-link__pk';
+      pkBtn.textContent = ' [pk]';
+      pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
+      var canPk = h.inBattleRange && h.canPkAttack !== false;
+      if (!canPk) {
+        pkBtn.disabled = true;
+        if (!h.inBattleRange) pkBtn.title = 'Занадто далеко';
+        else if (h.inBattle && !h.canPkAttack) pkBtn.title = 'Гравець у чужому PvP';
+        else pkBtn.title = 'Недоступно';
+      } else {
+        pkBtn.addEventListener('click', (function (heroId) {
+          return function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (heroId) onPkClick(heroId);
+          };
+        })(h.characterId));
+      }
+      main.appendChild(nameLink);
+      main.appendChild(levelSpan);
+      main.appendChild(pkBtn);
+      li.appendChild(main);
+      listEl.appendChild(li);
     }
   }
 
@@ -184,6 +328,12 @@
       var ch = formatDropChance(r);
       var span = document.createElement('span');
       span.className = 'l2-map-mob-modal__drop-txt';
+      if (r.l2ItemId && window.L2 && typeof L2.itemNameClassNames === 'function') {
+        span.className = L2.itemNameClassNames(
+          r.l2ItemId,
+          'l2-map-mob-modal__drop-txt l2-item-name'
+        );
+      }
       span.textContent = qty ? label + ' — ' + qty + ' · ' + ch : label + ' — ' + ch;
       li.appendChild(img);
       li.appendChild(span);
@@ -198,7 +348,8 @@
     if (!mobs || !mobs.length) {
       var hint = document.createElement('li');
       hint.className = 'l2-map-mob-item l2-map-mob-item--hint';
-      hint.textContent = 'Мобів поблизу не виявлено.';
+      hint.textContent =
+        'У радіусі обзору немає мобів — клікни по мобу на карті, щоб підійти.';
       listEl.appendChild(hint);
       return;
     }
@@ -226,7 +377,10 @@
       var a = document.createElement('a');
       a.className = mobLinkClass(s, playerLevel);
       a.href = '/battle.html?spawnId=' + encodeURIComponent(s.id || '');
-      a.setAttribute('aria-label', 'Атакувати моба');
+      a.setAttribute(
+        'aria-label',
+        s.inBattleRange ? 'Атакувати моба' : 'Підійти до моба'
+      );
       a.addEventListener('click', onBattleClick);
       a.textContent = mobDisplayLine(s);
       li.appendChild(iconBtn);
@@ -643,11 +797,16 @@
     var innerEl = $('dungeon-map-inner');
     var mobList = $('dungeon-mob-list');
     var mobMarkers = $('dungeon-mob-markers');
+    var heroList = $('dungeon-hero-list');
+    var heroSection = $('dungeon-hero-section');
+    var heroMarkers = $('dungeon-hero-markers');
     var viewport = $('dungeon-map-viewport');
     var dot = $('dungeon-dot');
     var moveTarget = $('dungeon-move-target');
+    var nearbyRadiusEl = $('dungeon-nearby-radius');
     var moveInFlight = false;
     var battleStartInFlight = false;
+    var pvpStartInFlight = false;
     var currentDungeon = null;
     var nearbyMobById = {};
     var mapControls = null;
@@ -678,6 +837,110 @@
       var mob = findNearbyMob(spawnId);
       if (!mob) return true;
       return mob.inBattleRange !== false;
+    }
+
+    async function startPvpFromDungeon(targetCharacterId) {
+      if (!targetCharacterId || pvpStartInFlight) return;
+      pvpStartInFlight = true;
+      try {
+        var t = localStorage.getItem('token');
+        var snap =
+          window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+        if (!t || !snap) {
+          window.location.href = '/';
+          return;
+        }
+        async function postStart(revision) {
+          return fetch('/game/battle/pvp/start', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + t,
+            },
+            body: JSON.stringify({
+              targetCharacterId: targetCharacterId,
+              expectedRevision: revision,
+            }),
+          });
+        }
+        var r = await postStart(snap.revision);
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return;
+        }
+        if (r.status === 409) {
+          if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+            await L2.resyncCharacterAfterConflict(null, await r.json().catch(function () {
+              return null;
+            }));
+          }
+          snap =
+            window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+          if (!snap) return;
+          r = await postStart(snap.revision);
+        }
+        if (!r.ok) {
+          var errMsg = 'Не вдалося розпочати PvP.';
+          try {
+            var ej = await r.json();
+            if (ej && ej.messageUk) errMsg = ej.messageUk;
+          } catch (eErr) {
+            /* ignore */
+          }
+          dungeonNotify(errMsg);
+          return;
+        }
+        var j = await r.json();
+        if (j.character && L2.applyCharacterSnapshot) {
+          L2.applyCharacterSnapshot(j.character);
+        }
+        window.location.href =
+          '/battle.html?pvpTargetId=' + encodeURIComponent(targetCharacterId);
+      } finally {
+        pvpStartInFlight = false;
+      }
+    }
+
+    async function walkToMobOnMap(mapX, mapY) {
+      if (moveInFlight) return;
+      if (!Number.isFinite(mapX) || !Number.isFinite(mapY)) return;
+      moveInFlight = true;
+      try {
+        var r = await postDungeonMove(
+          dungeonId,
+          Math.floor(mapX),
+          Math.floor(mapY)
+        );
+        if (r.ok && r.dungeon) {
+          paintDungeon(r.dungeon);
+          if (errEl) errEl.hidden = true;
+        } else if (r.err === '409') {
+          var fresh = await fetchDungeonView(dungeonId);
+          if (fresh) paintDungeon(fresh);
+          if (errEl) {
+            errEl.hidden = false;
+            errEl.textContent =
+              'Конфлікт ревізії — оновлено з сервера. Спробуй ще раз.';
+          }
+        } else if (errEl && typeof r.err === 'string' && r.err !== '401') {
+          errEl.hidden = false;
+          errEl.textContent = r.err;
+        }
+      } finally {
+        moveInFlight = false;
+      }
+    }
+
+    async function walkToMobBySpawnId(spawnId) {
+      var mob = findNearbyMob(spawnId);
+      if (!mob) {
+        dungeonNotify('Моб недоступний — оновлюю карту…');
+        var freshMob = await fetchDungeonView(dungeonId);
+        if (freshMob) paintDungeon(freshMob);
+        return;
+      }
+      await walkToMobOnMap(mob.mapX, mob.mapY);
     }
 
     async function startBattleFromDungeon(spawnId) {
@@ -758,7 +1021,13 @@
       var href = a.getAttribute('href') || '';
       var m = href.match(/[?&]spawnId=([^&]+)/);
       var spawnId = m ? decodeURIComponent(m[1]) : '';
-      startBattleFromDungeon(spawnId);
+      if (!spawnId) return;
+      var mob = findNearbyMob(spawnId);
+      if (mob && mob.inBattleRange) {
+        startBattleFromDungeon(spawnId);
+        return;
+      }
+      walkToMobBySpawnId(spawnId);
     }
 
     var mobModal = $('dungeon-mob-modal');
@@ -925,7 +1194,13 @@
         e.stopPropagation();
         e.preventDefault();
         var sid = pin.dataset.spawnId;
-        if (sid) openMobCatalog(sid);
+        if (!sid) return;
+        var mob = findNearbyMob(sid);
+        if (mob && mob.inBattleRange) {
+          startBattleFromDungeon(sid);
+          return;
+        }
+        walkToMobBySpawnId(sid);
       });
     }
 
@@ -939,40 +1214,63 @@
           nearbyMobById[mobRows[mi].id] = mobRows[mi];
         }
       }
+      var markerRows = d.mobMarkers || [];
+      for (var mk = 0; mk < markerRows.length; mk++) {
+        if (markerRows[mk] && markerRows[mk].id && !nearbyMobById[markerRows[mk].id]) {
+          nearbyMobById[markerRows[mk].id] = markerRows[mk];
+        }
+      }
       if (titleEl) titleEl.textContent = d.labelEn || '—';
       if (subEl) subEl.textContent = d.labelUk || '';
       if (imgEl && d.mapImageUrl && imgEl.src !== d.mapImageUrl) {
         imgEl.src = d.mapImageUrl;
       }
-      renderPlayer(d, imgEl, dot, moveTarget);
+      renderPlayer(d, imgEl, dot, moveTarget, nearbyRadiusEl);
       renderDungeonMobMarkers(imgEl, mobMarkers, d.mobMarkers || []);
+      renderDungeonHeroMarkers(imgEl, heroMarkers, d.nearbyHeroes || []);
+      renderDungeonHeroList(
+        heroList,
+        heroSection,
+        d.nearbyHeroes || [],
+        startPvpFromDungeon
+      );
       renderDungeonMobList(
         mobList,
         d.nearbyMobs || [],
         playerLevelFromSnapshot(),
         onDungeonMobBattleClick
       );
-      if (
-        !didInitialCenter &&
-        mapControls &&
-        d.player &&
-        typeof mapControls.maybeCenterOnPlayer === 'function'
-      ) {
-        mapControls.maybeCenterOnPlayer(d.player.mapX, d.player.mapY);
-        didInitialCenter = true;
+      if (mapControls && d.player && imgEl && imgEl.naturalWidth) {
+        if (
+          !didInitialCenter &&
+          typeof mapControls.forceCenterOnPlayer === 'function'
+        ) {
+          mapControls.forceCenterOnPlayer(d.player.mapX, d.player.mapY);
+          didInitialCenter = true;
+        } else if (
+          d.player.mapMoving &&
+          typeof mapControls.maybeCenterOnPlayer === 'function'
+        ) {
+          mapControls.maybeCenterOnPlayer(d.player.mapX, d.player.mapY);
+        }
       }
     }
 
     function schedulePoll() {
       if (pollTimer) clearTimeout(pollTimer);
-      var delay =
-        currentDungeon &&
-        currentDungeon.player &&
-        currentDungeon.player.mapMoving
+      var delay = document.hidden
+        ? DUNGEON_POLL_HIDDEN_MS
+        : currentDungeon &&
+            currentDungeon.player &&
+            currentDungeon.player.mapMoving
           ? DUNGEON_POLL_MOVE_MS
           : DUNGEON_POLL_IDLE_MS;
       pollTimer = setTimeout(async function () {
         pollTimer = null;
+        if (document.hidden) {
+          schedulePoll();
+          return;
+        }
         if (moveInFlight) {
           schedulePoll();
           return;
@@ -1016,10 +1314,10 @@
       if (mapControls && mapControls.applyMapScale) mapControls.applyMapScale();
       paintDungeon(currentDungeon || first);
       if (
-        shouldEnter &&
         mapControls &&
         first &&
         first.player &&
+        !didInitialCenter &&
         typeof mapControls.forceCenterOnPlayer === 'function'
       ) {
         mapControls.forceCenterOnPlayer(first.player.mapX, first.player.mapY);
@@ -1069,6 +1367,10 @@
     }
 
     schedulePoll();
+
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) schedulePoll();
+    });
 
     window.addEventListener('beforeunload', function () {
       if (pollTimer) clearTimeout(pollTimer);

@@ -1,5 +1,6 @@
 import type { DropEntry } from '../types/combatDrop.js';
 import type { NpcDropBag } from './npcDropsResolved.js';
+import { sealStoneDropEntriesForDungeonMob } from './sevenSignsSealStoneItems.js';
 import { SEVEN_SIGNS_DUNGEON_MOB_TYPES_BY_DUNGEON } from './sevenSignsDungeonMobCatalog.js';
 import { getDungeonMobSpawnById } from './sevenSignsDungeonMobSpawns.js';
 
@@ -143,7 +144,10 @@ function buildRewardTables(): {
         adenaChance: adena.adenaChance,
       };
       dropBagByDungeonNpc[key] = {
-        drops: [adenaDropEntry(mob.npcId, adena)],
+        drops: [
+          adenaDropEntry(mob.npcId, adena),
+          ...sealStoneDropEntriesForDungeonMob(dungeonId, mob.npcId),
+        ],
         spoil: [],
       };
     }

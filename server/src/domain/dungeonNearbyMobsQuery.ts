@@ -7,11 +7,14 @@ import {
   type SevenSignsDungeonMobSpawn,
 } from '../data/sevenSignsDungeonMobSpawns.js';
 
-/** Радіус списку/маркерів мобів на карті подземелля (px). */
-export const DUNGEON_NEARBY_LIST_RADIUS_PX = 320;
+/** Єдиний радіус обзору на карті подземелля (px): моби, атака, інші гравці. */
+export const DUNGEON_NEARBY_RADIUS_PX = 70;
 
-/** Радіус атаки моба на карті подземелля (px). */
-export const DUNGEON_BATTLE_RANGE_PX = 140;
+/** @deprecated alias — те саме, що DUNGEON_NEARBY_RADIUS_PX */
+export const DUNGEON_NEARBY_LIST_RADIUS_PX = DUNGEON_NEARBY_RADIUS_PX;
+
+/** @deprecated alias — те саме, що DUNGEON_NEARBY_RADIUS_PX */
+export const DUNGEON_BATTLE_RANGE_PX = DUNGEON_NEARBY_RADIUS_PX;
 
 const LIST_MAX = 40;
 
@@ -42,7 +45,7 @@ function toEntry(
     mapX: spawn.mapX,
     mapY: spawn.mapY,
     distance: Math.round(dist),
-    inBattleRange: dist <= DUNGEON_BATTLE_RANGE_PX,
+    inBattleRange: dist <= DUNGEON_NEARBY_RADIUS_PX,
     aggressive: spawn.kind === 'raid' ? true : spawn.aggressive,
     kind:
       spawn.kind === 'raid'
@@ -60,7 +63,7 @@ export function buildDungeonNearbyMobViews(
   playerMapY: number,
   mobSpawnHpJson?: unknown,
   nowMs: number = Date.now(),
-  radius: number = DUNGEON_NEARBY_LIST_RADIUS_PX
+  radius: number = DUNGEON_NEARBY_RADIUS_PX
 ): { listEntries: DungeonNearbyMobEntry[]; markerEntries: DungeonNearbyMobEntry[] } {
   const rows = getDungeonMobSpawnsForDungeon(dungeonId)
     .map((spawn) => toEntry(spawn, playerMapX, playerMapY))

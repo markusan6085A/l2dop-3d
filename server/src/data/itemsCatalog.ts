@@ -40,6 +40,7 @@ import { dropsShopConsumableGearCatalogExtras } from './dropsShopConsumableGearE
 import { dropsShopGearCatalogExtras } from './dropsShopGearCatalogExtras.js';
 import { authorGiftGearCatalogExtras, mergeAuthorGiftItems } from './itemsCatalogAuthorGifts.js';
 import { starterGearCatalogExtras } from './starterGearCatalogExtras.js';
+import { sealStoneItemMetaForCatalog, sealStoneNamesUkForClient } from './sevenSignsSealStoneItems.js';
 
 export type ItemSlotKind =
   | 'rhand'
@@ -353,6 +354,8 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
     o[id] = { nameUk: row.nameUk, slot: 'consumable' };
   }
 
+  Object.assign(o, sealStoneItemMetaForCatalog());
+
   return o;
 })();
 
@@ -617,6 +620,9 @@ const ITEM_INVENTORY_TAB_EXTRA: Partial<
   3950: 'consumable',
   3951: 'consumable',
   3952: 'consumable',
+  6360: 'resource',
+  6361: 'resource',
+  6362: 'resource',
 };
 
 export function itemInventoryTabHintsForClient(): Record<
@@ -647,6 +653,11 @@ export function itemNamesUkForClient(): Record<number, string> {
   }
 
   for (const [idStr, uk] of Object.entries(RESOURCE_CRAFT_ITEM_NAMES_UK)) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(sealStoneNamesUkForClient())) {
     const id = Number(idStr);
     if (uk && String(uk).trim() !== '') out[id] = uk;
   }

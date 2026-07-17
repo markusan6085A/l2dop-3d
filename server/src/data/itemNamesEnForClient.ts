@@ -12,6 +12,7 @@ import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatch
 import { L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER } from './l2dopNgWeaponDropsPatches.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
+import { sealStoneNamesEnForClient } from './sevenSignsSealStoneItems.js';
 
 type OverrideRow = { itemId?: number };
 
@@ -122,6 +123,10 @@ export function itemNamesEnForClient(): Record<number, string> {
 
   for (const [idStr, uk] of Object.entries(RESOURCE_CRAFT_ITEM_NAMES_UK)) {
     put(Number(idStr), resourceNameEn(uk), true);
+  }
+
+  for (const [idStr, en] of Object.entries(sealStoneNamesEnForClient())) {
+    put(Number(idStr), en, true);
   }
 
   for (const [idStr, en] of Object.entries(ITEM_NAMES_EN_OVERRIDES)) {

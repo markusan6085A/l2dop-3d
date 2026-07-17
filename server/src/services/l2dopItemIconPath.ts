@@ -4,6 +4,7 @@ import {
   craftResourceIconFileName,
   craftResourceIconRelUrl,
 } from '../data/resourceCraftIconFileNames.js';
+import { sealStoneIconUrlForItemId } from '../data/sevenSignsSealStoneItems.js';
 
 function publicDirCandidates(relParts: string[]): string[] {
   const cwd = process.cwd();
@@ -78,6 +79,8 @@ export function resolveItemIconPublicUrl(itemId: number): string {
     );
     if (adena) return '/assets/l2dop/etc_adena_i00.png';
   }
+  const sealStoneUrl = sealStoneIconUrlForItemId(itemId);
+  if (sealStoneUrl) return sealStoneUrl;
   const craftUrl = craftResourceIconRelUrl(itemId);
   if (craftUrl) {
     const craftFile = craftResourceIconFileName(itemId);

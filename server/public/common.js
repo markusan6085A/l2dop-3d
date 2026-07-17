@@ -80,7 +80,8 @@
       j.itemGradeHints ||
       j.itemStatsHints ||
       j.itemBlocksShieldById ||
-      j.craftResourceIconByItemId
+      j.craftResourceIconByItemId ||
+      j.itemNameColorSlugById
     );
   }
 
@@ -138,6 +139,15 @@
     ) {
       Object.keys(j.itemBlocksShieldById).forEach(function (k) {
         global.L2.itemBlocksShieldById[k] = j.itemBlocksShieldById[k];
+      });
+    }
+    if (
+      j.itemNameColorSlugById &&
+      typeof j.itemNameColorSlugById === 'object' &&
+      global.L2.itemNameColorSlugById
+    ) {
+      Object.keys(j.itemNameColorSlugById).forEach(function (k) {
+        global.L2.itemNameColorSlugById[k] = j.itemNameColorSlugById[k];
       });
     }
   }
@@ -243,6 +253,8 @@
     itemSlotById: {},
     /** NG | D | C | B | A | S — з GET /character/catalog-hints itemGradeHints + gearCatalog */
     itemGradeById: {},
+    /** itemId → seal-green | seal-blue | seal-red — з catalog-hints itemNameColorSlugById */
+    itemNameColorSlugById: {},
     itemGradeSlugForId: function (itemId) {
       var id = normalizePositiveInt(itemId);
       if (id <= 0) return '';
@@ -308,6 +320,12 @@
         baseClass != null && String(baseClass).trim() !== ''
           ? String(baseClass).trim()
           : 'l2-item-name';
+      var id = normalizePositiveInt(itemId);
+      var colorMap = global.L2.itemNameColorSlugById || {};
+      var colorSlug = id > 0 ? colorMap[id] || colorMap[String(id)] : null;
+      if (colorSlug && String(colorSlug).trim() !== '') {
+        return base + ' l2-item-name--' + String(colorSlug).trim();
+      }
       var slug = global.L2.itemGradeSlugForId(itemId);
       if (!slug) return base;
       return base + ' l2-item-name--grade-' + slug;

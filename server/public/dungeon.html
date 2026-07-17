@@ -28,6 +28,18 @@
       body.l2-page-dungeon .l2-map-viewport .l2-map-img {
         cursor: crosshair;
       }
+      body.l2-page-dungeon .l2-map-zoom-btns {
+        top: 2px;
+        right: 2px;
+        gap: 2px;
+        z-index: 12;
+      }
+      body.l2-page-dungeon .l2-map-zoom-square {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+        border-radius: 3px;
+      }
       body.l2-page-dungeon .l2-dungeon-dot {
         position: absolute;
         width: 14px;
@@ -136,7 +148,17 @@
                       hidden
                       aria-hidden="true"
                     ></div>
+                    <div
+                      id="dungeon-nearby-radius"
+                      class="l2-map-hero-view-radius"
+                      aria-hidden="true"
+                    ></div>
                     <div id="dungeon-dot" class="l2-dungeon-dot" aria-hidden="true"></div>
+                    <div
+                      id="dungeon-hero-markers"
+                      class="l2-map-hero-markers"
+                      aria-hidden="true"
+                    ></div>
                     <div
                       id="dungeon-mob-markers"
                       class="l2-map-mob-markers"
@@ -144,6 +166,9 @@
                     ></div>
                   </div>
                 </div>
+                <section class="l2-map-hero-section" id="dungeon-hero-section" aria-label="Герої поруч" hidden>
+                  <ul class="l2-map-hero-list" id="dungeon-hero-list"></ul>
+                </section>
                 <section class="l2-map-mob-section" aria-label="Моби подземелля">
                   <ul class="l2-map-mob-list" id="dungeon-mob-list"></ul>
                 </section>
@@ -215,6 +240,6 @@
     <script src="/common.js?v=20260717dungeon1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/dungeon.js?v=20260717dungeonMobModal3"></script>
+    <script src="/dungeon.js?v=20260717dungeonNearby1"></script>
   </body>
 </html>

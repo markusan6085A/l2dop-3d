@@ -12,6 +12,10 @@ import {
 } from '../data/itemsCatalog.js';
 import { itemNamesEnForClient } from '../data/itemNamesEnForClient.js';
 import { craftResourceIconHintsForClient } from '../data/resourceCraftIconHints.js';
+import {
+  sealStoneIconHintsForClient,
+  sealStoneNameColorSlugForClient,
+} from '../data/sevenSignsSealStoneItems.js';
 import { itemBlocksShieldHintsForClient } from '../data/l2dopTwoHandedWeapon.js';
 import { getSnapshotForUser } from '../services/charService.js';
 import { findPvpIncomingForCharacter } from '../services/pvpIncomingService.js';
@@ -33,7 +37,12 @@ function buildCharacterCatalogHints() {
     /** Дворучна зброя (l1 займає «другу руку») — для UI слота щита. */
     itemBlocksShieldById: itemBlocksShieldHintsForClient(),
     /** itemId → URL іконки як у крафті (`l2dop-by-itemid`), для сумки/ГМ. */
-    craftResourceIconByItemId: craftResourceIconHintsForClient(),
+    craftResourceIconByItemId: {
+      ...craftResourceIconHintsForClient(),
+      ...sealStoneIconHintsForClient(),
+    },
+    /** itemId → CSS slug кольору назви (каміння печаті Seven Signs). */
+    itemNameColorSlugById: sealStoneNameColorSlugForClient(),
   };
 }
 

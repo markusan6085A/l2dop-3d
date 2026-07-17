@@ -33,16 +33,41 @@
     return m ? m[1] : '';
   }
 
-  function resolveBattleReturnUrl(fallbackSpawnId, victorySummary) {
+  function resolveBattleReturnUrl(fallbackSpawnId, victorySummary, battleSpawnId) {
     var sid =
       (victorySummary && victorySummary.spawnId) ||
       fallbackSpawnId ||
+      battleSpawnId ||
       '';
     var did = dungeonIdFromSpawnId(sid);
+    if (
+      !did &&
+      victorySummary &&
+      victorySummary.nextHuntSpawnId
+    ) {
+      did = dungeonIdFromSpawnId(victorySummary.nextHuntSpawnId);
+    }
     if (did) {
       return '/dungeon.html?dungeonId=' + encodeURIComponent(did);
     }
     return '/map.html';
+  }
+
+  function isInDungeonBattleContext(fallbackSpawnId, victorySummary, battleSpawnId) {
+    var sid =
+      (victorySummary && victorySummary.spawnId) ||
+      fallbackSpawnId ||
+      battleSpawnId ||
+      '';
+    if (isDungeonSpawnId(sid)) return true;
+    if (
+      victorySummary &&
+      victorySummary.nextHuntSpawnId &&
+      isDungeonSpawnId(victorySummary.nextHuntSpawnId)
+    ) {
+      return true;
+    }
+    return false;
   }
 
   function freezeLogForHuntContinue(victory, currentBattle) {
@@ -2524,6 +2549,18 @@
         var ok = await tryStartHuntContinue(excludeId, preferredId, huntLevel);
         if (ok) return;
 
+        if (isInDungeonBattleContext(spawnId, victory, battle && battle.spawnId)) {
+          showBattleToast(
+            tr(
+              'battle_hunt_no_targets_dungeon',
+              'Поруч немає мобів — повертаємо на карту подземелля.'
+            ),
+            { long: true }
+          );
+          await goToMap();
+          return;
+        }
+
         showBattleToast(
           tr(
             'battle_hunt_abort',
@@ -2779,7 +2816,11 @@
           L2.setLastSnapshot(character);
         }
         saveVictoryToSession(null);
-        window.location.href = resolveBattleReturnUrl(spawnId, lastVictorySummary);
+        window.location.href = resolveBattleReturnUrl(
+          spawnId,
+          lastVictorySummary,
+          battle && battle.spawnId
+        );
       });
     }
 
@@ -2824,24 +2865,6 @@
     if (vCont) {
       vCont.addEventListener('click', function () {
         runWithBattleNavLock(async function () {
-          var victory =
-            lastVictorySummary ||
-            loadVictoryFromSession() ||
-            (spawnId ? { spawnId: spawnId } : null);
-          var sid =
-            victory && victory.spawnId ? victory.spawnId : spawnId;
-          var isPvpVic =
-            victory &&
-            (victory.isPvp ||
-              (sid && String(sid).indexOf('pvp:') === 0));
-          if (isPvpVic) {
-            await goToMap();
-            return;
-          }
-          if (sid && isDungeonSpawnId(sid)) {
-            await huntContinueManual(victory);
-            return;
-          }
           await goToMap();
         });
       });

@@ -15,16 +15,21 @@ import {
   getDungeonViewForPlayer,
   type DungeonViewPayload,
 } from './sevenSignsDungeonService.js';
+import {
+  getNearbyHeroesForDungeon,
+  type DungeonNearbyHeroEntry,
+} from './dungeonNearbyHeroesService.js';
 
 export interface DungeonViewWithPlayer extends DungeonViewPayload {
   player: NonNullable<ReturnType<typeof dungeonPlayerViewForRow>>;
+  nearbyHeroes: DungeonNearbyHeroEntry[];
 }
 
-export function getDungeonViewWithPlayer(
+export async function getDungeonViewWithPlayer(
   row: CharacterRow,
   dungeonId: string,
   nowMs: number = Date.now()
-): DungeonViewWithPlayer | null {
+): Promise<DungeonViewWithPlayer | null> {
   const player = dungeonPlayerViewForRow(row, dungeonId, nowMs);
   if (!player) return null;
   const view = getDungeonViewForPlayer(
@@ -50,7 +55,14 @@ export function getDungeonViewWithPlayer(
     nowMs
   );
   if (!view) return null;
-  return { ...view, player };
+  const nearbyHeroes = await getNearbyHeroesForDungeon(
+    dungeonId,
+    player.mapX,
+    player.mapY,
+    row.id,
+    nowMs
+  );
+  return { ...view, player, nearbyHeroes };
 }
 
 export async function performDungeonMove(
@@ -103,7 +115,7 @@ export async function performDungeonMove(
     if (!result.ok) throw gameConflictFromMutation(result);
 
     const nextRow = result.character as CharacterRow;
-    const dungeon = getDungeonViewWithPlayer(nextRow, key, nowMs);
+    const dungeon = await getDungeonViewWithPlayer(nextRow, key, nowMs);
     if (!dungeon) throw new Error('dungeon_move_forbidden');
     return {
       character: toSnapshot(nextRow),
@@ -149,7 +161,7 @@ export async function performDungeonEnter(
     if (!result.ok) throw gameConflictFromMutation(result);
 
     const nextRow = result.character as CharacterRow;
-    const dungeon = getDungeonViewWithPlayer(nextRow, key, nowMs);
+    const dungeon = await getDungeonViewWithPlayer(nextRow, key, nowMs);
     if (!dungeon) throw new Error('dungeon_enter_forbidden');
     return {
       character: toSnapshot(nextRow),

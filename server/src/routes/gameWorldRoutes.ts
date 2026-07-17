@@ -107,7 +107,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       if (!row) {
         return reply.code(404).send({ messageUk: 'Персонажа не знайдено.' });
       }
-      const view = getDungeonViewWithPlayer(row, dungeonId);
+      const view = await getDungeonViewWithPlayer(row, dungeonId);
       if (!view) {
         return reply.code(403).send({
           messageUk: 'Підійди ближче до входу в некрополь або катакомби.',
