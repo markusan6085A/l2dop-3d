@@ -69,6 +69,11 @@ export interface CharacterRow {
   buffHeroicTier: number | null;
   buffZealotStacks: number | null;
   chatRepliesReadAt: Date;
+  /** Клан; null — без клану. */
+  clanId: string | null;
+  clanRole: string | null;
+  /** Якщо завантажено з include clan. */
+  clan?: { name: string } | null;
 }
 
 /** Активний баф у снепшоті (для UI): з урахуванням `expiresAt` (L2 abnormalTime). */
@@ -240,4 +245,10 @@ export interface CharacterSnapshot {
   snapshotGeneratedAt?: number;
   /** Монотонна версія client snapshot (transport tie-break; не версія даних). */
   clientSnapshotVersion?: number;
+  /** id клану або null. */
+  clanId?: string | null;
+  /** Назва клану для UI. */
+  clanName?: string | null;
+  /** leader | member | null */
+  clanRole?: string | null;
 }

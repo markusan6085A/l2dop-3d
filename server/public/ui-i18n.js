@@ -72,6 +72,38 @@
     nav_mammon_title: { uk: 'Маммон / Rift', ru: 'Маммон / Rift' },
     page_mammon_title: { uk: 'Маммон — L2WAP', ru: 'Маммон — L2WAP' },
     mammon_section_aria: { uk: 'Маммон', ru: 'Маммон' },
+    page_clans_title: { uk: 'Клани — L2WAP', ru: 'Кланы — L2WAP' },
+    clans_section_aria: { uk: 'Клани', ru: 'Кланы' },
+    clans_back_city: { uk: '<< Назад до міста', ru: '<< Назад в город' },
+    clans_back_list: { uk: '<< Назад до кланів', ru: '<< Назад к кланам' },
+    clans_intro: {
+      uk: 'Створи власний клан, збери під своїм прапором відданих воїнів і впиши його ім’я в історію світу. Разом захоплюйте замки, перемагайте могутніх ворогів і ведіть свій клан до слави.',
+      ru: 'Создай собственный клан, собери под своим знаменем верных воинов и впиши его имя в историю мира. Вместе захватывайте замки, побеждайте могучих врагов и веди свой клан к славе.',
+    },
+    clans_btn_create: { uk: 'Створити Клан', ru: 'Создать клан' },
+    clans_btn_my: { uk: 'Мій клан', ru: 'Мой клан' },
+    page_clans_create_title: { uk: 'Створити клан — L2WAP', ru: 'Создать клан — L2WAP' },
+    clans_create_section_aria: { uk: 'Створити клан', ru: 'Создать клан' },
+    clans_create_rules_title: { uk: 'Умови створення клану', ru: 'Условия создания клана' },
+    clans_create_rule_level: { uk: 'Рівень персонажа — не нижче 20.', ru: 'Уровень персонажа — не ниже 20.' },
+    clans_create_rule_cost: { uk: 'Вартість створення — 1 Adena.', ru: 'Стоимость создания — 1 Adena.' },
+    clans_create_rule_not_in_clan: {
+      uk: 'Персонаж не повинен перебувати в іншому клані.',
+      ru: 'Персонаж не должен состоять в другом клане.',
+    },
+    clans_create_rule_name_len: {
+      uk: 'Назва клану має бути унікальною та містити від 3 до 16 символів.',
+      ru: 'Название клана должно быть уникальным и содержать от 3 до 16 символов.',
+    },
+    clans_create_rule_name_chars: {
+      uk: 'Заборонено використовувати образливі назви та спеціальні символи.',
+      ru: 'Запрещено использовать оскорбительные названия и спецсимволы.',
+    },
+    clans_create_name_label: { uk: 'Назва клану', ru: 'Название клана' },
+    clans_create_name_ph: { uk: 'Введи назву', ru: 'Введи название' },
+    clans_create_submit: { uk: 'Створити клан!', ru: 'Создать клан!' },
+    page_clan_my_title: { uk: 'Мій клан — L2WAP', ru: 'Мой клан — L2WAP' },
+    clan_my_section_aria: { uk: 'Мій клан', ru: 'Мой клан' },
     page_ancient_trader_title: { uk: 'Ancient Trader — L2WAP', ru: 'Ancient Trader — L2WAP' },
     ancient_trader_section_aria: { uk: 'Ancient Trader', ru: 'Ancient Trader' },
     city_btn_ancient_trader: { uk: 'Ancient Trader', ru: 'Ancient Trader' },
@@ -408,7 +440,10 @@
     scope.querySelectorAll('[data-i18n]').forEach(function (el) {
       var k = el.getAttribute('data-i18n');
       if (!k) return;
-      el.textContent = L2.tr(k);
+      var translated = L2.tr(k);
+      if (translated && translated !== k) {
+        el.textContent = translated;
+      }
     });
     scope.querySelectorAll('[data-i18n-attr]').forEach(function (el) {
       var raw = el.getAttribute('data-i18n-attr');
@@ -417,7 +452,10 @@
       if (parts.length < 2) return;
       var attr = parts[0].trim();
       var k = parts.slice(1).join(':').trim();
-      el.setAttribute(attr, L2.tr(k));
+      var translated = L2.tr(k);
+      if (translated && translated !== k) {
+        el.setAttribute(attr, translated);
+      }
     });
   };
 

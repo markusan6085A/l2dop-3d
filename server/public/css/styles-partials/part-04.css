@@ -554,12 +554,53 @@ button.l2-battle-victory-link::-moz-focus-inner {
   color: #fff;
   text-shadow: none;
   cursor: pointer;
-  border: 1px solid #bfa88a;
+  border: 1px solid #5c4a36;
   border-radius: 6px;
   border-image: none;
   background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transition: filter 0.12s ease;
+}
+
+.l2-page-magisters .l2-city-npc-card__actions {
+  align-items: center;
+  padding-left: 0;
+  gap: 0;
+}
+
+.l2-page-magisters .l2-city-npc-card__actions .l2-town-btn {
+  min-width: 140px;
+  max-width: 240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 7px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  border: 1px solid #5c4a36;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+  text-align: center;
+}
+
+.l2-page-magisters .l2-city-npc-card__actions .l2-town-btn:hover,
+.l2-page-magisters .l2-city-npc-card__actions .l2-town-btn:focus {
+  color: #fff;
+  border-color: #5c4a36;
+  filter: brightness(1.1);
+  outline: none;
+}
+
+.l2-magisters-btn-divider {
+  display: block;
+  width: min(240px, 92%);
+  margin: 6px auto;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #2a2218;
+  background: transparent;
 }
 
 .l2-battle-back-map:hover,
@@ -1318,40 +1359,6 @@ button.l2-battle-victory-link::-moz-focus-inner {
   line-height: 1.55;
   color: #bfa88a;
   text-align: left;
-}
-
-.l2-page-magisters .l2-city-npc-card__actions {
-  align-items: flex-start;
-  padding-left: 0.35cm;
-}
-
-.l2-magisters-link {
-  display: inline-block;
-  box-sizing: border-box;
-  width: auto;
-  max-width: 100%;
-  margin: 0;
-  padding: 4px 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  font-family: var(--l2-font-display);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  line-height: 1.4;
-  text-align: left;
-  text-decoration: none;
-  color: #5dbd5d;
-  cursor: pointer;
-}
-
-.l2-magisters-link:hover,
-.l2-magisters-link:focus {
-  color: #7ed67e;
-  outline: none;
-  background: transparent;
 }
 
 .l2-magisters-intro p:last-child {

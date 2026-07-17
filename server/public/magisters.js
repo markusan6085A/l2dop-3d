@@ -66,13 +66,18 @@
       (n.actions || []).forEach(function (a) {
         if (!isMagisterLearnHref(a)) return;
         var link = document.createElement('a');
-        link.className = 'l2-magisters-link';
+        link.className = 'l2-town-btn';
         link.href = a.href;
         link.textContent = a.labelUk;
         actionsWrap.appendChild(link);
 
+        var divider = document.createElement('hr');
+        divider.className = 'l2-magisters-btn-divider';
+        divider.setAttribute('aria-hidden', 'true');
+        actionsWrap.appendChild(divider);
+
         var learnedLink = document.createElement('a');
-        learnedLink.className = 'l2-magisters-link';
+        learnedLink.className = 'l2-town-btn';
         learnedLink.href = magisterLearnedHref(a.href);
         learnedLink.textContent = 'Вивчені скіли';
         actionsWrap.appendChild(learnedLink);

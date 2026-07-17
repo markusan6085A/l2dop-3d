@@ -40,6 +40,7 @@ const PROFILE_SELECT = {
   karma: true,
   profileStatus: true,
   lastUpdate: true,
+  clan: { select: { name: true } },
 } as const;
 
 type ProfileRow = {
@@ -55,6 +56,7 @@ type ProfileRow = {
   karma: number;
   profileStatus: string | null;
   lastUpdate: Date;
+  clan: { name: string } | null;
 };
 
 function resolveCityLabelUk(cityId: string): string {
@@ -78,7 +80,7 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
       row.profileStatus != null && String(row.profileStatus).trim()
         ? String(row.profileStatus).trim()
         : null,
-    clanName: null,
+    clanName: row.clan?.name ?? null,
     karma: Math.max(0, Math.floor(Number(row.karma) || 0)),
     pk: 0,
     recommendations: 0,

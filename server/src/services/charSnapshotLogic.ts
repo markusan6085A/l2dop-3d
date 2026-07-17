@@ -552,5 +552,8 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
         combatOptsFromRow(row)
       ),
     }),
+    clanId: row.clanId ?? null,
+    clanName: row.clan?.name ?? null,
+    clanRole: row.clanRole ?? null,
   };
 }

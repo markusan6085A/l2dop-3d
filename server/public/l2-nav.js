@@ -38,8 +38,7 @@
     },
     {
       iconPath: NAV_ICON + 'photo_2026-07-05_12-52-44.jpg',
-      href: null,
-      stubKey: 'nav_clan',
+      href: '/clan-my.html',
       i18nKey: 'nav_clan',
       i18nTitleKey: 'nav_clan_title',
       lbl: 'p4',

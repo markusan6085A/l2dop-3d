@@ -3,11 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="page_magisters_title">Магістри — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260717magBtn1" />
+    <title data-i18n="page_clans_title">Клани — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
-    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717magBtn1" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans3" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-magisters l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-clans l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
@@ -57,31 +59,33 @@
 
             <div id="l2-nav-top"></div>
 
-            <p class="err" id="magisters-load-err" hidden></p>
-            <p class="l2-city-stub-msg" id="magisters-stub-msg" hidden></p>
+            <p class="err" id="clans-load-err" hidden></p>
 
             <section
-              class="l2-magisters-main"
-              id="magisters-main"
-              hidden
-              data-i18n-attr="aria-label:magisters_section_aria"
-              aria-label="Магістри"
+              class="l2-clans-main"
+              data-i18n-attr="aria-label:clans_section_aria"
+              aria-label="Клани"
             >
-              <p class="l2-magisters-back">
-                <a class="l2-town-btn" href="/city.html" data-i18n="magisters_back_city"
-                  >Назад до міста</a
-                >
-              </p>
-              <div class="l2-magisters-intro">
-                <p data-i18n="magisters_intro_p1">
-                  Досвідчені майстри готові передати тобі знання про бойові техніки, магічні закляття та особливі
-                  навички класу.
-                </p>
-                <p data-i18n="magisters_intro_p2">
-                  Вивчай нові уміння, посилюй свого героя та готуйся до небезпечних пригод і битв.
+              <div class="l2-clans-intro">
+                <p data-i18n="clans_intro">
+                  Створи власний клан, збери під своїм прапором відданих воїнів і впиши його ім’я в історію світу.
+                  Разом захоплюйте замки, перемагайте могутніх ворогів і ведіть свій клан до слави.
                 </p>
               </div>
-              <ul class="l2-city-npc-list" id="magisters-npc-list"></ul>
+              <hr class="l2-clans-divider" aria-hidden="true" />
+              <p class="l2-clans-actions" id="clans-create-wrap">
+                <a class="l2-town-btn" href="/clans-create.html" data-i18n="clans_btn_create">Створити Клан</a>
+              </p>
+              <p class="l2-clans-actions" id="clans-my-wrap" hidden>
+                <a class="l2-town-btn" href="/clan-my.html" data-i18n="clans_btn_my">Мій клан</a>
+              </p>
+              <hr class="l2-clans-divider l2-clans-divider--muted" aria-hidden="true" />
+              <ul class="l2-clans-list" id="clans-list" aria-label="Список кланів"></ul>
+              <p class="l2-clans-back">
+                <a class="l2-clans-back__link" href="/city.html" data-i18n="clans_back_city"
+                  >&lt;&lt; Назад до міста</a
+                >
+              </p>
             </section>
 
             <div id="l2-foot-links"></div>
@@ -92,8 +96,8 @@
     </div>
 
     <script src="/common.js?v=20260717perf2"></script>
-    <script src="/ui-i18n.js"></script>
-    <script src="/l2-nav.js?v=20260717perf2"></script>
-    <script src="/magisters.js?v=20260717magBtnFrame1"></script>
+    <script src="/ui-i18n.js?v=20260718clans3"></script>
+    <script src="/l2-nav.js?v=20260718clans3"></script>
+    <script src="/clans.js?v=20260718clans3"></script>
   </body>
 </html>

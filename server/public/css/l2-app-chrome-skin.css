@@ -931,6 +931,7 @@ body.l2-app-l2-chrome .l2-char-cat-btn {
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc,
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn,
 body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn {
   appearance: none;
   -webkit-appearance: none;
@@ -943,7 +944,7 @@ body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn {
   max-width: 240px !important;
   margin: 0 auto !important;
   padding: 7px 14px !important;
-  border: 1px solid #bfa88a !important;
+  border: 1px solid #5c4a36 !important;
   border-image: none !important;
   border-radius: 6px !important;
   background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
@@ -972,10 +973,13 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc:focus-visible,
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:hover,
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus,
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn:focus-visible,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus-visible,
 body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:hover,
 body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus,
 body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus-visible {
-  border: 1px solid #bfa88a !important;
+  border: 1px solid #5c4a36 !important;
   border-image: none !important;
   background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
   color: #fff !important;
@@ -2298,58 +2302,32 @@ body.l2-app-l2-chrome.l2-page-char button.l2-char-bag-modal-action:focus-visible
   box-shadow: none !important;
 }
 
-/* magisters.html: intro — #bfa88a; посилання навчання — зелений текст без рамки */
+/* magisters.html: intro — #bfa88a; кнопки навчання — як «Назад до міста», білий текст */
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-intro p {
   color: #bfa88a !important;
   text-shadow: none !important;
 }
 
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link {
-  display: inline-block !important;
-  width: auto !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-  padding: 4px 0 !important;
-  border: none !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  filter: none !important;
-  -webkit-filter: none !important;
-  transform: none !important;
-  text-align: left !important;
-  justify-content: flex-start !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: #5dbd5d !important;
-  text-shadow: none !important;
-  text-decoration: none !important;
-}
-
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link:hover,
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link:focus,
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link:focus-visible {
-  color: #7ed67e !important;
-  background: transparent !important;
-  border: none !important;
-  border-image: none !important;
-  box-shadow: none !important;
-  filter: none !important;
-  -webkit-filter: none !important;
-  transform: none !important;
-  outline: none;
-}
-
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link::before,
-body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-link::after {
-  content: none !important;
-  display: none !important;
-}
-
 body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions {
-  align-items: flex-start !important;
-  padding-left: 0.35cm;
+  align-items: center !important;
+  padding-left: 0 !important;
+  gap: 0 !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn {
+  margin-bottom: 0 !important;
+  text-align: center !important;
+}
+
+body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-btn-divider {
+  display: block;
+  width: min(240px, 92%);
+  margin: 6px auto;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #2a2218;
+  background: transparent;
+  opacity: 1;
 }
 
 /* magister.html: блок вибору профи — лише текст-посилання (#bfa88a), без рамок 1512125 */

@@ -109,8 +109,24 @@ model Character {
   lastUpdate DateTime @updatedAt
   chatMessages ChatMessage[]
   marketListings MarketListing[]
+  /** Клан гравця; null — без клану. */
+  clanId     String?
+  /** leader | member */
+  clanRole   String?
+  clan       Clan?    @relation("ClanMember", fields: [clanId], references: [id], onDelete: SetNull)
+  ledClan    Clan?    @relation("ClanLeader")
 
   @@index([userId, lastUpdate(sort: Desc)])
+  @@index([clanId])
+}
+
+model Clan {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  leaderId  String      @unique
+  leader    Character   @relation("ClanLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members   Character[] @relation("ClanMember")
+  createdAt DateTime    @default(now())
 }
 
 model MarketListing {

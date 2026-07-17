@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="page_clans_create_title">Створити клан — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans4" />
+  </head>
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-clans-create l2-page-has-fixed-nav l2-app-l2-chrome">
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-city-root">
+          <div class="l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="clans-create-err" hidden></p>
+
+            <section
+              class="l2-clans-main"
+              data-i18n-attr="aria-label:clans_create_section_aria"
+              aria-label="Створити клан"
+            >
+              <div class="l2-clans-rules">
+                <h2 class="l2-clans-rules__title" data-i18n="clans_create_rules_title">Умови створення клану</h2>
+                <ul class="l2-clans-rules__list">
+                  <li data-i18n="clans_create_rule_level">Рівень персонажа — не нижче 20.</li>
+                  <li data-i18n="clans_create_rule_cost">Вартість створення — 1 Adena.</li>
+                  <li data-i18n="clans_create_rule_not_in_clan">Персонаж не повинен перебувати в іншому клані.</li>
+                  <li data-i18n="clans_create_rule_name_len">
+                    Назва клану має бути унікальною та містити від 3 до 16 символів.
+                  </li>
+                  <li data-i18n="clans_create_rule_name_chars">
+                    Заборонено використовувати образливі назви та спеціальні символи.
+                  </li>
+                </ul>
+              </div>
+
+              <label class="l2-clans-name-field" for="clan-name-input">
+                <span class="l2-clans-name-field__label" data-i18n="clans_create_name_label">Назва клану</span>
+                <input
+                  id="clan-name-input"
+                  class="l2-clans-name-field__input"
+                  type="text"
+                  maxlength="16"
+                  autocomplete="off"
+                  spellcheck="false"
+                  data-i18n-attr="placeholder:clans_create_name_ph"
+                  placeholder="Введи назву"
+                />
+              </label>
+
+              <p class="l2-clans-submit-wrap">
+                <button type="button" class="l2-clans-submit-btn" id="clan-create-submit" data-i18n="clans_create_submit">
+                  Створити клан!
+                </button>
+              </p>
+
+              <p class="l2-clans-back">
+                <a class="l2-clans-back__link" href="/clans.html" data-i18n="clans_back_list"
+                  >&lt;&lt; Назад до кланів</a
+                >
+              </p>
+            </section>
+
+            <div id="l2-foot-links"></div>
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260717perf2"></script>
+    <script src="/ui-i18n.js?v=20260718clans4"></script>
+    <script src="/l2-nav.js?v=20260718clans3"></script>
+    <script src="/clans-create.js?v=20260718clans3"></script>
+  </body>
+</html>
