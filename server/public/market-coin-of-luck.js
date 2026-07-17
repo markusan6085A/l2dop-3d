@@ -3,7 +3,7 @@
  */
 (function () {
   var COIN_ITEM_ID = 4037;
-  var COIN_ICON = '/assets/l2dop/gmshop.jpg';
+  var COIN_ICON = '/assets/l2dop/4037.jpg';
   var authToken = '';
   var myCharName = '';
   var cancelInFlight = false;

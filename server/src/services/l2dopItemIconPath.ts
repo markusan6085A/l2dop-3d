@@ -71,7 +71,7 @@ export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
   }
   if (itemId === COIN_OF_LUCK_ITEM_ID) {
     return firstExistingPath(
-      publicDirCandidates(['assets', 'l2dop', 'gmshop.jpg']),
+      publicDirCandidates(['assets', 'l2dop', '4037.jpg']),
     );
   }
   return null;
