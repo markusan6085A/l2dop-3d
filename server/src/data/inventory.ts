@@ -67,6 +67,8 @@ export interface InventoryState {
   v: number;
   /** Схема стартового набору (міграція з «сміттєвих» item_id). */
   _sk?: number;
+  /** 1 — одноразова видача tunic/stockings старим магам уже зроблена; не повторювати після продажу. */
+  _mysticRobePatch?: number;
   stacks: BagStack[];
   /**
    * Екіп: l1 зброя; l2 щит (ліворуч); l3 верх / fullarmor; l4 низ; lh шолом, lg рукавиці, lf чоботи;
@@ -169,13 +171,15 @@ export function starterInventory(classBranch?: StarterClassBranch): InventorySta
   return {
     v: 1,
     _sk: STARTER_KIT_VERSION,
+    _mysticRobePatch: 1,
     stacks,
     eq,
   };
 }
 
 /**
- * Старі маги без мантії: додати tunic/stockings у сумку й одягнути, якщо слоти порожні.
+ * Старі маги без мантії: один раз додати tunic/stockings у сумку й одягнути, якщо слоти порожні.
+ * Після `_mysticRobePatch === 1` не повторюється (інакше продаж давав би нескінченну адену).
  */
 export function ensureMysticRobeStarterPieces(
   inv: InventoryState,
@@ -184,6 +188,23 @@ export function ensureMysticRobeStarterPieces(
   if (String(classBranch).toLowerCase().trim() !== 'mystic') {
     return { inv, changed: false };
   }
+  if (inv._mysticRobePatch === 1) {
+    return { inv, changed: false };
+  }
+
+  const hasTunic =
+    normalizeEqSlot(inv.eq?.l3)?.itemId === STARTER_DEVOTION_TUNIC_ID ||
+    countBagQty(inv, STARTER_DEVOTION_TUNIC_ID) > 0;
+  const hasStockings =
+    normalizeEqSlot(inv.eq?.l4)?.itemId === STARTER_DEVOTION_STOCKINGS_ID ||
+    countBagQty(inv, STARTER_DEVOTION_STOCKINGS_ID) > 0;
+  const legacyMystic = inv._sk == null || inv._sk < STARTER_KIT_VERSION;
+
+  /** Поточна схема v7 або мантія вже є — лише зафіксувати прапорець, не перевидавати продане. */
+  if (!legacyMystic || (hasTunic && hasStockings)) {
+    return { inv: { ...inv, _mysticRobePatch: 1 }, changed: true };
+  }
+
   let next = inv;
   let changed = false;
   const eq: Partial<Record<string, EqSlotValue>> = { ...next.eq };
@@ -222,8 +243,11 @@ export function ensureMysticRobeStarterPieces(
     changed = true;
   }
 
-  if (!changed) return { inv, changed: false };
-  return { inv: { ...next, eq }, changed: true };
+  const withFlag: InventoryState = {
+    ...(changed ? { ...next, eq } : inv),
+    _mysticRobePatch: 1,
+  };
+  return { inv: withFlag, changed: true };
 }
 
 export function needsStarterKitMigration(inv: InventoryState): boolean {
@@ -254,13 +278,21 @@ export function migrateInventoryToSk2(inv: InventoryState): InventoryState {
   return {
     v: 1,
     _sk: STARTER_KIT_VERSION,
+    _mysticRobePatch: inv._mysticRobePatch,
     stacks,
     eq,
   };
 }
 
-function cloneMeta(inv: InventoryState): Pick<InventoryState, 'v' | '_sk'> {
-  return { v: inv.v, _sk: inv._sk };
+function cloneMeta(
+  inv: InventoryState
+): Pick<InventoryState, 'v' | '_sk' | '_mysticRobePatch'> {
+  const meta: Pick<InventoryState, 'v' | '_sk' | '_mysticRobePatch'> = {
+    v: inv.v,
+    _sk: inv._sk,
+  };
+  if (inv._mysticRobePatch === 1) meta._mysticRobePatch = 1;
+  return meta;
 }
 
 /** Сума qty у сумці для `itemId` (лише заточка 0 — крафт ресурсів). */
@@ -317,6 +349,13 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
   const skRaw = o._sk;
   const _sk =
     typeof skRaw === 'number' && Number.isFinite(skRaw) ? skRaw : undefined;
+  const robePatchRaw = o._mysticRobePatch;
+  const _mysticRobePatch =
+    typeof robePatchRaw === 'number' &&
+    Number.isFinite(robePatchRaw) &&
+    Math.floor(robePatchRaw) === 1
+      ? 1
+      : undefined;
   const stacks: BagStack[] = [];
   for (const row of stacksRaw) {
     if (!row || typeof row !== 'object') continue;
@@ -348,6 +387,7 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
   }
 
   const inv: InventoryState = { v: 1, _sk, stacks, eq };
+  if (_mysticRobePatch === 1) inv._mysticRobePatch = 1;
   /** Якщо у БД лишився щит разом із дворучкою — щит повертаємо в сумку. */
   const rhRepair = normalizeEqSlot(inv.eq.l1);
   if (rhRepair) {

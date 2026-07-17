@@ -1,6 +1,5 @@
 import { prisma } from '../lib/prisma.js';
 import {
-  applyInventoryReadPatches,
   parseInventoryRaw,
   removeEnchantedFromBag,
   stripEquippedFromStacks,
@@ -203,17 +202,15 @@ export async function applyShopSell(
         const row = current as CharacterRow;
         const base = resolveMapMovement(applyPassiveHpRegen(row));
         const invRaw = parseInventoryRaw(base.inventoryJson);
-        const patched = applyInventoryReadPatches(invRaw, base.classBranch);
-        const bagView = stripEquippedFromStacks(patched.inv);
+        const bagView = stripEquippedFromStacks(invRaw);
         const src = bagView.stacks.find(
           (s) => s.itemId === itemId && normEnchant(s.enchant) === enchant
         );
         if (!src || src.qty < qty) throw new Error('shop_sell_not_in_bag');
 
-        const nextInv = removeEnchantedFromBag(patched.inv, itemId, qty, enchant);
+        const nextInv = removeEnchantedFromBag(invRaw, itemId, qty, enchant);
         const nextAdena = BigInt(base.adena) + BigInt(totalSell);
-        const invChanged =
-          JSON.stringify(nextInv) !== JSON.stringify(parseInventoryRaw(current.inventoryJson));
+        const invChanged = JSON.stringify(nextInv) !== JSON.stringify(invRaw);
         const changed =
           base.hp !== current.hp ||
           base.worldX !== current.worldX ||
