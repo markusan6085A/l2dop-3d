@@ -68,6 +68,8 @@
   var lastSnapshot = null;
   var sessionCatalogMerged = false;
   var sessionCatalogFetchPromise = null;
+  var hudFirstFillDone = false;
+  var SESSION_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
 
   function hasCatalogHintsPayload(j) {
     if (!j || typeof j !== 'object') return false;
@@ -910,6 +912,10 @@
       if (!r.ok) return null;
       var j = await r.json();
       lastSnapshot = j.character;
+      global.L2.writeSessionSnapshotCache(
+        SESSION_SNAPSHOT_CACHE_KEY,
+        j.character
+      );
       // catalog-hints (~150–400 KB) — лише на екранах інвентаря/магазину;
       // char/craft/warehouse/sell-items/battle викликають L2.fetchCatalogHints() окремо.
       if (typeof global.L2.applyHudFromSnapshot === 'function') {
@@ -925,6 +931,10 @@
     applyCharacterSnapshot: function (snapshot, applyScreenSpecific) {
       if (!snapshot) return null;
       lastSnapshot = snapshot;
+      global.L2.writeSessionSnapshotCache(
+        SESSION_SNAPSHOT_CACHE_KEY,
+        snapshot
+      );
       if (typeof global.L2.applyHudFromSnapshot === 'function') {
         global.L2.applyHudFromSnapshot(snapshot);
       }
@@ -1229,6 +1239,11 @@
       var hasWapBars =
         typeof document !== 'undefined' &&
         !!document.querySelector('.l2-hud-legacy-bars');
+      var instantFill = hasWapBars && !hudFirstFillDone;
+      var barsRoot = instantFill
+        ? document.querySelector('.l2-hud-legacy-bars')
+        : null;
+      if (barsRoot) barsRoot.classList.add('l2-hud-legacy-bars--instant');
       function set(id, txt) {
         var el = document.getElementById(id);
         if (el) el.textContent = txt != null ? String(txt) : '—';
@@ -1326,6 +1341,12 @@
           String(c.level != null ? c.level : '—') + ' ' + lvlAbbr
         );
         set('l2-hud-legacy-name', c.name != null ? c.name : '—');
+      }
+      if (instantFill && barsRoot) {
+        hudFirstFillDone = true;
+        requestAnimationFrame(function () {
+          barsRoot.classList.remove('l2-hud-legacy-bars--instant');
+        });
       }
       if (typeof global.L2.syncGameHelper === 'function') {
         global.L2.syncGameHelper(c);
@@ -1446,6 +1467,17 @@
           }
         };
       }
+    },
+
+    /** Одразу після mount HUD — заповнити бари з sessionStorage (як char.html). */
+    hydrateHudFromSessionCache: function () {
+      var snap = global.L2.readSessionSnapshotCache(SESSION_SNAPSHOT_CACHE_KEY);
+      if (!snap) return null;
+      lastSnapshot = snap;
+      if (typeof global.L2.applyHudFromSnapshot === 'function') {
+        global.L2.applyHudFromSnapshot(snap);
+      }
+      return snap;
     },
 
     mountStandardHudPanel: function () {
@@ -1700,6 +1732,9 @@
     function runHudMount() {
       if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
         global.L2.mountStandardHudPanel();
+      }
+      if (global.L2 && typeof global.L2.hydrateHudFromSessionCache === 'function') {
+        global.L2.hydrateHudFromSessionCache();
       }
       bootstrapGameHelper();
       bootstrapOnlineFoot();

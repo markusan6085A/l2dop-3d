@@ -530,6 +530,10 @@ body.l2-page-story .l2-hud-panel--city-strip .l2-hud-stat-bar {
   background: transparent;
 }
 
+.l2-hud-legacy-bars--instant .l2-hud-legacy-bar-inner {
+  transition: none !important;
+}
+
 .l2-hud-legacy-bar {
   width: 100%;
   margin: 0;

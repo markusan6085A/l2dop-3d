@@ -6,6 +6,7 @@ import { DROPS_SHOP_CATALOG } from './dropsShopCatalog.generated.js';
 import { DROPS_SHOP_ARROW_ROWS } from './dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from './dropsShopConsumablesCatalog.js';
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from './dropsShopFighterSoulshotsCatalog.js';
+import { DROPS_SHOP_RESOURCE_ROWS } from './dropsShopResourcesCatalog.js';
 import dropsShopOverrides from './dropsShopOverrides.json';
 import { dropsGmPurchaseByShopKeyLower } from '../domain/dropsShopGmItemIdByShopKey.js';
 import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
@@ -13,6 +14,8 @@ import { L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER } from './l2dopNgWeaponDropsPat
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import { ancientAdenaNamesEnForClient } from './ancientAdenaItem.js';
+import { mammonGemstoneNamesEnForClient } from './mammonMerchantGemstones.js';
+import { mammonLifeStoneNamesEnForClient } from './mammonMerchantLifeStones.js';
 import { sealStoneNamesEnForClient } from './sevenSignsSealStoneItems.js';
 
 type OverrideRow = { itemId?: number };
@@ -40,6 +43,9 @@ const SYNTHETIC_SHOP_NAMES_EN: Record<string, string> = {
   'consumable/fighter_soulshot_b': 'B-grade Soulshot',
   'consumable/fighter_soulshot_a': 'A-grade Soulshot',
   'consumable/fighter_soulshot_s': 'S-grade Soulshot',
+  'consumable/resource_soul_ore': 'Soul Ore',
+  'consumable/resource_spirit_ore': 'Spirit Ore',
+  'consumable/resource_fishing_lure': 'Fishing Lure',
 };
 
 /** Ручні overrides, коли в каталозі лише UA або зламаний підпис. */
@@ -106,6 +112,7 @@ export function itemNamesEnForClient(): Record<number, string> {
     ...DROPS_SHOP_CONSUMABLE_ROWS,
     ...DROPS_SHOP_ARROW_ROWS,
     ...DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+    ...DROPS_SHOP_RESOURCE_ROWS,
   ];
   for (const row of syntheticRows) {
     const id = resolveItemIdForShopKey(row.shopKey);
@@ -132,6 +139,14 @@ export function itemNamesEnForClient(): Record<number, string> {
   }
 
   for (const [idStr, en] of Object.entries(ancientAdenaNamesEnForClient())) {
+    put(Number(idStr), en, true);
+  }
+
+  for (const [idStr, en] of Object.entries(mammonGemstoneNamesEnForClient())) {
+    put(Number(idStr), en, true);
+  }
+
+  for (const [idStr, en] of Object.entries(mammonLifeStoneNamesEnForClient())) {
     put(Number(idStr), en, true);
   }
 

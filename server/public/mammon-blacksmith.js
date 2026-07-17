@@ -1,8 +1,12 @@
 /**
- * Коваль Маммона — сторінка NPC.
+ * Коваль Маммона — NPC (карта) або сторінка телепорту (-loc).
  */
 (function () {
   var BLACKSMITH_ICON = '/nps/76.png';
+
+  function isLocPage() {
+    return /mammon-blacksmith-loc\.html$/i.test(String(window.location.pathname || ''));
+  }
 
   function initIcon() {
     var iconEl = document.getElementById('mammon-blacksmith-icon');
@@ -11,6 +15,25 @@
     iconEl.onerror = function () {
       iconEl.src = '/icons/drops/other.svg';
     };
+  }
+
+  async function loadCharacterHud() {
+    var t = localStorage.getItem('token');
+    if (!t || !window.L2) return;
+
+    fetch('/character', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' })
+      .then(function (r) {
+        if (r.status === 401) return null;
+        return r.json();
+      })
+      .then(function (j) {
+        if (!j || !j.character) return;
+        if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
+        if (typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(j.character);
+        }
+      })
+      .catch(function () {});
   }
 
   async function init() {
@@ -26,19 +49,17 @@
       return;
     }
 
-    fetch('/character', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' })
-      .then(function (r) {
-        if (r.status === 401) return null;
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j || !j.character) return;
-        if (L2.setLastSnapshot) L2.setLastSnapshot(j.character);
-        if (typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(j.character);
-        }
-      })
-      .catch(function () {});
+    if (isLocPage() && window.MammonLocationPage && typeof MammonLocationPage.init === 'function') {
+      await MammonLocationPage.init({
+        kind: 'blacksmith',
+        stateUrl: '/game/mammon/blacksmith',
+        stateKey: 'mammonBlacksmith',
+        teleportLabelUk: 'Телепорт до Коваля Маммона',
+      });
+      return;
+    }
+
+    await loadCharacterHud();
   }
 
   if (document.readyState === 'loading') {

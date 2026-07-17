@@ -6,6 +6,7 @@ import dropsShopOverrides from './dropsShopOverrides.json';
 import { DROPS_SHOP_ARROW_ROWS } from './dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from './dropsShopConsumablesCatalog.js';
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from './dropsShopFighterSoulshotsCatalog.js';
+import { DROPS_SHOP_RESOURCE_ROWS } from './dropsShopResourcesCatalog.js';
 
 type OverrideRow = { itemId?: number };
 
@@ -15,6 +16,7 @@ export function dropsShopConsumableGearCatalogExtras(): GearCatalogRow[] {
     ...DROPS_SHOP_CONSUMABLE_ROWS,
     ...DROPS_SHOP_ARROW_ROWS,
     ...DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+    ...DROPS_SHOP_RESOURCE_ROWS,
   ];
   const out: GearCatalogRow[] = [];
   for (const r of rows) {

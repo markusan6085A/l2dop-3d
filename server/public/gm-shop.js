@@ -189,13 +189,14 @@
   };
 
   /** Підвкладки «Розхідники» (відповідає `consumableSubtype` у відповіді API). */
-  var CONSUMABLE_SUB_KEYS = ['all', 'vials', 'arrows', 'charges'];
+  var CONSUMABLE_SUB_KEYS = ['all', 'vials', 'arrows', 'charges', 'resources'];
 
   var CONSUMABLE_SUB_LABEL_UK = {
     all: 'Все',
     vials: 'Банки',
     arrows: 'Стріли',
     charges: 'Заряди',
+    resources: 'Ресурси',
   };
 
   function $(id) {

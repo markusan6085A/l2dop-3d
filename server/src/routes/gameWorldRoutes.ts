@@ -34,6 +34,18 @@ import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { listSevenSignsDungeonsForMenu } from '../services/sevenSignsDungeonListService.js';
 import { performSevenSignsDungeonTeleport } from '../services/sevenSignsDungeonTeleportService.js';
+import {
+  parseMammonTeleportKind,
+  performMammonTeleport,
+} from '../services/mammonTeleportService.js';
+import {
+  getMammonMerchantShopCatalog,
+  performMammonMerchantBuy,
+} from '../services/mammonMerchantBuyService.js';
+import {
+  handleMammonMerchantShopRouteError,
+  handleMammonTeleportRouteError,
+} from './gameMammonRouteErrors.js';
 
 export function registerGameWorldRoutes(app: FastifyInstance): void {
   app.get(
@@ -83,10 +95,165 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
   );
 
   app.get(
+    '/mammon/merchant/shop',
+    { preHandler: requireAuth },
+    async (_request, reply) => {
+      return reply.send(getMammonMerchantShopCatalog());
+    }
+  );
+
+  app.post(
+    '/mammon/merchant/buy',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      const category =
+        typeof b.category === 'string' && b.category.trim()
+          ? b.category
+          : b.grade != null
+            ? 'gemstones'
+            : null;
+      const itemKey = b.itemKey ?? b.grade;
+      const qtyRaw = b.qty ?? b.quantity ?? 1;
+      const action = `mammon_merchant_buy:${String(category)}:${String(itemKey)}`;
+      try {
+        const character = await performMammonMerchantBuy(
+          userId,
+          er,
+          category,
+          itemKey,
+          qtyRaw
+        );
+        await logRouteMutation(
+          request,
+          action,
+          er,
+          'ok',
+          character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            action,
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        const handled = handleMammonMerchantShopRouteError(reply, e);
+        if (handled) {
+          await logRouteMutation(
+            request,
+            action,
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return handled;
+        }
+        await logRouteMutation(
+          request,
+          action,
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
+    }
+  );
+
+  app.get(
     '/mammon/blacksmith',
     { preHandler: requireAuth },
     async (_request, reply) => {
       return reply.send({ mammonBlacksmith: getMammonBlacksmithState() });
+    }
+  );
+
+  app.post(
+    '/mammon/teleport',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      const kind = parseMammonTeleportKind(b.kind);
+      if (!kind) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Обери Торговця або Коваля Маммона.',
+        });
+      }
+      const action = 'mammon_teleport:' + kind;
+      try {
+        const character = await performMammonTeleport(userId, kind, er);
+        await logRouteMutation(
+          request,
+          action,
+          er,
+          'ok',
+          character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            action,
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        const handled = handleMammonTeleportRouteError(reply, e);
+        if (handled) {
+          await logRouteMutation(
+            request,
+            action,
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return handled;
+        }
+        await logRouteMutation(
+          request,
+          action,
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
     }
   );
 

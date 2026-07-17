@@ -12,6 +12,7 @@ import { DROPS_SHOP_CATALOG } from '../data/dropsShopCatalog.generated.js';
 import { DROPS_SHOP_ARROW_ROWS } from '../data/dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.js';
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
+import { DROPS_SHOP_RESOURCE_ROWS } from '../data/dropsShopResourcesCatalog.js';
 import { prisma } from '../lib/prisma.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
@@ -78,7 +79,11 @@ export type {
 } from '../domain/dropsShopGearSubtypes.js';
 
 /** Підвкладки «Розхідники» в gm-shop (фільтр по полю в відповіді). */
-export type DropsShopConsumableSubtype = 'vials' | 'arrows' | 'charges';
+export type DropsShopConsumableSubtype =
+  | 'vials'
+  | 'arrows'
+  | 'charges'
+  | 'resources';
 
 export interface DropsShopOverrideEntry {
   itemId: number;
@@ -222,7 +227,7 @@ export interface DropsShopItemResponse {
   armorPiece?: DropsShopArmorPiece;
   /** Лише аксесуари (category `earring`): амулет / сережки / кільця. */
   jewelrySubtype?: DropsShopJewelrySubtype;
-  /** Лише розхідники: «Банки» / «Стріли» / «Заряди» (соски воїна, благословенний заряд духу). */
+  /** Лише розхідники: «Банки» / «Стріли» / «Заряди» / «Ресурси». */
   consumableSubtype?: DropsShopConsumableSubtype;
 }
 
@@ -388,6 +393,8 @@ function rowToClient(
       keyNorm.startsWith('consumable/blessed_spiritshot_')
     ) {
       out.consumableSubtype = 'charges';
+    } else if (keyNorm.startsWith('consumable/resource_')) {
+      out.consumableSubtype = 'resources';
     }
   }
 
@@ -416,6 +423,7 @@ export function buildDropsShopCatalogForClient(): {
     DROPS_SHOP_CONSUMABLE_ROWS,
     DROPS_SHOP_ARROW_ROWS,
     DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+    DROPS_SHOP_RESOURCE_ROWS,
   );
   for (const row of allCatalogRows) {
     const arr = byGrade.get(row.grade);
@@ -468,6 +476,7 @@ export async function applyDropsShopPurchase(
     DROPS_SHOP_CONSUMABLE_ROWS,
     DROPS_SHOP_ARROW_ROWS,
     DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+    DROPS_SHOP_RESOURCE_ROWS,
   );
   const row = allRows.find((r) => {
     const rk = r.shopKey.replace(/\\/g, '/');

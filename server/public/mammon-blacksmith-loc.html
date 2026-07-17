@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Коваль Маммона — L2WAP</title>
+    <title>Коваль Маммона — телепорт — L2WAP</title>
     <link rel="stylesheet" href="/styles.css?v=20260717mammonBlacksmith1" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
@@ -38,6 +38,61 @@
         line-height: 1.4;
         color: #a89a70;
       }
+      .l2-mammon-loc-label {
+        margin: 0 0 8px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #ece6d0;
+      }
+      .l2-mammon-loc-map-viewport {
+        position: relative;
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: min(200px, 34vh);
+        min-height: 160px;
+        margin: 0 0 10px;
+        overflow: auto;
+        border: 1px solid rgba(90, 120, 90, 0.45);
+        border-radius: 4px;
+        background: linear-gradient(180deg, #1a2820 0%, #0d1210 100%);
+        -webkit-overflow-scrolling: touch;
+      }
+      .l2-mammon-loc-map-inner {
+        position: relative;
+        display: inline-block;
+        line-height: 0;
+        vertical-align: top;
+      }
+      .l2-mammon-loc-npc-dot {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        margin: -5px 0 0 -5px;
+        border-radius: 50%;
+        background: #ffd060;
+        border: 1px solid #1a1510;
+        box-shadow: 0 0 4px rgba(255, 208, 96, 0.8);
+        pointer-events: none;
+      }
+      .l2-mammon-loc-cost {
+        margin: 0 0 8px;
+        font-size: 11px;
+        line-height: 1.35;
+        color: #a89a70;
+      }
+      .l2-mammon-loc-teleport.l2-magister-profession-confirm-btn {
+        max-width: none;
+        padding: 6px 12px;
+        font-size: 11px;
+        border-color: #6b543f;
+      }
+      .l2-mammon-loc-err {
+        margin: 8px 0 0;
+        font-size: 11px;
+        line-height: 1.35;
+        color: #e05050;
+      }
       .l2-mammon-blacksmith-back {
         margin: 12px 0 0;
         padding: 0;
@@ -62,7 +117,7 @@
     </style>
   </head>
   <body
-    class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-mammon-blacksmith l2-page-has-fixed-nav l2-app-l2-chrome"
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-mammon-blacksmith-loc l2-page-has-fixed-nav l2-app-l2-chrome"
   >
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
@@ -112,7 +167,7 @@
 
           <div id="l2-nav-top"></div>
 
-          <section class="l2-menu-panel" aria-label="Коваль Маммона">
+          <section class="l2-menu-panel" aria-label="Коваль Маммона — телепорт">
             <div class="l2-mammon-blacksmith-head">
               <img id="mammon-blacksmith-icon" src="/nps/76.png" width="40" height="40" alt="" />
               <div>
@@ -123,8 +178,34 @@
               </div>
             </div>
 
+            <p class="l2-mammon-loc-label" id="mammon-loc-label">Завантаження карти…</p>
+            <div class="l2-mammon-loc-map-viewport" id="mammon-loc-viewport" aria-label="Карта — позиція Маммона">
+              <div class="l2-mammon-loc-map-inner" id="mammon-loc-inner">
+                <img
+                  id="mammon-loc-img"
+                  class="l2-map-img"
+                  src="/assets/maps/aden2.jpg"
+                  alt="Карта світу"
+                  width="1812"
+                  height="2620"
+                  draggable="false"
+                />
+                <div id="mammon-loc-npc-dot" class="l2-mammon-loc-npc-dot" hidden aria-hidden="true"></div>
+                <div id="mammon-loc-player-dot" class="l2-map-dot" hidden aria-hidden="true"></div>
+              </div>
+            </div>
+            <p class="l2-mammon-loc-cost">Ціна телепорту: 1 Адена</p>
+            <button
+              type="button"
+              class="l2-magister-profession-confirm-btn l2-mammon-loc-teleport"
+              id="mammon-loc-teleport-btn"
+            >
+              Телепорт до Коваля Маммона
+            </button>
+            <p class="l2-mammon-loc-err" id="mammon-loc-err" hidden></p>
+
             <p class="l2-mammon-blacksmith-back">
-              <a class="l2-mammon-blacksmith-back__link" href="/map.html">&lt;&lt;&lt; До карти</a>
+              <a class="l2-mammon-blacksmith-back__link" href="/news.html">&lt;&lt;&lt; До новин</a>
             </p>
           </section>
 
@@ -136,6 +217,7 @@
     <script src="/common.js?v=20260717mammonBlacksmith1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
+    <script src="/mammon-location-common.js?v=20260717mammonLoc4"></script>
     <script src="/mammon-blacksmith.js?v=20260717mammonBlacksmith5"></script>
   </body>
 </html>

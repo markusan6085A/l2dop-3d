@@ -689,14 +689,32 @@
     listEl.appendChild(li);
   }
 
+  function mammonNpcIconUrl(href) {
+    var h = String(href || '');
+    if (h.indexOf('blacksmith') >= 0) return '/nps/76.png';
+    return '/nps/38.png';
+  }
+
   function appendNpcRow(listEl, npc, href) {
     if (!listEl || !npc) return;
     var li = document.createElement('li');
-    li.className = 'l2-map-mob-item l2-map-mob-item--npc';
+    li.className =
+      'l2-map-mob-item l2-map-mob-item--npc l2-map-mob-item--with-icon';
+    var img = document.createElement('img');
+    img.className = 'l2-map-npc-icon-img';
+    img.alt = '';
+    img.width = 22;
+    img.height = 22;
+    img.loading = 'lazy';
+    img.src = mammonNpcIconUrl(href);
+    img.onerror = function () {
+      img.src = '/icons/drops/other.svg';
+    };
     var a = document.createElement('a');
     a.className = 'l2-map-mob-link l2-map-mob-link--npc';
     a.href = href || '/mammon-merchant.html';
     a.textContent = npc.nameEn || npc.nameUk || 'NPC';
+    li.appendChild(img);
     li.appendChild(a);
     listEl.appendChild(li);
   }

@@ -44,6 +44,16 @@ import {
   ancientAdenaItemMetaForCatalog,
   ancientAdenaNamesUkForClient,
 } from './ancientAdenaItem.js';
+import {
+  mammonGemstoneInventoryTabHints,
+  mammonGemstoneItemMetaForCatalog,
+  mammonGemstoneNamesUkForClient,
+} from './mammonMerchantGemstones.js';
+import {
+  mammonLifeStoneInventoryTabHints,
+  mammonLifeStoneItemMetaForCatalog,
+  mammonLifeStoneNamesUkForClient,
+} from './mammonMerchantLifeStones.js';
 import { sealStoneItemMetaForCatalog, sealStoneNamesUkForClient } from './sevenSignsSealStoneItems.js';
 
 export type ItemSlotKind =
@@ -352,6 +362,9 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
     3951: { nameUk: 'Благословенний заряд духу' },
     3952: { nameUk: 'Благословенний заряд духу' },
     4037: { nameUk: 'Coin of Luck' },
+    1785: { nameUk: 'Soul Ore' },
+    3031: { nameUk: 'Spirit Ore' },
+    6519: { nameUk: 'Наживка' },
   };
   for (const [idStr, row] of Object.entries(CONSUMABLE_CATALOG_STUBS)) {
     const id = Number(idStr);
@@ -361,6 +374,8 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
 
   Object.assign(o, sealStoneItemMetaForCatalog());
   Object.assign(o, ancientAdenaItemMetaForCatalog());
+  Object.assign(o, mammonGemstoneItemMetaForCatalog());
+  Object.assign(o, mammonLifeStoneItemMetaForCatalog());
 
   return o;
 })();
@@ -631,6 +646,14 @@ const ITEM_INVENTORY_TAB_EXTRA: Partial<
   6362: 'resource',
   5575: 'resource',
   4037: 'consumable',
+  2130: 'resource',
+  2131: 'resource',
+  2132: 'resource',
+  2133: 'resource',
+  2134: 'resource',
+  1785: 'resource',
+  3031: 'resource',
+  6519: 'resource',
 };
 
 export function itemInventoryTabHintsForClient(): Record<
@@ -640,6 +663,8 @@ export function itemInventoryTabHintsForClient(): Record<
   return {
     ...L2DOP_ITEM_INVENTORY_TAB,
     ...ITEM_INVENTORY_TAB_EXTRA,
+    ...mammonGemstoneInventoryTabHints(),
+    ...mammonLifeStoneInventoryTabHints(),
   } as Record<number, L2ItemInventoryTabHint>;
 }
 
@@ -671,6 +696,16 @@ export function itemNamesUkForClient(): Record<number, string> {
   }
 
   for (const [idStr, uk] of Object.entries(ancientAdenaNamesUkForClient())) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(mammonGemstoneNamesUkForClient())) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(mammonLifeStoneNamesUkForClient())) {
     const id = Number(idStr);
     if (uk && String(uk).trim() !== '') out[id] = uk;
   }

@@ -44,7 +44,7 @@
     var html = '';
     if (entry.kind === 'mammon_spawn') {
       html =
-        '<span class="l2-news-item__mammon">Торговець Маммона</span>' +
+        '<a class="l2-news-item__mammon-link" href="/mammon-merchant-loc.html">Торговець Маммона</a>' +
         '<span class="l2-news-item__mammon-tail"> з\'явився у ' +
         escapeHtml(entry.locationEn || '—') +
         '</span> <span class="l2-news-item__ago">' +
@@ -52,7 +52,7 @@
         '</span>';
     } else if (entry.kind === 'mammon_blacksmith_spawn') {
       html =
-        '<span class="l2-news-item__mammon">Коваль Маммона</span>' +
+        '<a class="l2-news-item__mammon-link" href="/mammon-blacksmith-loc.html">Коваль Маммона</a>' +
         '<span class="l2-news-item__mammon-tail"> з\'явився у ' +
         escapeHtml(entry.locationEn || '—') +
         '</span> <span class="l2-news-item__ago">' +

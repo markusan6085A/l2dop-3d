@@ -1187,5 +1187,17 @@
   "consumable/fighter_soulshot_s": {
     "itemId": 1467,
     "priceAdena": 560
+  },
+  "consumable/resource_soul_ore": {
+    "itemId": 1785,
+    "priceAdena": 250
+  },
+  "consumable/resource_spirit_ore": {
+    "itemId": 3031,
+    "priceAdena": 400
+  },
+  "consumable/resource_fishing_lure": {
+    "itemId": 6519,
+    "priceAdena": 100
   }
 }
