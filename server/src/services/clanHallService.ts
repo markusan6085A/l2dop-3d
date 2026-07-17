@@ -18,6 +18,7 @@ async function loadHallStateForUser(userId: string): Promise<{
   clanId: string | null;
   clanRole: string | null;
   hallBlessingAt: Date | null;
+  clanLevel: number;
 } | null> {
   const char = await prisma.character.findFirst({
     where: { userId },
@@ -25,7 +26,7 @@ async function loadHallStateForUser(userId: string): Promise<{
     select: {
       clanId: true,
       clanRole: true,
-      clan: { select: { hallBlessingAt: true } },
+      clan: { select: { hallBlessingAt: true, level: true } },
     },
   });
   if (!char) return null;
@@ -33,6 +34,7 @@ async function loadHallStateForUser(userId: string): Promise<{
     clanId: char.clanId,
     clanRole: char.clanRole,
     hallBlessingAt: char.clan?.hallBlessingAt ?? null,
+    clanLevel: char.clan?.level ?? 1,
   };
 }
 
@@ -44,7 +46,7 @@ export async function getClanHallForUser(
   if (!row?.clanId) return null;
   const hasBlessing = row.hallBlessingAt != null;
   const canBuy = row.clanRole === 'leader' && !hasBlessing;
-  return buildClanHallView(hasBlessing, canBuy);
+  return buildClanHallView(hasBlessing, canBuy, row.clanLevel);
 }
 
 /** Купити благословення Клан-холу (лише лідер, списання adena). */
@@ -63,7 +65,7 @@ export async function purchaseClanHallBlessingForUser(
 
     const clan = await tx.clan.findUnique({
       where: { id: char.clanId },
-      select: { id: true, hallBlessingAt: true },
+      select: { id: true, hallBlessingAt: true, level: true },
     });
     if (!clan) throw new Error('clan_hall_not_in_clan');
     if (clan.hallBlessingAt != null) throw new Error('clan_hall_already_owned');
@@ -108,7 +110,7 @@ export async function purchaseClanHallBlessingForUser(
 
     return {
       character: await buildCharacterClientSnapshot(fresh, userId),
-      hall: buildClanHallView(true, false),
+      hall: buildClanHallView(true, false, clan.level),
     };
   });
 }

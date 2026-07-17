@@ -611,3 +611,61 @@ body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy-btn:disabled {
   cursor: default;
   text-decoration: none;
 }
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-owned {
+  margin: 0 0 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-apply-btn {
+  display: block;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #d4923a;
+  text-align: left;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-apply-btn:hover,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-apply-btn:focus,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-apply-btn:focus-visible {
+  color: #e0a84a;
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #e8e0d4;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats th,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats td {
+  padding: 3px 4px 3px 0;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats th {
+  color: #bfa88a;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats__row--active td {
+  color: #fff;
+  font-weight: 600;
+}

@@ -30,6 +30,7 @@ const CLAN_MY_SELECT = {
   name: true,
   createdAt: true,
   announcement: true,
+  level: true,
   leader: { select: { name: true } },
   _count: { select: { members: true } },
 } as const;
@@ -49,6 +50,7 @@ function buildClanMyView(
     name: string;
     createdAt: Date;
     announcement: string;
+    level: number;
     leader: { name: string };
     _count: { members: number };
   },
@@ -59,7 +61,7 @@ function buildClanMyView(
     id: clan.id,
     name: clan.name,
     foundedAt: clan.createdAt.toISOString(),
-    level: 1,
+    level: clan.level,
     leaderName: clan.leader.name,
     announcement: clan.announcement,
     reputation: 0,

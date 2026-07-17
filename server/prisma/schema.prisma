@@ -130,6 +130,8 @@ model Clan {
   announcement   String      @default("")
   /** Куплене благословення Клан-холу; null — ще не куплено. */
   hallBlessingAt DateTime?
+  /** Рівень клану (1–8). */
+  level          Int         @default(1)
   createdAt      DateTime    @default(now())
 }
 

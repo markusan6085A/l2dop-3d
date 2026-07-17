@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
-    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans11" />
+    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans12" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-clan-hall l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -82,6 +82,28 @@
                     <span data-i18n="clan_hall_buy">[Купити]</span>
                   </button>
                 </div>
+
+                <div id="clan-hall-owned-wrap" class="l2-clan-hall-owned" hidden>
+                  <button type="button" id="clan-hall-apply-btn" class="l2-clan-hall-apply-btn">
+                    <span data-i18n="clan_hall_apply_buff">Накласти баф</span>
+                  </button>
+
+                  <div class="l2-clan-hall-stats-wrap">
+                    <table class="l2-clan-hall-stats" id="clan-hall-stats-table">
+                      <thead>
+                        <tr>
+                          <th data-i18n="clan_hall_col_level">Рівень клану</th>
+                          <th data-i18n="clan_hall_col_patk">Фіз. атака</th>
+                          <th data-i18n="clan_hall_col_matk">Маг. атака</th>
+                          <th data-i18n="clan_hall_col_pdef">Фіз. захист</th>
+                          <th data-i18n="clan_hall_col_mdef">Маг. захист</th>
+                          <th data-i18n="clan_hall_col_hp">Макс. HP</th>
+                        </tr>
+                      </thead>
+                      <tbody id="clan-hall-stats-body"></tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
 
               <p class="l2-clans-back">
@@ -99,8 +121,8 @@
     </div>
 
     <script src="/common.js?v=20260717perf2"></script>
-    <script src="/ui-i18n.js?v=20260718clans11"></script>
+    <script src="/ui-i18n.js?v=20260718clans12"></script>
     <script src="/l2-nav.js?v=20260718clans3"></script>
-    <script src="/clan-hall.js?v=20260718clans10"></script>
+    <script src="/clan-hall.js?v=20260718clans12"></script>
   </body>
 </html>
