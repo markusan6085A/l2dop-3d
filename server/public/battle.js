@@ -47,6 +47,19 @@
     ) {
       did = dungeonIdFromSpawnId(victorySummary.nextHuntSpawnId);
     }
+    if (!did) {
+      try {
+        var snap =
+          window.L2 && typeof L2.lastSnapshot === 'function'
+            ? L2.lastSnapshot()
+            : null;
+        if (snap && snap.activeDungeonId) {
+          did = String(snap.activeDungeonId).trim();
+        }
+      } catch (eSnap) {
+        /* ignore */
+      }
+    }
     if (did) {
       return '/dungeon.html?dungeonId=' + encodeURIComponent(did);
     }
@@ -66,6 +79,15 @@
       isDungeonSpawnId(victorySummary.nextHuntSpawnId)
     ) {
       return true;
+    }
+    try {
+      var snap =
+        window.L2 && typeof L2.lastSnapshot === 'function'
+          ? L2.lastSnapshot()
+          : null;
+      if (snap && snap.activeDungeonId) return true;
+    } catch (eSnap) {
+      /* ignore */
     }
     return false;
   }
@@ -765,7 +787,10 @@
   }
 
   async function runWithBattleNavLock(fn) {
-    if (battleNavInFlight) return;
+    if (battleNavInFlight) {
+      await fn();
+      return;
+    }
     battleNavInFlight = true;
     try {
       await fn();
@@ -2550,13 +2575,6 @@
         if (ok) return;
 
         if (isInDungeonBattleContext(spawnId, victory, battle && battle.spawnId)) {
-          showBattleToast(
-            tr(
-              'battle_hunt_no_targets_dungeon',
-              'Поруч немає мобів — повертаємо на карту подземелля.'
-            ),
-            { long: true }
-          );
           await goToMap();
           return;
         }
@@ -2864,9 +2882,7 @@
     var vCont = $('battle-victory-continue');
     if (vCont) {
       vCont.addEventListener('click', function () {
-        runWithBattleNavLock(async function () {
-          await goToMap();
-        });
+        goToMap();
       });
     }
     var vHunt = $('battle-victory-hunt');
