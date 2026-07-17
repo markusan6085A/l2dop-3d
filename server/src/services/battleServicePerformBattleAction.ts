@@ -1668,7 +1668,8 @@ export async function performBattleAction(
   if (result.kind === 'full' && result.character) {
     result.character = await enrichPartialClientSnapshot(
       result.character,
-      userId
+      userId,
+      { includeUnreadCount: Boolean(result.victory) }
     );
   }
   return result;

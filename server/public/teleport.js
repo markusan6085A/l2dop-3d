@@ -651,13 +651,9 @@
       }
 
       var out = await r.json();
-      if (out.character && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(out.character);
+      if (out.character && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(out.character);
       }
-      if (out.character && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(out.character);
-      }
-      await resyncCharacter(errEl);
       window.location.href = '/map.html';
     } finally {
       teleportInFlight = false;

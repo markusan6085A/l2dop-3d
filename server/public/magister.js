@@ -57,6 +57,10 @@
 
   function applyMagisterSnapshot(snapshot) {
     if (!snapshot) return;
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(snapshot);
+      return;
+    }
     if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
       L2.applyCharacterSnapshot(snapshot);
       return;
@@ -325,21 +329,6 @@
     panel.hidden = false;
 
     var d = await r.json();
-    if (
-      d &&
-      typeof d.characterSp === 'number' &&
-      Number.isFinite(d.characterSp) &&
-      window.L2 &&
-      typeof L2.lastSnapshot === 'function'
-    ) {
-      var snapPatch = L2.lastSnapshot();
-      if (snapPatch) {
-        snapPatch.sp = Math.max(0, Math.floor(d.characterSp));
-        if (typeof L2.setLastSnapshot === 'function') {
-          L2.setLastSnapshot(snapPatch);
-        }
-      }
-    }
     var snapNowHeader =
       window.L2 && typeof L2.lastSnapshot === 'function'
         ? L2.lastSnapshot()

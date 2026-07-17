@@ -18,10 +18,10 @@ import {
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
-  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function assertOrcMysticRow(row: CharacterRow): void {
@@ -46,7 +46,7 @@ async function commitL2Profession(
   userId: string,
   expectedRevision: number,
   nextProf: string
-): Promise<CharacterSnapshot> {
+): Promise<CharacterRow> {
   void userId;
   const result = await mutateCharacterWithRevision(
     tx,
@@ -60,7 +60,7 @@ async function commitL2Profession(
     })
   );
   if (!result.ok) throw gameConflictFromMutation(result);
-  return toSnapshot(result.character as CharacterRow);
+  return result.character as CharacterRow;
 }
 
 //==== 1-ша профа: orc_mage → Orc Shaman (20+) ====
@@ -69,7 +69,7 @@ export async function performFirstProfessionOrcShaman(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -85,6 +85,7 @@ export async function performFirstProfessionOrcShaman(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'orc_shaman');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 2-га профа: Orc Shaman → Overlord | Warcryer (40+) ====
@@ -93,7 +94,7 @@ export async function performSecondProfessionOrcOverlord(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -109,13 +110,14 @@ export async function performSecondProfessionOrcOverlord(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'orc_overlord');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performSecondProfessionOrcWarcryer(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -131,6 +133,7 @@ export async function performSecondProfessionOrcWarcryer(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'orc_warcryer');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 3-тя профа (76+) ====
@@ -139,7 +142,7 @@ export async function performThirdProfessionOrcDominator(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -155,13 +158,14 @@ export async function performThirdProfessionOrcDominator(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'orc_dominator');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionOrcDoomcryer(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -177,4 +181,5 @@ export async function performThirdProfessionOrcDoomcryer(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'orc_doomcryer');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

@@ -9,10 +9,10 @@ import {
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
-  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 //==== Knight (Paladin / Phoenix · Dark Avenger / Hell) ====
@@ -24,7 +24,7 @@ export async function performSecondProfessionHumanPaladin(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -61,8 +61,9 @@ export async function performSecondProfessionHumanPaladin(
       () => ({ changed: true, data: { l2Profession: 'human_paladin' } })
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 /**
@@ -72,7 +73,7 @@ export async function performThirdProfessionHumanPhoenixKnight(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -109,8 +110,9 @@ export async function performThirdProfessionHumanPhoenixKnight(
       () => ({ changed: true, data: { l2Profession: 'human_phoenix_knight' } })
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 /**
@@ -120,7 +122,7 @@ export async function performSecondProfessionHumanDarkAvenger(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -157,8 +159,9 @@ export async function performSecondProfessionHumanDarkAvenger(
       () => ({ changed: true, data: { l2Profession: 'human_dark_avenger' } })
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 /**
@@ -168,7 +171,7 @@ export async function performThirdProfessionHumanHellKnight(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -205,6 +208,7 @@ export async function performThirdProfessionHumanHellKnight(
       () => ({ changed: true, data: { l2Profession: 'human_hell_knight' } })
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

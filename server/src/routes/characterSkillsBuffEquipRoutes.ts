@@ -4,6 +4,7 @@ import {
   ensureUserId,
   logRouteMutation,
   parseExpectedRevision,
+  parseSnapshotDebugDelayMs,
   sendGameConflict,
 } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
@@ -519,7 +520,14 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
             typeof enRaw === 'number' && Number.isFinite(enRaw)
               ? Math.max(0, Math.min(20, Math.floor(enRaw)))
               : 0;
-          const character = await applyEquipFromBag(userId, itemId, rev, enchant);
+          const debugDelay = parseSnapshotDebugDelayMs(request);
+          const character = await applyEquipFromBag(
+            userId,
+            itemId,
+            rev,
+            enchant,
+            debugDelay != null ? { debugResponseDelayMs: debugDelay } : undefined
+          );
           await logRouteMutation(
             request,
             'equip:' + String(itemId),

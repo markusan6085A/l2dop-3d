@@ -18,10 +18,10 @@ import {
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
-  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 async function performFirstProfessionHumanFighterWithQuest(
@@ -29,7 +29,7 @@ async function performFirstProfessionHumanFighterWithQuest(
   expectedRevision: number,
   targetProfession: HumanFighterFirstProfTarget
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const txRow = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -82,8 +82,9 @@ async function performFirstProfessionHumanFighterWithQuest(
       })
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(txRow, userId);
 }
 
 export async function performFirstProfessionHumanWarrior(

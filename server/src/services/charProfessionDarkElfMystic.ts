@@ -18,10 +18,10 @@ import {
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
-  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function assertDarkElfMysticRow(row: CharacterRow): void {
@@ -46,7 +46,7 @@ async function commitL2Profession(
   userId: string,
   expectedRevision: number,
   nextProf: string
-): Promise<CharacterSnapshot> {
+): Promise<CharacterRow> {
   void userId;
   const result = await mutateCharacterWithRevision(
     tx,
@@ -60,7 +60,7 @@ async function commitL2Profession(
     })
   );
   if (!result.ok) throw gameConflictFromMutation(result);
-  return toSnapshot(result.character as CharacterRow);
+  return result.character as CharacterRow;
 }
 
 //==== 1-ша профа: dark_elf_mage → Dark Wizard | Shillien Oracle (20+) ====
@@ -69,7 +69,7 @@ export async function performFirstProfessionDarkElfDarkWizard(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -91,13 +91,14 @@ export async function performFirstProfessionDarkElfDarkWizard(
       'dark_elf_dark_wizard'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performFirstProfessionDarkElfShillienOracle(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -119,6 +120,7 @@ export async function performFirstProfessionDarkElfShillienOracle(
       'dark_elf_shillien_oracle'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 2-га профа: гілка чарівника (40+) ====
@@ -127,7 +129,7 @@ export async function performSecondProfessionDarkElfPhantomSummoner(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -149,13 +151,14 @@ export async function performSecondProfessionDarkElfPhantomSummoner(
       'dark_elf_phantom_summoner'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performSecondProfessionDarkElfSpellhowler(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -177,6 +180,7 @@ export async function performSecondProfessionDarkElfSpellhowler(
       'dark_elf_spellhowler'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 2-га профа: гілка жреця (40+) ====
@@ -185,7 +189,7 @@ export async function performSecondProfessionDarkElfShillienElder(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -207,6 +211,7 @@ export async function performSecondProfessionDarkElfShillienElder(
       'dark_elf_shillien_elder'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 3-тя профа (76+) ====
@@ -215,7 +220,7 @@ export async function performThirdProfessionDarkElfSpectralMaster(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -237,13 +242,14 @@ export async function performThirdProfessionDarkElfSpectralMaster(
       'dark_elf_spectral_master'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionDarkElfStormScreamer(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -265,13 +271,14 @@ export async function performThirdProfessionDarkElfStormScreamer(
       'dark_elf_storm_screamer'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionDarkElfShillienSaint(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -293,4 +300,5 @@ export async function performThirdProfessionDarkElfShillienSaint(
       'dark_elf_shillien_saint'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

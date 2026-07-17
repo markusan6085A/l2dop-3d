@@ -88,3 +88,15 @@ export function sendGameConflict(reply: FastifyReply, err: GameConflictError) {
     character: err.character,
   });
 }
+
+/** Dev-only: X-L2-Debug-Delay-Ms для A/B stale-response тестів. */
+export function parseSnapshotDebugDelayMs(
+  request: FastifyRequest
+): number | undefined {
+  if (process.env.NODE_ENV === 'production') return undefined;
+  if (process.env.L2_ALLOW_DEBUG_DELAY !== '1') return undefined;
+  const raw = request.headers['x-l2-debug-delay-ms'];
+  const ms = Number(Array.isArray(raw) ? raw[0] : raw);
+  if (!Number.isFinite(ms) || ms <= 0 || ms > 5000) return undefined;
+  return Math.floor(ms);
+}

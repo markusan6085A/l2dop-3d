@@ -16,10 +16,10 @@ import { isL2DwarfRace } from '../data/l2dopHumanMysticBattleSkills.js';
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
-  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function assertDwarfFighter(row: CharacterRow): void {
@@ -45,7 +45,7 @@ async function commitProf(
   userId: string,
   expectedRevision: number,
   next: string
-): Promise<CharacterSnapshot> {
+): Promise<CharacterRow> {
   void userId;
   const result = await mutateCharacterWithRevision(
     tx,
@@ -57,14 +57,14 @@ async function commitProf(
     })
   );
   if (!result.ok) throw gameConflictFromMutation(result);
-  return toSnapshot(result.character as CharacterRow);
+  return result.character as CharacterRow;
 }
 
 export async function performFirstProfessionDwarfScavenger(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -77,13 +77,14 @@ export async function performFirstProfessionDwarfScavenger(
     requireLv(levelFromTotalExp(char.exp), HUMAN_FIGHTER_PRO_WARRIOR_LEVEL);
     return commitProf(tx, char.id, userId, expectedRevision, 'dwarf_scavenger');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performFirstProfessionDwarfArtisan(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -96,13 +97,14 @@ export async function performFirstProfessionDwarfArtisan(
     requireLv(levelFromTotalExp(char.exp), HUMAN_FIGHTER_PRO_WARRIOR_LEVEL);
     return commitProf(tx, char.id, userId, expectedRevision, 'dwarf_artisan');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performSecondProfessionDwarfBountyHunter(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -121,13 +123,14 @@ export async function performSecondProfessionDwarfBountyHunter(
       'dwarf_bounty_hunter'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performSecondProfessionDwarfWarsmith(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -140,13 +143,14 @@ export async function performSecondProfessionDwarfWarsmith(
     requireLv(levelFromTotalExp(char.exp), HUMAN_FIGHTER_SECOND_PROFESSION_LEVEL);
     return commitProf(tx, char.id, userId, expectedRevision, 'dwarf_warsmith');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionDwarfFortuneSeeker(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -165,13 +169,14 @@ export async function performThirdProfessionDwarfFortuneSeeker(
       'dwarf_fortune_seeker'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionDwarfMaestro(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -184,4 +189,5 @@ export async function performThirdProfessionDwarfMaestro(
     requireLv(levelFromTotalExp(char.exp), HUMAN_FIGHTER_PRO_DREADNOUGHT_LEVEL);
     return commitProf(tx, char.id, userId, expectedRevision, 'dwarf_maestro');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

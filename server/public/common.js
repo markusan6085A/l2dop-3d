@@ -80,7 +80,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260717-4';
+  var APP_DATA_VERSION = '20260717-5';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -134,6 +134,16 @@
     return Number.isFinite(ts) ? ts : null;
   }
 
+  function getClientSnapshotVersion(snapshot) {
+    var ver = Number(snapshot && snapshot.clientSnapshotVersion);
+    return Number.isFinite(ver) ? ver : null;
+  }
+
+  /**
+   * Transport ordering guard — не гарантує актуальність даних при однаковому revision.
+   * clientSnapshotVersion = порядок формування відповіді, не порядок read/commit.
+   * Довгостроково: revision + battleVersion + chatUnreadVersion окремо.
+   */
   function shouldRejectIncomingSnapshot(current, snapshot) {
     if (!snapshot) return true;
     if (!current) return false;
@@ -145,6 +155,7 @@
 
     var incomingRevision = getSnapshotRevision(snapshot);
     var currentRevision = getSnapshotRevision(current);
+
     if (
       incomingRevision !== null &&
       currentRevision !== null &&
@@ -155,18 +166,43 @@
     if (
       incomingRevision !== null &&
       currentRevision !== null &&
+      incomingRevision > currentRevision
+    ) {
+      return false;
+    }
+
+    if (
+      incomingRevision !== null &&
+      currentRevision !== null &&
       incomingRevision === currentRevision
     ) {
-      var incomingAt = getSnapshotGeneratedAt(snapshot);
-      var currentAt = getSnapshotGeneratedAt(current);
-      if (
-        incomingAt !== null &&
-        currentAt !== null &&
-        incomingAt < currentAt
-      ) {
+      var incomingVer = getClientSnapshotVersion(snapshot);
+      var currentVer = getClientSnapshotVersion(current);
+      if (currentVer !== null && incomingVer === null) {
         return true;
       }
+      if (currentVer === null && incomingVer !== null) {
+        return false;
+      }
+      if (currentVer !== null && incomingVer !== null) {
+        if (incomingVer < currentVer) return true;
+        if (incomingVer > currentVer) return false;
+      }
+
+      var incomingAt = getSnapshotGeneratedAt(snapshot);
+      var currentAt = getSnapshotGeneratedAt(current);
+      if (currentAt !== null && incomingAt === null) {
+        return true;
+      }
+      if (currentAt === null && incomingAt !== null) {
+        return false;
+      }
+      if (currentAt !== null && incomingAt !== null) {
+        return incomingAt < currentAt;
+      }
+      return false;
     }
+
     return false;
   }
 

@@ -11,6 +11,7 @@ import {
   nearestMapTown,
 } from '../data/mapLocalities.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
@@ -182,7 +183,7 @@ export async function performTeleport(
   const wx = Math.floor(dest.worldX);
   const wy = Math.floor(dest.worldY);
 
-  return prisma.$transaction(async (trx) => {
+  const row = await prisma.$transaction(async (trx) => {
     const char = (await trx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -248,8 +249,9 @@ export async function performTeleport(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 /**
@@ -269,7 +271,7 @@ export async function performRaidBossTeleport(
   const wy = Math.floor(spawn.worldY);
   const fee = BigInt(RB_TELEPORT_ADENA_COST);
 
-  return prisma.$transaction(async (trx) => {
+  const row = await prisma.$transaction(async (trx) => {
     const char = (await trx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -334,8 +336,9 @@ export async function performRaidBossTeleport(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 /**

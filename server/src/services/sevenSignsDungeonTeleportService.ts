@@ -11,12 +11,9 @@ import {
 } from '../domain/mobSpawnHpState.js';
 import { prisma } from '../lib/prisma.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
-import {
-  gameConflictFromMutation,
-  toSnapshot,
-  type CharacterRow,
-  type CharacterSnapshot,
-} from './charService.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
+import { gameConflictFromMutation } from './charConflict.js';
+import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { SEVEN_SIGNS_DUNGEON_TELEPORT_ADENA_COST } from './sevenSignsDungeonListService.js';
 
@@ -52,7 +49,7 @@ export async function performSevenSignsDungeonTeleport(
   const wy = Math.floor(dungeon.worldY);
   const fee = BigInt(SEVEN_SIGNS_DUNGEON_TELEPORT_ADENA_COST);
 
-  return prisma.$transaction(async (trx) => {
+  const row = await prisma.$transaction(async (trx) => {
     const char = (await trx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -121,6 +118,7 @@ export async function performSevenSignsDungeonTeleport(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

@@ -21,11 +21,11 @@ import {
   applyDailyQuestRewardToInventory,
   DAILY_QUEST_REWARDS,
 } from '../domain/dailyQuestRewards.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
   combatOptsFromRow,
-  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
@@ -43,7 +43,7 @@ export async function claimDailyQuestReward(
   const grant = DAILY_QUEST_REWARDS[taskId];
   if (!grant) throw new Error('daily_quest_invalid_id');
 
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -128,6 +128,7 @@ export async function claimDailyQuestReward(
       })
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

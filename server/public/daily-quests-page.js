@@ -174,7 +174,9 @@
       }
 
       lastSnapshot = c;
-      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c, applyScreenFromSnapshot);
+      } else if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
         L2.applyCharacterSnapshot(c, applyScreenFromSnapshot);
       } else {
         applyScreenFromSnapshot(c);
@@ -311,11 +313,10 @@
         return;
       }
       lastSnapshot = c;
-      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
-        L2.setLastSnapshot(c);
-      }
-      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c);
+      } else if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(c);
       }
 
       var cat = catalog();

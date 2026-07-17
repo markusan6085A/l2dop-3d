@@ -206,6 +206,9 @@ export async function getUnreadReplyCountForCharacter(
   characterId: string,
   chatRepliesReadAt: Date | null
 ): Promise<number> {
+  if (process.env.PERF_DEBUG === '1') {
+    console.log('[perf] unread COUNT', characterId);
+  }
   return prisma.chatMessage.count({
     where: {
       channel: 'all',

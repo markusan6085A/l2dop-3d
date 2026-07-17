@@ -18,10 +18,10 @@ import {
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
-  toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 function assertHumanMysticRow(row: CharacterRow): void {
@@ -46,7 +46,7 @@ async function commitL2Profession(
   userId: string,
   expectedRevision: number,
   nextProf: string
-): Promise<CharacterSnapshot> {
+): Promise<CharacterRow> {
   void userId;
   const result = await mutateCharacterWithRevision(
     tx,
@@ -60,7 +60,7 @@ async function commitL2Profession(
     })
   );
   if (!result.ok) throw gameConflictFromMutation(result);
-  return toSnapshot(result.character as CharacterRow);
+  return result.character as CharacterRow;
 }
 
 //==== 1-ша профа: human_mage → Wizard | Cleric (20+) ====
@@ -69,7 +69,7 @@ export async function performFirstProfessionHumanWizard(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -85,13 +85,14 @@ export async function performFirstProfessionHumanWizard(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_wizard');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performFirstProfessionHumanCleric(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -107,6 +108,7 @@ export async function performFirstProfessionHumanCleric(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_cleric');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 2-га профа: Wizard → Sorcerer | Necromancer | Warlock (40+) ====
@@ -115,7 +117,7 @@ export async function performSecondProfessionHumanSorcerer(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -131,13 +133,14 @@ export async function performSecondProfessionHumanSorcerer(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_sorcerer');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performSecondProfessionHumanNecromancer(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -159,13 +162,14 @@ export async function performSecondProfessionHumanNecromancer(
       'human_necromancer'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performSecondProfessionHumanWarlock(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -181,6 +185,7 @@ export async function performSecondProfessionHumanWarlock(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_warlock');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 2-га профа: Cleric → Bishop | Prophet (40+) ====
@@ -189,7 +194,7 @@ export async function performSecondProfessionHumanBishop(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -205,13 +210,14 @@ export async function performSecondProfessionHumanBishop(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_bishop');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performSecondProfessionHumanProphet(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -227,6 +233,7 @@ export async function performSecondProfessionHumanProphet(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_prophet');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 //==== 3-тя профа (76+) ====
@@ -235,7 +242,7 @@ export async function performThirdProfessionHumanArchmage(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -251,13 +258,14 @@ export async function performThirdProfessionHumanArchmage(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_archmage');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionHumanSoultaker(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -273,13 +281,14 @@ export async function performThirdProfessionHumanSoultaker(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_soultaker');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionHumanArcanaLord(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -301,13 +310,14 @@ export async function performThirdProfessionHumanArcanaLord(
       'human_arcana_lord'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionHumanCardinal(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -323,13 +333,14 @@ export async function performThirdProfessionHumanCardinal(
     );
     return commitL2Profession(tx, char.id, userId, expectedRevision, 'human_cardinal');
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
 export async function performThirdProfessionHumanHierophant(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -351,4 +362,5 @@ export async function performThirdProfessionHumanHierophant(
       'human_hierophant'
     );
   });
+  return buildCharacterClientSnapshot(row, userId);
 }

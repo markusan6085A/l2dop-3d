@@ -238,4 +238,6 @@ export interface CharacterSnapshot {
   bookVersion?: string;
   /** Час формування snapshot на сервері (ms) — tie-break при однаковому revision. */
   snapshotGeneratedAt?: number;
+  /** Монотонна версія client snapshot (transport tie-break; не версія даних). */
+  clientSnapshotVersion?: number;
 }

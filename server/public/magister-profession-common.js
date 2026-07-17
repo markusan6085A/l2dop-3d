@@ -147,6 +147,17 @@
     return choices;
   }
 
+  function applyPostMutationSnapshot(character) {
+    if (!character) return;
+    if (global.L2 && typeof global.L2.applyMutationSnapshot === 'function') {
+      global.L2.applyMutationSnapshot(character);
+      return;
+    }
+    if (global.L2 && typeof global.L2.applyCharacterSnapshot === 'function') {
+      global.L2.applyCharacterSnapshot(character);
+    }
+  }
+
   async function postProfessionSlug(slug, opts) {
     opts = opts || {};
     var t = localStorage.getItem('token');
@@ -200,10 +211,7 @@
         return false;
       }
       if (j.character) {
-        if (global.L2 && global.L2.setLastSnapshot) global.L2.setLastSnapshot(j.character);
-        if (typeof global.L2.applyHudFromSnapshot === 'function') {
-          global.L2.applyHudFromSnapshot(j.character);
-        }
+        applyPostMutationSnapshot(j.character);
       }
       if (opts.onSuccess) opts.onSuccess(j);
       return true;
@@ -266,12 +274,7 @@
         return false;
       }
       if (j.character) {
-        if (global.L2 && global.L2.setLastSnapshot) global.L2.setLastSnapshot(j.character);
-        if (typeof global.L2.applyCharacterSnapshot === 'function') {
-          global.L2.applyCharacterSnapshot(j.character);
-        } else if (typeof global.L2.applyHudFromSnapshot === 'function') {
-          global.L2.applyHudFromSnapshot(j.character);
-        }
+        applyPostMutationSnapshot(j.character);
       }
       if (opts.onSuccess) opts.onSuccess(j);
       return true;
@@ -348,10 +351,7 @@
       }
       var j = await r.json();
       if (j.character) {
-        if (global.L2 && global.L2.setLastSnapshot) global.L2.setLastSnapshot(j.character);
-        if (typeof global.L2.applyHudFromSnapshot === 'function') {
-          global.L2.applyHudFromSnapshot(j.character);
-        }
+        applyPostMutationSnapshot(j.character);
       }
       if (opts.onSuccess) opts.onSuccess(j);
       return true;

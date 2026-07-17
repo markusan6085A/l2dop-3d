@@ -12,6 +12,7 @@ import {
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
+import type { ClientSnapshotEnrichOpts } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyCharacterReadView } from './charReadView.js';
@@ -143,7 +144,8 @@ export async function applyEquipFromBag(
   userId: string,
   itemId: number,
   expectedRevision: number,
-  enchant: number = 0
+  enchant: number = 0,
+  snapshotOpts?: ClientSnapshotEnrichOpts
 ): Promise<CharacterSnapshot> {
   const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
@@ -183,13 +185,14 @@ export async function applyEquipFromBag(
     if (!result.ok) throw gameConflictFromMutation(result);
     return result.character as CharacterRow;
   });
-  return buildCharacterClientSnapshot(row, userId);
+  return buildCharacterClientSnapshot(row, userId, undefined, snapshotOpts);
 }
 
 export async function applyUnequip(
   userId: string,
   slot: string,
-  expectedRevision: number
+  expectedRevision: number,
+  snapshotOpts?: ClientSnapshotEnrichOpts
 ): Promise<CharacterSnapshot> {
   const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
@@ -229,5 +232,5 @@ export async function applyUnequip(
     if (!result.ok) throw gameConflictFromMutation(result);
     return result.character as CharacterRow;
   });
-  return buildCharacterClientSnapshot(row, userId);
+  return buildCharacterClientSnapshot(row, userId, undefined, snapshotOpts);
 }

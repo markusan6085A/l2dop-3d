@@ -3,6 +3,7 @@
  */
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
+import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import {
   gameConflictFromCharacter,
   gameConflictFromMutation,
@@ -910,7 +911,7 @@ export async function learnSkillForUser(
     throw new Error('skill_unknown');
   }
 
-  return prisma.$transaction(async (tx) => {
+  const row = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -1069,7 +1070,8 @@ export async function learnSkillForUser(
       })
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    return result.character as CharacterRow;
   });
+  return buildCharacterClientSnapshot(row, userId);
 }
 
