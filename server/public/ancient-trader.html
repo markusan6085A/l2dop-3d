@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="page_ancient_trader_title">Ancient Trader — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717ancientTrader1" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260717ancientTrader2" />
+    <link rel="stylesheet" href="/css/l2-menu-page.css?v=3" />
+    <link rel="stylesheet" href="/css/l2-item-colors.css?v=20260717sealStone1" />
+    <style>
+      .l2-ancient-trader-root {
+        padding: 8px 10px 14px;
+      }
+      .l2-ancient-trader-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0 0 12px;
+      }
+      .l2-ancient-trader-head img {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+      }
+      .l2-ancient-trader-title {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.35;
+        font-weight: 600;
+        color: #fff;
+      }
+      .l2-ancient-trader-sub {
+        margin: 4px 0 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #a89a70;
+      }
+      .l2-ancient-trader-result {
+        margin: 6px 0 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #fff;
+      }
+      .l2-ancient-trader-exchange-list {
+        margin: 0 0 12px;
+      }
+      .l2-ancient-trader-exchange {
+        margin: 0;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(191, 168, 138, 0.35);
+      }
+      .l2-ancient-trader-exchange:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+      .l2-ancient-trader-exchange:first-child {
+        padding-top: 0;
+      }
+      .l2-ancient-trader-exchange__label {
+        display: none;
+      }
+      .l2-ancient-trader-exchange__row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 62px auto;
+        gap: 6px;
+        align-items: center;
+      }
+      .l2-ancient-trader-exchange__text,
+      .l2-ancient-trader-exchange__rate {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.35;
+        color: #a89a70;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .l2-ancient-trader-exchange__aa {
+        color: #d4c4a0;
+        font-weight: 600;
+      }
+      .l2-ancient-trader-exchange__input {
+        width: 100%;
+        height: 22px;
+        margin: 0;
+        padding: 1px 6px;
+        border: 1px solid rgba(120, 100, 70, 0.65);
+        border-radius: 2px;
+        background: #fff;
+        color: #1a1510;
+        font: inherit;
+        font-size: 12px;
+        line-height: 1.2;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .l2-ancient-trader-exchange__input:focus {
+        outline: none;
+        border-color: rgba(191, 168, 138, 0.95);
+      }
+      .l2-ancient-trader-exchange__btn.l2-magister-profession-confirm-btn {
+        max-width: none;
+        padding: 5px 10px;
+        font-size: 10px;
+        white-space: nowrap;
+        border-color: #6b543f;
+      }
+      .l2-ancient-trader-exchange__err {
+        margin: 4px 0 0;
+        font-size: 11px;
+        line-height: 1.35;
+        color: #e05050;
+      }
+      .l2-ancient-trader-back {
+        margin: 12px 0 0;
+        padding: 0;
+      }
+      .l2-ancient-trader-back__link {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #bfa88a;
+        text-decoration: none;
+      }
+      .l2-ancient-trader-back__link:hover,
+      .l2-ancient-trader-back__link:focus {
+        color: #bfa88a;
+        text-decoration: underline;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-ancient-trader l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-menu-root l2-ancient-trader-root">
+          <div id="l2-hud-panel-mount"></div>
+
+          <div id="l2-nav-top"></div>
+
+          <section
+            class="l2-menu-panel"
+            data-i18n-attr="aria-label:ancient_trader_section_aria"
+            aria-label="Ancient Trader"
+          >
+            <div class="l2-ancient-trader-head">
+              <img
+                id="ancient-trader-icon"
+                src="/nps/38.png"
+                width="40"
+                height="40"
+                alt=""
+              />
+              <div>
+                <h1 class="l2-ancient-trader-title" id="ancient-trader-title">Ancient Trader</h1>
+                <p class="l2-ancient-trader-sub" id="ancient-trader-sub">Стародавній торговець</p>
+                <p class="l2-ancient-trader-result" id="ancient-trader-result" hidden></p>
+              </div>
+            </div>
+
+            <div class="l2-ancient-trader-exchange-list" aria-label="Обмін Seal Stones">
+              <div class="l2-ancient-trader-exchange" data-stone="green" data-aa-rate="5">
+                <div class="l2-ancient-trader-exchange__row">
+                  <span class="l2-ancient-trader-exchange__text">
+                    <span class="l2-item-name--seal-green">Green Seal Stone</span> Обміняти: 1 на
+                    <span class="l2-ancient-trader-exchange__aa">5 aa</span>
+                  </span>
+                  <input
+                    class="l2-ancient-trader-exchange__input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    value="1"
+                    aria-label="Кількість Green Seal Stone"
+                  />
+                  <button type="button" class="l2-magister-profession-confirm-btn l2-ancient-trader-exchange__btn">
+                    Обміняти
+                  </button>
+                </div>
+                <p class="l2-ancient-trader-exchange__err" hidden></p>
+              </div>
+
+              <div class="l2-ancient-trader-exchange" data-stone="blue" data-aa-rate="3">
+                <div class="l2-ancient-trader-exchange__row">
+                  <span class="l2-ancient-trader-exchange__text">
+                    <span class="l2-item-name--seal-blue">Blue Seal Stone</span> Обміняти: 1 на
+                    <span class="l2-ancient-trader-exchange__aa">3 aa</span>
+                  </span>
+                  <input
+                    class="l2-ancient-trader-exchange__input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    value="1"
+                    aria-label="Кількість Blue Seal Stone"
+                  />
+                  <button type="button" class="l2-magister-profession-confirm-btn l2-ancient-trader-exchange__btn">
+                    Обміняти
+                  </button>
+                </div>
+                <p class="l2-ancient-trader-exchange__err" hidden></p>
+              </div>
+
+              <div class="l2-ancient-trader-exchange" data-stone="red" data-aa-rate="10">
+                <div class="l2-ancient-trader-exchange__row">
+                  <span class="l2-ancient-trader-exchange__text">
+                    <span class="l2-item-name--seal-red">Red Seal Stone</span> Обміняти: 1 на
+                    <span class="l2-ancient-trader-exchange__aa">10 aa</span>
+                  </span>
+                  <input
+                    class="l2-ancient-trader-exchange__input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    value="1"
+                    aria-label="Кількість Red Seal Stone"
+                  />
+                  <button type="button" class="l2-magister-profession-confirm-btn l2-ancient-trader-exchange__btn">
+                    Обміняти
+                  </button>
+                </div>
+                <p class="l2-ancient-trader-exchange__err" hidden></p>
+              </div>
+            </div>
+
+            <p class="l2-ancient-trader-back">
+              <a class="l2-ancient-trader-back__link" href="/city.html">&lt;&lt;&lt; Назад до міста</a>
+            </p>
+          </section>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260717ancientTrader1"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
+    <script src="/ancient-trader.js?v=20260717ancientTrader9"></script>
+  </body>
+</html>

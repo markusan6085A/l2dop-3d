@@ -12,6 +12,7 @@ import {
 } from '../data/itemsCatalog.js';
 import { itemNamesEnForClient } from '../data/itemNamesEnForClient.js';
 import { craftResourceIconHintsForClient } from '../data/resourceCraftIconHints.js';
+import { ancientAdenaIconHintsForClient } from '../data/ancientAdenaItem.js';
 import {
   sealStoneIconHintsForClient,
   sealStoneNameColorSlugForClient,
@@ -40,6 +41,7 @@ function buildCharacterCatalogHints() {
     craftResourceIconByItemId: {
       ...craftResourceIconHintsForClient(),
       ...sealStoneIconHintsForClient(),
+      ...ancientAdenaIconHintsForClient(),
     },
     /** itemId → CSS slug кольору назви (каміння печаті Seven Signs). */
     itemNameColorSlugById: sealStoneNameColorSlugForClient(),

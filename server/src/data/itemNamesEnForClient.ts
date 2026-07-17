@@ -12,6 +12,7 @@ import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatch
 import { L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER } from './l2dopNgWeaponDropsPatches.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
+import { ancientAdenaNamesEnForClient } from './ancientAdenaItem.js';
 import { sealStoneNamesEnForClient } from './sevenSignsSealStoneItems.js';
 
 type OverrideRow = { itemId?: number };
@@ -49,6 +50,7 @@ const ITEM_NAMES_EN_OVERRIDES: Record<number, string> = {
   6652: 'Scroll: Valakas Protection',
   6654: 'Scroll: Valakas Flames',
   6655: 'Scroll: Valakas Slay',
+  4037: 'Coin of Luck',
 };
 
 let cache: Record<number, string> | null = null;
@@ -126,6 +128,10 @@ export function itemNamesEnForClient(): Record<number, string> {
   }
 
   for (const [idStr, en] of Object.entries(sealStoneNamesEnForClient())) {
+    put(Number(idStr), en, true);
+  }
+
+  for (const [idStr, en] of Object.entries(ancientAdenaNamesEnForClient())) {
     put(Number(idStr), en, true);
   }
 

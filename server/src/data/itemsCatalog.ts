@@ -40,6 +40,10 @@ import { dropsShopConsumableGearCatalogExtras } from './dropsShopConsumableGearE
 import { dropsShopGearCatalogExtras } from './dropsShopGearCatalogExtras.js';
 import { authorGiftGearCatalogExtras, mergeAuthorGiftItems } from './itemsCatalogAuthorGifts.js';
 import { starterGearCatalogExtras } from './starterGearCatalogExtras.js';
+import {
+  ancientAdenaItemMetaForCatalog,
+  ancientAdenaNamesUkForClient,
+} from './ancientAdenaItem.js';
 import { sealStoneItemMetaForCatalog, sealStoneNamesUkForClient } from './sevenSignsSealStoneItems.js';
 
 export type ItemSlotKind =
@@ -347,6 +351,7 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
     3950: { nameUk: 'Благословенний заряд духу' },
     3951: { nameUk: 'Благословенний заряд духу' },
     3952: { nameUk: 'Благословенний заряд духу' },
+    4037: { nameUk: 'Coin of Luck' },
   };
   for (const [idStr, row] of Object.entries(CONSUMABLE_CATALOG_STUBS)) {
     const id = Number(idStr);
@@ -355,6 +360,7 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   }
 
   Object.assign(o, sealStoneItemMetaForCatalog());
+  Object.assign(o, ancientAdenaItemMetaForCatalog());
 
   return o;
 })();
@@ -623,6 +629,8 @@ const ITEM_INVENTORY_TAB_EXTRA: Partial<
   6360: 'resource',
   6361: 'resource',
   6362: 'resource',
+  5575: 'resource',
+  4037: 'consumable',
 };
 
 export function itemInventoryTabHintsForClient(): Record<
@@ -658,6 +666,11 @@ export function itemNamesUkForClient(): Record<number, string> {
   }
 
   for (const [idStr, uk] of Object.entries(sealStoneNamesUkForClient())) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(ancientAdenaNamesUkForClient())) {
     const id = Number(idStr);
     if (uk && String(uk).trim() !== '') out[id] = uk;
   }
