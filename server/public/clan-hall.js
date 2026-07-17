@@ -68,10 +68,20 @@
     body.innerHTML = html;
   }
 
+  function renderBuyLabel(hall) {
+    var label = $('clan-hall-buy-label');
+    if (!label || !hall) return;
+    var cost = hall.costAdena != null ? String(hall.costAdena) : '1';
+    label.textContent =
+      '«Благословення Клан-холу». Ціна ' + cost + ':Adena';
+  }
+
   function applyHallView(hall) {
     var buyWrap = $('clan-hall-buy-wrap');
     var ownedWrap = $('clan-hall-owned-wrap');
     if (!hall) return;
+
+    renderBuyLabel(hall);
 
     if (hall.hasBlessing) {
       setPanelVisible(buyWrap, false);

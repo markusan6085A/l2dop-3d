@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 import {
   computeCombatStats,
-  effectiveMaxHpWithJewelFlat,
   effectiveMaxMpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
 import { computeVitals } from '../data/l2dopVitals.js';
@@ -17,6 +16,8 @@ import {
   tickWorldCombatState,
 } from '../domain/worldCombatState.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
+import { resolveClanHallPassiveBonus } from '../domain/clanHall.js';
+import { computeCharacterVitalsBundle } from './characterClanHallVitals.js';
 import { prisma } from '../lib/prisma.js';
 import { applyPassiveHpRegen, applyPassiveHpRegenPure } from './charPassiveRegen.js';
 import {
@@ -54,9 +55,13 @@ function opponentCombatFromRow(row: CharacterRow) {
     combat.con,
     combat.men
   );
-  const maxHp = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
+  const vitals = computeCharacterVitalsBundle({
+    row,
+    clanHallBonus: resolveClanHallPassiveBonus(row.clan ?? null),
+  });
+  const maxHp = vitals.maxHpChain.maxHpWithClanHall;
+  const hp = vitals.displayHp;
   const maxCp = Math.max(0, Math.floor(vit.maxCp * combat.buffMaxCpMul));
-  const hp = Math.max(0, Math.min(maxHp, row.hp));
   return {
     effLv,
     maxHp,

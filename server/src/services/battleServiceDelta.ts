@@ -5,6 +5,8 @@ import {
   battleSyncHasChanges,
   battleVersionFromState,
 } from '../domain/battleVersion.js';
+import { resolveHpWithClanHallPassive } from '../domain/characterClanHallVitals.js';
+import type { ClanHallBuffRow } from '../domain/clanHall.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { battleMobDebuffIconsForUi } from './battleServiceBattleBuffs.js';
 import type { CharacterRow } from './charService.js';
@@ -18,6 +20,9 @@ function battleVitalsPayload(args: {
   row: CharacterRow;
   st: BattleJsonState;
   maxHpEff: number;
+  maxHpNoClan?: number;
+  clanHallBonus?: ClanHallBuffRow | null;
+  characterHp?: number;
   maxMpEff: number;
   playerMp: number;
 }): Pick<
@@ -32,15 +37,23 @@ function battleVitalsPayload(args: {
   | 'characterDead'
 > {
   const { row, st, maxHpEff, maxMpEff, playerMp } = args;
+  const characterHp =
+    args.characterHp ??
+    resolveHpWithClanHallPassive({
+      storedHp: row.hp,
+      maxHpWithoutClanHall: args.maxHpNoClan ?? maxHpEff,
+      maxHpWithClanHall: maxHpEff,
+      clanHallBonus: args.clanHallBonus ?? null,
+    });
   return {
-    characterHp: Math.max(0, Math.min(maxHpEff, row.hp)),
+    characterHp: Math.max(0, Math.min(maxHpEff, characterHp)),
     characterMp: Math.max(0, Math.min(maxMpEff, playerMp)),
     characterMaxHp: maxHpEff,
     characterMaxMp: maxMpEff,
     mobHp: Math.max(0, st.mobHp),
     mobMaxHp: st.mobMaxHp,
     mobDead: st.mobHp <= 0,
-    characterDead: row.hp <= 0,
+    characterDead: characterHp <= 0,
   };
 }
 
@@ -49,6 +62,8 @@ export function buildBattleSyncResponse(args: {
   row: CharacterRow;
   st: BattleJsonState;
   maxHpEff: number;
+  maxHpNoClan?: number;
+  clanHallBonus?: ClanHallBuffRow | null;
   maxMpEff: number;
   playerMp: number;
   clientBattleVersion?: number;
@@ -109,6 +124,8 @@ export function buildBattleSyncResponse(args: {
       row: args.row,
       st: args.st,
       maxHpEff: args.maxHpEff,
+      maxHpNoClan: args.maxHpNoClan,
+      clanHallBonus: args.clanHallBonus,
       maxMpEff: args.maxMpEff,
       playerMp: args.playerMp,
     }),
@@ -120,6 +137,9 @@ export function buildBattleDeltaPayload(args: {
   row: CharacterRow;
   st: BattleJsonState | null;
   maxHpEff: number;
+  maxHpNoClan?: number;
+  clanHallBonus?: ClanHallBuffRow | null;
+  characterHp?: number;
   maxMpEff: number;
   playerMp: number;
   logLinesAdded?: number;
@@ -188,6 +208,9 @@ export function buildBattleDeltaPayload(args: {
       row: args.row,
       st,
       maxHpEff: args.maxHpEff,
+      maxHpNoClan: args.maxHpNoClan,
+      clanHallBonus: args.clanHallBonus,
+      characterHp: args.characterHp,
       maxMpEff: args.maxMpEff,
       playerMp: args.playerMp,
     }),

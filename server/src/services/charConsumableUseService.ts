@@ -6,7 +6,6 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import {
   computeCombatStats,
-  effectiveMaxHpWithJewelFlat,
   effectiveMaxMpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
 import { computeVitals } from '../data/l2dopVitals.js';
@@ -29,10 +28,11 @@ import { gameConflictFromMutation } from './charConflict.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import {
   combatOptsFromRow,
-  effectiveMaxHpWithBattleRoar,
   toSnapshot,
 } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
+import { computeCharacterVitalsBundle } from './characterClanHallVitals.js';
+import { resolveClanHallPassiveBonus } from '../domain/clanHall.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 const WORLD_TTL_MS = 30 * 60 * 1000;
@@ -64,12 +64,12 @@ function computeVitalCaps(row: CharacterRow, inv: InventoryState, nowMs: number)
     nowMs,
     combat.regenMp
   );
-  const maxHpBase = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
-  const maxHp = effectiveMaxHpWithBattleRoar(
+  const vitalsCaps = computeCharacterVitalsBundle({
     row,
-    maxHpBase,
-    worldTicked?.battleMods
-  );
+    clanHallBonus: resolveClanHallPassiveBonus(row.clan ?? null),
+    worldBattleMods: worldTicked?.battleMods,
+  });
+  const maxHp = vitalsCaps.maxHpChain.maxHpWithClanHall;
   return { maxHp, maxMp, regenMp: combat.regenMp, worldTicked };
 }
 

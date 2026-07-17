@@ -3,14 +3,7 @@ import {
   L2DOP_MAX_TOTAL_EXP_INCLUSIVE,
   levelFromTotalExp,
 } from '../data/l2dopExpgain.js';
-import {
-  computeCombatStats,
-  effectiveMaxHpWithJewelFlat,
-  effectiveMaxMpWithJewelFlat,
-} from '../data/l2dopCombatFormulas.js';
-import { computeVitals } from '../data/l2dopVitals.js';
 import type { InventoryState } from '../data/inventory.js';
-import { parseInventory } from '../data/inventory.js';
 import type { BattleJsonState } from '../domain/battle.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import {
@@ -34,7 +27,6 @@ import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import { resolveL2dopNpcIdByMobName } from './spawnCatalogService.js';
 import {
   gameConflictFromMutation,
-  combatOptsFromRow,
   toSnapshot,
   type CharacterRow,
   type CharacterSnapshot,
@@ -50,6 +42,10 @@ import type {
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { buildBattleDeltaPayload } from './battleServiceDelta.js';
 import type { BattleActionDeltaResponse } from './battleServiceDeltaTypes.js';
+import {
+  computeCharacterVitalsBundle,
+  resolveClanHallBonusInTx,
+} from './characterClanHallVitals.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import {
   clearMobSpawnHpEntry,
@@ -135,28 +131,14 @@ export async function persistBattleVictoryInTx(
     loot.adena + (nearbyExtraEconomy?.adenaIncrement ?? BigInt(0));
   const mobsKilledTotal = 1 + (nearbyExtraEconomy?.mobsKilledIncrement ?? 0);
   const newLevel = levelFromTotalExp(newExp);
-  const combatAfter = computeCombatStats(
-    newLevel,
-    char.race,
-    char.classBranch,
-    inv,
-    combatOptsFromRow(cr)
-  );
-  const vitAfter = computeVitals(
-    newLevel,
-    char.race,
-    char.classBranch,
-    combatAfter.con,
-    combatAfter.men
-  );
-  const maxHpAfter = effectiveMaxHpWithJewelFlat(
-    vitAfter.maxHp,
-    combatAfter
-  );
-  const maxMpAfter = effectiveMaxMpWithJewelFlat(
-    vitAfter.maxMp,
-    combatAfter
-  );
+  const rowAfterLevel = { ...cr, exp: newExp } as CharacterRow;
+  const clanHallBonusVictory = await resolveClanHallBonusInTx(tx, cr);
+  const vitalsAfter = computeCharacterVitalsBundle({
+    row: rowAfterLevel,
+    clanHallBonus: clanHallBonusVictory,
+  });
+  const maxHpAfter = vitalsAfter.maxHpChain.maxHpWithClanHall;
+  const maxMpAfter = vitalsAfter.maxMp;
   let nextHp: number;
   if (newLevel > preLevel) {
     nextHp = maxHpAfter;
@@ -505,24 +487,14 @@ export async function persistBattleContinueTurnInTx(
   );
   if (!updated.ok) throw gameConflictFromMutation(updated);
   const row = updated.character as CharacterRow;
-  const effLv = levelFromTotalExp(row.exp);
-  const invRow = parseInventory(row.inventoryJson);
-  const combat = computeCombatStats(
-    effLv,
-    row.race,
-    row.classBranch,
-    invRow,
-    combatOptsFromRow(row)
-  );
-  const vit = computeVitals(
-    effLv,
-    row.race,
-    row.classBranch,
-    combat.con,
-    combat.men
-  );
-  const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
-  const maxMpRow = effectiveMaxMpWithJewelFlat(vit.maxMp, combat);
+  const clanHallBonus = await resolveClanHallBonusInTx(tx, row);
+  const vitals = computeCharacterVitalsBundle({
+    row,
+    clanHallBonus,
+    battleMods: st.battleMods,
+  });
+  const maxHpEff = vitals.maxHpChain.maxHpWithClanHall;
+  const maxMpRow = vitals.maxMp;
   const playerMp =
     typeof st.playerMp === 'number' && Number.isFinite(st.playerMp)
       ? Math.max(0, Math.min(maxMpRow, Math.floor(st.playerMp)))
@@ -539,6 +511,9 @@ export async function persistBattleContinueTurnInTx(
     row,
     st,
     maxHpEff,
+    maxHpNoClan: vitals.maxHpChain.maxHpWithoutClanHall,
+    clanHallBonus: vitals.clanHallBonus,
+    characterHp: playerHp,
     maxMpEff: maxMpRow,
     playerMp,
     logLinesAdded,

@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client';
 import { gameConflictFromMutation } from './charConflict.js';
 import {
   computeCombatStats,
-  effectiveMaxHpWithJewelFlat,
   effectiveMaxMpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
@@ -17,12 +16,13 @@ import { prisma } from '../lib/prisma.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   combatOptsFromRow,
-  effectiveMaxHpWithBattleRoar,
   toSnapshot,
 } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
+import { computeCharacterVitalsBundle } from './characterClanHallVitals.js';
+import { resolveClanHallPassiveBonus } from '../domain/clanHall.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 
 const WORLD_TTL_MS = 30 * 60 * 1000;
@@ -114,12 +114,12 @@ export async function applyTownRestoreVitals(
           nowMs,
           combat.regenMp
         );
-        const maxHpBase = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
-        const maxHp = effectiveMaxHpWithBattleRoar(
-          base,
-          maxHpBase,
-          worldTicked?.battleMods
-        );
+        const vitalsCaps = computeCharacterVitalsBundle({
+          row: base,
+          clanHallBonus: resolveClanHallPassiveBonus(base.clan ?? null),
+          worldBattleMods: worldTicked?.battleMods,
+        });
+        const maxHp = vitalsCaps.maxHpChain.maxHpWithClanHall;
         const nextHp = maxHp;
         const nextWorldJson = buildWorldAfterMp(maxMp, nowMs, worldTicked);
 

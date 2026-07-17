@@ -1,6 +1,6 @@
 (function () {
   var FREE_MAX_LEVEL = 40;
-  var FEE_ADENA = 140000;
+  var FEE_ADENA = 1;
   var applyInFlight = false;
   var restoreInFlight = false;
   var SKILLS = [

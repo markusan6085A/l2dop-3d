@@ -11,6 +11,9 @@ import { gameConflictFromMutation } from './charConflict.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { computeCharacterVitalsBundle } from './characterClanHallVitals.js';
+import { resolveHpWithClanHallPassive } from '../domain/characterClanHallVitals.js';
+import { clanHallBuffForLevel } from '../domain/clanHall.js';
 
 export type ClanHallPurchaseResult = {
   character: CharacterSnapshot;
@@ -110,6 +113,7 @@ export async function purchaseClanHallBlessingForUser(
     }
 
     const nextAdena = BigInt(char.adena) - CLAN_HALL_BLESSING_COST_ADENA;
+    const purchaseBonus = clanHallBuffForLevel(clan.level ?? 1);
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,
@@ -122,9 +126,23 @@ export async function purchaseClanHallBlessingForUser(
           throw new Error('clan_hall_not_enough_adena');
         }
         if (base.battleJson != null) throw new Error('clan_hall_in_battle');
+        const vitalsBefore = computeCharacterVitalsBundle({
+          row: base,
+          clanHallBonus: null,
+        });
+        const vitalsAfter = computeCharacterVitalsBundle({
+          row: base,
+          clanHallBonus: purchaseBonus,
+        });
+        const nextHp = resolveHpWithClanHallPassive({
+          storedHp: base.hp,
+          maxHpWithoutClanHall: vitalsBefore.maxHpChain.maxHpWithoutClanHall,
+          maxHpWithClanHall: vitalsAfter.maxHpChain.maxHpWithClanHall,
+          clanHallBonus: purchaseBonus,
+        });
         return {
           changed: true,
-          data: { adena: nextAdena },
+          data: { adena: nextAdena, hp: nextHp },
         };
       }
     );

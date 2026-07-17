@@ -1,10 +1,14 @@
 import { parseInventory } from '../data/inventory.js';
 import {
   computeCombatStats,
-  effectiveMaxHpWithJewelFlat,
 } from '../data/l2dopCombatFormulas.js';
 import { computeVitals } from '../data/l2dopVitals.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
+import {
+  computeMaxHpChain,
+  resolveHpWithClanHallPassive,
+} from '../domain/characterClanHallVitals.js';
+import { resolveClanHallPassiveBonus } from '../domain/clanHall.js';
 import type { CharacterRow } from './charTypes.js';
 import {
   combatOptsFromRow,
@@ -46,8 +50,20 @@ export function computePassiveHpRegenPatch(
     combat.con,
     combat.men
   );
-  const maxHpBase = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
-  const maxHp = effectiveMaxHpWithBattleRoar(row, maxHpBase);
+  const clanHallPassive = resolveClanHallPassiveBonus(row.clan ?? null);
+  const maxHpChain = computeMaxHpChain({
+    vitMaxHp: vit.maxHp,
+    combat,
+    clanHallBonus: clanHallPassive,
+    applyBattleRoar: (base) => effectiveMaxHpWithBattleRoar(row, base),
+  });
+  const maxHp = maxHpChain.maxHpWithClanHall;
+  const curHp = resolveHpWithClanHallPassive({
+    storedHp: row.hp,
+    maxHpWithoutClanHall: maxHpChain.maxHpWithoutClanHall,
+    maxHpWithClanHall: maxHpChain.maxHpWithClanHall,
+    clanHallBonus: clanHallPassive,
+  });
 
   const secRaw =
     Math.floor(elapsedMs / (PASSIVE_REGEN_TICK_SECONDS * 1000)) *
@@ -58,7 +74,6 @@ export function computePassiveHpRegenPatch(
   );
   if (sec <= 0) return { changed: false, nextHp: row.hp };
 
-  const curHp = Math.max(0, Math.min(maxHp, Math.floor(row.hp)));
   const nextHp =
     combat.regenHp > 0 ? Math.min(maxHp, curHp + combat.regenHp * sec) : curHp;
   return { changed: nextHp !== row.hp, nextHp };

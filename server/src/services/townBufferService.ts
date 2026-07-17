@@ -18,7 +18,7 @@ import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
 const TOWN_BUFFER_FREE_MAX_LEVEL = 40;
-const TOWN_BUFFER_FEE_ADENA = 140000n;
+const TOWN_BUFFER_FEE_ADENA = 1n;
 
 /**
  * Набір міського бафера (за скріном): утилітарні сапорт-бафи без топ-рангу.

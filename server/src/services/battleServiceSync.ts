@@ -1,15 +1,6 @@
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
-import {
-  computeCombatStats,
-  effectiveMaxHpWithJewelFlat,
-  effectiveMaxMpWithJewelFlat,
-} from '../data/l2dopCombatFormulas.js';
-import { parseInventory } from '../data/inventory.js';
-import { computeVitals } from '../data/l2dopVitals.js';
-import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { prisma } from '../lib/prisma.js';
 import {
-  combatOptsFromRow,
   type CharacterRow,
 } from './charService.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
@@ -18,6 +9,10 @@ import {
   buildBattleSyncResponse,
 } from './battleServiceDelta.js';
 import type { BattleSyncResponse } from './battleServiceDeltaTypes.js';
+import {
+  computeCharacterVitalsBundle,
+  resolveClanHallBonusForCharacter,
+} from './characterClanHallVitals.js';
 
 export type BattleSyncQuery = {
   battleVersion?: number;
@@ -34,6 +29,9 @@ export async function getBattleSyncForUser(
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
+    include: {
+      clan: { select: { hallBlessingAt: true, level: true } },
+    },
   });
   if (!row) return null;
 
@@ -41,26 +39,13 @@ export async function getBattleSyncForUser(
   const revision = cr.revision;
   const clientBv = query.battleVersion;
   const clientLogSeq = query.lastLogSeq ?? 0;
+  const clanHallBonus = await resolveClanHallBonusForCharacter(cr);
 
   if (parsePvePendingDefeat(cr.pvePendingDefeatJson)) {
-    const effLv = levelFromTotalExp(cr.exp);
-    const inv = parseInventory(cr.inventoryJson);
-    const combat = computeCombatStats(
-      effLv,
-      cr.race,
-      cr.classBranch,
-      inv,
-      combatOptsFromRow(cr)
-    );
-    const vit = computeVitals(
-      effLv,
-      cr.race,
-      cr.classBranch,
-      combat.con,
-      combat.men
-    );
-    const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
-    const maxMpEff = effectiveMaxMpWithJewelFlat(vit.maxMp, combat);
+    const vitals = computeCharacterVitalsBundle({
+      row: cr,
+      clanHallBonus,
+    });
     return {
       changed: true,
       revision,
@@ -68,10 +53,10 @@ export async function getBattleSyncForUser(
       logSeq: 0,
       logTail: [],
       inBattle: false,
-      characterHp: Math.max(0, cr.hp),
-      characterMp: maxMpEff,
-      characterMaxHp: maxHpEff,
-      characterMaxMp: maxMpEff,
+      characterHp: vitals.displayHp,
+      characterMp: vitals.maxMp,
+      characterMaxHp: vitals.maxHpChain.maxHpWithClanHall,
+      characterMaxMp: vitals.maxMp,
       outcome: 'DEFEAT',
       battleEnded: true,
     };
@@ -93,24 +78,13 @@ export async function getBattleSyncForUser(
     };
   }
 
-  const effLv = levelFromTotalExp(cr.exp);
-  const inv = parseInventory(cr.inventoryJson);
-  const combat = computeCombatStats(
-    effLv,
-    cr.race,
-    cr.classBranch,
-    inv,
-    combatOptsFromRow(cr)
-  );
-  const vit = computeVitals(
-    effLv,
-    cr.race,
-    cr.classBranch,
-    combat.con,
-    combat.men
-  );
-  const maxHpEff = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
-  const maxMpEff = effectiveMaxMpWithJewelFlat(vit.maxMp, combat);
+  const vitals = computeCharacterVitalsBundle({
+    row: cr,
+    clanHallBonus,
+    battleMods: bj.battleMods,
+  });
+  const maxHpEff = vitals.maxHpChain.maxHpWithClanHall;
+  const maxMpEff = vitals.maxMp;
   const playerMp =
     typeof bj.playerMp === 'number' && Number.isFinite(bj.playerMp)
       ? Math.max(0, Math.min(maxMpEff, Math.floor(bj.playerMp)))
@@ -123,6 +97,8 @@ export async function getBattleSyncForUser(
     row: cr,
     st: bj,
     maxHpEff,
+    maxHpNoClan: vitals.maxHpChain.maxHpWithoutClanHall,
+    clanHallBonus: vitals.clanHallBonus,
     maxMpEff,
     playerMp,
     clientBattleVersion: clientBv,

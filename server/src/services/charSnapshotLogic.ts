@@ -4,7 +4,6 @@ import { parseWarehouse, warehouseToSnapshot } from '../data/warehouse.js';
 import {
   computeCombatStats,
   computeCombatStatsOptionsForCharacter,
-  effectiveMaxHpWithJewelFlat,
   effectiveMaxMpWithJewelFlat,
   type ComputeCombatStatsOptions,
 } from '../data/l2dopCombatFormulas.js';
@@ -43,6 +42,10 @@ import {
   type BattleBattleMods,
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
+import {
+  computeMaxHpChain,
+  resolveHpWithClanHallPassive,
+} from '../domain/characterClanHallVitals.js';
 import {
   applyClanHallPassiveFlat,
   resolveClanHallPassiveBonus,
@@ -280,18 +283,21 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     nowMs,
     combat.regenMp
   );
-  const maxHpBase = effectiveMaxHpWithJewelFlat(vit.maxHp, combat);
   const clanHallPassive = resolveClanHallPassiveBonus(row.clan ?? null);
-  const maxHpBaseWithClan = applyClanHallPassiveFlat(
-    { pAtk: 0, mAtk: 0, pDef: 0, mDef: 0, maxHp: maxHpBase },
-    clanHallPassive
-  ).maxHp;
-  const maxHp = effectiveMaxHpWithBattleRoar(
-    row,
-    maxHpBaseWithClan,
-    worldTicked?.battleMods
-  );
-  const hp = Math.min(Math.max(0, row.hp), maxHp);
+  const maxHpChain = computeMaxHpChain({
+    vitMaxHp: vit.maxHp,
+    combat,
+    clanHallBonus: clanHallPassive,
+    applyBattleRoar: (base) =>
+      effectiveMaxHpWithBattleRoar(row, base, worldTicked?.battleMods),
+  });
+  const maxHp = maxHpChain.maxHpWithClanHall;
+  const hp = resolveHpWithClanHallPassive({
+    storedHp: row.hp,
+    maxHpWithoutClanHall: maxHpChain.maxHpWithoutClanHall,
+    maxHpWithClanHall: maxHpChain.maxHpWithClanHall,
+    clanHallBonus: clanHallPassive,
+  });
   const l2ProfResolved = resolveL2ProfessionForSkillsRow(row);
   const learnedDetail = enrichLearnedSkillsForSnapshot(
     filterLearnedSkillEntriesForCharacter(
