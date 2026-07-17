@@ -889,14 +889,18 @@
       if (!t) lastSnapshot = null;
     },
 
-    fetchSnapshot: async function () {
+    fetchSnapshot: async function (opts) {
       var t = global.L2.token();
       if (!t) {
         lastSnapshot = null;
         return null;
       }
-      var r = await fetch('/character', {
+      var claimWorld =
+        opts && (opts.claimWorld === true || opts.claimWorld === 1);
+      var url = claimWorld ? '/character?claimWorld=1' : '/character';
+      var r = await fetch(url, {
         headers: { Authorization: 'Bearer ' + t },
+        cache: 'no-store',
       });
       if (r.status === 401) {
         global.L2.setToken(null);
@@ -946,39 +950,7 @@
      * map/city — «світова» сцена: закрити сесію подземелля на сервері (синхрон між пристроями).
      */
     claimWorldMapSession: async function () {
-      var t = global.L2.token();
-      if (!t) return null;
-      var snap = lastSnapshot;
-      if (!snap || snap.revision == null) {
-        snap = await global.L2.fetchSnapshot();
-      }
-      if (!snap) return null;
-      if (!snap.activeDungeonId) return snap;
-      var r = await fetch('/game/dungeon/leave', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + t,
-        },
-        body: JSON.stringify({ expectedRevision: snap.revision }),
-      });
-      if (r.status === 401) {
-        global.L2.setToken(null);
-        return null;
-      }
-      if (r.status === 409) {
-        await global.L2.resyncCharacterAfterConflict(null, await r.json().catch(function () {
-          return null;
-        }));
-        return lastSnapshot;
-      }
-      if (!r.ok) return snap;
-      var j = await r.json();
-      if (j && j.character) {
-        global.L2.applyCharacterSnapshot(j.character);
-        return j.character;
-      }
-      return snap;
+      return global.L2.fetchSnapshot({ claimWorld: true });
     },
 
     /** Повідомлення купівлі/продажу: зелений префікс + білий текст деталей. */

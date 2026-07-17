@@ -38,10 +38,7 @@ function isNearDungeonEntrance(row: CharacterRow, dungeonId: string): boolean {
   );
 }
 
-/** Вхід біля дверей або вже всередині цього ж подземелля (dungeonStateJson). */
 function playerMayUseDungeonSession(row: CharacterRow, dungeonId: string): boolean {
-  const stored = parseDungeonStateJson(row.dungeonStateJson);
-  if (stored?.dungeonId === dungeonId) return true;
   return isNearDungeonEntrance(row, dungeonId);
 }
 

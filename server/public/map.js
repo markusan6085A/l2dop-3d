@@ -377,7 +377,7 @@
   async function loadSnapshot() {
     var t = localStorage.getItem('token');
     if (!t) return null;
-    var r = await fetch('/character', {
+    var r = await fetch('/character?claimWorld=1', {
       headers: { Authorization: 'Bearer ' + t },
       cache: 'no-store',
     });
@@ -1086,12 +1086,7 @@
       writeCachedMapSnapshot(c);
     }
 
-    var snapshotPromise = loadSnapshot().then(async function (snap) {
-      if (window.L2 && typeof L2.claimWorldMapSession === 'function') {
-        return await L2.claimWorldMapSession();
-      }
-      return snap;
-    });
+    var snapshotPromise = loadSnapshot();
     var syncPromise = loadMapSync();
 
     var aroundData = { nearbySpawns: [], nearbyHeroes: [] };

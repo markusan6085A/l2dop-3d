@@ -805,7 +805,11 @@
           if (typeof L2.applyHudFromSnapshot === 'function') {
             L2.applyHudFromSnapshot(charJ.character);
           }
-          var activeDid = charJ.character.activeDungeonId || null;
+          var activeDid =
+            charJ.character.activeDungeonId != null &&
+            String(charJ.character.activeDungeonId).trim() !== ''
+              ? String(charJ.character.activeDungeonId).trim()
+              : null;
           if (!activeDid || activeDid !== dungeonId) {
             if (activeDid && activeDid !== dungeonId) {
               window.location.replace(

@@ -57,7 +57,15 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         return reply.code(401).send({ error: 'Unauthorized' });
       }
       try {
-        const character = await getSnapshotForUser(userId);
+        const q = request.query as Record<string, unknown>;
+        const claimWorld =
+          q.claimWorld === '1' ||
+          q.claimWorld === 1 ||
+          q.claimWorldSession === '1' ||
+          q.claimWorldSession === 1;
+        const character = await getSnapshotForUser(userId, {
+          claimWorldSession: claimWorld,
+        });
         if (!character) {
           return reply.code(404).send({ error: 'forbidden' });
         }

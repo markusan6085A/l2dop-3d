@@ -102,8 +102,33 @@ export async function applyPersistedCombatBuffs(
 }
 
 export async function getSnapshotForUser(
-  userId: string
+  userId: string,
+  opts?: { claimWorldSession?: boolean }
 ): Promise<CharacterSnapshot | null> {
+  if (opts?.claimWorldSession) {
+    return prisma.$transaction(async (trx) => {
+      const char = (await trx.character.findFirst({
+        where: { userId },
+        orderBy: { lastUpdate: 'desc' },
+      })) as CharacterRow | null;
+      if (!char) return null;
+
+      let row = char;
+      if (row.dungeonStateJson != null) {
+        row = (await trx.character.update({
+          where: { id: row.id },
+          data: {
+            dungeonStateJson: Prisma.JsonNull,
+            revision: { increment: 1 },
+          },
+        })) as CharacterRow;
+      }
+
+      const sanitized = await ensureInventoryReadPatchesRow(row);
+      return toSnapshot(applyCharacterReadView(sanitized));
+    });
+  }
+
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
