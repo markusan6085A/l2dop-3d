@@ -38,12 +38,19 @@ function isNearDungeonEntrance(row: CharacterRow, dungeonId: string): boolean {
   );
 }
 
+/** Вхід біля дверей або вже всередині цього ж подземелля (dungeonStateJson). */
+function playerMayUseDungeonSession(row: CharacterRow, dungeonId: string): boolean {
+  const stored = parseDungeonStateJson(row.dungeonStateJson);
+  if (stored?.dungeonId === dungeonId) return true;
+  return isNearDungeonEntrance(row, dungeonId);
+}
+
 export function resolveDungeonStateForRow(
   row: CharacterRow,
   dungeonId: string,
   nowMs: number = Date.now()
 ): DungeonStateV1 | null {
-  if (!isNearDungeonEntrance(row, dungeonId)) return null;
+  if (!playerMayUseDungeonSession(row, dungeonId)) return null;
 
   const start = dungeonStartPixel(dungeonId);
   if (!start) return null;
@@ -78,7 +85,7 @@ export function buildDungeonMovePatch(
 ): { nextState: DungeonStateV1; changed: boolean } | null {
   const grid = getDungeonWalkGrid(dungeonId);
   if (!grid) return null;
-  if (!isNearDungeonEntrance(row, dungeonId)) return null;
+  if (!playerMayUseDungeonSession(row, dungeonId)) return null;
 
   const start = dungeonStartPixel(dungeonId);
   if (!start) return null;

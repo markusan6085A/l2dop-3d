@@ -465,9 +465,31 @@
       window.location.href = '/';
       return null;
     }
+    if (r.status === 403) {
+      var msg403 = 'Персонаж більше не в цьому подземеллі.';
+      try {
+        var j403 = await r.json();
+        if (j403 && j403.messageUk) msg403 = j403.messageUk;
+      } catch (e403) {
+        /* ignore */
+      }
+      return { forbidden: true, messageUk: msg403 };
+    }
     if (!r.ok) return null;
     var j = await r.json();
     return j && j.dungeon ? j.dungeon : null;
+  }
+
+  async function resyncAndLeaveDungeon(reasonUk) {
+    if (window.L2 && typeof L2.fetchSnapshot === 'function') {
+      try {
+        await L2.fetchSnapshot();
+      } catch (eSync) {
+        /* ignore */
+      }
+    }
+    dungeonNotify(reasonUk || 'Персонаж перемістився — оновлюємо карту.');
+    window.location.href = '/map.html';
   }
 
   async function postDungeonMove(dungeonId, targetMapX, targetMapY) {
@@ -937,6 +959,10 @@
       if (!mob) {
         dungeonNotify('Моб недоступний — оновлюю карту…');
         var freshMob = await fetchDungeonView(dungeonId);
+        if (freshMob && freshMob.forbidden) {
+          await resyncAndLeaveDungeon(freshMob.messageUk);
+          return;
+        }
         if (freshMob) paintDungeon(freshMob);
         return;
       }
@@ -1276,6 +1302,10 @@
           return;
         }
         var d = await fetchDungeonView(dungeonId);
+        if (d && d.forbidden) {
+          await resyncAndLeaveDungeon(d.messageUk);
+          return;
+        }
         if (d && d.player) paintDungeon(d);
         schedulePoll();
       }, delay);
@@ -1297,6 +1327,10 @@
     }
     if (!first) {
       first = await fetchDungeonView(dungeonId);
+    }
+    if (first && first.forbidden) {
+      await resyncAndLeaveDungeon(first.messageUk);
+      return;
     }
     if (!first) {
       if (errEl) {

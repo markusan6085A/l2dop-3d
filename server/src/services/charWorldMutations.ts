@@ -29,6 +29,16 @@ import {
 } from './battleServiceDefeatSanitize.js';
 import { RB_TELEPORT_ADENA_COST } from './raidBossListService.js';
 
+function hadDungeonState(row: CharacterRow): boolean {
+  return row.dungeonStateJson != null;
+}
+
+function clearDungeonStatePatch(
+  row: CharacterRow
+): Pick<Prisma.CharacterUpdateManyMutationInput, 'dungeonStateJson'> {
+  return hadDungeonState(row) ? { dungeonStateJson: Prisma.JsonNull } : {};
+}
+
 const TELEPORT_FREE_MAX_LEVEL = 40;
 
 function resolveTeleportFee(level: number, teleportId: string): bigint {
@@ -146,6 +156,7 @@ export async function performMapMove(
             moveStartAt: new Date(),
             moveFromX: base.worldX,
             moveFromY: base.worldY,
+            ...clearDungeonStatePatch(current as CharacterRow),
           } as Prisma.CharacterUpdateManyMutationInput,
         };
       }
@@ -200,6 +211,7 @@ export async function performTeleport(
           base.moveFromY !== wy ||
           base.cityId !== dest.cityId ||
           base.battleJson != null ||
+          hadDungeonState(current as CharacterRow) ||
           fee > 0n;
         if (!changed) return { changed: false };
         const bj = parseBattleJson(base.battleJson);
@@ -229,6 +241,7 @@ export async function performTeleport(
             cityId: dest.cityId,
             battleJson: Prisma.JsonNull,
             mobSpawnHpJson: nextMobSpawnHpJson,
+            ...clearDungeonStatePatch(current as CharacterRow),
             ...(fee > 0n ? { adena: { decrement: fee } } : {}),
           } as Prisma.CharacterUpdateManyMutationInput,
         };
@@ -284,6 +297,7 @@ export async function performRaidBossTeleport(
           base.moveFromY !== wy ||
           base.cityId !== near.cityId ||
           base.battleJson != null ||
+          hadDungeonState(current as CharacterRow) ||
           fee > 0n;
         if (!changed) return { changed: false };
         const bj = parseBattleJson(base.battleJson);
@@ -313,6 +327,7 @@ export async function performRaidBossTeleport(
             cityId: near.cityId,
             battleJson: Prisma.JsonNull,
             mobSpawnHpJson: nextMobSpawnHpJson,
+            ...clearDungeonStatePatch(current as CharacterRow),
             ...(fee > 0n ? { adena: { decrement: fee } } : {}),
           } as Prisma.CharacterUpdateManyMutationInput,
         };
@@ -376,7 +391,8 @@ export async function performReturnToNearestTown(
           base.moveStartAt != null ||
           base.moveFromX !== wx ||
           base.moveFromY !== wy ||
-          base.cityId !== dest.cityId;
+          base.cityId !== dest.cityId ||
+          hadDungeonState(current as CharacterRow);
         if (!changed) return { changed: false };
         return {
           changed: true,
@@ -393,6 +409,7 @@ export async function performReturnToNearestTown(
             moveFromX: wx,
             moveFromY: wy,
             cityId: dest.cityId,
+            ...clearDungeonStatePatch(current as CharacterRow),
           } as Prisma.CharacterUpdateManyMutationInput,
         };
       }

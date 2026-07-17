@@ -110,7 +110,8 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       const view = await getDungeonViewWithPlayer(row, dungeonId);
       if (!view) {
         return reply.code(403).send({
-          messageUk: 'Підійди ближче до входу в некрополь або катакомби.',
+          messageUk:
+            'Персонаж уже не в цьому подземеллі (можливо, перемістився з іншого пристрою).',
         });
       }
       return reply.send({ dungeon: view });
