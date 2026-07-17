@@ -286,6 +286,7 @@
   var MAP_POLL_MS = 15000;
   var lastMapCatalogVersion = null;
   var lastPersonalMapSig = null;
+  var lastMammonRotationSig = null;
   var lastMapSyncRevision = null;
   var mapSyncInFlight = false;
 
@@ -351,6 +352,10 @@
     if (lastPersonalMapSig != null) {
       if (qs) qs += '&';
       qs += 'personalMapSig=' + encodeURIComponent(String(lastPersonalMapSig));
+    }
+    if (lastMammonRotationSig != null) {
+      if (qs) qs += '&';
+      qs += 'mammonRotationSig=' + encodeURIComponent(String(lastMammonRotationSig));
     }
     if (lastMapSyncRevision != null) {
       if (qs) qs += '&';
@@ -684,6 +689,45 @@
     listEl.appendChild(li);
   }
 
+  function appendNpcRow(listEl, npc) {
+    if (!listEl || !npc) return;
+    var li = document.createElement('li');
+    li.className = 'l2-map-mob-item l2-map-mob-item--battle';
+    var a = document.createElement('a');
+    a.className = 'l2-map-mob-link l2-map-mob-link--npc';
+    a.href = '/mammon-merchant.html';
+    a.textContent = npc.nameEn || npc.nameUk || 'Merchant of Mammon';
+    li.appendChild(a);
+    listEl.appendChild(li);
+  }
+
+  function renderNpcList(listEl, pagerEl, prevBtn, nextBtn, indEl, npc) {
+    if (!listEl) return;
+    var sig = npc ? String(npc.slotIndex) + '|' + String(npc.rotatesAtMs || '') : '0';
+    if (listEl.dataset.l2NpcListSig === sig) {
+      if (pagerEl) pagerEl.hidden = true;
+      return;
+    }
+    listEl.dataset.l2NpcListSig = sig;
+    listEl.innerHTML = '';
+    if (npc) {
+      appendNpcRow(listEl, npc);
+    } else {
+      var li = document.createElement('li');
+      li.className = 'l2-map-mob-item l2-map-mob-item--hint';
+      li.textContent = 'Немає даних про NPC — оновіть карту.';
+      listEl.appendChild(li);
+    }
+    if (pagerEl) pagerEl.hidden = true;
+  }
+
+  function renderNpcMarker(_img, layer, _npc) {
+    if (!layer) return;
+    if (layer.dataset.l2NpcMarkerSig === 'off') return;
+    layer.dataset.l2NpcMarkerSig = 'off';
+    layer.innerHTML = '';
+  }
+
   function renderAroundSkeleton(listEl) {
     if (!listEl) return;
     listEl.innerHTML = '';
@@ -898,6 +942,56 @@
     var heroList = $('map-hero-list');
     var moveTarget = $('map-move-target');
     var markersLayer = $('map-mob-markers');
+    var npcMarkersLayer = $('map-npc-markers');
+    var listModeNpcBtn = $('map-list-mode-npc');
+    var listModeMobsBtn = $('map-list-mode-mobs');
+
+    var MAP_LIST_MODE_KEY = 'l2mapListMode';
+    var listMode = 'mobs';
+    try {
+      var savedMode = sessionStorage.getItem(MAP_LIST_MODE_KEY);
+      if (savedMode === 'npc' || savedMode === 'mobs') listMode = savedMode;
+    } catch (eMode) {
+      /* ignore */
+    }
+
+    var mammonMerchant = null;
+
+    function applyListModeUi() {
+      var isNpc = listMode === 'npc';
+      if (listModeNpcBtn) {
+        listModeNpcBtn.classList.toggle('is-active', isNpc);
+        listModeNpcBtn.setAttribute('aria-selected', isNpc ? 'true' : 'false');
+      }
+      if (listModeMobsBtn) {
+        listModeMobsBtn.classList.toggle('is-active', !isNpc);
+        listModeMobsBtn.setAttribute('aria-selected', !isNpc ? 'true' : 'false');
+      }
+    }
+
+    function setListMode(mode) {
+      if (mode !== 'npc' && mode !== 'mobs') return;
+      listMode = mode;
+      applyListModeUi();
+      try {
+        sessionStorage.setItem(MAP_LIST_MODE_KEY, listMode);
+      } catch (eSave) {
+        /* ignore */
+      }
+      paintMain(false);
+    }
+
+    applyListModeUi();
+    if (listModeNpcBtn) {
+      listModeNpcBtn.addEventListener('click', function () {
+        setListMode('npc');
+      });
+    }
+    if (listModeMobsBtn) {
+      listModeMobsBtn.addEventListener('click', function () {
+        setListMode('mobs');
+      });
+    }
 
     var t = localStorage.getItem('token');
     if (!t) {
@@ -1016,6 +1110,13 @@
         lastMapSyncRevision = Math.floor(sync.revision);
       }
 
+      if (typeof sync.mammonRotationSig === 'string') {
+        lastMammonRotationSig = sync.mammonRotationSig;
+      }
+      if (sync.mammonMerchant) {
+        mammonMerchant = sync.mammonMerchant;
+      }
+
       if (sync.changed === false) {
         var msLite = sync.mapState;
         if (window.L2 && typeof L2.mergeMapStateIntoSnapshot === 'function') {
@@ -1035,6 +1136,17 @@
         }
         renderHeroList(aroundData, heroList, heroSection);
         renderHeroMarkers(img, heroMarkersLayer, (aroundData && aroundData.nearbyHeroes) || []);
+        renderNpcMarker(img, npcMarkersLayer, mammonMerchant);
+        if (listMode === 'npc') {
+          renderNpcList(
+            $('map-mob-list'),
+            $('map-mob-pager'),
+            $('map-mob-page-prev'),
+            $('map-mob-page-next'),
+            $('map-mob-page-ind'),
+            mammonMerchant
+          );
+        }
         return false;
       }
 
@@ -1077,6 +1189,18 @@
       render(c, img, dot, viewRadius, heroViewRadius, moveTarget, viewport, aroundData, centerOnPlayer);
       renderHeroList(aroundData, heroList, heroSection);
       renderHeroMarkers(img, heroMarkersLayer, aroundData.nearbyHeroes || []);
+      renderNpcMarker(img, npcMarkersLayer, mammonMerchant);
+      if (listMode === 'npc') {
+        renderNpcList(
+          $('map-mob-list'),
+          $('map-mob-pager'),
+          $('map-mob-page-prev'),
+          $('map-mob-page-next'),
+          $('map-mob-page-ind'),
+          mammonMerchant
+        );
+        return;
+      }
       renderAround(
         aroundData,
         $('map-mob-list'),
@@ -1469,6 +1593,7 @@
       img.addEventListener('click', async function (e) {
         if (mapMode !== 'map') return;
         if (e.target && e.target.closest && e.target.closest('.l2-map-mob-pin')) return;
+        if (e.target && e.target.closest && e.target.closest('.l2-map-npc-pin')) return;
         if (e.target && e.target.closest && e.target.closest('.l2-map-hero-pin')) return;
         if (Date.now() - lastPinchEnd < 380) return;
         var snap = window.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null;

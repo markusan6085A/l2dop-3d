@@ -7,6 +7,7 @@ import { signAccessToken } from '../lib/jwt.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { computeStarterVitalsForNewCharacter } from './charStarterVitals.js';
 import { mysticStarterLearnedSkillsForRace } from '../data/mysticStarterSkills.js';
+import { postPlayerJoinNews } from './serverNewsService.js';
 
 const RACES = [
   'Human',
@@ -147,10 +148,11 @@ export async function register(input: {
           : {}),
       } as unknown as Prisma.CharacterUncheckedCreateInput;
       await tx.character.create({ data: charData });
-      return u;
+      return { user: u, characterName };
     });
 
-    return { token: signAccessToken(user.id) };
+    await postPlayerJoinNews(user.characterName).catch(() => {});
+    return { token: signAccessToken(user.user.id) };
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       throw new AuthError('forbidden', 409);

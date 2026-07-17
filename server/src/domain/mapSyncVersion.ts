@@ -25,17 +25,23 @@ export function mobSpawnHpPersonalSig(
 export function mapSyncHasChanges(args: {
   clientMapCatalogVersion?: number;
   clientPersonalMapSig?: string;
+  clientMammonRotationSig?: string;
   clientRevision?: number;
   serverMapCatalogVersion: number;
   serverPersonalMapSig: string;
+  serverMammonRotationSig: string;
   serverRevision: number;
 }): boolean {
   const clientCat = args.clientMapCatalogVersion;
   const clientSig = args.clientPersonalMapSig;
+  const clientMammon = args.clientMammonRotationSig;
   const clientRev = args.clientRevision;
-  if (clientCat == null || clientSig == null || clientRev == null) return true;
+  if (clientCat == null || clientSig == null || clientMammon == null || clientRev == null) {
+    return true;
+  }
   if (clientCat !== args.serverMapCatalogVersion) return true;
   if (clientSig !== args.serverPersonalMapSig) return true;
+  if (clientMammon !== args.serverMammonRotationSig) return true;
   if (clientRev !== args.serverRevision) return true;
   return false;
 }

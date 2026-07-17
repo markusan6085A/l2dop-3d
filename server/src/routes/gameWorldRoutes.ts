@@ -19,6 +19,7 @@ import {
 import { getMapAroundForUser, resolvedWorldPositionFromCharacterRow } from '../services/mapAroundService.js';
 import { getMapWorldSpawnsNearPlayer } from '../services/mapSpawnsService.js';
 import { getMapSyncForUser } from '../services/charMapStateService.js';
+import { getMammonMerchantState } from '../services/mammonMerchantService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { prisma } from '../lib/prisma.js';
@@ -36,6 +37,8 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       const rawRev = q.revision;
       const personalMapSig =
         typeof q.personalMapSig === 'string' ? q.personalMapSig : undefined;
+      const mammonRotationSig =
+        typeof q.mammonRotationSig === 'string' ? q.mammonRotationSig : undefined;
       const mapCatalogVersion =
         typeof rawCat === 'string' && /^\d+$/.test(rawCat)
           ? parseInt(rawCat, 10)
@@ -51,12 +54,21 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       const data = await getMapSyncForUser(userId, {
         mapCatalogVersion,
         personalMapSig,
+        mammonRotationSig,
         revision,
       });
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
       }
       return reply.send(data);
+    }
+  );
+
+  app.get(
+    '/mammon/merchant',
+    { preHandler: requireAuth },
+    async (_request, reply) => {
+      return reply.send({ mammonMerchant: getMammonMerchantState() });
     }
   );
 

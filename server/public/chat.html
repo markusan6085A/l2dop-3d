@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
-    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260713chatTight1" />
+    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260717chatNews1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-chat l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -66,15 +66,18 @@
 
             <section class="l2-chat-panel" id="chat-content" aria-label="Чат" hidden>
               <div class="l2-chat-tabs" role="tablist" aria-label="Канали чату">
-                <button type="button" class="l2-chat-tabs__btn l2-chat-tabs__btn--active" data-channel="all" id="chat-tab-all">
-                  Заг
-                </button>
-                <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
-                <button type="button" class="l2-chat-tabs__btn" data-channel="trade" id="chat-tab-trade">
-                  Торг
-                </button>
-                <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
-                <button type="button" class="l2-chat-tabs__btn" data-channel="my" id="chat-tab-my">Мій</button>
+                <div class="l2-chat-tabs__main">
+                  <button type="button" class="l2-chat-tabs__btn l2-chat-tabs__btn--active" data-channel="all" id="chat-tab-all">
+                    Заг
+                  </button>
+                  <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
+                  <button type="button" class="l2-chat-tabs__btn" data-channel="trade" id="chat-tab-trade">
+                    Торг
+                  </button>
+                  <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
+                  <button type="button" class="l2-chat-tabs__btn" data-channel="my" id="chat-tab-my">Мій</button>
+                </div>
+                <a class="l2-chat-tabs__news" href="/news.html" id="chat-tab-news">Новости</a>
               </div>
 
               <label class="l2-chat-input-wrap">

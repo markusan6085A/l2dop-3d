@@ -88,8 +88,33 @@
                   <div id="map-hero-view-radius" class="l2-map-hero-view-radius" aria-hidden="true"></div>
                   <div id="map-hero-markers" class="l2-map-hero-markers" aria-hidden="true"></div>
                   <div id="map-mob-markers" class="l2-map-mob-markers" aria-hidden="true"></div>
+                  <div id="map-npc-markers" class="l2-map-npc-markers" aria-hidden="true"></div>
                   <div id="map-dot" class="l2-map-dot" aria-hidden="true"></div>
                 </div>
+              </div>
+
+              <div class="l2-map-list-mode" id="map-list-mode" role="tablist" aria-label="Список під картою">
+                <button
+                  type="button"
+                  class="l2-map-list-mode__btn"
+                  id="map-list-mode-npc"
+                  role="tab"
+                  aria-selected="false"
+                  data-mode="npc"
+                >
+                  NPC
+                </button>
+                <span class="l2-map-list-mode__sep" aria-hidden="true">|</span>
+                <button
+                  type="button"
+                  class="l2-map-list-mode__btn is-active"
+                  id="map-list-mode-mobs"
+                  role="tab"
+                  aria-selected="true"
+                  data-mode="mobs"
+                >
+                  Моби
+                </button>
               </div>
 
               <section class="l2-map-hero-section" id="map-hero-section" aria-label="Герої поруч" hidden>
@@ -174,6 +199,6 @@
     <script src="/common.js?v=20260713pveDefeatRedirect2"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/map.js?v=20260715mapSyncLite1"></script>
+    <script src="/map.js?v=20260717mammonMerchant2"></script>
   </body>
 </html>

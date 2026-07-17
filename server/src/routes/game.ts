@@ -8,10 +8,12 @@ import { marketReadRoutes } from './marketRoutes.js';
 import { registerGamePlayerRoutes } from './gamePlayerRoutes.js';
 import { registerGameResourceCraftRoutes } from './gameResourceCraftRoutes.js';
 import { registerGameWorldRoutes } from './gameWorldRoutes.js';
+import { registerGameNewsRoutes } from './gameNewsRoutes.js';
 
 export const gameRoutes: FastifyPluginAsync = async (app) => {
   registerGameIconRoutes(app);
   registerGameWorldRoutes(app);
+  registerGameNewsRoutes(app);
   registerGameBattleRoutes(app);
   registerGameResourceCraftRoutes(app);
   registerGameOnlineRoutes(app);

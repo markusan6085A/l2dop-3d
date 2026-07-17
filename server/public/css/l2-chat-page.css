@@ -15,10 +15,42 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-panel {
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs {
   display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__main {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-  margin: 0 0 8px;
+  min-width: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__news {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #d8ccb0;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__news:hover,
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__news:focus {
+  color: #fff;
+  outline: none;
+  text-decoration: underline;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-tabs__btn {

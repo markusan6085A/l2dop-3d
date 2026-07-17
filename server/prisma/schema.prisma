@@ -148,3 +148,21 @@ model WorldBossSession {
   stateJson Json
   updatedAt DateTime @updatedAt
 }
+
+/** Глобальні новини сервера (Новости в чаті). */
+model ServerNewsEntry {
+  id         String   @id @default(uuid())
+  /** mammon_spawn | player_join */
+  kind       String
+  locationEn String?
+  playerName String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+}
+
+/** Ключ–значення для дедуплікації подій (напр. rотація Маммона). */
+model ServerMeta {
+  key   String @id
+  value String
+}

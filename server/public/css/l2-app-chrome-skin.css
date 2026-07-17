@@ -2039,6 +2039,83 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-mob-section {
   padding: 8px 10px 10px !important;
 }
 
+/* map.html: перемикач NPC | Моби — світлий фон між картою і пагінацією */
+body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 6px 10px;
+  background-color: #eceae4 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode__sep {
+  color: #8a8478;
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode__btn {
+  margin: 0;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #5c564c;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode__btn.is-active {
+  color: #1a1814;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode__btn:hover:not(.is-active),
+body.l2-app-l2-chrome.l2-page-map .l2-map-list-mode__btn:focus-visible:not(.is-active) {
+  color: #2a2720;
+  outline: none;
+  text-decoration: underline;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-npc-markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-npc-pin {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  border: 2px solid #f0d878;
+  background: radial-gradient(circle at 35% 35%, #fff6c8, #c9a030 72%);
+  box-shadow: 0 0 6px rgba(240, 200, 80, 0.85);
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 4;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-link--npc {
+  color: #e8d48a !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-mob-item--npc-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #a89a70;
+}
+
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-detail {
   padding: 10px 10px 12px !important;
 }

@@ -6,6 +6,11 @@ import {
   mapSyncHasChanges,
   mobSpawnHpPersonalSig,
 } from '../domain/mapSyncVersion.js';
+import { mammonMerchantRotationSig } from '../domain/mammonMerchantRotation.js';
+import {
+  getMammonMerchantState,
+  type MammonMerchantStatePayload,
+} from './mammonMerchantService.js';
 import { prisma } from '../lib/prisma.js';
 import { getNearbyHeroesForMap } from './mapNearbyHeroesService.js';
 import { buildMapNearbySpawnViews } from './mapNearbySpawnsQuery.js';
@@ -73,8 +78,10 @@ export interface MapSyncPayload {
   changed: boolean;
   mapCatalogVersion: number;
   personalMapSig: string;
+  mammonRotationSig: string;
   revision: number;
   mapState: CharacterMapStatePayload;
+  mammonMerchant: MammonMerchantStatePayload;
   around: ReturnType<typeof resolveMapLocality> & {
     nearbySpawns: ReturnType<typeof buildMapNearbySpawnViews>['listEntries'];
     nearbyHeroes: Awaited<ReturnType<typeof getNearbyHeroesForMap>>;
@@ -92,6 +99,7 @@ export interface MapSyncPayload {
 export type MapSyncQuery = {
   mapCatalogVersion?: number;
   personalMapSig?: string;
+  mammonRotationSig?: string;
   revision?: number;
 };
 
@@ -123,12 +131,16 @@ export async function getMapSyncForUser(
   const nowMs = Date.now();
   const mobSpawnHpJson = row.mobSpawnHpJson;
   const personalMapSig = mobSpawnHpPersonalSig(mobSpawnHpJson, nowMs);
+  const mammonRotationSigVal = mammonMerchantRotationSig(nowMs);
+  const mammonMerchant = getMammonMerchantState(nowMs);
   const changed = mapSyncHasChanges({
     clientMapCatalogVersion: query.mapCatalogVersion,
     clientPersonalMapSig: query.personalMapSig,
+    clientMammonRotationSig: query.mammonRotationSig,
     clientRevision: query.revision,
     serverMapCatalogVersion: MAP_CATALOG_VERSION,
     serverPersonalMapSig: personalMapSig,
+    serverMammonRotationSig: mammonRotationSigVal,
     serverRevision: mapState.revision,
   });
 
@@ -162,8 +174,10 @@ export async function getMapSyncForUser(
       changed: false,
       mapCatalogVersion: MAP_CATALOG_VERSION,
       personalMapSig,
+      mammonRotationSig: mammonRotationSigVal,
       revision: mapState.revision,
       mapState,
+      mammonMerchant,
       around: {
         ...locality,
         nearbySpawns: [],
@@ -187,8 +201,10 @@ export async function getMapSyncForUser(
     changed: true,
     mapCatalogVersion: MAP_CATALOG_VERSION,
     personalMapSig,
+    mammonRotationSig: mammonRotationSigVal,
     revision: mapState.revision,
     mapState,
+    mammonMerchant,
     around: {
       ...locality,
       nearbySpawns: listEntries,

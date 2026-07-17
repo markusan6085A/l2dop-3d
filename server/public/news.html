@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Новости — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717news1" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-menu-page.css?v=3" />
+    <style>
+      body.l2-app-l2-chrome.l2-page-news .l2-news-back {
+        margin: 12px 0 0;
+        padding: 0;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-back__link {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #bfa88a;
+        text-decoration: none;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-back__link:hover,
+      body.l2-app-l2-chrome.l2-page-news .l2-news-back__link:focus {
+        color: #bfa88a;
+        text-decoration: underline;
+        outline: none;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 0 0 10px;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-item {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #ece6d0;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-item__ago {
+        color: #a89a70;
+        white-space: nowrap;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-item__nick {
+        color: #bfa88a;
+        font-weight: 600;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-item__loc {
+        color: #ece6d0;
+        font-weight: 600;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-empty {
+        margin: 0 0 10px;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #a89a70;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-pages {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 10px;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-pages__btn {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        color: #d8ccb0;
+        cursor: pointer;
+      }
+      body.l2-app-l2-chrome.l2-page-news .l2-news-pages__btn--active {
+        color: #fff;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-news l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-menu-root">
+          <div id="l2-hud-panel-mount"></div>
+
+          <div id="l2-nav-top"></div>
+
+          <section class="l2-menu-panel" aria-label="Новости">
+            <div class="l2-news-list" id="news-list" aria-live="polite"></div>
+            <nav class="l2-news-pages" id="news-pages" aria-label="Сторінки новин" hidden></nav>
+            <p class="l2-news-back">
+              <a class="l2-news-back__link" href="/chat.html">&lt;&lt;&lt; Назад до чату</a>
+            </p>
+          </section>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260717news1"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
+    <script src="/news.js?v=20260717newsFeed1"></script>
+  </body>
+</html>
