@@ -1953,7 +1953,7 @@
     /* ignore */
   }
 
-  var CHAT_REPLY_NOTIFY_VER = '20260717perf2';
+  var CHAT_REPLY_NOTIFY_VER = '20260717chatFixed1';
   var ONLINE_FOOT_ASSET_VER = '20260717perf2';
   var GAME_HELPER_ASSET_VER = '20260717perf2';
 
@@ -2096,10 +2096,10 @@
       }
       loadItemIconHintsFromSession();
       hydrateCatalogHintsFromLocalStorage();
+      bootstrapChatReplyNotify();
       function runDeferredChromeBootstraps() {
         bootstrapGameHelper();
         bootstrapOnlineFoot();
-        bootstrapChatReplyNotify();
       }
       if (typeof requestIdleCallback === 'function') {
         requestIdleCallback(runDeferredChromeBootstraps, { timeout: 2200 });

@@ -673,6 +673,9 @@
       return;
     }
 
+    var content = $('chat-content');
+    if (content) content.hidden = false;
+
     if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
       L2.renderCharacterFromCache();
     }
@@ -688,8 +691,6 @@
       }
     }
 
-    var content = $('chat-content');
-    if (content) content.hidden = false;
     await markChatRepliesRead();
     await loadChat();
   }

@@ -9,9 +9,8 @@
   var refreshQueued = false;
   var refreshDebounceTimer = null;
   var lastRefreshAt = 0;
-  var POLL_MS = 60000;
-  var INITIAL_FETCH_DELAY_MS = 2500;
-  var MIN_REFRESH_GAP_MS = 8000;
+  var POLL_MS = 15000;
+  var MIN_REFRESH_GAP_MS = 2500;
 
   function authToken() {
     if (global.L2 && typeof global.L2.token === 'function') {
@@ -45,7 +44,8 @@
     link.textContent = '+' + String(Math.min(99, Math.floor(n)));
   }
 
-  function fetchUnreadCount(linkEl) {
+  function fetchUnreadCount(linkEl, opts) {
+    opts = opts || {};
     var link = linkEl || document.getElementById('l2-chat-reply-notify');
     if (!link) return;
 
@@ -54,7 +54,7 @@
       return;
     }
 
-    if (document.hidden) {
+    if (document.hidden && !opts.force) {
       return;
     }
 
@@ -70,7 +70,7 @@
     }
 
     var now = Date.now();
-    if (now - lastRefreshAt < MIN_REFRESH_GAP_MS) {
+    if (!opts.force && now - lastRefreshAt < MIN_REFRESH_GAP_MS) {
       if (!refreshDebounceTimer) {
         refreshDebounceTimer = setTimeout(function () {
           refreshDebounceTimer = null;
@@ -111,7 +111,7 @@
   }
 
   function refreshCount(linkEl) {
-    fetchUnreadCount(linkEl);
+    fetchUnreadCount(linkEl, { force: true });
   }
 
   function ensurePoll(linkEl) {
@@ -125,10 +125,10 @@
     if (!global.__l2ChatReplyNotifyFocusBound) {
       global.__l2ChatReplyNotifyFocusBound = true;
       global.addEventListener('focus', function () {
-        fetchUnreadCount();
+        fetchUnreadCount(undefined, { force: true });
       });
       document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) fetchUnreadCount();
+        if (!document.hidden) fetchUnreadCount(undefined, { force: true });
       });
     }
   }
@@ -156,9 +156,7 @@
       link.href = '/chat.html';
       link.hidden = true;
       hudAnchor.insertAdjacentElement('afterend', link);
-      setTimeout(function () {
-        fetchUnreadCount(link);
-      }, INITIAL_FETCH_DELAY_MS);
+      fetchUnreadCount(link);
       ensurePoll(link);
     } else if (link.previousElementSibling !== hudAnchor) {
       hudAnchor.insertAdjacentElement('afterend', link);
