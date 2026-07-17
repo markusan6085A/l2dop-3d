@@ -112,9 +112,11 @@
   function applyAnnounceControls(clan) {
     var toggle = $('clan-my-announce-toggle');
     var readLabel = $('clan-my-announce-label-read');
+    var manageWrap = $('clan-my-manage-wrap');
     var canEdit = !!(clan && clan.canEditAnnouncement);
     if (toggle) toggle.hidden = !canEdit;
     if (readLabel) readLabel.hidden = canEdit;
+    if (manageWrap) manageWrap.hidden = !canEdit;
   }
 
   function applyClanView(clan) {

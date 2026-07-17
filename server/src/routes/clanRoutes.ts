@@ -13,9 +13,13 @@ import {
   listClansForClient,
 } from '../services/clanCreateService.js';
 import { getClanMyForUser, updateClanAnnouncementForUser } from '../services/clanMyService.js';
+import {
+  getClanHallForUser,
+  purchaseClanHallBlessingForUser,
+} from '../services/clanHallService.js';
 import { sendClanCreateError } from './clanRouteErrors.js';
 
-/** GET /game/clans/list, GET /game/clans/my, POST /game/clans/create */
+/** GET /game/clans/list, GET /game/clans/my, POST /game/clans/create, … */
 export function registerClanRoutes(app: FastifyInstance): void {
   app.get(
     '/clans/list',
@@ -120,6 +124,62 @@ export function registerClanRoutes(app: FastifyInstance): void {
         return reply.code(500).send({
           error: 'internal_error',
           messageUk: 'Не вдалося зберегти оголошення.',
+        });
+      }
+    }
+  );
+
+  app.get(
+    '/clans/hall',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const hall = await getClanHallForUser(userId);
+      return reply.send({ hall });
+    }
+  );
+
+  app.post(
+    '/clans/hall/buy',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const rev = parseExpectedRevision(
+        b,
+        reply,
+        'Передай expectedRevision з відповіді /character.'
+      );
+      if (rev == null) return;
+
+      try {
+        const result = await purchaseClanHallBlessingForUser(userId, rev);
+        await logRouteMutation(
+          request,
+          'clan_hall_buy',
+          rev,
+          'ok',
+          result.character.revision
+        );
+        return reply.send(result);
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          await logRouteMutation(request, 'clan_hall_buy', rev, 'conflict');
+          return sendGameConflict(reply, err);
+        }
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_hall_buy', rev, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_hall_buy', rev, 'error');
+        request.log.error({ err }, 'POST /game/clans/hall/buy');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося купити Клан-хол.',
         });
       }
     }

@@ -46,6 +46,26 @@ const CLAN_CREATE_ERRORS: Record<string, { status: number; messageUk: string }> 
     status: 403,
     messageUk: 'Редагувати оголошення може лише лідер клану.',
   },
+  clan_hall_not_in_clan: {
+    status: 400,
+    messageUk: 'Ти не в клані.',
+  },
+  clan_hall_buy_forbidden: {
+    status: 403,
+    messageUk: 'Купити Клан-хол може лише лідер клану.',
+  },
+  clan_hall_already_owned: {
+    status: 400,
+    messageUk: 'Благословення Клан-холу вже куплено.',
+  },
+  clan_hall_not_enough_adena: {
+    status: 400,
+    messageUk: 'Недостатньо Adena (потрібно 1).',
+  },
+  clan_hall_in_battle: {
+    status: 400,
+    messageUk: 'Неможливо купити під час бою.',
+  },
 };
 
 export function sendClanCreateError(

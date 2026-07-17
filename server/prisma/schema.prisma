@@ -127,8 +127,10 @@ model Clan {
   leader       Character   @relation("ClanLeader", fields: [leaderId], references: [id], onDelete: Cascade)
   members      Character[] @relation("ClanMember")
   /** Текст оголошення клану (редагує лідер). */
-  announcement String      @default("")
-  createdAt    DateTime    @default(now())
+  announcement   String      @default("")
+  /** Куплене благословення Клан-холу; null — ще не куплено. */
+  hallBlessingAt DateTime?
+  createdAt      DateTime    @default(now())
 }
 
 model MarketListing {

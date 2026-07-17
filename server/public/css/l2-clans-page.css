@@ -1,7 +1,9 @@
 /* clans.html / clans-create.html — intro, кнопки, «Назад» завжди знизу */
 body.l2-app-l2-chrome.l2-page-clans .l2-clans-main,
 body.l2-app-l2-chrome.l2-page-clans-create .l2-clans-main,
-body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-main {
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-main,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-main,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-main {
   display: flex;
   flex-direction: column;
   padding: 4px 0 8px;
@@ -208,7 +210,9 @@ body.l2-app-l2-chrome.l2-page-clans-create .l2-clans-actions a.l2-town-btn:focus
 
 body.l2-app-l2-chrome.l2-page-clans .l2-clans-back,
 body.l2-app-l2-chrome.l2-page-clans-create .l2-clans-back,
-body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back {
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-back,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-back {
   order: 99;
   margin: auto 0 0;
   padding: 12px 0 0;
@@ -217,7 +221,9 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back {
 
 body.l2-app-l2-chrome.l2-page-clans .l2-clans-back__link,
 body.l2-app-l2-chrome.l2-page-clans-create .l2-clans-back__link,
-body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back__link {
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back__link,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-back__link,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-back__link {
   display: inline-block;
   margin: 0;
   padding: 0;
@@ -243,7 +249,13 @@ body.l2-app-l2-chrome.l2-page-clans-create .l2-clans-back__link:focus,
 body.l2-app-l2-chrome.l2-page-clans-create .l2-clans-back__link:focus-visible,
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back__link:hover,
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back__link:focus,
-body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back__link:focus-visible {
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clans-back__link:focus-visible,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-back__link:hover,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-back__link:focus,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-back__link:focus-visible,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-back__link:hover,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-back__link:focus,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-back__link:focus-visible {
   color: #f06060 !important;
   text-decoration: underline;
   outline: none;
@@ -354,8 +366,18 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav {
 }
 
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-nav-link {
-  color: #d4923a;
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
   font-weight: 600;
+  line-height: 1.45;
+  color: #d4923a;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat {
@@ -434,6 +456,157 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-submit:focus-visible 
 }
 
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-announce-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+  text-decoration: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-row--manage {
+  margin-top: 6px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-manage-link {
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #d4923a;
+  text-decoration: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-manage-link:hover,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-manage-link:focus,
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-manage-link:focus-visible {
+  color: #e0a84a;
+  text-decoration: underline;
+  outline: none;
+}
+
+/* clan-manage.html */
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-main,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-panel {
+  padding-left: 2px;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-title {
+  margin: 0 0 8px;
+  font-family: var(--l2-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-clan {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-nav-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #d4923a;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-nav-link:hover,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-nav-link:focus,
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-nav-link:focus-visible {
+  color: #e0a84a;
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-city-stub-msg {
+  margin: 0 0 8px;
+  padding-left: 2px;
+}
+
+/* clan-hall.html */
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-main,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-panel {
+  padding-left: 2px;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-title {
+  margin: 0 0 8px;
+  font-family: var(--l2-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #d4923a;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-desc {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #9a8468;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 12px;
+  padding-right: 2px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy-label {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e8e0d4;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy-btn {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy-btn:hover,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy-btn:focus,
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy-btn:focus-visible {
+  color: #f0f0f0;
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy-btn:disabled {
   opacity: 0.55;
   cursor: default;
   text-decoration: none;
