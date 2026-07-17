@@ -7,8 +7,7 @@
   var authToken = '';
   var myCharName = '';
   var COIN_OF_LUCK_ITEM_ID = 4037;
-  var COIN_OF_LUCK_ICON_URL =
-    '/assets/assets/photo_2026-07-05_12-52-57.jpg';
+  var COIN_OF_LUCK_ICON_URL = '/assets/l2dop/gmshop.jpg';
 
   function $(id) {
     return document.getElementById(id);

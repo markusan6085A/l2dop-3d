@@ -69,6 +69,11 @@ export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
       publicDirCandidates(['assets', 'l2dop', 'etc_adena_i00.png']),
     );
   }
+  if (itemId === COIN_OF_LUCK_ITEM_ID) {
+    return firstExistingPath(
+      publicDirCandidates(['assets', 'l2dop', 'gmshop.jpg']),
+    );
+  }
   return null;
 }
 
@@ -84,10 +89,7 @@ export function resolveItemIconPublicUrl(itemId: number): string {
     if (adena) return '/assets/l2dop/etc_adena_i00.png';
   }
   if (itemId === COIN_OF_LUCK_ITEM_ID) {
-    const coin = firstExistingPath(
-      publicDirCandidates(['assets', 'assets', 'photo_2026-07-05_12-52-57.jpg']),
-    );
-    if (coin) return COIN_OF_LUCK_ICON_URL;
+    return COIN_OF_LUCK_ICON_URL;
   }
   const sealStoneUrl = sealStoneIconUrlForItemId(itemId);
   if (sealStoneUrl) return sealStoneUrl;

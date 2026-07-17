@@ -4,8 +4,7 @@ import type { DailyQuestId } from './dailyQuests.js';
 /** Coin of Luck (L2 item). */
 export const COIN_OF_LUCK_ITEM_ID = 4037;
 /** Та сама іконка, що в профілі / ринку Coin of Luck. */
-export const COIN_OF_LUCK_ICON_URL =
-  '/assets/assets/photo_2026-07-05_12-52-57.jpg';
+export const COIN_OF_LUCK_ICON_URL = '/assets/l2dop/gmshop.jpg';
 /** Велике MP-зілля (728). */
 export const DAILY_QUEST_MP_POTION_ITEM_ID = 728;
 
