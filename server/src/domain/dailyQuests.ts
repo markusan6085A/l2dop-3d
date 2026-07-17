@@ -31,6 +31,10 @@ export const DAILY_QUEST_NEEDS: Record<DailyQuestId, number> = {
   damage_dealer_500k: 500_000,
 };
 
+/** Після останньої активності гравця ще стільки секунд рахуємо онлайн. */
+export const DAILY_PLAYTIME_IDLE_GRACE_SEC = 10;
+const DAILY_PLAYTIME_IDLE_GRACE_MS = DAILY_PLAYTIME_IDLE_GRACE_SEC * 1000;
+
 export type DailyQuestTaskState = {
   have: number;
   done: boolean;
@@ -40,10 +44,12 @@ export type DailyQuestTaskState = {
 export type DailyQuestsJson = {
   v: 1;
   resetDayKey: string;
-  /** Накопичений онлайн за поточний день (сек). */
+  /** Накопичений активний онлайн за поточний день (сек). */
   playtimeSec: number;
-  /** Останній tick для віртуального додавання часу між мутаціями. */
+  /** Останній момент, коли зафіксовано playtimeSec (мс). */
   lastPlaytimeTickMs: number;
+  /** Остання активність гравця в грі (мс) — рух, бій, чат тощо. */
+  lastActiveMs: number;
   tasks: Record<string, DailyQuestTaskState>;
 };
 
@@ -83,20 +89,40 @@ export function emptyDailyQuestsJson(nowMs = Date.now()): DailyQuestsJson {
     resetDayKey: dailyResetDayKey(nowMs),
     playtimeSec: 0,
     lastPlaytimeTickMs: nowMs,
+    lastActiveMs: nowMs,
     tasks: freshTasks(),
   };
 }
 
+function resolveLastActiveMs(state: DailyQuestsJson): number {
+  return state.lastActiveMs > 0
+    ? state.lastActiveMs
+    : state.lastPlaytimeTickMs;
+}
+
+/** Скільки секунд активного онлайну на момент nowMs (read-path, без persist). */
+export function computePlaytimeSecAt(
+  state: DailyQuestsJson,
+  nowMs: number
+): number {
+  const need = DAILY_QUEST_NEEDS.daily_playtime_2h;
+  const lastActiveMs = resolveLastActiveMs(state);
+  const activeUntilMs = lastActiveMs + DAILY_PLAYTIME_IDLE_GRACE_MS;
+  const creditUntilMs = Math.min(nowMs, activeUntilMs);
+  const fromMs = state.lastPlaytimeTickMs;
+  if (creditUntilMs <= fromMs) {
+    return Math.min(need, state.playtimeSec);
+  }
+  const deltaSec = Math.floor((creditUntilMs - fromMs) / 1000);
+  return Math.min(need, state.playtimeSec + Math.max(0, deltaSec));
+}
+
+/** @deprecated Використовуй computePlaytimeSecAt — лишено для сумісності імпортів. */
 export function effectivePlaytimeSec(
   state: DailyQuestsJson,
   nowMs: number
 ): number {
-  const deltaSec = Math.max(
-    0,
-    Math.floor((nowMs - state.lastPlaytimeTickMs) / 1000)
-  );
-  const virtualCap = DAILY_QUEST_NEEDS.daily_playtime_2h;
-  return state.playtimeSec + Math.min(deltaSec, virtualCap);
+  return computePlaytimeSecAt(state, nowMs);
 }
 
 function normalizeTask(raw: unknown, need: number): DailyQuestTaskState {
@@ -140,12 +166,17 @@ export function parseDailyQuestsJson(
     typeof o.lastPlaytimeTickMs === 'number' && o.lastPlaytimeTickMs > 0
       ? Math.floor(o.lastPlaytimeTickMs)
       : nowMs;
+  const lastActiveMs =
+    typeof o.lastActiveMs === 'number' && o.lastActiveMs > 0
+      ? Math.floor(o.lastActiveMs)
+      : lastPlaytimeTickMs;
 
   let state: DailyQuestsJson = {
     v: 1,
     resetDayKey,
     playtimeSec,
     lastPlaytimeTickMs,
+    lastActiveMs,
     tasks,
   };
   state = maybeResetDailyQuests(state, nowMs);
@@ -180,21 +211,46 @@ function syncPlaytimeTask(state: DailyQuestsJson, playtimeSec: number): void {
   };
 }
 
-/** Закріпити віртуальний онлайн у state (перед persist). */
+function persistPlaytimeCredit(
+  state: DailyQuestsJson,
+  nowMs: number,
+  markActive: boolean
+): DailyQuestsJson {
+  state = maybeResetDailyQuests(state, nowMs);
+  const playtimeSec = computePlaytimeSecAt(state, nowMs);
+  const next: DailyQuestsJson = {
+    ...state,
+    playtimeSec,
+    lastPlaytimeTickMs: nowMs,
+    lastActiveMs: markActive ? nowMs : resolveLastActiveMs(state),
+    tasks: { ...state.tasks },
+  };
+  syncPlaytimeTask(next, playtimeSec);
+  return next;
+}
+
+/** Закріпити активний онлайн у state без нової активності (claim, settle). */
 export function tickDailyQuestPlaytimePersist(
   state: DailyQuestsJson,
   nowMs: number
 ): DailyQuestsJson {
-  state = maybeResetDailyQuests(state, nowMs);
-  const effective = effectivePlaytimeSec(state, nowMs);
-  const next: DailyQuestsJson = {
-    ...state,
-    playtimeSec: effective,
-    lastPlaytimeTickMs: nowMs,
-    tasks: { ...state.tasks },
-  };
-  syncPlaytimeTask(next, effective);
-  return next;
+  return persistPlaytimeCredit(state, nowMs, false);
+}
+
+/** Активність гравця: зарахувати онлайн і продовжити вікно grace. */
+export function tickDailyQuestPlaytimeOnActivity(
+  state: DailyQuestsJson,
+  nowMs: number
+): DailyQuestsJson {
+  return persistPlaytimeCredit(state, nowMs, true);
+}
+
+/** Будь-яка мутація гравця без окремого dailyQuest patch. */
+export function touchDailyQuestPlayerActivity(
+  state: DailyQuestsJson,
+  nowMs: number
+): DailyQuestsJson {
+  return tickDailyQuestPlaytimeOnActivity(state, nowMs);
 }
 
 function bumpTask(
@@ -230,7 +286,7 @@ export function applyDailyQuestBattleTurn(
     damageDealt: number;
   }
 ): DailyQuestsJson {
-  let next = tickDailyQuestPlaytimePersist(state, args.nowMs);
+  let next = tickDailyQuestPlaytimeOnActivity(state, args.nowMs);
   if (args.damageDealt > 0) {
     next = bumpTask(next, 'damage_dealer_500k', args.damageDealt);
   }
@@ -254,8 +310,8 @@ export function applyDailyQuestMobKill(
     isWorldBoss: boolean;
   }
 ): DailyQuestsJson {
-  if (args.isWorldBoss) return tickDailyQuestPlaytimePersist(state, args.nowMs);
-  let next = tickDailyQuestPlaytimePersist(state, args.nowMs);
+  if (args.isWorldBoss) return tickDailyQuestPlaytimeOnActivity(state, args.nowMs);
+  let next = tickDailyQuestPlaytimeOnActivity(state, args.nowMs);
   next = bumpTask(next, 'hunt_start_500', 1);
   return next;
 }
@@ -264,7 +320,7 @@ export function applyDailyQuestChatMessage(
   state: DailyQuestsJson,
   nowMs: number
 ): DailyQuestsJson {
-  const next = tickDailyQuestPlaytimePersist(state, nowMs);
+  const next = tickDailyQuestPlaytimeOnActivity(state, nowMs);
   return bumpTask(next, 'chat_social_10', 1);
 }
 
@@ -272,7 +328,7 @@ export function applyDailyQuestRaidBossParticipation(
   state: DailyQuestsJson,
   nowMs: number
 ): DailyQuestsJson {
-  let next = tickDailyQuestPlaytimePersist(state, nowMs);
+  let next = tickDailyQuestPlaytimeOnActivity(state, nowMs);
   next = bumpTask(next, 'raid_boss_participate', 1);
   next = bumpTask(next, 'strong_enemy_20', 1);
   return next;
@@ -293,7 +349,7 @@ export function dailyQuestsSnapshot(
   nowMs = Date.now()
 ): DailyQuestsSnapshot {
   const state = parseDailyQuestsJson(raw, nowMs);
-  const playtimeSec = effectivePlaytimeSec(state, nowMs);
+  const playtimeSec = computePlaytimeSecAt(state, nowMs);
   const tasks: Record<string, DailyQuestTaskSnapshot> = Object.create(null);
 
   for (const id of DAILY_QUEST_IDS) {
@@ -322,7 +378,7 @@ export function dailyQuestEffectiveHave(
   const need = DAILY_QUEST_NEEDS[taskId];
   const t = state.tasks[taskId] ?? emptyTaskState();
   if (taskId === 'daily_playtime_2h') {
-    return Math.min(need, effectivePlaytimeSec(state, nowMs));
+    return Math.min(need, computePlaytimeSecAt(state, nowMs));
   }
   return Math.min(need, Math.max(0, Math.floor(t.have)));
 }

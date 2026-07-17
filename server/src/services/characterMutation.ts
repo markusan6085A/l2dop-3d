@@ -1,4 +1,10 @@
 import type { Character, Prisma } from '@prisma/client';
+import {
+  dailyQuestsJsonChanged,
+  parseDailyQuestsJson,
+  serializeDailyQuestsJson,
+  touchDailyQuestPlayerActivity,
+} from '../domain/dailyQuests.js';
 
 export type CharacterMutationResult = {
   changed: boolean;
@@ -50,6 +56,26 @@ export async function mutateCharacterWithRevision(
       changed: false,
       character,
     };
+  }
+
+  /** Будь-яка мутація гравця (expectedRevision) = активність для «2 год у грі». */
+  if (
+    expectedRevision != null &&
+    mutation.data.dailyQuestsJson === undefined
+  ) {
+    const nowMs = Date.now();
+    const dailyAfter = touchDailyQuestPlayerActivity(
+      parseDailyQuestsJson(character.dailyQuestsJson, nowMs),
+      nowMs
+    );
+    if (dailyQuestsJsonChanged(character.dailyQuestsJson, dailyAfter)) {
+      mutation.data = {
+        ...mutation.data,
+        dailyQuestsJson: serializeDailyQuestsJson(
+          dailyAfter
+        ) as Prisma.InputJsonValue,
+      };
+    }
   }
 
   const now = new Date();
