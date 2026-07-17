@@ -1,7 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { findSevenSignsDungeonById } from '../data/sevenSignsDungeons.js';
 import { nearestMapTown } from '../data/mapLocalities.js';
-import { parseBattleJson } from '../domain/battle.js';
+import { resolveMapMovement } from '../domain/mapMovement.js';
+import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import {
   mergeMobSpawnHpEntry,
   mobSpawnHpFromBattleJson,
@@ -9,6 +10,7 @@ import {
   serializeMobSpawnHpState,
 } from '../domain/mobSpawnHpState.js';
 import { prisma } from '../lib/prisma.js';
+import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import {
   gameConflictFromMutation,
   toSnapshot,
@@ -16,11 +18,23 @@ import {
   type CharacterSnapshot,
 } from './charService.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
-import {
-  movementFieldsChanged,
-  normalizePassiveAndMove,
-} from './charWorldMutations.js';
 import { SEVEN_SIGNS_DUNGEON_TELEPORT_ADENA_COST } from './sevenSignsDungeonListService.js';
+
+function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
+  return resolveMapMovement(applyPassiveHpRegen(row));
+}
+
+function movementFieldsChanged(a: CharacterRow, b: CharacterRow): boolean {
+  return (
+    a.worldX !== b.worldX ||
+    a.worldY !== b.worldY ||
+    a.targetX !== b.targetX ||
+    a.targetY !== b.targetY ||
+    (a.moveStartAt?.getTime() ?? 0) !== (b.moveStartAt?.getTime() ?? 0) ||
+    a.moveFromX !== b.moveFromX ||
+    a.moveFromY !== b.moveFromY
+  );
+}
 
 /**
  * Телепорт до входу некрополя/катакомби на світовій карті (без авто-входу всередину).
@@ -55,8 +69,7 @@ export async function performSevenSignsDungeonTeleport(
           throw new Error('seven_signs_dungeon_teleport_not_enough_adena');
         }
         const near = nearestMapTown(wx, wy);
-        const hadDungeonState =
-          current.dungeonStateJson != null && current.dungeonStateJson !== Prisma.JsonNull;
+        const hadDungeonState = current.dungeonStateJson != null;
         const changed =
           base.hp !== current.hp ||
           movementFieldsChanged(current as CharacterRow, base) ||
@@ -82,7 +95,7 @@ export async function performSevenSignsDungeonTeleport(
             parseMobSpawnHpState(base.mobSpawnHpJson),
             hpSnap.spawnId,
             hpSnap.mobHp,
-            hpSnap.mobHpMax
+            hpSnap.mobMaxHp
           );
           nextMobSpawnHpJson = serializeMobSpawnHpState(merged);
         }

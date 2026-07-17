@@ -130,8 +130,8 @@ export function getSpawnCatalogInfo(
     null;
   const icon = mobIconUrlForSpawn(spawn);
   const c = mobCombatFromSpawn(spawn);
-  const bag = ensureMobDropBag(npcId, spawn.level);
-  const customDropOnly = hasCustomNpcDropBag(npcId);
+  const bag = ensureMobDropBag(npcId, spawn.level, spawnId);
+  const customDropOnly = hasCustomNpcDropBag(npcId, spawnId);
   const resPreview = customDropOnly
     ? { drops: [], spoil: [] }
     : resourceDropsForSpawnCatalog(spawn.level, spawn.id);
@@ -140,7 +140,9 @@ export function getSpawnCatalogInfo(
     viewer != null &&
     viewerMaySeeSpoilLoot(viewer.race, viewer.l2Profession, viewer.skillsLearnedJson ?? null);
   const sdPreview =
-    npcId != null ? sevenSignsDungeonMobRewardPreviewForNpcId(npcId) : undefined;
+    npcId != null
+      ? sevenSignsDungeonMobRewardPreviewForNpcId(npcId, spawnId)
+      : undefined;
   const rbPreview =
     !sdPreview && npcId != null
       ? raidBossRewardPreviewForNpcId(npcId)

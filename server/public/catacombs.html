@@ -3,14 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Меню — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
+    <title>Катакомби — Некрополі — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260426warmUi" />
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
     <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260712wapBars16" />
-    <link rel="stylesheet" href="/css/l2-menu-page.css?v=20260717catacombsMenu2" />
+    <link rel="stylesheet" href="/css/l2-rb-bosses-page.css?v=20260713rbBosses9" />
+    <link rel="stylesheet" href="/css/l2-catacombs-page.css?v=20260717catacombs2" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-menu l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal">
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-rb-bosses l2-page-catacombs l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
@@ -54,46 +58,22 @@
             decoding="async"
           />
         </div>
-        <div class="l2-screen-inner l2-menu-root">
+        <div class="l2-screen-inner l2-rb-root">
           <div class="l2-chrome-nav-column">
             <div id="l2-hud-panel-mount"></div>
-
             <div id="l2-nav-top"></div>
 
-            <section class="l2-menu-panel" aria-label="Меню">
-              <h1 class="l2-pers-h1">Меню</h1>
-              <div class="l2-menu-shortcuts">
-                <a class="l2-menu-rb-link" href="/rb-bosses.html">
-                  <img
-                    class="l2-menu-rb-link__ico"
-                    src="/ref/photo_2026-07-05_13-28-29-removebg-preview.png"
-                    alt=""
-                    width="22"
-                    height="22"
-                    decoding="async"
-                  />
-                  <span>Raid Bosses</span>
-                </a>
-                <a class="l2-menu-rb-link l2-menu-rb-link--catacombs" href="/catacombs.html">
-                  <img
-                    class="l2-menu-rb-link__ico"
-                    src="/ref/458.png"
-                    alt=""
-                    width="22"
-                    height="22"
-                    decoding="async"
-                  />
-                  <span>Катакомби — Некрополі</span>
-                </a>
-              </div>
-              <p class="l2-city-stub-msg" id="l2-menu-stub-msg" hidden></p>
-              <div id="l2-menu-craft-wrap" class="l2-menu-craft-wrap" hidden>
-                <a class="l2-town-btn l2-menu-btn-541" href="/craft.html">Крафт</a>
-              </div>
-              <div id="l2-menu-dev-boost-wrap" class="l2-menu-craft-wrap" hidden>
-                <a class="l2-town-btn l2-menu-btn-541" href="/dev-boost.html">Тест: Lv / Адена / SP</a>
-              </div>
-              <div id="l2-menu-body"></div>
+            <p class="l2-rb-back">
+              <a href="/menu.html">← Меню</a>
+            </p>
+            <h1 class="l2-pers-h1 l2-rb-title">
+              <span>Катакомби — Некрополі</span>
+            </h1>
+
+            <p class="err" id="catacombs-load-err" hidden></p>
+
+            <section class="l2-rb-panel" aria-label="Список подземелль Seven Signs">
+              <div id="catacombs-list"></div>
             </section>
 
             <div id="l2-nav-bottom"></div>
@@ -105,7 +85,6 @@
     <script src="/common.js?v=20260712wapBars16"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260709miruNav8"></script>
-    <script src="/craftProfessions.js"></script>
-    <script src="/menu.js"></script>
+    <script src="/catacombs.js?v=20260717catacombs2"></script>
   </body>
 </html>

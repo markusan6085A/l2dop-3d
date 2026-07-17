@@ -27,4 +27,7 @@ export const L2DOP_MOB_NAME_ALIASES: Record<string, string | number> = {
   Zaken: 'Закен',
   Valakas: 'Валакас',
   Antharas: 'Антарас',
+  /** Seven Signs — The Disciple's Necropolis */
+  'Death Lord Shax': 25282,
+  'Лорд Смерти Шакс': 25282,
 };

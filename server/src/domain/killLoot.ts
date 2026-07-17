@@ -59,6 +59,8 @@ export interface KillLootOptions {
   spawnKind?: MapSpawnKind;
   /** Ім'я моба зі спавна (бонус за таблицею mobNameRewardBonus). */
   mobName?: string;
+  /** sdms_* — нагороди Seven Signs подземелля за dungeonId. */
+  spawnId?: string;
 }
 
 /**
@@ -86,8 +88,8 @@ export function rollKillLoot(
     mobName: opts?.mobName,
   });
 
-  const bag = ensureMobDropBag(npcId, spawnLevel);
-  const customDropOnly = hasCustomNpcDropBag(npcId);
+  const bag = ensureMobDropBag(npcId, spawnLevel, opts?.spawnId);
+  const customDropOnly = hasCustomNpcDropBag(npcId, opts?.spawnId);
   for (const d of bag.drops) {
     const qty = rollDropLine(d);
     if (qty <= 0) continue;
@@ -148,7 +150,9 @@ export function rollKillLoot(
   let expGain: bigint;
   let spGain: number;
   const sdKillReward =
-    npcId != null ? rollSevenSignsDungeonKillReward(npcId) : undefined;
+    npcId != null
+      ? rollSevenSignsDungeonKillReward(npcId, opts?.spawnId)
+      : undefined;
   const rbKillReward =
     !sdKillReward && npcId != null ? rollRaidBossKillReward(npcId) : undefined;
   if (sdKillReward) {

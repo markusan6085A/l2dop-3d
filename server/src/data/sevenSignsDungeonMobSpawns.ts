@@ -42,8 +42,13 @@ export function dungeonMobSpawnToMapWorldSpawn(
     templateId: String(spawn.npcId),
     name: spawn.name,
     level: spawn.level,
-    kind: spawn.aggressive ? 'aggressive' : 'passive',
-    aggressive: spawn.aggressive,
+    kind:
+      spawn.kind === 'raid'
+        ? 'raid'
+        : spawn.aggressive
+          ? 'aggressive'
+          : 'passive',
+    aggressive: spawn.kind === 'raid' ? true : spawn.aggressive,
   };
 }
 

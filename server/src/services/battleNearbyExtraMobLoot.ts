@@ -116,7 +116,7 @@ export function applyNearbyExtraMobKillLoot(args: {
       race: char.race,
       l2Profession: char.l2Profession,
       skillsLearnedJson: char.skillsLearnedJson,
-    }, { spawnKind: spMeta.kind, mobName: ex.name });
+    }, { spawnKind: spMeta.kind, mobName: ex.name, spawnId: ex.spawnId });
 
     inv = loot.inventory;
     expGainFromExtras += loot.expGain;

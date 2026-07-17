@@ -120,7 +120,7 @@ export async function persistBattleVictoryInTx(
     race: char.race,
     l2Profession: char.l2Profession,
     skillsLearnedJson: char.skillsLearnedJson,
-  }, { spawnKind: spawn.kind, mobName: spawn.name });
+  }, { spawnKind: spawn.kind, mobName: spawn.name, spawnId: bj.spawnId });
   log.push('Перемога!');
   for (const line of loot.logLines) {
     log.push(line);

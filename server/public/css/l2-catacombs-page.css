@@ -1,0 +1,34 @@
+/**
+ * Сторінка «Катакомби — Некрополі» (список + телепорт).
+ */
+body.l2-page-catacombs .l2-pers-h1,
+body.l2-page-catacombs .l2-rb-title {
+  color: #c9a860;
+}
+
+body.l2-page-catacombs #catacombs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+body.l2-page-catacombs .l2-catacombs-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+body.l2-page-catacombs .l2-catacombs-row__name .l2-rb-row__label {
+  color: #e87828;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body.l2-page-catacombs .l2-catacombs-empty {
+  margin: 0;
+  padding: 8px 0;
+  color: #a89a70;
+  font-size: 12px;
+  text-align: center;
+}

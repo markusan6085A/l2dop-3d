@@ -38,6 +38,15 @@ const RAID_BOSS_REWARD_BY_NPC_ID: Readonly<Record<number, RaidBossRewardSpec>> =
     spMin: 56_000,
     spMax: 60_000,
   },
+  /** Death Lord Shax — The Disciple's Necropolis (L2DOP tuning). */
+  25282: {
+    adenaMin: 5896,
+    adenaMax: 7893,
+    expMin: 5_231_148,
+    expMax: 5_231_148,
+    spMin: 237_779,
+    spMax: 237_779,
+  },
 };
 
 function rollInt(min: number, max: number): number {

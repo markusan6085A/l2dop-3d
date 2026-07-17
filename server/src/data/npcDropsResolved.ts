@@ -15,25 +15,27 @@ export interface NpcDropBag {
   fallbackFromNpcId?: number;
 }
 
-function customDropBagForNpc(npcId: number): NpcDropBag | undefined {
-  return (
-    customNpcDropBagForMob(npcId) ??
-    customSevenSignsDungeonDropBagForMob(npcId)
-  );
-}
 
-export function hasCustomNpcDropBag(npcId: number | null | undefined): boolean {
+export function hasCustomNpcDropBag(
+  npcId: number | null | undefined,
+  spawnId?: string | null
+): boolean {
   if (npcId == null) return false;
-  return hasRaidBossDropBag(npcId) || hasSevenSignsDungeonDropBag(npcId);
+  return (
+    hasRaidBossDropBag(npcId) || hasSevenSignsDungeonDropBag(npcId, spawnId)
+  );
 }
 
 export function resolveNpcDropBag(
   npcId: number | null,
   _spawnLevel: number,
-  fallback: () => NpcDropBag
+  fallback: () => NpcDropBag,
+  spawnId?: string | null
 ): NpcDropBag {
   if (npcId != null) {
-    const custom = customDropBagForNpc(npcId);
+    const custom =
+      customNpcDropBagForMob(npcId) ??
+      customSevenSignsDungeonDropBagForMob(npcId, spawnId);
     if (custom) return custom;
   }
   return fallback();

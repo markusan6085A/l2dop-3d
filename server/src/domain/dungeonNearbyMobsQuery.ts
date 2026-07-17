@@ -43,8 +43,13 @@ function toEntry(
     mapY: spawn.mapY,
     distance: Math.round(dist),
     inBattleRange: dist <= DUNGEON_BATTLE_RANGE_PX,
-    aggressive: spawn.aggressive,
-    kind: spawn.aggressive ? 'aggressive' : 'passive',
+    aggressive: spawn.kind === 'raid' ? true : spawn.aggressive,
+    kind:
+      spawn.kind === 'raid'
+        ? 'raid'
+        : spawn.aggressive
+          ? 'aggressive'
+          : 'passive',
     icon: mapSpawn ? mobIconUrlForSpawn(mapSpawn) : '/mobs/1.png',
   };
 }

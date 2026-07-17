@@ -59,10 +59,16 @@ export function rewardExpSpForSpawn(
  */
 export function ensureMobDropBag(
   npcId: number | null,
-  spawnLevel: number
+  spawnLevel: number,
+  spawnId?: string | null
 ): NpcDropBag {
-  return resolveNpcDropBag(npcId, spawnLevel, () => ({
-    drops: [syntheticAdenaDropEntry(spawnLevel)],
-    spoil: [],
-  }));
+  return resolveNpcDropBag(
+    npcId,
+    spawnLevel,
+    () => ({
+      drops: [syntheticAdenaDropEntry(spawnLevel)],
+      spoil: [],
+    }),
+    spawnId
+  );
 }

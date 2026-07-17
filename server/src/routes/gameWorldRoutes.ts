@@ -30,6 +30,8 @@ import {
 } from '../services/dungeonMoveService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
+import { listSevenSignsDungeonsForMenu } from '../services/sevenSignsDungeonListService.js';
+import { performSevenSignsDungeonTeleport } from '../services/sevenSignsDungeonTeleportService.js';
 
 export function registerGameWorldRoutes(app: FastifyInstance): void {
   app.get(
@@ -502,6 +504,113 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
         await logRouteMutation(
           request,
           'raid_boss_teleport',
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
+    }
+  );
+
+  app.get(
+    '/catacombs',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      return reply.send(listSevenSignsDungeonsForMenu());
+    }
+  );
+
+  app.post(
+    '/catacombs/teleport',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      const dungeonId =
+        typeof b.dungeonId === 'string' ? b.dungeonId.trim() : '';
+      if (!dungeonId) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Обери некрополь або катакомбу.',
+        });
+      }
+      try {
+        const character = await performSevenSignsDungeonTeleport(
+          userId,
+          dungeonId,
+          er
+        );
+        await logRouteMutation(
+          request,
+          'catacombs_teleport',
+          er,
+          'ok',
+          character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            'catacombs_teleport',
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && e.message === 'seven_signs_dungeon_unknown') {
+          await logRouteMutation(
+            request,
+            'catacombs_teleport',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Невідоме подземелля.',
+          });
+        }
+        if (
+          e instanceof Error &&
+          e.message === 'seven_signs_dungeon_teleport_not_enough_adena'
+        ) {
+          await logRouteMutation(
+            request,
+            'catacombs_teleport',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Недостатньо адени для телепорту.',
+          });
+        }
+        await logRouteMutation(
+          request,
+          'catacombs_teleport',
           er,
           'error',
           undefined,
