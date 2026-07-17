@@ -2844,6 +2844,7 @@
 
     async function leaveToCity() {
       await runWithBattleNavLock(async function () {
+        stopBattleSyncPoll();
         var resLm = await leaveBattle(latestCharacterRevision());
         if (resLm && resLm._err === 409) {
           var leaveConflict2 = await parseActionErrorBodySafe(resLm);
@@ -2857,10 +2858,21 @@
           }
           resLm = await leaveBattle(latestCharacterRevision());
         }
-        if (resLm && resLm.character && L2.setLastSnapshot) {
-          L2.setLastSnapshot(resLm.character);
+        if (resLm && resLm._err) {
+          showBattleToast('Не вдалося скасувати бій.');
+          if (battle) startBattleSyncPoll();
+          return;
         }
-        window.location.href = '/city.html';
+        if (resLm && resLm.character) {
+          character = resLm.character;
+          if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+            L2.applyCharacterSnapshot(character);
+          } else if (window.L2 && L2.setLastSnapshot) {
+            L2.setLastSnapshot(character);
+          }
+        }
+        battle = null;
+        window.location.replace('/city.html');
       });
     }
 
@@ -2975,18 +2987,35 @@
       return !!(defRoot && !defRoot.hidden);
     }
 
-    function wireDefeatTownNavLink() {
+    function isVictoryScreenActive() {
+      var vicRoot = $('battle-victory-root');
+      return !!(vicRoot && !vicRoot.hidden);
+    }
+
+    function wireBattleCityNavLink() {
       var nav =
         document.getElementById('wap-bottom') ||
         document.getElementById('l2-nav-bottom');
       if (!nav) return;
       var cityLink = nav.querySelector('a[href="/city.html"]');
-      if (!cityLink || cityLink.dataset.l2DefeatTownWired === '1') return;
-      cityLink.dataset.l2DefeatTownWired = '1';
+      if (!cityLink || cityLink.dataset.l2BattleCityWired === '1') return;
+      cityLink.dataset.l2BattleCityWired = '1';
       cityLink.addEventListener('click', function (e) {
-        if (!isDefeatScreenActive()) return;
-        e.preventDefault();
-        returnToTownAndGoCity();
+        if (
+          isDefeatScreenActive() ||
+          (character && (character.pveDefeat || character.pvpDefeat))
+        ) {
+          e.preventDefault();
+          returnToTownAndGoCity();
+          return;
+        }
+        if (isVictoryScreenActive()) {
+          return;
+        }
+        if (battle || spawnId || pvpTargetId || isPvpMode) {
+          e.preventDefault();
+          leaveToCity();
+        }
       });
     }
 
@@ -2997,7 +3026,7 @@
       });
     }
 
-    wireDefeatTownNavLink();
+    wireBattleCityNavLink();
 
     if (pvpDeathMode || (character && character.pvpDefeat)) {
       if (character && character.pvpDefeat) {

@@ -428,6 +428,17 @@ button.l2-map-mob-title--tap-full:focus {
   color: #d8dcc8;
 }
 
+.l2-map-mob-list--skeleton .l2-map-mob-item--skeleton {
+  pointer-events: none;
+  cursor: default;
+}
+
+.l2-map-mob-list--skeleton .l2-map-mob-item--skeleton:hover,
+.l2-map-mob-list--skeleton .l2-map-mob-item--skeleton:focus {
+  background: transparent;
+  outline: none;
+}
+
 /* Герої поруч — між картою і пейджером мобів */
 .l2-map-hero-section {
   margin: 0 0 4px;

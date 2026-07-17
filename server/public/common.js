@@ -70,6 +70,52 @@
   var sessionCatalogFetchPromise = null;
   var hudFirstFillDone = false;
   var SESSION_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
+  var ITEM_ICON_HINTS_CACHE_KEY = 'l2-item-icon-hints-v1';
+  var itemIconHintsPersistTimer = null;
+
+  function loadItemIconHintsFromSession() {
+    try {
+      var raw = sessionStorage.getItem(ITEM_ICON_HINTS_CACHE_KEY);
+      if (!raw) return;
+      var j = JSON.parse(raw);
+      if (!j || typeof j !== 'object') return;
+      var icons = global.L2 && global.L2.itemIconById;
+      if (!icons) return;
+      Object.keys(j).forEach(function (k) {
+        var id = normalizePositiveInt(k);
+        var url = j[k];
+        if (id > 0 && url != null && String(url).trim() !== '') {
+          icons[id] = String(url);
+        }
+      });
+    } catch (eLoadIcons) {
+      /* ignore */
+    }
+  }
+
+  function persistItemIconHintsToSession() {
+    try {
+      var icons = global.L2 && global.L2.itemIconById;
+      if (!icons) return;
+      var keys = Object.keys(icons);
+      if (keys.length > 800) keys = keys.slice(keys.length - 800);
+      var out = {};
+      for (var i = 0; i < keys.length; i++) {
+        out[keys[i]] = icons[keys[i]];
+      }
+      sessionStorage.setItem(ITEM_ICON_HINTS_CACHE_KEY, JSON.stringify(out));
+    } catch (eSaveIcons) {
+      /* ignore quota */
+    }
+  }
+
+  function schedulePersistItemIconHints() {
+    if (itemIconHintsPersistTimer) return;
+    itemIconHintsPersistTimer = setTimeout(function () {
+      itemIconHintsPersistTimer = null;
+      persistItemIconHintsToSession();
+    }, 250);
+  }
 
   function hasCatalogHintsPayload(j) {
     if (!j || typeof j !== 'object') return false;
@@ -390,12 +436,14 @@
         var url = h[k];
         if (url != null && String(url).trim() !== '') icons[k] = String(url);
       });
+      schedulePersistItemIconHints();
     },
     rememberItemIconHint: function (itemId, iconUrl) {
       var id = normalizePositiveInt(itemId);
       if (id <= 0) return;
       if (iconUrl == null || String(iconUrl).trim() === '') return;
       global.L2.itemIconById[id] = String(iconUrl);
+      schedulePersistItemIconHints();
     },
     resolveItemIconUrl: function (itemId, fallbackUrl) {
       var id = normalizePositiveInt(itemId);
@@ -1469,15 +1517,55 @@
       }
     },
 
-    /** Одразу після mount HUD — заповнити бари з sessionStorage (як char.html). */
-    hydrateHudFromSessionCache: function () {
+    /** Одразу після mount HUD — snapshot з sessionStorage (нік, lvl, бари). */
+    hydrateCharacterFromSessionCache: function () {
       var snap = global.L2.readSessionSnapshotCache(SESSION_SNAPSHOT_CACHE_KEY);
       if (!snap) return null;
       lastSnapshot = snap;
       if (typeof global.L2.applyHudFromSnapshot === 'function') {
         global.L2.applyHudFromSnapshot(snap);
       }
+      if (typeof document !== 'undefined') {
+        try {
+          document.dispatchEvent(
+            new CustomEvent('l2:character-hydrated', {
+              detail: { character: snap },
+            })
+          );
+        } catch (eHydrate) {
+          /* ignore */
+        }
+      }
       return snap;
+    },
+
+    /** @deprecated alias */
+    hydrateHudFromSessionCache: function () {
+      return global.L2.hydrateCharacterFromSessionCache();
+    },
+
+    getSessionSnapshotOrNull: function () {
+      if (lastSnapshot) return lastSnapshot;
+      return global.L2.readSessionSnapshotCache(SESSION_SNAPSHOT_CACHE_KEY);
+    },
+
+    fmtAdenaUi: function (adenaRaw) {
+      if (adenaRaw == null || adenaRaw === '') return '—';
+      try {
+        return BigInt(String(adenaRaw))
+          .toString()
+          .replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+      } catch (eFmt) {
+        return String(adenaRaw);
+      }
+    },
+
+    renderShopAdenaMeta: function (el, snap) {
+      if (!el || !snap) return;
+      el.innerHTML =
+        '<span class="l2-gm-shop-adena">Адена: <strong class="l2-gm-shop-adena__amount">' +
+        global.L2.fmtAdenaUi(snap.adena) +
+        '</strong></span>';
     },
 
     mountStandardHudPanel: function () {
@@ -1733,9 +1821,10 @@
       if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
         global.L2.mountStandardHudPanel();
       }
-      if (global.L2 && typeof global.L2.hydrateHudFromSessionCache === 'function') {
-        global.L2.hydrateHudFromSessionCache();
+      if (global.L2 && typeof global.L2.hydrateCharacterFromSessionCache === 'function') {
+        global.L2.hydrateCharacterFromSessionCache();
       }
+      loadItemIconHintsFromSession();
       bootstrapGameHelper();
       bootstrapOnlineFoot();
       bootstrapChatReplyNotify();

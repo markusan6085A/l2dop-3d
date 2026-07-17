@@ -401,3 +401,42 @@ body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-sell-btn:focus {
   outline: none;
   color: #ff5555 !important;
 }
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-meta {
+  min-height: 22px;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-mount.l2-gm-shop--loading {
+  min-height: 320px;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-skeleton-tabs {
+  min-height: 22px;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-skeleton-list {
+  min-height: 200px;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row--skeleton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-skeleton-icon {
+  display: inline-block;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: rgba(140, 120, 90, 0.24);
+  animation: l2-ui-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop #drops-shop-msg:not([hidden]) {
+  min-height: 1.4em;
+}

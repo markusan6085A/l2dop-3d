@@ -20,7 +20,9 @@
 
   function readCachedMapSnapshot() {
     if (window.L2 && typeof L2.readSessionSnapshotCache === 'function') {
-      return L2.readSessionSnapshotCache(MAP_SNAPSHOT_CACHE_KEY);
+      var mapSnap = L2.readSessionSnapshotCache(MAP_SNAPSHOT_CACHE_KEY);
+      if (mapSnap) return mapSnap;
+      return L2.readSessionSnapshotCache('l2-char-snapshot-cache-v1');
     }
     return null;
   }
@@ -795,11 +797,13 @@
   function renderAroundSkeleton(listEl) {
     if (!listEl) return;
     listEl.innerHTML = '';
+    listEl.classList.add('l2-map-mob-list--skeleton');
     for (var i = 0; i < MOBS_PER_PAGE; i++) {
       var li = document.createElement('li');
-      li.className =
-        'l2-map-mob-item l2-map-mob-item--battle l2-map-mob-item--with-icon l2-map-mob-item--hint';
-      li.textContent = 'Завантаження мобів...';
+      li.className = 'l2-map-mob-item l2-map-mob-item--skeleton';
+      var line = document.createElement('span');
+      line.className = 'l2-ui-skeleton-line l2-ui-skeleton-line--map-row';
+      li.appendChild(line);
       listEl.appendChild(li);
     }
   }
@@ -899,6 +903,7 @@
   function renderAround(around, listEl, pagerEl, prevBtn, nextBtn, indEl, page, setPage, playerLevel) {
     if (!around || !listEl) return;
     listEl.classList.remove('l2-map-mob-list--npc');
+    listEl.classList.remove('l2-map-mob-list--skeleton');
     delete listEl.dataset.l2NpcListSig;
     var spawns = around.nearbySpawns || [];
     var total = spawns.length;
@@ -1095,11 +1100,13 @@
     var c = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
     if (!c) c = readCachedMapSnapshot();
     if (c) {
-      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(c);
+      } else if (window.L2 && typeof L2.setLastSnapshot === 'function') {
         L2.setLastSnapshot(c);
-      }
-      if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-        L2.applyHudFromSnapshot(c);
+        if (typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
       }
       writeCachedMapSnapshot(c);
     }

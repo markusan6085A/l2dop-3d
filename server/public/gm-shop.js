@@ -829,10 +829,51 @@
 
   function syncMeta(metaEl, snap) {
     if (!metaEl || !snap) return;
+    if (window.L2 && typeof L2.renderShopAdenaMeta === 'function') {
+      L2.renderShopAdenaMeta(metaEl, snap);
+      return;
+    }
     metaEl.innerHTML =
       '<span class="l2-gm-shop-adena">Адена: <strong class="l2-gm-shop-adena__amount">' +
       fmtAdena(snap.adena) +
       '</strong></span>';
+  }
+
+  function renderShopSkeleton(mount) {
+    if (!mount) return;
+    mount.classList.add('l2-gm-shop--loading');
+    mount.innerHTML = '';
+    var tabs = document.createElement('div');
+    tabs.className =
+      'l2-drops-shop-tablist l2-drops-shop-tablist--cats l2-gm-shop-skeleton-tabs';
+    tabs.setAttribute('aria-hidden', 'true');
+    var tabLine = document.createElement('span');
+    tabLine.className = 'l2-ui-skeleton-line l2-ui-skeleton-line--tabs';
+    tabs.appendChild(tabLine);
+    mount.appendChild(tabs);
+    var gradeTabs = document.createElement('div');
+    gradeTabs.className =
+      'l2-drops-shop-tablist l2-drops-shop-tablist--grades l2-gm-shop-skeleton-tabs';
+    gradeTabs.setAttribute('aria-hidden', 'true');
+    var gradeLine = document.createElement('span');
+    gradeLine.className = 'l2-ui-skeleton-line l2-ui-skeleton-line--tabs';
+    gradeTabs.appendChild(gradeLine);
+    mount.appendChild(gradeTabs);
+    var list = document.createElement('div');
+    list.className = 'l2-gm-shop-list l2-gm-shop-skeleton-list';
+    for (var si = 0; si < 6; si++) {
+      var row = document.createElement('div');
+      row.className = 'l2-gm-shop-row l2-gm-shop-row--skeleton';
+      var icon = document.createElement('span');
+      icon.className = 'l2-gm-shop-skeleton-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      var text = document.createElement('span');
+      text.className = 'l2-ui-skeleton-line l2-ui-skeleton-line--row';
+      row.appendChild(icon);
+      row.appendChild(text);
+      list.appendChild(row);
+    }
+    mount.appendChild(list);
   }
 
   function addPurchaseRows(
@@ -947,6 +988,7 @@
 
   function render(metaEl, mount, shopData, snap) {
     if (!mount) return;
+    mount.classList.remove('l2-gm-shop--loading');
 
     mount.innerHTML = '';
 
@@ -1634,6 +1676,25 @@
 
     setMsg(msgEl, '');
 
+    var cachedSnap =
+      window.L2 && typeof L2.getSessionSnapshotOrNull === 'function'
+        ? L2.getSessionSnapshotOrNull()
+        : null;
+    if (cachedSnap) {
+      if (typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(cachedSnap, function (snap) {
+          syncMeta(metaEl, snap);
+        });
+      } else {
+        if (L2.setLastSnapshot) L2.setLastSnapshot(cachedSnap);
+        if (typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(cachedSnap);
+        }
+        syncMeta(metaEl, cachedSnap);
+      }
+    }
+    renderShopSkeleton(mount);
+
     Promise.all([
       fetch('/character', {
         headers: { Authorization: 'Bearer ' + t },
@@ -1664,13 +1725,19 @@
           return;
         }
         var snap = jChar.character;
-        if (window.L2 && window.L2.setLastSnapshot)
-          window.L2.setLastSnapshot(snap);
-        if (
-          window.L2 &&
-          typeof window.L2.applyHudFromSnapshot === 'function'
-        )
-          window.L2.applyHudFromSnapshot(snap);
+        if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+          L2.applyCharacterSnapshot(snap, function (s) {
+            syncMeta(metaEl, s);
+          });
+        } else {
+          if (window.L2 && window.L2.setLastSnapshot)
+            window.L2.setLastSnapshot(snap);
+          if (
+            window.L2 &&
+            typeof window.L2.applyHudFromSnapshot === 'function'
+          )
+            window.L2.applyHudFromSnapshot(snap);
+        }
 
         if (!shop) {
           setMsg(msgEl, 'Не вдалося завантажити магазин.');

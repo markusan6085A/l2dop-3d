@@ -3152,3 +3152,40 @@ body.l2-app-l2-chrome .l2-market-row .l2-hud-nick {
   color: var(--l2-nick-color) !important;
   text-shadow: var(--l2-nick-shadow) !important;
 }
+
+/* Спільні skeleton-лінії (gm-shop, map, char) */
+.l2-ui-skeleton-line {
+  display: block;
+  border-radius: 3px;
+  background: rgba(140, 120, 90, 0.22);
+  animation: l2-ui-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes l2-ui-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+.l2-ui-skeleton-line--tabs {
+  width: 72%;
+  max-width: 420px;
+  height: 14px;
+  margin: 4px auto;
+}
+
+.l2-ui-skeleton-line--row {
+  flex: 1 1 auto;
+  height: 12px;
+  max-width: 280px;
+}
+
+.l2-ui-skeleton-line--map-row {
+  width: 65%;
+  height: 12px;
+  margin: 2px 0;
+}
