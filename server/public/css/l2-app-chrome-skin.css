@@ -2105,6 +2105,34 @@ body.l2-app-l2-chrome.l2-page-map .l2-map-npc-pin {
   z-index: 4;
 }
 
+body.l2-app-l2-chrome.l2-page-map .l2-map-dungeon-enter {
+  margin: 0;
+  padding: 8px 10px;
+  text-align: center;
+  background-color: #1d1c1a !important;
+  border-top: 1px solid rgba(232, 56, 56, 0.35);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-dungeon-enter__link {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #e85840 !important;
+  text-decoration: none;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-dungeon-enter__link:hover,
+body.l2-app-l2-chrome.l2-page-map .l2-map-dungeon-enter__link:focus {
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-map-dungeon-enter__label {
+  font-size: 11px;
+  color: #a89a70;
+}
+
 body.l2-app-l2-chrome.l2-page-map .l2-map-mob-list--npc {
   min-height: 0 !important;
 }

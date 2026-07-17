@@ -985,6 +985,9 @@
     var dot = $('map-dot');
     var viewRadius = $('map-view-radius');
     var heroViewRadius = $('map-hero-view-radius');
+    var dungeonEnterEl = $('map-dungeon-enter');
+    var dungeonEnterLink = $('map-dungeon-enter-link');
+    var dungeonEnterLabel = $('map-dungeon-enter-label');
     var heroMarkersLayer = $('map-hero-markers');
     var heroSection = $('map-hero-section');
     var heroList = $('map-hero-list');
@@ -1005,6 +1008,28 @@
 
     var mammonMerchant = null;
     var mammonBlacksmith = null;
+    var dungeonEntrance = null;
+
+    function renderDungeonEntrance(imgEl, entrance) {
+      if (!entrance) {
+        if (dungeonEnterEl) dungeonEnterEl.hidden = true;
+        return;
+      }
+      if (dungeonEnterEl) dungeonEnterEl.hidden = false;
+      if (dungeonEnterLink) {
+        dungeonEnterLink.href =
+          '/dungeon.html?dungeonId=' +
+          encodeURIComponent(entrance.id || '') +
+          '&enter=1';
+      }
+      if (dungeonEnterLabel) {
+        dungeonEnterLabel.textContent = entrance.labelUk
+          ? ' · ' + entrance.labelUk
+          : entrance.labelEn
+            ? ' · ' + entrance.labelEn
+            : '';
+      }
+    }
 
     function applyListModeUi() {
       var isNpc = listMode === 'npc';
@@ -1166,6 +1191,9 @@
       if (sync.mammonBlacksmith !== undefined) {
         mammonBlacksmith = sync.mammonBlacksmith || null;
       }
+      if (sync.dungeonEntrance !== undefined) {
+        dungeonEntrance = sync.dungeonEntrance || null;
+      }
 
       if (sync.changed === false) {
         var msLite = sync.mapState;
@@ -1187,6 +1215,7 @@
         renderHeroList(aroundData, heroList, heroSection);
         renderHeroMarkers(img, heroMarkersLayer, (aroundData && aroundData.nearbyHeroes) || []);
         renderNpcMarker(img, npcMarkersLayer, mammonMerchant);
+        renderDungeonEntrance(img, dungeonEntrance);
         if (listMode === 'npc') {
           paintNpcList();
         }
@@ -1251,6 +1280,7 @@
       renderHeroList(aroundData, heroList, heroSection);
       renderHeroMarkers(img, heroMarkersLayer, aroundData.nearbyHeroes || []);
       renderNpcMarker(img, npcMarkersLayer, mammonMerchant);
+      renderDungeonEntrance(img, dungeonEntrance);
       if (listMode === 'npc') {
         paintNpcList();
         return;

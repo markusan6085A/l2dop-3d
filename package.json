@@ -27,6 +27,8 @@
     "gen:npc-exp-sp": "node server/scripts/gen-l2dop-npc-exp-sp.mjs",
     "gen:npc-lineage-names": "node server/scripts/gen-l2dop-npc-id-by-lineage-name.mjs",
     "gen:map-raid-spawns": "node server/scripts/gen-l2dop-map-raid-spawns.mjs",
+    "gen:dungeon-walk-grids": "node server/scripts/gen-seven-signs-dungeon-walk-grids.mjs",
+    "gen:dungeon-mob-spawns": "node server/scripts/gen-seven-signs-dungeon-mob-spawns.mjs",
     "sync:skill-icons-text-rpg": "node server/scripts/sync-skill-icons-from-text-rpg.mjs",
     "gen:hf-skills": "node server/scripts/gen-interlude-hf-skill-tables.mjs",
     "gen:hm-skills": "node server/scripts/gen-human-mystic-catalog.mjs",

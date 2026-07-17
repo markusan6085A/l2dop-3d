@@ -5,10 +5,8 @@ import {
   type CharacterRow,
 } from './charService.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
-import {
-  HUNT_LEVEL_TOLERANCE,
-  listHuntCandidatesOrdered,
-} from '../domain/battleHuntChain.js';
+import { HUNT_LEVEL_TOLERANCE } from '../domain/battleHuntChain.js';
+import { resolveHuntCandidatesForCharacter } from '../domain/huntContinueCandidates.js';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import { startBattleInTx } from './battleServiceSession.js';
 
@@ -63,9 +61,7 @@ export async function startHuntContinueBattle(
     const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));
     const nowMs = Date.now();
     const huntLevel = resolveHuntTargetLevel(targetLevel, excludeSpawnId);
-    const candidates = listHuntCandidatesOrdered({
-      worldX: base.worldX,
-      worldY: base.worldY,
+    const candidates = resolveHuntCandidatesForCharacter(base, {
       targetLevel: huntLevel,
       excludeSpawnId,
       preferredSpawnId,

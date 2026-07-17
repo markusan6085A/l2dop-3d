@@ -64,14 +64,13 @@ import {
   setMobSpawnRespawnEntry,
 } from '../domain/mobSpawnRespawn.js';
 import { deleteWorldBossSession } from './worldBossSessionService.js';
+import { HUNT_LEVEL_TOLERANCE } from '../domain/battleHuntChain.js';
 import {
-  countSameLevelHuntSpawnsNearby,
-  findNextSameLevelHuntSpawn,
-  HUNT_LEVEL_TOLERANCE,
-} from '../domain/battleHuntChain.js';
+  countHuntCandidatesForCharacter,
+  findNextHuntCandidateForCharacter,
+} from '../domain/huntContinueCandidates.js';
 import { MOB_KILL_KARMA_WASH } from '../domain/pvpKarma.js';
 import type { NearbyExtraMobEconomyPatch } from './battleNearbyExtraMobLoot.js';
-import { resolvedWorldPositionFromCharacterRow } from './mapAroundService.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -260,18 +259,18 @@ export async function persistBattleVictoryInTx(
   if (!result.ok) throw gameConflictFromMutation(result);
   const row = result.character as CharacterRow;
   const mobSpawnHpSerialized = serializeMobSpawnHpState(mobHpAfterVictory);
-  const huntPos = resolvedWorldPositionFromCharacterRow(char as CharacterRow);
   const huntOpts = {
-    worldX: huntPos.worldX,
-    worldY: huntPos.worldY,
     targetLevel: spawn.level,
     levelTolerance: HUNT_LEVEL_TOLERANCE,
     excludeSpawnId: bj.spawnId,
     mobSpawnHpJson: mobSpawnHpSerialized,
     nowMs: nowVictoryMs,
   };
-  const nextHunt = findNextSameLevelHuntSpawn(huntOpts);
-  const huntSameLevelRemaining = countSameLevelHuntSpawnsNearby(huntOpts);
+  const nextHunt = findNextHuntCandidateForCharacter(char as CharacterRow, huntOpts);
+  const huntSameLevelRemaining = countHuntCandidatesForCharacter(
+    char as CharacterRow,
+    huntOpts
+  );
   const victory: BattleVictorySummary = {
     spawnId: bj.spawnId,
     mobName: spawn.name,

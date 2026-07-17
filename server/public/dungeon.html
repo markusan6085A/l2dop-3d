@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Подземелля — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717dungeon1" />
+    <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
+    <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260717dungeon2" />
+    <style>
+      body.l2-page-dungeon .l2-dungeon-head {
+        margin: 0 0 8px;
+        padding: 8px 10px 0;
+      }
+      body.l2-page-dungeon .l2-dungeon-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+      }
+      body.l2-page-dungeon .l2-dungeon-sub {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #a89a70;
+      }
+      body.l2-page-dungeon .l2-map-viewport .l2-map-img {
+        cursor: crosshair;
+      }
+      body.l2-page-dungeon .l2-dungeon-dot {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        margin: -7px 0 0 -7px;
+        border-radius: 50%;
+        background: #e83838;
+        border: 2px solid #0a0a0a;
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.95),
+          0 0 8px rgba(232, 56, 56, 0.75);
+        pointer-events: none;
+        z-index: 8;
+      }
+      body.l2-page-dungeon .l2-dungeon-back {
+        margin: 10px 0 0;
+        padding: 0 10px 12px;
+      }
+      body.l2-page-dungeon .l2-dungeon-back__link {
+        font-size: 12px;
+        color: #bfa88a;
+        text-decoration: none;
+      }
+      body.l2-page-dungeon .l2-dungeon-back__link:hover,
+      body.l2-page-dungeon .l2-dungeon-back__link:focus {
+        text-decoration: underline;
+        outline: none;
+      }
+      body.l2-page-dungeon #dungeon-mob-modal.l2-map-mob-modal {
+        z-index: 500;
+      }
+    </style>
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-map l2-page-dungeon l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img class="l2-outer-sframe__cap-tl-img" src="/ref/19.png" alt="" width="28" height="52" />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img class="l2-outer-sframe__cap-tr-img" src="/ref/18.png" alt="" width="28" height="52" />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img class="l2-game-chrome-crest__img" src="/ref/2.png" alt="" width="40" height="40" />
+        </div>
+        <div class="l2-screen-inner l2-map-root">
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
+
+          <p class="err" id="dungeon-load-err" hidden></p>
+
+          <div id="dungeon-content" hidden>
+            <div class="l2-dungeon-head">
+              <h1 class="l2-dungeon-title" id="dungeon-title">—</h1>
+              <p class="l2-dungeon-sub" id="dungeon-sub"></p>
+            </div>
+            <div id="map-content">
+              <div id="map-stack">
+                <div
+                  class="l2-map-viewport"
+                  id="dungeon-map-viewport"
+                  aria-label="Карта подземелля — прокрутка або перетягування"
+                >
+                  <div class="l2-map-zoom-btns" role="toolbar" aria-label="Масштаб карти">
+                    <button
+                      type="button"
+                      class="l2-map-zoom-square"
+                      id="dungeon-map-zoom-out"
+                      aria-label="Зменшити карту"
+                    >
+                      −
+                    </button>
+                    <button
+                      type="button"
+                      class="l2-map-zoom-square"
+                      id="dungeon-map-zoom-in"
+                      aria-label="Збільшити карту"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div class="l2-map-inner" id="dungeon-map-inner">
+                    <img
+                      id="dungeon-map-img"
+                      class="l2-map-img"
+                      src=""
+                      alt=""
+                      draggable="false"
+                    />
+                    <div
+                      id="dungeon-move-target"
+                      class="l2-map-move-target"
+                      hidden
+                      aria-hidden="true"
+                    ></div>
+                    <div id="dungeon-dot" class="l2-dungeon-dot" aria-hidden="true"></div>
+                    <div
+                      id="dungeon-mob-markers"
+                      class="l2-map-mob-markers"
+                      aria-hidden="true"
+                    ></div>
+                  </div>
+                </div>
+                <section class="l2-map-mob-section" aria-label="Моби подземелля">
+                  <ul class="l2-map-mob-list" id="dungeon-mob-list"></ul>
+                </section>
+              </div>
+            </div>
+            <p class="l2-dungeon-back">
+              <a class="l2-dungeon-back__link" href="/map.html">&lt;&lt;&lt; На поверхню</a>
+            </p>
+          </div>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="dungeon-mob-modal"
+      class="l2-map-mob-modal"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dungeon-mob-modal-title"
+    >
+      <button
+        type="button"
+        class="l2-map-mob-modal__backdrop"
+        id="dungeon-mob-modal-backdrop"
+        aria-label="Закрити"
+      ></button>
+      <div class="l2-map-mob-modal__panel">
+        <button
+          type="button"
+          class="l2-map-mob-modal__close"
+          id="dungeon-mob-modal-close"
+          aria-label="Закрити"
+        >
+          ×
+        </button>
+        <div class="l2-map-mob-modal__head">
+          <img
+            id="dungeon-mob-modal-icon"
+            class="l2-map-mob-modal__icon"
+            width="40"
+            height="40"
+            alt=""
+          />
+          <div>
+            <h3 id="dungeon-mob-modal-title" class="l2-map-mob-modal__title">—</h3>
+            <p id="dungeon-mob-modal-sub" class="l2-map-mob-modal__sub"></p>
+          </div>
+        </div>
+        <div class="l2-map-mob-modal__section">
+          <div class="l2-map-mob-modal__sec-title">Параметри (бій)</div>
+          <dl class="l2-map-mob-modal__stats" id="dungeon-mob-modal-stats"></dl>
+        </div>
+        <div class="l2-map-mob-modal__section">
+          <div class="l2-map-mob-modal__sec-title">Дроп</div>
+          <div id="dungeon-mob-modal-drops" class="l2-map-mob-modal__drops"></div>
+        </div>
+        <div class="l2-map-mob-modal__section">
+          <div class="l2-map-mob-modal__sec-title">Спойл</div>
+          <div id="dungeon-mob-modal-spoil" class="l2-map-mob-modal__drops"></div>
+        </div>
+        <p id="dungeon-mob-modal-note" class="l2-map-mob-modal__note" hidden></p>
+        <a id="dungeon-mob-modal-battle" class="l2-map-mob-modal__battle" href="#">У бій</a>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260717dungeon1"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
+    <script src="/dungeon.js?v=20260717dungeonMobModal3"></script>
+  </body>
+</html>

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/css/l2-outer-sframe.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260708globalClsAll2" />
     <link rel="stylesheet" href="/css/l2-hud-panel.css?v=20260712wapBars16" />
-    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260717mapNpcLink1" />
+    <link rel="stylesheet" href="/css/l2-app-chrome-skin.css?v=20260717dungeon1" />
   </head>
   <body class="l2-body l2-page-city l2-page-map l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
@@ -92,6 +92,13 @@
                   <div id="map-dot" class="l2-map-dot" aria-hidden="true"></div>
                 </div>
               </div>
+
+              <p class="l2-map-dungeon-enter" id="map-dungeon-enter" hidden>
+                <a class="l2-map-dungeon-enter__link" id="map-dungeon-enter-link" href="#"
+                  >Увійти в подземелля</a
+                >
+                <span class="l2-map-dungeon-enter__label" id="map-dungeon-enter-label"></span>
+              </p>
 
               <div class="l2-map-list-mode" id="map-list-mode" role="tablist" aria-label="Список під картою">
                 <button
@@ -199,6 +206,6 @@
     <script src="/common.js?v=20260713pveDefeatRedirect2"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260707navChatIcon1"></script>
-    <script src="/map.js?v=20260717mammonNearby1"></script>
+    <script src="/map.js?v=20260717dungeonNoRadius1"></script>
   </body>
 </html>

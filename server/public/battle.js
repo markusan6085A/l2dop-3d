@@ -21,6 +21,30 @@
     if (logEl) delete logEl.dataset.battleLogKey;
   }
 
+  function isDungeonSpawnId(id) {
+    return !!id && String(id).indexOf('sdms_') === 0;
+  }
+
+  function dungeonIdFromSpawnId(spawnId) {
+    var s = String(spawnId || '');
+    if (s.indexOf('sdms_') !== 0) return '';
+    var rest = s.slice(5);
+    var m = rest.match(/^(.+)_\d+$/);
+    return m ? m[1] : '';
+  }
+
+  function resolveBattleReturnUrl(fallbackSpawnId, victorySummary) {
+    var sid =
+      (victorySummary && victorySummary.spawnId) ||
+      fallbackSpawnId ||
+      '';
+    var did = dungeonIdFromSpawnId(sid);
+    if (did) {
+      return '/dungeon.html?dungeonId=' + encodeURIComponent(did);
+    }
+    return '/map.html';
+  }
+
   function freezeLogForHuntContinue(victory, currentBattle) {
     var lines =
       victory && victory.fullLog && victory.fullLog.length
@@ -2755,7 +2779,7 @@
           L2.setLastSnapshot(character);
         }
         saveVictoryToSession(null);
-        window.location.href = '/map.html';
+        window.location.href = resolveBattleReturnUrl(spawnId, lastVictorySummary);
       });
     }
 
@@ -2799,7 +2823,27 @@
     var vCont = $('battle-victory-continue');
     if (vCont) {
       vCont.addEventListener('click', function () {
-        goToMap();
+        runWithBattleNavLock(async function () {
+          var victory =
+            lastVictorySummary ||
+            loadVictoryFromSession() ||
+            (spawnId ? { spawnId: spawnId } : null);
+          var sid =
+            victory && victory.spawnId ? victory.spawnId : spawnId;
+          var isPvpVic =
+            victory &&
+            (victory.isPvp ||
+              (sid && String(sid).indexOf('pvp:') === 0));
+          if (isPvpVic) {
+            await goToMap();
+            return;
+          }
+          if (sid && isDungeonSpawnId(sid)) {
+            await huntContinueManual(victory);
+            return;
+          }
+          await goToMap();
+        });
       });
     }
     var vHunt = $('battle-victory-hunt');

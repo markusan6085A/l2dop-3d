@@ -61,6 +61,7 @@ export interface CharacterRow {
   /** Розкладка панелі скілів у бою (41 слот). */
   battleHotbarJson: Prisma.JsonValue | null;
   questProgressJson: Prisma.JsonValue | null;
+  dungeonStateJson: Prisma.JsonValue | null;
   dailyQuestsJson: Prisma.JsonValue | null;
   buffHeroicTier: number | null;
   buffZealotStacks: number | null;

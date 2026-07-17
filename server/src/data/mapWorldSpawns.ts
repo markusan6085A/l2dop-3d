@@ -278,6 +278,10 @@ function expandRegularSpawnsThreefold(spawns: MapWorldSpawn[]): MapWorldSpawn[] 
   return out;
 }
 
+import {
+  resolveMapWorldSpawnById,
+} from './sevenSignsDungeonMobSpawns.js';
+
 /** Усі спавни для БД/бою (статично; пізніше — spawnlist з l2dop). */
 export const MAP_WORLD_SPAWNS: MapWorldSpawn[] = expandRegularSpawnsThreefold([
   ...buildDenseTownFieldSpawns(),
@@ -286,6 +290,8 @@ export const MAP_WORLD_SPAWNS: MapWorldSpawn[] = expandRegularSpawnsThreefold([
 ]);
 
 export function getWorldSpawnById(id: string): MapWorldSpawn | undefined {
+  const dungeonSpawn = resolveMapWorldSpawnById(id);
+  if (dungeonSpawn) return dungeonSpawn;
   return MAP_WORLD_SPAWNS.find((s) => s.id === id);
 }
 

@@ -8,6 +8,7 @@ import { mobCombatFromSpawn } from '../domain/battle.js';
 import { mobKillRewardMult } from '../domain/championMobRules.js';
 import type { DropEntry } from '../types/combatDrop.js';
 import { raidBossRewardPreviewForNpcId } from '../data/l2dopRaidBossRewardPatches.js';
+import { sevenSignsDungeonMobRewardPreviewForNpcId } from '../data/l2dopSevenSignsDungeonMobRewards.js';
 import { hasCustomNpcDropBag } from '../data/npcDropsResolved.js';
 import { resolveL2dopNpcIdByMobName } from '../data/l2dopNpcResolve.js';
 import {
@@ -138,11 +139,16 @@ export function getSpawnCatalogInfo(
     !customDropOnly &&
     viewer != null &&
     viewerMaySeeSpoilLoot(viewer.race, viewer.l2Profession, viewer.skillsLearnedJson ?? null);
+  const sdPreview =
+    npcId != null ? sevenSignsDungeonMobRewardPreviewForNpcId(npcId) : undefined;
   const rbPreview =
-    npcId != null ? raidBossRewardPreviewForNpcId(npcId) : undefined;
-  const rewardMult = rbPreview
-    ? 1
-    : mobKillRewardMult({ spawnKind: spawn.kind, mobName: spawn.name });
+    !sdPreview && npcId != null
+      ? raidBossRewardPreviewForNpcId(npcId)
+      : undefined;
+  const rewardMult =
+    rbPreview || sdPreview
+      ? 1
+      : mobKillRewardMult({ spawnKind: spawn.kind, mobName: spawn.name });
   const drops = [...bag.drops, ...resPreview.drops].map((d) =>
     serializeDropScaled(d, rewardMult)
   );
@@ -153,12 +159,15 @@ export function getSpawnCatalogInfo(
     : [];
   const rw = rewardExpSpForSpawn(npcId, spawn.level);
   const rewardExp =
+    sdPreview?.expLabel ??
     rbPreview?.expLabel ??
     scaleRewardNumber(rw.exp, rewardMult);
   const rewardSp =
+    sdPreview?.spLabel ??
     rbPreview?.spLabel ??
     scaleRewardNumber(rw.sp, rewardMult);
-  const rewardExpSynthetic = rbPreview != null ? false : rw.synthetic;
+  const rewardExpSynthetic =
+    sdPreview != null || rbPreview != null ? false : rw.synthetic;
   return {
     spawnId: spawn.id,
     name: spawn.name,

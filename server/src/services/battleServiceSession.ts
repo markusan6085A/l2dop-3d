@@ -1,6 +1,16 @@
 import { Prisma } from '@prisma/client';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
+import { getDungeonMobSpawnById } from '../data/sevenSignsDungeonMobSpawns.js';
+import { findSevenSignsDungeonById } from '../data/sevenSignsDungeons.js';
 import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
+import {
+  dungeonMobBattleDistancePx,
+  DUNGEON_BATTLE_RANGE_PX,
+} from '../domain/dungeonNearbyMobsQuery.js';
+import { resolveDungeonMovementPatch } from '../domain/dungeonMapMovement.js';
+import { parseDungeonStateJson } from '../domain/dungeonState.js';
+import { resolveDungeonMoveSpeedStatsForRow } from '../domain/dungeonRunSpeed.js';
+import { isWithinMapNearbyHeroRadius } from '../domain/mapNearbyRadius.js';
 import { findPvpIncomingForCharacter } from './pvpIncomingService.js';
 import type { PvpIncomingAttack } from './pvpIncomingService.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
@@ -92,12 +102,47 @@ export async function startBattleInTx(
   }
   const cr0 = char as CharacterRow;
   const base = resolveMapMovement(applyPassiveHpRegen(cr0));
-  const distAtCommit = Math.hypot(
-    base.worldX - spawn.worldX,
-    base.worldY - spawn.worldY
-  );
-  if (distAtCommit > BATTLE_RANGE) {
-    throw new Error('battle_too_far');
+
+  const dungeonMob = getDungeonMobSpawnById(spawnId);
+  if (dungeonMob) {
+    const dungeon = findSevenSignsDungeonById(dungeonMob.dungeonId);
+    if (
+      !dungeon ||
+      !isWithinMapNearbyHeroRadius(
+        base.worldX,
+        base.worldY,
+        dungeon.worldX,
+        dungeon.worldY
+      )
+    ) {
+      throw new Error('battle_too_far');
+    }
+    const dState = parseDungeonStateJson(base.dungeonStateJson);
+    if (!dState || dState.dungeonId !== dungeonMob.dungeonId) {
+      throw new Error('battle_too_far');
+    }
+    const speed = resolveDungeonMoveSpeedStatsForRow(base, Date.now());
+    const live = resolveDungeonMovementPatch(
+      dState,
+      speed.mapMoveSpeedPx,
+      Date.now()
+    ).state;
+    const distPx = dungeonMobBattleDistancePx(
+      dungeonMob,
+      live.mapX,
+      live.mapY
+    );
+    if (distPx > DUNGEON_BATTLE_RANGE_PX) {
+      throw new Error('battle_too_far');
+    }
+  } else {
+    const distAtCommit = Math.hypot(
+      base.worldX - spawn.worldX,
+      base.worldY - spawn.worldY
+    );
+    if (distAtCommit > BATTLE_RANGE) {
+      throw new Error('battle_too_far');
+    }
   }
   const inv0 = parseInventory(base.inventoryJson);
   const effLv0 = levelFromTotalExp(base.exp);

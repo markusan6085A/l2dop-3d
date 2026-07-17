@@ -1,6 +1,7 @@
 import { addItemToBag, type InventoryState } from '../data/inventory.js';
 import type { DropEntry } from '../types/combatDrop.js';
 import { rollRaidBossKillReward } from '../data/l2dopRaidBossRewardPatches.js';
+import { rollSevenSignsDungeonKillReward } from '../data/l2dopSevenSignsDungeonMobRewards.js';
 import { hasCustomNpcDropBag } from '../data/npcDropsResolved.js';
 import {
   ensureMobDropBag,
@@ -146,8 +147,14 @@ export function rollKillLoot(
 
   let expGain: bigint;
   let spGain: number;
-  const rbKillReward = npcId != null ? rollRaidBossKillReward(npcId) : undefined;
-  if (rbKillReward) {
+  const sdKillReward =
+    npcId != null ? rollSevenSignsDungeonKillReward(npcId) : undefined;
+  const rbKillReward =
+    !sdKillReward && npcId != null ? rollRaidBossKillReward(npcId) : undefined;
+  if (sdKillReward) {
+    expGain = BigInt(sdKillReward.exp);
+    spGain = sdKillReward.sp;
+  } else if (rbKillReward) {
     expGain = BigInt(rbKillReward.exp);
     spGain = rbKillReward.sp;
   } else {

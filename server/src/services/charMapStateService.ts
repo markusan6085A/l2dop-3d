@@ -30,6 +30,10 @@ import {
   parsePvePendingDefeat,
   pvePendingDefeatToSummary,
 } from '../domain/pvePendingDefeat.js';
+import {
+  getDungeonEntranceAt,
+  type DungeonEntrancePayload,
+} from './sevenSignsDungeonService.js';
 
 /** Легкий зріз для карти / HUD (без інвентаря й каталогів). */
 export interface CharacterMapStatePayload {
@@ -88,6 +92,7 @@ export interface MapSyncPayload {
   mapState: CharacterMapStatePayload;
   mammonMerchant: MammonMerchantStatePayload | null;
   mammonBlacksmith: MammonBlacksmithStatePayload | null;
+  dungeonEntrance: DungeonEntrancePayload | null;
   around: ReturnType<typeof resolveMapLocality> & {
     nearbySpawns: ReturnType<typeof buildMapNearbySpawnViews>['listEntries'];
     nearbyHeroes: Awaited<ReturnType<typeof getNearbyHeroesForMap>>;
@@ -164,6 +169,7 @@ export async function getMapSyncForUser(
     mapState.worldX,
     mapState.worldY
   );
+  const dungeonEntrance = getDungeonEntranceAt(mapState.worldX, mapState.worldY);
   const changed = mapSyncHasChanges({
     clientMapCatalogVersion: query.mapCatalogVersion,
     clientPersonalMapSig: query.personalMapSig,
@@ -210,6 +216,7 @@ export async function getMapSyncForUser(
       mapState,
       mammonMerchant,
       mammonBlacksmith,
+      dungeonEntrance,
       around: {
         ...locality,
         nearbySpawns: [],
@@ -238,6 +245,7 @@ export async function getMapSyncForUser(
     mapState,
     mammonMerchant,
     mammonBlacksmith,
+    dungeonEntrance,
     around: {
       ...locality,
       nearbySpawns: listEntries,

@@ -21,10 +21,15 @@ import { getMapWorldSpawnsNearPlayer } from '../services/mapSpawnsService.js';
 import { getMapSyncForUser } from '../services/charMapStateService.js';
 import { getMammonMerchantState } from '../services/mammonMerchantService.js';
 import { getMammonBlacksmithState } from '../services/mammonBlacksmithService.js';
+import { prisma } from '../lib/prisma.js';
+import type { CharacterRow } from '../services/charTypes.js';
+import {
+  getDungeonViewWithPlayer,
+  performDungeonEnter,
+  performDungeonMove,
+} from '../services/dungeonMoveService.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
-import { prisma } from '../lib/prisma.js';
-import type { CharacterRow } from '../services/charService.js';
 
 export function registerGameWorldRoutes(app: FastifyInstance): void {
   app.get(
@@ -78,6 +83,263 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     { preHandler: requireAuth },
     async (_request, reply) => {
       return reply.send({ mammonBlacksmith: getMammonBlacksmithState() });
+    }
+  );
+
+  app.get(
+    '/dungeon/view',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const q = request.query as Record<string, unknown>;
+      const dungeonId =
+        typeof q.dungeonId === 'string' ? q.dungeonId.trim() : '';
+      if (!dungeonId) {
+        return reply.code(400).send({ messageUk: 'Невідоме подземелля.' });
+      }
+      const row = (await prisma.character.findFirst({
+        where: { userId },
+        orderBy: { lastUpdate: 'desc' },
+      })) as CharacterRow | null;
+      if (!row) {
+        return reply.code(404).send({ messageUk: 'Персонажа не знайдено.' });
+      }
+      const view = getDungeonViewWithPlayer(row, dungeonId);
+      if (!view) {
+        return reply.code(403).send({
+          messageUk: 'Підійди ближче до входу в некрополь або катакомби.',
+        });
+      }
+      return reply.send({ dungeon: view });
+    }
+  );
+
+  app.post(
+    '/dungeon/enter',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      const dungeonId =
+        typeof b.dungeonId === 'string' ? b.dungeonId.trim() : '';
+      if (!dungeonId) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Невідоме подземелля.',
+        });
+      }
+      try {
+        const result = await performDungeonEnter(userId, dungeonId, er);
+        await logRouteMutation(
+          request,
+          'dungeon_enter',
+          er,
+          'ok',
+          result.character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send(result);
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            'dungeon_enter',
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && e.message === 'dungeon_enter_invalid') {
+          await logRouteMutation(
+            request,
+            'dungeon_enter',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Невідоме подземелля.',
+          });
+        }
+        if (e instanceof Error && e.message === 'dungeon_enter_forbidden') {
+          await logRouteMutation(
+            request,
+            'dungeon_enter',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(403).send({
+            error: e.message,
+            messageUk: 'Підійди ближче до входу в некрополь або катакомби.',
+          });
+        }
+        await logRouteMutation(
+          request,
+          'dungeon_enter',
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
+    }
+  );
+
+  app.post(
+    '/dungeon/move',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      const dungeonId =
+        typeof b.dungeonId === 'string' ? b.dungeonId.trim() : '';
+      const tx = b.targetMapX;
+      const ty = b.targetMapY;
+      if (!dungeonId) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Невідоме подземелля.',
+        });
+      }
+      if (typeof tx !== 'number' || typeof ty !== 'number') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібні targetMapX і targetMapY (числа).',
+        });
+      }
+      try {
+        const result = await performDungeonMove(
+          userId,
+          dungeonId,
+          tx,
+          ty,
+          er
+        );
+        await logRouteMutation(
+          request,
+          'dungeon_move',
+          er,
+          'ok',
+          result.character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send(result);
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            'dungeon_move',
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && e.message === 'dungeon_move_invalid') {
+          await logRouteMutation(
+            request,
+            'dungeon_move',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Некоректні координати.',
+          });
+        }
+        if (e instanceof Error && e.message === 'dungeon_move_forbidden') {
+          await logRouteMutation(
+            request,
+            'dungeon_move',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(403).send({
+            error: e.message,
+            messageUk: 'Рух у подземеллі зараз недоступний.',
+          });
+        }
+        if (e instanceof Error && e.message === 'dungeon_target_too_close') {
+          await logRouteMutation(
+            request,
+            'dungeon_move',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Обери точку далі від поточної позиції.',
+          });
+        }
+        if (
+          e instanceof Error &&
+          (e.message === 'dungeon_target_blocked' ||
+            e.message === 'dungeon_no_path')
+        ) {
+          await logRouteMutation(
+            request,
+            'dungeon_move',
+            er,
+            'error',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Туди не пройти — лише по коридорах катакомб.',
+          });
+        }
+        await logRouteMutation(
+          request,
+          'dungeon_move',
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
     }
   );
 
