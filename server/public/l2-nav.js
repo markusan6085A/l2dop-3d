@@ -95,23 +95,7 @@
     var span = document.createElement('span');
     span.className = 'l2-wap-lbl l2-wap-lbl--' + item.lbl;
     span.textContent = item.i18nKey && L2.tr ? L2.tr(item.i18nKey) : item.label || '';
-    var hasIcon =
-      (typeof item.iconPath === 'string' && item.iconPath.length > 0) ||
-      (typeof item.icon === 'string' && item.icon.length > 0);
-    if (hasIcon) {
-      var img = document.createElement('img');
-      img.className = 'l2-wap-ico';
-      img.src = item.iconPath ? item.iconPath : ASSETS + '/' + item.icon;
-      img.width = 14;
-      img.height = 14;
-      img.alt = '';
-      img.decoding = 'async';
-      img.addEventListener('error', function onIcoErr() {
-        img.removeEventListener('error', onIcoErr);
-        img.src = '/icons/drops/other.svg';
-      });
-      a.appendChild(img);
-    }
+    /* l2-nav-minimal: лише текст, без 8 JPG-іконок (економія запитів). */
     a.appendChild(span);
     return a;
   }

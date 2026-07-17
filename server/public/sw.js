@@ -2,7 +2,7 @@
  * Service Worker: cache-first для статики (фото, ref, css, js).
  * HTML і API — завжди мережа (сервер = джерело правди).
  */
-var GAME_CACHE_VERSION = '20260717dungeonReturn2';
+var GAME_CACHE_VERSION = '20260717perf2';
 var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
 /** Лише безверсійні іконки/рамки — JS/CSS з ?v= не precache (інакше застрягає старий UI). */
@@ -52,7 +52,10 @@ function shouldIgnoreSearchForPath(pathname) {
     pathname.indexOf('/icons/') === 0 ||
     pathname.indexOf('/ref/') === 0 ||
     pathname.indexOf('/characters/') === 0 ||
-    pathname.indexOf('/mobs/') === 0
+    pathname.indexOf('/mobs/') === 0 ||
+    pathname.indexOf('/css/') === 0 ||
+    pathname === '/styles.css' ||
+    /\.(css|js)$/i.test(pathname)
   );
 }
 
@@ -154,10 +157,20 @@ self.addEventListener('fetch', function (event) {
         });
       }
 
-      /** ?v= — завжди мережа першою, щоб bump версії реально оновлював CSS/JS на проді. */
+      /** ?v= — cache-first (pathname), фонове оновлення (stale-while-revalidate). */
       if (hasVersionQuery(url)) {
-        return fetchAndMaybeCache().catch(function () {
-          return cacheLookup(cache, event.request);
+        return cacheLookup(cache, event.request).then(function (cached) {
+          var networkUpdate = fetchAndMaybeCache().catch(function () {
+            return null;
+          });
+          if (cached) {
+            event.waitUntil(networkUpdate);
+            return cached;
+          }
+          return networkUpdate.then(function (response) {
+            if (response) return response;
+            return cacheLookup(cache, event.request);
+          });
         });
       }
 

@@ -1,0 +1,5 @@
+/**
+ * HUD + app chrome skin — один link замість двох окремих файлів у HTML.
+ */
+@import url("l2-hud-panel.css?v=20260717perf2");
+@import url("l2-app-chrome-skin.css?v=20260717perf2");

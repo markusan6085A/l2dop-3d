@@ -1783,9 +1783,9 @@
     /* ignore */
   }
 
-  var CHAT_REPLY_NOTIFY_VER = '20260709perf1';
-  var ONLINE_FOOT_ASSET_VER = '20260709perfLayout1';
-  var GAME_HELPER_ASSET_VER = '20260712helper9';
+  var CHAT_REPLY_NOTIFY_VER = '20260717perf2';
+  var ONLINE_FOOT_ASSET_VER = '20260717perf2';
+  var GAME_HELPER_ASSET_VER = '20260717perf2';
 
   function bootstrapChatReplyNotify() {
     if (typeof document === 'undefined' || !document.body) return;
