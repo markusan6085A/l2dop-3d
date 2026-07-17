@@ -34,7 +34,17 @@
         display: grid;
         grid-template-columns: repeat(11, 1fr);
         gap: 5px;
-        margin: 0 0 12px;
+        margin: 0 0 10px;
+      }
+      .l2-town-buffer-divider {
+        margin: 0 0 10px;
+        padding: 0;
+        border: 0;
+        border-top: 1px solid rgba(165, 145, 116, 0.42);
+        width: 100%;
+      }
+      .l2-town-buffer-actions .l2-town-buffer-divider {
+        margin: 2px 0 8px;
       }
       .l2-town-buffer-skill {
         display: grid;
@@ -75,28 +85,30 @@
         -webkit-tap-highlight-color: transparent;
       }
       .l2-town-buffer-text-btn--apply {
-        color: #5ce85c;
+        color: #a59174;
         font-weight: 700;
         text-decoration: underline;
       }
       .l2-town-buffer-text-btn--apply:hover:not(:disabled),
       .l2-town-buffer-text-btn--apply:focus-visible:not(:disabled) {
         outline: none;
-        filter: brightness(1.12);
-        color: #7eff7e !important;
+        color: #bfa88a !important;
       }
       .l2-town-buffer-text-btn--restore {
-        color: #e8dcc0;
+        color: #a59174;
         text-decoration: underline;
         font-weight: 600;
       }
       .l2-town-buffer-text-btn--restore:hover:not(:disabled),
       .l2-town-buffer-text-btn--restore:focus-visible:not(:disabled) {
         outline: none;
-        filter: brightness(1.08);
+      }
+      .l2-town-buffer-text-btn--restore:hover:not(:disabled) .l2-town-buffer-restore-label,
+      .l2-town-buffer-text-btn--restore:focus-visible:not(:disabled) .l2-town-buffer-restore-label {
+        color: #bfa88a;
       }
       .l2-town-buffer-restore-label {
-        color: #e8dcc0;
+        color: #a59174;
       }
       .l2-town-buffer-restore-sep {
         color: #8a8070;
@@ -160,9 +172,11 @@
           <section class="l2-town-buffer-card" id="town-buffer-card" hidden>
             <h1 class="l2-town-buffer-title">Міський бафер</h1>
             <div class="l2-town-buffer-row" id="town-buffer-row"></div>
+            <hr class="l2-town-buffer-divider" aria-hidden="true" />
             <div class="l2-town-buffer-actions">
               <p class="l2-town-buffer-fee" id="town-buffer-fee">Ціна: —</p>
               <button type="button" class="l2-town-buffer-text-btn l2-town-buffer-text-btn--apply" id="town-buffer-apply-btn">Взяти баф</button>
+              <hr class="l2-town-buffer-divider" aria-hidden="true" />
               <button type="button" class="l2-town-buffer-text-btn l2-town-buffer-text-btn--restore" id="town-buffer-restore-btn">
                 <span class="l2-town-buffer-restore-label">Відновити </span><span class="l2-town-buffer-vital l2-town-buffer-vital--hp">HP</span><span class="l2-town-buffer-restore-sep"> | </span><span class="l2-town-buffer-vital l2-town-buffer-vital--mp">MP</span><span class="l2-town-buffer-restore-sep"> | </span><span class="l2-town-buffer-vital l2-town-buffer-vital--cp">CP</span>
               </button>
