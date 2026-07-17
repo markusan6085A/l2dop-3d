@@ -38,6 +38,21 @@ function isNearDungeonEntrance(row: CharacterRow, dungeonId: string): boolean {
   );
 }
 
+/** Повідомлення для 403 GET /game/dungeon/view. */
+export function dungeonViewDeniedMessageUk(
+  row: CharacterRow,
+  dungeonId: string
+): string {
+  const stored = parseDungeonStateJson(row.dungeonStateJson);
+  if (stored?.dungeonId && stored.dungeonId !== dungeonId) {
+    return 'Зараз активне інше подземелля — спочатку вийди на карту.';
+  }
+  if (stored?.dungeonId === dungeonId && !isNearDungeonEntrance(row, dungeonId)) {
+    return 'Персонаж перемістився з цього подземелля (інший пристрій або місто).';
+  }
+  return 'Підійди до входу в некрополь або катакомби (телепорт зі списку катакомб).';
+}
+
 function playerMayUseDungeonSession(row: CharacterRow, dungeonId: string): boolean {
   return isNearDungeonEntrance(row, dungeonId);
 }

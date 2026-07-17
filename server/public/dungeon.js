@@ -810,15 +810,9 @@
             String(charJ.character.activeDungeonId).trim() !== ''
               ? String(charJ.character.activeDungeonId).trim()
               : null;
-          if (!activeDid || activeDid !== dungeonId) {
-            if (activeDid && activeDid !== dungeonId) {
-              window.location.replace(
-                '/dungeon.html?dungeonId=' + encodeURIComponent(activeDid)
-              );
-              return;
-            }
-            await resyncAndLeaveDungeon(
-              'Персонаж уже не в подземеллі — переходимо на карту.'
+          if (activeDid && activeDid !== dungeonId) {
+            window.location.replace(
+              '/dungeon.html?dungeonId=' + encodeURIComponent(activeDid)
             );
             return;
           }
@@ -1320,7 +1314,14 @@
         }
         var d = await fetchDungeonView(dungeonId);
         if (d && d.forbidden) {
-          await resyncAndLeaveDungeon(d.messageUk);
+          if (currentDungeon && currentDungeon.player) {
+            await resyncAndLeaveDungeon(
+              d.messageUk ||
+                'Сесію подземелля закрито (місто або карта на іншому пристрої).'
+            );
+            return;
+          }
+          schedulePoll();
           return;
         }
         if (d && d.player) paintDungeon(d);
@@ -1346,7 +1347,12 @@
       first = await fetchDungeonView(dungeonId);
     }
     if (first && first.forbidden) {
-      await resyncAndLeaveDungeon(first.messageUk);
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent =
+          first.messageUk ||
+          'Підійди до входу в некрополь або катакомби (телепорт зі списку катакомб).';
+      }
       return;
     }
     if (!first) {

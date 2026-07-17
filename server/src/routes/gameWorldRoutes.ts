@@ -29,6 +29,7 @@ import {
   performDungeonMove,
 } from '../services/dungeonMoveService.js';
 import { performDungeonLeave } from '../services/dungeonLeaveService.js';
+import { dungeonViewDeniedMessageUk } from '../domain/dungeonMoveLogic.js';
 import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { listSevenSignsDungeonsForMenu } from '../services/sevenSignsDungeonListService.js';
@@ -111,8 +112,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       const view = await getDungeonViewWithPlayer(row, dungeonId);
       if (!view) {
         return reply.code(403).send({
-          messageUk:
-            'Персонаж уже не в цьому подземеллі (можливо, перемістився з іншого пристрою).',
+          messageUk: dungeonViewDeniedMessageUk(row, dungeonId),
         });
       }
       return reply.send({ dungeon: view });
