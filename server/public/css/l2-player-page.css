@@ -33,9 +33,101 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel {
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-photo-wrap {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   margin: 0 auto;
   max-width: 320px;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-character-hero-power {
+  width: 100%;
+  max-width: 300px;
+  margin: 8px auto 12px;
+  padding: 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-character-hero-power__label {
+  color: #fff;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-character-hero-power__val {
+  color: #bfa88a;
+  font-weight: 700;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats .l2-character-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(48, 48, 48, 0.88);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  text-decoration: none;
+  color: #d8ccb0;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats > .l2-character-row:first-child {
+  border-top: 1px dotted rgba(80, 80, 80, 0.75);
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats .l2-character-row__ico {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats .l2-character-row__label {
+  color: #d8ccb0;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats .l2-character-row__val {
+  color: #d8ccb0;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats .l2-character-row__val--white {
+  color: #fff;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-stats .l2-character-row__info {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-player
+  .l2-player-stats
+  .l2-character-row--all-white
+  .l2-character-row__label,
+body.l2-app-l2-chrome.l2-page-player
+  .l2-player-stats
+  .l2-character-row--all-white
+  .l2-character-row__val {
+  color: #fff;
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-frame--hero-only {

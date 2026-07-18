@@ -1,5 +1,10 @@
+import { countBagQty, parseInventory } from '../data/inventory.js';
+import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { MAP_TOWNS } from '../data/mapLocalities.js';
+import { COIN_OF_LUCK_ITEM_ID } from '../domain/dailyQuestRewards.js';
 import { prisma } from '../lib/prisma.js';
+import { resolveHeroPowerFromCharacterRow } from './charSnapshotLogic.js';
+import type { CharacterRow } from './charTypes.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
 
 export type PlayerPublicProfileDto = {
@@ -21,6 +26,11 @@ export type PlayerPublicProfileDto = {
   mobsKilled: number;
   pvpWins: number;
   pvpLosses: number;
+  heroPower: number;
+  adena: string;
+  coinOfLuck: number;
+  exp: string;
+  sp: number;
   /** ISO — остання активність (для «був у мережі …»). */
   lastSeenAt: string;
   isOnline: boolean;
@@ -36,10 +46,19 @@ const PROFILE_SELECT = {
   gender: true,
   l2Profession: true,
   cityId: true,
+  adena: true,
+  exp: true,
+  sp: true,
   mobsKilled: true,
   karma: true,
   profileStatus: true,
   lastUpdate: true,
+  inventoryJson: true,
+  skillsLearnedJson: true,
+  activeBuffsJson: true,
+  buffHeroicTier: true,
+  buffZealotStacks: true,
+  worldCombatStateJson: true,
   clan: { select: { name: true } },
 } as const;
 
@@ -52,10 +71,19 @@ type ProfileRow = {
   gender: string;
   l2Profession: string;
   cityId: string;
+  adena: bigint;
+  exp: bigint;
+  sp: number;
   mobsKilled: number;
   karma: number;
   profileStatus: string | null;
   lastUpdate: Date;
+  inventoryJson: unknown;
+  skillsLearnedJson: unknown;
+  activeBuffsJson: unknown;
+  buffHeroicTier: number | null;
+  buffZealotStacks: number | null;
+  worldCombatStateJson: unknown;
   clan: { name: string } | null;
 };
 
@@ -66,10 +94,13 @@ function resolveCityLabelUk(cityId: string): string {
 }
 
 function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
+  const inv = parseInventory(row.inventoryJson ?? null);
+  const effectiveLevel = levelFromTotalExp(row.exp);
+  const heroRow = row as CharacterRow;
   return {
     id: row.id,
     name: row.name,
-    level: row.level,
+    level: effectiveLevel,
     race: row.race,
     classBranch: row.classBranch,
     gender: row.gender,
@@ -88,6 +119,11 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
     mobsKilled: Math.max(0, Math.floor(Number(row.mobsKilled) || 0)),
     pvpWins: 0,
     pvpLosses: 0,
+    heroPower: resolveHeroPowerFromCharacterRow(heroRow),
+    adena: row.adena.toString(),
+    coinOfLuck: countBagQty(inv, COIN_OF_LUCK_ITEM_ID),
+    exp: row.exp.toString(),
+    sp: Math.max(0, Math.floor(Number(row.sp) || 0)),
     lastSeenAt: row.lastUpdate.toISOString(),
     isOnline: isCharacterOnlineNow(row.id),
     registeredAt: row.lastUpdate.toISOString(),

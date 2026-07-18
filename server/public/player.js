@@ -16,6 +16,36 @@
     return dd + '.' + mm + '.' + yyyy;
   }
 
+  function fmtNum(s) {
+    if (s == null || s === '') return '0';
+    try {
+      return BigInt(String(s)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+    } catch (_e) {
+      return String(s);
+    }
+  }
+
+  function fmtInt(n) {
+    if (n == null || n === '') return '0';
+    var v = Number(n);
+    if (!Number.isFinite(v)) return '0';
+    return String(Math.trunc(v));
+  }
+
+  function formatHeroPower(n) {
+    var v = Number(n);
+    if (!Number.isFinite(v)) return '1\u202f000';
+    return String(Math.trunc(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+  }
+
+  function professionLabel(p) {
+    if (window.L2 && typeof L2.hudL2ProfessionUkFromSnapshot === 'function') {
+      return L2.hudL2ProfessionUkFromSnapshot(p);
+    }
+    if (!p || p.l2Profession == null) return '—';
+    return String(p.l2Profession);
+  }
+
   function formatLastSeenUk(iso) {
     if (!iso) return 'Офлайн';
     var then = Date.parse(String(iso));
@@ -131,6 +161,19 @@
 
     applyOnlineLine(p);
 
+    var powerEl = $('player-hero-power');
+    if (powerEl) {
+      powerEl.textContent = formatHeroPower(p.heroPower);
+    }
+
+    var levelEl = $('player-level');
+    if (levelEl) levelEl.textContent = p.level != null ? fmtInt(p.level) : '—';
+    set('player-adena', p.adena != null ? fmtNum(p.adena) : '0');
+    set('player-coin-luck', p.coinOfLuck != null ? fmtNum(p.coinOfLuck) : '0');
+    set('player-exp', p.exp != null ? fmtNum(p.exp) : '0');
+    set('player-sp', p.sp != null ? fmtInt(p.sp) : '0');
+    set('player-profession', professionLabel(p));
+
     var regEl = $('player-registered');
     if (regEl) {
       regEl.textContent = 'Рег-я: ' + formatRegisteredUk(p.registeredAt);
@@ -140,6 +183,18 @@
   }
 
   function wireStubs() {
+    var statsRoot = $('player-stats');
+    if (statsRoot) {
+      statsRoot.querySelectorAll('.l2-character-row__ico').forEach(function (icon) {
+        if (icon.dataset.fallbackWired === '1') return;
+        icon.dataset.fallbackWired = '1';
+        icon.addEventListener('error', function onIconError() {
+          icon.removeEventListener('error', onIconError);
+          icon.src = '/icons/drops/other.svg';
+        });
+      });
+    }
+
     document.querySelectorAll('[data-stub]').forEach(function (btn) {
       if (btn.dataset.stubWired === '1') return;
       btn.dataset.stubWired = '1';

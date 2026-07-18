@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711nickTone1" />
     <link rel="stylesheet" href="/css/l2-character-page.css?v=20260711nickTone1" />
-    <link rel="stylesheet" href="/css/l2-player-page.css?v=20260711profStatus3" />
+    <link rel="stylesheet" href="/css/l2-player-page.css?v=20260718playerStats1" />
     <link rel="stylesheet" href="/css/l2-recommend-nick-page.css?v=20260711recBlue1" />
   </head>
   <body
@@ -89,13 +89,109 @@
                           alt=""
                           decoding="async"
                         />
-                      </div>
                     </div>
                   </div>
                 </div>
+                <p class="l2-character-hero-power" aria-label="Мощ героя">
+                  <span class="l2-character-hero-power__label">Мощ:</span>
+                  <span class="l2-character-hero-power__val" id="player-hero-power">—</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="l2-character-stats l2-player-stats" id="player-stats">
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-53-25.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Рівень:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="player-level">—</span>
               </div>
 
-              <div class="l2-player-social-actions" id="player-social-actions">
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Адена:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="player-adena">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Coin of Luck:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="player-coin-luck">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-57.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Досвід:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="player-exp">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--info">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__info">Кількість отримуваного досвіду:</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Очки умінь:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="player-sp">0</span>
+              </div>
+
+              <div class="l2-character-row l2-character-row--stat l2-character-row--all-white">
+                <img
+                  class="l2-character-row__ico"
+                  src="/assets/assets/photo_2026-07-05_12-52-44.jpg"
+                  alt=""
+                  width="14"
+                  height="14"
+                  decoding="async"
+                />
+                <span class="l2-character-row__label">Професія:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="player-profession">—</span>
+              </div>
+            </div>
+
+            <div class="l2-player-social-actions" id="player-social-actions">
                 <button type="button" class="l2-player-social-actions__btn" data-stub="Запросити в групу">
                   Запросити в групу
                 </button>
@@ -162,6 +258,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260717perf2"></script>
     <script src="/charHeroPortrait.js?v=20260713hfWarlordF3"></script>
-    <script src="/player.js?v=20260711recBlue1"></script>
+    <script src="/player.js?v=20260718playerStats1"></script>
   </body>
 </html>
