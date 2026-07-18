@@ -2953,6 +2953,24 @@
                 (ejBlock.messageUk &&
                   String(ejBlock.messageUk).indexOf('заверши бій') !== -1))
             ) {
+              var erLeave = latestCharacterRevision();
+              if (erLeave != null) {
+                var leaveRes = await leaveBattle(erLeave);
+                if (leaveRes && !leaveRes._err && leaveRes.character) {
+                  character = leaveRes.character;
+                  if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+                } else if (leaveRes && leaveRes._err === 409) {
+                  var leaveConflict = await parseActionErrorBodySafe(leaveRes);
+                  if (
+                    window.L2 &&
+                    typeof L2.resyncCharacterAfterConflict === 'function'
+                  ) {
+                    await L2.resyncCharacterAfterConflict(function (snap) {
+                      character = snap;
+                    }, leaveConflict);
+                  }
+                }
+              }
               await syncBattleFromServer();
               if (character && character.pveDefeat) {
                 checkPveDefeatFromCharacter(character);

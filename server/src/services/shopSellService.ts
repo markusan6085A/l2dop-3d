@@ -26,6 +26,7 @@ import {
   itemInventoryTabHintsForClient,
 } from '../data/itemsCatalog.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from '../data/resourceCraftItemNamesUk.js';
+import { applyCGradeWeaponGmShopPrice } from '../domain/dropsShopPurchasePrice.js';
 import {
   resourceSellPriceAdena,
   shopSellTotalAdena,
@@ -45,13 +46,16 @@ function resolveBuyOfferForRow(
     overrides[shopKeyNorm] ??
     (iconRel ? overrides[iconRel] : undefined);
   if (o && o.itemId > 0 && o.priceAdena > 0) {
-    return { itemId: o.itemId, priceAdena: o.priceAdena };
+    return applyCGradeWeaponGmShopPrice(row, {
+      itemId: o.itemId,
+      priceAdena: o.priceAdena,
+    });
   }
   const gm = dropsGmPurchaseByShopKeyLower();
   const gmOffer =
     (iconRel ? gm.get(iconRel) : undefined) ?? gm.get(shopKeyNorm);
   if (gmOffer && gmOffer.itemId > 0 && gmOffer.priceAdena > 0) {
-    return { itemId: gmOffer.itemId, priceAdena: gmOffer.priceAdena };
+    return applyCGradeWeaponGmShopPrice(row, gmOffer);
   }
   return null;
 }
@@ -59,19 +63,6 @@ function resolveBuyOfferForRow(
 function buildBuyPriceByItemId(): Map<number, number> {
   const m = new Map<number, number>();
   const overrides = loadDropsShopOverrides();
-  for (const entry of Object.values(overrides)) {
-    if (!entry || typeof entry.itemId !== 'number' || entry.itemId <= 0) continue;
-    const price =
-      typeof entry.priceAdena === 'number' && Number.isFinite(entry.priceAdena)
-        ? Math.max(0, Math.floor(entry.priceAdena))
-        : 0;
-    if (price > 0) m.set(entry.itemId, price);
-  }
-  for (const offer of dropsGmPurchaseByShopKeyLower().values()) {
-    if (offer.itemId > 0 && offer.priceAdena > 0 && !m.has(offer.itemId)) {
-      m.set(offer.itemId, offer.priceAdena);
-    }
-  }
   const allRows = DROPS_SHOP_CATALOG.concat(
     DROPS_SHOP_CONSUMABLE_ROWS,
     DROPS_SHOP_ARROW_ROWS,
@@ -79,7 +70,10 @@ function buildBuyPriceByItemId(): Map<number, number> {
   );
   for (const row of allRows) {
     const offer = resolveBuyOfferForRow(row, overrides);
-    if (offer && !m.has(offer.itemId)) {
+    if (offer) m.set(offer.itemId, offer.priceAdena);
+  }
+  for (const offer of dropsGmPurchaseByShopKeyLower().values()) {
+    if (offer.itemId > 0 && offer.priceAdena > 0 && !m.has(offer.itemId)) {
       m.set(offer.itemId, offer.priceAdena);
     }
   }

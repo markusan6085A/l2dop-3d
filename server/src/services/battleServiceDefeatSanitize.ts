@@ -45,9 +45,18 @@ export async function prepareCharacterAfterDefeatInTx(
   return row;
 }
 
-export function isBattleBlockingReturnToTown(char: CharacterRow): boolean {
-  if (char.battleJson == null) return false;
-  if (hasPendingDefeat(char)) return false;
-  if (char.hp <= 0) return false;
-  return true;
+/**
+ * POST /battle/return-to-town — лише екран поразки; завжди знімаємо «завислий» battleJson
+ * (без revision++), щоб не ловити battle_still_active при десинку HP.
+ */
+export async function forceClearActiveBattleForReturnToTownInTx(
+  tx: Tx,
+  char: CharacterRow
+): Promise<CharacterRow> {
+  if (char.battleJson == null) return char;
+  await persistCharacterFieldsInTx(tx, char.id, {
+    battleJson: Prisma.JsonNull,
+  });
+  const fresh = await tx.character.findUnique({ where: { id: char.id } });
+  return (fresh as CharacterRow) ?? char;
 }

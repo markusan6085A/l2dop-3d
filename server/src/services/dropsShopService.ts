@@ -26,6 +26,7 @@ import {
   dropsShopRelPathFromGmIcon,
   type GmShopPurchaseOffer,
 } from '../domain/dropsShopGmItemIdByShopKey.js';
+import { applyCGradeWeaponGmShopPrice } from '../domain/dropsShopPurchasePrice.js';
 import embeddedDropsShopOverrides from '../data/dropsShopOverrides.json';
 import { buildDropsShopStatsPreviewUk } from '../domain/dropsShopStatsPreviewUk.js';
 import {
@@ -249,12 +250,21 @@ function resolveDropsShopPurchaseOffer(
   return gmOffer ?? null;
 }
 
+function resolveDropsShopPurchaseOfferPriced(
+  row: DropsShopCatalogRow,
+  overrides: OverridesMap
+): GmShopPurchaseOffer | null {
+  const offer = resolveDropsShopPurchaseOffer(row, overrides);
+  if (!offer) return null;
+  return applyCGradeWeaponGmShopPrice(row, offer);
+}
+
 function rowToClient(
   row: DropsShopCatalogRow,
   overrides: OverridesMap
 ): DropsShopItemResponse {
   const keyNorm = row.shopKey.replace(/\\/g, '/').toLowerCase();
-  const offer = resolveDropsShopPurchaseOffer(row, overrides);
+  const offer = resolveDropsShopPurchaseOfferPriced(row, overrides);
   const itemId = offer?.itemId ?? null;
   const priceAdena = offer?.priceAdena ?? null;
   const previewItemId = itemId ?? null;
@@ -485,7 +495,7 @@ export async function applyDropsShopPurchase(
   if (!row) throw new Error('drops_shop_unknown');
 
   const overrides = loadDropsShopOverrides();
-  const offer = resolveDropsShopPurchaseOffer(row, overrides);
+  const offer = resolveDropsShopPurchaseOfferPriced(row, overrides);
   if (!offer) throw new Error('drops_shop_not_configured');
   const itemId = offer.itemId;
   const priceAdena = BigInt(offer.priceAdena);

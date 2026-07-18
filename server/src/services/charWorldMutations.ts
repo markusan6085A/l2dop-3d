@@ -26,7 +26,7 @@ import {
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import {
   prepareCharacterAfterDefeatInTx,
-  isBattleBlockingReturnToTown,
+  forceClearActiveBattleForReturnToTownInTx,
 } from './battleServiceDefeatSanitize.js';
 import { RB_TELEPORT_ADENA_COST } from './raidBossListService.js';
 
@@ -343,7 +343,7 @@ export async function performRaidBossTeleport(
 
 /**
  * Після поразки в бою: миттєво в найближче місто/селище з `MAP_TOWNS` (як телепорт).
- * Потрібен неактивний бій (`battleJson` порожній).
+ * Завислий `battleJson` знімається всередині (див. forceClearActiveBattleForReturnToTownInTx).
  */
 export async function performReturnToNearestTown(
   userId: string,
@@ -361,6 +361,7 @@ export async function performReturnToNearestTown(
       char,
       Date.now()
     );
+    char = await forceClearActiveBattleForReturnToTownInTx(tx, char);
 
     const result = await mutateCharacterWithRevision(
       tx,
@@ -368,9 +369,6 @@ export async function performReturnToNearestTown(
       expectedRevision,
       (current) => {
         const base = normalizePassiveAndMove(current as CharacterRow);
-        if (isBattleBlockingReturnToTown(base)) {
-          throw new Error('battle_still_active');
-        }
         const near = nearestMapTown(base.worldX, base.worldY);
         const dest = getTeleportDestination(near.teleportId);
         if (!dest) throw new Error('teleport_unknown');
@@ -383,6 +381,7 @@ export async function performReturnToNearestTown(
         const mustClearBattle = base.battleJson != null;
         const changed =
           mustClearBattle ||
+          base.hp <= 0 ||
           base.hp !== recoverHp ||
           base.pvpPendingDefeatJson != null ||
           base.pvePendingDefeatJson != null ||
