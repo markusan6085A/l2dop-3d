@@ -1907,10 +1907,10 @@
         '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
         '</div>' +
         global.L2.getHudWapBarsMarkup() +
-        global.L2.getHudNoticeMarkup() +
         '</div>' +
         '</header>' +
         global.L2.getClanInviteHudMarkup() +
+        global.L2.getHudNoticeMarkup() +
         global.L2.getPvpIncomingMarkup()
       );
     },
@@ -1938,14 +1938,16 @@
     applyHudNoticeFromSnapshot: function (c) {
       var el = document.getElementById('l2-hud-notice');
       if (!el) {
-        var bars = document.querySelector('.l2-hud-legacy-bars');
-        if (bars && bars.parentNode) {
+        var clanBox = document.getElementById('l2-clan-invite-hud');
+        var hudPanel = document.querySelector('.l2-hud-panel');
+        var anchor = clanBox || hudPanel;
+        if (anchor && anchor.parentNode) {
           el = document.createElement('p');
           el.id = 'l2-hud-notice';
           el.className = 'l2-hud-notice';
           el.hidden = true;
           el.setAttribute('role', 'status');
-          bars.parentNode.insertBefore(el, bars.nextSibling);
+          anchor.parentNode.insertBefore(el, anchor.nextSibling);
         }
       }
       if (!el) return;
@@ -1984,6 +1986,31 @@
       );
     },
 
+    renderClanInviteNotice: function (pending, textEl) {
+      if (!textEl) return;
+      textEl.textContent = '';
+      if (!pending) return;
+      var nick =
+        pending.inviterName != null ? String(pending.inviterName).trim() : '—';
+      var clan =
+        pending.clanName != null ? String(pending.clanName).trim() : '—';
+      if (!nick) nick = '—';
+      if (!clan) clan = '—';
+
+      function addSpan(className, txt) {
+        var s = document.createElement('span');
+        if (className) s.className = className;
+        s.textContent = txt;
+        textEl.appendChild(s);
+      }
+
+      addSpan('l2-clan-invite-hud__lead', 'Гравець ');
+      addSpan('l2-clan-invite-hud__nick', nick);
+      addSpan('l2-clan-invite-hud__lead', ' запрошує вас вступити до клану ');
+      addSpan('l2-clan-invite-hud__clan', '«' + clan + '»');
+      addSpan('l2-clan-invite-hud__lead', '.');
+    },
+
     applyPendingClanInviteFromSnapshot: function (c) {
       var box = document.getElementById('l2-clan-invite-hud');
       if (!box) {
@@ -2002,6 +2029,18 @@
       }
       if (!box) return;
 
+      var hudPanel = document.querySelector('.l2-hud-panel');
+      if (box && hudPanel && hudPanel.parentNode) {
+        if (hudPanel.contains(box)) {
+          hudPanel.parentNode.insertBefore(box, hudPanel.nextSibling);
+        } else if (
+          box.parentNode === hudPanel.parentNode &&
+          box.previousElementSibling !== hudPanel
+        ) {
+          hudPanel.insertAdjacentElement('afterend', box);
+        }
+      }
+
       var textEl = document.getElementById('l2-clan-invite-hud-text');
       var acceptEl = document.getElementById('l2-clan-invite-accept');
       var declineEl = document.getElementById('l2-clan-invite-decline');
@@ -2014,8 +2053,8 @@
       }
 
       box.hidden = false;
-      if (textEl) {
-        textEl.textContent = global.L2.clanInviteNoticeText(pending);
+      if (textEl && typeof global.L2.renderClanInviteNotice === 'function') {
+        global.L2.renderClanInviteNotice(pending, textEl);
       }
 
       function wireBtn(el, action) {
@@ -2218,11 +2257,22 @@
       /* template розбирає одразу вузол <header> */
       tpl.innerHTML = html;
       var node = tpl.content.querySelector('.l2-hud-panel');
+      var clanInvite = tpl.content.getElementById('l2-clan-invite-hud');
+      var hudNotice = tpl.content.getElementById('l2-hud-notice');
       var incoming = tpl.content.getElementById('l2-pvp-incoming');
       if (!node || !node.classList.contains('l2-hud-panel')) return;
       function mountAfterHeader(header) {
+        var after = header;
+        if (clanInvite && !document.getElementById('l2-clan-invite-hud')) {
+          after.insertAdjacentElement('afterend', clanInvite);
+          after = clanInvite;
+        }
+        if (hudNotice && !document.getElementById('l2-hud-notice')) {
+          after.insertAdjacentElement('afterend', hudNotice);
+          after = hudNotice;
+        }
         if (incoming && !document.getElementById('l2-pvp-incoming')) {
-          header.insertAdjacentElement('afterend', incoming);
+          after.insertAdjacentElement('afterend', incoming);
         }
       }
       if (m) {
@@ -2235,6 +2285,8 @@
         if (!hasLegacy) {
           existing.replaceWith(node);
           mountAfterHeader(node);
+        } else {
+          mountAfterHeader(existing);
         }
       }
     },

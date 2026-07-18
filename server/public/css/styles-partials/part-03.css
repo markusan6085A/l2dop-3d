@@ -600,12 +600,23 @@ button.l2-map-mob-title--tap-full:focus {
   font-size: 12px;
   line-height: 1.35;
   text-align: center;
-  border-top: 1px solid rgba(120, 120, 120, 0.45);
 }
 
 .l2-clan-invite-hud__text {
   margin: 0 0 4px;
-  color: #5dbd5d;
+}
+
+.l2-clan-invite-hud__lead {
+  color: #fff;
+}
+
+.l2-clan-invite-hud__nick {
+  color: var(--l2-nick-color, #bfa88a);
+  text-shadow: var(--l2-nick-shadow, 0 1px 2px rgba(0, 0, 0, 0.85));
+}
+
+.l2-clan-invite-hud__clan {
+  color: #bfa88a;
 }
 
 .l2-clan-invite-hud__actions {
@@ -626,17 +637,27 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-clan-invite-hud__btn--accept {
-  color: #5dbd5d;
+  color: #8a7558;
 }
 
 .l2-clan-invite-hud__btn--decline {
-  color: #d8ccb0;
+  color: #e85840;
 }
 
 .l2-clan-invite-hud__btn:hover,
 .l2-clan-invite-hud__btn:focus {
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.l2-clan-invite-hud__btn--accept:hover,
+.l2-clan-invite-hud__btn--accept:focus {
+  color: #bfa88a;
+}
+
+.l2-clan-invite-hud__btn--decline:hover,
+.l2-clan-invite-hud__btn--decline:focus {
+  color: #ff6644;
 }
 
 .l2-map-mob-detail {

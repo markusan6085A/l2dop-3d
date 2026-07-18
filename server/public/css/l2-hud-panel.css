@@ -665,3 +665,69 @@ body.l2-page-story .l2-hud-panel--city-strip .l2-hud-stat-bar {
   text-align: center;
   color: #5dbd5d;
 }
+
+.l2-clan-invite-hud {
+  margin: 0 0 8px;
+  padding: 4px 6px 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.l2-clan-invite-hud__text {
+  margin: 0 0 4px;
+}
+
+.l2-clan-invite-hud__lead {
+  color: #fff;
+}
+
+.l2-clan-invite-hud__nick {
+  color: var(--l2-nick-color, #bfa88a);
+  text-shadow: var(--l2-nick-shadow, 0 1px 2px rgba(0, 0, 0, 0.85));
+}
+
+.l2-clan-invite-hud__clan {
+  color: #bfa88a;
+}
+
+.l2-clan-invite-hud__actions {
+  margin: 0;
+}
+
+.l2-clan-invite-hud__btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0 4px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-clan-invite-hud__btn--accept {
+  color: #8a7558;
+}
+
+.l2-clan-invite-hud__btn--decline {
+  color: #e85840;
+}
+
+.l2-clan-invite-hud__btn:hover,
+.l2-clan-invite-hud__btn:focus {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.l2-clan-invite-hud__btn--accept:hover,
+.l2-clan-invite-hud__btn--accept:focus {
+  color: #bfa88a;
+}
+
+.l2-clan-invite-hud__btn--decline:hover,
+.l2-clan-invite-hud__btn--decline:focus {
+  color: #ff6644;
+}
