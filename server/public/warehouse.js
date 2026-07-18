@@ -108,6 +108,7 @@
     return 'l2-warehouse-name l2-item-name';
   }
 
+  function qtySuffix(qty) {
     var q = Number(qty);
     if (!Number.isFinite(q) || q <= 1) return '';
     return ' (x' + String(q) + ')';
