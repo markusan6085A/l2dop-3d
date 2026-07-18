@@ -6,7 +6,7 @@
   'use strict';
 
   var POLL_MS = 5000;
-  var ASSET_VER = '20260718partyHud3';
+  var ASSET_VER = '20260718partyHud4';
 
   var hudState = null;
   var fetchSeq = 0;
@@ -120,24 +120,37 @@
     captureLayoutDebug('flash');
   }
 
+  function playerProfileHref(characterId, name) {
+    if (characterId) {
+      return '/player.html?id=' + encodeURIComponent(String(characterId));
+    }
+    if (name) {
+      return '/player.html?name=' + encodeURIComponent(String(name));
+    }
+    return '/party.html';
+  }
+
+  function appendViewLink(parent, href) {
+    var viewBtn = document.createElement('a');
+    viewBtn.className = 'l2-party-hud__view';
+    viewBtn.href = href;
+    viewBtn.textContent = '[Переглянути]';
+    parent.appendChild(viewBtn);
+  }
+
   function renderMemberRow(inner) {
     inner.className = 'l2-party-hud-inner l2-party-hud-inner--member';
     clearInner(inner);
 
     var row = document.createElement('div');
-    row.className = 'l2-party-hud__row';
+    row.className = 'l2-party-hud__row l2-party-hud__row--inline';
 
     var label = document.createElement('span');
     label.className = 'l2-party-hud__member-label';
     label.textContent = 'Ви перебуваєте в паті';
 
-    var viewBtn = document.createElement('a');
-    viewBtn.className = 'l2-party-hud__view';
-    viewBtn.href = '/party.html';
-    viewBtn.textContent = '[Переглянути]';
-
     row.appendChild(label);
-    row.appendChild(viewBtn);
+    appendViewLink(row, '/party.html');
     inner.appendChild(row);
   }
 
@@ -151,20 +164,30 @@
         : 'Гравець';
     if (!invName) invName = 'Гравець';
 
+    var inviterId =
+      data.invite.inviterCharacterId != null
+        ? String(data.invite.inviterCharacterId).trim()
+        : '';
+
     var row = document.createElement('div');
-    row.className = 'l2-party-hud__row l2-party-hud__row--invite';
+    row.className = 'l2-party-hud__row l2-party-hud__row--invite l2-party-hud__row--inline';
 
-    var text = document.createElement('span');
-    text.className = 'l2-party-hud__text';
-    var msg = invName + ' запрошує вас у паті';
+    var nick = document.createElement('span');
+    nick.className = 'l2-party-hud__nick';
+    nick.textContent = invName;
+
+    var lead = document.createElement('span');
+    lead.className = 'l2-party-hud__lead';
+    var leadText = ' запрошує вас у паті';
     if (data.extraInviteCount > 0) {
-      msg += ' (ще ' + String(data.extraInviteCount) + ')';
+      leadText += ' (ще ' + String(data.extraInviteCount) + ')';
     }
-    text.textContent = msg;
-    text.title = msg;
+    lead.textContent = leadText;
 
-    var actions = document.createElement('span');
-    actions.className = 'l2-party-hud__actions';
+    row.title = invName + leadText;
+    row.appendChild(nick);
+    row.appendChild(lead);
+    appendViewLink(row, playerProfileHref(inviterId, invName));
 
     var acceptBtn = document.createElement('button');
     acceptBtn.type = 'button';
@@ -184,10 +207,8 @@
       respondInvite('decline');
     });
 
-    actions.appendChild(acceptBtn);
-    actions.appendChild(declineBtn);
-    row.appendChild(text);
-    row.appendChild(actions);
+    row.appendChild(acceptBtn);
+    row.appendChild(declineBtn);
     inner.appendChild(row);
   }
 
