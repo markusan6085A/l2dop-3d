@@ -144,6 +144,13 @@
     if (manageWrap) manageWrap.hidden = !canEdit;
   }
 
+  function canShowLeaveClan(clan) {
+    if (!clan) return false;
+    if (clan.viewerRole === 'leader') return false;
+    if (clan.canEditAnnouncement) return false;
+    return clan.canLeaveClan === true || clan.viewerRole === 'member';
+  }
+
   function applyClanView(clan) {
     var panel = $('clan-my-panel');
     var empty = $('clan-my-empty');
@@ -181,9 +188,9 @@
 
     applyAnnounceControls(clan);
 
-    var leaveBtn = $('clan-my-leave-btn');
-    if (leaveBtn) {
-      leaveBtn.hidden = !clan.canLeaveClan;
+    var leaveWrap = $('clan-my-leave-wrap');
+    if (leaveWrap) {
+      leaveWrap.hidden = !canShowLeaveClan(clan);
     }
 
     state.chatPage = 1;
@@ -565,6 +572,7 @@
           maxMembers: 40,
           canEditAnnouncement: c.clanRole === 'leader',
           canLeaveClan: c.clanRole === 'member',
+          viewerRole: c.clanRole || null,
         });
       } else {
         applyEmptyView();

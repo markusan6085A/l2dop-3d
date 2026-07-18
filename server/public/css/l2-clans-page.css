@@ -391,19 +391,12 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-title {
   color: #fff;
 }
 
-body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-compose {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 6px;
-}
-
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-input {
   box-sizing: border-box;
-  flex: 1 1 160px;
-  min-width: 0;
+  display: block;
+  width: min(100%, 280px);
   height: 28px;
+  margin: 0 0 4px;
   padding: 4px 8px;
   border: 1px solid #5c4a36;
   border-radius: 4px;
@@ -415,7 +408,8 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-input {
 }
 
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-send {
-  margin: 0;
+  display: block;
+  margin: 0 0 6px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -423,7 +417,8 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-send {
   font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
-  color: #bfa88a;
+  color: #fff;
+  text-align: left;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -431,6 +426,10 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-send {
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-send:disabled {
   opacity: 0.55;
   cursor: default;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-divider {
+  margin: 0 0 6px;
 }
 
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-list {
@@ -492,20 +491,28 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-chat-pages__btn--active {
   text-decoration: none;
 }
 
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-wrap {
+  margin: 0 0 10px;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-divider {
+  margin: 0 0 6px;
+}
+
 body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-btn {
   display: block;
-  width: 100%;
-  margin: 0 0 10px;
-  padding: 6px 8px;
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-radius: 4px;
+  border-radius: 0;
   background: transparent;
   font-family: var(--l2-font-display);
   font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
   color: #e85840;
-  text-align: center;
+  text-align: left;
   text-decoration: underline;
   cursor: pointer;
 }
