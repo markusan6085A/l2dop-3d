@@ -127,6 +127,19 @@
     clan_my_nav_dungeons: { uk: 'Підземелля драконів', ru: 'Подземелья драконов' },
     clan_my_nav_hall: { uk: 'КланХолл', ru: 'КланХолл' },
     clan_my_chat_title: { uk: 'Чат клану:', ru: 'Чат клана:' },
+    clan_my_chat_ph: { uk: 'Повідомлення…', ru: 'Сообщение…' },
+    clan_my_chat_send: { uk: 'Написати', ru: 'Написать' },
+    clan_my_chat_empty: {
+      uk: 'Немає повідомлень. Напиши першим.',
+      ru: 'Нет сообщений. Напиши первым.',
+    },
+    clan_my_chat_prev: { uk: '<<', ru: '<<' },
+    clan_my_chat_next: { uk: '>>', ru: '>>' },
+    clan_my_leave_btn: { uk: 'Вийти з клану', ru: 'Выйти из клана' },
+    clan_my_leave_confirm: {
+      uk: 'Вийти з клану?',
+      ru: 'Выйти из клана?',
+    },
     clan_my_announce_ph: {
       uk: 'Напиши оголошення для клану…',
       ru: 'Напиши объявление для клана…',

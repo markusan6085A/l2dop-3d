@@ -114,6 +114,26 @@ const CLAN_CREATE_ERRORS: Record<string, { status: number; messageUk: string }> 
     status: 400,
     messageUk: 'Неможливо вступити в клан під час бою.',
   },
+  clan_chat_empty_message: {
+    status: 400,
+    messageUk: 'Повідомлення порожнє.',
+  },
+  clan_chat_not_in_clan: {
+    status: 400,
+    messageUk: 'Ти не в клані.',
+  },
+  clan_leave_not_in_clan: {
+    status: 400,
+    messageUk: 'Ти не в клані.',
+  },
+  clan_leave_leader_forbidden: {
+    status: 403,
+    messageUk: 'Лідер не може вийти з клану — спочатку передай лідерство.',
+  },
+  clan_leave_in_battle: {
+    status: 400,
+    messageUk: 'Неможливо вийти з клану під час бою.',
+  },
 };
 
 export function sendClanCreateError(

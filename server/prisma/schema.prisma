@@ -117,6 +117,7 @@ model Character {
   ledClan    Clan?    @relation("ClanLeader")
   clanInvitesSent ClanInvite[] @relation("ClanInviteInviter")
   clanInvitesRecv ClanInvite[] @relation("ClanInviteTarget")
+  clanChatMessages ClanChatMessage[]
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
@@ -136,6 +137,7 @@ model Clan {
   level          Int         @default(1)
   createdAt      DateTime    @default(now())
   invites        ClanInvite[]
+  chatMessages   ClanChatMessage[]
 }
 
 model ClanInvite {
@@ -156,6 +158,18 @@ model ClanInvite {
   @@index([targetCharacterId, deliveredAt])
   @@index([targetCharacterId, respondedAt])
   @@index([clanId, targetCharacterId])
+}
+
+model ClanChatMessage {
+  id          String    @id @default(uuid())
+  clanId      String
+  clan        Clan      @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  text        String
+  createdAt   DateTime  @default(now())
+
+  @@index([clanId, createdAt(sort: Desc)])
 }
 
 model MarketListing {

@@ -21,6 +21,7 @@ export type ClanMyView = {
   maxMembers: number;
   viewerRole: string | null;
   canEditAnnouncement: boolean;
+  canLeaveClan: boolean;
 };
 
 const CLAN_MAX_MEMBERS = 40;
@@ -73,6 +74,7 @@ function buildClanMyView(
     maxMembers: CLAN_MAX_MEMBERS,
     viewerRole,
     canEditAnnouncement: viewerRole === 'leader',
+    canLeaveClan: viewerRole === 'member',
   };
 }
 

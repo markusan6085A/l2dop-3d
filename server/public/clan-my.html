@@ -16,7 +16,7 @@
 
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
 
-    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans8" />
+    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260718clans9" />
 
   </head>
 
@@ -420,10 +420,33 @@
 
 
                 <div class="l2-clan-my-chat">
-
                   <p class="l2-clan-my-chat-title" data-i18n="clan_my_chat_title">Чат клану:</p>
-
+                  <div class="l2-clan-my-chat-compose">
+                    <input
+                      type="text"
+                      id="clan-my-chat-input"
+                      class="l2-clan-my-chat-input"
+                      maxlength="220"
+                      autocomplete="off"
+                      data-i18n-attr="placeholder:clan_my_chat_ph"
+                      placeholder="Повідомлення…"
+                    />
+                    <button type="button" id="clan-my-chat-send" class="l2-clan-my-chat-send">
+                      <span data-i18n="clan_my_chat_send">Написати</span>
+                    </button>
+                  </div>
+                  <div id="clan-my-chat-list" class="l2-clan-my-chat-list" aria-live="polite"></div>
+                  <nav
+                    id="clan-my-chat-pages"
+                    class="l2-clan-my-chat-pages"
+                    aria-label="Сторінки чату клану"
+                    hidden
+                  ></nav>
                 </div>
+
+                <button type="button" id="clan-my-leave-btn" class="l2-clan-my-leave-btn" hidden>
+                  <span data-i18n="clan_my_leave_btn">Вийти з клану</span>
+                </button>
 
               </div>
             </section>
@@ -446,11 +469,11 @@
 
     <script src="/common.js?v=20260717perf2"></script>
 
-    <script src="/ui-i18n.js?v=20260718clans8"></script>
+    <script src="/ui-i18n.js?v=20260718clans9"></script>
 
     <script src="/l2-nav.js?v=20260718clans3"></script>
 
-    <script src="/clan-my.js?v=20260718clans8"></script>
+    <script src="/clan-my.js?v=20260718clans9"></script>
 
   </body>
 

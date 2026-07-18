@@ -22,6 +22,11 @@ import {
   declineClanInviteForUser,
   sendClanInviteForUser,
 } from '../services/clanInviteService.js';
+import {
+  leaveClanForUser,
+  listClanChatMessages,
+  sendClanChatMessage,
+} from '../services/clanChatService.js';
 import { sendClanCreateError } from './clanRouteErrors.js';
 
 /** GET /game/clans/list, GET /game/clans/my, POST /game/clans/create, … */
@@ -232,6 +237,98 @@ export function registerClanRoutes(app: FastifyInstance): void {
         return reply.code(500).send({
           error: 'internal_error',
           messageUk: 'Не вдалося відхилити запрошення в клан.',
+        });
+      }
+    }
+  );
+
+  app.get(
+    '/clans/chat',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const q = request.query as { page?: string };
+      const result = await listClanChatMessages(userId, q?.page);
+      if (!result) {
+        return reply.code(400).send({
+          error: 'clan_chat_not_in_clan',
+          messageUk: 'Ти не в клані.',
+        });
+      }
+      return reply.send(result);
+    }
+  );
+
+  app.post(
+    '/clans/chat',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+
+      try {
+        const message = await sendClanChatMessage(userId, b.text);
+        await logRouteMutation(request, 'clan_chat_send', 0, 'ok');
+        return reply.send({ ok: true, message });
+      } catch (err) {
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_chat_send', 0, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_chat_send', 0, 'error');
+        request.log.error({ err }, 'POST /game/clans/chat');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося надіслати повідомлення.',
+        });
+      }
+    }
+  );
+
+  app.post(
+    '/clans/leave',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const rev = parseExpectedRevision(
+        b,
+        reply,
+        'Передай expectedRevision з відповіді /character.'
+      );
+      if (rev == null) return;
+
+      try {
+        const character = await leaveClanForUser(userId, rev);
+        await logRouteMutation(
+          request,
+          'clan_leave',
+          rev,
+          'ok',
+          character.revision
+        );
+        return reply.send({ character });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          await logRouteMutation(request, 'clan_leave', rev, 'conflict');
+          return sendGameConflict(reply, err);
+        }
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_leave', rev, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_leave', rev, 'error');
+        request.log.error({ err }, 'POST /game/clans/leave');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося вийти з клану.',
         });
       }
     }
