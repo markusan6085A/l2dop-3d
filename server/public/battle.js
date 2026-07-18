@@ -2061,8 +2061,7 @@
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
       if (content) content.hidden = false;
       if (errEl) errEl.hidden = true;
-      hideVictoryScreen();
-      refreshUI();
+      prepareActiveBattleUi();
     }
 
     async function ensurePvpBattle() {
@@ -2073,6 +2072,7 @@
         expectedPvpSpawn &&
         battle.spawnId === expectedPvpSpawn
       ) {
+        prepareActiveBattleUi();
         return true;
       }
       var er = latestCharacterRevision();
@@ -2128,8 +2128,7 @@
       var errEl = $('battle-load-err');
       if (content) content.hidden = false;
       if (errEl) errEl.hidden = true;
-      hideVictoryScreen();
-      refreshUI();
+      prepareActiveBattleUi();
     }
 
     async function tryStartHuntContinue(excludeSpawnId, preferredSpawnId, targetLevel) {
@@ -2179,6 +2178,7 @@
         return false;
       }
       if (battle && battle.spawnId === spawnId) {
+        prepareActiveBattleUi();
         return true;
       }
       var er = latestCharacterRevision();
@@ -2202,7 +2202,7 @@
         }
         if (battle && battle.spawnId === spawnId) {
           resetHuntLogChain();
-          refreshUI();
+          prepareActiveBattleUi();
           return true;
         }
         st = await startBattle(spawnId, latestCharacterRevision());
@@ -2249,6 +2249,7 @@
       syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       resetHuntLogChain();
+      prepareActiveBattleUi();
       return true;
     }
 
@@ -2551,11 +2552,25 @@
       el.appendChild(lvl);
     }
 
-    function hideVictoryScreen() {
+    function resetBattleOutcomePanels() {
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
+      var defRoot = $('battle-defeat-root');
       if (active) active.hidden = false;
       if (vicRoot) vicRoot.hidden = true;
+      if (defRoot) defRoot.hidden = true;
+    }
+
+    function prepareActiveBattleUi() {
+      clearDefeatFromSession();
+      saveVictoryToSession(null);
+      lastVictorySummary = null;
+      var contentEl = $('battle-content');
+      var errLoad = $('battle-load-err');
+      if (contentEl) contentEl.hidden = false;
+      if (errLoad) errLoad.hidden = true;
+      resetBattleOutcomePanels();
+      refreshUI();
     }
 
     var lastVictorySummary = null;
@@ -3088,9 +3103,7 @@
 
     var battleReady = await ensureBattle();
     if (battleReady) {
-      if (content) content.hidden = false;
-      if (errEl) errEl.hidden = true;
-      refreshUI();
+      prepareActiveBattleUi();
       startBattleSyncPoll();
     } else {
       var pendingDefeat = loadDefeatFromSession();
