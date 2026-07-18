@@ -13,6 +13,10 @@
   var mobDetailPage = 0;
   var MAP_SNAPSHOT_CACHE_KEY = 'l2-map-snapshot-cache-v1';
 
+  function $(id) {
+    return document.getElementById(id);
+  }
+
   function applyMapRadiiFromSync(sync) {
     if (!sync || !sync.mapRadii) return;
     var mobR = Number(sync.mapRadii.mobInteractionRadius);
