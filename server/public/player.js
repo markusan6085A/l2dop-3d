@@ -72,13 +72,42 @@
   }
 
   function canInviteToParty(viewed, selfPartyState) {
-    if (!viewed) return false;
-    if (String(viewed.id || '') === String((selfCharacter && selfCharacter.id) || '')) {
+    if (!viewed || !selfCharacter) return false;
+    if (String(viewed.id || '') === String(selfCharacter.id || '')) {
       return false;
     }
-    if (!selfPartyState || !selfPartyState.viewerIsLeader) return false;
-    if (selfPartyState.memberCount >= selfPartyState.maxMembers) return false;
+    if (selfPartyState && !selfPartyState.viewerIsLeader) return false;
+    if (
+      selfPartyState &&
+      selfPartyState.memberCount >= selfPartyState.maxMembers
+    ) {
+      return false;
+    }
     return true;
+  }
+
+  function partyInviteMessageUk(j, fallback) {
+    if (j && j.messageUk) return String(j.messageUk);
+    var code = j && j.error ? String(j.error) : '';
+    if (code === 'party_target_in_party') return 'Цей гравець уже в паті.';
+    if (code === 'party_full') return 'Паті заповнене';
+    if (code === 'party_invite_exists') return 'Запрошення вже надіслано';
+    if (code === 'party_invite_leader_only') return 'Запрошувати може лише лідер';
+    return fallback || 'Не вдалося надіслати запрошення.';
+  }
+
+  async function reloadSelfParty(token) {
+    try {
+      var partyRes = await fetch('/game/party', {
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (partyRes.ok) {
+        var partyJson = await partyRes.json();
+        selfParty = partyJson && partyJson.party ? partyJson.party : null;
+      }
+    } catch (_eParty) {
+      selfParty = null;
+    }
   }
 
   function canInviteToClan(viewed, self) {
@@ -149,19 +178,23 @@
     var btn = $('player-party-action');
     if (!btn) return;
     btn.removeAttribute('data-stub');
-    if (canInviteToParty(viewedProfile, selfParty)) {
-      btn.textContent = 'Запросити в паті';
-      btn.disabled = false;
-    } else if (selfParty && !selfParty.viewerIsLeader) {
-      btn.textContent = 'Запросити в паті';
-      btn.disabled = true;
-    } else if (!selfParty) {
-      btn.textContent = 'Створити паті';
-      btn.disabled = false;
-    } else {
-      btn.textContent = 'Запросити в паті';
-      btn.disabled = true;
+    if (
+      String(viewedProfile.id || '') ===
+      String((selfCharacter && selfCharacter.id) || '')
+    ) {
+      btn.hidden = true;
+      return;
     }
+    btn.hidden = false;
+    if (selfParty && !selfParty.viewerIsLeader) {
+      btn.textContent = 'Запросити в паті';
+      btn.disabled = true;
+      btn.title = 'Запрошувати може лише лідер';
+      return;
+    }
+    btn.disabled = false;
+    btn.title = '';
+    btn.textContent = 'Запросити в паті';
   }
 
   function patchClanInviteUi() {
@@ -305,14 +338,19 @@
     btn.dataset.partyInviteWired = '1';
     btn.addEventListener('click', async function () {
       if (partyInviteInFlight) return;
-      if (!selfParty) {
-        window.location.href = '/party.html';
+      if (!viewedProfile || !selfCharacter) return;
+      if (
+        String(viewedProfile.id || '') === String(selfCharacter.id || '')
+      ) {
         return;
       }
-      if (!canInviteToParty(viewedProfile, selfParty)) return;
+      if (selfParty && !selfParty.viewerIsLeader) {
+        showSocialMsg('Запрошувати може лише лідер', true);
+        return;
+      }
       partyInviteInFlight = true;
       try {
-        var r = await fetch('/game/party/invite', {
+        var r = await fetch('/game/party/invite-player', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -320,7 +358,6 @@
           },
           body: JSON.stringify({
             targetCharacterId: String(viewedProfile.id || ''),
-            expectedPartyVersion: selfParty.version,
           }),
         });
         if (r.status === 401) {
@@ -334,25 +371,21 @@
         } catch (_eJson) {
           j = null;
         }
-        if (r.status === 409 && j && j.code === 'party_version_conflict') {
-          if (j.party) selfParty = j.party;
-          patchPartyInviteUi();
-          showSocialMsg('Стан паті застарів — оновлено.', true);
-          return;
-        }
         if (r.ok) {
-          if (j && typeof j.partyVersion === 'number') {
-            selfParty.version = j.partyVersion;
+          await reloadSelfParty(token);
+          patchPartyInviteUi();
+          if (window.L2 && typeof L2.refreshPartyHud === 'function') {
+            L2.refreshPartyHud();
           }
-          showSocialMsg('Запрошення в паті надіслано.', false);
+          showSocialMsg('Запрошення надіслано', false);
           return;
         }
         showSocialMsg(
-          j && j.messageUk ? String(j.messageUk) : 'Не вдалося надіслати запрошення в паті.',
+          partyInviteMessageUk(j, 'Не вдалося надіслати запрошення.'),
           true
         );
       } catch (_e) {
-        showSocialMsg('Не вдалося надіслати запрошення в паті.', true);
+        showSocialMsg('Не вдалося надіслати запрошення.', true);
       } finally {
         partyInviteInFlight = false;
       }
@@ -461,14 +494,8 @@
           });
       }
       try {
-        var partyRes = await fetch('/game/party', {
-          headers: { Authorization: 'Bearer ' + token },
-        });
-        if (partyRes.ok) {
-          var partyJson = await partyRes.json();
-          selfParty = partyJson && partyJson.party ? partyJson.party : null;
-        }
-      } catch (_eParty) {
+        await reloadSelfParty(token);
+      } catch (_ePartyLoad) {
         selfParty = null;
       }
       if (window.L2 && typeof L2.fetchCatalogHints === 'function') {

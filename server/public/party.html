@@ -6,8 +6,8 @@
     <title>Паті — L2WAP</title>
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
-    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-party-page.css?v=20260718party1" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718partyHud1" />
+    <link rel="stylesheet" href="/css/l2-party-page.css?v=20260718partyUx1" />
   </head>
   <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-party l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal">
     <div class="l2-shell">
@@ -40,29 +40,18 @@
 
           <section class="l2-party-panel" aria-label="Паті">
             <h1 class="l2-party-panel__title">Паті</h1>
-            <p class="l2-party-panel__meta" id="party-meta" hidden></p>
 
             <div id="party-empty" hidden>
-              <p class="l2-party-panel__hint">Ти не в паті. Максимум 5 учасників (лідер + 4).</p>
-              <button type="button" class="l2-party-btn" id="party-create-btn">Створити паті</button>
+              <p class="l2-party-panel__empty">Ви ще не перебуваєте в паті.</p>
+              <p class="l2-party-panel__hint">
+                Відкрийте профіль іншого гравця, щоб запросити його.
+              </p>
             </div>
 
             <div id="party-active" hidden>
+              <p class="l2-party-panel__meta" id="party-meta"></p>
               <ul class="l2-party-members" id="party-members-list"></ul>
-              <div class="l2-party-actions" id="party-leader-actions" hidden>
-                <label class="l2-party-invite-field">
-                  <span>Запросити (characterId)</span>
-                  <input type="text" id="party-invite-target" autocomplete="off" spellcheck="false" />
-                </label>
-                <button type="button" class="l2-party-btn" id="party-invite-btn">Запросити</button>
-                <button type="button" class="l2-party-btn l2-party-btn--danger" id="party-disband-btn">Розпустити</button>
-              </div>
-              <button type="button" class="l2-party-btn" id="party-leave-btn">Вийти з паті</button>
-            </div>
-
-            <div class="l2-party-invites-block" id="party-invites-block" hidden>
-              <h2 class="l2-party-invites-block__title">Запрошення</h2>
-              <ul class="l2-party-invites" id="party-invites-list"></ul>
+              <div class="l2-party-footer" id="party-footer-actions"></div>
             </div>
           </section>
 
@@ -70,8 +59,8 @@
         </div>
       </div>
     </div>
-    <script src="/common.js?v=20260718layoutStable2"></script>
+    <script src="/common.js?v=20260718partyHud1"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/party.js?v=20260718party1"></script>
+    <script src="/party.js?v=20260718partyUx1"></script>
   </body>
 </html>

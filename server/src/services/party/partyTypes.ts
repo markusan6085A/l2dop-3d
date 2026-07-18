@@ -48,3 +48,32 @@ export type PartyLeaveResult = {
 export type PartyInvitesListResult = {
   invites: PartyInviteView[];
 };
+
+export type PartyHudInvite = {
+  inviteId: string;
+  inviterCharacterId: string;
+  inviterName: string;
+  partyVersion: number;
+  expiresAt: string;
+};
+
+export type PartyHudParty = {
+  partyId: string;
+  partyVersion: number;
+  leaderCharacterId: string;
+  memberCount: number;
+  maxMembers: number;
+  isLeader: boolean;
+};
+
+export type PartyHudResult = {
+  party: PartyHudParty | null;
+  invite: PartyHudInvite | null;
+  extraInviteCount: number;
+};
+
+export type PartyProfileInviteResult = {
+  ok: true;
+  partyVersion: number;
+  createdParty: boolean;
+};

@@ -9,9 +9,11 @@ import { PartyVersionConflictError } from '../services/party/partyErrors.js';
 import {
   acceptPartyInviteForUser,
   declinePartyInviteForUser,
+  invitePlayerFromProfileForUser,
   listPartyInvitesForUser,
   sendPartyInviteForUser,
 } from '../services/party/partyInviteService.js';
+import { getPartyHudForUser } from '../services/party/partyHudService.js';
 import {
   createPartyForUser,
   disbandPartyForUser,
@@ -53,6 +55,23 @@ export function registerPartyRoutes(app: FastifyInstance): void {
         return reply.send(
           await getPartyForUser(userId, characterIdFromQuery(q))
         );
+      } catch (err) {
+        const mapped = sendPartyRouteError(reply, err);
+        if (mapped) return mapped;
+        throw err;
+      }
+    }
+  );
+
+  app.get(
+    '/party/hud',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const q = (request.query as Record<string, unknown>) ?? {};
+      try {
+        return reply.send(await getPartyHudForUser(userId, characterIdFromQuery(q)));
       } catch (err) {
         const mapped = sendPartyRouteError(reply, err);
         if (mapped) return mapped;
@@ -106,6 +125,41 @@ export function registerPartyRoutes(app: FastifyInstance): void {
           return mapped;
         }
         await logPartyRouteMutation(request, 'party_create', null, 'error');
+        throw err;
+      }
+    }
+  );
+
+  app.post(
+    '/party/invite-player',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const charId = characterIdFromBody(b);
+      try {
+        const result = await invitePlayerFromProfileForUser(
+          userId,
+          b.targetCharacterId,
+          charId
+        );
+        await logPartyRouteMutation(
+          request,
+          'party_invite_player',
+          null,
+          'ok',
+          result.partyVersion
+        );
+        return reply.send(result);
+      } catch (err) {
+        const mapped = sendPartyRouteError(reply, err);
+        if (mapped) {
+          await logPartyRouteMutation(request, 'party_invite_player', null, 'error');
+          return mapped;
+        }
+        await logPartyRouteMutation(request, 'party_invite_player', null, 'error');
         throw err;
       }
     }

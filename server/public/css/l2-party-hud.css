@@ -1,0 +1,114 @@
+#l2-party-hud-slot,
+.l2-party-hud-slot {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0 4px 2px;
+  overflow: hidden;
+}
+
+.l2-party-hud-inner {
+  box-sizing: border-box;
+  height: 30px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid rgba(138, 107, 58, 0.45);
+  border-radius: 6px;
+  background: rgba(18, 14, 10, 0.88);
+  font-size: 11px;
+  line-height: 1.2;
+  color: #d9c48a;
+  display: flex;
+  align-items: center;
+}
+
+.l2-party-hud-inner--empty {
+  border-color: transparent;
+  background: transparent;
+}
+
+.l2-party-hud-inner--flash {
+  justify-content: center;
+  color: #c8b890;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.l2-party-hud__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.l2-party-hud__row--invite {
+  gap: 6px;
+}
+
+.l2-party-hud__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.l2-party-hud__actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.l2-party-hud__btn {
+  padding: 2px 8px;
+  border: 1px solid rgba(214, 170, 86, 0.55);
+  border-radius: 5px;
+  background: rgba(40, 28, 16, 0.92);
+  color: #e8d8a6;
+  font-size: 10px;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.l2-party-hud__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.l2-party-hud__btn--accept {
+  border-color: rgba(90, 140, 70, 0.65);
+}
+
+.l2-party-hud__btn--decline {
+  border-color: rgba(140, 90, 70, 0.55);
+}
+
+.l2-party-hud__member-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #e8d8a6;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.l2-party-hud__view {
+  flex: 0 0 auto;
+  color: #ffd27a;
+  text-decoration: none;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.l2-party-hud__view:hover,
+.l2-party-hud__view:focus {
+  text-decoration: underline;
+}

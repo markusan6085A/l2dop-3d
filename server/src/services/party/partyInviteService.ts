@@ -22,6 +22,7 @@ import type {
   PartyInvitesListResult,
   PartyInviteView,
   PartyMutationResult,
+  PartyProfileInviteResult,
 } from './partyTypes.js';
 
 const INVITE_LIST_INCLUDE = {
@@ -258,6 +259,105 @@ export async function declinePartyInviteForUser(
     await tx.partyInvite.delete({ where: { id: invite.id } });
     return { ok: true };
   });
+}
+
+/**
+ * POST /game/party/invite-player — профіль: auto-create + invite в одній tx.
+ * Якщо invite не вдався, Party не залишається (rollback).
+ */
+export async function invitePlayerFromProfileForUser(
+  userId: string,
+  rawTargetCharacterId: unknown,
+  characterId?: string | null
+): Promise<PartyProfileInviteResult> {
+  const targetCharacterId = String(rawTargetCharacterId || '').trim();
+  if (!targetCharacterId) throw new Error('party_invite_target_required');
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const char = await findCharacterForUserInTx(tx, userId, { characterId });
+      if (!char) throw new Error('no_character');
+
+      let createdParty = false;
+      let partyId: string;
+      let partyVersion: number;
+
+      const membership = await tx.partyMember.findUnique({
+        where: { characterId: char.id },
+        select: { partyId: true },
+      });
+
+      if (membership) {
+        const locked = await lockPartyForUpdateInTx(tx, membership.partyId);
+        if (!locked) throw new Error('party_not_found');
+        if (locked.leaderCharacterId !== char.id) {
+          throw new Error('party_invite_leader_only');
+        }
+        partyId = locked.id;
+        partyVersion = locked.version;
+      } else {
+        const party = await tx.party.create({
+          data: {
+            leaderCharacterId: char.id,
+            members: {
+              create: {
+                characterId: char.id,
+                slotOrder: 0,
+              },
+            },
+          },
+          select: { id: true, version: true },
+        });
+        await purgeAllPartyInvitesForTargetInTx(tx, char.id);
+        createdParty = true;
+        partyId = party.id;
+        partyVersion = party.version;
+      }
+
+      if (targetCharacterId === char.id) {
+        throw new Error('party_invite_self');
+      }
+
+      const target = await tx.character.findUnique({
+        where: { id: targetCharacterId },
+        select: { id: true },
+      });
+      if (!target) throw new Error('party_invite_target_not_found');
+
+      await assertCharacterNotInPartyInTx(tx, targetCharacterId);
+      await assertPartyNotFullInTx(tx, partyId);
+
+      const nowMs = Date.now();
+      await purgeExpiredPartyInvitesInTx(tx, nowMs, { partyId });
+
+      const pending = await tx.partyInvite.findUnique({
+        where: {
+          partyId_targetCharacterId: {
+            partyId,
+            targetCharacterId,
+          },
+        },
+        select: { id: true },
+      });
+      if (pending) throw new Error('party_invite_exists');
+
+      await tx.partyInvite.create({
+        data: {
+          partyId,
+          inviterCharacterId: char.id,
+          targetCharacterId,
+          expiresAt: new Date(nowMs + PARTY_INVITE_TTL_MS),
+        },
+      });
+
+      return { ok: true, partyVersion, createdParty };
+    });
+  } catch (err) {
+    if (isPartyMemberCharacterUniqueViolation(err)) {
+      throw new Error('party_already_member');
+    }
+    throw err;
+  }
 }
 
 export async function mapPartyVersionMismatchToConflict(

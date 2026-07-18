@@ -1908,7 +1908,7 @@
       if (el.classList && el.classList.contains('l2-gm-modal-overlay')) return false;
       var tag = el.tagName;
       var id = el.id || '';
-      if (/^l2-(pvp-incoming|clan-invite-hud|hud-notice|chat-reply-notify)$/.test(id)) {
+      if (/^l2-(pvp-incoming|party-hud-slot|clan-invite-hud|hud-notice|chat-reply-notify)$/.test(id)) {
         return false;
       }
       if (tag === 'SECTION' || tag === 'MAIN') {
@@ -2029,6 +2029,15 @@
       }
       global.L2.seedOnlineFootEarly();
       global.L2.seedChatReplyNotifyEarly();
+      global.L2.seedPartyHudEarly();
+    },
+
+    getPartyHudSlotMarkup: function () {
+      return (
+        '<div id="l2-party-hud-slot" class="l2-party-hud-slot" aria-live="polite">' +
+        '<div id="l2-party-hud-inner" class="l2-party-hud-inner l2-party-hud-inner--empty"></div>' +
+        '</div>'
+      );
     },
 
     /** Єдині Wap-бари HP/MP/CP/EXP для всіх сторінок. */
@@ -2082,6 +2091,7 @@
         global.L2.getHudWapBarsMarkup() +
         '</div>' +
         '</header>' +
+        global.L2.getPartyHudSlotMarkup() +
         global.L2.getClanInviteHudMarkup() +
         global.L2.getHudNoticeMarkup() +
         global.L2.getPvpIncomingMarkup()
@@ -2563,6 +2573,7 @@
   }
 
   var CHAT_REPLY_NOTIFY_VER = '20260717chatSnap1';
+  var PARTY_HUD_VER = '20260718partyHud2';
   var ONLINE_FOOT_ASSET_VER = '20260717perf2';
   var GAME_HELPER_ASSET_VER = '20260717perf2';
 
@@ -2600,6 +2611,42 @@
     scriptReply.src = '/l2-chat-reply-notify.js?v=' + CHAT_REPLY_NOTIFY_VER;
     scriptReply.onload = runReplyMount;
     (document.head || document.documentElement).appendChild(scriptReply);
+  }
+
+  function bootstrapPartyHud() {
+    if (typeof document === 'undefined' || !document.body) return;
+    if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+    if (!localStorage.getItem('token')) return;
+
+    function runPartyHudMount() {
+      if (global.L2PartyHud && typeof global.L2PartyHud.mount === 'function') {
+        global.L2PartyHud.mount();
+      }
+    }
+
+    if (global.L2PartyHud && global.L2PartyHud.ASSET_VER === PARTY_HUD_VER) {
+      runPartyHudMount();
+      return;
+    }
+
+    if (document.getElementById('l2-party-hud-js')) {
+      return;
+    }
+
+    var scriptParty = document.createElement('script');
+    scriptParty.id = 'l2-party-hud-js';
+    scriptParty.src = '/l2-party-hud.js?v=' + PARTY_HUD_VER;
+    scriptParty.onload = runPartyHudMount;
+    (document.head || document.documentElement).appendChild(scriptParty);
+  }
+
+  if (global.L2) {
+    global.L2.seedPartyHudEarly = bootstrapPartyHud;
+    global.L2.refreshPartyHud = function () {
+      if (global.L2PartyHud && typeof global.L2PartyHud.refresh === 'function') {
+        global.L2PartyHud.refresh();
+      }
+    };
   }
 
   function shouldBootstrapGameHelper() {

@@ -8,10 +8,14 @@ const PARTY_ERRORS: Record<string, { status: number; messageUk: string }> = {
     status: 400,
     messageUk: 'Ти вже в паті.',
   },
-  party_full: { status: 400, messageUk: 'У паті вже максимум учасників (5).' },
+  party_full: { status: 400, messageUk: 'Паті заповнене' },
   party_forbidden: {
     status: 403,
     messageUk: 'Недостатньо прав для цієї дії в паті.',
+  },
+  party_invite_leader_only: {
+    status: 403,
+    messageUk: 'Запрошувати може лише лідер.',
   },
   party_target_in_party: {
     status: 400,
@@ -31,7 +35,7 @@ const PARTY_ERRORS: Record<string, { status: number; messageUk: string }> = {
   },
   party_invite_exists: {
     status: 400,
-    messageUk: 'Запрошення цьому гравцю вже надіслано.',
+    messageUk: 'Запрошення вже надіслано',
   },
   party_invite_id_required: {
     status: 400,

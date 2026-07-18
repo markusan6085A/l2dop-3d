@@ -1,10 +1,9 @@
 /**
- * Сторінка паті — соціальні операції (фаза 1, без battle/reward).
+ * Сторінка складу паті — без технічних форм; invite через профіль + HUD.
  */
 (function () {
   var state = {
     party: null,
-    invites: [],
     inFlight: false,
   };
 
@@ -28,6 +27,12 @@
     if (!el) return;
     el.hidden = true;
     el.textContent = '';
+  }
+
+  function refreshGlobalHud() {
+    if (window.L2 && typeof L2.refreshPartyHud === 'function') {
+      L2.refreshPartyHud();
+    }
   }
 
   async function api(path, opts) {
@@ -64,20 +69,15 @@
     state.party = res.data.party || null;
   }
 
-  async function loadInvites() {
-    var res = await api('/game/party/invites');
-    if (res._err || !res.status || res.status >= 400) {
-      state.invites = [];
-      return;
-    }
-    state.invites = Array.isArray(res.data.invites) ? res.data.invites : [];
+  function userMessage(data, fallback) {
+    if (data && data.messageUk) return String(data.messageUk);
+    return fallback;
   }
 
   function applyPartyConflict(data) {
     if (data && data.party) {
       state.party = data.party;
-    }
-    if (typeof data.serverPartyVersion === 'number' && state.party) {
+    } else if (typeof data.serverPartyVersion === 'number' && state.party) {
       state.party.version = data.serverPartyVersion;
     }
     render();
@@ -103,74 +103,57 @@
       var m = members[i];
       var li = document.createElement('li');
       li.className = 'l2-party-member';
+
+      var main = document.createElement('div');
+      main.className = 'l2-party-member__main';
       var name = document.createElement('span');
       name.className = 'l2-party-member__name';
       name.textContent =
-        m.name + ' (ур. ' + m.level + ') — ' + (m.professionLabelUk || '—');
-      li.appendChild(name);
+        m.name + ' · ур. ' + m.level + ' · ' + (m.professionLabelUk || '—');
+      main.appendChild(name);
       if (m.isLeader) {
         var badge = document.createElement('span');
         badge.className = 'l2-party-member__badge';
-        badge.textContent = '★ лідер';
-        li.appendChild(badge);
-      } else if (state.party.viewerIsLeader) {
+        badge.textContent = 'Лідер';
+        main.appendChild(badge);
+      }
+      li.appendChild(main);
+
+      if (state.party.viewerIsLeader && !m.isLeader) {
         var kick = document.createElement('button');
         kick.type = 'button';
-        kick.className = 'l2-party-member__kick l2-party-btn';
-        kick.textContent = 'Kick';
+        kick.className = 'l2-party-btn l2-party-btn--danger l2-party-member__kick';
+        kick.textContent = 'Вигнати';
         kick.dataset.characterId = m.characterId;
         kick.addEventListener('click', onKickClick);
         li.appendChild(kick);
       }
+
       list.appendChild(li);
     }
   }
 
-  function renderInvites() {
-    var block = $('party-invites-block');
-    var list = $('party-invites-list');
-    if (!block || !list) return;
-    if (!state.invites.length) {
-      block.hidden = true;
-      list.innerHTML = '';
+  function renderFooter() {
+    var footer = $('party-footer-actions');
+    if (!footer || !state.party) return;
+    footer.innerHTML = '';
+
+    if (state.party.viewerIsLeader) {
+      var disband = document.createElement('button');
+      disband.type = 'button';
+      disband.className = 'l2-party-btn l2-party-btn--danger';
+      disband.textContent = 'Розпустити паті';
+      disband.addEventListener('click', onDisbandClick);
+      footer.appendChild(disband);
       return;
     }
-    block.hidden = false;
-    list.innerHTML = '';
-    for (var i = 0; i < state.invites.length; i++) {
-      var inv = state.invites[i];
-      var li = document.createElement('li');
-      li.className = 'l2-party-invite';
-      li.textContent =
-        'Запрошення від ' +
-        inv.inviterName +
-        ' (лідер: ' +
-        inv.leaderName +
-        ', ' +
-        inv.memberCount +
-        '/' +
-        inv.maxMembers +
-        ')';
-      var actions = document.createElement('div');
-      actions.className = 'l2-party-invite__actions';
-      var accept = document.createElement('button');
-      accept.type = 'button';
-      accept.className = 'l2-party-btn';
-      accept.textContent = 'Прийняти';
-      accept.dataset.inviteId = inv.inviteId;
-      accept.dataset.partyVersion = String(inv.partyVersion);
-      accept.addEventListener('click', onAcceptInvite);
-      var decline = document.createElement('button');
-      decline.type = 'button';
-      decline.className = 'l2-party-btn';
-      decline.textContent = 'Відхилити';
-      decline.dataset.inviteId = inv.inviteId;
-      decline.addEventListener('click', onDeclineInvite);
-      actions.appendChild(accept);
-      actions.appendChild(decline);
-      li.appendChild(actions);
-      list.appendChild(li);
-    }
+
+    var leave = document.createElement('button');
+    leave.type = 'button';
+    leave.className = 'l2-party-btn';
+    leave.textContent = 'Покинути паті';
+    leave.addEventListener('click', onLeaveClick);
+    footer.appendChild(leave);
   }
 
   function render() {
@@ -178,34 +161,26 @@
     var empty = $('party-empty');
     var active = $('party-active');
     var meta = $('party-meta');
-    var leaderActions = $('party-leader-actions');
     if (!empty || !active) return;
 
     if (!state.party) {
       empty.hidden = false;
       active.hidden = true;
-      if (meta) meta.hidden = true;
-      renderInvites();
+      if (meta) meta.textContent = '';
       return;
     }
 
     empty.hidden = true;
     active.hidden = false;
     if (meta) {
-      meta.hidden = false;
       meta.textContent =
         'Учасників: ' +
         state.party.memberCount +
         '/' +
-        state.party.maxMembers +
-        ' · v' +
-        state.party.version;
-    }
-    if (leaderActions) {
-      leaderActions.hidden = !state.party.viewerIsLeader;
+        state.party.maxMembers;
     }
     renderMembers();
-    renderInvites();
+    renderFooter();
   }
 
   async function withLock(fn) {
@@ -219,74 +194,27 @@
     }
   }
 
-  async function onCreateClick() {
-    await withLock(async function () {
-      var res = await postJson('/game/party/create', {});
-      if (res.status === 409 && res.data.code === 'party_version_conflict') {
-        applyPartyConflict(res.data);
-        showErr('Стан паті змінився — оновлено.');
-        return;
-      }
-      if (!res.status || res.status >= 400) {
-        showErr(res.data.messageUk || 'Не вдалося створити паті.');
-        return;
-      }
-      state.party = res.data.party;
-      await loadInvites();
-      render();
-    });
-  }
-
-  async function onInviteClick() {
-    if (!state.party) return;
-    var input = $('party-invite-target');
-    var targetId = input ? String(input.value || '').trim() : '';
-    if (!targetId) {
-      showErr('Вкажи characterId.');
-      return;
-    }
-    await withLock(async function () {
-      var res = await postJson('/game/party/invite', {
-        targetCharacterId: targetId,
-        expectedPartyVersion: state.party.version,
-      });
-      if (res.status === 409 && res.data.code === 'party_version_conflict') {
-        applyPartyConflict(res.data);
-        showErr('Стан паті застарів — оновлено.');
-        return;
-      }
-      if (!res.status || res.status >= 400) {
-        showErr(res.data.messageUk || 'Не вдалося надіслати запрошення.');
-        return;
-      }
-      if (typeof res.data.partyVersion === 'number') {
-        state.party.version = res.data.partyVersion;
-      }
-      if (input) input.value = '';
-      render();
-    });
-  }
-
   async function onLeaveClick() {
     if (!state.party) return;
-    if (!window.confirm('Вийти з паті?')) return;
+    if (!window.confirm('Покинути паті?')) return;
     await withLock(async function () {
       var res = await postJson('/game/party/leave', {
         expectedPartyVersion: state.party.version,
       });
       if (res.status === 409 && res.data.code === 'party_version_conflict') {
         applyPartyConflict(res.data);
-        showErr('Стан паті застарів — оновлено.');
+        showErr('Стан паті змінився. Оновлено.');
+        refreshGlobalHud();
         return;
       }
       if (!res.status || res.status >= 400) {
-        showErr(res.data.messageUk || 'Не вдалося вийти.');
+        showErr(userMessage(res.data, 'Не вдалося покинути паті.'));
         return;
       }
       state.party = null;
       await loadParty();
-      await loadInvites();
       render();
+      refreshGlobalHud();
     });
   }
 
@@ -299,15 +227,17 @@
       });
       if (res.status === 409 && res.data.code === 'party_version_conflict') {
         applyPartyConflict(res.data);
-        showErr('Стан паті застарів — оновлено.');
+        showErr('Стан паті змінився. Оновлено.');
+        refreshGlobalHud();
         return;
       }
       if (!res.status || res.status >= 400) {
-        showErr(res.data.messageUk || 'Не вдалося розпустити паті.');
+        showErr(userMessage(res.data, 'Не вдалося розпустити паті.'));
         return;
       }
       state.party = null;
       render();
+      refreshGlobalHud();
     });
   }
 
@@ -315,6 +245,7 @@
     var btn = ev.currentTarget;
     var targetId = btn && btn.dataset ? btn.dataset.characterId : '';
     if (!targetId || !state.party) return;
+    if (!window.confirm('Вигнати учасника з паті?')) return;
     await withLock(async function () {
       var res = await postJson('/game/party/kick', {
         targetCharacterId: targetId,
@@ -322,59 +253,17 @@
       });
       if (res.status === 409 && res.data.code === 'party_version_conflict') {
         applyPartyConflict(res.data);
-        showErr('Стан паті застарів — оновлено.');
+        showErr('Стан паті змінився. Оновлено.');
+        refreshGlobalHud();
         return;
       }
       if (!res.status || res.status >= 400) {
-        showErr(res.data.messageUk || 'Не вдалося виключити.');
+        showErr(userMessage(res.data, 'Не вдалося вигнати учасника.'));
         return;
       }
       state.party = res.data.party;
       render();
-    });
-  }
-
-  async function onAcceptInvite(ev) {
-    var btn = ev.currentTarget;
-    var inviteId = btn && btn.dataset ? btn.dataset.inviteId : '';
-    var pv = btn && btn.dataset ? Number(btn.dataset.partyVersion) : NaN;
-    if (!inviteId || !Number.isFinite(pv)) return;
-    await withLock(async function () {
-      var res = await postJson('/game/party/invite/accept', {
-        inviteId: inviteId,
-        expectedPartyVersion: pv,
-      });
-      if (res.status === 409 && res.data.code === 'party_version_conflict') {
-        applyPartyConflict(res.data);
-        await loadInvites();
-        render();
-        showErr('Стан паті застарів — оновлено.');
-        return;
-      }
-      if (!res.status || res.status >= 400) {
-        showErr(res.data.messageUk || 'Не вдалося прийняти.');
-        await loadInvites();
-        render();
-        return;
-      }
-      state.party = res.data.party;
-      await loadInvites();
-      render();
-    });
-  }
-
-  async function onDeclineInvite(ev) {
-    var btn = ev.currentTarget;
-    var inviteId = btn && btn.dataset ? btn.dataset.inviteId : '';
-    if (!inviteId) return;
-    await withLock(async function () {
-      var res = await postJson('/game/party/invite/decline', { inviteId: inviteId });
-      if (!res.status || res.status >= 400) {
-        showErr(res.data.messageUk || 'Не вдалося відхилити.');
-        return;
-      }
-      await loadInvites();
-      render();
+      refreshGlobalHud();
     });
   }
 
@@ -389,20 +278,10 @@
       showErr('Потрібен вхід.');
       return;
     }
-    if (window.L2 && typeof L2.ensureHudFromCharacter === 'function') {
-      await L2.ensureHudFromCharacter();
+    if (typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
     }
-    var createBtn = $('party-create-btn');
-    if (createBtn) createBtn.addEventListener('click', onCreateClick);
-    var inviteBtn = $('party-invite-btn');
-    if (inviteBtn) inviteBtn.addEventListener('click', onInviteClick);
-    var leaveBtn = $('party-leave-btn');
-    if (leaveBtn) leaveBtn.addEventListener('click', onLeaveClick);
-    var disbandBtn = $('party-disband-btn');
-    if (disbandBtn) disbandBtn.addEventListener('click', onDisbandClick);
-
     await loadParty();
-    await loadInvites();
     render();
   }
 
