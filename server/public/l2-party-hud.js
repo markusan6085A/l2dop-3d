@@ -6,7 +6,7 @@
   'use strict';
 
   var POLL_MS = 5000;
-  var ASSET_VER = '20260718partyHud2';
+  var ASSET_VER = '20260718partyHud3';
 
   var hudState = null;
   var fetchSeq = 0;
@@ -134,7 +134,7 @@
     var viewBtn = document.createElement('a');
     viewBtn.className = 'l2-party-hud__view';
     viewBtn.href = '/party.html';
-    viewBtn.textContent = 'Переглянути';
+    viewBtn.textContent = '[Переглянути]';
 
     row.appendChild(label);
     row.appendChild(viewBtn);

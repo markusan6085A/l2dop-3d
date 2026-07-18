@@ -106,11 +106,33 @@
 
       var main = document.createElement('div');
       main.className = 'l2-party-member__main';
-      var name = document.createElement('span');
-      name.className = 'l2-party-member__name';
-      name.textContent =
-        m.name + ' · ур. ' + m.level + ' · ' + (m.professionLabelUk || '—');
-      main.appendChild(name);
+
+      var nick = document.createElement('span');
+      nick.className = 'l2-party-member__nick';
+      nick.textContent = m.name || '—';
+
+      var sep1 = document.createElement('span');
+      sep1.className = 'l2-party-member__sep';
+      sep1.textContent = ' · ';
+
+      var level = document.createElement('span');
+      level.className = 'l2-party-member__level';
+      level.textContent = 'ур. ' + (m.level != null ? m.level : '—');
+
+      var sep2 = document.createElement('span');
+      sep2.className = 'l2-party-member__sep';
+      sep2.textContent = ' · ';
+
+      var prof = document.createElement('span');
+      prof.className = 'l2-party-member__prof';
+      prof.textContent = m.professionLabelUk || '—';
+
+      main.appendChild(nick);
+      main.appendChild(sep1);
+      main.appendChild(level);
+      main.appendChild(sep2);
+      main.appendChild(prof);
+
       if (m.isLeader) {
         var badge = document.createElement('span');
         badge.className = 'l2-party-member__badge';
@@ -122,8 +144,8 @@
       if (state.party.viewerIsLeader && !m.isLeader) {
         var kick = document.createElement('button');
         kick.type = 'button';
-        kick.className = 'l2-party-btn l2-party-btn--danger l2-party-member__kick';
-        kick.textContent = 'Вигнати';
+        kick.className = 'l2-party-link l2-party-link--kick';
+        kick.textContent = '[Вигнати]';
         kick.dataset.characterId = m.characterId;
         kick.addEventListener('click', onKickClick);
         li.appendChild(kick);
@@ -141,8 +163,8 @@
     if (state.party.viewerIsLeader) {
       var disband = document.createElement('button');
       disband.type = 'button';
-      disband.className = 'l2-party-btn l2-party-btn--danger';
-      disband.textContent = 'Розпустити паті';
+      disband.className = 'l2-party-link l2-party-link--danger';
+      disband.textContent = '[Розпустити паті]';
       disband.addEventListener('click', onDisbandClick);
       footer.appendChild(disband);
       return;
@@ -150,8 +172,8 @@
 
     var leave = document.createElement('button');
     leave.type = 'button';
-    leave.className = 'l2-party-btn';
-    leave.textContent = 'Покинути паті';
+    leave.className = 'l2-party-link l2-party-link--danger';
+    leave.textContent = '[Покинути паті]';
     leave.addEventListener('click', onLeaveClick);
     footer.appendChild(leave);
   }
