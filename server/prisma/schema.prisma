@@ -123,6 +123,7 @@ model Character {
   partyMembership  PartyMember?
   partyInvitesSent PartyInvite[] @relation("PartyInviteInviter")
   partyInvitesRecv PartyInvite[] @relation("PartyInviteTarget")
+  partyBattleParticipants PartyBattleParticipant[]
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
@@ -138,6 +139,70 @@ model Party {
   updatedAt         DateTime      @updatedAt
   members           PartyMember[]
   invites           PartyInvite[]
+  battleSessions    PartyBattleSession[]
+}
+
+enum PartyBattleSessionState {
+  active
+  victory
+  ended
+}
+
+/** Спільний PvE-бій паті: одне mobHp на групу (фаза 2). Історія зберігається після disband Party. */
+model PartyBattleSession {
+  id                     String                   @id @default(uuid())
+  partyId                String?
+  originPartyId          String
+  activePartyKey         String?                  @unique
+  spawnId                String
+  canonicalMobTemplateId String
+  mobWorldX              Int
+  mobWorldY              Int
+  mobHp                  Int
+  mobMaxHp               Int
+  battleVersion          Int                      @default(1)
+  state                  PartyBattleSessionState  @default(active)
+  lastActivityAt         DateTime                 @default(now())
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  endedAt                DateTime?
+  endReason              String?
+  party                  Party?                   @relation(fields: [partyId], references: [id], onDelete: SetNull)
+  participants           PartyBattleParticipant[]
+  rewards                PartyKillReward[]
+
+  @@index([originPartyId])
+  @@index([spawnId, state])
+  @@index([lastActivityAt, state])
+}
+
+model PartyBattleParticipant {
+  partyBattleId       String
+  characterId         String
+  joinedAt            DateTime  @default(now())
+  lastActivityAt      DateTime  @default(now())
+  lastDamagingHitAtMs BigInt?
+  totalDamage         Int       @default(0)
+  active              Boolean   @default(true)
+  leftAt              DateTime?
+  partyBattle         PartyBattleSession @relation(fields: [partyBattleId], references: [id], onDelete: Cascade)
+  character           Character          @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([partyBattleId, characterId])
+  @@index([characterId])
+}
+
+/** Idempotency: одна session — одна нагорода на characterId. */
+model PartyKillReward {
+  partyBattleId String
+  characterId   String
+  expGain       Int
+  spGain        Int
+  adenaGain     BigInt
+  createdAt     DateTime @default(now())
+  partyBattle   PartyBattleSession @relation(fields: [partyBattleId], references: [id], onDelete: Cascade)
+
+  @@id([partyBattleId, characterId])
 }
 
 model PartyMember {
