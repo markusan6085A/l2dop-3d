@@ -578,6 +578,8 @@
       return;
     }
     state.token = t;
+    var panelEarly = $('clan-my-panel');
+    if (panelEarly) panelEarly.hidden = false;
 
     if (typeof L2.renderCharacterFromCache === 'function') {
       L2.renderCharacterFromCache();

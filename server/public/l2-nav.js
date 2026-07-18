@@ -226,4 +226,8 @@
     top: TOP,
     bottom: BOTTOM,
   };
+
+  if (typeof document !== 'undefined' && document.body && document.getElementById('l2-nav-bottom')) {
+    L2.mountL2Nav({});
+  }
 })(typeof window !== 'undefined' ? window : globalThis);

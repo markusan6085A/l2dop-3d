@@ -572,6 +572,9 @@
       return;
     }
 
+    var panelEarly = $('magister-panel');
+    if (panelEarly) panelEarly.hidden = false;
+
     await refreshCharacterSnapshot();
     await loadMagisterPage();
   }

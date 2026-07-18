@@ -1859,6 +1859,24 @@
     },
 
     /** Показати основний контент одразу (як char.html), без стрибка після fetch. */
+    shouldRevealChromeShell: function (el) {
+      if (!el || el.nodeType !== 1) return false;
+      var tag = el.tagName;
+      if (tag !== 'SECTION' && tag !== 'MAIN' && tag !== 'DIV') return false;
+      var id = el.id || '';
+      if (tag === 'DIV' && !id) return false;
+      if (
+        /(?:^|-)(?:err|stub-msg|overlay|modal|toast|hint|pager|confirm|edit-wrap|announce-edit|leave-confirm|smiles-panel|reply-hint|hero-stage|buff-strip|empty|announce-read|leave-wrap|nav-bottom|nav-top|hud-panel-mount|foot-links|craft-wrap|dev-boost-wrap|bag-modal|smiles-pager|load-err|battle-content)$/.test(
+          id
+        )
+      ) {
+        return false;
+      }
+      if (id === 'clan-my-empty') return false;
+      if (el.classList.contains('l2-gm-modal-overlay')) return false;
+      return true;
+    },
+
     revealChromePageContentEarly: function () {
       if (typeof document === 'undefined' || !document.body) return;
       if (!document.body.classList.contains('l2-app-l2-chrome')) return;
@@ -1870,18 +1888,75 @@
         token = null;
       }
       if (!token) return;
+      var shouldReveal = global.L2.shouldRevealChromeShell;
       document
         .querySelectorAll(
-          '.l2-chrome-nav-column > section[hidden], ' +
-            '.l2-townlive-column > section[hidden], ' +
-            '.l2-chrome-nav-column > main[hidden], ' +
-            '.l2-townlive-column > main[hidden], ' +
-            '.l2-screen-inner > section[hidden][id$="-content"], ' +
-            '.l2-screen-inner > main[hidden][id$="-content"]'
+          '.l2-screen-inner [hidden], .l2-chrome-nav-column [hidden], .l2-townlive-column [hidden]'
         )
         .forEach(function (el) {
-          el.removeAttribute('hidden');
+          if (shouldReveal(el)) el.removeAttribute('hidden');
         });
+    },
+
+    seedOnlineFootEarly: function () {
+      if (typeof document === 'undefined' || !document.body) return;
+      if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+      if (document.body.classList.contains('l2-page-online')) return;
+      if (document.body.classList.contains('l2-page-battle')) return;
+      if (document.getElementById('l2-online-foot')) return;
+      var shell = document.querySelector('.l2-shell');
+      if (!shell) return;
+      var screen = shell.querySelector('.l2-screen.l2-outer-sframe-host');
+      if (!screen) return;
+      var foot = document.createElement('div');
+      foot.className = 'l2-online-foot';
+      foot.id = 'l2-online-foot';
+      var link = document.createElement('a');
+      link.className = 'l2-online-foot__link';
+      link.id = 'l2-online-link';
+      link.href = '/online.html';
+      link.textContent = 'Онлайн: —';
+      foot.appendChild(link);
+      if (screen.nextSibling) {
+        shell.insertBefore(foot, screen.nextSibling);
+      } else {
+        shell.appendChild(foot);
+      }
+    },
+
+    seedChatReplyNotifyEarly: function () {
+      if (typeof document === 'undefined' || !document.body) return;
+      if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+      if (document.body.classList.contains('l2-page-battle')) return;
+      if (document.body.classList.contains('l2-page-chat')) return;
+      if (document.getElementById('l2-chat-reply-notify')) return;
+      var hud =
+        document.querySelector(
+          '.l2-chrome-nav-column > .l2-hud-panel, .l2-townlive-column > .l2-hud-panel, .l2-screen-inner > .l2-hud-panel'
+        ) || document.getElementById('l2-hud-panel-mount');
+      if (!hud) return;
+      var link = document.createElement('a');
+      link.className = 'l2-chat-reply-notify';
+      link.id = 'l2-chat-reply-notify';
+      link.href = '/chat.html';
+      link.hidden = true;
+      hud.insertAdjacentElement('afterend', link);
+    },
+
+    bootstrapChromeShellEarly: function () {
+      if (typeof document === 'undefined' || !document.body) return;
+      if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+      global.L2.ensureNavMinimalChrome();
+      if (!document.getElementById('l2-nav-bottom')) return;
+      global.L2.revealChromePageContentEarly();
+      if (typeof global.L2.mountStandardHudPanel === 'function') {
+        global.L2.mountStandardHudPanel();
+      }
+      if (typeof global.L2.hydrateCharacterFromSessionCache === 'function') {
+        global.L2.hydrateCharacterFromSessionCache();
+      }
+      global.L2.seedOnlineFootEarly();
+      global.L2.seedChatReplyNotifyEarly();
     },
 
     /** Єдині Wap-бари HP/MP/CP/EXP для всіх сторінок. */
@@ -2548,26 +2623,14 @@
     (document.head || document.documentElement).appendChild(script);
   }
 
-  if (typeof document !== 'undefined' && document.body && global.L2 && typeof global.L2.ensureNavMinimalChrome === 'function') {
-    global.L2.ensureNavMinimalChrome();
-  }
-  if (typeof document !== 'undefined' && document.body && global.L2 && typeof global.L2.revealChromePageContentEarly === 'function') {
-    global.L2.revealChromePageContentEarly();
+  if (typeof document !== 'undefined' && document.body && global.L2 && typeof global.L2.bootstrapChromeShellEarly === 'function') {
+    global.L2.bootstrapChromeShellEarly();
   }
 
   if (typeof document !== 'undefined') {
     function runHudMount() {
-      if (global.L2 && typeof global.L2.ensureNavMinimalChrome === 'function') {
-        global.L2.ensureNavMinimalChrome();
-      }
-      if (global.L2 && typeof global.L2.revealChromePageContentEarly === 'function') {
-        global.L2.revealChromePageContentEarly();
-      }
-      if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
-        global.L2.mountStandardHudPanel();
-      }
-      if (global.L2 && typeof global.L2.hydrateCharacterFromSessionCache === 'function') {
-        global.L2.hydrateCharacterFromSessionCache();
+      if (global.L2 && typeof global.L2.bootstrapChromeShellEarly === 'function') {
+        global.L2.bootstrapChromeShellEarly();
       }
       loadItemIconHintsFromSession();
       hydrateCatalogHintsFromLocalStorage();
