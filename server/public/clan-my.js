@@ -26,6 +26,7 @@
     chatInFlight: false,
     chatSendInFlight: false,
     leaveInFlight: false,
+    leaveConfirmOpen: false,
   };
 
   function $(id) {
@@ -192,6 +193,7 @@
     if (leaveWrap) {
       leaveWrap.hidden = !canShowLeaveClan(clan);
     }
+    hideLeaveConfirm();
 
     state.chatPage = 1;
     loadClanChat();
@@ -438,9 +440,25 @@
     }
   }
 
-  async function leaveClan() {
+  function showLeaveConfirm() {
+    var box = $('clan-my-leave-confirm');
+    if (!box) return;
+    box.hidden = false;
+    state.leaveConfirmOpen = true;
+  }
+
+  function hideLeaveConfirm() {
+    var box = $('clan-my-leave-confirm');
+    if (box) box.hidden = true;
+    state.leaveConfirmOpen = false;
+    var yesBtn = $('clan-my-leave-yes');
+    var noBtn = $('clan-my-leave-no');
+    if (yesBtn) yesBtn.disabled = false;
+    if (noBtn) noBtn.disabled = false;
+  }
+
+  async function confirmLeaveClan() {
     if (state.leaveInFlight || !state.token) return;
-    if (!window.confirm(tr('clan_my_leave_confirm', 'Вийти з клану?'))) return;
 
     var rev =
       window.L2 && typeof L2.lastSnapshot === 'function'
@@ -452,8 +470,12 @@
     }
 
     var leaveBtn = $('clan-my-leave-btn');
+    var yesBtn = $('clan-my-leave-yes');
+    var noBtn = $('clan-my-leave-no');
     state.leaveInFlight = true;
     if (leaveBtn) leaveBtn.disabled = true;
+    if (yesBtn) yesBtn.disabled = true;
+    if (noBtn) noBtn.disabled = true;
     try {
       var r = await fetch('/game/clans/leave', {
         method: 'POST',
@@ -467,6 +489,7 @@
         if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
           await L2.resyncCharacterAfterConflict();
         }
+        hideLeaveConfirm();
         return;
       }
       if (!r.ok) {
@@ -474,6 +497,7 @@
           return {};
         });
         showErr(errBody.messageUk || 'Не вдалося вийти з клану.');
+        hideLeaveConfirm();
         return;
       }
       var data = await r.json().catch(function () {
@@ -483,6 +507,7 @@
         L2.applyMutationSnapshot(data.character);
       }
       state.clan = null;
+      hideLeaveConfirm();
       applyEmptyView();
     } finally {
       state.leaveInFlight = false;
@@ -510,10 +535,23 @@
 
   function bindLeaveClan() {
     var leaveBtn = $('clan-my-leave-btn');
-    if (!leaveBtn) return;
-    leaveBtn.addEventListener('click', function () {
-      leaveClan();
-    });
+    var yesBtn = $('clan-my-leave-yes');
+    var noBtn = $('clan-my-leave-no');
+    if (leaveBtn) {
+      leaveBtn.addEventListener('click', function () {
+        showLeaveConfirm();
+      });
+    }
+    if (yesBtn) {
+      yesBtn.addEventListener('click', function () {
+        confirmLeaveClan();
+      });
+    }
+    if (noBtn) {
+      noBtn.addEventListener('click', function () {
+        hideLeaveConfirm();
+      });
+    }
   }
 
   async function init() {

@@ -527,6 +527,46 @@ body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-btn:focus:not(:disabled)
   color: #ff6644;
 }
 
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-confirm {
+  margin: 6px 0 0;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-confirm__text {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-confirm__actions {
+  margin: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-confirm__btn {
+  margin: 0 10px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--l2-font-display);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-confirm__btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-confirm__btn:hover:not(:disabled),
+body.l2-app-l2-chrome.l2-page-clan-my .l2-clan-my-leave-confirm__btn:focus:not(:disabled) {
+  color: #bfa88a;
+}
+
 body.l2-app-l2-chrome.l2-page-clan-my .l2-city-stub-msg {
   margin: 0 0 8px;
   padding-left: 2px;
