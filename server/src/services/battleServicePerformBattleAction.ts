@@ -225,6 +225,9 @@ export async function performBattleActionInTx(
 
     char = await refreshPvpOpponentHpForCharacterInTx(tx, char as CharacterRow);
 
+    /** Після flush pending-ударів РБ revision не змінюється, але char могло оновитись. */
+    const writeRevision = char.revision;
+
     const bj = parseBattleJson((char as CharacterRow).battleJson);
     if (!bj) {
       const snapAfterFlush = toSnapshot(
@@ -976,7 +979,8 @@ export async function performBattleActionInTx(
     if (
       lethalShotProc === true &&
       damagingPlayerHit &&
-      !isPvpBattleJson(st)
+      !isPvpBattleJson(st) &&
+      mobHp > 1
     ) {
       mobHp = 1;
       st.mobHp = 1;
@@ -1525,7 +1529,7 @@ export async function performBattleActionInTx(
 
     const continueBase: BattleContinueTurnBase = {
       userId,
-      expectedRevision,
+      expectedRevision: writeRevision,
       char: char as CharacterRow,
       bj,
       spawn,
@@ -1604,26 +1608,26 @@ export async function performBattleActionInTx(
       if (playerHp <= 0) {
         const d = await persistBattleDefeatInTx(tx, {
           userId,
-          expectedRevision: char.revision,
-          char: char as CharacterRow,
-          bj,
-          spawn,
-          maxHpEff: maxHpEffAfter,
-          maxMpEff,
-          st,
-          log,
-        });
-        return wrapBattleDefeatAsDelta(d);
-      }
-      return persistBattleContinueFromTurn(
-        tx,
-        { ...continueBase, char: char as CharacterRow, playerHp, mobHp, st },
-        persistSide,
-        logLinesAdded
-      );
+        expectedRevision: writeRevision,
+        char: char as CharacterRow,
+        bj,
+        spawn,
+        maxHpEff: maxHpEffAfter,
+        maxMpEff,
+        st,
+        log,
+      });
+      return wrapBattleDefeatAsDelta(d);
     }
+    return persistBattleContinueFromTurn(
+      tx,
+      { ...continueBase, char: char as CharacterRow, playerHp, mobHp, st },
+      persistSide,
+      logLinesAdded
+    );
+  }
 
-    const shouldMobCounterAttack = resolveMobShouldCounterAttack({
+  const shouldMobCounterAttack = resolveMobShouldCounterAttack({
       st,
       action,
       race: char.race,
@@ -1658,7 +1662,7 @@ export async function performBattleActionInTx(
     if (playerHp <= 0) {
       const d = await persistBattleDefeatInTx(tx, {
         userId,
-        expectedRevision,
+        expectedRevision: writeRevision,
         char: char as CharacterRow,
         bj,
         spawn,

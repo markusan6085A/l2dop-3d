@@ -30,12 +30,13 @@ export function raceFighterL2ActionAllowed(actionNorm: string): boolean {
   return RACE_FIGHTER_ACTIVE_L2_ID_SET.has(Number(mysticId[1]));
 }
 
-/** Клієнт / хотбар інколи шлють `l2_256` замість `accuracy_stance` — узгоджуємо з каталогом. */
+/** Клієнт / хотбар інколи шлють `l2_256` або `L2_343` — узгоджуємо з каталогом. */
 export function normalizeClientBattleAction(raw: unknown): string | null {
   if (typeof raw !== 'string') return null;
   const t = raw.trim();
   if (!t) return null;
-  const mysticId = /^l2_(\d+)$/.exec(t);
+  const l2Norm = t.replace(/^L2_/i, 'l2_');
+  const mysticId = /^l2_(\d+)$/.exec(l2Norm);
   if (mysticId) {
     const id = Number(mysticId[1]);
     if (
@@ -45,12 +46,15 @@ export function normalizeClientBattleAction(raw: unknown): string | null {
       ORC_MYSTIC_ALL_L2_IDS.has(id) ||
       RACE_FIGHTER_ACTIVE_L2_ID_SET.has(id)
     ) {
-      return t;
+      return l2Norm;
     }
   }
   const mapped =
     CANONICAL_L2_SKILL_TO_BATTLE_ACTION[
+      l2Norm as keyof typeof CANONICAL_L2_SKILL_TO_BATTLE_ACTION
+    ] ??
+    CANONICAL_L2_SKILL_TO_BATTLE_ACTION[
       t as keyof typeof CANONICAL_L2_SKILL_TO_BATTLE_ACTION
     ];
-  return mapped ?? t;
+  return mapped ?? l2Norm;
 }

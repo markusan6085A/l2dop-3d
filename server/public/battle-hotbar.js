@@ -253,7 +253,7 @@
 
   function canonicalBattleActionId(id) {
     if (typeof id !== 'string' || !id) return id;
-    var t = id.trim();
+    var t = id.trim().replace(/^L2_/i, 'l2_');
     return L2_BATTLE_ID_TO_ACTION[t] != null ? L2_BATTLE_ID_TO_ACTION[t] : t;
   }
 

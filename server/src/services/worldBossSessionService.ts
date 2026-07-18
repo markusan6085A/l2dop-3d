@@ -169,9 +169,11 @@ export async function resolveCanonicalWorldBossMobHpInTx(
   mobMaxHp: number,
   localMobHp: number
 ): Promise<number> {
+  const local = Math.max(0, Math.min(mobMaxHp, Math.floor(localMobHp)));
   const shared = await loadWorldBossSessionMobHp(tx, spawnId);
-  if (shared == null) return Math.max(0, Math.min(mobMaxHp, Math.floor(localMobHp)));
-  return clampSharedWorldBossMobHp(mobMaxHp, shared);
+  if (shared == null) return local;
+  const sharedClamped = clampSharedWorldBossMobHp(mobMaxHp, shared);
+  return Math.min(local, sharedClamped);
 }
 
 export async function ensureWorldBossSessionInTx(
