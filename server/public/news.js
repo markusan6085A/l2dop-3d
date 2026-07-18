@@ -59,9 +59,10 @@
         escapeHtml(ago) +
         '</span>';
     } else if (entry.kind === 'player_join') {
-      p.appendChild(
-        document.createTextNode('У грі з\'явився новий гравець: ')
-      );
+      var lead = document.createElement('span');
+      lead.className = 'l2-news-item__join-lead';
+      lead.textContent = 'У грі з\'явився новий гравець: ';
+      p.appendChild(lead);
       var nick =
         window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
           ? L2.createPlayerProfileNickEl({
