@@ -126,6 +126,8 @@ import {
   persistPartyBattleContinueTurnInTx,
   resolvePartyBattleStageBTestVictoryInTx,
 } from './party/partyBattleOutcomeTx.js';
+import { resolvePartyBattleVictoryInTx } from './party/partyBattleVictoryTx.js';
+import { isPartyBattleRewardDistributionReady } from '../domain/partyBattleFlags.js';
 import type { PartyBattleActionLockContext } from './party/partyBattleActionLock.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
@@ -1706,7 +1708,7 @@ export async function performBattleActionInTx(
 
     if (mobHp <= 0) {
       if (partyBattleCtx) {
-        return resolvePartyBattleStageBTestVictoryInTx(tx, {
+        const partyVictoryBase = {
           sessionId: partyBattleCtx.session.id,
           characterId: cr.id,
           expectedRevision: writeRevision,
@@ -1719,7 +1721,20 @@ export async function performBattleActionInTx(
           logLinesAdded,
           maxMpEff,
           side: persistSide,
-        });
+        };
+        if (isPartyBattleRewardDistributionReady()) {
+          return resolvePartyBattleVictoryInTx(tx, {
+            ...partyVictoryBase,
+            userId,
+            bj,
+            spawn,
+            inv,
+            preLevel,
+            currentMp,
+            cr: char as CharacterRow,
+          });
+        }
+        return resolvePartyBattleStageBTestVictoryInTx(tx, partyVictoryBase);
       }
       const victory = await resolveMobDeadVictoryInTx(tx, {
         ...continueBase,

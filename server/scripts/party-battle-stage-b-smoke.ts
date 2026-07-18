@@ -16,6 +16,7 @@ import { MAP_WORLD_SPAWNS } from '../src/data/mapWorldSpawns.js';
 import {
   isPartyBattleEngineEnabled,
   canStartPartyBattleViaRoute,
+  isPartyBattleRewardDistributionReady,
 } from '../src/domain/partyBattleFlags.js';
 import {
   PARTY_BATTLE_END_REASON,
@@ -140,7 +141,9 @@ async function withFlags<T>(
 ): Promise<T> {
   process.env.PARTY_BATTLE_ENABLED = 'true';
   process.env.PARTY_BATTLE_ALLOW_UNREWARDED_TESTS = 'true';
+  delete process.env.PARTY_BATTLE_REWARDS_ENABLED;
   assert.equal(canStartPartyBattleViaRoute(), true);
+  assert.equal(isPartyBattleRewardDistributionReady(), false);
   try {
     return await fn();
   } finally {
@@ -471,6 +474,7 @@ async function main(): Promise<void> {
   await testFlagOffNoPartyTableQueries();
   process.env.PARTY_BATTLE_ENABLED = 'true';
   process.env.PARTY_BATTLE_ALLOW_UNREWARDED_TESTS = 'true';
+  delete process.env.PARTY_BATTLE_REWARDS_ENABLED;
   await testConcurrentStartOneSession();
   await testWrongSpawnError();
   await testSharedHpTwoAttackers();
