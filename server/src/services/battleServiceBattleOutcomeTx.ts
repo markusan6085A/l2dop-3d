@@ -11,7 +11,7 @@ import {
   bumpBattleVersionInPlace,
 } from '../domain/battleVersion.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
-import { rollKillLoot } from '../domain/killLoot.js';
+import { rollKillLoot, type KillLootResult } from '../domain/killLoot.js';
 import {
   incrementQuestKillOnVictory,
   parseQuestProgressJson,
@@ -71,6 +71,9 @@ import type { NearbyExtraMobEconomyPatch } from './battleNearbyExtraMobLoot.js';
 
 type Tx = Prisma.TransactionClient;
 
+/** РБ split: economyOnly = EXP/SP/adena; full = усе (звичайна перемога). */
+export type BattleVictoryRewardMode = 'full' | 'economyOnly';
+
 export async function persistBattleVictoryInTx(
   tx: Tx,
   args: {
@@ -92,6 +95,9 @@ export async function persistBattleVictoryInTx(
     skillCooldownsJson?: Prisma.InputJsonValue;
     /** EXP/SP/адена за додаткові AoE-цілі в цьому ж ході (char.exp уже містить їхній EXP). */
     nearbyExtraEconomy?: NearbyExtraMobEconomyPatch;
+    /** РБ: один roll на kill — reuse для split нагород. */
+    preRolledLoot?: KillLootResult;
+    rewardMode?: BattleVictoryRewardMode;
   }
 ): Promise<{ character: CharacterSnapshot; victory: BattleVictorySummary }> {
   const {
@@ -110,18 +116,37 @@ export async function persistBattleVictoryInTx(
     activeBuffsJson,
     skillCooldownsJson,
     nearbyExtraEconomy,
+    preRolledLoot,
+    rewardMode = 'full',
   } = args;
 
   const npcId = resolveL2dopNpcIdByMobName(spawn.name) ?? null;
-  const loot = rollKillLoot(npcId, spawn.level, inv, {
-    race: char.race,
-    l2Profession: char.l2Profession,
-    skillsLearnedJson: char.skillsLearnedJson,
-  }, { spawnKind: spawn.kind, mobName: spawn.name, spawnId: bj.spawnId });
+  const loot =
+    preRolledLoot ??
+    rollKillLoot(
+      npcId,
+      spawn.level,
+      inv,
+      {
+        race: char.race,
+        l2Profession: char.l2Profession,
+        skillsLearnedJson: char.skillsLearnedJson,
+      },
+      { spawnKind: spawn.kind, mobName: spawn.name, spawnId: bj.spawnId }
+    );
   log.push('Перемога!');
-  for (const line of loot.logLines) {
-    log.push(line);
+  if (rewardMode === 'economyOnly') {
+    for (const line of loot.logLines) {
+      if (/EXP| SP|аден/i.test(line)) log.push(line);
+    }
+  } else {
+    for (const line of loot.logLines) {
+      log.push(line);
+    }
   }
+
+  const inventoryForPersist =
+    rewardMode === 'economyOnly' ? inv : loot.inventory;
 
   let newExp = char.exp + loot.expGain;
   if (newExp > L2DOP_MAX_TOTAL_EXP_INCLUSIVE) {
@@ -218,7 +243,7 @@ export async function persistBattleVictoryInTx(
         sp: { increment: spGainTotal },
         mobsKilled: { increment: mobsKilledTotal },
         karma: karmaAfter,
-        inventoryJson: loot.inventory as unknown as Prisma.InputJsonValue,
+        inventoryJson: inventoryForPersist as unknown as Prisma.InputJsonValue,
         battleJson: Prisma.JsonNull,
         mobSpawnHpJson: serializeMobSpawnHpState(mobHpAfterVictory),
         worldCombatStateJson:
@@ -270,7 +295,10 @@ export async function persistBattleVictoryInTx(
       loot.expGain + (nearbyExtraEconomy?.expGainFromExtras ?? BigInt(0))
     ).toString(),
     spGain: spGainTotal,
-    items: loot.items.map((it) => ({ ...it })),
+    items:
+      rewardMode === 'economyOnly'
+        ? []
+        : loot.items.map((it) => ({ ...it })),
     levelUp: newLevel > preLevel ? newLevel : null,
     nextHuntSpawnId: nextHunt?.spawnId ?? null,
     huntSameLevelRemaining,

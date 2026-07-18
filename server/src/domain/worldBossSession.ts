@@ -170,7 +170,7 @@ export interface WorldBossSessionState {
   nextMobAutoAttackAtMs: number;
   /** Черга timestamp ударів поточної серії (3 рандомні удари за burst window). */
   pendingBurstHitAtMs?: number[];
-  /** Нагорода top dealer вже видана — захист від double-loot при concurrent kill. */
+  /** Дроп (предмети) top dealer вже видано — захист від double-loot при concurrent kill. */
   lootIssued?: boolean;
   lootIssuedAt?: number;
   lootRecipientCharacterId?: string | null;

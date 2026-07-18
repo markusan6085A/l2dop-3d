@@ -574,7 +574,11 @@ export async function recordWorldBossDamagingHitInTx(
 ): Promise<WorldBossSessionState | null> {
   let session = await lockSessionRow(tx, spawnId);
   if (!session) return null;
-  session.mobHp = Math.max(0, Math.min(session.mobMaxHp, mobHp));
+  const nextHp = Math.max(0, Math.min(session.mobMaxHp, mobHp));
+  session.mobHp = nextHp;
+  if (nextHp <= 0) {
+    session.mobHp = 0;
+  }
   registerWorldBossDamagingHit(session, characterId, damageDealt, nowMs);
   await saveSession(tx, session);
   presenceWriteAtMs.set(presenceWriteKey(spawnId, characterId), nowMs);

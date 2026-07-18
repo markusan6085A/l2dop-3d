@@ -747,7 +747,10 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         });
       }
       try {
-        const character = await saveBattleHotbar(userId, er, b.slots);
+        const characterId = parseOptionalCharacterId(b.characterId);
+        const character = await saveBattleHotbar(userId, er, b.slots, {
+          characterId,
+        });
         await logRouteMutation(
           request,
           'battle_hotbar',

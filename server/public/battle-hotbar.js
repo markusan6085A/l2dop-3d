@@ -539,6 +539,7 @@
         body: JSON.stringify({
           slots: slots,
           expectedRevision: revision,
+          characterId: c.id,
         }),
       });
     }
@@ -552,7 +553,10 @@
           j409 = null;
         }
         await L2.resyncCharacterAfterConflict(function (snap) {
-          if (ctx.setCharacter) ctx.setCharacter(snap);
+          var cur = ctx.getCharacter ? ctx.getCharacter() : null;
+          if (!cur || !snap || String(snap.id) === String(cur.id)) {
+            if (ctx.setCharacter) ctx.setCharacter(snap);
+          }
         }, j409);
         c = ctx.getCharacter ? ctx.getCharacter() : null;
         if (!c || !c.revision) return;

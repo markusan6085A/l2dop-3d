@@ -5,11 +5,13 @@ import { prisma } from '../lib/prisma.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { findCharacterForUserInTx } from './charResolveForUser.js';
 
 export async function saveBattleHotbar(
   userId: string,
   expectedRevision: number,
-  slotsRaw: unknown
+  slotsRaw: unknown,
+  opts?: { characterId?: string | null }
 ): Promise<CharacterSnapshot> {
   const slots = parseBattleHotbarSlots(slotsRaw);
   if (slots === null) {
@@ -17,9 +19,8 @@ export async function saveBattleHotbar(
   }
 
   return prisma.$transaction(async (tx) => {
-    const char = await tx.character.findFirst({
-      where: { userId },
-      orderBy: { lastUpdate: 'desc' },
+    const char = await findCharacterForUserInTx(tx, userId, {
+      characterId: opts?.characterId,
     });
     if (!char) throw new Error('no_character');
 

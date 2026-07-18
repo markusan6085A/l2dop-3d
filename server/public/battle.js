@@ -15,12 +15,43 @@
   var battlePageCharacterId = null;
   var battlePageSpawnId = null;
 
+  var BATTLE_PAGE_CTX_KEY = 'l2dop_battle_page_ctx_v1';
+
   function setBattlePageContext(characterId, spawnId) {
     if (characterId != null && String(characterId).length) {
       battlePageCharacterId = String(characterId);
     }
     if (spawnId != null && String(spawnId).length) {
       battlePageSpawnId = String(spawnId);
+    }
+    try {
+      if (battlePageCharacterId || battlePageSpawnId) {
+        sessionStorage.setItem(
+          BATTLE_PAGE_CTX_KEY,
+          JSON.stringify({
+            characterId: battlePageCharacterId,
+            spawnId: battlePageSpawnId,
+          })
+        );
+      }
+    } catch (eCtx) {
+      /* ignore */
+    }
+  }
+
+  function restoreBattlePageContextFromSession() {
+    try {
+      var raw = sessionStorage.getItem(BATTLE_PAGE_CTX_KEY);
+      if (!raw) return;
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.characterId && !battlePageCharacterId) {
+        battlePageCharacterId = String(parsed.characterId);
+      }
+      if (parsed && parsed.spawnId && !battlePageSpawnId) {
+        battlePageSpawnId = String(parsed.spawnId);
+      }
+    } catch (eRestore) {
+      /* ignore */
     }
   }
 
@@ -1529,6 +1560,7 @@
     }
 
     if (spawnId) setBattlePageContext(null, spawnId);
+    restoreBattlePageContextFromSession();
 
     var state = await getBattleState();
     if (!state || state._err || !state.character) {
@@ -1883,7 +1915,9 @@
       } else if (
         conflictBody &&
         conflictBody.character &&
-        typeof conflictBody.character === 'object'
+        typeof conflictBody.character === 'object' &&
+        (!battlePageCharacterId ||
+          String(conflictBody.character.id) === String(battlePageCharacterId))
       ) {
         if (
           !character ||
@@ -1896,7 +1930,9 @@
       } else if (
         conflictBody &&
         typeof conflictBody.serverRevision === 'number' &&
-        character
+        character &&
+        (!battlePageCharacterId ||
+          String(character.id) === String(battlePageCharacterId))
       ) {
         character = Object.assign({}, character, {
           revision: conflictBody.serverRevision,

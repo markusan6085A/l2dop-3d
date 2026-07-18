@@ -225,6 +225,10 @@ export async function performBattleActionInTx(
 
     char = await refreshPvpOpponentHpForCharacterInTx(tx, char as CharacterRow);
 
+    if (char.revision !== expectedRevision) {
+      throw gameConflictFromCharacter(char);
+    }
+
     /** Після flush pending-ударів РБ revision не змінюється, але char могло оновитись. */
     const writeRevision = char.revision;
 
