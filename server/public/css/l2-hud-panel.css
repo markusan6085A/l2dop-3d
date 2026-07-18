@@ -656,3 +656,12 @@ body.l2-page-story .l2-hud-panel--city-strip .l2-hud-stat-bar {
   pointer-events: none;
   white-space: nowrap;
 }
+
+.l2-hud-notice {
+  margin: 4px 0 0;
+  padding: 2px 4px 0;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  color: #5dbd5d;
+}

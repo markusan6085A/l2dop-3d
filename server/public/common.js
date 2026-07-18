@@ -70,6 +70,7 @@
   var sessionCatalogMerged = false;
   var sessionCatalogFetchPromise = null;
   var hudFirstFillDone = false;
+  var clanInviteRespondInFlight = false;
   var SESSION_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
   var ONLINE_COUNT_CACHE_KEY = 'l2-online-count-cache-v1';
   var CATALOG_HINTS_LS_KEY = 'l2-catalog-hints-v1';
@@ -1816,6 +1817,12 @@
       if (typeof global.L2.syncGameHelper === 'function') {
         global.L2.syncGameHelper(c);
       }
+      if (typeof global.L2.applyHudNoticeFromSnapshot === 'function') {
+        global.L2.applyHudNoticeFromSnapshot(c);
+      }
+      if (typeof global.L2.applyPendingClanInviteFromSnapshot === 'function') {
+        global.L2.applyPendingClanInviteFromSnapshot(c);
+      }
     },
 
     /** Базовий колір ніка з HUD; пізніше — з snapshot.nickColor після «покраски». */
@@ -1882,6 +1889,10 @@
       );
     },
 
+    getHudNoticeMarkup: function () {
+      return '<p class="l2-hud-notice" id="l2-hud-notice" hidden role="status"></p>';
+    },
+
     getHudPanelMarkup: function () {
       if (global.L2.ensureNavMinimalChrome) {
         global.L2.ensureNavMinimalChrome();
@@ -1896,9 +1907,22 @@
         '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
         '</div>' +
         global.L2.getHudWapBarsMarkup() +
+        global.L2.getHudNoticeMarkup() +
+        global.L2.getClanInviteHudMarkup() +
         '</div>' +
         '</header>' +
         global.L2.getPvpIncomingMarkup()
+      );
+    },
+
+    getClanInviteHudMarkup: function () {
+      return (
+        '<div id="l2-clan-invite-hud" class="l2-clan-invite-hud" hidden role="region" aria-label="Запрошення в клан">' +
+        '<p class="l2-clan-invite-hud__text" id="l2-clan-invite-hud-text"></p>' +
+        '<p class="l2-clan-invite-hud__actions">' +
+        '<button type="button" class="l2-clan-invite-hud__btn l2-clan-invite-hud__btn--accept" id="l2-clan-invite-accept">Прийняти</button> ' +
+        '<button type="button" class="l2-clan-invite-hud__btn l2-clan-invite-hud__btn--decline" id="l2-clan-invite-decline">Відхилити</button>' +
+        '</p></div>'
       );
     },
 
@@ -1909,6 +1933,204 @@
         '<button type="button" class="l2-pvp-incoming__attack" id="l2-pvp-incoming-attack">Атакувати</button>' +
         '</div>'
       );
+    },
+
+    applyHudNoticeFromSnapshot: function (c) {
+      var el = document.getElementById('l2-hud-notice');
+      if (!el) {
+        var bars = document.querySelector('.l2-hud-legacy-bars');
+        if (bars && bars.parentNode) {
+          el = document.createElement('p');
+          el.id = 'l2-hud-notice';
+          el.className = 'l2-hud-notice';
+          el.hidden = true;
+          el.setAttribute('role', 'status');
+          bars.parentNode.insertBefore(el, bars.nextSibling);
+        }
+      }
+      if (!el) return;
+      var notice =
+        c && c.hudNoticeUk != null ? String(c.hudNoticeUk).trim() : '';
+      if (notice) {
+        el.hidden = false;
+        el.textContent = notice;
+        if (lastSnapshot && lastSnapshot.hudNoticeUk) {
+          delete lastSnapshot.hudNoticeUk;
+          global.L2.writeSessionSnapshotCache(
+            SESSION_SNAPSHOT_CACHE_KEY,
+            lastSnapshot
+          );
+        }
+        return;
+      }
+      el.hidden = true;
+      el.textContent = '';
+    },
+
+    clanInviteNoticeText: function (pending) {
+      if (!pending) return '';
+      var nick =
+        pending.inviterName != null ? String(pending.inviterName).trim() : '—';
+      var clan =
+        pending.clanName != null ? String(pending.clanName).trim() : '—';
+      if (!nick) nick = '—';
+      if (!clan) clan = '—';
+      return (
+        'Гравець ' +
+        nick +
+        ' запрошує вас вступити до клану «' +
+        clan +
+        '».'
+      );
+    },
+
+    applyPendingClanInviteFromSnapshot: function (c) {
+      var box = document.getElementById('l2-clan-invite-hud');
+      if (!box) {
+        var noticeEl = document.getElementById('l2-hud-notice');
+        var anchor = noticeEl || document.querySelector('.l2-hud-legacy-bars');
+        if (anchor && anchor.parentNode) {
+          var wrap = document.createElement('div');
+          wrap.innerHTML = global.L2.getClanInviteHudMarkup();
+          var created = wrap.firstElementChild;
+          if (created) {
+            anchor.parentNode.insertBefore(
+              created,
+              noticeEl ? noticeEl.nextSibling : anchor.nextSibling
+            );
+            box = created;
+          }
+        }
+      }
+      if (!box) return;
+
+      var textEl = document.getElementById('l2-clan-invite-hud-text');
+      var acceptEl = document.getElementById('l2-clan-invite-accept');
+      var declineEl = document.getElementById('l2-clan-invite-decline');
+      var pending = c && c.pendingClanInvite ? c.pendingClanInvite : null;
+
+      if (!pending || !pending.inviteId) {
+        box.hidden = true;
+        if (textEl) textEl.textContent = '';
+        return;
+      }
+
+      box.hidden = false;
+      if (textEl) {
+        textEl.textContent = global.L2.clanInviteNoticeText(pending);
+      }
+
+      function wireBtn(el, action) {
+        if (!el) return;
+        el.onclick = function (ev) {
+          ev.preventDefault();
+          if (typeof global.L2.respondClanInvite === 'function') {
+            global.L2.respondClanInvite(action);
+          }
+        };
+      }
+      wireBtn(acceptEl, 'accept');
+      wireBtn(declineEl, 'decline');
+    },
+
+    respondClanInvite: async function (action) {
+      if (clanInviteRespondInFlight) return;
+      var snap = lastSnapshot || global.L2.lastSnapshot();
+      var pending = snap && snap.pendingClanInvite ? snap.pendingClanInvite : null;
+      if (!pending || !pending.inviteId) return;
+
+      var token = null;
+      try {
+        token = localStorage.getItem('token');
+      } catch (_eTok) {
+        token = null;
+      }
+      if (!token) {
+        window.location.href = '/';
+        return;
+      }
+
+      clanInviteRespondInFlight = true;
+      try {
+        var url =
+          action === 'accept'
+            ? '/game/clans/invite/accept'
+            : '/game/clans/invite/decline';
+        var body = { inviteId: String(pending.inviteId) };
+        if (action === 'accept') {
+          if (!snap || snap.revision == null) {
+            if (typeof global.L2.resyncCharacterWhenRequired === 'function') {
+              snap = await global.L2.resyncCharacterWhenRequired();
+            }
+          }
+          if (!snap || snap.revision == null) return;
+          body.expectedRevision = snap.revision;
+        }
+
+        var r = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return;
+        }
+
+        if (r.status === 409 && action === 'accept') {
+          if (typeof global.L2.resyncCharacterAfterConflict === 'function') {
+            var conflictBody = {};
+            try {
+              conflictBody = await r.json();
+            } catch (_e409) {
+              conflictBody = {};
+            }
+            await global.L2.resyncCharacterAfterConflict(null, conflictBody);
+          }
+          return;
+        }
+
+        var j = null;
+        try {
+          j = await r.json();
+        } catch (_eJson) {
+          j = null;
+        }
+
+        if (action === 'accept' && j && j.character) {
+          if (typeof global.L2.applyCharacterSnapshot === 'function') {
+            global.L2.applyCharacterSnapshot(j.character);
+          }
+          return;
+        }
+
+        if (r.ok) {
+          if (lastSnapshot) {
+            delete lastSnapshot.pendingClanInvite;
+            global.L2.writeSessionSnapshotCache(
+              SESSION_SNAPSHOT_CACHE_KEY,
+              lastSnapshot
+            );
+          }
+          global.L2.applyPendingClanInviteFromSnapshot(lastSnapshot);
+          return;
+        }
+
+        if (j && j.messageUk && typeof alert === 'function') {
+          alert(String(j.messageUk));
+        }
+      } catch (_eNet) {
+        if (typeof alert === 'function') {
+          alert('Збій мережі або сервера.');
+        }
+      } finally {
+        clanInviteRespondInFlight = false;
+      }
     },
 
     applyPvpIncoming: function (incoming, onAttack) {

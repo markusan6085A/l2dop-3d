@@ -66,6 +66,54 @@ const CLAN_CREATE_ERRORS: Record<string, { status: number; messageUk: string }> 
     status: 400,
     messageUk: 'Неможливо купити під час бою.',
   },
+  clan_invite_target_required: {
+    status: 400,
+    messageUk: 'Не вказано гравця.',
+  },
+  clan_invite_no_clan: {
+    status: 400,
+    messageUk: 'Ти не в клані.',
+  },
+  clan_invite_target_not_found: {
+    status: 404,
+    messageUk: 'Гравця не знайдено.',
+  },
+  clan_invite_self: {
+    status: 400,
+    messageUk: 'Не можна запросити себе.',
+  },
+  clan_invite_target_in_clan: {
+    status: 400,
+    messageUk: 'Гравець уже в клані.',
+  },
+  clan_invite_already_sent: {
+    status: 400,
+    messageUk: 'Запрошення в цей клан уже надіслано.',
+  },
+  clan_invite_clan_full: {
+    status: 400,
+    messageUk: 'У клані немає вільних місць.',
+  },
+  clan_invite_id_required: {
+    status: 400,
+    messageUk: 'Не вказано запрошення.',
+  },
+  clan_invite_not_found: {
+    status: 404,
+    messageUk: 'Запрошення не знайдено.',
+  },
+  clan_invite_already_responded: {
+    status: 400,
+    messageUk: 'На це запрошення уже відповіли.',
+  },
+  clan_invite_already_in_clan: {
+    status: 400,
+    messageUk: 'Ти вже в клані.',
+  },
+  clan_invite_in_battle: {
+    status: 400,
+    messageUk: 'Неможливо вступити в клан під час бою.',
+  },
 };
 
 export function sendClanCreateError(

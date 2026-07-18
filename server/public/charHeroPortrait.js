@@ -14,6 +14,14 @@
     return '/characters/photo_' + n + '_2026-07-13_13-06-13-removebg-preview.png';
   }
 
+  function charPngDwarf(n) {
+    return (
+      '/characters/гном/photo_' +
+      n +
+      '_2026-07-13_10-24-36-removebg-preview.png'
+    );
+  }
+
   function snapshotLevel(c) {
     var n = c && c.level != null ? Number(c.level) : 1;
     return isFinite(n) && n > 0 ? Math.floor(n) : 1;
@@ -39,7 +47,9 @@
     if (race === 'Dark Elf') {
       return mystic ? heroUrl(5) : heroUrl(40);
     }
-    if (race === 'Dwarf') return heroUrl(24);
+    if (race === 'Dwarf') {
+      return c.gender === 'female' ? charPngDwarf(2) : charPngDwarf(1);
+    }
     if (race === 'Orc') return mystic ? heroUrl(17) : heroUrl(15);
     return heroUrl(2);
   }
@@ -209,32 +219,32 @@
       blackKey: false,
     },
     dwarf_fighter: {
-      url: heroUrl(24),
+      url: charPngDwarf(1),
       skin: 'dwarf-fighter-m',
       blackKey: false,
     },
     'dwarf_fighter|female': {
-      url: heroUrl(23),
+      url: charPngDwarf(2),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
     dwarf_scavenger: {
-      url: heroUrl(26),
+      url: charPngDwarf(5),
       skin: 'dwarf-scavenger-m',
       blackKey: false,
     },
     dwarf_artisan: {
-      url: heroUrl(26),
+      url: charPngDwarf(4),
       skin: 'dwarf-scavenger-m',
       blackKey: false,
     },
     'dwarf_scavenger|female': {
-      url: heroUrl(25),
+      url: charPngDwarf(6),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
     'dwarf_artisan|female': {
-      url: heroUrl(25),
+      url: charPngDwarf(3),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
@@ -493,11 +503,30 @@
     ],
   };
 
+  var DWARF_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngDwarf(11) },
+      { minLevel: 52, url: charPngDwarf(10) },
+      { minLevel: 40, url: charPngDwarf(7) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngDwarf(12) },
+      { minLevel: 52, url: charPngDwarf(9) },
+      { minLevel: 40, url: charPngDwarf(8) },
+    ],
+  };
+
   /**
    * Портрет за рівнем (вищий minLevel перевіряється першим).
    * Ключ — точний l2Profession зі snapshot.
    */
   var HERO_PORTRAIT_LEVEL_RULES = {
+    dwarf_scavenger: DWARF_PROF_LEVEL_PORTRAITS,
+    dwarf_artisan: DWARF_PROF_LEVEL_PORTRAITS,
+    dwarf_bounty_hunter: DWARF_PROF_LEVEL_PORTRAITS,
+    dwarf_fortune_seeker: DWARF_PROF_LEVEL_PORTRAITS,
+    dwarf_warsmith: DWARF_PROF_LEVEL_PORTRAITS,
+    dwarf_maestro: DWARF_PROF_LEVEL_PORTRAITS,
     human_hawkeye: {
       male: [
         { minLevel: 62, url: charPng(27) },
@@ -638,6 +667,7 @@
     if (race === 'Dark Elf' && branch === 'fighter') return 'dark_elf_fighter';
     if (race === 'Elf' && branch === 'mystic') return 'elf_mage';
     if (race === 'Elf' && branch === 'fighter') return 'elf_fighter';
+    if (race === 'Dwarf' && branch === 'fighter') return 'dwarf_fighter';
     return null;
   }
 

@@ -253,7 +253,17 @@ export interface CharacterSnapshot {
   clanRole?: string | null;
   /** Пасивний бонус Клан-холу (для UI профілю). */
   clanHallBonus?: ClanHallBonusSnapshot | null;
+  /** Одноразове повідомлення під HUD-барами (зникає після показу). */
+  hudNoticeUk?: string | null;
+  /** Активне запрошення в клан (після першого показу під HUD). */
+  pendingClanInvite?: PendingClanInviteSnapshot | null;
 }
+
+export type PendingClanInviteSnapshot = {
+  inviteId: string;
+  inviterName: string;
+  clanName: string;
+};
 
 export type ClanHallBonusSnapshot = {
   active: boolean;

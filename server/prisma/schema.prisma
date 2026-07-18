@@ -115,6 +115,8 @@ model Character {
   clanRole   String?
   clan       Clan?    @relation("ClanMember", fields: [clanId], references: [id], onDelete: SetNull)
   ledClan    Clan?    @relation("ClanLeader")
+  clanInvitesSent ClanInvite[] @relation("ClanInviteInviter")
+  clanInvitesRecv ClanInvite[] @relation("ClanInviteTarget")
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
@@ -133,6 +135,27 @@ model Clan {
   /** Рівень клану (1–8). */
   level          Int         @default(1)
   createdAt      DateTime    @default(now())
+  invites        ClanInvite[]
+}
+
+model ClanInvite {
+  id                 String    @id @default(uuid())
+  clanId             String
+  clan               Clan      @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  inviterCharacterId String
+  inviter            Character @relation("ClanInviteInviter", fields: [inviterCharacterId], references: [id], onDelete: Cascade)
+  targetCharacterId  String
+  target             Character @relation("ClanInviteTarget", fields: [targetCharacterId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  /** Коли запрошення показано під HUD (перша ігрова дія). */
+  deliveredAt        DateTime?
+  respondedAt        DateTime?
+  /** accepted | declined */
+  response           String?
+
+  @@index([targetCharacterId, deliveredAt])
+  @@index([targetCharacterId, respondedAt])
+  @@index([clanId, targetCharacterId])
 }
 
 model MarketListing {

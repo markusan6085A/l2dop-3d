@@ -129,7 +129,9 @@ export async function getSnapshotForUser(
       }
 
       const sanitized = await ensureInventoryReadPatchesRow(row);
-      return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId);
+      return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId, undefined, {
+        deliverHudNotices: false,
+      });
     });
   }
 
@@ -140,7 +142,9 @@ export async function getSnapshotForUser(
   });
   if (!row) return null;
   const sanitized = await ensureInventoryReadPatchesRow(row as CharacterRow);
-  return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId);
+  return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId, undefined, {
+    deliverHudNotices: false,
+  });
 }
 
 export async function applyEquipFromBag(

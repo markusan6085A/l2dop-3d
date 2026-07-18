@@ -2,6 +2,10 @@
  * Сторінка «Профіль гравця»: GET /game/player/:id/profile або by-name.
  */
 (function () {
+  var viewedProfile = null;
+  var selfCharacter = null;
+  var clanInviteInFlight = false;
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -65,6 +69,14 @@
     return 'був у мережі ' + days + ' дн тому';
   }
 
+  function canInviteToClan(viewed, self) {
+    if (!viewed || !self) return false;
+    if (String(viewed.id || '') === String(self.id || '')) return false;
+    if (viewed.clanName) return false;
+    if (!self.clanId) return false;
+    return true;
+  }
+
   function applyOnlineLine(p) {
     var el = $('player-online-text');
     if (!el || !p) return;
@@ -93,7 +105,16 @@
     return null;
   }
 
+  function showClanInviteMsg(text, isError) {
+    var el = $('player-clan-invite-msg');
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = text;
+    el.classList.toggle('l2-player-clan-invite-msg--error', !!isError);
+  }
+
   function applyProfile(p) {
+    viewedProfile = p;
     var headline = $('player-headline');
     if (headline) {
       headline.textContent =
@@ -116,12 +137,23 @@
     }
 
     var clanBtn = $('player-clan-action');
+    var clanInviteMsg = $('player-clan-invite-msg');
+    if (clanInviteMsg) {
+      clanInviteMsg.hidden = true;
+      clanInviteMsg.textContent = '';
+      clanInviteMsg.classList.remove('l2-player-clan-invite-msg--error');
+    }
     if (clanBtn) {
+      clanBtn.removeAttribute('data-stub');
       if (p.clanName) {
         clanBtn.textContent = 'Клан: ' + String(p.clanName);
-        clanBtn.setAttribute('data-stub', 'Клан');
+        clanBtn.disabled = true;
+      } else if (canInviteToClan(p, selfCharacter)) {
+        clanBtn.textContent = 'Запросити в клан';
+        clanBtn.disabled = false;
       } else {
         clanBtn.textContent = 'Запросити в клан';
+        clanBtn.disabled = false;
         clanBtn.setAttribute('data-stub', 'Запросити в клан');
       }
     }
@@ -208,6 +240,53 @@
     });
   }
 
+  function wireClanInvite(token) {
+    var btn = $('player-clan-action');
+    if (!btn || btn.dataset.clanInviteWired === '1') return;
+    btn.dataset.clanInviteWired = '1';
+    btn.addEventListener('click', async function () {
+      if (!canInviteToClan(viewedProfile, selfCharacter)) return;
+      if (clanInviteInFlight) return;
+      clanInviteInFlight = true;
+      try {
+        var r = await fetch('/game/clans/invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+          body: JSON.stringify({
+            targetCharacterId: String(viewedProfile.id || ''),
+          }),
+        });
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return;
+        }
+        var j = null;
+        try {
+          j = await r.json();
+        } catch (_eJson) {
+          j = null;
+        }
+        if (r.ok) {
+          showClanInviteMsg('Ви надіслали гравцеві запрошення вступити до клану.', false);
+          return;
+        }
+        var errMsg =
+          j && j.messageUk
+            ? String(j.messageUk)
+            : 'Не вдалося надіслати запрошення в клан.';
+        showClanInviteMsg(errMsg, true);
+      } catch (_e) {
+        showClanInviteMsg('Не вдалося надіслати запрошення в клан.', true);
+      } finally {
+        clanInviteInFlight = false;
+      }
+    });
+  }
+
   async function init() {
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({});
@@ -233,12 +312,12 @@
       if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
         L2.renderCharacterFromCache();
       }
-      var selfChar =
+      selfCharacter =
         window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
           ? await L2.resyncCharacterWhenRequired()
           : null;
-      if (selfChar && typeof L2.applyMutationSnapshot === 'function') {
-        L2.applyMutationSnapshot(selfChar);
+      if (selfCharacter && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(selfCharacter);
       }
 
       var r = await fetch(apiUrl, {
@@ -276,6 +355,7 @@
       applyProfile(j.profile);
       var content = $('player-content');
       if (content) content.hidden = false;
+      wireClanInvite(token);
       wireStubs();
     } catch (_e) {
       if (errEl) {

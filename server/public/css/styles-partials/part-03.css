@@ -585,6 +585,59 @@ button.l2-map-mob-title--tap-full:focus {
   text-underline-offset: 2px;
 }
 
+.l2-hud-notice {
+  margin: 4px 0 0;
+  padding: 2px 4px 0;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  color: #5dbd5d;
+}
+
+.l2-clan-invite-hud {
+  margin: 4px 0 0;
+  padding: 2px 4px 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.l2-clan-invite-hud__text {
+  margin: 0 0 4px;
+  color: #5dbd5d;
+}
+
+.l2-clan-invite-hud__actions {
+  margin: 0;
+}
+
+.l2-clan-invite-hud__btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0 4px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l2-clan-invite-hud__btn--accept {
+  color: #5dbd5d;
+}
+
+.l2-clan-invite-hud__btn--decline {
+  color: #d8ccb0;
+}
+
+.l2-clan-invite-hud__btn:hover,
+.l2-clan-invite-hud__btn:focus {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .l2-map-mob-detail {
   margin: 0 0 10px;
   padding: 10px 8px 12px;

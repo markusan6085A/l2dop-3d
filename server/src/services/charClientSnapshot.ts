@@ -13,10 +13,13 @@ import {
   applyDevSnapshotResponseDelay,
   nextClientSnapshotVersion,
 } from './clientSnapshotVersion.js';
+import { attachPendingClanInviteToSnapshot } from './clanInviteService.js';
 
 export type ClientSnapshotEnrichOpts = {
   /** false — без COUNT unread (battle action, hotbar тощо). */
   includeUnreadCount?: boolean;
+  /** false — не показувати одноразові HUD-повідомлення (GET /character). */
+  deliverHudNotices?: boolean;
   /** Dev-only: штучна затримка перед відправкою відповіді (після snapshot). */
   debugResponseDelayMs?: number;
 };
@@ -88,8 +91,15 @@ export async function buildCharacterClientSnapshot(
     row.id,
     row.chatRepliesReadAt ?? null
   );
+  const deliverHudNotices = opts?.deliverHudNotices !== false;
+  const clanInviteExtras = await attachPendingClanInviteToSnapshot(
+    row.id,
+    rowReady.clanId,
+    deliverHudNotices
+  );
   const result = attachClientSnapshotMeta(snap, {
     chatUnreadReplyCount,
+    ...clanInviteExtras,
     ...extras,
   });
   await applyDevSnapshotResponseDelay(opts?.debugResponseDelayMs);
@@ -104,11 +114,25 @@ export async function enrichPartialClientSnapshot(
 ): Promise<CharacterSnapshot> {
   const includeUnread = opts?.includeUnreadCount !== false;
   let result: CharacterSnapshot;
+  const deliverHudNotices = opts?.deliverHudNotices !== false;
+  const clanInviteExtras =
+    snap.id != null
+      ? await attachPendingClanInviteToSnapshot(
+          snap.id,
+          snap.clanId,
+          deliverHudNotices
+        )
+      : {};
   if (!includeUnread) {
-    result = attachClientSnapshotMeta(snap);
+    result = attachClientSnapshotMeta(snap, {
+      ...clanInviteExtras,
+    });
   } else {
     const chatUnreadReplyCount = await getUnreadReplyCount(userId);
-    result = attachClientSnapshotMeta(snap, { chatUnreadReplyCount });
+    result = attachClientSnapshotMeta(snap, {
+      chatUnreadReplyCount,
+      ...clanInviteExtras,
+    });
   }
   await applyDevSnapshotResponseDelay(opts?.debugResponseDelayMs);
   return result;

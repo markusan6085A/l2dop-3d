@@ -17,6 +17,11 @@ import {
   getClanHallForUser,
   purchaseClanHallBlessingForUser,
 } from '../services/clanHallService.js';
+import {
+  acceptClanInviteForUser,
+  declineClanInviteForUser,
+  sendClanInviteForUser,
+} from '../services/clanInviteService.js';
 import { sendClanCreateError } from './clanRouteErrors.js';
 
 /** GET /game/clans/list, GET /game/clans/my, POST /game/clans/create, … */
@@ -124,6 +129,109 @@ export function registerClanRoutes(app: FastifyInstance): void {
         return reply.code(500).send({
           error: 'internal_error',
           messageUk: 'Не вдалося зберегти оголошення.',
+        });
+      }
+    }
+  );
+
+  app.post(
+    '/clans/invite',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+
+      try {
+        await sendClanInviteForUser(userId, b.targetCharacterId);
+        await logRouteMutation(request, 'clan_invite', 0, 'ok');
+        return reply.send({ ok: true });
+      } catch (err) {
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_invite', 0, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_invite', 0, 'error');
+        request.log.error({ err }, 'POST /game/clans/invite');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося надіслати запрошення в клан.',
+        });
+      }
+    }
+  );
+
+  app.post(
+    '/clans/invite/accept',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const rev = parseExpectedRevision(
+        b,
+        reply,
+        'Передай expectedRevision з відповіді /character.'
+      );
+      if (rev == null) return;
+
+      try {
+        const character = await acceptClanInviteForUser(userId, b.inviteId, rev);
+        await logRouteMutation(
+          request,
+          'clan_invite_accept',
+          rev,
+          'ok',
+          character.revision
+        );
+        return reply.send({ character });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          await logRouteMutation(request, 'clan_invite_accept', rev, 'conflict');
+          return sendGameConflict(reply, err);
+        }
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_invite_accept', rev, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_invite_accept', rev, 'error');
+        request.log.error({ err }, 'POST /game/clans/invite/accept');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося прийняти запрошення в клан.',
+        });
+      }
+    }
+  );
+
+  app.post(
+    '/clans/invite/decline',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+
+      try {
+        await declineClanInviteForUser(userId, b.inviteId);
+        await logRouteMutation(request, 'clan_invite_decline', 0, 'ok');
+        return reply.send({ ok: true });
+      } catch (err) {
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_invite_decline', 0, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_invite_decline', 0, 'error');
+        request.log.error({ err }, 'POST /game/clans/invite/decline');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося відхилити запрошення в клан.',
         });
       }
     }

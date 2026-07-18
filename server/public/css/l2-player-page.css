@@ -261,6 +261,18 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-social-actions__btn {
   -webkit-tap-highlight-color: transparent;
 }
 
+body.l2-app-l2-chrome.l2-page-player .l2-player-clan-invite-msg {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #5dbd5d;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-clan-invite-msg--error {
+  color: #e85840;
+}
+
 body.l2-app-l2-chrome.l2-page-player .l2-player-section-title {
   margin: 0 0 8px;
   padding: 0;
