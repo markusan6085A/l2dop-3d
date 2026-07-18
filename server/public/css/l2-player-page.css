@@ -147,9 +147,14 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-bg {
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-hero-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  overflow: visible;
+  pointer-events: none;
 }
 
 /* Тінь під ногами на сходах */
@@ -160,7 +165,7 @@ body.l2-app-l2-chrome.l2-page-player
   content: '';
   position: absolute;
   left: 50%;
-  bottom: 5.5%;
+  bottom: calc(5.5% + 0.5cm);
   z-index: 0;
   width: 56%;
   height: 13%;
@@ -185,7 +190,7 @@ body.l2-app-l2-chrome.l2-page-player
   content: '';
   position: absolute;
   left: 50%;
-  bottom: 6.5%;
+  bottom: calc(6.5% + 0.5cm);
   z-index: 0;
   width: 32%;
   height: 5.5%;
@@ -200,7 +205,7 @@ body.l2-app-l2-chrome.l2-page-player
   pointer-events: none;
 }
 
-/* Однаковий розмір усіх героїв на профілі */
+/* Однаковий розмір усіх героїв на профілі (+0.5cm вище) */
 body.l2-app-l2-chrome.l2-page-player
   .l2-player-hero-panel
   .l2-char-equip-bg--hero-on-stairs
@@ -215,7 +220,7 @@ body.l2-app-l2-chrome.l2-page-player
   margin: 0 auto;
   object-fit: contain;
   object-position: center bottom;
-  transform: translateY(8%) scale(1);
+  transform: translateY(calc(8% - 0.5cm)) scale(1);
   transform-origin: center bottom;
   filter: drop-shadow(0 7px 11px rgba(0, 0, 0, 0.38));
 }
@@ -235,7 +240,7 @@ body.l2-app-l2-chrome.l2-page-player
   height: 168px;
   max-width: 210px;
   max-height: 168px;
-  transform: translateY(8%) scale(1);
+  transform: translateY(calc(8% - 0.5cm)) scale(1);
   transform-origin: center bottom;
 }
 

@@ -148,6 +148,7 @@
       L2CharHero.renderPortrait(p, {
         imgId: 'player-hero-img',
         stageId: 'player-hero-stage',
+        bgSelector: '#player-equip-frame .l2-char-equip-bg',
       });
     }
 
