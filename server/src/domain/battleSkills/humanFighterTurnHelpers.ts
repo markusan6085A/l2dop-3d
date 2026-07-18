@@ -333,7 +333,8 @@ export function isCooldownBlocked(
 
 export function assertSkillCooldownReady(
   cooldownUntilMs: number | undefined,
-  nowMs: number = Date.now()
+  nowMs: number = Date.now(),
+  skillId?: string
 ): void {
   if (!isCooldownBlocked(cooldownUntilMs, nowMs)) return;
   const readyAtMs =
@@ -342,6 +343,7 @@ export function assertSkillCooldownReady(
       : nowMs + COOLDOWN_READY_GRACE_MS;
   throw new BattleSkillNotAllowedError({
     reason: 'cooldown',
+    skillId,
     remainingCooldownMs: Math.max(1, readyAtMs - nowMs),
     serverNowMs: nowMs,
     cooldownReadyAtMs: readyAtMs,

@@ -546,7 +546,6 @@ export async function persistBattleContinueTurnInTx(
   const hotbarStaleFlag =
     hotbarStale === true ||
     activeBuffsJson !== undefined ||
-    skillCooldownsJson !== undefined ||
     inventoryJson !== undefined ||
     nearbyExtraEconomy !== undefined;
 
@@ -567,6 +566,7 @@ export async function persistBattleContinueTurnInTx(
     kind: 'delta',
     revision: row.revision,
     characterId: row.id,
+    serverNowMs: delta.serverNowMs ?? Date.now(),
     delta,
   };
 }

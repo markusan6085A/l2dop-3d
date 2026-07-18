@@ -1621,6 +1621,106 @@
     var lastBattleVisualSig = '';
     var lastBattleVersion = 0;
     var lastBattleLogSeq = 0;
+    /** serverNowMs - Date.now() — для розрахунку cooldown без локального drift. */
+    var serverTimeOffsetMs = 0;
+
+    function estimatedServerNowMs() {
+      return Date.now() + serverTimeOffsetMs;
+    }
+
+    function absorbServerNowMs(serverNowMs) {
+      if (typeof serverNowMs !== 'number' || !Number.isFinite(serverNowMs)) return;
+      serverTimeOffsetMs = serverNowMs - Date.now();
+    }
+
+    function pickCooldownMap(payload) {
+      if (!payload || typeof payload !== 'object') return null;
+      return payload.skillCooldowns || payload.mysticSkillCdUntil || null;
+    }
+
+    function applyBattleCooldownFields(payload, topLevel) {
+      if (!payload || !battle) return;
+      var charId =
+        topLevel && topLevel.characterId != null
+          ? String(topLevel.characterId)
+          : null;
+      if (charId && character && String(character.id) !== charId) return;
+      var incomingBv =
+        typeof payload.battleVersion === 'number'
+          ? Math.floor(payload.battleVersion)
+          : null;
+      if (incomingBv != null && incomingBv < lastBattleVersion) return;
+      if (typeof payload.serverNowMs === 'number') {
+        absorbServerNowMs(payload.serverNowMs);
+      } else if (topLevel && typeof topLevel.serverNowMs === 'number') {
+        absorbServerNowMs(topLevel.serverNowMs);
+      }
+      var cdMap = pickCooldownMap(payload);
+      if (!cdMap || typeof cdMap !== 'object') return;
+      if (!battle.mysticSkillCdUntil) battle.mysticSkillCdUntil = {};
+      var estNow = estimatedServerNowMs();
+      for (var sk in cdMap) {
+        if (!Object.prototype.hasOwnProperty.call(cdMap, sk)) continue;
+        var incomingUntil = cdMap[sk];
+        if (typeof incomingUntil !== 'number' || !Number.isFinite(incomingUntil)) {
+          continue;
+        }
+        var existingUntil = battle.mysticSkillCdUntil[sk];
+        if (
+          typeof existingUntil === 'number' &&
+          incomingUntil < existingUntil &&
+          incomingBv != null &&
+          incomingBv < lastBattleVersion
+        ) {
+          continue;
+        }
+        if (typeof existingUntil === 'number' && incomingUntil < existingUntil) {
+          incomingUntil = existingUntil;
+        }
+        if (incomingUntil > estNow) {
+          battle.mysticSkillCdUntil[sk] = incomingUntil;
+        } else if (Object.prototype.hasOwnProperty.call(battle.mysticSkillCdUntil, sk)) {
+          delete battle.mysticSkillCdUntil[sk];
+        }
+      }
+      if (
+        battleHotbar &&
+        typeof battleHotbar.syncCooldownsFromBattle === 'function'
+      ) {
+        battleHotbar.syncCooldownsFromBattle(battle, incomingBv);
+      }
+    }
+
+    function applySkillCooldownErrorBody(body, actionId) {
+      if (!body || !battle) return;
+      if (typeof body.serverNowMs === 'number') {
+        absorbServerNowMs(body.serverNowMs);
+      }
+      var skillId = body.skillId || actionId;
+      var until =
+        body.cooldownUntilMs != null
+          ? body.cooldownUntilMs
+          : body.cooldownReadyAtMs;
+      if (typeof until !== 'number' || !Number.isFinite(until)) return;
+      if (!battle.mysticSkillCdUntil) battle.mysticSkillCdUntil = {};
+      battle.mysticSkillCdUntil[String(skillId)] = until;
+      if (
+        battleHotbar &&
+        typeof battleHotbar.applyServerCooldown === 'function'
+      ) {
+        battleHotbar.applyServerCooldown(String(skillId), until);
+      }
+    }
+
+    function clearBattleHotbarCooldowns() {
+      serverTimeOffsetMs = 0;
+      if (
+        battleHotbar &&
+        typeof battleHotbar.clearBattleCooldowns === 'function'
+      ) {
+        battleHotbar.clearBattleCooldowns();
+      }
+    }
 
     function syncBattleTrackFromView(b) {
       if (!b) return;
@@ -1642,17 +1742,19 @@
 
     function clearLocalBattleStateAfterVictory() {
       stopBattleSyncPoll();
+      clearBattleHotbarCooldowns();
       battle = null;
       lastBattleVersion = 0;
       lastBattleLogSeq = 0;
       lastBattleVisualSig = '';
     }
 
-    function applyBattleDelta(delta) {
+    function applyBattleDelta(delta, topLevel) {
       if (!delta) return false;
       var vicRootEarly = $('battle-victory-root');
       if (vicRootEarly && !vicRootEarly.hidden) return false;
       if (delta.battleEnded === true && !battle) return false;
+      applyBattleCooldownFields(delta, topLevel);
       if (!delta.changed) {
         if (typeof delta.battleVersion === 'number') {
           lastBattleVersion = Math.floor(delta.battleVersion);
@@ -1695,11 +1797,6 @@
             curLog.push(delta.logTail[li]);
           }
           battle.log = curLog;
-        }
-        if (delta.mysticSkillCdUntil) {
-          battle.mysticSkillCdUntil = delta.mysticSkillCdUntil;
-        } else if (Object.prototype.hasOwnProperty.call(delta, 'mysticSkillCdUntil')) {
-          delete battle.mysticSkillCdUntil;
         }
         if (Object.prototype.hasOwnProperty.call(delta, 'battleMods')) {
           if (
@@ -2016,6 +2113,7 @@
           return syncBattleFromServerFull();
         }
         if (!st.changed) {
+          applyBattleCooldownFields(st, null);
           if (character) {
             if (st.revision != null) character.revision = st.revision;
             if (st.characterHp != null) character.hp = st.characterHp;
@@ -2243,7 +2341,7 @@
           }
           return 'hotbar_resync';
         }
-        applyBattleDelta(res.delta);
+        applyBattleDelta(res.delta, res);
         if (res.defeat) return 'defeat';
         if (checkPvpDefeatFromCharacter(character)) {
           stopBattleSyncPoll();
@@ -2261,6 +2359,8 @@
       syncBattleTrackFromView(battle);
       if (res.victory || (res.lethalMeta && res.lethalMeta.battleEnded)) {
         clearLocalBattleStateAfterVictory();
+      } else if (res.kind === 'full') {
+        clearBattleHotbarCooldowns();
       }
       if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
         L2.applyCharacterSnapshot(character);
@@ -2685,16 +2785,10 @@
             }
             if (
               parsedErrBody &&
-              parsedErrBody.reason === 'cooldown' &&
-              battleHotbar
+              (parsedErrBody.code === 'skill_cooldown' ||
+                parsedErrBody.reason === 'cooldown')
             ) {
-              if (typeof battleHotbar.abortPendingSkillCd === 'function') {
-                battleHotbar.abortPendingSkillCd(act, battle);
-              }
-              if (typeof battleHotbar.notifySkillUsed === 'function') {
-                await syncBattleFromServerFull();
-                battleHotbar.notifySkillUsed(act, battle);
-              }
+              applySkillCooldownErrorBody(parsedErrBody, act);
               refreshUI();
               return;
             }
@@ -2709,7 +2803,12 @@
           }
         }
         var outcome = applyBattleMutationResult(res);
-        if (battleHotbar && typeof battleHotbar.notifySkillUsed === 'function') {
+        if (
+          battleHotbar &&
+          typeof battleHotbar.notifySkillUsed === 'function' &&
+          res &&
+          res.kind === 'delta'
+        ) {
           battleHotbar.notifySkillUsed(act, battle);
         }
         if (outcome === 'hotbar_resync') {
@@ -3190,6 +3289,12 @@
             },
             getToken: function () {
               return localStorage.getItem('token');
+            },
+            getServerTimeOffsetMs: function () {
+              return serverTimeOffsetMs;
+            },
+            getBattleVersion: function () {
+              return lastBattleVersion;
             },
             showToast: showBattleToast,
           });

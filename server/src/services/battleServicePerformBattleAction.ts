@@ -107,6 +107,8 @@ import {
 } from './battleServiceDamageRolls.js';
 import { battleActionAllowed } from './battleServiceBattleUi.js';
 import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
+import { logSkillCooldownApplied } from './battleServiceCooldown.js';
+import { battleVersionFromState } from '../domain/battleVersion.js';
 import { enrichPartialClientSnapshot, ensureClanHallOnRow } from './charClientSnapshot.js';
 import { findCharacterForUserInTx } from './charResolveForUser.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
@@ -795,6 +797,20 @@ export async function performBattleActionInTx(
     );
     nextCooldowns = cdFromMysticPatch.rows;
     cooldownsChanged = cdFromMysticPatch.changed;
+    if (cdFromMysticPatch.changed && mysticSkillCdUntilPatch) {
+      const bvLog = battleVersionFromState(st);
+      for (const [skillKey, untilMs] of Object.entries(mysticSkillCdUntilPatch)) {
+        if (typeof untilMs !== 'number' || !Number.isFinite(untilMs)) continue;
+        if (untilMs <= nowMsTurn) continue;
+        logSkillCooldownApplied({
+          characterId: char.id,
+          skillId: skillKey,
+          nowMs: nowMsTurn,
+          cooldownUntilMs: untilMs,
+          battleVersion: bvLog,
+        });
+      }
+    }
 
     const prevRoarMul = st.battleMods?.battleRoarMaxHpMul ?? 1;
     const mergedMods = applyBattleModsPatch(st.battleMods, battleModsPatch);
@@ -1612,7 +1628,6 @@ export async function performBattleActionInTx(
       ...(dailyQuestsJsonPatch ? { dailyQuestsJson: dailyQuestsJsonPatch } : {}),
       hotbarStale:
         activeBuffsChanged ||
-        cooldownsChanged ||
         !!inventoryDirty ||
         nearbyExtraEconomy !== undefined ||
         dailyQuestsJsonPatch !== undefined ||

@@ -7,8 +7,8 @@ import {
 } from '../domain/battleVersion.js';
 import { resolveHpWithClanHallPassive } from '../domain/characterClanHallVitals.js';
 import type { ClanHallBuffRow } from '../domain/clanHall.js';
-import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { battleMobDebuffIconsForUi } from './battleServiceBattleBuffs.js';
+import { buildBattleCooldownFields } from './battleServiceCooldown.js';
 import type { CharacterRow } from './charService.js';
 import type {
   BattleDeltaPayload,
@@ -31,6 +31,8 @@ function battleVitalsPayload(args: {
   | 'characterMp'
   | 'characterMaxHp'
   | 'characterMaxMp'
+  | 'characterCp'
+  | 'characterMaxCp'
   | 'mobHp'
   | 'mobMaxHp'
   | 'mobDead'
@@ -54,6 +56,15 @@ function battleVitalsPayload(args: {
     mobMaxHp: st.mobMaxHp,
     mobDead: st.mobHp <= 0,
     characterDead: characterHp <= 0,
+    ...(typeof st.playerCp === 'number' && Number.isFinite(st.playerCp)
+      ? {
+          characterCp: Math.max(0, Math.floor(st.playerCp)),
+          characterMaxCp:
+            typeof st.playerMaxCp === 'number' && Number.isFinite(st.playerMaxCp)
+              ? Math.max(0, Math.floor(st.playerMaxCp))
+              : undefined,
+        }
+      : {}),
   };
 }
 
@@ -82,6 +93,7 @@ export function buildBattleSyncResponse(args: {
   });
 
   if (!changed) {
+    const cdFields = buildBattleCooldownFields(args.row, args.st, Date.now());
     return {
       changed: false,
       revision,
@@ -91,7 +103,7 @@ export function buildBattleSyncResponse(args: {
       inBattle: true,
       outcome: null,
       battleEnded: false,
-      mysticSkillCdUntil: args.mysticSkillCdUntil,
+      ...cdFields,
       ...battleVitalsPayload({
         row: args.row,
         st: args.st,
@@ -105,12 +117,7 @@ export function buildBattleSyncResponse(args: {
   }
 
   const logTail = battleLogTailAfterSeq(args.st, clientLogSeq).tail;
-  const mysticSkillCdUntil =
-    args.mysticSkillCdUntil ??
-    (args.st.mysticSkillCdUntil &&
-    Object.keys(args.st.mysticSkillCdUntil).length > 0
-      ? { ...args.st.mysticSkillCdUntil }
-      : undefined);
+  const cdFields = buildBattleCooldownFields(args.row, args.st, Date.now());
   const mobDebuffIcons = battleMobDebuffIconsForUi(args.st);
   const battleMods =
     args.st.battleMods && Object.keys(args.st.battleMods).length > 0
@@ -126,7 +133,7 @@ export function buildBattleSyncResponse(args: {
     inBattle: true,
     outcome: null,
     battleEnded: false,
-    mysticSkillCdUntil,
+    ...cdFields,
     mobDebuffIcons,
     ...(battleMods ? { battleMods } : {}),
     ...battleVitalsPayload({
@@ -189,11 +196,7 @@ export function buildBattleDeltaPayload(args: {
     ).tail;
   }
 
-  const mysticSkillCdUntil = battleCooldownsForSync(
-    args.row,
-    st,
-    Date.now()
-  );
+  const cdFields = buildBattleCooldownFields(args.row, st, Date.now());
 
   const battleMods =
     st.battleMods && Object.keys(st.battleMods).length > 0
@@ -209,7 +212,7 @@ export function buildBattleDeltaPayload(args: {
     ...(logTail.length > 0 ? { logTail } : { logTail: [] }),
     outcome: args.outcome ?? null,
     battleEnded: args.battleEnded ?? false,
-    mysticSkillCdUntil,
+    ...cdFields,
     battleMods,
     mobDebuffIcons,
     ...(args.hotbarStale ? { hotbarStale: true } : {}),
@@ -226,26 +229,4 @@ export function buildBattleDeltaPayload(args: {
   };
 }
 
-/** Кулдауни для sync: mystic CD + skillCooldownsJson (read-only parse). */
-export function battleCooldownsForSync(
-  row: CharacterRow,
-  st: BattleJsonState,
-  nowMs: number
-): Record<string, number> | undefined {
-  const merged: Record<string, number> = {};
-  const mystic = st.mysticSkillCdUntil;
-  if (mystic) {
-    for (const [key, readyAt] of Object.entries(mystic)) {
-      if (typeof readyAt === 'number' && Number.isFinite(readyAt) && readyAt > nowMs) {
-        merged[key] = readyAt;
-      }
-    }
-  }
-  const rows = parseSkillCooldowns(row.skillCooldownsJson, nowMs);
-  for (const cd of rows) {
-    if (cd.readyAt > nowMs) {
-      merged['l2_' + String(cd.skillId)] = cd.readyAt;
-    }
-  }
-  return Object.keys(merged).length > 0 ? merged : undefined;
-}
+export { battleCooldownsForSync } from './battleServiceCooldown.js';

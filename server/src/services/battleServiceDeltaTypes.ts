@@ -8,20 +8,29 @@ export interface BattleDeltaPayload {
   changed: boolean;
   revision: number;
   battleVersion: number;
+  /** Epoch ms сервера — для клієнтського serverTimeOffsetMs. */
+  serverNowMs?: number;
   characterHp?: number;
   characterMp?: number;
   characterMaxHp?: number;
   characterMaxMp?: number;
+  characterCp?: number;
+  characterMaxCp?: number;
   mobHp?: number;
   mobMaxHp?: number;
   mobDead?: boolean;
   characterDead?: boolean;
   battleEnded?: boolean;
   outcome?: BattleOutcomeKind;
+  /** Активні skillId → cooldownUntilMs (Unix ms). */
+  skillCooldowns?: Record<string, number>;
+  /** @deprecated Alias — те саме, що skillCooldowns. */
   mysticSkillCdUntil?: Record<string, number>;
+  /** attack/bolt GCD until (Unix ms). */
+  globalCooldownUntilMs?: number;
   logTail?: string[];
   logSeq?: number;
-  /** true — клієнт має оновити хотбар (інвентар/бафи/КД поза mysticSkillCdUntil). */
+  /** true — клієнт має оновити хотбар (інвентар/бафи поза cooldown delta). */
   hotbarStale?: boolean;
   /** Поточні battleMods (null — немає активних модів у бою). */
   battleMods?: BattleBattleMods | null;
@@ -37,6 +46,7 @@ export interface BattleActionDeltaResponse {
   kind: 'delta';
   revision: number;
   characterId: string;
+  serverNowMs?: number;
   delta: BattleDeltaPayload;
   victory?: BattleVictorySummary;
   defeat?: BattleDefeatSummary;

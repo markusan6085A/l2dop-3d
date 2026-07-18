@@ -475,6 +475,23 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           return sendGameConflict(reply, e);
         }
         if (e instanceof BattleSkillNotAllowedError) {
+          if (e.reason === 'cooldown') {
+            const nowMs = e.serverNowMs ?? Date.now();
+            const cooldownUntilMs =
+              e.cooldownReadyAtMs ??
+              nowMs + Math.max(1, e.remainingCooldownMs ?? 1);
+            const remainingMs = Math.max(0, cooldownUntilMs - nowMs);
+            return reply.code(400).send({
+              error: 'skill_cooldown',
+              code: 'skill_cooldown',
+              reason: 'cooldown',
+              skillId: e.skillId ?? actionNorm,
+              serverNowMs: nowMs,
+              cooldownUntilMs,
+              remainingMs,
+              messageUk: 'Скіл ще на перезарядці.',
+            });
+          }
           return reply.code(400).send({
             error: e.code,
             code: e.code,
@@ -488,10 +505,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             ...(typeof e.cooldownReadyAtMs === 'number'
               ? { cooldownReadyAtMs: e.cooldownReadyAtMs }
               : {}),
-            messageUk:
-              e.reason === 'cooldown'
-                ? 'Скіл ще на перезарядці.'
-                : 'Цей скіл зараз недоступний для твого персонажа.',
+            messageUk: 'Цей скіл зараз недоступний для твого персонажа.',
           });
         }
         if (e instanceof Error && e.message === 'no_character') {

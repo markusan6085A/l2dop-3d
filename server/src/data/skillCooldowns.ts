@@ -27,12 +27,12 @@ export function skillCooldownReadyAtMs(nowMs: number, cdSec: number): number {
 }
 
 /**
- * Секунди для UI-лічильника: floor, щоб 4.67 с показувало 4, а не 5→4.
- * Для rem < 1 с повертає 1, поки ще не минув grace на клієнті.
+ * Секунди для UI-лічильника: ceil — 999 ms показує 1 с, 1 ms ще блокує.
+ * 0 ms — скіл доступний (повертає 0).
  */
 export function skillCooldownDisplaySec(remainingMs: number): number {
   if (!Number.isFinite(remainingMs) || remainingMs <= 0) return 0;
-  return Math.max(1, Math.floor(remainingMs / 1000));
+  return Math.max(1, Math.ceil(remainingMs / 1000));
 }
 
 function toFiniteNum(v: unknown): number | undefined {

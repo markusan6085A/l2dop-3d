@@ -11,12 +11,14 @@ export type BattleSkillNotAllowedReason =
 export class BattleSkillNotAllowedError extends Error {
   readonly code = 'battle_skill_not_allowed';
   readonly reason: BattleSkillNotAllowedReason;
+  readonly skillId?: string;
   readonly remainingCooldownMs?: number;
   readonly serverNowMs?: number;
   readonly cooldownReadyAtMs?: number;
 
   constructor(args: {
     reason: BattleSkillNotAllowedReason;
+    skillId?: string;
     remainingCooldownMs?: number;
     serverNowMs?: number;
     cooldownReadyAtMs?: number;
@@ -24,6 +26,7 @@ export class BattleSkillNotAllowedError extends Error {
     super('battle_skill_not_allowed');
     this.name = 'BattleSkillNotAllowedError';
     this.reason = args.reason;
+    this.skillId = args.skillId;
     this.remainingCooldownMs = args.remainingCooldownMs;
     this.serverNowMs = args.serverNowMs;
     this.cooldownReadyAtMs = args.cooldownReadyAtMs;

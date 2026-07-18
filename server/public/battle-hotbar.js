@@ -754,7 +754,7 @@
     return Math.max(0, Math.round(cdSec * 1000));
   }
 
-  /** Секунди для overlay: floor, щоб 4.67 с показувало 4, а не 5→4. */
+  /** Секунди для overlay: ceil — 999 ms → 1 с; 0 ms → доступний. */
   function skillCooldownDisplaySec(remainingMs) {
     if (
       typeof remainingMs !== 'number' ||
@@ -763,7 +763,7 @@
     ) {
       return 0;
     }
-    return Math.max(1, Math.floor(remainingMs / 1000));
+    return Math.max(1, Math.ceil(remainingMs / 1000));
   }
 
   /**
@@ -778,12 +778,18 @@
     var slotsLoadedSig = '';
     var cdTimer = null;
     var equipInFlight = false;
-    /** Локальний КД (optimistic in-flight), ключі як у `mysticSkillCdUntil`. */
+    /** Локальний КД (лише дзеркало серверного), ключі як у `mysticSkillCdUntil`. */
     var localCdUntil = Object.create(null);
-    /** Ключі з optimistic prime до відповіді сервера. */
-    var pendingSkillCdKeys = Object.create(null);
     /** Фіксована тривалість поточного КД для sweep (legacy; sweep вимкнено). */
     var localCdDuration = Object.create(null);
+
+    function estimatedServerNowMs() {
+      var off =
+        typeof opts.getServerTimeOffsetMs === 'function'
+          ? opts.getServerTimeOffsetMs()
+          : 0;
+      return Date.now() + (typeof off === 'number' && Number.isFinite(off) ? off : 0);
+    }
 
     function cdTrackKey(aid, rowL2) {
       if (typeof rowL2 === 'number' && rowL2 > 0) {
@@ -872,11 +878,13 @@
     }
 
     function clearPendingSkillCd(aid, rowL2) {
-      delete pendingSkillCdKeys[cdTrackKey(aid, rowL2)];
+      void aid;
+      void rowL2;
     }
 
     function markPendingSkillCd(aid, rowL2) {
-      pendingSkillCdKeys[cdTrackKey(aid, rowL2)] = true;
+      void aid;
+      void rowL2;
     }
 
     function mergedCdMap(battle) {
@@ -889,13 +897,12 @@
           if (typeof sv === 'number' && Number.isFinite(sv)) out[sk] = sv;
         }
       }
-      /** Optimistic in-flight — лише якщо сервер ще не віддав ключ. */
+      var estNow = estimatedServerNowMs();
       for (var lk in localCdUntil) {
         if (!Object.prototype.hasOwnProperty.call(localCdUntil, lk)) continue;
-        if (Object.prototype.hasOwnProperty.call(out, lk)) continue;
-        if (!pendingSkillCdKeys[lk]) continue;
         var lv = localCdUntil[lk];
-        if (typeof lv === 'number' && Number.isFinite(lv) && lv > Date.now()) {
+        if (typeof lv !== 'number' || !Number.isFinite(lv) || lv <= estNow) continue;
+        if (!Object.prototype.hasOwnProperty.call(out, lk) || lv > out[lk]) {
           out[lk] = lv;
         }
       }
@@ -904,27 +911,25 @@
 
     function syncLocalCdFromBattle(battle) {
       var srv = battle && battle.mysticSkillCdUntil;
-      if (!srv || typeof srv !== 'object') return;
-      var now = Date.now();
+      if (!srv || typeof srv !== 'object') {
+        localCdUntil = Object.create(null);
+        localCdDuration = Object.create(null);
+        return;
+      }
+      var estNow = estimatedServerNowMs();
+      var nextLocal = Object.create(null);
       for (var k in srv) {
         if (!Object.prototype.hasOwnProperty.call(srv, k)) continue;
         var v = srv[k];
         if (typeof v !== 'number' || !Number.isFinite(v)) continue;
-        if (v > now) {
-          localCdUntil[k] = v;
-          delete pendingSkillCdKeys[k];
-        } else if (Object.prototype.hasOwnProperty.call(localCdUntil, k)) {
-          delete localCdUntil[k];
-          delete pendingSkillCdKeys[k];
-        }
+        if (v > estNow) nextLocal[k] = v;
       }
-      /** Сервер — джерело правди: прибрати застарілі локальні l2_* без in-flight. */
-      for (var lk in localCdUntil) {
-        if (!Object.prototype.hasOwnProperty.call(localCdUntil, lk)) continue;
-        if (pendingSkillCdKeys[lk]) continue;
-        if (!Object.prototype.hasOwnProperty.call(srv, lk)) {
-          delete localCdUntil[lk];
-          delete localCdDuration[lk];
+      localCdUntil = nextLocal;
+      for (var dk in localCdDuration) {
+        if (!Object.prototype.hasOwnProperty.call(localCdDuration, dk)) continue;
+        var dur = localCdDuration[dk];
+        if (!dur || typeof dur.until !== 'number' || dur.until <= estNow) {
+          delete localCdDuration[dk];
         }
       }
     }
@@ -972,14 +977,14 @@
         clearCdDurationForAction(aid, rowL2);
         return null;
       }
-      var now = Date.now();
-      var remMs = until - now;
-      if (remMs <= SKILL_CD_UI_GRACE_MS) {
+      var estNow = estimatedServerNowMs();
+      var remMs = until - estNow;
+      if (remMs <= 0) {
         clearCdDurationForAction(aid, rowL2);
         return null;
       }
       var trackKey = cdTrackKey(aid, rowL2);
-      var cdMs = ensureCdDuration(trackKey, until, cdSec, now);
+      var cdMs = ensureCdDuration(trackKey, until, cdSec, estNow);
       return { until: until, cdMs: cdMs, remMs: remMs };
     }
 
@@ -999,36 +1004,59 @@
       }
     }
 
-    /** Одразу показати КД на іконці (до відповіді сервера). */
+    /** @deprecated КД лише з серверної відповіді — не викликати до action. */
     function primeSkillCd(actionId) {
-      var battle = opts.getBattle();
-      if (!battle) return;
-      var info = cdInfoForAction(battle, actionId);
-      if (info.cdSec == null || info.cdSec <= 0) return;
-      var untilMs = Date.now() + skillCooldownDurationMs(info.cdSec);
-      markPendingSkillCd(info.aid, info.rowL2);
-      stampLocalCd(info.aid, info.rowL2, untilMs);
-      var box = opts.container;
-      var existing = box && box.querySelector('.l2-battle-hotbar');
-      if (existing) {
-        updateDynamicState(existing, battle, opts.getCharacter(), slotsCache);
-      } else {
-        render();
-      }
+      void actionId;
     }
 
-    /** Скасувати optimistic КД (помилка / cooldown від сервера). */
-    function abortPendingSkillCd(actionId, battleOpt) {
+    function logSkillCooldownClient(battleNow, actionId) {
+      var meta = skillCooldownMeta(battleNow, actionId);
+      var info = cdInfoForAction(battleNow, actionId);
+      var until =
+        meta && typeof meta.until === 'number'
+          ? meta.until
+          : mysticCdUntilForAction(mergedCdMap(battleNow), info.aid, info.rowL2);
+      var estNow = estimatedServerNowMs();
+      var remMs =
+        typeof until === 'number' && Number.isFinite(until) ? until - estNow : 0;
+      var bv =
+        typeof opts.getBattleVersion === 'function' ? opts.getBattleVersion() : 0;
+      console.log('[skill-cooldown-client]', {
+        skillId: info.aid,
+        cooldownUntilMs: until,
+        estimatedServerNowMs: estNow,
+        remainingMs: remMs,
+        secondsLeft: skillCooldownDisplaySec(remMs),
+        battleVersion: bv,
+      });
+    }
+
+    function applyServerCooldown(skillId, cooldownUntilMs) {
+      if (typeof cooldownUntilMs !== 'number' || !Number.isFinite(cooldownUntilMs)) {
+        return;
+      }
+      var battle = opts.getBattle();
+      if (!battle) return;
+      if (!battle.mysticSkillCdUntil) battle.mysticSkillCdUntil = {};
+      battle.mysticSkillCdUntil[String(skillId)] = cooldownUntilMs;
+      stampLocalCd(String(skillId), null, cooldownUntilMs);
+    }
+
+    function syncCooldownsFromBattle(battleOpt) {
       var battle = battleOpt || opts.getBattle();
       if (!battle) return;
-      var info = cdInfoForAction(battle, actionId);
-      var trackKey = cdTrackKey(info.aid, info.rowL2);
-      delete pendingSkillCdKeys[trackKey];
-      delete localCdUntil[info.aid];
-      if (typeof info.rowL2 === 'number' && info.rowL2 > 0) {
-        delete localCdUntil['l2_' + Math.floor(info.rowL2)];
-      }
-      clearCdDurationForAction(info.aid, info.rowL2);
+      syncLocalCdFromBattle(battle);
+    }
+
+    function clearBattleCooldowns() {
+      localCdUntil = Object.create(null);
+      localCdDuration = Object.create(null);
+    }
+
+    /** Скасувати локальний КД (помилка мережі — без optimistic prime). */
+    function abortPendingSkillCd(actionId, battleOpt) {
+      void actionId;
+      void battleOpt;
     }
 
     /** Після успішної дії — синхронізувати КД із snapshot бою. */
@@ -1078,7 +1106,7 @@
         typeof meta.remMs === 'number' && Number.isFinite(meta.remMs)
           ? meta.remMs
           : meta.until - tnow;
-      if (remMs <= SKILL_CD_UI_GRACE_MS) {
+      if (remMs <= 0) {
         setCdOverlayVisible(cdRoot, false);
         longEl.textContent = '';
         return false;
@@ -1102,14 +1130,14 @@
           return;
         }
         syncLocalCdFromBattle(battleNow);
-        pruneLocalCd(Date.now());
+        pruneLocalCd(estimatedServerNowMs());
         var els = wrap.querySelectorAll('[data-slot-cd]');
         var any = false;
         for (var i = 0; i < els.length; i++) {
           var el = els[i];
           var act = el.getAttribute('data-slot-cd');
           var meta = skillCooldownMeta(battleNow, act);
-          if (applySkillCdOverlay(el, meta, Date.now())) any = true;
+          if (applySkillCdOverlay(el, meta, estimatedServerNowMs())) any = true;
         }
         if (!any) clearCdTimer();
       }
@@ -1451,14 +1479,12 @@
         btn.addEventListener('click', function () {
           var actNow = canonicalBattleActionId(slot.a);
           var battleNow = opts.getBattle();
+          logSkillCooldownClient(battleNow, actNow);
           if (battleNow && isSkillOnCooldown(battleNow, actNow)) {
             if (typeof opts.showToast === 'function') {
               opts.showToast('Скіл на перезарядці.');
             }
             return;
-          }
-          if (typeof primeSkillCd === 'function') {
-            primeSkillCd(actNow);
           }
           opts.onBattleAction(actNow);
         });
@@ -1888,7 +1914,6 @@
       lastRenderKey = '';
       localCdUntil = Object.create(null);
       localCdDuration = Object.create(null);
-      pendingSkillCdKeys = Object.create(null);
       setHotbarPersistCtx(null);
     }
 
@@ -1912,6 +1937,9 @@
       notifySkillUsed: notifySkillUsed,
       abortPendingSkillCd: abortPendingSkillCd,
       isSkillOnCooldown: isSkillOnCooldown,
+      applyServerCooldown: applyServerCooldown,
+      syncCooldownsFromBattle: syncCooldownsFromBattle,
+      clearBattleCooldowns: clearBattleCooldowns,
     };
   }
 
