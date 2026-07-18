@@ -128,6 +128,30 @@
     });
   }
 
+  function patchClanInviteUi() {
+    if (!viewedProfile) return;
+    var clanBtn = $('player-clan-action');
+    var clanInviteMsg = $('player-clan-invite-msg');
+    if (clanInviteMsg) {
+      clanInviteMsg.hidden = true;
+      clanInviteMsg.textContent = '';
+      clanInviteMsg.classList.remove('l2-player-clan-invite-msg--error');
+    }
+    if (!clanBtn) return;
+    clanBtn.removeAttribute('data-stub');
+    if (viewedProfile.clanName) {
+      clanBtn.textContent = 'Клан: ' + String(viewedProfile.clanName);
+      clanBtn.disabled = true;
+    } else if (canInviteToClan(viewedProfile, selfCharacter)) {
+      clanBtn.textContent = 'Запросити в клан';
+      clanBtn.disabled = false;
+    } else {
+      clanBtn.textContent = 'Запросити в клан';
+      clanBtn.disabled = false;
+      clanBtn.setAttribute('data-stub', 'Запросити в клан');
+    }
+  }
+
   function applyProfile(p) {
     viewedProfile = p;
     var headline = $('player-headline');
@@ -154,27 +178,7 @@
 
     renderViewedEquipment(p);
 
-    var clanBtn = $('player-clan-action');
-    var clanInviteMsg = $('player-clan-invite-msg');
-    if (clanInviteMsg) {
-      clanInviteMsg.hidden = true;
-      clanInviteMsg.textContent = '';
-      clanInviteMsg.classList.remove('l2-player-clan-invite-msg--error');
-    }
-    if (clanBtn) {
-      clanBtn.removeAttribute('data-stub');
-      if (p.clanName) {
-        clanBtn.textContent = 'Клан: ' + String(p.clanName);
-        clanBtn.disabled = true;
-      } else if (canInviteToClan(p, selfCharacter)) {
-        clanBtn.textContent = 'Запросити в клан';
-        clanBtn.disabled = false;
-      } else {
-        clanBtn.textContent = 'Запросити в клан';
-        clanBtn.disabled = false;
-        clanBtn.setAttribute('data-stub', 'Запросити в клан');
-      }
-    }
+    patchClanInviteUi();
 
     var set = function (id, txt) {
       var el = $(id);
@@ -336,21 +340,37 @@
         L2.renderCharacterFromCache();
       }
 
-      var resyncPromise =
-        window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
-          ? L2.resyncCharacterWhenRequired()
-          : Promise.resolve(null);
-      var catalogPromise =
-        window.L2 && typeof L2.fetchCatalogHints === 'function'
-          ? L2.fetchCatalogHints().catch(function () {
-              return false;
-            })
-          : Promise.resolve(false);
-      var profilePromise = fetch(apiUrl, {
+      selfCharacter =
+        window.L2 && typeof L2.getCachedCharacter === 'function'
+          ? L2.getCachedCharacter()
+          : null;
+
+      if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+        void L2.resyncCharacterWhenRequired()
+          .then(function (c) {
+            if (c) {
+              selfCharacter = c;
+              if (typeof L2.applyMutationSnapshot === 'function') {
+                L2.applyMutationSnapshot(c);
+              }
+              patchClanInviteUi();
+            } else if (!selfCharacter) {
+              window.location.href = '/';
+            }
+          })
+          .catch(function () {
+            /* resync optional for profile reveal */
+          });
+      }
+      if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+        void L2.fetchCatalogHints().catch(function () {
+          return false;
+        });
+      }
+
+      var r = await fetch(apiUrl, {
         headers: { Authorization: 'Bearer ' + token },
       });
-
-      var r = await profilePromise;
       if (r.status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/';
@@ -379,23 +399,6 @@
         }
         return;
       }
-
-      selfCharacter = await resyncPromise;
-      var cached =
-        window.L2 && typeof L2.getCachedCharacter === 'function'
-          ? L2.getCachedCharacter()
-          : null;
-      if (!selfCharacter && cached) {
-        selfCharacter = cached;
-      }
-      if (!selfCharacter && !cached) {
-        window.location.href = '/';
-        return;
-      }
-      if (selfCharacter && typeof L2.applyMutationSnapshot === 'function') {
-        L2.applyMutationSnapshot(selfCharacter);
-      }
-      await catalogPromise;
 
       applyProfile(j.profile);
       wireViewedEquipment();

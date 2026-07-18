@@ -109,11 +109,37 @@ body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-row__val {
   font-weight: 600;
 }
 
-body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-loading {
-  margin: 0;
-  padding: 8px 3mm 12px;
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-rows {
+  min-height: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-rows--passive {
+  min-height: 72px;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-rows--armor {
+  min-height: 48px;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-set:not([hidden]) {
+  min-height: 24px;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-row--skeleton .l2-bonuses-row__label,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-row--skeleton .l2-bonuses-row__val {
+  color: #7a7260;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-meta__val--skeleton,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-line__val--skeleton,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-intro--skeleton {
+  color: #7a7260;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-rows__error {
+  margin: 0 0 6px;
+  padding: 0 3mm;
   font-size: 12px;
-  line-height: 1.35;
-  color: #a89a70;
-  text-align: center;
+  line-height: 1.45;
+  color: #c96;
 }

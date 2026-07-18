@@ -804,54 +804,6 @@
     }
     logLayoutPhase('skeleton-rendered');
 
-    var resyncPromise =
-      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
-        ? L2.resyncCharacterWhenRequired()
-        : Promise.resolve(null);
-    var catalogPromise =
-      window.L2 && typeof L2.fetchCatalogHints === 'function'
-        ? L2.fetchCatalogHints().catch(function () {
-            return false;
-          })
-        : Promise.resolve(false);
-
-    logLayoutPhase('fetch-start');
-    var locationsOk = await loadAvailableTeleportIds(t);
-    if (locationsOk) {
-      renderCityList(listEl);
-      if (errEl) errEl.hidden = true;
-      logLayoutPhase('fetch-finished');
-    } else if (!citiesListRendered) {
-      renderListError(listEl, 'Не вдалося завантажити точки телепорту.');
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent = 'Не вдалося завантажити точки телепорту.';
-      }
-    }
-
-    var c = await resyncPromise;
-    var snapCached =
-      window.L2 && typeof L2.getCachedCharacter === 'function'
-        ? L2.getCachedCharacter()
-        : cached;
-    if (!c && !snapCached) {
-      if (errEl) {
-        errEl.hidden = false;
-        errEl.textContent = 'Не вдалося завантажити героя.';
-      }
-      return;
-    }
-    if (c && window.L2 && typeof L2.applyMutationSnapshot === 'function') {
-      L2.applyMutationSnapshot(c);
-    }
-    if (c) {
-      writeCachedTeleportSnapshot(c);
-      applyCurrentLocation(c);
-    }
-    await catalogPromise;
-
-    logLayoutPhase('content-ready');
-
     if (listEl && !listEl.dataset.tpClickWired) {
       listEl.dataset.tpClickWired = '1';
       listEl.addEventListener('click', function (e) {
@@ -875,6 +827,54 @@
         hideSurroundings(listEl);
       });
     }
+
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      void L2.resyncCharacterWhenRequired()
+        .then(function (c) {
+          var snapCached =
+            window.L2 && typeof L2.getCachedCharacter === 'function'
+              ? L2.getCachedCharacter()
+              : cached;
+          if (!c && !snapCached) {
+            if (errEl) {
+              errEl.hidden = false;
+              errEl.textContent = 'Не вдалося завантажити героя.';
+            }
+            return;
+          }
+          if (c && window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+            L2.applyMutationSnapshot(c);
+          }
+          if (c) {
+            writeCachedTeleportSnapshot(c);
+            applyCurrentLocation(c);
+          }
+        })
+        .catch(function () {
+          /* resync optional for list reveal */
+        });
+    }
+    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+      void L2.fetchCatalogHints().catch(function () {
+        return false;
+      });
+    }
+
+    logLayoutPhase('fetch-start');
+    var locationsOk = await loadAvailableTeleportIds(t);
+    if (locationsOk) {
+      renderCityList(listEl);
+      if (errEl) errEl.hidden = true;
+      logLayoutPhase('fetch-finished');
+    } else if (!citiesListRendered) {
+      renderListError(listEl, 'Не вдалося завантажити точки телепорту.');
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent = 'Не вдалося завантажити точки телепорту.';
+      }
+    }
+
+    logLayoutPhase('content-ready');
   }
 
   init();

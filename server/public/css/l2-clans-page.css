@@ -663,6 +663,13 @@ body.l2-app-l2-chrome.l2-page-clan-manage .l2-clans-main,
 body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-panel {
   padding-left: 2px;
   text-align: left;
+  min-height: clamp(280px, 45vh, 380px);
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-panel--loading {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-title {
