@@ -69,6 +69,8 @@ import {
 import {
   ensureWorldBossSessionInTx,
   isSharedWorldBossKind,
+  loadWorldBossSessionMobHp,
+  clampSharedWorldBossMobHp,
   readWorldBossSessionMobHp,
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
@@ -382,7 +384,7 @@ export async function getBattleState(
     if (sharedHp != null) {
       bj = {
         ...bjRaw,
-        mobHp: Math.max(0, Math.min(bjRaw.mobMaxHp, Math.floor(sharedHp))),
+        mobHp: clampSharedWorldBossMobHp(bjRaw.mobMaxHp, sharedHp),
       };
     }
   }
@@ -475,12 +477,20 @@ export async function leaveBattle(
 
     let nextMobSpawnHpJson: Prisma.InputJsonValue | typeof Prisma.JsonNull =
       serializeMobSpawnHpState(parseMobSpawnHpState(cr.mobSpawnHpJson));
-    const hpSnap = mobSpawnHpFromBattleJson(bj);
-    if (hpSnap) {
+    const hpSnap = bj ? mobSpawnHpFromBattleJson(bj) : null;
+    if (hpSnap && bj) {
+      let persistMobHp = hpSnap.mobHp;
+      const spawnMetaLeave = resolveBattleSpawnMeta(bj);
+      if (spawnMetaLeave && isSharedWorldBossKind(spawnMetaLeave.kind)) {
+        const sharedHp = await loadWorldBossSessionMobHp(tx, hpSnap.spawnId);
+        if (sharedHp != null) {
+          persistMobHp = clampSharedWorldBossMobHp(hpSnap.mobMaxHp, sharedHp);
+        }
+      }
       const merged = mergeMobSpawnHpEntry(
         parseMobSpawnHpState(cr.mobSpawnHpJson),
         hpSnap.spawnId,
-        hpSnap.mobHp,
+        persistMobHp,
         hpSnap.mobMaxHp
       );
       nextMobSpawnHpJson = serializeMobSpawnHpState(merged);

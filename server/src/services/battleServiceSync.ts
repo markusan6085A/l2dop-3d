@@ -4,7 +4,10 @@ import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import { findCharacterForUser } from './charResolveForUser.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import type { BattleJsonState } from '../domain/battle.js';
-import { readWorldBossSessionMobHp } from './worldBossSessionService.js';
+import {
+  readWorldBossSessionMobHp,
+  clampSharedWorldBossMobHp,
+} from './worldBossSessionService.js';
 import {
   battleCooldownsForSync,
   buildBattleSyncResponse,
@@ -24,7 +27,7 @@ async function battleJsonWithSharedMobHp(
   if (sharedHp == null) return bj;
   return {
     ...bj,
-    mobHp: Math.max(0, Math.min(bj.mobMaxHp, Math.floor(sharedHp))),
+    mobHp: clampSharedWorldBossMobHp(bj.mobMaxHp, sharedHp),
   };
 }
 

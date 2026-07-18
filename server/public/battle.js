@@ -1587,6 +1587,12 @@
       }
     }
 
+    function applyBattleVitalsFromPayload(payload) {
+      if (!payload || !battle) return;
+      if (payload.mobHp != null) battle.mobHp = payload.mobHp;
+      if (payload.mobMaxHp != null) battle.mobMaxHp = payload.mobMaxHp;
+    }
+
     function applyBattleDelta(delta) {
       if (!delta) return false;
       if (!delta.changed) {
@@ -1607,6 +1613,7 @@
           if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
           if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
         }
+        applyBattleVitalsFromPayload(delta);
         return false;
       }
       if (character) {
@@ -1807,11 +1814,15 @@
             if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
             if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
           }
+          applyBattleVitalsFromPayload(st);
           if (typeof st.battleVersion === 'number') {
             lastBattleVersion = Math.floor(st.battleVersion);
           }
           if (typeof st.logSeq === 'number') {
             lastBattleLogSeq = Math.floor(st.logSeq);
+          }
+          if (battle && (st.mobHp != null || st.mobMaxHp != null)) {
+            refreshBattleUI(false);
           }
           return false;
         }

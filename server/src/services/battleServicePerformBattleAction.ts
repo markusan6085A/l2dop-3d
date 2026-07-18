@@ -169,13 +169,13 @@ import {
 import { executeBattleTurnResolve } from './battleServicePerformBattleAction.turnResolve.js';
 import {
   isSharedWorldBossKind,
-  loadWorldBossSessionMobHp,
   recordWorldBossBattlePresenceInTx,
   recordWorldBossDamagingHitInTx,
   applyWorldBossAggressionTauntInTx,
   isWorldBossAutoAttackDueInTx,
   runWorldBossCombatTickInTx,
   flushWorldBossPendingMobHitsForCharacterInTx,
+  resolveCanonicalWorldBossMobHpInTx,
 } from './worldBossSessionService.js';
 import { refreshPvpOpponentHpForCharacterInTx } from './battleServicePvpSession.js';
 import {
@@ -301,10 +301,13 @@ export async function performBattleActionInTx(
         cr.id,
         presenceMs
       );
-      const sharedHp = await loadWorldBossSessionMobHp(tx, spawn.spawnId);
-      if (sharedHp != null) {
-        st.mobHp = sharedHp;
-      }
+      const sharedHp = await resolveCanonicalWorldBossMobHpInTx(
+        tx,
+        spawn.spawnId,
+        st.mobMaxHp,
+        st.mobHp
+      );
+      st.mobHp = sharedHp;
     }
     const log = [...st.log];
     const initialLogLen = log.length;

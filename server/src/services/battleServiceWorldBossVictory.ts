@@ -33,6 +33,7 @@ import type { BattleVictorySummary } from './battleServiceTypes.js';
 import {
   lockWorldBossSessionInTx,
   tryClaimWorldBossLootInTx,
+  forceWorldBossSessionMobHpZeroInTx,
 } from './worldBossSessionService.js';
 import { creditDailyQuestRaidBossParticipationInTx } from './dailyQuestProgressService.js';
 import { creditRaidBossKillInTx } from './ratingsStatsService.js';
@@ -197,6 +198,15 @@ export async function resolveWorldBossVictoryInTx(
       session?.lootRecipientCharacterId
     );
     return finishWorldBossVictoryIdempotentInTx(tx, args, recipientName);
+  }
+
+  /**
+   * Смертельний удар: локальний mobHp уже 0, але сесія могла відставати —
+   * синхронізуємо перед видачею луту (не блокуємо kill лише через desync).
+   */
+  if (args.mobHp <= 0 && session.mobHp > 0) {
+    await forceWorldBossSessionMobHpZeroInTx(tx, args.bj.spawnId);
+    session.mobHp = 0;
   }
 
   if (session.mobHp > 0) {

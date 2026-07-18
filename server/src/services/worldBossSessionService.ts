@@ -154,6 +154,26 @@ export async function deleteWorldBossSession(
   await tx.worldBossSession.deleteMany({ where: { spawnId } });
 }
 
+/** Спільне HP РБ: канонічне значення з сесії (clamp до maxHp бою). */
+export function clampSharedWorldBossMobHp(
+  mobMaxHp: number,
+  sharedHp: number
+): number {
+  const max = Math.max(1, Math.floor(mobMaxHp));
+  return Math.max(0, Math.min(max, Math.floor(sharedHp)));
+}
+
+export async function resolveCanonicalWorldBossMobHpInTx(
+  tx: Tx,
+  spawnId: string,
+  mobMaxHp: number,
+  localMobHp: number
+): Promise<number> {
+  const shared = await loadWorldBossSessionMobHp(tx, spawnId);
+  if (shared == null) return Math.max(0, Math.min(mobMaxHp, Math.floor(localMobHp)));
+  return clampSharedWorldBossMobHp(mobMaxHp, shared);
+}
+
 export async function ensureWorldBossSessionInTx(
   tx: Tx,
   spawn: MapWorldSpawn,
@@ -161,11 +181,12 @@ export async function ensureWorldBossSessionInTx(
   nowMs: number
 ): Promise<WorldBossSessionState> {
   const mc = mobCombatFromSpawn(spawn);
+  const hpHint = Math.max(0, Math.min(mc.maxHp, Math.floor(mobHp)));
   let session = await lockSessionRow(tx, spawn.id);
   if (!session) {
     session = createWorldBossSessionState({
       spawnId: spawn.id,
-      mobHp,
+      mobHp: hpHint,
       mobMaxHp: mc.maxHp,
       mobPAtk: mc.pAtk,
       mobPDef: mc.pDef,
@@ -184,7 +205,11 @@ export async function ensureWorldBossSessionInTx(
     await saveSession(tx, session);
     return session;
   }
-  session.mobHp = Math.max(0, Math.min(session.mobMaxHp, mobHp));
+  /** Не «лікувати» спільного боса персональним mobSpawnHp — лише найменший HP. */
+  session.mobHp = Math.max(
+    0,
+    Math.min(session.mobMaxHp, Math.min(session.mobHp, hpHint))
+  );
   return session;
 }
 
@@ -502,6 +527,17 @@ export async function runWorldBossCombatTickInTx(
   await syncParticipantMobHpInTx(tx, session);
   await saveSession(tx, session);
   return session;
+}
+
+/** Смертельний удар: примусово 0 HP у спільній сесії (desync guard). */
+export async function forceWorldBossSessionMobHpZeroInTx(
+  tx: Tx,
+  spawnId: string
+): Promise<void> {
+  const session = await lockSessionRow(tx, spawnId);
+  if (!session || session.mobHp <= 0) return;
+  session.mobHp = 0;
+  await saveSession(tx, session);
 }
 
 export async function recordWorldBossBattlePresenceInTx(

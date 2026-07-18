@@ -60,7 +60,7 @@ import {
   mobRespawnMsForKind,
   setMobSpawnRespawnEntry,
 } from '../domain/mobSpawnRespawn.js';
-import { deleteWorldBossSession } from './worldBossSessionService.js';
+import { deleteWorldBossSession, resolveCanonicalWorldBossMobHpInTx } from './worldBossSessionService.js';
 import { HUNT_LEVEL_TOLERANCE } from '../domain/battleHuntChain.js';
 import {
   countHuntCandidatesForCharacter,
@@ -442,7 +442,16 @@ export async function persistBattleContinueTurnInTx(
   void profAct;
   void inv;
 
-  st.mobHp = mobHp;
+  let canonicalMobHp = mobHp;
+  if (isSharedWorldBossKind(spawn.kind as MapSpawnKind)) {
+    canonicalMobHp = await resolveCanonicalWorldBossMobHpInTx(
+      tx,
+      bj.spawnId,
+      st.mobMaxHp,
+      mobHp
+    );
+  }
+  st.mobHp = canonicalMobHp;
   applyBattleLogWriteInPlace(st, log, logLinesAdded);
   bumpBattleVersionInPlace(st);
 
