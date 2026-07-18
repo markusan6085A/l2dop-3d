@@ -71,8 +71,8 @@ async function createTestAccount(label: string): Promise<{
           name,
           race: 'Human',
           classBranch: 'fighter',
-          worldX: 1000,
-          worldY: 1000,
+          worldX: CANONICAL_TEST_SPAWN.worldX,
+          worldY: CANONICAL_TEST_SPAWN.worldY,
         },
       },
     },
@@ -102,8 +102,8 @@ async function createSessionWithParticipant(
       partyId,
       spawnId,
       canonicalMobTemplateId: String(CANONICAL_TEST_SPAWN.templateId ?? 'test_mob'),
-      mobWorldX: 1000,
-      mobWorldY: 1000,
+      mobWorldX: CANONICAL_TEST_SPAWN.worldX,
+      mobWorldY: CANONICAL_TEST_SPAWN.worldY,
       mobMaxHp: 500,
       starterCharacterId: characterId,
     });
@@ -382,24 +382,18 @@ async function testPerformBattleActionPartyLockTrace(): Promise<void> {
     where: { id: characterId },
     data: {
       battleJson,
-      worldX: 1000,
-      worldY: 1000,
+      worldX: CANONICAL_TEST_SPAWN.worldX,
+      worldY: CANONICAL_TEST_SPAWN.worldY,
     },
   });
 
   partyBattleLockTrace.reset();
-  let errMsg = '';
-  try {
-    await prisma.$transaction((tx) =>
-      performBattleActionInTx(tx, userId, 'attack', charRow.revision, {
-        characterId,
-        battleSpawnId: spawnId,
-      })
-    );
-  } catch (err) {
-    errMsg = err instanceof Error ? err.message : String(err);
-  }
-  assert.equal(errMsg, 'party_battle_not_ready');
+  await prisma.$transaction((tx) =>
+    performBattleActionInTx(tx, userId, 'attack', charRow.revision, {
+      characterId,
+      battleSpawnId: spawnId,
+    })
+  );
 
   const lockIdx = partyBattleLockTrace.events.indexOf('session:lock:done');
   const charIdx = partyBattleLockTrace.events.indexOf(

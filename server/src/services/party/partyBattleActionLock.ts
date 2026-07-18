@@ -17,6 +17,7 @@ import { isWithinMobBattleRange } from '../../domain/mapNearbyRadius.js';
 import {
   isPartyBattleSessionTerminal,
 } from '../../domain/partyBattleSessionConstants.js';
+import { isPartyBattleEngineEnabled } from '../../domain/partyBattleFlags.js';
 import {
   passiveAndMovePatch,
 } from '../charPassiveMovePersist.js';
@@ -64,6 +65,7 @@ export function isPartyBattleActionPath(
   battleJson: unknown,
   parsedPartyBattleId?: string | null
 ): boolean {
+  if (!isPartyBattleEngineEnabled()) return false;
   const fromParsed =
     typeof parsedPartyBattleId === 'string' && parsedPartyBattleId.trim().length > 0
       ? parsedPartyBattleId.trim()
@@ -91,6 +93,9 @@ export async function lockPartyBattleSessionForActionInTx(
   trace('session:lock:done');
   if (!locked) throw new Error('party_battle_session_not_found');
   if (isPartyBattleSessionTerminal(locked.state)) {
+    throw new Error('party_battle_session_not_active');
+  }
+  if (!locked.activePartyKey) {
     throw new Error('party_battle_session_not_active');
   }
   if (locked.spawnId !== args.spawnId) {

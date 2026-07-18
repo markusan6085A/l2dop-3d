@@ -40,6 +40,7 @@ export interface BattleDeltaPayload {
 
 export interface BattleSyncResponse extends BattleDeltaPayload {
   inBattle: boolean;
+  partyBattle?: import('./party/partyBattleSyncService.js').PartyBattleSyncDto;
 }
 
 export interface BattleActionDeltaResponse {

@@ -14,6 +14,8 @@ import {
 } from './partyMemberHelpers.js';
 import { buildPartyView, loadPartyViewForCharacter } from './partySnapshot.js';
 import { isPartyMemberCharacterUniqueViolation } from './partyPrismaErrors.js';
+import { isPartyBattleEngineEnabled } from '../../domain/partyBattleFlags.js';
+import { endActivePartyBattleSessionForPartyDisbandInTx } from './partyBattleSessionService.js';
 import type { GetPartyResult, PartyLeaveResult, PartyMutationResult } from './partyTypes.js';
 
 type Tx = Prisma.TransactionClient;
@@ -237,6 +239,10 @@ export async function disbandPartyForUser(
 
     if (locked.leaderCharacterId !== char.id) {
       throw new Error('party_forbidden');
+    }
+
+    if (isPartyBattleEngineEnabled()) {
+      await endActivePartyBattleSessionForPartyDisbandInTx(tx, locked.id);
     }
 
     await tx.party.delete({ where: { id: locked.id } });
