@@ -22,6 +22,14 @@
     );
   }
 
+  function charPngOrc(n) {
+    return (
+      '/characters/орк/photo_' +
+      n +
+      '_2026-07-13_10-25-16-removebg-preview.png'
+    );
+  }
+
   function snapshotLevel(c) {
     var n = c && c.level != null ? Number(c.level) : 1;
     return isFinite(n) && n > 0 ? Math.floor(n) : 1;
@@ -50,7 +58,15 @@
     if (race === 'Dwarf') {
       return c.gender === 'female' ? charPngDwarf(2) : charPngDwarf(1);
     }
-    if (race === 'Orc') return mystic ? heroUrl(17) : heroUrl(15);
+    if (race === 'Orc') {
+      return mystic
+        ? c.gender === 'female'
+          ? charPngOrc(3)
+          : charPngOrc(6)
+        : c.gender === 'female'
+          ? charPngOrc(2)
+          : charPngOrc(1);
+    }
     return heroUrl(2);
   }
 
@@ -289,42 +305,132 @@
       blackKey: false,
     },
     orc_fighter: {
-      url: heroUrl(15),
+      url: charPngOrc(1),
       skin: 'orc-fighter-m',
       blackKey: false,
     },
     orc_raider: {
-      url: heroUrl(19),
+      url: charPngOrc(5),
       skin: 'orc-raider-m',
       blackKey: false,
     },
     orc_monk: {
-      url: heroUrl(21),
+      url: charPngOrc(9),
       skin: 'orc-monk-m',
       blackKey: false,
     },
     orc_mage: {
-      url: heroUrl(17),
+      url: charPngOrc(6),
+      skin: 'orc-mystic-m',
+      blackKey: false,
+    },
+    orc_shaman: {
+      url: charPngOrc(7),
       skin: 'orc-mystic-m',
       blackKey: false,
     },
     'orc_fighter|female': {
-      url: heroUrl(16),
+      url: charPngOrc(2),
       skin: 'orc-fighter-f',
       blackKey: false,
     },
     'orc_raider|female': {
-      url: heroUrl(22),
+      url: charPngOrc(4),
       skin: 'orc-raider-f',
       blackKey: false,
     },
     'orc_monk|female': {
-      url: heroUrl(20),
+      url: charPngOrc(10),
+      skin: 'orc-monk-f',
+      blackKey: false,
+    },
+    orc_destroyer: {
+      url: charPngOrc(16),
+      skin: 'orc-raider-m',
+      blackKey: false,
+    },
+    orc_titan: {
+      url: charPngOrc(32),
+      skin: 'orc-raider-m',
+      blackKey: false,
+    },
+    'orc_destroyer|female': {
+      url: charPngOrc(14),
+      skin: 'orc-raider-f',
+      blackKey: false,
+    },
+    'orc_titan|female': {
+      url: charPngOrc(33),
+      skin: 'orc-raider-f',
+      blackKey: false,
+    },
+    orc_tyrant: {
+      url: charPngOrc(15),
+      skin: 'orc-monk-m',
+      blackKey: false,
+    },
+    orc_grand_khavatari: {
+      url: charPngOrc(31),
+      skin: 'orc-monk-m',
+      blackKey: false,
+    },
+    'orc_tyrant|female': {
+      url: charPngOrc(13),
+      skin: 'orc-monk-f',
+      blackKey: false,
+    },
+    'orc_grand_khavatari|female': {
+      url: charPngOrc(34),
       skin: 'orc-monk-f',
       blackKey: false,
     },
     'orc_mage|female': {
-      url: heroUrl(18),
+      url: charPngOrc(3),
+      skin: 'orc-mystic-f',
+      blackKey: false,
+    },
+    'orc_shaman|female': {
+      url: charPngOrc(8),
+      skin: 'orc-mystic-f',
+      blackKey: false,
+    },
+    orc_overlord: {
+      url: charPngOrc(12),
+      skin: 'orc-mystic-m',
+      blackKey: false,
+    },
+    orc_warcryer: {
+      url: charPngOrc(12),
+      skin: 'orc-mystic-m',
+      blackKey: false,
+    },
+    orc_dominator: {
+      url: charPngOrc(29),
+      skin: 'orc-mystic-m',
+      blackKey: false,
+    },
+    orc_doomcryer: {
+      url: charPngOrc(29),
+      skin: 'orc-mystic-m',
+      blackKey: false,
+    },
+    'orc_overlord|female': {
+      url: charPngOrc(11),
+      skin: 'orc-mystic-f',
+      blackKey: false,
+    },
+    'orc_warcryer|female': {
+      url: charPngOrc(11),
+      skin: 'orc-mystic-f',
+      blackKey: false,
+    },
+    'orc_dominator|female': {
+      url: charPngOrc(28),
+      skin: 'orc-mystic-f',
+      blackKey: false,
+    },
+    'orc_doomcryer|female': {
+      url: charPngOrc(28),
       skin: 'orc-mystic-f',
       blackKey: false,
     },
@@ -543,6 +649,45 @@
     ],
   };
 
+  /** Орк 2 профа (Tyrant): 52+ → photo_19 / photo_2026-07-18, 62+ → photo_25/24. */
+  var ORC_MONK_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngOrc(25) },
+      { minLevel: 52, url: charPngOrc(19) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngOrc(24) },
+      {
+        minLevel: 52,
+        url: '/characters/орк/photo_2026-07-18_14-03-18-removebg-preview.png',
+      },
+    ],
+  };
+
+  /** Орк 2 профа (Destroyer): 52+ → photo_20/21, 62+ → photo_26/27. */
+  var ORC_FIGHTER_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngOrc(26) },
+      { minLevel: 52, url: charPngOrc(20) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngOrc(27) },
+      { minLevel: 52, url: charPngOrc(21) },
+    ],
+  };
+
+  /** Орк 2 профа (Overlord / Warcryer): 52+ → photo_18/17, 62+ → photo_22/23. */
+  var ORC_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngOrc(22) },
+      { minLevel: 52, url: charPngOrc(18) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngOrc(23) },
+      { minLevel: 52, url: charPngOrc(17) },
+    ],
+  };
+
   /** Гном 1–2 профа: 52+ → photo_7/8, 62+ → photo_10/9. */
   var DWARF_PROF_LEVEL_PORTRAITS = {
     male: [
@@ -637,19 +782,14 @@
     human_warrior: {
       female: HUMAN_WARLORD_BRANCH_FEMALE_LEVELS.female,
     },
+    orc_overlord: ORC_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS,
+    orc_warcryer: ORC_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS,
+    orc_destroyer: ORC_FIGHTER_SECOND_PROF_LEVEL_PORTRAITS,
+    orc_tyrant: ORC_MONK_SECOND_PROF_LEVEL_PORTRAITS,
   };
 
   /** 2–3 профа гілки — та сама картинка, що на базовій 2-й (або 1-й для rogue/luk). */
   var SCENE_HERO_PROF_ALIAS = {
-    orc_destroyer: 'orc_raider',
-    orc_tyrant: 'orc_monk',
-    orc_titan: 'orc_raider',
-    orc_grand_khavatari: 'orc_monk',
-    orc_shaman: 'orc_mage',
-    orc_overlord: 'orc_mage',
-    orc_warcryer: 'orc_mage',
-    orc_dominator: 'orc_mage',
-    orc_doomcryer: 'orc_mage',
     elf_elven_wizard: 'elf_mage',
     elf_elven_oracle: 'elf_mage',
     elf_elemental_summoner: 'elf_elven_wizard',
@@ -709,6 +849,8 @@
     if (race === 'Elf' && branch === 'mystic') return 'elf_mage';
     if (race === 'Elf' && branch === 'fighter') return 'elf_fighter';
     if (race === 'Dwarf' && branch === 'fighter') return 'dwarf_fighter';
+    if (race === 'Orc' && branch === 'fighter') return 'orc_fighter';
+    if (race === 'Orc' && branch === 'mystic') return 'orc_mage';
     return null;
   }
 
