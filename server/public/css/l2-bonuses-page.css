@@ -1,0 +1,119 @@
+/**
+ * Сторінка «Бонуси» (bonuses.html).
+ */
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-root {
+  padding: 0 0.5cm 0.75cm;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-panel {
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-back {
+  margin: 0 0 10px;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-back-link {
+  color: #bfa88a;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-back-link:hover,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-back-link:focus {
+  color: #e8dcc8;
+  text-decoration: underline;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-panel__title {
+  margin: 0 0 10px;
+  padding: 0 3mm;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-meta,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-lead,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-intro,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-line,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-row,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-set__line {
+  margin: 0 0 6px;
+  padding: 0 3mm;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #ece6d0;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-meta__label {
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-meta__val {
+  color: #a89a70;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-line__label--accent,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-intro--accent {
+  color: #bfa88a;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-clan__line {
+  margin: 0 0 6px;
+  padding: 0 3mm;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #3db838;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-sep {
+  margin: 8px 0;
+  padding: 0 3mm;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #a89a70;
+  text-align: center;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-lead {
+  color: #fff;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-section {
+  margin: 0 0 4px;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-section__title {
+  margin: 0 0 8px;
+  padding: 0 3mm;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-line__label,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-row__label {
+  color: #d8ccb0;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-line__val,
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-row__val {
+  color: #fff;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-bonuses .l2-bonuses-loading {
+  margin: 0;
+  padding: 8px 3mm 12px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #a89a70;
+  text-align: center;
+}

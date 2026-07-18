@@ -24,6 +24,7 @@ import { getSnapshotForUser } from '../services/charService.js';
 import { findPvpIncomingForCharacter } from '../services/pvpIncomingService.js';
 import { getCharacterMapStateForUser } from '../services/charMapStateService.js';
 import { getMagisterDialogForUser } from '../services/skillLearnService.js';
+import { getCharacterBonusesForUser } from '../services/characterBonusesService.js';
 import { characterDbErrorPayload } from './characterRouteErrors.js';
 import { CHARACTER_CATALOG_VERSION } from '../data/characterCatalogVersion.js';
 
@@ -182,6 +183,32 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         return reply.send(dialog);
       } catch (err) {
         request.log.error({ err }, 'GET /character/magister');
+        const { code, body } = characterDbErrorPayload(err);
+        return reply.code(code).send(body);
+      }
+    }
+  );
+
+  app.get(
+    '/bonuses',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      try {
+        const bonuses = await getCharacterBonusesForUser(userId);
+        if (!bonuses) {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        void reply.header(
+          'Cache-Control',
+          'private, no-store, no-cache, must-revalidate, max-age=0'
+        );
+        return reply.send({ bonuses });
+      } catch (err) {
+        request.log.error({ err }, 'GET /character/bonuses');
         const { code, body } = characterDbErrorPayload(err);
         return reply.code(code).send(body);
       }

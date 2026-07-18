@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Бонуси — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-bonuses-page.css?v=20260718bonuses2" />
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-bonuses l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-city-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-bonuses-root">
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
+
+          <p class="err" id="bonuses-load-err" hidden></p>
+
+          <main class="l2-bonuses-panel" id="bonuses-content" hidden>
+            <p class="l2-bonuses-back">
+              <a class="l2-bonuses-back-link" href="/character.html">← Назад до персонажа</a>
+            </p>
+            <h1 class="l2-bonuses-panel__title">Бонуси</h1>
+
+            <p class="l2-bonuses-meta">
+              <span class="l2-bonuses-meta__label">Раса персонажа:</span>
+              <span class="l2-bonuses-meta__val" id="bonuses-race-val">—</span>
+            </p>
+            <p class="l2-bonuses-meta">
+              <span class="l2-bonuses-meta__label">Професія:</span>
+              <span class="l2-bonuses-meta__val" id="bonuses-profession-val">—</span>
+            </p>
+            <p class="l2-bonuses-sep" aria-hidden="true">---</p>
+            <p class="l2-bonuses-lead">Зараз на персонажі</p>
+
+            <section class="l2-bonuses-section" aria-labelledby="bonuses-passive-title">
+              <h2 class="l2-bonuses-section__title" id="bonuses-passive-title">Пасивні бонуси</h2>
+              <p class="l2-bonuses-line">
+                <span class="l2-bonuses-line__label l2-bonuses-line__label--accent"
+                  >Бонус від Soulshot/Spiritshot:</span
+                >
+                <span class="l2-bonuses-line__val" id="bonuses-soulshot">—</span>
+              </p>
+              <div class="l2-bonuses-clan" id="bonuses-clan" hidden></div>
+            </section>
+
+            <p class="l2-bonuses-sep" aria-hidden="true">---</p>
+
+            <section class="l2-bonuses-section" aria-labelledby="bonuses-skills-title">
+              <h2 class="l2-bonuses-section__title" id="bonuses-skills-title">Пасивні умения</h2>
+              <p class="l2-bonuses-intro l2-bonuses-intro--accent" id="bonuses-skills-intro">—</p>
+              <div class="l2-bonuses-rows" id="bonuses-passive-skills"></div>
+            </section>
+
+            <p class="l2-bonuses-sep" aria-hidden="true">---</p>
+
+            <section class="l2-bonuses-section" aria-labelledby="bonuses-armor-title">
+              <h2 class="l2-bonuses-section__title" id="bonuses-armor-title">Бонуси від броні</h2>
+              <div class="l2-bonuses-rows" id="bonuses-armor"></div>
+              <div class="l2-bonuses-set" id="bonuses-armor-set" hidden></div>
+            </section>
+          </main>
+
+          <p class="l2-bonuses-loading" id="bonuses-loading">Завантаження…</p>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260717perf2"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260717perf2"></script>
+    <script src="/bonuses-page.js?v=20260718bonuses2"></script>
+  </body>
+</html>
