@@ -5,6 +5,18 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-panel {
   margin-top: 0.5cm;
   padding: 0 0.5cm;
   box-sizing: border-box;
+  min-height: clamp(420px, 68vh, 620px);
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-panel--loading {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-frame {
+  width: 300px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-panel__headline {

@@ -333,12 +333,33 @@ body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-banner {
   width: 70%;
   max-width: 70%;
   height: auto;
+  max-height: 80px;
+  aspect-ratio: 320 / 80;
   margin: 0 auto 10px 0;
   padding: 0 0 8px;
   box-sizing: border-box;
   border-bottom: 1px solid rgba(48, 48, 48, 0.95);
   object-fit: contain;
   object-position: left center;
+}
+
+body.l2-app-l2-chrome.l2-page-teleport #tp-cities-list {
+  min-height: clamp(200px, 36vh, 340px);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-block--skeleton .l2-teleport-miru-city-label,
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-block--skeleton .l2-teleport-miru-tp-btn,
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-city-block--skeleton .l2-teleport-miru-price-adena {
+  color: rgba(191, 168, 138, 0.45);
+}
+
+body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-list__error {
+  margin: 0;
+  padding: 8px 0;
+  min-height: 2.7em;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #e07070;
 }
 
 body.l2-app-l2-chrome.l2-page-teleport .l2-teleport-miru-section {

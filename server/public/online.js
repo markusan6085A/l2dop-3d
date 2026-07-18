@@ -181,6 +181,17 @@
     listEl.appendChild(frag);
   }
 
+  function renderListError(message) {
+    var listEl = $('online-players-list');
+    if (!listEl) return;
+    var err = document.createElement('p');
+    err.className = 'l2-online-list__error';
+    err.textContent = message || 'Не вдалося завантажити онлайн.';
+    var frag = document.createDocumentFragment();
+    frag.appendChild(err);
+    replaceListContent(listEl, frag);
+  }
+
   function renderListSkeleton() {
     var listEl = $('online-players-list');
     if (!listEl) return;
@@ -269,13 +280,8 @@
     wireIcons(listEl);
   }
 
-  function revealOnlinePanel() {
-    var content = $('online-content');
-    if (content) content.classList.remove('l2-online-panel--loading');
-    logLayoutPhase('content-revealed');
-  }
-
-  async function loadOnline(sort) {
+  async function loadOnline(sort, opts) {
+    opts = opts || {};
     if (onlineInFlight) return false;
     var token = localStorage.getItem('token');
     var errEl = $('online-load-err');
@@ -290,6 +296,10 @@
       errEl.textContent = '';
     }
 
+    if (!lastPayload && opts.showSkeleton !== false) {
+      renderListSkeleton();
+    }
+
     logLayoutPhase('fetch-start');
 
     try {
@@ -302,9 +312,13 @@
         return false;
       }
       if (!r.ok) {
+        var failMsg = 'Не вдалося завантажити онлайн.';
         if (errEl) {
           errEl.hidden = false;
-          errEl.textContent = 'Не вдалося завантажити онлайн.';
+          errEl.textContent = failMsg;
+        }
+        if (!lastPayload) {
+          renderListError(failMsg);
         }
         return false;
       }
@@ -313,9 +327,13 @@
       logLayoutPhase('fetch-finished');
       return true;
     } catch (_e) {
+      var catchMsg = 'Не вдалося завантажити онлайн.';
       if (errEl) {
         errEl.hidden = false;
-        errEl.textContent = 'Не вдалося завантажити онлайн.';
+        errEl.textContent = catchMsg;
+      }
+      if (!lastPayload) {
+        renderListError(catchMsg);
       }
       return false;
     } finally {
@@ -362,16 +380,14 @@
     logLayoutPhase('cache-rendered');
 
     renderListSkeleton();
+    logLayoutPhase('skeleton-rendered');
 
     var resyncPromise =
       window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
         ? L2.resyncCharacterWhenRequired()
         : Promise.resolve(null);
 
-    var onlineOk = await loadOnline('level');
-    if (onlineOk) {
-      revealOnlinePanel();
-    }
+    await loadOnline('level', { showSkeleton: false });
 
     var c = await resyncPromise;
     var cached =
@@ -385,6 +401,7 @@
     if (c && window.L2 && typeof L2.applyMutationSnapshot === 'function') {
       L2.applyMutationSnapshot(c);
     }
+    logLayoutPhase('content-ready');
   }
 
   init();

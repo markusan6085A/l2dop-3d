@@ -305,6 +305,11 @@
     });
   }
 
+  function revealPlayerPanel() {
+    var content = $('player-content');
+    if (content) content.classList.remove('l2-player-panel--loading');
+  }
+
   async function init() {
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({});
@@ -330,20 +335,22 @@
       if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
         L2.renderCharacterFromCache();
       }
-      selfCharacter =
-        window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
-          ? await L2.resyncCharacterWhenRequired()
-          : null;
-      if (selfCharacter && typeof L2.applyMutationSnapshot === 'function') {
-        L2.applyMutationSnapshot(selfCharacter);
-      }
-      if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
-        await L2.fetchCatalogHints();
-      }
 
-      var r = await fetch(apiUrl, {
+      var resyncPromise =
+        window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
+          ? L2.resyncCharacterWhenRequired()
+          : Promise.resolve(null);
+      var catalogPromise =
+        window.L2 && typeof L2.fetchCatalogHints === 'function'
+          ? L2.fetchCatalogHints().catch(function () {
+              return false;
+            })
+          : Promise.resolve(false);
+      var profilePromise = fetch(apiUrl, {
         headers: { Authorization: 'Bearer ' + token },
       });
+
+      var r = await profilePromise;
       if (r.status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/';
@@ -373,10 +380,26 @@
         return;
       }
 
+      selfCharacter = await resyncPromise;
+      var cached =
+        window.L2 && typeof L2.getCachedCharacter === 'function'
+          ? L2.getCachedCharacter()
+          : null;
+      if (!selfCharacter && cached) {
+        selfCharacter = cached;
+      }
+      if (!selfCharacter && !cached) {
+        window.location.href = '/';
+        return;
+      }
+      if (selfCharacter && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(selfCharacter);
+      }
+      await catalogPromise;
+
       applyProfile(j.profile);
       wireViewedEquipment();
-      var content = $('player-content');
-      if (content) content.hidden = false;
+      revealPlayerPanel();
       wireClanInvite(token);
       wireStubs();
     } catch (_e) {

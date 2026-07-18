@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260712tpMeta3" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260718tpStable1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-teleport l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -56,36 +56,34 @@
           />
         </div>
         <div class="l2-screen-inner l2-teleport-root">
-          <div class="l2-chrome-nav-column l2-teleport-column">
-            <div id="l2-hud-panel-mount"></div>
+          <div id="l2-hud-panel-mount"></div>
 
-            <div id="l2-nav-top"></div>
+          <div id="l2-nav-top"></div>
 
-            <p class="err" id="tp-load-err" hidden></p>
+          <p class="err" id="tp-load-err" hidden></p>
 
-            <section class="l2-teleport-miru" id="tp-content" aria-label="Телепорт" hidden>
-              <p class="l2-teleport-miru-you">
-                Ви в Городі <span id="tp-current-city">—</span>.
-              </p>
+          <section class="l2-teleport-miru" id="tp-content" aria-label="Телепорт">
+            <p class="l2-teleport-miru-you">
+              Ви в Городі <span id="tp-current-city">—</span>.
+            </p>
 
-              <img
-                class="l2-teleport-miru-banner"
-                src="/assets/gk.jpg"
-                alt=""
-                width="320"
-                height="80"
-                decoding="async"
-              />
+            <img
+              class="l2-teleport-miru-banner"
+              src="/assets/gk.jpg"
+              alt=""
+              width="320"
+              height="80"
+              decoding="async"
+            />
 
-              <h2 class="l2-teleport-miru-section">Города:</h2>
-              <nav class="l2-town-miru-list" id="tp-cities-list" aria-label="Города"></nav>
+            <h2 class="l2-teleport-miru-section">Города:</h2>
+            <nav class="l2-town-miru-list" id="tp-cities-list" aria-label="Города"></nav>
 
-              <p class="err" id="tp-err" hidden></p>
-              <p class="l2-city-stub-msg" id="tp-ok" hidden></p>
-            </section>
+            <p class="err" id="tp-err" hidden></p>
+            <p class="l2-city-stub-msg" id="tp-ok" hidden></p>
+          </section>
 
-            <div id="l2-nav-bottom"></div>
-          </div>
+          <div id="l2-nav-bottom"></div>
         </div>
       </div>
     </div>
@@ -93,6 +91,6 @@
     <script src="/common.js?v=20260718layoutStable4"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/teleport.js?v=20260712tpMeta5"></script>
+    <script src="/teleport.js?v=20260718tpStable1"></script>
   </body>
 </html>

@@ -3,12 +3,6 @@
 body.l2-app-l2-chrome.l2-page-online .l2-online-panel {
   padding: 4px 0 8px;
   box-sizing: border-box;
-  min-height: clamp(280px, 52vh, 480px);
-}
-
-body.l2-app-l2-chrome.l2-page-online .l2-online-panel--loading {
-  visibility: hidden;
-  pointer-events: none;
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-online-head {
@@ -158,11 +152,17 @@ body.l2-app-l2-chrome.l2-page-online .l2-online-player__city {
   color: #fff;
 }
 
-body.l2-app-l2-chrome.l2-page-online .l2-online-empty {
+body.l2-app-l2-chrome.l2-page-online .l2-online-empty,
+body.l2-app-l2-chrome.l2-page-online .l2-online-list__error {
   margin: 0;
   padding: 0;
   font-size: 12px;
   color: #9a9488;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-list__error {
+  color: #e07070;
+  min-height: 2.7em;
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-chrome-nav-column > .err {

@@ -12,6 +12,9 @@
   var availableTeleportIds = null;
   var teleportCostById = null;
   var teleportMobRangeById = null;
+  var citiesListRendered = false;
+  var layoutDebug = false;
+  var TP_SKELETON_ROWS = 6;
 
   /** Фіксований порядок міст; окремі блоки «Окресности» — через surroundingsKey. */
   var TELEPORT_CITIES = [
@@ -146,6 +149,67 @@
 
   function $(id) {
     return document.getElementById(id);
+  }
+
+  function isLayoutDebugEnabled() {
+    try {
+      return (
+        /(?:^|[?&])layoutDebug=1(?:&|$)/.test(String(location.search || '')) ||
+        localStorage.getItem('l2-layout-debug') === '1'
+      );
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  function logLayoutPhase(phase) {
+    if (!layoutDebug) return;
+    var contentEl = $('tp-content');
+    var hudMount = $('l2-hud-panel-mount');
+    var navMount = $('l2-nav-bottom');
+    var listEl = $('tp-cities-list');
+    console.log('[page-layout-phase]', {
+      page: 'teleport',
+      phase: phase,
+      scrollY: window.scrollY,
+      contentHeight: contentEl ? contentEl.getBoundingClientRect().height : null,
+      listHeight: listEl ? listEl.getBoundingClientRect().height : null,
+      hudHeight: hudMount ? hudMount.getBoundingClientRect().height : null,
+      navHeight: navMount ? navMount.getBoundingClientRect().height : null,
+    });
+  }
+
+  function installLayoutShiftObserver() {
+    if (!layoutDebug || typeof PerformanceObserver === 'undefined') return;
+    try {
+      new PerformanceObserver(function (list) {
+        for (var i = 0; i < list.getEntries().length; i++) {
+          var entry = list.getEntries()[i];
+          if (!entry.hadRecentInput && entry.value > 0) {
+            console.log('[layout-shift]', {
+              page: 'teleport',
+              value: entry.value,
+              sources: entry.sources
+                ? entry.sources.map(function (s) {
+                    return {
+                      node: s.node,
+                      previousRect: s.previousRect,
+                      currentRect: s.currentRect,
+                    };
+                  })
+                : [],
+            });
+          }
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+    } catch (_e) {
+      /* ignore */
+    }
+  }
+
+  function replaceListContent(listEl, frag) {
+    listEl.innerHTML = '';
+    listEl.appendChild(frag);
   }
 
   function readCachedTeleportSnapshot() {
@@ -411,25 +475,42 @@
 
   function renderSkeletonList(listEl) {
     if (!listEl) return;
-    listEl.innerHTML = '';
-    for (var i = 0; i < 6; i++) {
-      listEl.appendChild(createCityBlock({ label: 'Завантаження…' }, true));
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < TP_SKELETON_ROWS; i++) {
+      var block = createCityBlock({ label: '…' }, true);
+      block.classList.add('l2-teleport-miru-city-block--skeleton');
+      block.setAttribute('aria-hidden', 'true');
+      frag.appendChild(block);
     }
+    replaceListContent(listEl, frag);
     wireMiruIcons(listEl);
+  }
+
+  function renderListError(listEl, message) {
+    if (!listEl) return;
+    var err = document.createElement('p');
+    err.className = 'l2-teleport-miru-list__error';
+    err.textContent = message || 'Не вдалося завантажити точки телепорту.';
+    var frag = document.createDocumentFragment();
+    frag.appendChild(err);
+    replaceListContent(listEl, frag);
   }
 
   function renderCityList(listEl) {
     if (!listEl) return;
-    listEl.innerHTML = '';
+    hideSurroundings(listEl);
+    var frag = document.createDocumentFragment();
     for (var i = 0; i < TELEPORT_CITIES.length; i++) {
       var row = TELEPORT_CITIES[i];
       var item = createCityBlock(row, false);
       if (i === TELEPORT_CITIES.length - 1) {
         item.classList.add('l2-teleport-miru-city-block--last');
       }
-      listEl.appendChild(item);
+      frag.appendChild(item);
     }
+    replaceListContent(listEl, frag);
     wireMiruIcons(listEl);
+    citiesListRendered = true;
   }
 
   function clearSurroundingsActive(listEl) {
@@ -496,7 +577,7 @@
       var r = await fetch('/game/teleport/locations', {
         headers: { Authorization: 'Bearer ' + token },
       });
-      if (!r.ok) return;
+      if (!r.ok) return false;
       var j = await r.json();
       var map = {};
       var costs = {};
@@ -520,8 +601,9 @@
       availableTeleportIds = map;
       teleportCostById = costs;
       teleportMobRangeById = mobRanges;
+      return true;
     } catch (_e) {
-      /* ignore */
+      return false;
     }
   }
 
@@ -667,6 +749,10 @@
   }
 
   async function init() {
+    layoutDebug = isLayoutDebugEnabled();
+    installLayoutShiftObserver();
+    logLayoutPhase('html-ready');
+
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
         onStub: function (label) {
@@ -674,9 +760,9 @@
         },
       });
     }
+    logLayoutPhase('chrome-mounted');
 
     var errEl = $('tp-load-err');
-    var content = $('tp-content');
     var listEl = $('tp-cities-list');
     var tpErr = $('tp-err');
     var tpOk = $('tp-ok');
@@ -691,11 +777,17 @@
       return;
     }
 
-    if (content) content.hidden = false;
-    renderSkeletonList(listEl);
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
+    }
+    logLayoutPhase('cache-rendered');
 
     var cached =
-      window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+      window.L2 && typeof L2.getCachedCharacter === 'function'
+        ? L2.getCachedCharacter()
+        : window.L2 && typeof L2.lastSnapshot === 'function'
+          ? L2.lastSnapshot()
+          : null;
     if (!cached) cached = readCachedTeleportSnapshot();
     if (cached) {
       if (window.L2 && typeof L2.setLastSnapshot === 'function') {
@@ -707,35 +799,61 @@
       applyCurrentLocation(cached);
     }
 
-    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
-      L2.renderCharacterFromCache();
+    if (!citiesListRendered) {
+      renderSkeletonList(listEl);
     }
-    var c =
+    logLayoutPhase('skeleton-rendered');
+
+    var resyncPromise =
       window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
-        ? await L2.resyncCharacterWhenRequired()
-        : null;
-    if (!c) {
-      var errMsg = 'Не вдалося завантажити героя.';
+        ? L2.resyncCharacterWhenRequired()
+        : Promise.resolve(null);
+    var catalogPromise =
+      window.L2 && typeof L2.fetchCatalogHints === 'function'
+        ? L2.fetchCatalogHints().catch(function () {
+            return false;
+          })
+        : Promise.resolve(false);
+
+    logLayoutPhase('fetch-start');
+    var locationsOk = await loadAvailableTeleportIds(t);
+    if (locationsOk) {
+      renderCityList(listEl);
+      if (errEl) errEl.hidden = true;
+      logLayoutPhase('fetch-finished');
+    } else if (!citiesListRendered) {
+      renderListError(listEl, 'Не вдалося завантажити точки телепорту.');
       if (errEl) {
         errEl.hidden = false;
-        errEl.textContent = errMsg;
+        errEl.textContent = 'Не вдалося завантажити точки телепорту.';
+      }
+    }
+
+    var c = await resyncPromise;
+    var snapCached =
+      window.L2 && typeof L2.getCachedCharacter === 'function'
+        ? L2.getCachedCharacter()
+        : cached;
+    if (!c && !snapCached) {
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent = 'Не вдалося завантажити героя.';
       }
       return;
     }
-    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+    if (c && window.L2 && typeof L2.applyMutationSnapshot === 'function') {
       L2.applyMutationSnapshot(c);
     }
-    writeCachedTeleportSnapshot(c);
-    applyCurrentLocation(c);
-    if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
-      await L2.fetchCatalogHints();
+    if (c) {
+      writeCachedTeleportSnapshot(c);
+      applyCurrentLocation(c);
     }
+    await catalogPromise;
 
-    await loadAvailableTeleportIds(t);
-    renderCityList(listEl);
-    if (errEl) errEl.hidden = true;
+    logLayoutPhase('content-ready');
 
-    if (listEl) {
+    if (listEl && !listEl.dataset.tpClickWired) {
+      listEl.dataset.tpClickWired = '1';
       listEl.addEventListener('click', function (e) {
         var tpBtn = e.target && e.target.closest ? e.target.closest('.l2-teleport-miru-tp-btn') : null;
         if (tpBtn && !tpBtn.disabled) {
