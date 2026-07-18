@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Паті — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
+    <link rel="stylesheet" href="/css/l2-party-page.css?v=20260718party1" />
+  </head>
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-party l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal">
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img class="l2-outer-sframe__cap-tl-img" src="/ref/19.png" alt="" width="28" height="52" decoding="async" />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img class="l2-outer-sframe__cap-tr-img" src="/ref/18.png" alt="" width="28" height="52" decoding="async" />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img class="l2-game-chrome-crest__img" src="/ref/2.png" alt="" width="40" height="40" decoding="async" />
+        </div>
+        <div class="l2-screen-inner l2-city-root">
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
+
+          <p class="err" id="party-page-err" hidden></p>
+
+          <section class="l2-party-panel" aria-label="Паті">
+            <h1 class="l2-party-panel__title">Паті</h1>
+            <p class="l2-party-panel__meta" id="party-meta" hidden></p>
+
+            <div id="party-empty" hidden>
+              <p class="l2-party-panel__hint">Ти не в паті. Максимум 5 учасників (лідер + 4).</p>
+              <button type="button" class="l2-party-btn" id="party-create-btn">Створити паті</button>
+            </div>
+
+            <div id="party-active" hidden>
+              <ul class="l2-party-members" id="party-members-list"></ul>
+              <div class="l2-party-actions" id="party-leader-actions" hidden>
+                <label class="l2-party-invite-field">
+                  <span>Запросити (characterId)</span>
+                  <input type="text" id="party-invite-target" autocomplete="off" spellcheck="false" />
+                </label>
+                <button type="button" class="l2-party-btn" id="party-invite-btn">Запросити</button>
+                <button type="button" class="l2-party-btn l2-party-btn--danger" id="party-disband-btn">Розпустити</button>
+              </div>
+              <button type="button" class="l2-party-btn" id="party-leave-btn">Вийти з паті</button>
+            </div>
+
+            <div class="l2-party-invites-block" id="party-invites-block" hidden>
+              <h2 class="l2-party-invites-block__title">Запрошення</h2>
+              <ul class="l2-party-invites" id="party-invites-list"></ul>
+            </div>
+          </section>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+    <script src="/common.js?v=20260718layoutStable2"></script>
+    <script src="/l2-nav.js?v=20260718layoutStable2"></script>
+    <script src="/party.js?v=20260718party1"></script>
+  </body>
+</html>

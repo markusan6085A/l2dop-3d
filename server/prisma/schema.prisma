@@ -118,9 +118,55 @@ model Character {
   clanInvitesSent ClanInvite[] @relation("ClanInviteInviter")
   clanInvitesRecv ClanInvite[] @relation("ClanInviteTarget")
   clanChatMessages ClanChatMessage[]
+  /** Паті: лідерство без partyId на Character — membership лише через PartyMember. */
+  ledParty         Party?        @relation("PartyLeader")
+  partyMembership  PartyMember?
+  partyInvitesSent PartyInvite[] @relation("PartyInviteInviter")
+  partyInvitesRecv PartyInvite[] @relation("PartyInviteTarget")
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
+}
+
+/** Група до 5 гравців (лідер + 4). Соціальний стан — partyVersion, не Character.revision. */
+model Party {
+  id                String        @id @default(uuid())
+  leaderCharacterId String        @unique
+  leader            Character     @relation("PartyLeader", fields: [leaderCharacterId], references: [id], onDelete: Cascade)
+  version           Int           @default(1)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  members           PartyMember[]
+  invites           PartyInvite[]
+}
+
+model PartyMember {
+  partyId     String
+  characterId String    @unique
+  slotOrder   Int
+  joinedAt    DateTime  @default(now())
+  party       Party     @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([partyId, characterId])
+  @@unique([partyId, slotOrder])
+  @@index([partyId])
+}
+
+/** Активні запрошення; після accept/decline/expiry запис видаляється. */
+model PartyInvite {
+  id                 String    @id @default(uuid())
+  partyId            String
+  party              Party     @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  inviterCharacterId String
+  inviter            Character @relation("PartyInviteInviter", fields: [inviterCharacterId], references: [id], onDelete: Cascade)
+  targetCharacterId  String
+  target             Character @relation("PartyInviteTarget", fields: [targetCharacterId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  expiresAt          DateTime
+
+  @@unique([partyId, targetCharacterId])
+  @@index([targetCharacterId])
 }
 
 model Clan {

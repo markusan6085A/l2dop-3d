@@ -5,6 +5,8 @@
   var viewedProfile = null;
   var selfCharacter = null;
   var clanInviteInFlight = false;
+  var partyInviteInFlight = false;
+  var selfParty = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -69,6 +71,16 @@
     return 'був у мережі ' + days + ' дн тому';
   }
 
+  function canInviteToParty(viewed, selfPartyState) {
+    if (!viewed) return false;
+    if (String(viewed.id || '') === String((selfCharacter && selfCharacter.id) || '')) {
+      return false;
+    }
+    if (!selfPartyState || !selfPartyState.viewerIsLeader) return false;
+    if (selfPartyState.memberCount >= selfPartyState.maxMembers) return false;
+    return true;
+  }
+
   function canInviteToClan(viewed, self) {
     if (!viewed || !self) return false;
     if (String(viewed.id || '') === String(self.id || '')) return false;
@@ -128,6 +140,30 @@
     });
   }
 
+  function showSocialMsg(text, isError) {
+    showClanInviteMsg(text, isError);
+  }
+
+  function patchPartyInviteUi() {
+    if (!viewedProfile) return;
+    var btn = $('player-party-action');
+    if (!btn) return;
+    btn.removeAttribute('data-stub');
+    if (canInviteToParty(viewedProfile, selfParty)) {
+      btn.textContent = 'Запросити в паті';
+      btn.disabled = false;
+    } else if (selfParty && !selfParty.viewerIsLeader) {
+      btn.textContent = 'Запросити в паті';
+      btn.disabled = true;
+    } else if (!selfParty) {
+      btn.textContent = 'Створити паті';
+      btn.disabled = false;
+    } else {
+      btn.textContent = 'Запросити в паті';
+      btn.disabled = true;
+    }
+  }
+
   function patchClanInviteUi() {
     if (!viewedProfile) return;
     var clanBtn = $('player-clan-action');
@@ -179,6 +215,7 @@
     renderViewedEquipment(p);
 
     patchClanInviteUi();
+    patchPartyInviteUi();
 
     var set = function (id, txt) {
       var el = $(id);
@@ -259,6 +296,66 @@
           stub.textContent = btn.getAttribute('data-stub') + ' — заглушка, з’явиться пізніше.';
         }
       });
+    });
+  }
+
+  function wirePartyInvite(token) {
+    var btn = $('player-party-action');
+    if (!btn || btn.dataset.partyInviteWired === '1') return;
+    btn.dataset.partyInviteWired = '1';
+    btn.addEventListener('click', async function () {
+      if (partyInviteInFlight) return;
+      if (!selfParty) {
+        window.location.href = '/party.html';
+        return;
+      }
+      if (!canInviteToParty(viewedProfile, selfParty)) return;
+      partyInviteInFlight = true;
+      try {
+        var r = await fetch('/game/party/invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+          body: JSON.stringify({
+            targetCharacterId: String(viewedProfile.id || ''),
+            expectedPartyVersion: selfParty.version,
+          }),
+        });
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+          return;
+        }
+        var j = null;
+        try {
+          j = await r.json();
+        } catch (_eJson) {
+          j = null;
+        }
+        if (r.status === 409 && j && j.code === 'party_version_conflict') {
+          if (j.party) selfParty = j.party;
+          patchPartyInviteUi();
+          showSocialMsg('Стан паті застарів — оновлено.', true);
+          return;
+        }
+        if (r.ok) {
+          if (j && typeof j.partyVersion === 'number') {
+            selfParty.version = j.partyVersion;
+          }
+          showSocialMsg('Запрошення в паті надіслано.', false);
+          return;
+        }
+        showSocialMsg(
+          j && j.messageUk ? String(j.messageUk) : 'Не вдалося надіслати запрошення в паті.',
+          true
+        );
+      } catch (_e) {
+        showSocialMsg('Не вдалося надіслати запрошення в паті.', true);
+      } finally {
+        partyInviteInFlight = false;
+      }
     });
   }
 
@@ -354,6 +451,7 @@
                 L2.applyMutationSnapshot(c);
               }
               patchClanInviteUi();
+              patchPartyInviteUi();
             } else if (!selfCharacter) {
               window.location.href = '/';
             }
@@ -361,6 +459,17 @@
           .catch(function () {
             /* resync optional for profile reveal */
           });
+      }
+      try {
+        var partyRes = await fetch('/game/party', {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (partyRes.ok) {
+          var partyJson = await partyRes.json();
+          selfParty = partyJson && partyJson.party ? partyJson.party : null;
+        }
+      } catch (_eParty) {
+        selfParty = null;
       }
       if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
         void L2.fetchCatalogHints().catch(function () {
@@ -404,6 +513,7 @@
       wireViewedEquipment();
       revealPlayerPanel();
       wireClanInvite(token);
+      wirePartyInvite(token);
       wireStubs();
     } catch (_e) {
       if (errEl) {
