@@ -39,7 +39,8 @@ import { performBattleActionInTx } from '../src/services/battleServicePerformBat
 import { startBattleInTx } from '../src/services/battleServiceSession.js';
 import type { BattleJsonState } from '../src/domain/battleTypes.js';
 import type { BattleActionFullResponse } from '../src/services/battleServiceDeltaTypes.js';
-import { touchOnlinePresence } from '../src/services/onlinePresenceService.js';
+import { performPartyBattleLethalAttack, buildTerminalLethalResponse } from './partyBattleSmokeLethalHelper.js';
+import { touchOnlinePresence, isCharacterOnlineNow } from '../src/services/onlinePresenceService.js';
 import { toSnapshot } from '../src/services/charService.js';
 import { ensureClanHallOnRow } from '../src/services/charClientSnapshot.js';
 import { createPartyForUser, kickPartyMemberForUser, leavePartyForUser } from '../src/services/party/partyService.js';
@@ -114,66 +115,22 @@ async function lethalAttack(
   userId: string,
   characterId: string
 ): Promise<BattleActionFullResponse> {
-  let char = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
-  const bj = char.battleJson as BattleJsonState | null;
-  assert.ok(bj?.partyBattleId);
-  const sessionId = bj!.partyBattleId!;
-  await prisma.partyBattleSession.update({
-    where: { id: sessionId },
-    data: { mobHp: 1 },
-  });
-  await prisma.character.update({
-    where: { id: characterId },
-    data: {
-      battleJson: { ...bj, mobHp: 1 } as unknown as Prisma.InputJsonValue,
-    },
+  const { response } = await performPartyBattleLethalAttack({
+    userId,
+    characterId,
+    battleSpawnId: CANONICAL_SPAWN.id,
   });
 
-  let attempts = 0;
-  while (attempts < 40) {
-    char = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
-    if (char.battleJson == null) {
-      break;
-    }
-    try {
-      let response: BattleActionFullResponse | undefined;
-      await prisma.$transaction(async (tx) => {
-        const r = await performBattleActionInTx(tx, userId, 'attack', char.revision, {
-          characterId,
-          battleSpawnId: CANONICAL_SPAWN.id,
-        });
-        if (r.kind === 'full') {
-          response = r as BattleActionFullResponse;
-        }
-      });
-      if (response) return response;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('battle_skill_not_allowed') || msg.includes('cooldown')) {
-        await new Promise((r) => setTimeout(r, 600));
-        attempts += 1;
-        continue;
-      }
-      throw err;
-    }
-    attempts += 1;
-    await new Promise((r) => setTimeout(r, 100));
-  }
+  if (response) return response;
 
-  char = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
+  const terminal = await buildTerminalLethalResponse(characterId);
+  if (terminal) return terminal;
+
+  const char = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
   if (char.battleJson == null) {
-    const reward = await prisma.partyKillReward.findFirst({
-      where: { characterId },
-      orderBy: { createdAt: 'desc' },
-    });
-    if (!reward) throw new Error('lethal_attack_failed');
-    return {
-      kind: 'full',
-      character: toSnapshot(await ensureClanHallOnRow(char as never, prisma)),
-      battle: null,
-    };
+    throw new Error('lethal_attack_failed: battle_cleared_no_terminal');
   }
-  throw new Error('lethal_attack_failed');
+  throw new Error('lethal_attack_failed: battle_still_active');
 }
 
 function withStageCFlags(): void {
@@ -309,6 +266,61 @@ async function testTwoMemberRewardSplit(): Promise<void> {
   const killerBefore = await prisma.character.findUniqueOrThrow({ where: { id: killer.characterId } });
   const mateBefore = await prisma.character.findUniqueOrThrow({ where: { id: mate.characterId } });
   const sessionId = await startPartyBattleForKiller(killer.userId, killer.characterId);
+  const mateChar0 = await prisma.character.findUniqueOrThrow({ where: { id: mate.characterId } });
+  await prisma.$transaction(async (tx) => {
+    const { startOrJoinPartyBattleInTx } = await import(
+      '../src/services/party/partyBattleStartJoinService.js'
+    );
+    await startOrJoinPartyBattleInTx(tx, {
+      userId: mate.userId,
+      char: mateChar0 as never,
+      spawn: CANONICAL_SPAWN,
+      expectedRevision: mateChar0.revision,
+      partyId: membership.partyId,
+      wTick: null,
+      nowStartMs: Date.now(),
+    });
+  });
+  await touchOnlinePresence(killer.userId);
+  await touchOnlinePresence(mate.userId);
+  assert.equal(isCharacterOnlineNow(killer.characterId), true);
+  assert.equal(isCharacterOnlineNow(mate.characterId), true);
+
+  const killerPos = await prisma.character.findUniqueOrThrow({
+    where: { id: killer.characterId },
+    select: { worldX: true, worldY: true, dungeonStateJson: true },
+  });
+  await prisma.character.update({
+    where: { id: mate.characterId },
+    data: {
+      worldX: killerPos.worldX,
+      worldY: killerPos.worldY,
+      targetX: 0,
+      targetY: 0,
+      moveStartAt: null,
+      moveFromX: killerPos.worldX,
+      moveFromY: killerPos.worldY,
+      dungeonStateJson: killerPos.dungeonStateJson ?? Prisma.JsonNull,
+    },
+  });
+
+  const sessionRow = await prisma.partyBattleSession.findUniqueOrThrow({
+    where: { id: sessionId },
+    select: { originPartyId: true },
+  });
+  assert.equal(sessionRow.originPartyId, membership.partyId);
+
+  const partyMembers = await prisma.partyMember.findMany({
+    where: { partyId: membership.partyId },
+    select: { characterId: true },
+  });
+  assert.equal(partyMembers.length, 2);
+
+  const activeParticipants = await prisma.partyBattleParticipant.count({
+    where: { partyBattleId: sessionId, active: true },
+  });
+  assert.equal(activeParticipants, 2);
+
   const result = await lethalAttack(killer.userId, killer.characterId);
 
   assert.ok(result.partyReward);
@@ -500,6 +512,7 @@ async function testLockOrderSessionBeforeCharacter(): Promise<void> {
   const killer = await createTestAccount('lo');
   await createPartyForUser(killer.userId, killer.characterId);
   await startPartyBattleForKiller(killer.userId, killer.characterId);
+  await touchOnlinePresence(killer.userId);
   partyBattleLockTrace.reset();
   await lethalAttack(killer.userId, killer.characterId);
 
@@ -576,8 +589,18 @@ async function testKickClearsPartyBattle(): Promise<void> {
   await prisma.user.deleteMany({ where: { id: { in: [leader.userId, target.userId] } } });
 }
 
+async function cleanupStalePartyBattleTestSessions(): Promise<void> {
+  await prisma.partyBattleSession.deleteMany({
+    where: { state: { in: ['victory', 'ended'] } },
+  });
+  await prisma.partyBattleSession.deleteMany({
+    where: { state: 'active', partyId: null },
+  });
+}
+
 async function main(): Promise<void> {
   console.log('party-battle-stage-c smoke');
+  await cleanupStalePartyBattleTestSessions();
   testProductionDefaults();
   testFlagMatrix();
   testSplitPure();

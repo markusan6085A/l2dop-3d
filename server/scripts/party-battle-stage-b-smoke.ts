@@ -39,6 +39,7 @@ import {
   createActivePartyBattleSessionInTx,
 } from '../src/services/party/partyBattleSessionService.js';
 import type { BattleJsonState } from '../src/domain/battleTypes.js';
+import { performPartyBattleLethalAttack } from './partyBattleSmokeLethalHelper.js';
 
 const CANONICAL_SPAWN = MAP_WORLD_SPAWNS[0]!;
 
@@ -141,7 +142,7 @@ async function withFlags<T>(
 ): Promise<T> {
   process.env.PARTY_BATTLE_ENABLED = 'true';
   process.env.PARTY_BATTLE_ALLOW_UNREWARDED_TESTS = 'true';
-  delete process.env.PARTY_BATTLE_REWARDS_ENABLED;
+  process.env.PARTY_BATTLE_REWARDS_ENABLED = 'false';
   assert.equal(canStartPartyBattleViaRoute(), true);
   assert.equal(isPartyBattleRewardDistributionReady(), false);
   try {
@@ -379,43 +380,28 @@ async function testLethalZeroEconomy(): Promise<void> {
     let char = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
     const expBefore = char.exp;
     const adenaBefore = char.adena;
+    const sessionId = (char.battleJson as BattleJsonState).partyBattleId!;
+    assert.ok(sessionId);
 
-    await prisma.partyBattleSession.update({
-      where: {
-        id: (char.battleJson as BattleJsonState).partyBattleId!,
-      },
-      data: { mobHp: 1 },
+    await performPartyBattleLethalAttack({
+      userId: a.userId,
+      characterId: a.characterId,
+      battleSpawnId: CANONICAL_SPAWN.id,
     });
-
-    let attempts = 0;
-    while (char.battleJson != null && attempts < 40) {
-      char = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
-      if (char.battleJson == null) break;
-      await prisma.$transaction(async (tx) => {
-        await performBattleActionInTx(tx, a.userId, 'attack', char.revision, {
-          characterId: a.characterId,
-          battleSpawnId: CANONICAL_SPAWN.id,
-        });
-      });
-      attempts += 1;
-    }
 
     char = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
     assert.equal(Number(char.exp), Number(expBefore));
     assert.equal(char.adena, adenaBefore);
     assert.equal(char.battleJson, null);
 
-    const session = await prisma.partyBattleSession.findFirst({
-      where: { originPartyId: (await prisma.partyMember.findUniqueOrThrow({
-        where: { characterId: a.characterId },
-      })).partyId },
+    const session = await prisma.partyBattleSession.findUniqueOrThrow({
+      where: { id: sessionId },
     });
-    assert.ok(session);
-    assert.equal(session!.endReason, PARTY_BATTLE_END_REASON.stage_b_test_victory);
-    assert.equal(session!.activePartyKey, null);
+    assert.equal(session.endReason, PARTY_BATTLE_END_REASON.stage_b_test_victory);
+    assert.equal(session.activePartyKey, null);
     ok('lethal test — no exp/adena, battleJson cleared');
 
-    await prisma.partyBattleSession.delete({ where: { id: session!.id } });
+    await prisma.partyBattleSession.delete({ where: { id: sessionId } });
     await prisma.user.delete({ where: { id: a.userId } });
   });
 }
@@ -431,7 +417,8 @@ async function testSessionLockBeforeCharacterWrite(): Promise<void> {
   console.log('\n[lock] session before Character write');
   process.env.PARTY_BATTLE_LOCK_TRACE = 'true';
   partyBattleLockTrace.reset();
-  await withFlags(async () => {
+  try {
+    await withFlags(async () => {
     const a = await createTestAccount('lk');
     await createPartyForUser(a.userId, a.characterId);
     const char0 = await prisma.character.findUniqueOrThrow({
@@ -466,7 +453,11 @@ async function testSessionLockBeforeCharacterWrite(): Promise<void> {
       await prisma.partyBattleSession.delete({ where: { id: bj.partyBattleId } });
     }
     await prisma.user.delete({ where: { id: a.userId } });
-  });
+    });
+  } finally {
+    delete process.env.PARTY_BATTLE_LOCK_TRACE;
+    partyBattleLockTrace.reset();
+  }
 }
 
 async function main(): Promise<void> {
@@ -474,7 +465,7 @@ async function main(): Promise<void> {
   await testFlagOffNoPartyTableQueries();
   process.env.PARTY_BATTLE_ENABLED = 'true';
   process.env.PARTY_BATTLE_ALLOW_UNREWARDED_TESTS = 'true';
-  delete process.env.PARTY_BATTLE_REWARDS_ENABLED;
+  process.env.PARTY_BATTLE_REWARDS_ENABLED = 'false';
   await testConcurrentStartOneSession();
   await testWrongSpawnError();
   await testSharedHpTwoAttackers();

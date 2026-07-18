@@ -173,6 +173,35 @@ async function buildMemberSnapshotsInTx(
   return out;
 }
 
+async function loadPartyMemberIdsForVictoryInTx(
+  tx: Tx,
+  session: PartyBattleSession,
+  killerCharacterId: string
+): Promise<string[]> {
+  const killerMembership = await tx.partyMember.findUnique({
+    where: { characterId: killerCharacterId },
+    select: { partyId: true },
+  });
+  const killerPartyId = String(killerMembership?.partyId ?? '').trim();
+  if (killerPartyId) {
+    const killerPartyRows = await tx.partyMember.findMany({
+      where: { partyId: killerPartyId },
+      select: { characterId: true },
+    });
+    if (killerPartyRows.length > 0) {
+      return killerPartyRows.map((r) => r.characterId);
+    }
+  }
+
+  const lookupId = String(session.partyId ?? session.originPartyId ?? '').trim();
+  if (!lookupId) return [];
+  const rows = await tx.partyMember.findMany({
+    where: { partyId: lookupId },
+    select: { characterId: true },
+  });
+  return rows.map((r) => r.characterId);
+}
+
 /** Stage C atomic victory: один loot roll, split EXP/SP/adena, items killer-only. */
 export async function resolvePartyBattleVictoryInTx(
   tx: Tx,
@@ -202,20 +231,18 @@ export async function resolvePartyBattleVictoryInTx(
     return loadIdempotentVictoryResponseInTx(tx, args, sessionAfterDamage);
   }
 
-  const partyId = sessionAfterDamage.partyId;
-  const partyMembers = partyId
-    ? await tx.partyMember.findMany({
-        where: { partyId },
-        select: { characterId: true },
-      })
-    : [];
-  const partyMemberIds = partyMembers.map((m) => m.characterId);
+  const partyMemberIds = await loadPartyMemberIdsForVictoryInTx(
+    tx,
+    sessionAfterDamage,
+    args.characterId
+  );
 
   const participantRows = await tx.partyBattleParticipant.findMany({
-    where: { partyBattleId: args.sessionId },
+    where: { partyBattleId: args.sessionId, active: true },
     select: { characterId: true },
   });
   const participantIds = participantRows.map((p) => p.characterId);
+  const activeParticipantIds = new Set(participantIds);
 
   const lockIds = mergeUniqueCharacterIds(
     partyMemberIds,
@@ -236,9 +263,10 @@ export async function resolvePartyBattleVictoryInTx(
   }
 
   const killerResolved = resolveMapMovement(killerRow);
+  const snapshotMemberIds = mergeUniqueCharacterIds(partyMemberIds, participantIds);
   const memberSnapshots = await buildMemberSnapshotsInTx(
     lockedRows,
-    partyMemberIds
+    snapshotMemberIds
   );
   const eligibleIds = resolvePartyBattleRewardEligibleIds({
     killerCharacterId: args.characterId,
@@ -249,7 +277,8 @@ export async function resolvePartyBattleVictoryInTx(
     },
     partyMemberIds,
     memberSnapshots,
-    isOnline: isCharacterOnlineNow,
+    isOnline: (characterId) =>
+      isCharacterOnlineNow(characterId) || activeParticipantIds.has(characterId),
   });
 
   if (eligibleIds.length === 0) {

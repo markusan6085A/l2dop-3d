@@ -1047,6 +1047,18 @@ export async function performBattleActionInTx(
       playerHp
     );
 
+    if (
+      process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL === '1' &&
+      partyBattleCtx &&
+      action === 'attack' &&
+      partyBattleMobHpAtTurnOpen <= 1
+    ) {
+      pDmg = Math.max(pDmg, partyBattleMobHpAtTurnOpen);
+      if (pDmg > 0 && physOutcome === 'miss') {
+        physOutcome = 'hit';
+      }
+    }
+
     mobHp = Math.max(0, mobHp - pDmg);
 
     const landedPhysicalHit =
@@ -1707,15 +1719,35 @@ export async function performBattleActionInTx(
     };
 
     if (mobHp <= 0) {
-      if (partyBattleCtx) {
+      let partyCtx = partyBattleCtx;
+      let partyMobHpOpen = partyBattleMobHpAtTurnOpen;
+      if (!partyCtx && !isPvpBattleJson(bj) && !worldBossBattle) {
+        const sid =
+          (typeof st.partyBattleId === 'string' && st.partyBattleId.trim()) ||
+          peekPartyBattleIdFromBattleJson(bj) ||
+          null;
+        if (sid) {
+          throwIfPartyBattleRouteBlocked();
+          partyCtx = await lockPartyBattleSessionForActionInTx(tx, {
+            sessionId: sid,
+            characterId: cr.id,
+            spawnId: spawn.spawnId,
+            charRow: char as CharacterRow,
+          });
+          char = partyCtx.char;
+          partyMobHpOpen = partyCtx.session.mobHp;
+        }
+      }
+
+      if (partyCtx) {
         const partyVictoryBase = {
-          sessionId: partyBattleCtx.session.id,
+          sessionId: partyCtx.session.id,
           characterId: cr.id,
           expectedRevision: writeRevision,
           char: char as CharacterRow,
           st,
           playerHp,
-          mobHpBefore: partyBattleMobHpAtTurnOpen,
+          mobHpBefore: partyMobHpOpen,
           mobHpAfter: mobHp,
           log,
           logLinesAdded,
