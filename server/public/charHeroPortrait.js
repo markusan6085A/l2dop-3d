@@ -30,6 +30,14 @@
     );
   }
 
+  function charPngElf(n) {
+    return (
+      '/characters/светлий ельф/photo_' +
+      n +
+      '_2026-07-13_10-26-29-removebg-preview.png'
+    );
+  }
+
   function snapshotLevel(c) {
     var n = c && c.level != null ? Number(c.level) : 1;
     return isFinite(n) && n > 0 ? Math.floor(n) : 1;
@@ -51,7 +59,14 @@
     var branch = c.classBranch != null ? String(c.classBranch).toLowerCase() : 'fighter';
     var mystic = branch === 'mystic';
     if (race === 'Human') return mystic ? heroUrl(12) : heroUrl(2);
-    if (race === 'Elf') return mystic ? heroUrl(42) : heroUrl(28);
+    if (race === 'Elf') {
+      if (mystic) {
+        return c.gender === 'female' ? charPngElf(1) : charPngElf(2);
+      }
+      return c.gender === 'female'
+        ? '/characters/светлий ельф/photo_2026-07-18_14-14-19-removebg-preview.png'
+        : charPngElf(3);
+    }
     if (race === 'Dark Elf') {
       return mystic ? heroUrl(5) : heroUrl(40);
     }
@@ -595,13 +610,93 @@
       blackKey: false,
     },
     elf_mage: {
-      url: heroUrl(42),
+      url: charPngElf(2),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_elven_wizard: {
+      url: charPngElf(11),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_elven_oracle: {
+      url: charPngElf(11),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_spellsinger: {
+      url: charPngElf(21),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_elemental_summoner: {
+      url: charPngElf(21),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_elven_elder: {
+      url: charPngElf(21),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_mystic_muse: {
+      url: charPngElf(41),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_elemental_master: {
+      url: charPngElf(41),
+      skin: 'elf-mystic-m',
+      blackKey: false,
+    },
+    elf_evas_saint: {
+      url: charPngElf(41),
       skin: 'elf-mystic-m',
       blackKey: false,
     },
     'elf_mage|female': {
-      url: heroUrl(42),
-      skin: 'elf-mystic-m',
+      url: charPngElf(1),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_elven_wizard|female': {
+      url: charPngElf(10),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_elven_oracle|female': {
+      url: charPngElf(10),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_spellsinger|female': {
+      url: charPngElf(20),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_elemental_summoner|female': {
+      url: charPngElf(20),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_elven_elder|female': {
+      url: charPngElf(20),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_mystic_muse|female': {
+      url: charPngElf(51),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_elemental_master|female': {
+      url: charPngElf(51),
+      skin: 'elf-mystic-f',
+      blackKey: false,
+    },
+    'elf_evas_saint|female': {
+      url: charPngElf(51),
+      skin: 'elf-mystic-f',
       blackKey: false,
     },
     dark_elf_fighter: {
@@ -615,13 +710,113 @@
       blackKey: false,
     },
     elf_fighter: {
-      url: heroUrl(28),
+      url: charPngElf(3),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_elven_knight: {
+      url: charPngElf(5),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_temple_knight: {
+      url: charPngElf(16),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_evas_templar: {
+      url: charPngElf(46),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_swordsinger: {
+      url: charPngElf(13),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_sword_muse: {
+      url: '/characters/светлий ельф/4514511.png',
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_elven_scout: {
+      url: charPngElf(4),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_silver_ranger: {
+      url: charPngElf(12),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_moonlight_sentinel: {
+      url: charPngElf(43),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_plainswalker: {
+      url: charPngElf(14),
+      skin: 'elf-fighter-m',
+      blackKey: false,
+    },
+    elf_wind_rider: {
+      url: charPngElf(45),
       skin: 'elf-fighter-m',
       blackKey: false,
     },
     'elf_fighter|female': {
-      url: heroUrl(28),
-      skin: 'elf-fighter-m',
+      url: '/characters/светлий ельф/photo_2026-07-18_14-14-19-removebg-preview.png',
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_elven_knight|female': {
+      url: charPngElf(8),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_temple_knight|female': {
+      url: charPngElf(19),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_evas_templar|female': {
+      url: charPngElf(49),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_swordsinger|female': {
+      url: charPngElf(17),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_sword_muse|female': {
+      url: charPngElf(50),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_elven_scout|female': {
+      url: charPngElf(7),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_silver_ranger|female': {
+      url: charPngElf(15),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_moonlight_sentinel|female': {
+      url: charPngElf(47),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_plainswalker|female': {
+      url: charPngElf(18),
+      skin: 'elf-fighter-f',
+      blackKey: false,
+    },
+    'elf_wind_rider|female': {
+      url: charPngElf(48),
+      skin: 'elf-fighter-f',
       blackKey: false,
     },
     'dark-elf|mystic|male': {
@@ -646,6 +841,66 @@
     female: [
       { minLevel: 62, url: charPng(44) },
       { minLevel: 52, url: charPng(26) },
+    ],
+  };
+
+  /** Світлий ельф 2 профа (Plainswalker): 52+ → photo_28/24, 62+ → photo_39/37. */
+  var ELF_PLAINSWALKER_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngElf(39) },
+      { minLevel: 52, url: charPngElf(28) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngElf(37) },
+      { minLevel: 52, url: charPngElf(24) },
+    ],
+  };
+
+  /** Світлий ельф 2 профа (Silver Ranger): 52+ → photo_26/22, 62+ → photo_42/34. */
+  var ELF_RANGER_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngElf(42) },
+      { minLevel: 52, url: charPngElf(26) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngElf(34) },
+      { minLevel: 52, url: charPngElf(22) },
+    ],
+  };
+
+  /** Світлий ельф 2 профа (Swordsinger): 52+ → photo_29/25, 62+ → photo_38/35. */
+  var ELF_SWORDSINGER_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngElf(38) },
+      { minLevel: 52, url: charPngElf(29) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngElf(35) },
+      { minLevel: 52, url: charPngElf(25) },
+    ],
+  };
+
+  /** Світлий ельф 2 профа (Temple Knight): 52+ → photo_27/23, 62+ → photo_40/36. */
+  var ELF_KNIGHT_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngElf(40) },
+      { minLevel: 52, url: charPngElf(27) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngElf(36) },
+      { minLevel: 52, url: charPngElf(23) },
+    ],
+  };
+
+  /** Світлий ельф 2 профа (маги): 52+ → photo_30/31, 62+ → photo_33/32. */
+  var ELF_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS = {
+    male: [
+      { minLevel: 62, url: charPngElf(33) },
+      { minLevel: 52, url: charPngElf(30) },
+    ],
+    female: [
+      { minLevel: 62, url: charPngElf(32) },
+      { minLevel: 52, url: charPngElf(31) },
     ],
   };
 
@@ -786,18 +1041,17 @@
     orc_warcryer: ORC_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS,
     orc_destroyer: ORC_FIGHTER_SECOND_PROF_LEVEL_PORTRAITS,
     orc_tyrant: ORC_MONK_SECOND_PROF_LEVEL_PORTRAITS,
+    elf_spellsinger: ELF_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS,
+    elf_elemental_summoner: ELF_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS,
+    elf_elven_elder: ELF_MYSTIC_SECOND_PROF_LEVEL_PORTRAITS,
+    elf_temple_knight: ELF_KNIGHT_SECOND_PROF_LEVEL_PORTRAITS,
+    elf_swordsinger: ELF_SWORDSINGER_SECOND_PROF_LEVEL_PORTRAITS,
+    elf_silver_ranger: ELF_RANGER_SECOND_PROF_LEVEL_PORTRAITS,
+    elf_plainswalker: ELF_PLAINSWALKER_SECOND_PROF_LEVEL_PORTRAITS,
   };
 
   /** 2–3 профа гілки — та сама картинка, що на базовій 2-й (або 1-й для rogue/luk). */
   var SCENE_HERO_PROF_ALIAS = {
-    elf_elven_wizard: 'elf_mage',
-    elf_elven_oracle: 'elf_mage',
-    elf_elemental_summoner: 'elf_elven_wizard',
-    elf_spellsinger: 'elf_elven_wizard',
-    elf_elven_elder: 'elf_elven_oracle',
-    elf_elemental_master: 'elf_elemental_summoner',
-    elf_mystic_muse: 'elf_spellsinger',
-    elf_evas_saint: 'elf_elven_elder',
     dark_elf_phantom_summoner: 'dark_elf_dark_wizard',
     dark_elf_spellhowler: 'dark_elf_dark_wizard',
     dark_elf_shillien_elder: 'dark_elf_shillien_oracle',
@@ -814,16 +1068,6 @@
     dark_elf_spectral_dancer: 'dark_elf_bladedancer',
     dark_elf_ghost_hunter: 'dark_elf_abyss_walker',
     dark_elf_ghost_sentinel: 'dark_elf_phantom_ranger',
-    elf_elven_scout: 'elf_fighter',
-    elf_elven_knight: 'elf_fighter',
-    elf_temple_knight: 'elf_elven_knight',
-    elf_swordsinger: 'elf_elven_knight',
-    elf_plainswalker: 'elf_elven_scout',
-    elf_silver_ranger: 'elf_elven_scout',
-    elf_evas_templar: 'elf_temple_knight',
-    elf_sword_muse: 'elf_swordsinger',
-    elf_wind_rider: 'elf_plainswalker',
-    elf_moonlight_sentinel: 'elf_silver_ranger',
   };
 
   var HERO_BG_SKIN_PREFIX = 'l2-char-equip-bg--hero-';
