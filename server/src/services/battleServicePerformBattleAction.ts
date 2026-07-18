@@ -225,6 +225,20 @@ export async function performBattleActionInTx(
 
     char = await refreshPvpOpponentHpForCharacterInTx(tx, char as CharacterRow);
 
+    const bjPeekAfterFlush = parseBattleJson((char as CharacterRow).battleJson);
+    if (!bjPeekAfterFlush) {
+      const snapAfterFlushEarly = toSnapshot(
+        await ensureClanHallOnRow(char as CharacterRow, tx)
+      );
+      if (snapAfterFlushEarly.pveDefeat) {
+        return wrapBattleDefeatAsDelta({
+          character: snapAfterFlushEarly,
+          defeat: snapAfterFlushEarly.pveDefeat,
+        });
+      }
+      throw new Error('battle_none');
+    }
+
     if (char.revision !== expectedRevision) {
       throw gameConflictFromCharacter(char);
     }

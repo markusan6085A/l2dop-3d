@@ -506,6 +506,8 @@
 
   var hotbarPersistCtx = null;
   var hotbarPersistTimer = null;
+  var hotbarPersistQueue = Promise.resolve();
+  var hotbarPersistSeq = 0;
   /** Локальні зміни панелі ще не на сервері — не перезаписувати зі snapshot. */
   var hotbarSlotsDirty = false;
 
@@ -513,24 +515,62 @@
     hotbarPersistCtx = ctx;
   }
 
+  function hotbarSlotsSignature(slots) {
+    try {
+      return JSON.stringify(slots || []);
+    } catch (eSig) {
+      return '';
+    }
+  }
+
+  function applyHotbarSlotsLocally(characterId, slots, characterOpt) {
+    if (!characterId || !slots) return;
+    try {
+      localStorage.setItem(storageKey(characterId), JSON.stringify(slots));
+    } catch (eStore) {
+      /* ignore */
+    }
+    if (characterOpt) {
+      characterOpt.battleHotbarSlots = slots.slice();
+    }
+    hotbarSlotsDirty = false;
+  }
+
   function scheduleHotbarPersist(character, slots) {
-    if (!hotbarPersistCtx || !character || !character.revision) return;
+    if (!hotbarPersistCtx || !character || !character.id) return;
     if (hotbarPersistTimer != null) clearTimeout(hotbarPersistTimer);
     hotbarPersistTimer = setTimeout(function () {
       hotbarPersistTimer = null;
-      flushHotbarPersist(character, slots);
+      enqueueHotbarPersist(character, slots);
     }, 500);
   }
 
-  async function flushHotbarPersist(character, slots) {
+  function enqueueHotbarPersist(character, slots) {
+    var seq = ++hotbarPersistSeq;
+    hotbarPersistQueue = hotbarPersistQueue
+      .catch(function () {
+        /* keep queue alive */
+      })
+      .then(function () {
+        return flushHotbarPersist(character, slots, seq);
+      });
+    return hotbarPersistQueue;
+  }
+
+  async function flushHotbarPersist(character, slots, seq) {
+    if (seq !== hotbarPersistSeq) return;
     var ctx = hotbarPersistCtx;
     if (!ctx) return;
+    if (window.L2 && window.L2.battleMutationInFlight) {
+      enqueueHotbarPersist(character, slots);
+      return;
+    }
     var t = ctx.getToken ? ctx.getToken() : null;
     if (!t) return;
     var c = ctx.getCharacter ? ctx.getCharacter() : character;
-    if (!c || !c.revision) return;
-    async function postOnce(revision) {
-      return fetch('/game/battle/hotbar', {
+    if (!c || !c.id) return;
+    try {
+      var r = await fetch('/game/battle/hotbar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -538,41 +578,25 @@
         },
         body: JSON.stringify({
           slots: slots,
-          expectedRevision: revision,
           characterId: c.id,
         }),
       });
-    }
-    try {
-      var r = await postOnce(c.revision);
-      if (r.status === 409 && window.L2 && L2.resyncCharacterAfterConflict) {
-        var j409 = null;
-        try {
-          j409 = await r.json();
-        } catch (e409) {
-          j409 = null;
-        }
-        await L2.resyncCharacterAfterConflict(function (snap) {
-          var cur = ctx.getCharacter ? ctx.getCharacter() : null;
-          if (!cur || !snap || String(snap.id) === String(cur.id)) {
-            if (ctx.setCharacter) ctx.setCharacter(snap);
-          }
-        }, j409);
-        c = ctx.getCharacter ? ctx.getCharacter() : null;
-        if (!c || !c.revision) return;
-        r = await postOnce(c.revision);
+      if (seq !== hotbarPersistSeq) return;
+      if (r.status === 401) {
+        if (window.L2 && L2.setToken) L2.setToken(null);
+        window.location.href = '/';
+        return;
       }
       if (!r.ok) return;
-      var j = await r.json();
-      if (j.character) {
-        if (ctx.setCharacter) ctx.setCharacter(j.character);
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(j.character);
-        if (typeof ctx.onHotbarPersisted === 'function') {
-          ctx.onHotbarPersisted(j.character);
-        } else if (typeof ctx.renderHotbar === 'function') {
-          hotbarSlotsDirty = false;
-          ctx.renderHotbar();
-        }
+      var j = await r.json().catch(function () {
+        return null;
+      });
+      if (!j || !j.ok || !j.battleHotbarSlots) return;
+      applyHotbarSlotsLocally(c.id, j.battleHotbarSlots, c);
+      if (typeof ctx.onHotbarPersisted === 'function') {
+        ctx.onHotbarPersisted(j.battleHotbarSlots, c.id);
+      } else if (typeof ctx.renderHotbar === 'function') {
+        ctx.renderHotbar();
       }
     } catch (e) {
       /* ignore */
@@ -751,7 +775,7 @@
     var category = 'magic';
     var slotsCache = [];
     var slotsLoadedForCharacterId = null;
-    var slotsLoadedRevision = null;
+    var slotsLoadedSig = '';
     var cdTimer = null;
     var equipInFlight = false;
     /** Локальний КД (optimistic in-flight), ключі як у `mysticSkillCdUntil`. */
@@ -1588,23 +1612,23 @@
         slotsCache = new Array(HOTBAR_SLOTS);
         for (var zi = 0; zi < HOTBAR_SLOTS; zi++) slotsCache[zi] = null;
         slotsLoadedForCharacterId = null;
-        slotsLoadedRevision = null;
+        slotsLoadedSig = '';
         return;
       }
       if (hotbarSlotsDirty && slotsLoadedForCharacterId === character.id) {
         return;
       }
-      var rev = character.revision;
+      var sig = hotbarSlotsSignature(character.battleHotbarSlots);
       if (
         slotsLoadedForCharacterId === character.id &&
-        slotsLoadedRevision === rev &&
+        slotsLoadedSig === sig &&
         slotsCache.length === HOTBAR_SLOTS
       ) {
         return;
       }
       slotsCache = loadSlots(character.id, character.battleHotbarSlots);
       slotsLoadedForCharacterId = character.id;
-      slotsLoadedRevision = rev;
+      slotsLoadedSig = sig;
     }
 
     var lastRenderKey = '';
@@ -1858,7 +1882,7 @@
       }
       modal = null;
       slotsLoadedForCharacterId = null;
-      slotsLoadedRevision = null;
+      slotsLoadedSig = '';
       slotsCache = [];
       hotbarSlotsDirty = false;
       lastRenderKey = '';
@@ -1871,11 +1895,11 @@
     setHotbarPersistCtx(
       Object.assign({}, opts, {
         renderHotbar: render,
-        onHotbarPersisted: function (snap) {
+        onHotbarPersisted: function (slots, characterId) {
           hotbarSlotsDirty = false;
-          slotsCache = loadSlots(snap.id, snap.battleHotbarSlots);
-          slotsLoadedForCharacterId = snap.id;
-          slotsLoadedRevision = snap.revision;
+          slotsCache = loadSlots(characterId, slots);
+          slotsLoadedForCharacterId = characterId;
+          slotsLoadedSig = hotbarSlotsSignature(slots);
           render();
         },
       })

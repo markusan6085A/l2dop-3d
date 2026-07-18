@@ -1409,7 +1409,13 @@
         String(rev) + ':' + global.L2.getSnapshotCatalogRenderKey(snapshot)
       );
     },
-    resyncCharacterAfterConflict: async function (applyScreenSpecific, conflictPayload) {
+    resyncCharacterAfterConflict: async function (
+      applyScreenSpecific,
+      conflictPayload,
+      opts
+    ) {
+      opts = opts && typeof opts === 'object' ? opts : {};
+      var forceApply = opts.force === true || opts.forceOnConflict === true;
       var snap =
         conflictPayload &&
         conflictPayload.character &&
@@ -1420,6 +1426,26 @@
         snap = await global.L2.fetchSnapshot();
       }
       if (!snap) throw new Error('failed_to_refetch_character');
+      if (
+        forceApply &&
+        typeof conflictPayload === 'object' &&
+        typeof conflictPayload.serverRevision === 'number'
+      ) {
+        snap = Object.assign({}, snap, {
+          revision: conflictPayload.serverRevision,
+        });
+      }
+      if (forceApply) {
+        lastSnapshot = snap;
+        global.L2.writeSessionSnapshotCache(SESSION_SNAPSHOT_CACHE_KEY, snap);
+        if (typeof global.L2.applyHudFromSnapshot === 'function') {
+          global.L2.applyHudFromSnapshot(snap);
+        }
+        if (typeof applyScreenSpecific === 'function') {
+          applyScreenSpecific(snap);
+        }
+        return snap;
+      }
       return global.L2.applyCharacterSnapshot(snap, applyScreenSpecific);
     },
     /**

@@ -841,10 +841,12 @@
   async function runWithBattleActionLock(fn) {
     if (battleActionInFlight) return;
     battleActionInFlight = true;
+    if (window.L2) window.L2.battleMutationInFlight = true;
     try {
       await fn();
     } finally {
       battleActionInFlight = false;
+      if (window.L2) window.L2.battleMutationInFlight = false;
     }
   }
 
@@ -1888,6 +1890,32 @@
       }
     }
 
+    function applyConflictRevisionLocally(conflictBody) {
+      if (!conflictBody || !character) return;
+      var snap = conflictBody.character;
+      var rev =
+        typeof conflictBody.serverRevision === 'number'
+          ? Math.floor(conflictBody.serverRevision)
+          : snap && snap.revision != null
+            ? Math.floor(Number(snap.revision))
+            : null;
+      if (rev == null || !Number.isFinite(rev) || rev < 1) return;
+      if (
+        snap &&
+        snap.id &&
+        battlePageCharacterId &&
+        String(snap.id) !== String(battlePageCharacterId)
+      ) {
+        return;
+      }
+      if (snap && snap.id && String(snap.id) === String(character.id)) {
+        character = Object.assign({}, snap, { revision: rev });
+      } else {
+        character = Object.assign({}, character, { revision: rev });
+      }
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+    }
+
     async function resyncBattleAfterConflict(conflictBody) {
       var trustConflictChar =
         conflictBody &&
@@ -1900,15 +1928,19 @@
         : Object.assign({}, conflictBody || {}, { character: null });
       if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
         try {
-          await L2.resyncCharacterAfterConflict(function (snap) {
-            if (
-              !battlePageCharacterId ||
-              String(snap.id) === String(battlePageCharacterId)
-            ) {
-              character = snap;
-              setBattlePageContext(snap.id, battlePageSpawnId);
-            }
-          }, resyncPayload);
+          await L2.resyncCharacterAfterConflict(
+            function (snap) {
+              if (
+                !battlePageCharacterId ||
+                String(snap.id) === String(battlePageCharacterId)
+              ) {
+                character = snap;
+                setBattlePageContext(snap.id, battlePageSpawnId);
+              }
+            },
+            resyncPayload,
+            { force: true }
+          );
         } catch (eResync) {
           /* fallback нижче */
         }
@@ -1974,27 +2006,34 @@
     }
 
     async function performBattleActionWithResync(action, extraBody) {
-      var MAX = 4;
+      var MAX = 2;
       var lastRes = null;
-      for (var attempt = 0; attempt < MAX; attempt++) {
-        var rev = latestCharacterRevision();
-        if (!rev) return { _err: 'no_revision' };
-        try {
-          lastRes = await battleAction(action, rev, extraBody);
-        } catch (eNet) {
-          return { _err: 'network' };
+      var hadSyncPoll = battleSyncTimer != null;
+      stopBattleSyncPoll();
+      try {
+        for (var attempt = 0; attempt < MAX; attempt++) {
+          var rev = latestCharacterRevision();
+          if (!rev) return { _err: 'no_revision' };
+          try {
+            lastRes = await battleAction(action, rev, extraBody);
+          } catch (eNet) {
+            return { _err: 'network' };
+          }
+          if (!lastRes || lastRes._err !== 409) return lastRes;
+          var conflictBody = await parseActionErrorBodySafe(lastRes);
+          applyConflictRevisionLocally(conflictBody);
+          var syncOutcome = await resyncBattleAfterConflict(conflictBody);
+          if (syncOutcome === 'abort') return lastRes;
+          if (attempt < MAX - 1) {
+            await new Promise(function (resolve) {
+              setTimeout(resolve, 100 + attempt * 50);
+            });
+          }
         }
-        if (!lastRes || lastRes._err !== 409) return lastRes;
-        var conflictBody = await parseActionErrorBodySafe(lastRes);
-        var syncOutcome = await resyncBattleAfterConflict(conflictBody);
-        if (syncOutcome === 'abort') return lastRes;
-        if (attempt < MAX - 1) {
-          await new Promise(function (resolve) {
-            setTimeout(resolve, 80);
-          });
-        }
+        return lastRes;
+      } finally {
+        if (hadSyncPoll && battle) startBattleSyncPoll();
       }
-      return lastRes;
     }
 
     async function after409ResyncBattleState(conflictRes) {
@@ -2136,6 +2175,24 @@
       if (isNotInBattleErrorBody(parsedErrBody)) {
         battle = null;
         if (await syncBattleFromServer()) return true;
+      }
+      if (
+        res &&
+        res._err === 409 &&
+        parsedErrBody &&
+        (parsedErrBody.code === 'revision_conflict' ||
+          parsedErrBody.error === 'revision_conflict')
+      ) {
+        applyConflictRevisionLocally(parsedErrBody);
+        await resyncBattleAfterConflict(parsedErrBody);
+        refreshUI();
+        showBattleToast(
+          tr(
+            'battle_toast_revision_conflict',
+            'Стан оновлено. Натисни ще раз.'
+          )
+        );
+        return true;
       }
       if (res && res._err) {
         showBattleToast(

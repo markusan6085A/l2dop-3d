@@ -738,46 +738,44 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       if (!userId) return;
       const b = ensureBodyRecord(request.body, reply);
       if (!b) return;
-      const er = parseExpectedRevision(b, reply);
-      if (er == null) return;
       if (!('slots' in b)) {
         return reply.code(400).send({
           error: 'invalid_input',
           messageUk: 'Потрібен масив слотів панелі скілів.',
         });
       }
-      try {
-        const characterId = parseOptionalCharacterId(b.characterId);
-        const character = await saveBattleHotbar(userId, er, b.slots, {
-          characterId,
+      const characterId = parseOptionalCharacterId(b.characterId);
+      if (!characterId) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен characterId.',
         });
-        await logRouteMutation(
-          request,
-          'battle_hotbar',
-          er,
-          'ok',
-          character.revision,
-          character.id,
-          'battle-mutation'
+      }
+      try {
+        const battleHotbarSlots = await saveBattleHotbar(
+          userId,
+          characterId,
+          b.slots
         );
-        return reply.send({ character });
+        request.log.info(
+          { action: 'battle_hotbar', characterId, result: 'ok' },
+          'battle-hotbar-save'
+        );
+        return reply.send({ ok: true, battleHotbarSlots });
       } catch (e) {
-        if (e instanceof GameConflictError) {
-          await logRouteMutation(request, 'battle_hotbar', er, 'conflict', undefined, undefined, 'battle-mutation');
-          return sendGameConflict(reply, e);
-        }
         if (e instanceof Error && e.message === 'hotbar_invalid') {
-          await logRouteMutation(request, 'battle_hotbar', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(400).send({
             error: 'invalid_input',
             messageUk: 'Некоректна розкладка панелі скілів.',
           });
         }
         if (e instanceof Error && e.message === 'no_character') {
-          await logRouteMutation(request, 'battle_hotbar', er, 'error', undefined, undefined, 'battle-mutation');
           return reply.code(404).send({ error: 'forbidden' });
         }
-        await logRouteMutation(request, 'battle_hotbar', er, 'error', undefined, undefined, 'battle-mutation');
+        request.log.info(
+          { action: 'battle_hotbar', characterId, result: 'error' },
+          'battle-hotbar-save'
+        );
         throw e;
       }
     }

@@ -1,50 +1,43 @@
 import { Prisma } from '@prisma/client';
-import { gameConflictFromMutation } from './charConflict.js';
-import { parseBattleHotbarSlots } from '../domain/battleHotbar.js';
+import {
+  parseBattleHotbarSlots,
+  type BattleHotbarSlot,
+} from '../domain/battleHotbar.js';
 import { prisma } from '../lib/prisma.js';
-import { toSnapshot } from './charSnapshotLogic.js';
-import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
-import { mutateCharacterWithRevision } from './characterMutation.js';
-import { findCharacterForUserInTx } from './charResolveForUser.js';
+import { persistCharacterFieldsInTx } from './charInternalPersist.js';
 
+/**
+ * UI-розкладка хотбару: write без Character.revision++ (last-write-wins).
+ * Не чіпає battleJson, revision, battleVersion, lastLogSeq.
+ */
 export async function saveBattleHotbar(
   userId: string,
-  expectedRevision: number,
-  slotsRaw: unknown,
-  opts?: { characterId?: string | null }
-): Promise<CharacterSnapshot> {
+  characterId: string,
+  slotsRaw: unknown
+): Promise<(BattleHotbarSlot | null)[]> {
   const slots = parseBattleHotbarSlots(slotsRaw);
   if (slots === null) {
     throw new Error('hotbar_invalid');
   }
+  const cid = String(characterId || '').trim();
+  if (!cid) throw new Error('hotbar_no_character');
 
-  return prisma.$transaction(async (tx) => {
-    const char = await findCharacterForUserInTx(tx, userId, {
-      characterId: opts?.characterId,
+  await prisma.$transaction(async (tx) => {
+    const char = await tx.character.findFirst({
+      where: { userId, id: cid },
+      select: { id: true, battleHotbarJson: true },
     });
     if (!char) throw new Error('no_character');
 
-    const result = await mutateCharacterWithRevision(
-      tx,
-      char.id,
-      expectedRevision,
-      (current) => {
-        const row = current as CharacterRow;
-        const existing = parseBattleHotbarSlots(row.battleHotbarJson);
-        if (JSON.stringify(existing) === JSON.stringify(slots)) {
-          return { changed: false };
-        }
-        return {
-          changed: true,
-          data: {
-            battleHotbarJson: JSON.parse(
-              JSON.stringify(slots)
-            ) as Prisma.InputJsonValue,
-          },
-        };
-      }
-    );
-    if (!result.ok) throw gameConflictFromMutation(result);
-    return toSnapshot(result.character as CharacterRow);
+    const existing = parseBattleHotbarSlots(char.battleHotbarJson);
+    if (JSON.stringify(existing) === JSON.stringify(slots)) return;
+
+    await persistCharacterFieldsInTx(tx, char.id, {
+      battleHotbarJson: JSON.parse(
+        JSON.stringify(slots)
+      ) as Prisma.InputJsonValue,
+    });
   });
+
+  return slots;
 }
