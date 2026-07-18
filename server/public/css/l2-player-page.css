@@ -130,7 +130,7 @@ body.l2-app-l2-chrome.l2-page-player
   color: #fff;
 }
 
-body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-frame--hero-only {
+body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-frame {
   margin: 0 auto;
   width: 100%;
   max-width: 300px;

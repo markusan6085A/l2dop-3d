@@ -113,6 +113,21 @@
     el.classList.toggle('l2-player-clan-invite-msg--error', !!isError);
   }
 
+  function renderViewedEquipment(p) {
+    var frame = $('player-equip-frame');
+    if (!frame || !window.L2CharEquipFrame) return;
+    var eq = p && p.equipment && typeof p.equipment === 'object' ? p.equipment : {};
+    L2CharEquipFrame.renderEquipSlots({ eq: eq }, frame);
+  }
+
+  function wireViewedEquipment() {
+    var frame = $('player-equip-frame');
+    if (!frame || !window.L2CharEquipFrame) return;
+    L2CharEquipFrame.wireEquipSlotView(frame, function () {
+      return viewedProfile && viewedProfile.equipment ? viewedProfile.equipment : {};
+    });
+  }
+
   function applyProfile(p) {
     viewedProfile = p;
     var headline = $('player-headline');
@@ -135,6 +150,8 @@
         stageId: 'player-hero-stage',
       });
     }
+
+    renderViewedEquipment(p);
 
     var clanBtn = $('player-clan-action');
     var clanInviteMsg = $('player-clan-invite-msg');
@@ -319,6 +336,9 @@
       if (selfCharacter && typeof L2.applyMutationSnapshot === 'function') {
         L2.applyMutationSnapshot(selfCharacter);
       }
+      if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
+        await L2.fetchCatalogHints();
+      }
 
       var r = await fetch(apiUrl, {
         headers: { Authorization: 'Bearer ' + token },
@@ -353,6 +373,7 @@
       }
 
       applyProfile(j.profile);
+      wireViewedEquipment();
       var content = $('player-content');
       if (content) content.hidden = false;
       wireClanInvite(token);

@@ -35,6 +35,8 @@ export type PlayerPublicProfileDto = {
   lastSeenAt: string;
   isOnline: boolean;
   registeredAt: string;
+  /** Одягнутий екіп (inventory.eq) — для рамки слотів на публічному профілі. */
+  equipment: Partial<Record<string, number | { itemId: number; enchant?: number }>>;
 };
 
 const PROFILE_SELECT = {
@@ -127,6 +129,7 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
     lastSeenAt: row.lastUpdate.toISOString(),
     isOnline: isCharacterOnlineNow(row.id),
     registeredAt: row.lastUpdate.toISOString(),
+    equipment: { ...inv.eq },
   };
 }
 

@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-char-222-skin.css?v=20260711nickTone1" />
     <link rel="stylesheet" href="/css/l2-character-page.css?v=20260711nickTone1" />
-    <link rel="stylesheet" href="/css/l2-player-page.css?v=20260718playerStats1" />
+    <link rel="stylesheet" href="/css/l2-player-page.css?v=20260718playerEquip1" />
+    <link rel="stylesheet" href="/css/l2-item-colors.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-recommend-nick-page.css?v=20260711recBlue1" />
   </head>
   <body
@@ -72,7 +73,7 @@
 
               <div class="l2-character-hero-panel l2-player-hero-panel">
                 <div class="l2-char-photo-wrap">
-                  <div class="l2-char-equip-frame l2-char-equip-frame--hero-only">
+                  <div class="l2-char-equip-frame" id="player-equip-frame">
                     <div class="l2-char-equip-bg">
                       <img
                         class="l2-char-equip-scene"
@@ -89,6 +90,31 @@
                           alt=""
                           decoding="async"
                         />
+                      </div>
+                    </div>
+                    <div class="l2-char-equip-slots l2-char-equip-slots--left">
+                      <img data-l2-slot="head" data-l2-eq-key="lh" class="l2-char-slot-icon" src="/icons/slot_head.png" alt="" />
+                      <img data-l2-slot="armor" data-l2-eq-key="l3" class="l2-char-slot-icon" src="/icons/slot_armor.png" alt="" />
+                      <img data-l2-slot="legs" data-l2-eq-key="l4" class="l2-char-slot-icon" src="/icons/slot_legs.png" alt="" />
+                      <img data-l2-slot="gloves" data-l2-eq-key="lg" class="l2-char-slot-icon" src="/icons/slot_gloves.png" alt="" />
+                      <img data-l2-slot="boots" data-l2-eq-key="lf" class="l2-char-slot-icon" src="/icons/slot_boots.png" alt="" />
+                      <img data-l2-slot="belt" class="l2-char-slot-icon" src="/icons/slot_belt.png" alt="" />
+                      <div class="l2-char-equip-weapons-row">
+                        <img data-l2-slot="weapon" data-l2-eq-key="l1" class="l2-char-slot-icon" src="/icons/slot_weapon.png" alt="" />
+                        <img data-l2-slot="shield" data-l2-eq-key="l2" class="l2-char-slot-icon" src="/icons/slot_shield.png" alt="" />
+                      </div>
+                    </div>
+                    <div class="l2-char-equip-slots l2-char-equip-slots--right">
+                      <img data-l2-slot="jewelry" class="l2-char-slot-icon" src="/icons/slot_jewelry.png" alt="" />
+                      <img data-l2-slot="necklace" data-l2-eq-key="neck" class="l2-char-slot-icon" src="/icons/slot_necklace.png" alt="" />
+                      <img data-l2-slot="earring_left" data-l2-eq-key="le1" class="l2-char-slot-icon" src="/icons/slot_earring_left.png" alt="" />
+                      <img data-l2-slot="earring_right" data-l2-eq-key="le2" class="l2-char-slot-icon" src="/icons/slot_earring_right.png" alt="" />
+                      <img data-l2-slot="ring_left" data-l2-eq-key="lr1" class="l2-char-slot-icon" src="/icons/slot_ring_left.png" alt="" />
+                      <img data-l2-slot="ring_right" data-l2-eq-key="lr2" class="l2-char-slot-icon" src="/icons/slot_ring_right.png" alt="" />
+                      <div class="l2-char-equip-weapons-row">
+                        <img data-l2-slot="tattoo" class="l2-char-slot-icon" src="/icons/slot_tattoo.png" alt="" />
+                        <img data-l2-slot="cloak" class="l2-char-slot-icon" src="/icons/slot_cloak.png" alt="" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -262,7 +288,10 @@
     <script src="/common.js?v=20260718clanInvite4"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260717perf2"></script>
+    <script src="/charEquipFrame.js?v=20260718playerEquip1"></script>
+    <script src="/armor-set-bonuses-ui.js?v=5"></script>
+    <script src="/item-stats-modal.js?v=20260717itemStats1"></script>
     <script src="/charHeroPortrait.js?v=20260718dwarfPng1"></script>
-    <script src="/player.js?v=20260718clanInvite4"></script>
+    <script src="/player.js?v=20260718playerEquip1"></script>
   </body>
 </html>

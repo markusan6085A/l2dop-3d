@@ -47,7 +47,67 @@
     };
   }
 
-  function qtySuffix(qty) {
+  function itemStatsParts(id) {
+    var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[id];
+    var seg = null;
+    if (sl === 'rhand') seg = 'weapon';
+    else if (sl === 'lhand' || sl === 'shield') seg = 'shield';
+    else if (
+      sl === 'chest' ||
+      sl === 'legs' ||
+      sl === 'head' ||
+      sl === 'gloves' ||
+      sl === 'feet' ||
+      sl === 'fullarmor'
+    ) {
+      seg = 'armor';
+    } else if (sl === 'ring' || sl === 'neck' || sl === 'earring') {
+      seg = 'accessor';
+    }
+    if (
+      seg !== 'weapon' &&
+      seg !== 'armor' &&
+      seg !== 'shield' &&
+      seg !== 'accessor'
+    ) {
+      return [];
+    }
+    if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
+      return L2.buildItemStatsPreviewLines(id).map(function (ln) {
+        return { label: ln.labelUk, value: ln.valueUk };
+      });
+    }
+    return [];
+  }
+
+  function appendRowStats(container, parts) {
+    if (!container || !parts || !parts.length) return;
+    for (var pi = 0; pi < parts.length; pi++) {
+      if (pi > 0) {
+        var sep = document.createElement('span');
+        sep.className = 'l2-item-stat-sep';
+        sep.textContent = ' | ';
+        container.appendChild(sep);
+      }
+      var part = parts[pi];
+      if (window.L2 && typeof L2.appendColoredItemStatPair === 'function') {
+        L2.appendColoredItemStatPair(container, part.label, part.value);
+      } else {
+        var plain = document.createElement('span');
+        plain.className = 'l2-item-stat-plain';
+        plain.textContent = part.label + ' ' + part.value;
+        container.appendChild(plain);
+      }
+    }
+  }
+
+  function itemNameClasses(itemId) {
+    if (window.L2 && typeof L2.itemNameClassNames === 'function') {
+      return L2.itemNameClassNames(itemId, 'l2-warehouse-name l2-item-name');
+    }
+    return 'l2-warehouse-name l2-item-name';
+  }
+
     var q = Number(qty);
     if (!Number.isFinite(q) || q <= 1) return '';
     return ' (x' + String(q) + ')';
@@ -212,7 +272,7 @@
       mid.className = 'l2-warehouse-mid';
 
       var name = document.createElement('div');
-      name.className = 'l2-warehouse-name';
+      name.className = itemNameClasses(itemId);
       var line = warehouseShortName(itemId) + qtySuffix(qty);
       if (enchant > 0) line += ' +' + enchant;
       name.textContent = line;
@@ -221,14 +281,12 @@
       var statsRow = document.createElement('div');
       statsRow.className = 'l2-warehouse-stats-row';
 
-      if (window.L2 && typeof L2.buildItemStatsCompactLine === 'function') {
-        var compact = L2.buildItemStatsCompactLine(itemId);
-        if (compact) {
-          var statsEl = document.createElement('div');
-          statsEl.className = 'l2-warehouse-stats';
-          statsEl.textContent = compact;
-          statsRow.appendChild(statsEl);
-        }
+      var statParts = itemStatsParts(itemId);
+      if (statParts.length) {
+        var statsEl = document.createElement('div');
+        statsEl.className = 'l2-warehouse-stats';
+        appendRowStats(statsEl, statParts);
+        statsRow.appendChild(statsEl);
       }
 
       var btn = document.createElement('button');

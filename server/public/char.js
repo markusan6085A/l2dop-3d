@@ -347,6 +347,10 @@
   }
 
   function renderEquipSlots(inv) {
+    if (window.L2CharEquipFrame && typeof L2CharEquipFrame.renderEquipSlots === 'function') {
+      L2CharEquipFrame.renderEquipSlots(inv);
+      return;
+    }
     inv = inv || { eq: {} };
     var eq = inv.eq || {};
     var wId = eqItemId(eq.l1);
@@ -1498,41 +1502,12 @@
 
   function wireEquipSlotClicks() {
     var frame = document.querySelector('.l2-char-equip-frame');
-    if (!frame) return;
-    frame.addEventListener('click', function (e) {
-      var img = e.target.closest('img[data-l2-eq-key].l2-char-slot-icon--filled');
-      if (!img) return;
-      var mirror = img.getAttribute('data-l2-mirror-twohand') === '1';
-      var key = img.getAttribute('data-l2-eq-key');
-      if (!key) return;
+    if (!frame || !window.L2CharEquipFrame) return;
+    L2CharEquipFrame.wireEquipSlotUnequip(frame, function () {
       var snap = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
       var inv = snap && snap.inventory ? snap.inventory : null;
-      var eq = inv && inv.eq ? inv.eq : {};
-      if (mirror) {
-        if (!eqItemId(eq.l1)) return;
-        apiUnequip('l1');
-        return;
-      }
-      if (!eqItemId(eq[key])) return;
-      apiUnequip(key);
-    });
-    frame.addEventListener('keydown', function (e) {
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      var img = e.target.closest('img[data-l2-eq-key].l2-char-slot-icon--filled');
-      if (!img) return;
-      e.preventDefault();
-      var mirror = img.getAttribute('data-l2-mirror-twohand') === '1';
-      var key = img.getAttribute('data-l2-eq-key');
-      if (!key) return;
-      var snap = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
-      var inv = snap && snap.inventory ? snap.inventory : null;
-      var eq = inv && inv.eq ? inv.eq : {};
-      if (mirror) {
-        if (!eqItemId(eq.l1)) return;
-        apiUnequip('l1');
-        return;
-      }
-      if (!eqItemId(eq[key])) return;
+      return inv && inv.eq ? inv.eq : {};
+    }, function (key) {
       apiUnequip(key);
     });
   }
