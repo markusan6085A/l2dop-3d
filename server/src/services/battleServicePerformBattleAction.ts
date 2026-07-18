@@ -61,7 +61,6 @@ import {
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import {
-  assertBasicAttackCooldownReady,
   basicAttackCooldownPatch,
 } from '../domain/battleBasicAttackCooldown.js';
 import {
@@ -109,6 +108,11 @@ import { battleActionAllowed } from './battleServiceBattleUi.js';
 import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
 import { logSkillCooldownApplied } from './battleServiceCooldown.js';
 import { battleVersionFromState } from '../domain/battleVersion.js';
+import {
+  assertActionCooldownReady,
+  mergeBattleCooldownMaps,
+  syncMysticSkillCdUntilFromMerged,
+} from '../domain/battleSkillCooldownResolve.js';
 import { enrichPartialClientSnapshot, ensureClanHallOnRow } from './charClientSnapshot.js';
 import { findCharacterForUserInTx } from './charResolveForUser.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
@@ -429,31 +433,24 @@ export async function performBattleActionInTx(
     let activeBuffsForTurn = activeBuffsPre.slice();
 
     /**
-     * Перед обробкою дії мерджимо постійний `skillCooldownsJson` у
-     * `st.mysticSkillCdUntil` — так хендлери self-buff-ів (War Cry 78,
-     * Battle Roar 121, Thrill Fight 130, Focus Attack 317) коректно
-     * бачать КД, навіть якщо він виставлений ще до входу в цей бій
-     * (напр. каст out-of-battle або після F5).
+     * Перед обробкою дії: єдиний merged cooldown map (json + mystic, max на ключ).
      */
     {
-      const persistedCds = parseSkillCooldowns(
-        (char as CharacterRow).skillCooldownsJson,
+      const mergedCd = mergeBattleCooldownMaps(
+        char as CharacterRow,
+        st,
         nowMsTurn
       );
-      if (persistedCds.length > 0) {
-        const mergedCd: Record<string, number> = {
-          ...(st.mysticSkillCdUntil ?? {}),
-        };
-        for (const e of persistedCds) {
-          const key = 'l2_' + e.skillId;
-          const prev = mergedCd[key];
-          if (!Number.isFinite(prev) || (prev as number) < e.readyAt) {
-            mergedCd[key] = e.readyAt;
-          }
-        }
-        st.mysticSkillCdUntil = mergedCd;
-      }
+      syncMysticSkillCdUntilFromMerged(st, mergedCd);
     }
+
+    assertActionCooldownReady({
+      characterId: char.id,
+      row: char as CharacterRow,
+      st,
+      action,
+      nowMs: nowMsTurn,
+    });
 
     /**
      * Generic expire-tick для legacy-бафів з `st.battleModsExpiresAtMsBySkillId`:
@@ -669,7 +666,6 @@ export async function performBattleActionInTx(
       }
     }
 
-    assertBasicAttackCooldownReady(st, action, nowMsTurn);
 
     const turnResolved = executeBattleTurnResolve({
       action,

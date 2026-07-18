@@ -15,6 +15,7 @@ export class BattleSkillNotAllowedError extends Error {
   readonly remainingCooldownMs?: number;
   readonly serverNowMs?: number;
   readonly cooldownReadyAtMs?: number;
+  readonly cooldownDiag?: import('./battleSkillCooldownResolve.js').ActionCooldownResolve;
 
   constructor(args: {
     reason: BattleSkillNotAllowedReason;
@@ -22,6 +23,7 @@ export class BattleSkillNotAllowedError extends Error {
     remainingCooldownMs?: number;
     serverNowMs?: number;
     cooldownReadyAtMs?: number;
+    cooldownDiag?: import('./battleSkillCooldownResolve.js').ActionCooldownResolve;
   }) {
     super('battle_skill_not_allowed');
     this.name = 'BattleSkillNotAllowedError';
@@ -30,6 +32,7 @@ export class BattleSkillNotAllowedError extends Error {
     this.remainingCooldownMs = args.remainingCooldownMs;
     this.serverNowMs = args.serverNowMs;
     this.cooldownReadyAtMs = args.cooldownReadyAtMs;
+    this.cooldownDiag = args.cooldownDiag;
   }
 }
 

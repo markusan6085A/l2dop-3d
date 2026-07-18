@@ -966,13 +966,39 @@
       return null;
     }
 
+    /** Канонічний cooldown-ключ (`l2_<id>`) для action. */
+    function effectiveCooldownUntilForAction(battle, actionId) {
+      if (!battle) return null;
+      var info = cdInfoForAction(battle, actionId);
+      var m = mergedCdMap(battle);
+      var skillUntil = mysticCdUntilForAction(m, info.aid, info.rowL2);
+      var atk = m.attack;
+      var blt = m.bolt;
+      var globalUntil = null;
+      if (typeof atk === 'number' || typeof blt === 'number') {
+        globalUntil = Math.max(
+          typeof atk === 'number' ? atk : 0,
+          typeof blt === 'number' ? blt : 0
+        );
+        if (!Number.isFinite(globalUntil) || globalUntil <= 0) globalUntil = null;
+      }
+      if (info.aid === 'attack' || info.aid === 'bolt') {
+        var parts = [];
+        if (typeof skillUntil === 'number') parts.push(skillUntil);
+        if (typeof globalUntil === 'number') parts.push(globalUntil);
+        if (!parts.length) return null;
+        return Math.max.apply(null, parts);
+      }
+      return typeof skillUntil === 'number' ? skillUntil : null;
+    }
+
     function skillCooldownMeta(battle, actionId) {
       if (!battle) return null;
       var info = cdInfoForAction(battle, actionId);
       var aid = info.aid;
       var cdSec = info.cdSec;
       var rowL2 = info.rowL2;
-      var until = mysticCdUntilForAction(mergedCdMap(battle), aid, rowL2);
+      var until = effectiveCooldownUntilForAction(battle, actionId);
       if (typeof until !== 'number' || !Number.isFinite(until)) {
         clearCdDurationForAction(aid, rowL2);
         return null;
@@ -1943,9 +1969,20 @@
     };
   }
 
+  function normalizeBattleSkillId(action, battle) {
+    var aid = canonicalBattleActionId(action);
+    if (typeof aid === 'string' && /^l2_\d+$/i.test(aid)) {
+      return aid.replace(/^L2_/i, 'l2_');
+    }
+    var l2 = l2SkillIdForBattleAction(battle, aid);
+    if (typeof l2 === 'number' && l2 > 0) return 'l2_' + Math.floor(l2);
+    return String(aid || action || '');
+  }
+
   global.L2BattleHotbar = {
     mount: mountBattleHotbar,
     mergeCharacterCatalog: mergeCharacterCatalog,
     canonicalBattleActionId: canonicalBattleActionId,
+    normalizeBattleSkillId: normalizeBattleSkillId,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

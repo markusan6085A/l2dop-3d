@@ -476,6 +476,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         }
         if (e instanceof BattleSkillNotAllowedError) {
           if (e.reason === 'cooldown') {
+            const diag = e.cooldownDiag;
             const nowMs = e.serverNowMs ?? Date.now();
             const cooldownUntilMs =
               e.cooldownReadyAtMs ??
@@ -486,9 +487,28 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
               code: 'skill_cooldown',
               reason: 'cooldown',
               skillId: e.skillId ?? actionNorm,
+              requestedAction: actionNorm,
+              requestedSkillId: actionNorm,
+              normalizedSkillId:
+                diag?.normalizedSkillId ?? e.skillId ?? actionNorm,
+              nowMs,
               serverNowMs: nowMs,
+              skillCooldownUntilMs: diag?.skillCooldownUntilMs,
+              globalCooldownUntilMs: diag?.globalCooldownUntilMs,
               cooldownUntilMs,
-              remainingMs,
+              readyAtMs:
+                diag?.readyAtMs ??
+                (Math.max(
+                  diag?.skillCooldownUntilMs ?? 0,
+                  diag?.globalCooldownUntilMs ?? 0
+                ) || cooldownUntilMs),
+              skillRemainingMs: diag?.skillRemainingMs ?? remainingMs,
+              globalRemainingMs: diag?.globalRemainingMs ?? 0,
+              remainingMs: diag?.remainingMs ?? remainingMs,
+              battleVersion: diag?.battleVersion,
+              cooldownSource: diag?.cooldownSource,
+              blockedBy: diag?.blockedBy,
+              cooldownMapKeys: diag?.cooldownMapKeys ?? [],
               messageUk: 'Скіл ще на перезарядці.',
             });
           }

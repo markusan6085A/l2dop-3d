@@ -1,34 +1,20 @@
 import type { BattleJsonState } from '../domain/battle.js';
-import { parseSkillCooldowns } from '../data/skillCooldowns.js';
+import {
+  mergeBattleCooldownMaps,
+} from '../domain/battleSkillCooldownResolve.js';
 import type { CharacterRow } from './charTypes.js';
+
+export { mergeBattleCooldownMaps, normalizeBattleSkillId } from '../domain/battleSkillCooldownResolve.js';
 
 const GLOBAL_CD_KEYS = ['attack', 'bolt'] as const;
 
-/** Кулдауни для sync/action delta: in-battle map + skillCooldownsJson. */
+/** Кулдауни для sync/action delta — merged json + mystic (max на ключ). */
 export function battleCooldownsForSync(
   row: CharacterRow,
   st: BattleJsonState,
   nowMs: number
 ): Record<string, number> | undefined {
-  const merged: Record<string, number> = {};
-  const mystic = st.mysticSkillCdUntil;
-  if (mystic) {
-    for (const [key, readyAt] of Object.entries(mystic)) {
-      if (
-        typeof readyAt === 'number' &&
-        Number.isFinite(readyAt) &&
-        readyAt > nowMs
-      ) {
-        merged[key] = readyAt;
-      }
-    }
-  }
-  const rows = parseSkillCooldowns(row.skillCooldownsJson, nowMs);
-  for (const cd of rows) {
-    if (cd.readyAt > nowMs) {
-      merged['l2_' + String(cd.skillId)] = cd.readyAt;
-    }
-  }
+  const merged = mergeBattleCooldownMaps(row, st, nowMs);
   return Object.keys(merged).length > 0 ? merged : undefined;
 }
 

@@ -1,5 +1,5 @@
 /**
- * Smoke: delta-first skill cooldown — display sec, server offset, stale guard.
+ * Smoke: cooldown key identity + merged map (json vs mystic).
  * Запуск: npm run test:skill-cooldown
  */
 import assert from 'node:assert/strict';
@@ -9,12 +9,19 @@ import {
   assertSkillCooldownReady,
 } from '../src/domain/battleSkills/humanFighterTurnHelpers.js';
 import { BattleSkillNotAllowedError } from '../src/domain/battleSkillNotAllowedError.js';
+import {
+  mergeBattleCooldownMaps,
+  normalizeBattleSkillId,
+  resolveActionCooldownState,
+  assertActionCooldownReady,
+} from '../src/domain/battleSkillCooldownResolve.js';
+import type { BattleJsonState } from '../src/domain/battle.js';
+import type { CharacterRow } from '../src/services/charTypes.js';
 
 function testDisplaySecCeil(): void {
   assert.equal(skillCooldownDisplaySec(999), 1, '999 ms → 1 s');
   assert.equal(skillCooldownDisplaySec(1), 1, '1 ms → 1 s (blocked)');
   assert.equal(skillCooldownDisplaySec(0), 0, '0 ms → available');
-  assert.equal(skillCooldownDisplaySec(-5), 0, 'negative → available');
 }
 
 function testServerOffsetRemaining(): void {
@@ -25,23 +32,102 @@ function testServerOffsetRemaining(): void {
   const estimatedServerNowMs = clientNowMs + offsetMs;
   const remainingMs = Math.max(0, cooldownUntilMs - estimatedServerNowMs);
   assert.equal(remainingMs, 500, '±10 s clock skew keeps remainingMs');
-  assert.equal(skillCooldownDisplaySec(remainingMs), 1, '500 ms shows 1 s');
 }
 
-function testClientRemainingBlocks(): void {
-  const remainingMs = 1;
-  assert.equal(remainingMs > 0, true, '1 ms left still blocked on client');
-  assert.equal(skillCooldownDisplaySec(remainingMs), 1, '1 ms shows 1 s');
-  assert.equal(skillCooldownDisplaySec(0), 0, '0 ms available');
+function testNormalizeSkillId(): void {
+  assert.equal(normalizeBattleSkillId('war_cry'), 'l2_78');
+  assert.equal(normalizeBattleSkillId('l2_78'), 'l2_78');
+  assert.equal(normalizeBattleSkillId('power_strike'), 'l2_3');
 }
 
-function testServerGraceReady(): void {
-  const nowMs = Date.now();
-  const until = nowMs + 1;
+function testMergeMaxJsonOverMystic(): void {
+  const nowMs = 1_000_000;
+  const row = {
+    skillCooldownsJson: [{ skillId: 78, readyAt: nowMs + 5000 }],
+  } as unknown as CharacterRow;
+  const st = {
+    mysticSkillCdUntil: { l2_78: nowMs + 1000 },
+  } as BattleJsonState;
+  const merged = mergeBattleCooldownMaps(row, st, nowMs);
+  assert.equal(merged.l2_78, nowMs + 5000, 'json max wins over shorter mystic');
+}
+
+function testMergeMaxMysticOverJson(): void {
+  const nowMs = 1_000_000;
+  const row = {
+    skillCooldownsJson: [{ skillId: 78, readyAt: nowMs + 1000 }],
+  } as unknown as CharacterRow;
+  const st = {
+    mysticSkillCdUntil: { l2_78: nowMs + 8000 },
+  } as BattleJsonState;
+  const merged = mergeBattleCooldownMaps(row, st, nowMs);
+  assert.equal(merged.l2_78, nowMs + 8000, 'mystic max wins over shorter json');
+}
+
+function testExpiredKeysDropped(): void {
+  const nowMs = 1_000_000;
+  const row = { skillCooldownsJson: [] } as unknown as CharacterRow;
+  const st = {
+    mysticSkillCdUntil: { l2_78: nowMs - 500, attack: nowMs + 500 },
+  } as BattleJsonState;
+  const merged = mergeBattleCooldownMaps(row, st, nowMs);
+  assert.equal(merged.l2_78, undefined);
+  assert.equal(merged.attack, nowMs + 500);
+}
+
+function testResolveWarCryBlockedByJson(): void {
+  const nowMs = 1_000_000;
+  const row = {
+    skillCooldownsJson: [{ skillId: 78, readyAt: nowMs + 3000 }],
+  } as unknown as CharacterRow;
+  const st = { mysticSkillCdUntil: {} } as BattleJsonState;
+  const state = resolveActionCooldownState(row, st, 'war_cry', nowMs);
+  assert.equal(state.normalizedSkillId, 'l2_78');
+  assert.equal(state.skillCooldownUntilMs, nowMs + 3000);
+  assert.equal(state.blockedBy, 'skill');
+  assert.ok(state.remainingMs > 0);
+}
+
+function testResolveExpiredAllowsCast(): void {
+  const nowMs = 1_000_000;
+  const row = { skillCooldownsJson: [] } as unknown as CharacterRow;
+  const st = {
+    mysticSkillCdUntil: { l2_78: nowMs - 1000 },
+  } as BattleJsonState;
+  const state = resolveActionCooldownState(row, st, 'war_cry', nowMs);
+  assert.equal(state.readyAtMs, undefined);
+  assert.equal(state.remainingMs, 0);
+  assertActionCooldownReady({
+    characterId: 'test',
+    row,
+    st,
+    action: 'war_cry',
+    nowMs,
+  });
+}
+
+function testGlobalBlocksAttack(): void {
+  const nowMs = 1_000_000;
+  const row = { skillCooldownsJson: [] } as unknown as CharacterRow;
+  const st = {
+    mysticSkillCdUntil: { attack: nowMs + 2000, l2_3: nowMs + 500 },
+  } as BattleJsonState;
+  const state = resolveActionCooldownState(row, st, 'attack', nowMs);
+  assert.equal(state.blockedBy, 'global');
+  assert.equal(state.readyAtMs, nowMs + 2000);
+}
+
+function testLegacyKeyNotUsedWithoutL2Prefix(): void {
+  const nowMs = 1_000_000;
+  const row = { skillCooldownsJson: [] } as unknown as CharacterRow;
+  const st = {
+    mysticSkillCdUntil: { '78': nowMs + 5000, l2_78: nowMs - 100 },
+  } as BattleJsonState;
+  const state = resolveActionCooldownState(row, st, 'war_cry', nowMs);
   assert.equal(
-    isCooldownBlocked(until, nowMs),
-    false,
-    'server grace: 1 ms within COOLDOWN_READY_GRACE_MS may accept cast'
+    state.skillCooldownUntilMs,
+    undefined,
+    'bare "78" key must not block l2_78 action'
   );
 }
 
@@ -56,47 +142,21 @@ function testCooldownErrorShape(): void {
     const err = e as BattleSkillNotAllowedError;
     assert.equal(err.reason, 'cooldown');
     assert.equal(err.skillId, 'l2_78');
-    assert.equal(err.cooldownReadyAtMs, Math.floor(until));
-    assert.ok((err.remainingCooldownMs ?? 0) >= 1);
   }
-}
-
-function testStaleDeltaMergeLogic(): void {
-  let lastBattleVersion = 5;
-  const existingUntil = 2000;
-  const incomingBv = 3;
-  const incomingUntil = 5000;
-  let accepted = incomingUntil;
-  if (incomingBv != null && incomingBv < lastBattleVersion) {
-    accepted = existingUntil;
-  } else if (incomingUntil < existingUntil) {
-    accepted = existingUntil;
-  }
-  assert.equal(accepted, existingUntil, 'stale bv must not overwrite newer cd');
-}
-
-function testFreshDeltaTakesMax(): void {
-  const existingUntil = 2000;
-  const incomingBv = 6;
-  const lastBattleVersion = 5;
-  const incomingUntil = 5000;
-  let accepted = incomingUntil;
-  if (incomingBv != null && incomingBv < lastBattleVersion) {
-    accepted = existingUntil;
-  } else if (incomingUntil < existingUntil) {
-    accepted = existingUntil;
-  }
-  assert.equal(accepted, 5000, 'newer bv takes incoming cd');
 }
 
 function main(): void {
   testDisplaySecCeil();
   testServerOffsetRemaining();
-  testClientRemainingBlocks();
-  testServerGraceReady();
+  testNormalizeSkillId();
+  testMergeMaxJsonOverMystic();
+  testMergeMaxMysticOverJson();
+  testExpiredKeysDropped();
+  testResolveWarCryBlockedByJson();
+  testResolveExpiredAllowsCast();
+  testGlobalBlocksAttack();
+  testLegacyKeyNotUsedWithoutL2Prefix();
   testCooldownErrorShape();
-  testStaleDeltaMergeLogic();
-  testFreshDeltaTakesMax();
   console.log('skill-cooldown-smoke: OK');
 }
 

@@ -1657,30 +1657,36 @@
       }
       var cdMap = pickCooldownMap(payload);
       if (!cdMap || typeof cdMap !== 'object') return;
-      if (!battle.mysticSkillCdUntil) battle.mysticSkillCdUntil = {};
       var estNow = estimatedServerNowMs();
-      for (var sk in cdMap) {
-        if (!Object.prototype.hasOwnProperty.call(cdMap, sk)) continue;
-        var incomingUntil = cdMap[sk];
-        if (typeof incomingUntil !== 'number' || !Number.isFinite(incomingUntil)) {
-          continue;
+      if (incomingBv != null && incomingBv >= lastBattleVersion) {
+        var nextCd = Object.create(null);
+        for (var sk in cdMap) {
+          if (!Object.prototype.hasOwnProperty.call(cdMap, sk)) continue;
+          var v = cdMap[sk];
+          if (typeof v === 'number' && Number.isFinite(v) && v > estNow) {
+            nextCd[sk] = v;
+          }
         }
-        var existingUntil = battle.mysticSkillCdUntil[sk];
-        if (
-          typeof existingUntil === 'number' &&
-          incomingUntil < existingUntil &&
-          incomingBv != null &&
-          incomingBv < lastBattleVersion
-        ) {
-          continue;
+        if (Object.keys(nextCd).length > 0) {
+          battle.mysticSkillCdUntil = nextCd;
+        } else {
+          delete battle.mysticSkillCdUntil;
         }
-        if (typeof existingUntil === 'number' && incomingUntil < existingUntil) {
-          incomingUntil = existingUntil;
-        }
-        if (incomingUntil > estNow) {
-          battle.mysticSkillCdUntil[sk] = incomingUntil;
-        } else if (Object.prototype.hasOwnProperty.call(battle.mysticSkillCdUntil, sk)) {
-          delete battle.mysticSkillCdUntil[sk];
+      } else {
+        if (!battle.mysticSkillCdUntil) battle.mysticSkillCdUntil = {};
+        for (var sk2 in cdMap) {
+          if (!Object.prototype.hasOwnProperty.call(cdMap, sk2)) continue;
+          var incomingUntil = cdMap[sk2];
+          if (typeof incomingUntil !== 'number' || !Number.isFinite(incomingUntil)) {
+            continue;
+          }
+          if (incomingUntil > estNow) {
+            battle.mysticSkillCdUntil[sk2] = incomingUntil;
+          } else if (
+            Object.prototype.hasOwnProperty.call(battle.mysticSkillCdUntil, sk2)
+          ) {
+            delete battle.mysticSkillCdUntil[sk2];
+          }
         }
       }
       if (
@@ -1691,24 +1697,105 @@
       }
     }
 
+    function normalizeBattleSkillIdClient(action) {
+      if (
+        window.L2BattleHotbar &&
+        typeof L2BattleHotbar.normalizeBattleSkillId === 'function'
+      ) {
+        return L2BattleHotbar.normalizeBattleSkillId(action, battle);
+      }
+      if (
+        window.L2BattleHotbar &&
+        typeof L2BattleHotbar.canonicalBattleActionId === 'function'
+      ) {
+        return L2BattleHotbar.canonicalBattleActionId(action);
+      }
+      return String(action || '');
+    }
+
+    function logSkillCooldownClientClick(action) {
+      if (!battle) return;
+      var estNow = estimatedServerNowMs();
+      var cdMap = battle.mysticSkillCdUntil || {};
+      var norm = normalizeBattleSkillIdClient(action);
+      var localSkillUntil = cdMap[norm];
+      if (localSkillUntil == null && /^l2_\d+$/.test(norm) === false) {
+        localSkillUntil = cdMap['l2_' + norm];
+      }
+      var atk = cdMap.attack;
+      var blt = cdMap.bolt;
+      var localGlobal =
+        typeof atk === 'number' || typeof blt === 'number'
+          ? Math.max(
+              typeof atk === 'number' ? atk : 0,
+              typeof blt === 'number' ? blt : 0
+            )
+          : null;
+      var readyAt =
+        localSkillUntil != null || localGlobal != null
+          ? Math.max(localSkillUntil || 0, localGlobal || 0)
+          : null;
+      var remMs = readyAt != null ? Math.max(0, readyAt - estNow) : 0;
+      console.log('[skill-cooldown-client-click]', {
+        action: action,
+        skillId: action,
+        normalizedSkillId: norm,
+        localSkillCooldownUntilMs: localSkillUntil,
+        localGlobalCooldownUntilMs: localGlobal,
+        estimatedServerNowMs: estNow,
+        remainingMs: remMs,
+        serverTimeOffsetMs: serverTimeOffsetMs,
+        battleVersion: lastBattleVersion,
+        localCooldownKeys: Object.keys(cdMap),
+      });
+    }
+
     function applySkillCooldownErrorBody(body, actionId) {
       if (!body || !battle) return;
       if (typeof body.serverNowMs === 'number') {
         absorbServerNowMs(body.serverNowMs);
+      } else if (typeof body.nowMs === 'number') {
+        absorbServerNowMs(body.nowMs);
       }
-      var skillId = body.skillId || actionId;
+      var norm =
+        body.normalizedSkillId ||
+        normalizeBattleSkillIdClient(body.skillId || actionId);
       var until =
-        body.cooldownUntilMs != null
-          ? body.cooldownUntilMs
-          : body.cooldownReadyAtMs;
+        body.readyAtMs != null
+          ? body.readyAtMs
+          : body.cooldownUntilMs != null
+            ? body.cooldownUntilMs
+            : body.cooldownReadyAtMs;
       if (typeof until !== 'number' || !Number.isFinite(until)) return;
       if (!battle.mysticSkillCdUntil) battle.mysticSkillCdUntil = {};
-      battle.mysticSkillCdUntil[String(skillId)] = until;
+      battle.mysticSkillCdUntil[String(norm)] = until;
+      if (
+        body.blockedBy === 'global' &&
+        (actionId === 'attack' || actionId === 'bolt')
+      ) {
+        battle.mysticSkillCdUntil[String(actionId)] = until;
+      } else if (
+        typeof body.skillCooldownUntilMs === 'number' &&
+        body.skillCooldownUntilMs > estimatedServerNowMs()
+      ) {
+        battle.mysticSkillCdUntil[String(norm)] = body.skillCooldownUntilMs;
+      }
+      console.log('[skill-cooldown-client-error]', {
+        action: actionId,
+        normalizedSkillId: norm,
+        blockedBy: body.blockedBy,
+        readyAtMs: until,
+        skillCooldownUntilMs: body.skillCooldownUntilMs,
+        globalCooldownUntilMs: body.globalCooldownUntilMs,
+        remainingMs: body.remainingMs,
+        cooldownSource: body.cooldownSource,
+        cooldownMapKeys: body.cooldownMapKeys,
+      });
       if (
         battleHotbar &&
         typeof battleHotbar.applyServerCooldown === 'function'
       ) {
-        battleHotbar.applyServerCooldown(String(skillId), until);
+        battleHotbar.applyServerCooldown(String(norm), until);
       }
     }
 
@@ -2737,6 +2824,7 @@
         ) {
           act = L2BattleHotbar.canonicalBattleActionId(action);
         }
+        logSkillCooldownClientClick(act);
         var res;
         try {
           res = await performBattleActionWithResync(act);
