@@ -59,12 +59,27 @@
         escapeHtml(ago) +
         '</span>';
     } else if (entry.kind === 'player_join') {
-      html =
-        'У грі з\'явився новий гравець: <span class="l2-news-item__nick">' +
-        escapeHtml(entry.playerName || '—') +
-        '</span> <span class="l2-news-item__ago">' +
-        escapeHtml(ago) +
-        '</span>';
+      p.appendChild(
+        document.createTextNode('У грі з\'явився новий гравець: ')
+      );
+      var nick =
+        window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+          ? L2.createPlayerProfileNickEl({
+              name: entry.playerName,
+              className: 'l2-news-item__nick',
+            })
+          : (function () {
+              var span = document.createElement('span');
+              span.className = 'l2-news-item__nick';
+              span.textContent = String(entry.playerName || '—');
+              return span;
+            })();
+      p.appendChild(nick);
+      var agoEl = document.createElement('span');
+      agoEl.className = 'l2-news-item__ago';
+      agoEl.textContent = ' ' + ago;
+      p.appendChild(agoEl);
+      return p;
     } else {
       html = '— <span class="l2-news-item__ago">' + escapeHtml(ago) + '</span>';
     }
