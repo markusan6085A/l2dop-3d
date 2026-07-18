@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-rb-bosses-page.css?v=20260713rbBosses9" />
-    <link rel="stylesheet" href="/css/l2-catacombs-page.css?v=20260717catacombs2" />
+    <link rel="stylesheet" href="/css/l2-rb-bosses-page.css?v=20260718rbStable1" />
+    <link rel="stylesheet" href="/css/l2-catacombs-page.css?v=20260718catacombs3" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-rb-bosses l2-page-catacombs l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -57,25 +57,23 @@
           />
         </div>
         <div class="l2-screen-inner l2-rb-root">
-          <div class="l2-chrome-nav-column">
-            <div id="l2-hud-panel-mount"></div>
-            <div id="l2-nav-top"></div>
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
 
-            <p class="l2-rb-back">
-              <a href="/menu.html">← Меню</a>
-            </p>
-            <h1 class="l2-pers-h1 l2-rb-title">
-              <span>Катакомби — Некрополі</span>
-            </h1>
+          <p class="l2-rb-back">
+            <a href="/menu.html">← Меню</a>
+          </p>
+          <h1 class="l2-pers-h1 l2-rb-title">
+            <span>Катакомби — Некрополі</span>
+          </h1>
 
-            <p class="err" id="catacombs-load-err" hidden></p>
+          <p class="err" id="catacombs-load-err" hidden></p>
 
-            <section class="l2-rb-panel" aria-label="Список подземелль Seven Signs">
-              <div id="catacombs-list"></div>
-            </section>
+          <section class="l2-rb-panel" aria-label="Список подземелль Seven Signs">
+            <div id="catacombs-list" class="l2-rb-list"></div>
+          </section>
 
-            <div id="l2-nav-bottom"></div>
-          </div>
+          <div id="l2-nav-bottom"></div>
         </div>
       </div>
     </div>
@@ -83,6 +81,6 @@
     <script src="/common.js?v=20260718layoutStable4"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/catacombs.js?v=20260717catacombs2"></script>
+    <script src="/catacombs.js?v=20260718catacombs3"></script>
   </body>
 </html>

@@ -51,13 +51,47 @@ body.l2-page-rb-bosses .l2-rb-panel {
   min-width: 0;
 }
 
-body.l2-page-rb-bosses #rb-list {
+body.l2-page-rb-bosses #rb-list,
+body.l2-page-catacombs #catacombs-list,
+body.l2-page-rb-bosses .l2-rb-list,
+body.l2-page-catacombs .l2-rb-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-height: clamp(520px, 58dvh, 640px);
+  box-sizing: border-box;
 }
 
-body.l2-page-rb-bosses .l2-rb-row {
+body.l2-page-rb-bosses .l2-rb-pager-slot {
+  min-height: 36px;
+  margin-top: 12px;
+  box-sizing: border-box;
+}
+
+body.l2-page-rb-bosses .l2-rb-pager-slot .l2-rb-pager {
+  margin-top: 0;
+}
+
+body.l2-page-rb-bosses .l2-rb-row--skeleton .l2-rb-row__label,
+body.l2-page-rb-bosses .l2-rb-row--skeleton .l2-rb-row__price,
+body.l2-page-rb-bosses .l2-rb-row--skeleton .l2-rb-row__tp,
+body.l2-page-catacombs .l2-rb-row--skeleton .l2-rb-row__label,
+body.l2-page-catacombs .l2-rb-row--skeleton .l2-rb-row__price,
+body.l2-page-catacombs .l2-rb-row--skeleton .l2-rb-row__tp {
+  color: #7a7260;
+}
+
+body.l2-page-rb-bosses .l2-rb-list__error,
+body.l2-page-catacombs .l2-rb-list__error {
+  margin: 0;
+  padding: 8px 0;
+  color: #c96;
+  font-size: 12px;
+  text-align: center;
+}
+
+body.l2-page-rb-bosses .l2-rb-row,
+body.l2-page-catacombs .l2-rb-row {
   display: flex;
   align-items: center;
   justify-content: space-between;

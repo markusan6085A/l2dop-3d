@@ -2,7 +2,10 @@
  * Сторінка «РБ-боси»: список, модалка інфо/дроп, телепорт на карту.
  */
 (function () {
+  var SKELETON_ROWS = 15;
   var teleportInFlight = false;
+  var listInFlight = false;
+  var listLoadedOnce = false;
   var modalSpawnId = null;
 
   function $(id) {
@@ -24,6 +27,11 @@
     var u = new URL(window.location.href);
     u.searchParams.set('page', String(page));
     window.history.replaceState({}, '', u.pathname + u.search);
+  }
+
+  function replaceListContent(listEl, frag) {
+    listEl.innerHTML = '';
+    listEl.appendChild(frag);
   }
 
   function formatDropChance(d) {
@@ -154,75 +162,117 @@
     if (modal) modal.hidden = false;
   }
 
-  function renderList(data) {
+  function createSkeletonRow() {
+    var row = document.createElement('div');
+    row.className = 'l2-rb-row l2-rb-row--skeleton';
+    row.setAttribute('aria-hidden', 'true');
+
+    var left = document.createElement('div');
+    left.className = 'l2-rb-row__name';
+    var ico = document.createElement('img');
+    ico.className = 'l2-rb-row__ico';
+    ico.src = '/mobs/1.png';
+    ico.alt = '';
+    ico.width = 24;
+    ico.height = 24;
+    ico.decoding = 'async';
+    var label = document.createElement('span');
+    label.className = 'l2-rb-row__label';
+    label.textContent = '…';
+    left.appendChild(ico);
+    left.appendChild(label);
+
+    var right = document.createElement('div');
+    right.className = 'l2-rb-row__actions';
+    var price = document.createElement('span');
+    price.className = 'l2-rb-row__price';
+    price.textContent = '( … )';
+    var tp = document.createElement('span');
+    tp.className = 'l2-rb-row__tp';
+    tp.textContent = '…';
+    right.appendChild(price);
+    right.appendChild(tp);
+
+    row.appendChild(left);
+    row.appendChild(right);
+    return row;
+  }
+
+  function renderListSkeleton() {
     var list = $('rb-list');
     if (!list) return;
-    list.innerHTML = '';
-    var bosses = (data && data.bosses) || [];
-    if (!bosses.length) {
-      list.textContent = 'Рейд-босів не знайдено.';
-      return;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < SKELETON_ROWS; i++) {
+      frag.appendChild(createSkeletonRow());
     }
-    for (var i = 0; i < bosses.length; i++) {
-      var b = bosses[i];
-      var row = document.createElement('div');
-      row.className = 'l2-rb-row';
+    replaceListContent(list, frag);
+  }
 
-      var left = document.createElement('button');
-      left.type = 'button';
-      left.className = 'l2-rb-row__name';
-      left.setAttribute('data-spawn-id', b.spawnId);
-      left.addEventListener('click', function () {
-        openModal(this.getAttribute('data-spawn-id'));
-      });
+  function renderListError(message) {
+    var list = $('rb-list');
+    if (!list) return;
+    var err = document.createElement('p');
+    err.className = 'l2-rb-list__error';
+    err.textContent = message || 'Не вдалося завантажити список РБ.';
+    var frag = document.createDocumentFragment();
+    frag.appendChild(err);
+    replaceListContent(list, frag);
+  }
 
-      var ico = document.createElement('img');
-      ico.className = 'l2-rb-row__ico';
-      ico.src = b.icon || '/mobs/1.png';
-      ico.alt = '';
-      ico.width = 24;
-      ico.height = 24;
-      ico.decoding = 'async';
-      ico.onerror = function () {
-        ico.src = '/mobs/1.png';
-      };
+  function buildBossRow(b) {
+    var row = document.createElement('div');
+    row.className = 'l2-rb-row';
 
-      var label = document.createElement('span');
-      label.className = 'l2-rb-row__label';
-      label.textContent = b.name + ' · рів. ' + b.level;
+    var left = document.createElement('button');
+    left.type = 'button';
+    left.className = 'l2-rb-row__name';
+    left.setAttribute('data-spawn-id', b.spawnId);
 
-      left.appendChild(ico);
-      left.appendChild(label);
+    var ico = document.createElement('img');
+    ico.className = 'l2-rb-row__ico';
+    ico.src = b.icon || '/mobs/1.png';
+    ico.alt = '';
+    ico.width = 24;
+    ico.height = 24;
+    ico.decoding = 'async';
+    ico.onerror = function () {
+      ico.src = '/mobs/1.png';
+    };
 
-      var right = document.createElement('div');
-      right.className = 'l2-rb-row__actions';
+    var label = document.createElement('span');
+    label.className = 'l2-rb-row__label';
+    label.textContent = b.name + ' · рів. ' + b.level;
 
-      var price = document.createElement('span');
-      price.className = 'l2-rb-row__price';
-      var cost = b.adenaCost != null ? b.adenaCost : 1;
-      price.appendChild(document.createTextNode('('));
-      var gold = document.createElement('span');
-      gold.className = 'l2-rb-row__price-gold';
-      gold.textContent = 'Аден ' + String(cost);
-      price.appendChild(gold);
-      price.appendChild(document.createTextNode(')'));
+    left.appendChild(ico);
+    left.appendChild(label);
 
-      var tp = document.createElement('button');
-      tp.type = 'button';
-      tp.className = 'l2-rb-row__tp';
-      tp.textContent = 'Телепорт';
-      tp.setAttribute('data-spawn-id', b.spawnId);
-      tp.addEventListener('click', function () {
-        doTeleport(this.getAttribute('data-spawn-id'));
-      });
+    var right = document.createElement('div');
+    right.className = 'l2-rb-row__actions';
 
-      right.appendChild(price);
-      right.appendChild(tp);
-      row.appendChild(left);
-      row.appendChild(right);
-      list.appendChild(row);
-    }
+    var price = document.createElement('span');
+    price.className = 'l2-rb-row__price';
+    var cost = b.adenaCost != null ? b.adenaCost : 1;
+    price.appendChild(document.createTextNode('('));
+    var gold = document.createElement('span');
+    gold.className = 'l2-rb-row__price-gold';
+    gold.textContent = 'Аден ' + String(cost);
+    price.appendChild(gold);
+    price.appendChild(document.createTextNode(')'));
 
+    var tp = document.createElement('button');
+    tp.type = 'button';
+    tp.className = 'l2-rb-row__tp';
+    tp.textContent = 'Телепорт';
+    tp.setAttribute('data-spawn-id', b.spawnId);
+
+    right.appendChild(price);
+    right.appendChild(tp);
+    row.appendChild(left);
+    row.appendChild(right);
+    return row;
+  }
+
+  function renderPager(data) {
     var pager = $('rb-pager');
     var ind = $('rb-pager-ind');
     var prev = $('rb-pager-prev');
@@ -238,33 +288,104 @@
     if (next) next.disabled = data.page >= data.totalPages;
   }
 
+  function renderList(data) {
+    var list = $('rb-list');
+    if (!list) return;
+    var bosses = (data && data.bosses) || [];
+    if (!bosses.length) {
+      var empty = document.createElement('p');
+      empty.className = 'l2-rb-list__error';
+      empty.textContent = 'Рейд-босів не знайдено.';
+      var frag = document.createDocumentFragment();
+      frag.appendChild(empty);
+      replaceListContent(list, frag);
+      renderPager(data);
+      return;
+    }
+
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < bosses.length; i++) {
+      frag.appendChild(buildBossRow(bosses[i]));
+    }
+    replaceListContent(list, frag);
+    renderPager(data);
+  }
+
+  function wireListDelegation() {
+    var list = $('rb-list');
+    if (!list || list.dataset.rbDelegated === '1') return;
+    list.dataset.rbDelegated = '1';
+    list.addEventListener('click', function (e) {
+      var tpBtn =
+        e.target && e.target.closest ? e.target.closest('.l2-rb-row__tp') : null;
+      if (tpBtn) {
+        var tpId = tpBtn.getAttribute('data-spawn-id');
+        if (tpId) doTeleport(tpId);
+        return;
+      }
+      var nameBtn =
+        e.target && e.target.closest ? e.target.closest('.l2-rb-row__name') : null;
+      if (nameBtn) {
+        var spawnId = nameBtn.getAttribute('data-spawn-id');
+        if (spawnId) openModal(spawnId);
+      }
+    });
+  }
+
   async function loadPage(page) {
+    if (listInFlight) return null;
     var err = $('rb-load-err');
-    if (err) err.hidden = true;
+    if (err) {
+      err.hidden = true;
+      err.textContent = '';
+    }
     var tok = localStorage.getItem('token');
     if (!tok) {
       window.location.href = '/';
-      return;
+      return null;
     }
-    var r = await fetch('/game/raid-bosses?page=' + encodeURIComponent(String(page)), {
-      headers: authHeaders(),
-    });
-    if (r.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-      return;
+
+    listInFlight = true;
+    if (!listLoadedOnce) {
+      renderListSkeleton();
     }
-    if (!r.ok) {
+
+    try {
+      var r = await fetch('/game/raid-bosses?page=' + encodeURIComponent(String(page)), {
+        headers: authHeaders(),
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return null;
+      }
+      if (!r.ok) {
+        if (err) {
+          err.hidden = false;
+          err.textContent = 'Не вдалося завантажити список РБ.';
+        }
+        if (!listLoadedOnce) {
+          renderListError('Не вдалося завантажити список РБ.');
+        }
+        return null;
+      }
+      var data = await r.json();
+      renderList(data);
+      setPageInUrl(data.page || page);
+      listLoadedOnce = true;
+      return data;
+    } catch (_e) {
       if (err) {
         err.hidden = false;
         err.textContent = 'Не вдалося завантажити список РБ.';
       }
-      return;
+      if (!listLoadedOnce) {
+        renderListError('Не вдалося завантажити список РБ.');
+      }
+      return null;
+    } finally {
+      listInFlight = false;
     }
-    var data = await r.json();
-    renderList(data);
-    setPageInUrl(data.page || page);
-    return data;
   }
 
   async function doTeleport(spawnId) {
@@ -278,10 +399,7 @@
     try {
       var r = await fetch('/game/raid-boss/teleport', {
         method: 'POST',
-        headers: Object.assign(
-          { 'Content-Type': 'application/json' },
-          authHeaders()
-        ),
+        headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
         body: JSON.stringify({
           spawnId: spawnId,
           expectedRevision: snap.revision,
@@ -304,10 +422,7 @@
         j = null;
       }
       if (!r.ok) {
-        alert(
-          (j && j.messageUk) ||
-            'Телепорт не вдався.'
-        );
+        alert((j && j.messageUk) || 'Телепорт не вдався.');
         return;
       }
       if (j && j.character && L2.applyCharacterSnapshot) {
@@ -338,9 +453,10 @@
 
   function init() {
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
-      L2.mountL2Nav();
+      L2.mountL2Nav({});
     }
     wirePager();
+    wireListDelegation();
 
     var closeBtn = $('rb-modal-close');
     var backdrop = $('rb-modal-backdrop');
@@ -352,22 +468,23 @@
       window.location.href = '/';
       return;
     }
-    (function () {
-      if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
-        L2.renderCharacterFromCache();
-      }
-      return window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
-        ? L2.resyncCharacterWhenRequired()
-        : Promise.resolve(null);
-    })()
-      .then(function (c) {
-        if (c && typeof L2.applyMutationSnapshot === 'function') {
-          L2.applyMutationSnapshot(c);
-        }
-      })
-      .finally(function () {
-        loadPage(readPageFromUrl());
-      });
+
+    if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
+    }
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      void L2.resyncCharacterWhenRequired()
+        .then(function (c) {
+          if (c && typeof L2.applyMutationSnapshot === 'function') {
+            L2.applyMutationSnapshot(c);
+          }
+        })
+        .catch(function () {
+          /* optional for list reveal */
+        });
+    }
+
+    loadPage(readPageFromUrl());
   }
 
   if (document.readyState === 'loading') {

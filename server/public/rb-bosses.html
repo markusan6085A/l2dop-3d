@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-rb-bosses-page.css?v=20260713rbBosses9" />
+    <link rel="stylesheet" href="/css/l2-rb-bosses-page.css?v=20260718rbStable1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-rb-bosses l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -56,29 +56,29 @@
           />
         </div>
         <div class="l2-screen-inner l2-rb-root">
-          <div class="l2-chrome-nav-column">
-            <div id="l2-hud-panel-mount"></div>
-            <div id="l2-nav-top"></div>
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
 
-            <p class="l2-rb-back">
-              <a href="/menu.html">← Меню</a>
-            </p>
-            <h1 class="l2-pers-h1 l2-rb-title">
-              <img
-                class="l2-rb-title__ico"
-                src="/ref/photo_2026-07-05_13-28-29-removebg-preview.png"
-                alt=""
-                width="28"
-                height="28"
-                decoding="async"
-              />
-              <span>Raid Bosses</span>
-            </h1>
+          <p class="l2-rb-back">
+            <a href="/menu.html">← Меню</a>
+          </p>
+          <h1 class="l2-pers-h1 l2-rb-title">
+            <img
+              class="l2-rb-title__ico"
+              src="/ref/photo_2026-07-05_13-28-29-removebg-preview.png"
+              alt=""
+              width="28"
+              height="28"
+              decoding="async"
+            />
+            <span>Raid Bosses</span>
+          </h1>
 
-            <p class="err" id="rb-load-err" hidden></p>
+          <p class="err" id="rb-load-err" hidden></p>
 
-            <section class="l2-rb-panel" aria-label="Список рейд-босів">
-              <div id="rb-list"></div>
+          <section class="l2-rb-panel" aria-label="Список рейд-босів">
+            <div id="rb-list" class="l2-rb-list"></div>
+            <div class="l2-rb-pager-slot">
               <div class="l2-rb-pager" id="rb-pager" hidden>
                 <button type="button" class="l2-rb-pager__btn" id="rb-pager-prev" aria-label="Попередня">
                   &lt;&lt;
@@ -88,10 +88,10 @@
                   &gt;&gt;
                 </button>
               </div>
-            </section>
+            </div>
+          </section>
 
-            <div id="l2-nav-bottom"></div>
-          </div>
+          <div id="l2-nav-bottom"></div>
         </div>
       </div>
     </div>
@@ -127,6 +127,6 @@
     <script src="/common.js?v=20260718layoutStable4"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/rb-bosses.js?v=20260713rbBosses3"></script>
+    <script src="/rb-bosses.js?v=20260718rbStable1"></script>
   </body>
 </html>
