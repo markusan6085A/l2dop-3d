@@ -229,7 +229,7 @@
       blackKey: false,
     },
     dwarf_scavenger: {
-      url: charPngDwarf(5),
+      url: charPngDwarf(4),
       skin: 'dwarf-scavenger-m',
       blackKey: false,
     },
@@ -239,12 +239,52 @@
       blackKey: false,
     },
     'dwarf_scavenger|female': {
-      url: charPngDwarf(6),
+      url: charPngDwarf(3),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
     'dwarf_artisan|female': {
       url: charPngDwarf(3),
+      skin: 'dwarf-fighter-f',
+      blackKey: false,
+    },
+    dwarf_bounty_hunter: {
+      url: charPngDwarf(5),
+      skin: 'dwarf-scavenger-m',
+      blackKey: false,
+    },
+    'dwarf_bounty_hunter|female': {
+      url: charPngDwarf(6),
+      skin: 'dwarf-fighter-f',
+      blackKey: false,
+    },
+    dwarf_warsmith: {
+      url: charPngDwarf(5),
+      skin: 'dwarf-scavenger-m',
+      blackKey: false,
+    },
+    'dwarf_warsmith|female': {
+      url: charPngDwarf(6),
+      skin: 'dwarf-fighter-f',
+      blackKey: false,
+    },
+    dwarf_fortune_seeker: {
+      url: charPngDwarf(11),
+      skin: 'dwarf-scavenger-m',
+      blackKey: false,
+    },
+    'dwarf_fortune_seeker|female': {
+      url: charPngDwarf(12),
+      skin: 'dwarf-fighter-f',
+      blackKey: false,
+    },
+    dwarf_maestro: {
+      url: charPngDwarf(11),
+      skin: 'dwarf-scavenger-m',
+      blackKey: false,
+    },
+    'dwarf_maestro|female': {
+      url: charPngDwarf(12),
       skin: 'dwarf-fighter-f',
       blackKey: false,
     },
@@ -503,17 +543,22 @@
     ],
   };
 
+  /** Гном 1–2 профа: 52+ → photo_7/8, 62+ → photo_10/9. */
   var DWARF_PROF_LEVEL_PORTRAITS = {
     male: [
-      { minLevel: 62, url: charPngDwarf(11) },
-      { minLevel: 52, url: charPngDwarf(10) },
-      { minLevel: 40, url: charPngDwarf(7) },
+      { minLevel: 62, url: charPngDwarf(10) },
+      { minLevel: 52, url: charPngDwarf(7) },
     ],
     female: [
-      { minLevel: 62, url: charPngDwarf(12) },
-      { minLevel: 52, url: charPngDwarf(9) },
-      { minLevel: 40, url: charPngDwarf(8) },
+      { minLevel: 62, url: charPngDwarf(9) },
+      { minLevel: 52, url: charPngDwarf(8) },
     ],
+  };
+
+  /** Гном 3 профа: Fortune Seeker / Maestro — photo_11/12 (без перекриття 52/62). */
+  var DWARF_THIRD_PROF_LEVEL_PORTRAITS = {
+    male: [{ minLevel: 76, url: charPngDwarf(11) }],
+    female: [{ minLevel: 76, url: charPngDwarf(12) }],
   };
 
   /**
@@ -524,9 +569,9 @@
     dwarf_scavenger: DWARF_PROF_LEVEL_PORTRAITS,
     dwarf_artisan: DWARF_PROF_LEVEL_PORTRAITS,
     dwarf_bounty_hunter: DWARF_PROF_LEVEL_PORTRAITS,
-    dwarf_fortune_seeker: DWARF_PROF_LEVEL_PORTRAITS,
     dwarf_warsmith: DWARF_PROF_LEVEL_PORTRAITS,
-    dwarf_maestro: DWARF_PROF_LEVEL_PORTRAITS,
+    dwarf_fortune_seeker: DWARF_THIRD_PROF_LEVEL_PORTRAITS,
+    dwarf_maestro: DWARF_THIRD_PROF_LEVEL_PORTRAITS,
     human_hawkeye: {
       male: [
         { minLevel: 62, url: charPng(27) },
@@ -596,10 +641,6 @@
 
   /** 2–3 профа гілки — та сама картинка, що на базовій 2-й (або 1-й для rogue/luk). */
   var SCENE_HERO_PROF_ALIAS = {
-    dwarf_bounty_hunter: 'dwarf_scavenger',
-    dwarf_fortune_seeker: 'dwarf_scavenger',
-    dwarf_warsmith: 'dwarf_artisan',
-    dwarf_maestro: 'dwarf_artisan',
     orc_destroyer: 'orc_raider',
     orc_tyrant: 'orc_monk',
     orc_titan: 'orc_raider',

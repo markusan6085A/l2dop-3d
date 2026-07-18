@@ -304,6 +304,11 @@
   object-position: center bottom;
 }
 
+:root {
+  --l2-hero-feet-gap: 0.12cm;
+  --l2-hero-shadow-bottom: 0.04cm;
+}
+
 .l2-char-equip-hero-stage {
   position: absolute;
   inset: 0;
@@ -313,6 +318,12 @@
   justify-content: center;
   pointer-events: none;
   overflow: hidden;
+}
+
+/* Усі герої: 0.5 см від ніг до нижньої рамки, тінь на тому ж рівні */
+.l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-stage {
+  padding-bottom: var(--l2-hero-feet-gap);
+  box-sizing: border-box;
 }
 
 .l2-char-equip-hero-stage[hidden] {

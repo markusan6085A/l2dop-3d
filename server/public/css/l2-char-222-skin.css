@@ -60,10 +60,8 @@ body.l2-app-l2-chrome.l2-page-char {
   --l2-hero-prof-h: 65.2%;
   --l2-hero-prof-w: 68.8%;
   --l2-hero-prof-scale: 0.748;
-  --l2-hero-shadow-before-bottom: -0.75%;
-  --l2-hero-shadow-after-bottom: 0;
-  --l2-hero-male-y: 5%;
-  --l2-hero-female-y: 2%;
+  --l2-hero-shadow-before-bottom: var(--l2-hero-shadow-bottom);
+  --l2-hero-shadow-after-bottom: var(--l2-hero-shadow-bottom);
 }
 
 /* Герой поверх сцени: тінь під ногами (як у human_fighter на старті) */
@@ -112,7 +110,7 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-on-stairs .l2-char-eq
   max-width: var(--l2-hero-starter-w);
   object-fit: contain;
   object-position: center bottom;
-  transform: translateY(var(--l2-hero-male-y)) scale(var(--l2-hero-starter-scale));
+  transform: scale(var(--l2-hero-starter-scale));
   transform-origin: center bottom;
   filter: none;
 }
@@ -139,41 +137,6 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-mystic-f .l2
   height: var(--l2-hero-starter-h);
   max-width: var(--l2-hero-starter-w);
   filter: none;
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-mage-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dwarf-fighter-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-orc-fighter-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-elf-fighter-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-elf-mystic-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-fighter-m .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-mystic-m .l2-char-equip-hero-overlay {
-  transform: translateY(var(--l2-hero-male-y)) scale(var(--l2-hero-starter-scale));
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-mage-f .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dwarf-fighter-f .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-orc-fighter-f .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-dark-elf-mystic-f .l2-char-equip-hero-overlay {
-  transform: translateY(var(--l2-hero-female-y)) scale(var(--l2-hero-starter-scale));
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay,
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-hawkeye-f .l2-char-equip-hero-overlay {
-  transform: translateY(var(--l2-hero-female-y)) scale(var(--l2-hero-starter-scale));
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='52'],
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='62'],
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-f .l2-char-equip-hero-overlay[data-hero-portrait-raised='1'],
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='52'],
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-fighter-f .l2-char-equip-hero-overlay[data-hero-portrait-tier='62'],
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-m .l2-char-equip-hero-overlay[data-hero-portrait-tier='52'],
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-m .l2-char-equip-hero-overlay[data-hero-portrait-tier='62'],
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-bg--hero-human-warlord-m .l2-char-equip-hero-overlay[data-hero-portrait-raised='1'] {
-  transform: translateY(-1%) scale(var(--l2-hero-starter-scale));
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-slot-icon {
