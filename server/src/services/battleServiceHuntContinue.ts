@@ -5,6 +5,7 @@ import {
   type CharacterRow,
 } from './charService.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
+import { findCharacterForUserInTx } from './charResolveForUser.js';
 import { HUNT_LEVEL_TOLERANCE } from '../domain/battleHuntChain.js';
 import { resolveHuntCandidatesForCharacter } from '../domain/huntContinueCandidates.js';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
@@ -52,10 +53,7 @@ export async function startHuntContinueBattle(
   );
 
   return prisma.$transaction(async (tx) => {
-    const row = await tx.character.findFirst({
-      where: { userId },
-      orderBy: { lastUpdate: 'desc' },
-    });
+    const row = await findCharacterForUserInTx(tx, userId);
     if (!row) throw new Error('no_character');
 
     const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));

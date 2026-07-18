@@ -1,9 +1,10 @@
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
-import { prisma } from '../lib/prisma.js';
-import {
-  type CharacterRow,
-} from './charService.js';
+import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
+import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
+import { findCharacterForUser } from './charResolveForUser.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
+import type { BattleJsonState } from '../domain/battle.js';
+import { readWorldBossSessionMobHp } from './worldBossSessionService.js';
 import {
   battleCooldownsForSync,
   buildBattleSyncResponse,
@@ -13,6 +14,19 @@ import {
   computeCharacterVitalsBundle,
   resolveClanHallBonusForCharacter,
 } from './characterClanHallVitals.js';
+import type { CharacterRow } from './charTypes.js';
+async function battleJsonWithSharedMobHp(
+  bj: BattleJsonState
+): Promise<BattleJsonState> {
+  const spawnMeta = resolveBattleSpawnMeta(bj);
+  if (!spawnMeta || !isSharedWorldBossKind(spawnMeta.kind)) return bj;
+  const sharedHp = await readWorldBossSessionMobHp(bj.spawnId);
+  if (sharedHp == null) return bj;
+  return {
+    ...bj,
+    mobHp: Math.max(0, Math.min(bj.mobMaxHp, Math.floor(sharedHp))),
+  };
+}
 
 export type BattleSyncQuery = {
   battleVersion?: number;
@@ -26,9 +40,7 @@ export async function getBattleSyncForUser(
   userId: string,
   query: BattleSyncQuery
 ): Promise<BattleSyncResponse | null> {
-  const row = await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
+  const row = await findCharacterForUser(userId, {
     include: {
       clan: { select: { hallBlessingAt: true, level: true } },
     },
@@ -62,8 +74,8 @@ export async function getBattleSyncForUser(
     };
   }
 
-  const bj = parseBattleJson(cr.battleJson);
-  if (!bj) {
+  const bjRaw = parseBattleJson(cr.battleJson);
+  if (!bjRaw) {
     const hadClientState =
       clientBv != null && clientBv > 0;
     return {
@@ -77,6 +89,8 @@ export async function getBattleSyncForUser(
       battleEnded: false,
     };
   }
+
+  const bj = await battleJsonWithSharedMobHp(bjRaw);
 
   const vitals = computeCharacterVitalsBundle({
     row: cr,

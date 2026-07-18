@@ -1730,9 +1730,10 @@
     }
 
     function latestCharacterRevision() {
+      if (character && character.revision != null) return character.revision;
       var ls = window.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null;
       if (ls && ls.revision != null) return ls.revision;
-      return character && character.revision != null ? character.revision : null;
+      return null;
     }
 
     function battleSyncIntervalMs() {
@@ -1759,9 +1760,14 @@
           return syncBattleFromServerFull();
         }
         if (!st.changed) {
-          if (st.revision != null && character) {
-            character.revision = st.revision;
+          if (character) {
+            if (st.revision != null) character.revision = st.revision;
+            if (st.characterHp != null) character.hp = st.characterHp;
+            if (st.characterMp != null) character.mp = st.characterMp;
+            if (st.characterMaxHp != null) character.maxHp = st.characterMaxHp;
+            if (st.characterMaxMp != null) character.maxMp = st.characterMaxMp;
             if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+            if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
           }
           if (typeof st.battleVersion === 'number') {
             lastBattleVersion = Math.floor(st.battleVersion);
@@ -1810,9 +1816,19 @@
         } catch (eResync) {
           /* fallback нижче */
         }
-      } else if (conflictBody && conflictBody.character) {
-        character = conflictBody.character;
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      } else if (
+        conflictBody &&
+        conflictBody.character &&
+        typeof conflictBody.character === 'object'
+      ) {
+        if (
+          !character ||
+          !character.id ||
+          conflictBody.character.id === character.id
+        ) {
+          character = conflictBody.character;
+          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        }
       } else if (
         conflictBody &&
         typeof conflictBody.serverRevision === 'number' &&
@@ -1934,7 +1950,11 @@
       character = res.character;
       battle = res.battle;
       syncBattleTrackFromView(battle);
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(character);
+      } else {
+        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      }
       if (checkPvpDefeatFromCharacter(character)) {
         stopBattleSyncPoll();
         return 'pvp_defeat';

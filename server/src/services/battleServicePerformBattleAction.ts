@@ -9,7 +9,7 @@ import {
   type BattleActionId,
 } from '../domain/battle.js';
 import { mergeDisplayBattleMods } from '../domain/combatDisplayContext.js';
-import { applyClanHallToCombatStats, resolveHpWithClanHallPassive, computeMaxHpChain } from '../domain/characterClanHallVitals.js';
+import { applyClanHallToCombatStats, computeMaxHpChain } from '../domain/characterClanHallVitals.js';
 import {
   computeCharacterVitalsBundle,
   resolveClanHallBonusInTx,
@@ -108,6 +108,7 @@ import {
 import { battleActionAllowed } from './battleServiceBattleUi.js';
 import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
 import { enrichPartialClientSnapshot, ensureClanHallOnRow } from './charClientSnapshot.js';
+import { findCharacterForUserInTx } from './charResolveForUser.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
@@ -205,9 +206,8 @@ export async function performBattleActionInTx(
     battlePotionItemId?: number;
   }
 ): Promise<BattleActionResponse> {
-    let char = await tx.character.findFirst({
-      where: { userId },
-      orderBy: { lastUpdate: 'desc' },
+    let char = await findCharacterForUserInTx(tx, userId, {
+      include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
     });
     if (!char) throw new Error('no_character');
     if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
@@ -304,15 +304,11 @@ export async function performBattleActionInTx(
     }
     const log = [...st.log];
     const initialLogLen = log.length;
-    let playerHp = resolveHpWithClanHallPassive({
-      storedHp: char.hp,
-      maxHpWithoutClanHall: vitalsBundle.maxHpChain.maxHpWithoutClanHall,
-      maxHpWithClanHall: effectiveBattleMaxHp(maxHpEff, st.battleMods),
-      clanHallBonus: clanHallPassive,
-    });
-    playerHp = Math.min(
-      Math.max(0, playerHp),
-      effectiveBattleMaxHp(maxHpEff, st.battleMods)
+    /** У бою беремо HP з колонки БД (урон уже персиститься на continue), без clan-hall «bump». */
+    const battleHpCap = effectiveBattleMaxHp(maxHpEff, st.battleMods);
+    let playerHp = Math.min(
+      battleHpCap,
+      Math.max(0, Math.floor(char.hp))
     );
     let mobHp = st.mobHp;
 

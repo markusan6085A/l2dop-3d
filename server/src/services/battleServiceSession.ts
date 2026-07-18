@@ -49,6 +49,7 @@ import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { battleViewFromState, skillCooldownUiContextFromRow } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
 import { applyCharacterReadView } from './charReadView.js';
+import { findCharacterForUser, findCharacterForUserInTx } from './charResolveForUser.js';
 import { persistableActiveBuffsFromJson } from '../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../data/skillCooldowns.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
@@ -68,6 +69,7 @@ import {
 import {
   ensureWorldBossSessionInTx,
   isSharedWorldBossKind,
+  readWorldBossSessionMobHp,
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
@@ -93,9 +95,7 @@ export async function startBattleInTx(
     'Бій розпочато: [' + spawn.name + '] (ур. ' + spawn.level + ').',
   ];
 
-  const char = await tx.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
+  const char = await findCharacterForUserInTx(tx, userId, {
     include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
   });
   if (!char) throw new Error('no_character');
@@ -350,9 +350,7 @@ export async function getBattleState(
   /**
    * Read-only resync (F5 / 409): без flush RB, PvP refresh, без write у БД.
    */
-  let row = (await prisma.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
+  let row = (await findCharacterForUser(userId, {
     include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
   })) as CharacterRow | null;
   if (!row) return null;
@@ -362,10 +360,20 @@ export async function getBattleState(
   if (snap.pveDefeat || snap.pvpDefeat) {
     return { character: snap, battle: null, pvpIncoming };
   }
-  const bj = parseBattleJson((row as CharacterRow).battleJson);
-  if (!bj) return { character: snap, battle: null, pvpIncoming };
-  const spawnMeta = resolveBattleSpawnMeta(bj);
+  const bjRaw = parseBattleJson((row as CharacterRow).battleJson);
+  if (!bjRaw) return { character: snap, battle: null, pvpIncoming };
+  const spawnMeta = resolveBattleSpawnMeta(bjRaw);
   if (!spawnMeta) return { character: snap, battle: null, pvpIncoming };
+  let bj = bjRaw;
+  if (isSharedWorldBossKind(spawnMeta.kind)) {
+    const sharedHp = await readWorldBossSessionMobHp(bjRaw.spawnId);
+    if (sharedHp != null) {
+      bj = {
+        ...bjRaw,
+        mobHp: Math.max(0, Math.min(bjRaw.mobMaxHp, Math.floor(sharedHp))),
+      };
+    }
+  }
   const cr = row as CharacterRow;
   const prof =
     typeof cr.l2Profession === 'string' && cr.l2Profession.trim()
@@ -411,10 +419,7 @@ export async function leaveBattle(
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
   return prisma.$transaction(async (tx) => {
-    const char = await tx.character.findFirst({
-      where: { userId },
-      orderBy: { lastUpdate: 'desc' },
-    });
+    const char = await findCharacterForUserInTx(tx, userId);
     if (!char) throw new Error('no_character');
     if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 

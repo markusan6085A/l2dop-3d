@@ -140,17 +140,22 @@ export async function persistBattleVictoryInTx(
   });
   const maxHpAfter = vitalsAfter.maxHpChain.maxHpWithClanHall;
   const maxMpAfter = vitalsAfter.maxMp;
+  const leveledUp = newLevel > preLevel;
   let nextHp: number;
-  if (newLevel > preLevel) {
+  if (leveledUp) {
     nextHp = maxHpAfter;
     log.push('Рівень ' + newLevel + '!');
   } else {
-    nextHp = Math.max(1, playerHp);
+    nextHp = Math.min(maxHpAfter, Math.max(1, Math.floor(playerHp)));
   }
+
+  const nextMp = leveledUp
+    ? maxMpAfter
+    : Math.min(maxMpAfter, Math.max(0, Math.floor(currentMp)));
 
   const stWorld: BattleJsonState = {
     ...st,
-    playerMp: Math.min(maxMpAfter, currentMp),
+    playerMp: nextMp,
   };
   const worldVictory = worldCombatStateFromBattleJson(
     stWorld,

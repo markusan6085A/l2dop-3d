@@ -198,6 +198,16 @@ export async function loadWorldBossSessionMobHp(
   return session?.mobHp ?? null;
 }
 
+/** Read-path (sync / GET battle): спільне HP РБ/епіка з сесії. */
+export async function readWorldBossSessionMobHp(
+  spawnId: string
+): Promise<number | null> {
+  const row = await prisma.worldBossSession.findUnique({ where: { spawnId } });
+  if (!row) return null;
+  const session = parseWorldBossSessionState(row.stateJson);
+  return session?.mobHp ?? null;
+}
+
 async function loadParticipantContexts(
   tx: Tx,
   session: WorldBossSessionState
