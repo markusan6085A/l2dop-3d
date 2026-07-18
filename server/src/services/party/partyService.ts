@@ -13,6 +13,7 @@ import {
   purgeAllPartyInvitesForTargetInTx,
 } from './partyMemberHelpers.js';
 import { buildPartyView, loadPartyViewForCharacter } from './partySnapshot.js';
+import { enrichPartyViewStageD } from './partyViewEnrichService.js';
 import { isPartyMemberCharacterUniqueViolation } from './partyPrismaErrors.js';
 import { isPartyBattleEngineEnabled } from '../../domain/partyBattleFlags.js';
 import { PARTY_BATTLE_END_REASON } from '../../domain/partyBattleSessionConstants.js';
@@ -68,7 +69,10 @@ export async function getPartyForUser(
     select: { id: true },
   });
   if (!char) throw new Error('no_character');
-  const party = await loadPartyViewForCharacter(char.id);
+  const partyRaw = await loadPartyViewForCharacter(char.id);
+  const party = partyRaw
+    ? await enrichPartyViewStageD(partyRaw)
+    : null;
   return { party };
 }
 

@@ -57,6 +57,7 @@
     "test:party-battle-stage-b0.5": "tsx server/scripts/party-battle-stage-b0.5-smoke.ts",
     "test:party-battle-stage-b": "tsx server/scripts/party-battle-stage-b-smoke.ts",
     "test:party-battle-stage-c": "tsx server/scripts/party-battle-stage-c-smoke.ts",
+    "test:party-battle-stage-d": "tsx server/scripts/party-battle-stage-d-smoke.ts",
     "test:warehouse-deposit-atomic": "tsx server/scripts/warehouse-deposit-atomic-smoke.ts",
     "check:public-js": "node server/scripts/check-public-js-syntax.mjs",
     "test:stress:rapid": "tsx server/scripts/stress-rapid-actions.ts",

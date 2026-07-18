@@ -39,7 +39,15 @@ export interface NearbyHeroEntry {
   l2Profession: string;
   /** Карма > 0 — для маркера PK. */
   pk: number;
+  /** Stage D: член поточної паті viewer. */
+  isPartyMember?: boolean;
+  isPartyLeader?: boolean;
 }
+
+export type NearbyHeroesPartyContext = {
+  memberIds: Set<string>;
+  leaderCharacterId: string;
+};
 
 const MAX_NEARBY_HEROES = 50;
 
@@ -102,7 +110,8 @@ export async function getNearbyHeroesForMap(
   worldX: number,
   worldY: number,
   excludeCharacterId: string,
-  nowMs: number = Date.now()
+  nowMs: number = Date.now(),
+  partyContext: NearbyHeroesPartyContext | null = null
 ): Promise<NearbyHeroEntry[]> {
   const R = MAP_NEARBY_HERO_RADIUS;
   const R2 = R * R;
@@ -141,6 +150,10 @@ export async function getNearbyHeroesForMap(
       nowMs
     );
     const pkAllowed = canPkAttackHero(row, exclude);
+    const isPartyMember =
+      partyContext != null && partyContext.memberIds.has(row.id);
+    const isPartyLeader =
+      isPartyMember && partyContext!.leaderCharacterId === row.id;
     candidates.push({
       characterId: row.id,
       name: row.name,
@@ -156,6 +169,9 @@ export async function getNearbyHeroesForMap(
       gender: row.gender || 'male',
       l2Profession: row.l2Profession || '',
       pk: karma > 0 ? karma : 0,
+      ...(partyContext
+        ? { isPartyMember, isPartyLeader }
+        : {}),
     });
   }
 

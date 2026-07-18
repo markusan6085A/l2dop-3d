@@ -76,7 +76,17 @@
               ></div>
             </div>
 
-            <div id="battle-active-root">
+            <div id="battle-active-root" class="l2-battle-active-root">
+            <div class="l2-battle-top-grid">
+            <aside
+              id="battle-party-panel"
+              class="l2-battle-party-panel"
+              hidden
+              aria-label="Паті в бою"
+            >
+              <h3 class="l2-battle-party-panel__title">Паті</h3>
+              <ul id="battle-party-members" class="l2-battle-party-members"></ul>
+            </aside>
             <section
               class="l2-battle-mob-panel"
               data-i18n-attr="aria-label:battle_enemy_aria"
@@ -121,6 +131,8 @@
                 ></div>
               </div>
               <div class="l2-battle-skills" id="battle-skills"></div>
+            </section>
+            </div>
 
               <div class="l2-battle-log-wrap">
                 <div class="l2-battle-log-title" data-i18n="battle_log_title">Лог бою</div>
@@ -137,7 +149,6 @@
                   Назад на карту
                 </a>
               </div>
-            </section>
             </div>
 
             <section

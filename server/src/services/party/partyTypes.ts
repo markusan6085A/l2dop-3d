@@ -6,6 +6,30 @@ export type PartyMemberView = {
   isLeader: boolean;
   slotOrder: number;
   joinedAt: string;
+  /** Stage D — read-only status (null коли UI вимкнено). */
+  online?: boolean;
+  nearby?: boolean;
+  activeInBattle?: boolean;
+};
+
+export type PartyHudActiveBattle = {
+  partyBattleId: string;
+  spawnId: string;
+  mobName: string;
+  mobHp: number;
+  mobMaxHp: number;
+  state: string;
+  memberNearby: boolean;
+  mobInBattleRange: boolean;
+  canJoin: boolean;
+};
+
+export type PartyHudRewardNotice = {
+  partyBattleId: string;
+  expGain: number;
+  spGain: number;
+  adenaGain: string;
+  createdAt: string;
 };
 
 export type PartyView = {
@@ -19,6 +43,8 @@ export type PartyView = {
   members: PartyMemberView[];
   viewerCharacterId: string;
   viewerIsLeader: boolean;
+  /** Stage D — active battle summary для party page. */
+  activeBattle?: PartyHudActiveBattle | null;
 };
 
 export type PartyInviteView = {
@@ -70,6 +96,8 @@ export type PartyHudResult = {
   party: PartyHudParty | null;
   invite: PartyHudInvite | null;
   extraInviteCount: number;
+  activeBattle?: PartyHudActiveBattle | null;
+  rewardNotice?: PartyHudRewardNotice | null;
 };
 
 export type PartyProfileInviteResult = {

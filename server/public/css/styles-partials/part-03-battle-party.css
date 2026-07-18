@@ -1,0 +1,224 @@
+
+/* Stage D: party battle top grid (party ~41% | mob ~59%) */
+.l2-battle-active-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.l2-battle-top-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 41%) minmax(0, 59%);
+  gap: 8px;
+  width: 100%;
+  align-items: start;
+}
+
+.l2-battle-party-panel {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px solid var(--l2-gold-frame);
+  border-radius: 8px;
+  background: rgba(18, 14, 10, 0.92);
+}
+
+.l2-battle-party-panel__title {
+  margin: 0 0 6px;
+  font-family: var(--l2-font-display);
+  font-size: 11px;
+  font-weight: 600;
+  color: #c8b890;
+  text-align: center;
+}
+
+.l2-battle-party-members {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.l2-battle-party-member {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 4px 4px 5px;
+  border: 1px solid rgba(120, 100, 70, 0.35);
+  border-radius: 6px;
+  background: rgba(8, 6, 4, 0.55);
+}
+
+.l2-battle-party-member--far,
+.l2-battle-party-member--offline {
+  opacity: 0.72;
+  filter: grayscale(0.35);
+}
+
+.l2-battle-party-member--dead {
+  opacity: 0.85;
+  border-color: rgba(180, 60, 60, 0.55);
+  background: rgba(40, 10, 10, 0.45);
+}
+
+.l2-battle-party-member__head {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  margin-bottom: 3px;
+}
+
+.l2-battle-party-member__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 600;
+  color: #e8dcc8;
+}
+
+.l2-battle-party-member__meta {
+  flex: 0 0 auto;
+  font-size: 9px;
+  color: #a89878;
+  white-space: nowrap;
+}
+
+.l2-battle-party-member__status {
+  display: block;
+  font-size: 9px;
+  color: #9a9080;
+  margin-bottom: 3px;
+}
+
+.l2-battle-party-member__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 3px;
+}
+
+.l2-battle-party-member__bar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.l2-battle-party-member__bar-lbl {
+  flex: 0 0 18px;
+  font-size: 8px;
+  font-weight: 700;
+  color: #b8a888;
+}
+
+.l2-battle-party-member__bar-outer {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.65);
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.l2-battle-party-member__bar-inner {
+  height: 100%;
+  min-width: 2px;
+}
+
+.l2-battle-party-member__bar-inner--hp {
+  background: linear-gradient(180deg, #c03838 0%, #801818 100%);
+}
+
+.l2-battle-party-member__bar-inner--mp {
+  background: linear-gradient(180deg, #3868c0 0%, #183080 100%);
+}
+
+.l2-battle-party-member__buffs {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.l2-battle-party-member__buff {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  border-radius: 2px;
+  object-fit: cover;
+  background: #111;
+}
+
+.l2-battle-party-member__buff-more {
+  flex: 0 0 auto;
+  font-size: 9px;
+  color: #c8b890;
+  white-space: nowrap;
+}
+
+.l2-battle-top-grid .l2-battle-mob-panel {
+  margin: 0;
+  min-width: 0;
+}
+
+.l2-battle-top-grid .l2-battle-mob-hp-wrap .l2-battle-bar-outer {
+  max-width: 100%;
+  flex: 1 1 auto;
+}
+
+.l2-battle-top-grid .l2-battle-mob-icon {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 430px) {
+  .l2-battle-top-grid {
+    grid-template-columns: minmax(0, 42%) minmax(0, 58%);
+    gap: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .l2-battle-party-member__name {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 320px) {
+  .l2-battle-top-grid {
+    grid-template-columns: minmax(0, 40%) minmax(0, 60%);
+    gap: 4px;
+  }
+
+  .l2-battle-party-panel {
+    padding: 6px 4px;
+  }
+
+  .l2-battle-party-member__buff {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (min-width: 520px) {
+  .l2-battle-party-member__buffs--wide .l2-battle-party-member__buff:nth-child(n + 7) {
+    display: none;
+  }
+}
+
+@media (max-width: 519px) {
+  .l2-battle-party-member__buffs .l2-battle-party-member__buff:nth-child(n + 5) {
+    display: none;
+  }
+}

@@ -24,6 +24,11 @@ export function isPartyBattleRewardDistributionReady(): boolean {
   );
 }
 
+/** Stage D UI (map/HUD/battle frames) — engine + rewards. */
+export function isPartyBattleStageDUiEnabled(): boolean {
+  return isPartyBattleRewardDistributionReady();
+}
+
 /** Lethal без reward / route access до Stage C rewards. */
 export function isPartyBattleUnrewardedTestsAllowed(): boolean {
   return envTruthy('PARTY_BATTLE_ALLOW_UNREWARDED_TESTS');

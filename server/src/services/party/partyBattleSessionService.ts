@@ -298,6 +298,7 @@ export async function recordPartyKillRewardInTx(
     expGain: number;
     spGain: number;
     adenaGain: bigint;
+    notifiedAt?: Date | null;
   }
 ): Promise<void> {
   await tx.partyKillReward.create({
@@ -307,6 +308,7 @@ export async function recordPartyKillRewardInTx(
       expGain: args.expGain,
       spGain: args.spGain,
       adenaGain: args.adenaGain,
+      ...(args.notifiedAt ? { notifiedAt: args.notifiedAt } : {}),
     },
   });
 }

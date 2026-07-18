@@ -12,8 +12,8 @@ import {
   battleCooldownsForSync,
   buildBattleSyncResponse,
 } from './battleServiceDelta.js';
-import { isPartyBattleSyncStale } from './party/partyBattleSyncService.js';
-import { isPartyBattleEngineEnabled } from '../domain/partyBattleFlags.js';
+import { isPartyBattleSyncStale, readPartyBattleSyncDtoForViewer } from './party/partyBattleSyncService.js';
+import { isPartyBattleEngineEnabled, isPartyBattleRewardDistributionReady } from '../domain/partyBattleFlags.js';
 import { isPartyBattleSyncContext } from './party/partyBattleSyncGuard.js';
 import {
   computeCharacterVitalsBundle,
@@ -181,17 +181,44 @@ export async function getBattleSyncForUser(
       where: { id: partySessionId },
     });
     if (sessionRow && !isPartyBattleSyncStale(bjRaw, sessionRow)) {
-      partyBattle = {
-        partyBattleId: sessionRow.id,
-        battleVersion: sessionRow.battleVersion,
-        spawnId: sessionRow.spawnId,
-        mobHp: sessionRow.mobHp,
-        mobMaxHp: sessionRow.mobMaxHp,
-        state: sessionRow.state,
-        participantCount: await prisma.partyBattleParticipant.count({
-          where: { partyBattleId: sessionRow.id, active: true },
-        }),
+      const participantCount = await prisma.partyBattleParticipant.count({
+        where: { partyBattleId: sessionRow.id, active: true },
+      });
+      const membership = sessionRow.activePartyKey
+        ? await prisma.partyMember.findUnique({
+            where: { characterId: cr.id },
+            select: { partyId: true },
+          })
+        : null;
+      const viewerPlayfield = {
+        worldX: cr.worldX,
+        worldY: cr.worldY,
+        dungeonStateJson: cr.dungeonStateJson,
       };
+      if (
+        membership &&
+        sessionRow.activePartyKey === membership.partyId &&
+        isPartyBattleRewardDistributionReady()
+      ) {
+        partyBattle =
+          (await readPartyBattleSyncDtoForViewer(
+            sessionRow.id,
+            membership.partyId,
+            cr.id,
+            viewerPlayfield,
+            nowMs
+          )) ?? undefined;
+      } else {
+        partyBattle = {
+          partyBattleId: sessionRow.id,
+          battleVersion: sessionRow.battleVersion,
+          spawnId: sessionRow.spawnId,
+          mobHp: sessionRow.mobHp,
+          mobMaxHp: sessionRow.mobMaxHp,
+          state: sessionRow.state,
+          participantCount,
+        };
+      }
       bj.mobHp = sessionRow.mobHp;
       bj.battleVersion = sessionRow.battleVersion;
     } else if (!sessionRow || isPartyBattleSyncStale(bjRaw, sessionRow)) {

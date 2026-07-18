@@ -36,6 +36,14 @@ import {
   getDungeonEntranceAt,
   type DungeonEntrancePayload,
 } from './sevenSignsDungeonService.js';
+import { getMapRadiiConfig, type MapRadiiConfig } from '../domain/mapRadiiConfig.js';
+import { isPartyBattleRewardDistributionReady } from '../domain/partyBattleFlags.js';
+import {
+  loadPartyMemberStatusEntries,
+  partyNearbyMemberNames,
+  resolveCharacterPlayfieldPosition,
+  type PartyMemberStatusCharacterRow,
+} from './party/partyMemberStatusReadService.js';
 
 /** Легкий зріз для карти / HUD (без інвентаря й каталогів). */
 export interface CharacterMapStatePayload {
@@ -94,6 +102,7 @@ export interface MapSyncPayload {
   personalMapSig: string;
   mammonRotationSig: string;
   revision: number;
+  mapRadii: MapRadiiConfig;
   mapState: CharacterMapStatePayload;
   mammonMerchant: MammonMerchantStatePayload | null;
   mammonBlacksmith: MammonBlacksmithStatePayload | null;
@@ -101,6 +110,7 @@ export interface MapSyncPayload {
   around: ReturnType<typeof resolveMapLocality> & {
     nearbySpawns: ReturnType<typeof buildMapNearbySpawnViews>['listEntries'];
     nearbyHeroes: Awaited<ReturnType<typeof getNearbyHeroesForMap>>;
+    partyNearbyMembers: { characterId: string; name: string }[];
   };
   spawns: ReturnType<typeof buildMapNearbySpawnViews>['markerEntries'];
   pvpIncoming: PvpIncomingAttack | null;
@@ -203,11 +213,67 @@ export async function getMapSyncForUser(
     : null;
 
   const locality = resolveMapLocality(mapState.worldX, mapState.worldY);
+  const mapRadii = getMapRadiiConfig();
+
+  let partyContext: {
+    memberIds: Set<string>;
+    leaderCharacterId: string;
+  } | null = null;
+  let partyNearbyMembers: { characterId: string; name: string }[] = [];
+
+  if (isPartyBattleRewardDistributionReady()) {
+    const membership = await prisma.partyMember.findUnique({
+      where: { characterId: mapState.id },
+      select: {
+        partyId: true,
+        party: {
+          select: {
+            leaderCharacterId: true,
+            members: { select: { characterId: true } },
+          },
+        },
+      },
+    });
+    if (membership?.party) {
+      partyContext = {
+        memberIds: new Set(
+          membership.party.members.map((m) => m.characterId)
+        ),
+        leaderCharacterId: membership.party.leaderCharacterId,
+      };
+      const viewerRow = await prisma.character.findUnique({
+        where: { id: mapState.id },
+        select: {
+          worldX: true,
+          worldY: true,
+          targetX: true,
+          targetY: true,
+          moveStartAt: true,
+          moveFromX: true,
+          moveFromY: true,
+          dungeonStateJson: true,
+        },
+      });
+      if (viewerRow) {
+        const viewerPlayfield = resolveCharacterPlayfieldPosition(
+          viewerRow as unknown as PartyMemberStatusCharacterRow
+        );
+        const statusEntries = await loadPartyMemberStatusEntries(
+          membership.partyId,
+          mapState.id,
+          viewerPlayfield
+        );
+        partyNearbyMembers = partyNearbyMemberNames(statusEntries, mapState.id);
+      }
+    }
+  }
+
   const nearbyHeroes = await getNearbyHeroesForMap(
     mapState.worldX,
     mapState.worldY,
     mapState.id,
-    nowMs
+    nowMs,
+    partyContext
   );
   const pvpIncoming = await findPvpIncomingForCharacter(mapState.id);
 
@@ -218,6 +284,7 @@ export async function getMapSyncForUser(
       personalMapSig,
       mammonRotationSig: mammonRotationSigVal,
       revision: mapState.revision,
+      mapRadii,
       mapState,
       mammonMerchant,
       mammonBlacksmith,
@@ -226,6 +293,7 @@ export async function getMapSyncForUser(
         ...locality,
         nearbySpawns: [],
         nearbyHeroes,
+        partyNearbyMembers,
       },
       spawns: [],
       pvpIncoming,
@@ -247,6 +315,7 @@ export async function getMapSyncForUser(
     personalMapSig,
     mammonRotationSig: mammonRotationSigVal,
     revision: mapState.revision,
+    mapRadii,
     mapState,
     mammonMerchant,
     mammonBlacksmith,
@@ -255,6 +324,7 @@ export async function getMapSyncForUser(
       ...locality,
       nearbySpawns: listEntries,
       nearbyHeroes,
+      partyNearbyMembers,
     },
     spawns: markerEntries,
     pvpIncoming,

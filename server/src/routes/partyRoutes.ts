@@ -14,6 +14,7 @@ import {
   sendPartyInviteForUser,
 } from '../services/party/partyInviteService.js';
 import { getPartyHudForUser } from '../services/party/partyHudService.js';
+import { ackPartyRewardNoticeForUser } from '../services/party/partyRewardNoticeService.js';
 import {
   createPartyForUser,
   disbandPartyForUser,
@@ -75,6 +76,59 @@ export function registerPartyRoutes(app: FastifyInstance): void {
       } catch (err) {
         const mapped = sendPartyRouteError(reply, err);
         if (mapped) return mapped;
+        throw err;
+      }
+    }
+  );
+
+  app.post(
+    '/party/reward-notice/ack',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const partyBattleId =
+        typeof b.partyBattleId === 'string' ? b.partyBattleId.trim() : '';
+      if (!partyBattleId) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен partyBattleId.',
+        });
+      }
+      try {
+        const result = await ackPartyRewardNoticeForUser(
+          userId,
+          partyBattleId,
+          characterIdFromBody(b)
+        );
+        await logPartyRouteMutation(
+          request,
+          'party_reward_notice_ack',
+          null,
+          'ok',
+          null,
+          partyBattleId
+        );
+        return reply.send(result);
+      } catch (err) {
+        const mapped = sendPartyRouteError(reply, err);
+        if (mapped) {
+          await logPartyRouteMutation(
+            request,
+            'party_reward_notice_ack',
+            null,
+            'error'
+          );
+          return mapped;
+        }
+        await logPartyRouteMutation(
+          request,
+          'party_reward_notice_ack',
+          null,
+          'error'
+        );
         throw err;
       }
     }

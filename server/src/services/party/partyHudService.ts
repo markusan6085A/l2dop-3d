@@ -1,6 +1,11 @@
 import { prisma } from '../../lib/prisma.js';
 import { PARTY_MAX_MEMBERS } from './partyConstants.js';
 import { purgeExpiredPartyInvitesInTx } from './partyExpire.js';
+import {
+  isPartyBattleRewardDistributionReady,
+} from '../../domain/partyBattleFlags.js';
+import { buildPartyHudActiveBattle } from './partyBattleHudReadService.js';
+import { getUnreadPartyRewardNotice } from './partyRewardNoticeService.js';
 import type { PartyHudResult } from './partyTypes.js';
 
 /** GET /game/party/hud — легкий стан для глобального HUD (без full PartyView). */
@@ -41,6 +46,9 @@ export async function getPartyHudForUser(
   });
 
   let party: PartyHudResult['party'] = null;
+  let activeBattle: PartyHudResult['activeBattle'] = null;
+  let rewardNotice: PartyHudResult['rewardNotice'] = null;
+
   if (membership?.party) {
     const row = membership.party;
     party = {
@@ -51,6 +59,14 @@ export async function getPartyHudForUser(
       maxMembers: PARTY_MAX_MEMBERS,
       isLeader: row.leaderCharacterId === char.id,
     };
+
+    if (isPartyBattleRewardDistributionReady()) {
+      activeBattle = await buildPartyHudActiveBattle(
+        row.id,
+        char.id
+      );
+      rewardNotice = await getUnreadPartyRewardNotice(char.id);
+    }
   }
 
   const invites = await prisma.partyInvite.findMany({
@@ -76,9 +92,16 @@ export async function getPartyHudForUser(
       }
     : null;
 
-  return {
+  const result: PartyHudResult = {
     party,
     invite,
     extraInviteCount: Math.max(0, invites.length - 1),
   };
+
+  if (isPartyBattleRewardDistributionReady()) {
+    if (activeBattle) result.activeBattle = activeBattle;
+    if (rewardNotice) result.rewardNotice = rewardNotice;
+  }
+
+  return result;
 }

@@ -284,6 +284,9 @@ export async function resolvePartyBattleVictoryInTx(
       expGain: bigintToSafeInt(expShares.get(recipientId) ?? 0n, 'exp'),
       spGain: spShares.get(recipientId) ?? 0,
       adenaGain: adenaShares.get(recipientId) ?? 0n,
+      ...(recipientId === args.characterId
+        ? { notifiedAt: new Date(nowMs) }
+        : {}),
     });
   }
 
