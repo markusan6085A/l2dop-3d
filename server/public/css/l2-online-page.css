@@ -3,6 +3,12 @@
 body.l2-app-l2-chrome.l2-page-online .l2-online-panel {
   padding: 4px 0 8px;
   box-sizing: border-box;
+  min-height: clamp(280px, 52vh, 480px);
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-panel--loading {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-online-head {
@@ -93,6 +99,13 @@ body.l2-app-l2-chrome.l2-page-online .l2-online-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 120px;
+}
+
+body.l2-app-l2-chrome.l2-page-online .l2-online-player--skeleton .l2-online-player__nick,
+body.l2-app-l2-chrome.l2-page-online .l2-online-player--skeleton .l2-online-player__city,
+body.l2-app-l2-chrome.l2-page-online .l2-online-player--skeleton .l2-online-player__power {
+  color: rgba(200, 192, 176, 0.45);
 }
 
 body.l2-app-l2-chrome.l2-page-online .l2-online-player__main {

@@ -117,18 +117,26 @@ function testGlobalBlocksAttack(): void {
   assert.equal(state.readyAtMs, nowMs + 2000);
 }
 
-function testLegacyKeyNotUsedWithoutL2Prefix(): void {
+function testBareNumericKeyMigratesToL2(): void {
   const nowMs = 1_000_000;
   const row = { skillCooldownsJson: [] } as unknown as CharacterRow;
   const st = {
-    mysticSkillCdUntil: { '78': nowMs + 5000, l2_78: nowMs - 100 },
+    mysticSkillCdUntil: { '78': nowMs + 4000, l2_78: nowMs + 1000 },
   } as BattleJsonState;
-  const state = resolveActionCooldownState(row, st, 'war_cry', nowMs);
-  assert.equal(
-    state.skillCooldownUntilMs,
-    undefined,
-    'bare "78" key must not block l2_78 action'
-  );
+  const merged = mergeBattleCooldownMaps(row, st, nowMs);
+  assert.equal(merged.l2_78, nowMs + 4000, 'bare "78" merges into l2_78 (max)');
+  assert.equal(merged['78'], undefined);
+}
+
+function testLegacyActionKeyMigratesToL2(): void {
+  const nowMs = 1_000_000;
+  const row = { skillCooldownsJson: [] } as unknown as CharacterRow;
+  const st = {
+    mysticSkillCdUntil: { war_cry: nowMs + 2000 },
+  } as BattleJsonState;
+  const merged = mergeBattleCooldownMaps(row, st, nowMs);
+  assert.equal(merged.l2_78, nowMs + 2000);
+  assert.equal(merged.war_cry, undefined);
 }
 
 function testCooldownErrorShape(): void {
@@ -155,7 +163,8 @@ function main(): void {
   testResolveWarCryBlockedByJson();
   testResolveExpiredAllowsCast();
   testGlobalBlocksAttack();
-  testLegacyKeyNotUsedWithoutL2Prefix();
+  testBareNumericKeyMigratesToL2();
+  testLegacyActionKeyMigratesToL2();
   testCooldownErrorShape();
   console.log('skill-cooldown-smoke: OK');
 }

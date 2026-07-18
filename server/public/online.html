@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-online-page.css?v=20260716onlinePower2" />
+    <link rel="stylesheet" href="/css/l2-online-page.css?v=20260718onlineStable1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-online l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -56,44 +56,46 @@
           />
         </div>
         <div class="l2-screen-inner l2-online-root">
-          <div class="l2-chrome-nav-column">
-            <div id="l2-hud-panel-mount"></div>
-            <div id="l2-nav-top"></div>
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
 
-            <p class="err" id="online-load-err" hidden></p>
+          <p class="err" id="online-load-err" hidden></p>
 
-            <section class="l2-online-panel" id="online-content" aria-label="Онлайн" hidden>
-              <h1 class="l2-online-head">
-                Зараз у грі (<span class="l2-online-head__count" id="online-count">0</span>)
-              </h1>
+          <section
+            class="l2-online-panel l2-online-panel--loading"
+            id="online-content"
+            aria-label="Онлайн"
+          >
+            <h1 class="l2-online-head">
+              Зараз у грі (<span class="l2-online-head__count" id="online-count">—</span>)
+            </h1>
 
-              <div class="l2-online-sort" role="group" aria-label="Сортування">
-                <span class="l2-online-sort__label">Сортувати за:</span>
-                <button type="button" class="l2-online-sort__btn" data-sort="level" id="online-sort-level">
-                  рівнем
-                </button>
-                <span class="l2-online-sort__sep" aria-hidden="true">|</span>
-                <button type="button" class="l2-online-sort__btn" data-sort="name" id="online-sort-name">
-                  ніком
-                </button>
-                <span class="l2-online-sort__sep" aria-hidden="true">|</span>
-                <button type="button" class="l2-online-sort__btn" data-sort="power" id="online-sort-power">
-                  мощ
-                </button>
-              </div>
+            <div class="l2-online-sort" role="group" aria-label="Сортування">
+              <span class="l2-online-sort__label">Сортувати за:</span>
+              <button type="button" class="l2-online-sort__btn" data-sort="level" id="online-sort-level">
+                рівнем
+              </button>
+              <span class="l2-online-sort__sep" aria-hidden="true">|</span>
+              <button type="button" class="l2-online-sort__btn" data-sort="name" id="online-sort-name">
+                ніком
+              </button>
+              <span class="l2-online-sort__sep" aria-hidden="true">|</span>
+              <button type="button" class="l2-online-sort__btn" data-sort="power" id="online-sort-power">
+                мощ
+              </button>
+            </div>
 
-              <p class="l2-online-clan-filter">Без клану</p>
+            <p class="l2-online-clan-filter">Без клану</p>
 
-              <div class="l2-online-col-head-row" aria-hidden="true">
-                <span class="l2-online-col-head l2-online-col-head--nick">Нік</span>
-                <span class="l2-online-col-head l2-online-col-head--power">Мощ</span>
-              </div>
+            <div class="l2-online-col-head-row" aria-hidden="true">
+              <span class="l2-online-col-head l2-online-col-head--nick">Нік</span>
+              <span class="l2-online-col-head l2-online-col-head--power">Мощ</span>
+            </div>
 
-              <div class="l2-online-list" id="online-players-list" aria-live="polite"></div>
-            </section>
+            <div class="l2-online-list" id="online-players-list" aria-live="polite"></div>
+          </section>
 
-            <div id="l2-nav-bottom"></div>
-          </div>
+          <div id="l2-nav-bottom"></div>
         </div>
       </div>
     </div>
@@ -101,6 +103,6 @@
     <script src="/common.js?v=20260718layoutStable4"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/online.js?v=20260716onlinePower1"></script>
+    <script src="/online.js?v=20260718onlineStable1"></script>
   </body>
 </html>

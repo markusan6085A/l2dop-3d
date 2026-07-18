@@ -14,7 +14,20 @@ import {
 } from './battleSkills/humanFighterTurnHelpers.js';
 import type { CharacterRow } from '../services/charTypes.js';
 
-/** Канонічний ключ скіла для cooldown map (`l2_<id>` або legacy action). */
+/** Канонічний ключ у in-battle cooldown map. */
+export function canonicalCooldownMapKey(rawKey: string): string | null {
+  const key = String(rawKey || '').trim();
+  if (!key) return null;
+  if (key === 'attack' || key === 'bolt') return key;
+  if (/^l2_\d+$/i.test(key)) return key.replace(/^L2_/i, 'l2_');
+  /** Legacy: bare numeric `"78"` → `l2_78`. */
+  if (/^\d+$/.test(key)) return 'l2_' + key;
+  const fromAction = canonicalBattleSkillId(key);
+  if (/^l2_\d+$/.test(fromAction)) return fromAction;
+  return null;
+}
+
+/** Канонічний ключ скіла з action (`war_cry` → `l2_78`). */
 export function normalizeBattleSkillId(action: string): string {
   const act = String(action || '').trim();
   if (!act) return act;
@@ -53,7 +66,9 @@ export function mergeBattleCooldownMaps(
   const mystic = st.mysticSkillCdUntil;
   if (mystic) {
     for (const [key, until] of Object.entries(mystic)) {
-      putActiveCooldown(merged, key, until, nowMs);
+      const canonKey = canonicalCooldownMapKey(key);
+      if (!canonKey) continue;
+      putActiveCooldown(merged, canonKey, until, nowMs);
     }
   }
   for (const cd of parseSkillCooldowns(row.skillCooldownsJson, nowMs)) {
