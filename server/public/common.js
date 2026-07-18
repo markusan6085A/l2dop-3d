@@ -497,11 +497,29 @@
     lastSnapshot: function () {
       return lastSnapshot;
     },
+    /** Alias для діагностики revision у battle.js. */
+    getLastSnapshot: function () {
+      return lastSnapshot;
+    },
     setLastSnapshot: function (s) {
       lastSnapshot = s;
       if (s && typeof s === 'object') {
         global.L2.writeSessionSnapshotCache(SESSION_SNAPSHOT_CACHE_KEY, s);
       }
+    },
+    /**
+     * Примусово записати revision у memory + sessionStorage cache.
+     * Використовувати після 409, коли serverRevision — єдине джерело правди.
+     */
+    applyAuthoritativeRevision: function (snapshot, serverRevision) {
+      if (!snapshot || typeof snapshot !== 'object') return null;
+      var rev = normalizePositiveInt(serverRevision);
+      if (!rev) rev = normalizePositiveInt(snapshot.revision);
+      if (!rev) return snapshot;
+      var auth = Object.assign({}, snapshot, { revision: rev });
+      lastSnapshot = auth;
+      global.L2.writeSessionSnapshotCache(SESSION_SNAPSHOT_CACHE_KEY, auth);
+      return auth;
     },
     /** Поточний snapshot з memory або sessionStorage (без мережі). */
     getCachedCharacter: function () {

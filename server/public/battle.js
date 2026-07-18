@@ -1481,14 +1481,21 @@
     return msg;
   }
 
-  async function battleAction(action, expectedRevision, extraBody) {
-    var body = battleMutationBody({ action: action, expectedRevision: expectedRevision });
+  function buildBattleActionBody(action, expectedRevision, extraBody) {
+    var body = {
+      action: action,
+      expectedRevision: expectedRevision,
+    };
     if (extraBody && typeof extraBody === 'object') {
       for (var kb in extraBody) {
         if (!Object.prototype.hasOwnProperty.call(extraBody, kb)) continue;
         body[kb] = extraBody[kb];
       }
     }
+    return battleMutationBody(body);
+  }
+
+  async function postBattleAction(body) {
     return fetchJson('/game/battle/action', {
       method: 'POST',
       headers: {
@@ -1497,6 +1504,12 @@
       },
       body: JSON.stringify(body),
     });
+  }
+
+  async function battleAction(action, expectedRevision, extraBody) {
+    return postBattleAction(
+      buildBattleActionBody(action, expectedRevision, extraBody)
+    );
   }
 
   async function leaveBattle(expectedRevision) {
@@ -1808,11 +1821,164 @@
       }
     }
 
-    function latestCharacterRevision() {
-      if (character && character.revision != null) return character.revision;
-      var ls = window.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null;
-      if (ls && ls.revision != null) return ls.revision;
+    function normalizeBattleRevision(raw) {
+      if (raw == null) return null;
+      var n = Math.floor(Number(raw));
+      return Number.isFinite(n) && n >= 1 ? n : null;
+    }
+
+    function battleCharacterIdForRevision() {
+      if (battlePageCharacterId) return String(battlePageCharacterId);
+      if (character && character.id) return String(character.id);
       return null;
+    }
+
+    function snapshotRevisionForBattleChar(snap) {
+      if (!snap || snap.revision == null) return null;
+      var battleCharId = battleCharacterIdForRevision();
+      if (battleCharId && snap.id && String(snap.id) !== battleCharId) return null;
+      return normalizeBattleRevision(snap.revision);
+    }
+
+    /** Єдине джерело expectedRevision для POST /battle/action — після 409 усі stores мають збігатися. */
+    function getAuthoritativeCurrentRevision() {
+      var battleCharId = battleCharacterIdForRevision();
+      var revs = [];
+      if (character && character.revision != null) {
+        if (
+          !battleCharId ||
+          !character.id ||
+          String(character.id) === battleCharId
+        ) {
+          var rc = normalizeBattleRevision(character.revision);
+          if (rc != null) revs.push(rc);
+        }
+      }
+      var ls =
+        window.L2 && typeof L2.getLastSnapshot === 'function'
+          ? L2.getLastSnapshot()
+          : window.L2 && L2.lastSnapshot
+            ? L2.lastSnapshot()
+            : null;
+      var rs = snapshotRevisionForBattleChar(ls);
+      if (rs != null) revs.push(rs);
+      if (!revs.length) return null;
+      return Math.max.apply(null, revs);
+    }
+
+    function latestCharacterRevision() {
+      return getAuthoritativeCurrentRevision();
+    }
+
+    function writeAuthoritativeCharacterState(snap) {
+      if (!snap || typeof snap !== 'object') return null;
+      character = snap;
+      if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(snap);
+      } else if (window.L2 && typeof L2.setCachedCharacter === 'function') {
+        L2.setCachedCharacter(snap);
+      }
+      return snap;
+    }
+
+    function mergeConflictRevisionIntoCharacter(snap, conflictBody) {
+      if (!snap || typeof snap !== 'object') return snap;
+      var serverRev =
+        conflictBody &&
+        typeof conflictBody.serverRevision === 'number' &&
+        Number.isFinite(conflictBody.serverRevision)
+          ? Math.floor(conflictBody.serverRevision)
+          : null;
+      var conflictSnap =
+        conflictBody &&
+        conflictBody.character &&
+        typeof conflictBody.character === 'object'
+          ? conflictBody.character
+          : null;
+      var merged = Object.assign({}, conflictSnap || {}, snap);
+      if (serverRev != null && serverRev >= 1) {
+        merged.revision = serverRev;
+      } else {
+        merged.revision =
+          normalizeBattleRevision(snap.revision) ||
+          normalizeBattleRevision(conflictSnap && conflictSnap.revision);
+      }
+      if (
+        window.L2 &&
+        typeof L2.applyAuthoritativeRevision === 'function' &&
+        merged.revision != null
+      ) {
+        return L2.applyAuthoritativeRevision(merged, merged.revision);
+      }
+      return merged;
+    }
+
+    function applyAuthoritativeConflictRevision(conflictBody) {
+      if (!conflictBody) return;
+      var serverRev = normalizeBattleRevision(conflictBody.serverRevision);
+      var conflictSnap =
+        conflictBody.character && typeof conflictBody.character === 'object'
+          ? conflictBody.character
+          : null;
+      if (serverRev == null && conflictSnap) {
+        serverRev = normalizeBattleRevision(conflictSnap.revision);
+      }
+      if (serverRev == null) return;
+
+      var battleCharId = battleCharacterIdForRevision();
+      if (
+        conflictSnap &&
+        conflictSnap.id &&
+        battleCharId &&
+        String(conflictSnap.id) !== battleCharId
+      ) {
+        if (character && String(character.id) === battleCharId) {
+          writeAuthoritativeCharacterState(
+            Object.assign({}, character, { revision: serverRev })
+          );
+        }
+        return;
+      }
+
+      var base =
+        conflictSnap &&
+        (!battleCharId || String(conflictSnap.id) === battleCharId)
+          ? conflictSnap
+          : character;
+      if (!base) return;
+      writeAuthoritativeCharacterState(
+        mergeConflictRevisionIntoCharacter(base, conflictBody)
+      );
+    }
+
+    function logBattleActionAttempt(attempt, body, rev) {
+      var lsSnap =
+        window.L2 && typeof L2.getLastSnapshot === 'function'
+          ? L2.getLastSnapshot()
+          : null;
+      console.log('[battle-action]', {
+        attempt: attempt,
+        characterId: body && body.characterId,
+        battleSpawnId: body && body.battleSpawnId,
+        action: body && body.action,
+        expectedRevision: body && body.expectedRevision,
+        snapshotRevision: normalizeBattleRevision(lsSnap && lsSnap.revision),
+        characterRevision: normalizeBattleRevision(
+          character && character.revision
+        ),
+        resolvedRevision: rev,
+      });
+    }
+
+    function logBattle409(conflictBody) {
+      console.log('[battle-409]', {
+        receivedServerRevision:
+          conflictBody && conflictBody.serverRevision,
+        receivedCharacterRevision:
+          conflictBody &&
+          conflictBody.character &&
+          conflictBody.character.revision,
+      });
     }
 
     function battleSyncIntervalMs() {
@@ -1891,42 +2057,35 @@
     }
 
     function applyConflictRevisionLocally(conflictBody) {
-      if (!conflictBody || !character) return;
-      var snap = conflictBody.character;
-      var rev =
-        typeof conflictBody.serverRevision === 'number'
-          ? Math.floor(conflictBody.serverRevision)
-          : snap && snap.revision != null
-            ? Math.floor(Number(snap.revision))
-            : null;
-      if (rev == null || !Number.isFinite(rev) || rev < 1) return;
-      if (
-        snap &&
-        snap.id &&
-        battlePageCharacterId &&
-        String(snap.id) !== String(battlePageCharacterId)
-      ) {
-        return;
-      }
-      if (snap && snap.id && String(snap.id) === String(character.id)) {
-        character = Object.assign({}, snap, { revision: rev });
-      } else {
-        character = Object.assign({}, character, { revision: rev });
-      }
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+      applyAuthoritativeConflictRevision(conflictBody);
     }
 
     async function resyncBattleAfterConflict(conflictBody) {
-      var trustConflictChar =
-        conflictBody &&
-        conflictBody.character &&
-        typeof conflictBody.character === 'object' &&
-        (!battlePageCharacterId ||
-          String(conflictBody.character.id) === String(battlePageCharacterId));
-      var resyncPayload = trustConflictChar
-        ? conflictBody
-        : Object.assign({}, conflictBody || {}, { character: null });
-      if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+      applyAuthoritativeConflictRevision(conflictBody);
+
+      var st = await getBattleState();
+      if (st && !st._err && st.character) {
+        character = mergeConflictRevisionIntoCharacter(st.character, conflictBody);
+        battle = st.battle;
+        setBattlePageContext(
+          character.id,
+          battlePageSpawnId || (battle && battle.spawnId) || spawnId
+        );
+        writeAuthoritativeCharacterState(character);
+        syncBattleTrackFromView(battle);
+        if (window.L2 && L2.applyHudFromSnapshot) {
+          L2.applyHudFromSnapshot(character);
+        }
+      } else if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+        var trustConflictChar =
+          conflictBody &&
+          conflictBody.character &&
+          typeof conflictBody.character === 'object' &&
+          (!battlePageCharacterId ||
+            String(conflictBody.character.id) === String(battlePageCharacterId));
+        var resyncPayload = trustConflictChar
+          ? conflictBody
+          : Object.assign({}, conflictBody || {}, { character: null });
         try {
           await L2.resyncCharacterAfterConflict(
             function (snap) {
@@ -1934,54 +2093,43 @@
                 !battlePageCharacterId ||
                 String(snap.id) === String(battlePageCharacterId)
               ) {
-                character = snap;
+                character = mergeConflictRevisionIntoCharacter(snap, conflictBody);
                 setBattlePageContext(snap.id, battlePageSpawnId);
+                writeAuthoritativeCharacterState(character);
               }
             },
             resyncPayload,
             { force: true }
           );
         } catch (eResync) {
-          /* fallback нижче */
+          /* fallback: authoritative revision already applied above */
+        }
+        st = await getBattleState();
+        if (st && !st._err && st.character) {
+          character = mergeConflictRevisionIntoCharacter(st.character, conflictBody);
+          battle = st.battle;
+          writeAuthoritativeCharacterState(character);
+          setBattlePageContext(
+            character.id,
+            battlePageSpawnId || (battle && battle.spawnId) || spawnId
+          );
+          syncBattleTrackFromView(battle);
         }
       } else if (
         conflictBody &&
         conflictBody.character &&
-        typeof conflictBody.character === 'object' &&
-        (!battlePageCharacterId ||
-          String(conflictBody.character.id) === String(battlePageCharacterId))
+        typeof conflictBody.character === 'object'
       ) {
-        if (
-          !character ||
-          !character.id ||
-          conflictBody.character.id === character.id
-        ) {
-          character = conflictBody.character;
-          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-        }
-      } else if (
-        conflictBody &&
-        typeof conflictBody.serverRevision === 'number' &&
-        character &&
-        (!battlePageCharacterId ||
-          String(character.id) === String(battlePageCharacterId))
-      ) {
-        character = Object.assign({}, character, {
-          revision: conflictBody.serverRevision,
-        });
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        character = mergeConflictRevisionIntoCharacter(
+          conflictBody.character,
+          conflictBody
+        );
+        writeAuthoritativeCharacterState(character);
       }
-      var st = await getBattleState();
-      if (!st || st._err || !st.character) return 'retry';
-      character = st.character;
-      battle = st.battle;
-      setBattlePageContext(
-        character.id,
-        battlePageSpawnId || (battle && battle.spawnId) || spawnId
-      );
-      syncBattleTrackFromView(battle);
-      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-      if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
+
+      if (window.L2 && L2.applyHudFromSnapshot && character) {
+        L2.applyHudFromSnapshot(character);
+      }
       if (checkPvpDefeatFromCharacter(character)) {
         stopBattleSyncPoll();
         return 'abort';
@@ -2012,16 +2160,19 @@
       stopBattleSyncPoll();
       try {
         for (var attempt = 0; attempt < MAX; attempt++) {
-          var rev = latestCharacterRevision();
+          var rev = getAuthoritativeCurrentRevision();
           if (!rev) return { _err: 'no_revision' };
+          var body = buildBattleActionBody(action, rev, extraBody);
+          logBattleActionAttempt(attempt + 1, body, rev);
           try {
-            lastRes = await battleAction(action, rev, extraBody);
+            lastRes = await postBattleAction(body);
           } catch (eNet) {
             return { _err: 'network' };
           }
           if (!lastRes || lastRes._err !== 409) return lastRes;
           var conflictBody = await parseActionErrorBodySafe(lastRes);
-          applyConflictRevisionLocally(conflictBody);
+          logBattle409(conflictBody);
+          applyAuthoritativeConflictRevision(conflictBody);
           var syncOutcome = await resyncBattleAfterConflict(conflictBody);
           if (syncOutcome === 'abort') return lastRes;
           if (attempt < MAX - 1) {
@@ -2183,13 +2334,13 @@
         (parsedErrBody.code === 'revision_conflict' ||
           parsedErrBody.error === 'revision_conflict')
       ) {
-        applyConflictRevisionLocally(parsedErrBody);
+        applyAuthoritativeConflictRevision(parsedErrBody);
         await resyncBattleAfterConflict(parsedErrBody);
         refreshUI();
         showBattleToast(
           tr(
             'battle_toast_revision_conflict',
-            'Стан оновлено. Натисни ще раз.'
+            'Стан персонажа оновлено. Повторіть дію.'
           )
         );
         return true;
