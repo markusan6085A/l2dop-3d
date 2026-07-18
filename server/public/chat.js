@@ -1,5 +1,7 @@
 /**
  * Сторінка чату — GET/POST /game/chat, канал «Заг».
+ * Оновлення списку — лише вручну («Оновити», send, delete, зміна каналу/сторінки).
+ * GET /game/chat повертає повну сторінку (до 15 повідомлень), не delta.
  */
 (function () {
   var CHAT_ICON = '/assets/assets/photo_2026-07-05_12-52-39.jpg';
@@ -16,8 +18,15 @@
   var SMILE_COLS = 8;
   var SMILE_ROWS = 3;
   var SMILE_PAGE_SIZE = SMILE_COLS * SMILE_ROWS;
-  var SMILE_PICKER_H = 25;
   var SMILE_TOKEN_RE = /:([0-9]+|[a-z0-9_]+):/gi;
+
+  var chatLoadedOnce = false;
+  var currentMessages = [];
+  var lastMessagesSignature = '';
+  var chatRequestSeq = 0;
+  var scrollDebug = false;
+  var messageNodesById = Object.create(null);
+  var NEAR_NEWEST_THRESHOLD = 80;
 
   function getSmilePageSize() {
     return SMILE_PAGE_SIZE;
@@ -25,6 +34,75 @@
 
   function getSmilesCatalog() {
     return window.L2ChatSmiles && L2ChatSmiles.byCode ? L2ChatSmiles.byCode : {};
+  }
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function isScrollDebugEnabled() {
+    try {
+      return (
+        /(?:^|[?&])(?:layoutDebug|chatScrollDebug)=1(?:&|$)/.test(
+          String(location.search || '')
+        ) || localStorage.getItem('l2-layout-debug') === '1'
+      );
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  function getMessagesEl() {
+    return $('chat-messages');
+  }
+
+  function distanceFromBottom(listEl) {
+    if (!listEl) return null;
+    return listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight;
+  }
+
+  function wasNearNewest(listEl) {
+    if (!listEl) return true;
+    return listEl.scrollTop <= NEAR_NEWEST_THRESHOLD;
+  }
+
+  function logChatScroll(phase, extra) {
+    if (!scrollDebug) return;
+    var messagesEl = getMessagesEl();
+    var payload = {
+      phase: phase,
+      windowScrollY: window.scrollY,
+      listScrollTop: messagesEl ? messagesEl.scrollTop : null,
+      listScrollHeight: messagesEl ? messagesEl.scrollHeight : null,
+      listClientHeight: messagesEl ? messagesEl.clientHeight : null,
+      distanceFromBottom: distanceFromBottom(messagesEl),
+      messageCount: currentMessages ? currentMessages.length : 0,
+      activeElement:
+        document.activeElement && document.activeElement.id
+          ? document.activeElement.id
+          : document.activeElement
+            ? document.activeElement.tagName
+            : null,
+    };
+    if (extra && typeof extra === 'object') {
+      for (var k in extra) {
+        if (Object.prototype.hasOwnProperty.call(extra, k)) payload[k] = extra[k];
+      }
+    }
+    console.log('[chat-scroll]', payload);
+  }
+
+  function focusInput(input, fromUserAction) {
+    if (!input || typeof input.focus !== 'function') return;
+    if (fromUserAction && typeof input.focus === 'function') {
+      try {
+        input.focus({ preventScroll: true });
+        return;
+      } catch (_e) {
+        /* fallback below */
+      }
+    }
+    input.focus();
   }
 
   function insertSmileToken(code) {
@@ -48,7 +126,7 @@
     input.value = before + spacerBefore + token + spacerAfter + after;
     var caret = (before + spacerBefore + token + spacerAfter).length;
     if (input.setSelectionRange) input.setSelectionRange(caret, caret);
-    input.focus();
+    focusInput(input, true);
 
     var stubEl = $('chat-stub-msg');
     if (stubEl) stubEl.hidden = true;
@@ -82,9 +160,7 @@
 
     while ((match = re.exec(text)) !== null) {
       if (match.index > lastIndex) {
-        container.appendChild(
-          document.createTextNode(text.slice(lastIndex, match.index))
-        );
+        container.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
       }
       var code = String(match[1] || '').toLowerCase();
       var smile = catalog[code];
@@ -118,9 +194,7 @@
   }
 
   function getSmilesList() {
-    return window.L2ChatSmiles && Array.isArray(L2ChatSmiles.list)
-      ? L2ChatSmiles.list
-      : [];
+    return window.L2ChatSmiles && Array.isArray(L2ChatSmiles.list) ? L2ChatSmiles.list : [];
   }
 
   function renderSmilesPickerPage() {
@@ -160,6 +234,8 @@
         img.className = 'l2-chat-smiles__img';
         img.src = item.src;
         img.alt = '';
+        img.width = 20;
+        img.height = 20;
         img.loading = 'lazy';
         img.decoding = 'async';
 
@@ -171,9 +247,7 @@
       })(slice[i]);
     }
 
-    if (pager) {
-      pager.hidden = totalPages <= 1;
-    }
+    if (pager) pager.hidden = totalPages <= 1;
     if (prevBtn) prevBtn.disabled = smilesPage <= 0;
     if (nextBtn) nextBtn.disabled = smilesPage >= totalPages - 1;
   }
@@ -224,10 +298,6 @@
     if (stubEl && smilesOpen) stubEl.hidden = true;
   }
 
-  function $(id) {
-    return document.getElementById(id);
-  }
-
   function stubTail() {
     return window.L2 && L2.tr ? L2.tr('stub_later') : 'заглушка, з’явиться пізніше.';
   }
@@ -275,6 +345,7 @@
     var hint = $('chat-reply-hint');
     var nameEl = $('chat-reply-hint-name');
     if (!hint || !nameEl) return;
+    logChatScroll('reply-' + (replyTarget ? 'open' : 'close'));
     if (!replyTarget || !replyTarget.characterName) {
       hint.hidden = true;
       nameEl.textContent = '';
@@ -295,8 +366,7 @@
       characterName: String(characterName),
     };
     updateReplyHint();
-    var input = $('chat-input');
-    if (input) input.focus();
+    focusInput($('chat-input'), true);
     var stubEl = $('chat-stub-msg');
     if (stubEl) stubEl.hidden = true;
   }
@@ -304,6 +374,19 @@
   function clearReplyTarget() {
     replyTarget = null;
     updateReplyHint();
+  }
+
+  function showNewMessagesButton(show) {
+    var btn = $('chat-new-msgs');
+    if (!btn) return;
+    btn.hidden = !show;
+  }
+
+  function scrollListToNewest(listEl) {
+    if (!listEl) return;
+    listEl.scrollTop = 0;
+    showNewMessagesButton(false);
+    logChatScroll('after-autoscroll', { mode: 'newest-top' });
   }
 
   function wireIcons(root) {
@@ -318,124 +401,371 @@
     });
   }
 
-  function renderMessages(messages) {
-    var listEl = $('chat-messages');
-    if (!listEl) return;
-    listEl.innerHTML = '';
+  function messageSignature(m) {
+    if (!m) return '';
+    return [
+      String(m.id || ''),
+      String(m.text || ''),
+      String(m.characterId || ''),
+      String(m.characterName || ''),
+      String(m.channel || ''),
+      String(m.replyToCharacterId || ''),
+      String(m.replyToCharacterName || ''),
+      String(m.createdAt || ''),
+      String(m.editedAt || ''),
+      String(m.updatedAt || ''),
+      String(m.deletedAt || ''),
+      m.deleted === true ? '1' : m.deleted === false ? '0' : '',
+      String(m.moderationState || m.moderated || ''),
+      String(m.clanId || ''),
+      String(m.clanTag || ''),
+      String(m.clanName || ''),
+      String(m.iconUrl || ''),
+    ].join('\0');
+  }
 
-    if (!messages || !messages.length) {
-      var empty = document.createElement('p');
-      empty.className = 'l2-chat-empty';
-      empty.textContent =
-        currentChannel === 'all' ? 'Немає повідомлень. Напиши першим.' : 'Канал ще порожній.';
-      listEl.appendChild(empty);
+  function messagesListSignature(messages) {
+    if (!messages || !messages.length) return '';
+    var parts = [];
+    for (var i = 0; i < messages.length; i++) {
+      parts.push(messageSignature(messages[i]));
+    }
+    return parts.join('\n');
+  }
+
+  function escapeMessageIdForSelector(id) {
+    var s = String(id || '');
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+      return CSS.escape(s);
+    }
+    return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
+  function captureScrollAnchor(listEl) {
+    if (!listEl || wasNearNewest(listEl)) return null;
+    var listRect = listEl.getBoundingClientRect();
+    var items = listEl.querySelectorAll('.l2-chat-msg');
+    for (var i = 0; i < items.length; i++) {
+      var el = items[i];
+      var rect = el.getBoundingClientRect();
+      if (rect.bottom > listRect.top + 2 && rect.top < listRect.bottom - 2) {
+        return {
+          messageId: String(el.getAttribute('data-message-id') || ''),
+          viewportOffset: rect.top - listRect.top,
+        };
+      }
+    }
+    return null;
+  }
+
+  function captureScrollState(listEl) {
+    return {
+      wasNearNewest: wasNearNewest(listEl),
+      oldScrollTop: listEl.scrollTop,
+      oldScrollHeight: listEl.scrollHeight,
+      anchor: captureScrollAnchor(listEl),
+    };
+  }
+
+  function restoreScrollAnchor(listEl, anchor) {
+    if (!listEl || !anchor || !anchor.messageId) return false;
+    var el = listEl.querySelector(
+      '.l2-chat-msg[data-message-id="' + escapeMessageIdForSelector(anchor.messageId) + '"]'
+    );
+    if (!el) return false;
+    var listRect = listEl.getBoundingClientRect();
+    var rect = el.getBoundingClientRect();
+    var currentOffset = rect.top - listRect.top;
+    listEl.scrollTop += currentOffset - anchor.viewportOffset;
+    return true;
+  }
+
+  function hasNewMessagesAtTop(prevMessages, messages) {
+    if (!prevMessages || !prevMessages.length || !messages || !messages.length) return false;
+    if (messages.length <= prevMessages.length) return false;
+    var prevFirstId = String(prevMessages[0].id);
+    var nextFirstId = String(messages[0].id);
+    if (prevFirstId === nextFirstId) return false;
+    for (var i = 0; i < messages.length; i++) {
+      if (String(messages[i].id) === prevFirstId) {
+        return i > 0;
+      }
+    }
+    return true;
+  }
+
+  function applyScrollAfterUpdate(listEl, scrollState, opts) {
+    opts = opts || {};
+    if (!listEl || !scrollState) return;
+
+    if (opts.scrollToNewest === true || scrollState.wasNearNewest) {
+      scrollListToNewest(listEl);
       return;
     }
 
-    for (var i = 0; i < messages.length; i++) {
-      var m = messages[i];
-      var item = document.createElement('article');
-      item.className = 'l2-chat-msg';
-      var charId = String(m.characterId || '');
-      var isMine = !!(myCharacterId && charId && charId === myCharacterId);
-      if (isMine) item.classList.add('l2-chat-msg--mine');
-      if (i > 0) {
-        var prev = messages[i - 1];
-        var prevId = String(prev && prev.characterId ? prev.characterId : '');
-        if (charId && prevId && charId !== prevId) {
-          item.classList.add('l2-chat-msg--author-break');
-        }
-      }
-
-      var head = document.createElement('div');
-      head.className = 'l2-chat-msg__head';
-
-      var img = document.createElement('img');
-      img.className = 'l2-chat-msg__ico';
-      img.src = CHAT_ICON;
-      img.alt = '';
-      img.width = 14;
-      img.height = 14;
-      img.decoding = 'async';
-
-      var nick =
-        window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
-          ? L2.createPlayerProfileNickEl({
-              characterId: m.characterId,
-              name: m.characterName,
-              className: 'l2-chat-msg__nick',
-            })
-          : (function () {
-              var span = document.createElement('span');
-              span.className = 'l2-chat-msg__nick';
-              span.textContent = String(m.characterName || '—');
-              return span;
-            })();
-
-      var reply = document.createElement('button');
-      reply.type = 'button';
-      reply.className = 'l2-chat-msg__reply';
-      reply.textContent = '[відповісти]';
-      if (!myCharacterId || m.characterId !== myCharacterId) {
-        reply.setAttribute('data-reply-character-id', String(m.characterId || ''));
-        reply.setAttribute('data-reply-character-name', String(m.characterName || ''));
-      } else {
-        reply.hidden = true;
-      }
-
-      var ago = document.createElement('span');
-      ago.className = 'l2-chat-msg__ago';
-      ago.textContent = formatAgoUk(m.createdAt);
-
-      head.appendChild(img);
-      head.appendChild(nick);
-      head.appendChild(reply);
-      head.appendChild(ago);
-
-      if (myCharacterId && m.characterId === myCharacterId) {
-        var delBtn = document.createElement('button');
-        delBtn.type = 'button';
-        delBtn.className = 'l2-chat-msg__delete';
-        delBtn.setAttribute('aria-label', 'Видалити повідомлення');
-        delBtn.title = 'Видалити';
-        delBtn.textContent = '×';
-        delBtn.setAttribute('data-message-id', String(m.id || ''));
-        head.appendChild(delBtn);
-      }
-
-      var text = document.createElement('p');
-      text.className = 'l2-chat-msg__text';
-      if (m.replyToCharacterName) {
-        var replyTo = document.createElement('span');
-        replyTo.className = 'l2-chat-msg__reply-to';
-        if (myCharacterId && m.replyToCharacterId === myCharacterId) {
-          replyTo.className += ' l2-chat-msg__reply-to--me';
-        }
-        replyTo.textContent = String(m.replyToCharacterName) + ', ';
-        text.appendChild(replyTo);
-      }
-      appendMessageTextWithSmiles(text, m.text);
-      item.appendChild(head);
-      item.appendChild(text);
-
-      listEl.appendChild(item);
+    if (scrollState.anchor && restoreScrollAnchor(listEl, scrollState.anchor)) {
+      if (opts.hasNewAtTop) showNewMessagesButton(true);
+      logChatScroll('after-autoscroll', {
+        mode: 'anchor-restore',
+        messageId: scrollState.anchor.messageId,
+      });
+      return;
     }
 
+    listEl.scrollTop =
+      scrollState.oldScrollTop + (listEl.scrollHeight - scrollState.oldScrollHeight);
+    if (opts.hasNewAtTop) showNewMessagesButton(true);
+    logChatScroll('after-autoscroll', { mode: 'scrollHeight-fallback' });
+  }
+
+  function clearMessageIndex() {
+    messageNodesById = Object.create(null);
+  }
+
+  function applyAuthorBreakClass(item, m, prevMessage) {
+    item.classList.remove('l2-chat-msg--author-break');
+    var charId = String(m.characterId || '');
+    var prevId = String(prevMessage && prevMessage.characterId ? prevMessage.characterId : '');
+    if (charId && prevId && charId !== prevId) {
+      item.classList.add('l2-chat-msg--author-break');
+    }
+  }
+
+  function setMessageTextContent(textEl, m) {
+    textEl.innerHTML = '';
+    if (m.replyToCharacterName) {
+      var replyTo = document.createElement('span');
+      replyTo.className = 'l2-chat-msg__reply-to';
+      if (myCharacterId && m.replyToCharacterId === myCharacterId) {
+        replyTo.className += ' l2-chat-msg__reply-to--me';
+      }
+      replyTo.textContent = String(m.replyToCharacterName) + ', ';
+      textEl.appendChild(replyTo);
+    }
+    appendMessageTextWithSmiles(textEl, m.text);
+  }
+
+  function createMessageElement(m, prevMessage) {
+    var item = document.createElement('article');
+    item.className = 'l2-chat-msg';
+    item.setAttribute('data-message-id', String(m.id || ''));
+    var charId = String(m.characterId || '');
+    var isMine = !!(myCharacterId && charId && charId === myCharacterId);
+    if (isMine) item.classList.add('l2-chat-msg--mine');
+    applyAuthorBreakClass(item, m, prevMessage);
+
+    var head = document.createElement('div');
+    head.className = 'l2-chat-msg__head';
+
+    var img = document.createElement('img');
+    img.className = 'l2-chat-msg__ico';
+    img.src = CHAT_ICON;
+    img.alt = '';
+    img.width = 14;
+    img.height = 14;
+    img.decoding = 'async';
+
+    var nick =
+      window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+        ? L2.createPlayerProfileNickEl({
+            characterId: m.characterId,
+            name: m.characterName,
+            className: 'l2-chat-msg__nick',
+          })
+        : (function () {
+            var span = document.createElement('span');
+            span.className = 'l2-chat-msg__nick';
+            span.textContent = String(m.characterName || '—');
+            return span;
+          })();
+
+    var reply = document.createElement('button');
+    reply.type = 'button';
+    reply.className = 'l2-chat-msg__reply';
+    reply.textContent = '[відповісти]';
+    if (!myCharacterId || m.characterId !== myCharacterId) {
+      reply.setAttribute('data-reply-character-id', String(m.characterId || ''));
+      reply.setAttribute('data-reply-character-name', String(m.characterName || ''));
+    } else {
+      reply.hidden = true;
+    }
+
+    var ago = document.createElement('span');
+    ago.className = 'l2-chat-msg__ago';
+    ago.textContent = formatAgoUk(m.createdAt);
+
+    head.appendChild(img);
+    head.appendChild(nick);
+    head.appendChild(reply);
+    head.appendChild(ago);
+
+    if (myCharacterId && m.characterId === myCharacterId) {
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'l2-chat-msg__delete';
+      delBtn.setAttribute('aria-label', 'Видалити повідомлення');
+      delBtn.title = 'Видалити';
+      delBtn.textContent = '×';
+      delBtn.setAttribute('data-message-id', String(m.id || ''));
+      head.appendChild(delBtn);
+    }
+
+    var text = document.createElement('p');
+    text.className = 'l2-chat-msg__text';
+    setMessageTextContent(text, m);
+    item.appendChild(head);
+    item.appendChild(text);
+    return item;
+  }
+
+  function patchMessageElement(item, m, prevMessage) {
+    if (!item) return;
+    item.setAttribute('data-message-id', String(m.id || ''));
+    applyAuthorBreakClass(item, m, prevMessage);
+
+    var ago = item.querySelector('.l2-chat-msg__ago');
+    if (ago) ago.textContent = formatAgoUk(m.createdAt);
+
+    var text = item.querySelector('.l2-chat-msg__text');
+    if (text) setMessageTextContent(text, m);
+  }
+
+  function renderEmptyList(listEl) {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    var empty = document.createElement('p');
+    empty.className = 'l2-chat-empty';
+    empty.textContent =
+      currentChannel === 'all' ? 'Немає повідомлень. Напиши першим.' : 'Канал ще порожній.';
+    listEl.appendChild(empty);
+    clearMessageIndex();
+  }
+
+  function replaceListWithFragment(listEl, frag) {
+    listEl.innerHTML = '';
+    listEl.appendChild(frag);
+  }
+
+  function reorderMessagesPreserveNodes(listEl, messages) {
+    var oldNodes = messageNodesById;
+    var frag = document.createDocumentFragment();
+    var prevMsg = null;
+    messageNodesById = Object.create(null);
+
+    for (var i = 0; i < messages.length; i++) {
+      var m = messages[i];
+      var mid = String(m.id || '');
+      var sig = messageSignature(m);
+      var existing = oldNodes[mid];
+      var el;
+
+      if (existing && existing.el && existing.sig === sig) {
+        el = existing.el;
+      } else if (existing && existing.el) {
+        el = existing.el;
+        patchMessageElement(el, m, prevMsg);
+      } else {
+        el = createMessageElement(m, prevMsg);
+      }
+
+      messageNodesById[mid] = { el: el, sig: sig };
+      frag.appendChild(el);
+      prevMsg = m;
+    }
+
+    replaceListWithFragment(listEl, frag);
     wireIcons(listEl);
-    listEl.querySelectorAll('.l2-chat-msg__reply').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var cid = btn.getAttribute('data-reply-character-id');
-        var cname = btn.getAttribute('data-reply-character-name');
-        if (cid && cname) {
-          setReplyTarget(cid, cname);
-        }
-      });
+  }
+
+  function idsEqual(a, b) {
+    if (!a || !b || a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (String(a[i]) !== String(b[i])) return false;
+    }
+    return true;
+  }
+
+  function syncMessages(messages, opts) {
+    opts = opts || {};
+    var listEl = getMessagesEl();
+    if (!listEl) return;
+
+    logChatScroll('before-render', {
+      mode: opts.mode || 'sync',
+      incomingCount: messages ? messages.length : 0,
+      listClientHeight: listEl.clientHeight,
     });
-    listEl.querySelectorAll('.l2-chat-msg__delete').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var id = btn.getAttribute('data-message-id');
-        if (id) deleteChatMessage(id);
+
+    if (!messages || !messages.length) {
+      if (!chatLoadedOnce || opts.forceFull) {
+        renderEmptyList(listEl);
+        chatLoadedOnce = true;
+        currentMessages = [];
+        lastMessagesSignature = '';
+      }
+      logChatScroll('after-render', { mode: 'empty', listClientHeight: listEl.clientHeight });
+      return;
+    }
+
+    var nextSignature = messagesListSignature(messages);
+    if (!opts.forceFull && chatLoadedOnce && nextSignature === lastMessagesSignature) {
+      logChatScroll('after-render', { skipped: true });
+      return;
+    }
+
+    var prevMessages = currentMessages || [];
+    var scrollState = chatLoadedOnce && !opts.forceFull ? captureScrollState(listEl) : null;
+    var hasNewAtTop = hasNewMessagesAtTop(prevMessages, messages);
+
+    if (!chatLoadedOnce || opts.forceFull) {
+      reorderMessagesPreserveNodes(listEl, messages);
+      chatLoadedOnce = true;
+      currentMessages = messages.slice();
+      lastMessagesSignature = nextSignature;
+      if (opts.scrollToNewest !== false) {
+        scrollListToNewest(listEl);
+      }
+      logChatScroll('after-render', {
+        mode: 'full',
+        listClientHeight: listEl.clientHeight,
       });
+      return;
+    }
+
+    var prevIds = prevMessages.map(function (m) {
+      return String(m.id);
+    });
+    var nextIds = messages.map(function (m) {
+      return String(m.id);
+    });
+    var renderMode = 'reorder';
+
+    if (idsEqual(prevIds, nextIds)) {
+      renderMode = 'patch-same-order';
+      for (var i = 0; i < messages.length; i++) {
+        var mid = nextIds[i];
+        var nodeEntry = messageNodesById[mid];
+        if (nodeEntry && nodeEntry.el) {
+          patchMessageElement(nodeEntry.el, messages[i], i > 0 ? messages[i - 1] : null);
+          nodeEntry.sig = messageSignature(messages[i]);
+        }
+      }
+    } else {
+      reorderMessagesPreserveNodes(listEl, messages);
+    }
+
+    currentMessages = messages.slice();
+    lastMessagesSignature = nextSignature;
+
+    applyScrollAfterUpdate(listEl, scrollState, {
+      scrollToNewest: opts.scrollToNewest,
+      hasNewAtTop: hasNewAtTop,
+    });
+
+    logChatScroll('after-render', {
+      mode: renderMode,
+      listClientHeight: listEl.clientHeight,
+      anchorMessageId: scrollState && scrollState.anchor ? scrollState.anchor.messageId : null,
     });
   }
 
@@ -456,67 +786,85 @@
       b.textContent = label;
       b.addEventListener('click', function () {
         currentPage = targetPage;
-        loadChat();
+        loadChat({ reason: 'page', forceFull: true, scrollToNewest: false });
       });
       nav.appendChild(b);
     }
 
-    if (page > 1) {
-      addBtn('<<', 1, false);
-    }
+    if (page > 1) addBtn('<<', 1, false);
     for (var p = 1; p <= totalPages; p++) {
       if (totalPages > 5 && p > 2 && p < totalPages - 1 && Math.abs(p - page) > 1) {
         continue;
       }
       addBtn(String(p), p, p === page);
     }
-    if (page < totalPages) {
-      addBtn('>>', totalPages, false);
-    }
+    if (page < totalPages) addBtn('>>', totalPages, false);
   }
 
-  async function loadChat() {
-    if (chatInFlight) return;
+  async function fetchChatPayload(token) {
+    var url =
+      '/game/chat?channel=' +
+      encodeURIComponent(currentChannel) +
+      '&page=' +
+      encodeURIComponent(String(currentPage));
+    var r = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+    if (r.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+      return null;
+    }
+    if (!r.ok) throw new Error('chat_load_fail');
+    return r.json();
+  }
+
+  async function loadChat(opts) {
+    opts = opts || {};
+    if (chatInFlight) return false;
     var token = localStorage.getItem('token');
     var errEl = $('chat-load-err');
     if (!token) {
       window.location.href = '/';
-      return;
+      return false;
     }
 
+    var requestSeq = ++chatRequestSeq;
     chatInFlight = true;
     if (errEl) {
       errEl.hidden = true;
       errEl.textContent = '';
     }
 
+    logChatScroll('before-fetch', { reason: opts.reason || 'load', requestSeq: requestSeq });
+
     try {
-      var url =
-        '/game/chat?channel=' +
-        encodeURIComponent(currentChannel) +
-        '&page=' +
-        encodeURIComponent(String(currentPage));
-      var r = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
-      if (r.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return;
+      var j = await fetchChatPayload(token);
+      if (!j) return false;
+      if (requestSeq !== chatRequestSeq) {
+        logChatScroll('after-fetch', { stale: true, requestSeq: requestSeq });
+        return false;
       }
-      if (!r.ok) {
-        if (errEl) {
-          errEl.hidden = false;
-          errEl.textContent = 'Не вдалося завантажити чат.';
-        }
-        return;
-      }
-      var j = await r.json();
-      renderMessages(j.messages || []);
+
+      logChatScroll('after-fetch', {
+        reason: opts.reason || 'load',
+        requestSeq: requestSeq,
+        incomingCount: j.messages ? j.messages.length : 0,
+      });
+
+      syncMessages(j.messages || [], {
+        forceFull: !!opts.forceFull,
+        scrollToNewest: opts.scrollToNewest,
+        mode: opts.reason || 'load',
+      });
       renderPages(Number(j.page) || 1, Number(j.totalPages) || 1);
+      return true;
     } catch (_e) {
+      if (requestSeq !== chatRequestSeq) return false;
       if (errEl) {
         errEl.hidden = false;
         errEl.textContent = 'Не вдалося завантажити чат.';
       }
+      logChatScroll('after-fetch', { error: true, requestSeq: requestSeq });
+      return false;
     } finally {
       chatInFlight = false;
     }
@@ -569,7 +917,7 @@
       input.value = '';
       clearReplyTarget();
       currentPage = 1;
-      await loadChat();
+      await loadChat({ reason: 'send', scrollToNewest: true });
     } catch (_e) {
       showStub('Надсилання повідомлення');
     } finally {
@@ -603,7 +951,7 @@
         showStub(j.messageUk || 'Видалення повідомлення');
         return;
       }
-      await loadChat();
+      await loadChat({ reason: 'delete' });
     } catch (_e) {
       showStub('Видалення повідомлення');
     } finally {
@@ -627,11 +975,33 @@
     }
   }
 
+  function wireMessageListDelegation() {
+    var listEl = getMessagesEl();
+    if (!listEl || listEl.dataset.chatDelegated === '1') return;
+    listEl.dataset.chatDelegated = '1';
+    listEl.addEventListener('click', function (e) {
+      var replyBtn =
+        e.target && e.target.closest ? e.target.closest('.l2-chat-msg__reply') : null;
+      if (replyBtn) {
+        var cid = replyBtn.getAttribute('data-reply-character-id');
+        var cname = replyBtn.getAttribute('data-reply-character-name');
+        if (cid && cname) setReplyTarget(cid, cname);
+        return;
+      }
+      var delBtn =
+        e.target && e.target.closest ? e.target.closest('.l2-chat-msg__delete') : null;
+      if (delBtn) {
+        var id = delBtn.getAttribute('data-message-id');
+        if (id) deleteChatMessage(id);
+      }
+    });
+  }
+
   function wireUi() {
     document.querySelectorAll('.l2-chat-tabs__btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setChannel(btn.getAttribute('data-channel'));
-        loadChat();
+        loadChat({ reason: 'channel', forceFull: true, scrollToNewest: true });
       });
     });
 
@@ -642,12 +1012,21 @@
     if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', clearReplyTarget);
 
     var refreshBtn = $('chat-refresh-btn');
-    if (refreshBtn) refreshBtn.addEventListener('click', loadChat);
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', function () {
+        loadChat({ reason: 'refresh', scrollToNewest: false });
+      });
+    }
+
+    var newMsgsBtn = $('chat-new-msgs');
+    if (newMsgsBtn) {
+      newMsgsBtn.addEventListener('click', function () {
+        scrollListToNewest(getMessagesEl());
+      });
+    }
 
     var smilesBtn = $('chat-smiles-btn');
-    if (smilesBtn) {
-      smilesBtn.addEventListener('click', toggleSmilesPanel);
-    }
+    if (smilesBtn) smilesBtn.addEventListener('click', toggleSmilesPanel);
 
     var input = $('chat-input');
     if (input) {
@@ -657,18 +1036,27 @@
           sendChat();
         }
       });
+      input.addEventListener(
+        'focus',
+        function () {
+          logChatScroll('input-focus');
+        },
+        true
+      );
     }
+
+    wireMessageListDelegation();
   }
 
   async function init() {
+    scrollDebug = isScrollDebugEnabled();
+    logChatScroll('init');
+
     var token = localStorage.getItem('token');
     if (!token) {
       window.location.href = '/';
       return;
     }
-
-    var content = $('chat-content');
-    if (content) content.hidden = false;
 
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({});
@@ -680,19 +1068,31 @@
       L2.renderCharacterFromCache();
     }
 
-    var snap =
-      window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
-        ? await L2.resyncCharacterWhenRequired()
-        : null;
-    if (snap && snap.id != null) {
-      myCharacterId = String(snap.id);
-      if (typeof L2.applyMutationSnapshot === 'function') {
-        L2.applyMutationSnapshot(snap);
-      }
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      void L2.resyncCharacterWhenRequired()
+        .then(function (snap) {
+          if (snap && snap.id != null) {
+            myCharacterId = String(snap.id);
+            if (typeof L2.applyMutationSnapshot === 'function') {
+              L2.applyMutationSnapshot(snap);
+            }
+          }
+        })
+        .catch(function () {
+          /* optional for chat reveal */
+        });
     }
 
-    await markChatRepliesRead();
-    loadChat();
+    var cached =
+      window.L2 && typeof L2.getCachedCharacter === 'function'
+        ? L2.getCachedCharacter()
+        : null;
+    if (cached && cached.id != null) {
+      myCharacterId = String(cached.id);
+    }
+
+    void markChatRepliesRead();
+    await loadChat({ reason: 'init', scrollToNewest: true });
   }
 
   init();

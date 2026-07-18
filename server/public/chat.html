@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260718heroFeet5" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260718chatStable1" />
+    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260718chatStable3" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-chat l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -89,13 +89,15 @@
                 />
               </label>
 
-              <p class="l2-chat-reply-hint" id="chat-reply-hint" hidden>
-                <span class="l2-chat-reply-hint__label">Відповідь:</span>
-                <span class="l2-chat-reply-hint__name" id="chat-reply-hint-name"></span>
-                <button type="button" class="l2-chat-reply-hint__cancel" id="chat-reply-cancel" aria-label="Скасувати відповідь">
-                  ×
-                </button>
-              </p>
+              <div class="l2-chat-reply-slot">
+                <p class="l2-chat-reply-hint" id="chat-reply-hint" hidden>
+                  <span class="l2-chat-reply-hint__label">Відповідь:</span>
+                  <span class="l2-chat-reply-hint__name" id="chat-reply-hint-name"></span>
+                  <button type="button" class="l2-chat-reply-hint__cancel" id="chat-reply-cancel" aria-label="Скасувати відповідь">
+                    ×
+                  </button>
+                </p>
+              </div>
 
               <div class="l2-chat-compose-actions">
                 <button type="button" class="l2-chat-send" id="chat-send-btn">Написати</button>
@@ -124,10 +126,17 @@
                 </nav>
               </div>
 
-              <p class="l2-city-stub-msg" id="chat-stub-msg" hidden></p>
+              <div class="l2-chat-status-slot">
+                <p class="l2-city-stub-msg" id="chat-stub-msg" hidden></p>
+              </div>
 
-              <div class="l2-chat-list" id="chat-messages" aria-live="polite">
-                <p class="l2-chat-empty l2-chat-empty--loading">Завантаження…</p>
+              <div class="l2-chat-list-wrap">
+                <button type="button" class="l2-chat-new-msgs" id="chat-new-msgs" hidden>
+                  Нові повідомлення ↑
+                </button>
+                <div class="l2-chat-list" id="chat-messages" aria-live="polite">
+                  <p class="l2-chat-empty l2-chat-empty--loading">Завантаження…</p>
+                </div>
               </div>
 
               <nav class="l2-chat-pages" id="chat-pages" aria-label="Сторінки чату" hidden></nav>
@@ -142,6 +151,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/chatSmiles.js?v=20260711chatOrig5"></script>
-    <script src="/chat.js?v=20260718chatStable1"></script>
+    <script src="/chat.js?v=20260718chatStable3"></script>
   </body>
 </html>
