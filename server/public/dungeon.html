@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+п»ї<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Подземелля — L2WAP</title>
+    <title>РџРѕРґР·РµРјРµР»Р»СЏ вЂ” L2WAP</title>
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
@@ -104,7 +104,7 @@
 
           <div id="dungeon-content">
             <div class="l2-dungeon-head">
-              <h1 class="l2-dungeon-title" id="dungeon-title">—</h1>
+              <h1 class="l2-dungeon-title" id="dungeon-title">вЂ”</h1>
               <p class="l2-dungeon-sub" id="dungeon-sub"></p>
             </div>
             <div id="map-content">
@@ -112,22 +112,22 @@
                 <div
                   class="l2-map-viewport"
                   id="dungeon-map-viewport"
-                  aria-label="Карта подземелля — прокрутка або перетягування"
+                  aria-label="РљР°СЂС‚Р° РїРѕРґР·РµРјРµР»Р»СЏ вЂ” РїСЂРѕРєСЂСѓС‚РєР° Р°Р±Рѕ РїРµСЂРµС‚СЏРіСѓРІР°РЅРЅСЏ"
                 >
-                  <div class="l2-map-zoom-btns" role="toolbar" aria-label="Масштаб карти">
+                  <div class="l2-map-zoom-btns" role="toolbar" aria-label="РњР°СЃС€С‚Р°Р± РєР°СЂС‚Рё">
                     <button
                       type="button"
                       class="l2-map-zoom-square"
                       id="dungeon-map-zoom-out"
-                      aria-label="Зменшити карту"
+                      aria-label="Р—РјРµРЅС€РёС‚Рё РєР°СЂС‚Сѓ"
                     >
-                      ?
+                      в€’
                     </button>
                     <button
                       type="button"
                       class="l2-map-zoom-square"
                       id="dungeon-map-zoom-in"
-                      aria-label="Збільшити карту"
+                      aria-label="Р—Р±С–Р»СЊС€РёС‚Рё РєР°СЂС‚Сѓ"
                     >
                       +
                     </button>
@@ -164,16 +164,16 @@
                     ></div>
                   </div>
                 </div>
-                <section class="l2-map-hero-section" id="dungeon-hero-section" aria-label="Герої поруч" hidden>
+                <section class="l2-map-hero-section" id="dungeon-hero-section" aria-label="Р“РµСЂРѕС— РїРѕСЂСѓС‡" hidden>
                   <ul class="l2-map-hero-list" id="dungeon-hero-list"></ul>
                 </section>
-                <section class="l2-map-mob-section" aria-label="Моби подземелля">
+                <section class="l2-map-mob-section" aria-label="РњРѕР±Рё РїРѕРґР·РµРјРµР»Р»СЏ">
                   <ul class="l2-map-mob-list" id="dungeon-mob-list"></ul>
                 </section>
               </div>
             </div>
             <p class="l2-dungeon-back">
-              <a class="l2-dungeon-back__link" href="/map.html">&lt;&lt;&lt; На поверхню</a>
+              <a class="l2-dungeon-back__link" href="/map.html">&lt;&lt;&lt; РќР° РїРѕРІРµСЂС…РЅСЋ</a>
             </p>
           </div>
 
@@ -194,16 +194,16 @@
         type="button"
         class="l2-map-mob-modal__backdrop"
         id="dungeon-mob-modal-backdrop"
-        aria-label="Закрити"
+        aria-label="Р—Р°РєСЂРёС‚Рё"
       ></button>
       <div class="l2-map-mob-modal__panel">
         <button
           type="button"
           class="l2-map-mob-modal__close"
           id="dungeon-mob-modal-close"
-          aria-label="Закрити"
+          aria-label="Р—Р°РєСЂРёС‚Рё"
         >
-          ?
+          Г—
         </button>
         <div class="l2-map-mob-modal__head">
           <img
@@ -214,28 +214,28 @@
             alt=""
           />
           <div>
-            <h3 id="dungeon-mob-modal-title" class="l2-map-mob-modal__title">—</h3>
+            <h3 id="dungeon-mob-modal-title" class="l2-map-mob-modal__title">вЂ”</h3>
             <p id="dungeon-mob-modal-sub" class="l2-map-mob-modal__sub"></p>
           </div>
         </div>
         <div class="l2-map-mob-modal__section">
-          <div class="l2-map-mob-modal__sec-title">Параметри (бій)</div>
+          <div class="l2-map-mob-modal__sec-title">РџР°СЂР°РјРµС‚СЂРё (Р±С–Р№)</div>
           <dl class="l2-map-mob-modal__stats" id="dungeon-mob-modal-stats"></dl>
         </div>
         <div class="l2-map-mob-modal__section">
-          <div class="l2-map-mob-modal__sec-title">Дроп</div>
+          <div class="l2-map-mob-modal__sec-title">Р”СЂРѕРї</div>
           <div id="dungeon-mob-modal-drops" class="l2-map-mob-modal__drops"></div>
         </div>
         <div class="l2-map-mob-modal__section">
-          <div class="l2-map-mob-modal__sec-title">Спойл</div>
+          <div class="l2-map-mob-modal__sec-title">РЎРїРѕР№Р»</div>
           <div id="dungeon-mob-modal-spoil" class="l2-map-mob-modal__drops"></div>
         </div>
         <p id="dungeon-mob-modal-note" class="l2-map-mob-modal__note" hidden></p>
-        <a id="dungeon-mob-modal-battle" class="l2-map-mob-modal__battle" href="#">У бій</a>
+        <a id="dungeon-mob-modal-battle" class="l2-map-mob-modal__battle" href="#">РЈ Р±С–Р№</a>
       </div>
     </div>
 
-    <script src="/common.js?v=20260718layoutStable3"></script>
+    <script src="/common.js?v=20260718layoutStable4"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/dungeon.js?v=20260717worldSync2"></script>

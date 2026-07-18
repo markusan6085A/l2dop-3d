@@ -14,12 +14,18 @@ function hasPendingDefeat(char: CharacterRow): boolean {
   );
 }
 
+function shouldClearStaleBattleJson(char: CharacterRow): boolean {
+  if (char.battleJson == null) return false;
+  if (hasPendingDefeat(char)) return true;
+  return char.hp <= 0;
+}
+
 /** Після поразки battleJson має бути порожнім; при «завислому» бою — прибрати без revision++. */
 export async function sanitizeDefeatOrphanBattleInTx(
   tx: Tx,
   char: CharacterRow
 ): Promise<CharacterRow> {
-  if (!hasPendingDefeat(char)) return char;
+  if (!shouldClearStaleBattleJson(char)) return char;
   if (char.battleJson == null) return char;
   await persistCharacterFieldsInTx(tx, char.id, {
     battleJson: Prisma.JsonNull,
@@ -41,5 +47,7 @@ export async function prepareCharacterAfterDefeatInTx(
 
 export function isBattleBlockingReturnToTown(char: CharacterRow): boolean {
   if (char.battleJson == null) return false;
-  return !hasPendingDefeat(char);
+  if (hasPendingDefeat(char)) return false;
+  if (char.hp <= 0) return false;
+  return true;
 }

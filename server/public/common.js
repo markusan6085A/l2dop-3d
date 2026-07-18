@@ -1878,9 +1878,15 @@
         return true;
       }
       if (tag === 'DIV' && id) {
-        if (id === 'clan-my-empty' || id === 'chat-smiles-panel') return false;
+        if (
+          id === 'clan-my-empty' ||
+          id === 'chat-smiles-panel' ||
+          id === 'battle-content'
+        ) {
+          return false;
+        }
         if (id === 'clan-my-panel') return true;
-        if (/(?:^|-)(?:content|panel)$/.test(id)) return true;
+        if (id.endsWith('-content') || id.endsWith('-panel')) return true;
       }
       return false;
     },
@@ -1912,7 +1918,7 @@
       var shouldReveal = global.L2.shouldRevealChromeShell;
       document
         .querySelectorAll(
-          '.l2-screen-inner section[hidden], .l2-screen-inner main[hidden], .l2-chrome-nav-column section[hidden], .l2-chrome-nav-column main[hidden], .l2-townlive-column section[hidden], .l2-townlive-column main[hidden], .l2-screen-inner div[hidden][id$="-content"], .l2-screen-inner div[hidden][id$="-panel"], .l2-screen-inner div[hidden]#clan-my-panel, .l2-chrome-nav-column div[hidden][id$="-content"], .l2-chrome-nav-column div[hidden][id$="-panel"], .l2-townlive-column div[hidden][id$="-content"], .l2-townlive-column div[hidden][id$="-panel"], .l2-townlive-column div[hidden]#clan-my-panel'
+          '.l2-screen-inner section[hidden], .l2-screen-inner main[hidden], .l2-chrome-nav-column section[hidden], .l2-chrome-nav-column main[hidden], .l2-townlive-column section[hidden], .l2-townlive-column main[hidden], .l2-screen-inner div[hidden][id$="-content"]:not(#battle-content), .l2-screen-inner div[hidden][id$="-panel"], .l2-screen-inner div[hidden]#clan-my-panel, .l2-chrome-nav-column div[hidden][id$="-content"]:not(#battle-content), .l2-chrome-nav-column div[hidden][id$="-panel"], .l2-townlive-column div[hidden][id$="-content"]:not(#battle-content), .l2-townlive-column div[hidden][id$="-panel"], .l2-townlive-column div[hidden]#clan-my-panel'
         )
         .forEach(function (el) {
           if (shouldReveal(el)) el.removeAttribute('hidden');
