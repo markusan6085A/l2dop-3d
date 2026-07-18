@@ -23,6 +23,7 @@ import type {
   BattleActionResponse,
 } from './battleServiceDeltaTypes.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
+import { battleVersionFromState } from '../domain/battleVersion.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -128,7 +129,13 @@ export async function resolveMobDeadVictoryInTx(
   }
   if (isSharedWorldBossKind(args.spawn.kind)) {
     const wb = await resolveWorldBossVictoryInTx(tx, args);
-    return wb ? wrapVictoryAsFull(wb) : null;
+    return wb
+      ? wrapVictoryAsFull({
+          ...wb,
+          battle: null,
+          lethalMeta: buildLethalVictoryMeta({ st: args.st, mobHp: 0 }),
+        })
+      : null;
   }
   const v = await persistBattleVictoryInTx(tx, {
     userId: args.userId,
@@ -146,19 +153,41 @@ export async function resolveMobDeadVictoryInTx(
     ...extras,
     nearbyExtraEconomy: args.side.nearbyExtraEconomy,
   });
-  return wrapVictoryAsFull({ ...v, battle: null });
+  return wrapVictoryAsFull({
+    ...v,
+    battle: null,
+    lethalMeta: buildLethalVictoryMeta({ st: args.st, mobHp: 0 }),
+  });
 }
 
 export function wrapVictoryAsFull(v: {
   character: CharacterSnapshot;
   victory?: BattleVictorySummary;
   battle: null;
+  lethalMeta?: BattleActionFullResponse['lethalMeta'];
 }): BattleActionFullResponse {
   return {
     kind: 'full',
     character: v.character,
     battle: null,
     victory: v.victory,
+    ...(v.lethalMeta ? { lethalMeta: v.lethalMeta } : {}),
+  };
+}
+
+export function buildLethalVictoryMeta(args: {
+  st: BattleContinueTurnBase['st'];
+  mobHp: number;
+}): NonNullable<BattleActionFullResponse['lethalMeta']> {
+  const mobMaxHp = Math.max(1, Math.floor(Number(args.st.mobMaxHp) || 1));
+  const mobHp = Math.max(0, Math.floor(args.mobHp));
+  return {
+    battleEnded: true,
+    mobDead: true,
+    mobHp,
+    mobMaxHp,
+    outcome: 'VICTORY',
+    battleVersion: battleVersionFromState(args.st),
   };
 }
 

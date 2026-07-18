@@ -36,6 +36,7 @@ import {
   lockWorldBossSessionInTx,
   tryClaimWorldBossLootInTx,
   forceWorldBossSessionMobHpZeroInTx,
+  deleteWorldBossSession,
 } from './worldBossSessionService.js';
 import { creditDailyQuestRaidBossParticipationInTx } from './dailyQuestProgressService.js';
 import { creditRaidBossKillInTx } from './ratingsStatsService.js';
@@ -225,6 +226,7 @@ async function finishWorldBossVictoryIdempotentInTx(
   character: CharacterSnapshot;
   battle: null;
 }> {
+  await deleteWorldBossSession(tx, args.bj.spawnId);
   const msg = itemRecipientName
     ? 'Бос уже переможений! Дроп (речі): ' + itemRecipientName + '.'
     : 'Бос уже переможений.';

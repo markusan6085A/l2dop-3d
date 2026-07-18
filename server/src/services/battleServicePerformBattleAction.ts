@@ -176,6 +176,7 @@ import {
   runWorldBossCombatTickInTx,
   flushWorldBossPendingMobHitsForCharacterInTx,
   resolveCanonicalWorldBossMobHpInTx,
+  loadWorldBossSessionMobHp,
 } from './worldBossSessionService.js';
 import { refreshPvpOpponentHpForCharacterInTx } from './battleServicePvpSession.js';
 import {
@@ -1033,17 +1034,51 @@ export async function performBattleActionInTx(
     }
 
     if (worldBossBattle && damagingPlayerHit) {
-      const ws = await recordWorldBossDamagingHitInTx(
+      let sessionDamage = pDmg;
+      if (
+        lethalShotProc === true &&
+        !isPvpBattleJson(st) &&
+        mobHp === 1 &&
+        pDmg > 0
+      ) {
+        const sharedPre = await loadWorldBossSessionMobHp(tx, spawn.spawnId);
+        if (sharedPre != null && sharedPre > 1) {
+          sessionDamage = Math.min(pDmg, Math.max(0, sharedPre - 1));
+        }
+      }
+      const hit = await recordWorldBossDamagingHitInTx(
         tx,
         spawn.spawnId,
         cr.id,
-        mobHp,
-        pDmg,
+        sessionDamage,
         Date.now()
       );
-      if (ws) {
-        mobHp = ws.mobHp;
-        st.mobHp = ws.mobHp;
+      if (hit) {
+        mobHp = hit.nextHp;
+        st.mobHp = hit.nextHp;
+        if (
+          lethalShotProc === true &&
+          !isPvpBattleJson(st) &&
+          mobHp > 1 &&
+          hit.damageApplied > 0
+        ) {
+          mobHp = 1;
+          st.mobHp = 1;
+        }
+        if (hit.nextHp <= 0) {
+          console.log('[rb-lethal]', {
+            spawnId: spawn.spawnId,
+            preHp: hit.preHp,
+            damage: hit.damageApplied,
+            nextMobHp: hit.nextHp,
+            persistedMobHp: hit.session.mobHp,
+            outcome: 'pending_victory',
+            battleVersion: st.battleVersion ?? 0,
+          });
+        }
+      } else {
+        mobHp = 0;
+        st.mobHp = 0;
       }
     }
 

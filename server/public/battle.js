@@ -1640,8 +1640,19 @@
       if (payload.mobMaxHp != null) battle.mobMaxHp = payload.mobMaxHp;
     }
 
+    function clearLocalBattleStateAfterVictory() {
+      stopBattleSyncPoll();
+      battle = null;
+      lastBattleVersion = 0;
+      lastBattleLogSeq = 0;
+      lastBattleVisualSig = '';
+    }
+
     function applyBattleDelta(delta) {
       if (!delta) return false;
+      var vicRootEarly = $('battle-victory-root');
+      if (vicRootEarly && !vicRootEarly.hidden) return false;
+      if (delta.battleEnded === true && !battle) return false;
       if (!delta.changed) {
         if (typeof delta.battleVersion === 'number') {
           lastBattleVersion = Math.floor(delta.battleVersion);
@@ -2027,6 +2038,10 @@
           return false;
         }
         if (st.outcome === 'DEFEAT' || st.battleEnded) {
+          if (st.battleEnded && !battle) {
+            stopBattleSyncPoll();
+            return false;
+          }
           return syncBattleFromServerFull();
         }
         applyBattleDelta(st);
@@ -2244,6 +2259,9 @@
       character = res.character;
       battle = res.battle;
       syncBattleTrackFromView(battle);
+      if (res.victory || (res.lethalMeta && res.lethalMeta.battleEnded)) {
+        clearLocalBattleStateAfterVictory();
+      }
       if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
         L2.applyCharacterSnapshot(character);
       } else {
@@ -2960,8 +2978,17 @@
     }
 
     async function handleVictoryOutcome(victory) {
+      clearLocalBattleStateAfterVictory();
       clearDefeatFromSession();
       renderPlayerBars(character);
+      if (victory) {
+        console.log('[rb-victory-client]', {
+          spawnId: victory.spawnId,
+          mobName: victory.mobName,
+          battleEnded: true,
+          mobHp: 0,
+        });
+      }
       showVictoryScreen(victory);
     }
 

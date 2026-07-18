@@ -174,6 +174,8 @@ export interface WorldBossSessionState {
   lootIssued?: boolean;
   lootIssuedAt?: number;
   lootRecipientCharacterId?: string | null;
+  /** Збільшується при respawn після смерті — sync не приймає stale HP зі старого бою. */
+  spawnGeneration?: number;
 }
 
 export interface WorldBossParticipantContext {
@@ -227,6 +229,7 @@ export function createWorldBossSessionState(args: {
     autoAttackIntervalMs: timing.autoAttackIntervalMs,
     firstAggroDelayMs: timing.firstAggroDelayMs,
     nextMobAutoAttackAtMs: WORLD_BOSS_NO_ATTACK_SCHEDULED,
+    spawnGeneration: 1,
   };
 }
 
@@ -337,11 +340,22 @@ export function parseWorldBossSessionState(raw: unknown): WorldBossSessionState 
     ...(lootIssued ? { lootIssued: true } : {}),
     ...(lootIssuedAt != null ? { lootIssuedAt } : {}),
     ...(lootRecipientCharacterId ? { lootRecipientCharacterId } : {}),
+    spawnGeneration:
+      o.spawnGeneration != null && Number.isFinite(Number(o.spawnGeneration))
+        ? Math.max(1, Math.floor(Number(o.spawnGeneration)))
+        : 1,
   };
 }
 
 export function isWorldBossLootIssued(session: WorldBossSessionState): boolean {
   return session.lootIssued === true;
+}
+
+/** Сесія мертва — потрібен новий respawn-стан, а не «лікування» старого HP. */
+export function isWorldBossSessionDeadForRespawn(
+  session: WorldBossSessionState
+): boolean {
+  return session.mobHp <= 0 || isWorldBossLootIssued(session);
 }
 
 function participantPresenceMs(

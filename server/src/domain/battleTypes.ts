@@ -352,6 +352,10 @@ export interface BattleJsonState {
    * Не збігається з `character.revision` — revision++ лише на видимих мутаціях гравця.
    */
   battleVersion?: number;
+  /** Покоління спільної сесії РБ — для anti-stale sync після respawn. */
+  worldBossSpawnGeneration?: number;
+  /** Sync-only: battleJson застарів відносно WorldBossSession.spawnGeneration. */
+  worldBossSpawnStale?: boolean;
   /**
    * Монотонний лічильник рядків логу (виживає обрізання `log` до MAX_BATTLE_LOG).
    */

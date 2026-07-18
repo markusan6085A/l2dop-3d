@@ -5,7 +5,7 @@ import { findCharacterForUser } from './charResolveForUser.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import type { BattleJsonState } from '../domain/battle.js';
 import {
-  readWorldBossSessionMobHp,
+  readWorldBossSessionState,
   clampSharedWorldBossMobHp,
 } from './worldBossSessionService.js';
 import {
@@ -23,11 +23,25 @@ async function battleJsonWithSharedMobHp(
 ): Promise<BattleJsonState> {
   const spawnMeta = resolveBattleSpawnMeta(bj);
   if (!spawnMeta || !isSharedWorldBossKind(spawnMeta.kind)) return bj;
-  const sharedHp = await readWorldBossSessionMobHp(bj.spawnId);
-  if (sharedHp == null) return bj;
+  const session = await readWorldBossSessionState(bj.spawnId);
+  if (!session) {
+    return {
+      ...bj,
+      mobHp: 0,
+    };
+  }
+  const clientGen =
+    bj.worldBossSpawnGeneration != null
+      ? Math.floor(Number(bj.worldBossSpawnGeneration))
+      : null;
+  const sessionGen = Math.max(1, Math.floor(Number(session.spawnGeneration) || 1));
+  const staleGeneration =
+    clientGen != null && Number.isFinite(clientGen) && clientGen !== sessionGen;
   return {
     ...bj,
-    mobHp: clampSharedWorldBossMobHp(bj.mobMaxHp, sharedHp),
+    mobHp: clampSharedWorldBossMobHp(bj.mobMaxHp, session.mobHp),
+    worldBossSpawnGeneration: sessionGen,
+    ...(staleGeneration ? { worldBossSpawnStale: true } : {}),
   };
 }
 
@@ -98,6 +112,48 @@ export async function getBattleSyncForUser(
   }
 
   const bj = await battleJsonWithSharedMobHp(bjRaw);
+  const spawnMeta = resolveBattleSpawnMeta(bjRaw);
+  const sharedBoss = spawnMeta != null && isSharedWorldBossKind(spawnMeta.kind);
+
+  if (
+    sharedBoss &&
+    (bj as BattleJsonState & { worldBossSpawnStale?: boolean }).worldBossSpawnStale ===
+      true
+  ) {
+    return {
+      changed: true,
+      revision,
+      battleVersion: 0,
+      logSeq: 0,
+      logTail: [],
+      inBattle: false,
+      outcome: null,
+      battleEnded: true,
+      mobHp: bj.mobHp,
+      mobMaxHp: bj.mobMaxHp,
+      mobDead: bj.mobHp <= 0,
+    };
+  }
+
+  const sessionGone =
+    sharedBoss &&
+    bj.mobHp <= 0 &&
+    (await readWorldBossSessionState(bjRaw.spawnId)) == null;
+  if (sessionGone) {
+    return {
+      changed: true,
+      revision,
+      battleVersion: 0,
+      logSeq: 0,
+      logTail: [],
+      inBattle: false,
+      outcome: 'VICTORY',
+      battleEnded: true,
+      mobHp: 0,
+      mobMaxHp: bj.mobMaxHp,
+      mobDead: true,
+    };
+  }
 
   const vitals = computeCharacterVitalsBundle({
     row: cr,

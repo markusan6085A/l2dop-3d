@@ -48,6 +48,16 @@ export interface BattleActionFullResponse {
   battle: import('./battleServiceTypes.js').BattleView | null;
   victory?: BattleVictorySummary;
   defeat?: BattleDefeatSummary;
+  /** Lethal / RB kill: однозначні поля для клієнта (очистити HP-бар). */
+  lethalMeta?: Pick<
+    BattleDeltaPayload,
+    | 'battleEnded'
+    | 'mobDead'
+    | 'mobHp'
+    | 'mobMaxHp'
+    | 'outcome'
+    | 'battleVersion'
+  >;
 }
 
 export type BattleActionResponse =

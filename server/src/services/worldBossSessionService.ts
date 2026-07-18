@@ -16,6 +16,7 @@ import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
 import {
   createWorldBossSessionState,
   isSharedWorldBossKind,
+  isWorldBossSessionDeadForRespawn,
   listValidWorldBossParticipantIds,
   parseWorldBossSessionState,
   reconcileWorldBossTarget,
@@ -188,7 +189,7 @@ export async function ensureWorldBossSessionInTx(
   if (!session) {
     session = createWorldBossSessionState({
       spawnId: spawn.id,
-      mobHp: hpHint,
+      mobHp: mc.maxHp,
       mobMaxHp: mc.maxHp,
       mobPAtk: mc.pAtk,
       mobPDef: mc.pDef,
@@ -207,7 +208,31 @@ export async function ensureWorldBossSessionInTx(
     await saveSession(tx, session);
     return session;
   }
-  /** Не «лікувати» спільного боса персональним mobSpawnHp — лише найменший HP. */
+  if (isWorldBossSessionDeadForRespawn(session)) {
+    const nextGen = Math.max(1, Math.floor(Number(session.spawnGeneration) || 1)) + 1;
+    session = createWorldBossSessionState({
+      spawnId: spawn.id,
+      mobHp: mc.maxHp,
+      mobMaxHp: mc.maxHp,
+      mobPAtk: mc.pAtk,
+      mobPDef: mc.pDef,
+      mobMAtk: mc.mAtk,
+      mobMDef: mc.mDef,
+      mobEvasion: mc.evasion,
+      spawnWorldX: spawn.worldX,
+      spawnWorldY: spawn.worldY,
+      spawnName: spawn.name,
+      spawnLevel: spawn.level,
+      spawnKind: spawn.kind,
+      nowMs,
+      autoAttackIntervalMs: spawn.autoAttackIntervalMs,
+      firstAggroDelayMs: spawn.firstAggroDelayMs,
+    });
+    session.spawnGeneration = nextGen;
+    await saveSession(tx, session);
+    return session;
+  }
+  /** Активний бій: не «лікувати» спільного боса персональним mobSpawnHp — лише найменший HP. */
   session.mobHp = Math.max(
     0,
     Math.min(session.mobMaxHp, Math.min(session.mobHp, hpHint))
@@ -229,10 +254,17 @@ export async function loadWorldBossSessionMobHp(
 export async function readWorldBossSessionMobHp(
   spawnId: string
 ): Promise<number | null> {
+  const session = await readWorldBossSessionState(spawnId);
+  return session?.mobHp ?? null;
+}
+
+/** Read-path: повний стан сесії (generation для anti-stale sync). */
+export async function readWorldBossSessionState(
+  spawnId: string
+): Promise<WorldBossSessionState | null> {
   const row = await prisma.worldBossSession.findUnique({ where: { spawnId } });
   if (!row) return null;
-  const session = parseWorldBossSessionState(row.stateJson);
-  return session?.mobHp ?? null;
+  return parseWorldBossSessionState(row.stateJson);
 }
 
 async function loadParticipantContexts(
@@ -564,25 +596,36 @@ export async function recordWorldBossBattlePresenceInTx(
   }
 }
 
+export type WorldBossDamagingHitResult = {
+  session: WorldBossSessionState;
+  preHp: number;
+  nextHp: number;
+  damageApplied: number;
+};
+
+/** Урон по РБ: атомарно session.mobHp -= damage під FOR UPDATE (не absolute write з клієнтського turn). */
 export async function recordWorldBossDamagingHitInTx(
   tx: Tx,
   spawnId: string,
   characterId: string,
-  mobHp: number,
   damageDealt: number,
   nowMs: number
-): Promise<WorldBossSessionState | null> {
+): Promise<WorldBossDamagingHitResult | null> {
   let session = await lockSessionRow(tx, spawnId);
   if (!session) return null;
-  const nextHp = Math.max(0, Math.min(session.mobMaxHp, mobHp));
-  session.mobHp = nextHp;
-  if (nextHp <= 0) {
-    session.mobHp = 0;
+  const preHp = Math.max(0, Math.floor(session.mobHp));
+  if (preHp <= 0) {
+    return { session, preHp: 0, nextHp: 0, damageApplied: 0 };
   }
-  registerWorldBossDamagingHit(session, characterId, damageDealt, nowMs);
+  const damageApplied = Math.max(0, Math.floor(damageDealt));
+  const nextHp = Math.max(0, preHp - damageApplied);
+  session.mobHp = nextHp;
+  if (damageApplied > 0) {
+    registerWorldBossDamagingHit(session, characterId, damageApplied, nowMs);
+  }
   await saveSession(tx, session);
   presenceWriteAtMs.set(presenceWriteKey(spawnId, characterId), nowMs);
-  return session;
+  return { session, preHp, nextHp, damageApplied };
 }
 
 /** Aggression: перемикає currentTargetCharacterId РБ на кастера таунту. */

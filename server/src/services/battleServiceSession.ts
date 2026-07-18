@@ -71,7 +71,7 @@ import {
   isSharedWorldBossKind,
   loadWorldBossSessionMobHp,
   clampSharedWorldBossMobHp,
-  readWorldBossSessionMobHp,
+  readWorldBossSessionState,
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
@@ -191,6 +191,7 @@ export async function startBattleInTx(
     mc.maxHp
   );
   let mobHpStart = mobHpStartRaw;
+  let worldBossSpawnGeneration: number | undefined;
   if (isSharedWorldBossKind(spawn.kind)) {
     const session = await ensureWorldBossSessionInTx(
       tx,
@@ -199,6 +200,10 @@ export async function startBattleInTx(
       nowStartMs
     );
     mobHpStart = session.mobHp;
+    worldBossSpawnGeneration = Math.max(
+      1,
+      Math.floor(Number(session.spawnGeneration) || 1)
+    );
     await recordWorldBossBattlePresenceInTx(
       tx,
       spawn.id,
@@ -239,6 +244,9 @@ export async function startBattleInTx(
     lastRegenTickMs: nowStartMs,
     lastPlayerAttackAtMs: nowStartMs,
     mobHitsUntilRetaliation: randomMobRetaliationWindowHits(),
+    ...(worldBossSpawnGeneration != null
+      ? { worldBossSpawnGeneration }
+      : {}),
   };
   if (wTick?.battleMods) {
     const bm = { ...wTick.battleMods };
@@ -380,11 +388,20 @@ export async function getBattleState(
   if (!spawnMeta) return { character: snap, battle: null, pvpIncoming };
   let bj = bjRaw;
   if (isSharedWorldBossKind(spawnMeta.kind)) {
-    const sharedHp = await readWorldBossSessionMobHp(bjRaw.spawnId);
-    if (sharedHp != null) {
+    const session = await readWorldBossSessionState(bjRaw.spawnId);
+    if (session) {
       bj = {
         ...bjRaw,
-        mobHp: clampSharedWorldBossMobHp(bjRaw.mobMaxHp, sharedHp),
+        mobHp: clampSharedWorldBossMobHp(bjRaw.mobMaxHp, session.mobHp),
+        worldBossSpawnGeneration: Math.max(
+          1,
+          Math.floor(Number(session.spawnGeneration) || 1)
+        ),
+      };
+    } else {
+      bj = {
+        ...bjRaw,
+        mobHp: 0,
       };
     }
   }
