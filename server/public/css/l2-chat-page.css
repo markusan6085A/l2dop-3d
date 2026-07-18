@@ -142,6 +142,14 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-actions-sep {
   font-size: 12px;
 }
 
+body.l2-app-l2-chrome.l2-page-chat #l2-pvp-incoming {
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-chat .l2-hud-panel--legacy-minimal + .l2-chat-reply-notify[hidden] {
+  display: none !important;
+}
+
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-list {
   display: flex;
   flex-direction: column;
@@ -150,6 +158,8 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-list {
   padding: 0;
   overflow: visible;
   box-sizing: border-box;
+  min-height: 6.5rem;
+  contain: layout style;
 }
 
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty {

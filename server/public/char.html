@@ -1,9 +1,9 @@
-п»ї<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>РџРµСЂСЃ вЂ” L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260718heroFeet5" />
+    <title>Перс — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260718heroFeet5" />
     <link rel="preload" as="image" href="/assets/fons_pers.jpg" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
@@ -65,12 +65,12 @@
           <div id="char-content">
             <div class="l2-char-mobi">
               <div class="l2-char-title-row">
-                <span class="l2-char-title-empty">РџРѕСЂРѕР¶РЅС–Р№ С‚РёС‚СѓР»</span>
+                <span class="l2-char-title-empty">Порожній титул</span>
                 <span class="l2-char-name-bracket" id="char-name-bracket"></span>
               </div>
 
-              <div class="l2-char-photo-wrap" aria-label="РџРµСЂСЃРѕРЅР°Р¶">
-                <!-- Р’РЅСѓС‚СЂС–С€РЅС–Р№ Р±Р»РѕРє СЏРє text-rpg CharacterEquipmentFrame (РіРµСЂРѕР№ + СЃР»РѕС‚Рё) -->
+              <div class="l2-char-photo-wrap" aria-label="Персонаж">
+                <!-- Внутрішній блок як text-rpg CharacterEquipmentFrame (герой + слоти) -->
                 <div class="l2-char-equip-frame">
                   <div class="l2-char-equip-bg">
                     <img
@@ -117,7 +117,7 @@
                   </div>
                 </div>
                 <div class="l2-char-currency">
-                  <span class="l2-char-currency-seg" title="РђРґРµРЅР°">
+                  <span class="l2-char-currency-seg" title="Адена">
                     <img
                       class="l2-char-currency-ico"
                       src="/assets/l2dop/etc_adena_i00.png"
@@ -125,10 +125,10 @@
                       height="16"
                       alt=""
                     />
-                    <span class="l2-char-adena-label">РђРґРµРЅР°</span>
+                    <span class="l2-char-adena-label">Адена</span>
                     <span id="char-adena">0</span>
                   </span>
-                  <span class="l2-char-currency-seg" title="Р”РѕСЃРІС–Рґ">
+                  <span class="l2-char-currency-seg" title="Досвід">
                     <img
                       class="l2-char-currency-ico"
                       src="/assets/l2dop/etc_exp_point_i00.png"
@@ -139,7 +139,7 @@
                     <span class="l2-char-adena-label">EXP</span>
                     <span id="char-exp">0</span>
                   </span>
-                  <span class="l2-char-currency-seg" title="РћС‡РєРё РІРјС–РЅСЊ">
+                  <span class="l2-char-currency-seg" title="Очки вмінь">
                     <img
                       class="l2-char-currency-ico"
                       src="/assets/l2dop/etc_sp_point_i00.png"
@@ -150,48 +150,48 @@
                     <span class="l2-char-adena-label">SP</span>
                     <span id="char-sp">0</span>
                   </span>
-                  <span class="l2-char-weight" title="Р’Р°РіР° С–РЅРІРµРЅС‚Р°СЂСЏ"
+                  <span class="l2-char-weight" title="Вага інвентаря"
                     >(<span id="char-w-cur">2</span>/<span id="char-w-max">250</span>)</span
                   >
                 </div>
               </div>
 
-              <div class="l2-char-bag-block" aria-label="РЎСѓРјРєР°">
-                <p class="l2-char-bag-title">РЈ СЃСѓРјС†С–</p>
-                <div class="l2-char-inv-filters" aria-label="РљР°С‚РµРіРѕСЂС–С— СЃСѓРјРєРё">
+              <div class="l2-char-bag-block" aria-label="Сумка">
+                <p class="l2-char-bag-title">У сумці</p>
+                <div class="l2-char-inv-filters" aria-label="Категорії сумки">
                   <div class="l2-char-inv-shop-tabs-host l2-gm-shop">
                     <div class="l2-char-inv-cats-wrap">
                       <div
                         id="char-bag-tab-all-host"
                         class="l2-char-inv-all-host"
-                        aria-label="Р’СЃРµ"
+                        aria-label="Все"
                       ></div>
                       <div
                         id="char-bag-tab-cats"
                         class="l2-drops-shop-tablist l2-drops-shop-tablist--cats"
                         role="tablist"
-                        aria-label="РўРёРї РїСЂРµРґРјРµС‚Р°"
+                        aria-label="Тип предмета"
                       ></div>
                     </div>
                     <div
                       id="char-bag-tab-grades"
                       class="l2-drops-shop-tablist l2-drops-shop-tablist--grades"
                       role="tablist"
-                      aria-label="Р“СЂРµР№Рґ"
+                      aria-label="Грейд"
                     ></div>
                     <div
                       id="char-bag-tab-subs"
                       class="l2-drops-shop-tablist l2-drops-shop-tablist--weapon-kind"
                       role="tablist"
-                      aria-label="РџС–РґРєР°С‚РµРіРѕСЂС–СЏ"
+                      aria-label="Підкатегорія"
                       hidden
                     ></div>
                   </div>
                 </div>
                 <div id="char-bag-list" class="l2-char-bag-list"></div>
-                <div id="char-bag-pager" class="l2-char-bag-pager" hidden aria-label="РЎС‚РѕСЂС–РЅРєРё СЃСѓРјРєРё"></div>
-                <p class="l2-char-bag-hint" id="char-bag-empty" hidden>РЎСѓРјРєР° РїРѕСЂРѕР¶РЅСЏ.</p>
-                <p class="l2-char-bag-hint" id="char-bag-filter-empty" hidden>РќРµРјР°С” РїСЂРµРґРјРµС‚С–РІ Р·Р° С†РёРј С„С–Р»СЊС‚СЂРѕРј.</p>
+                <div id="char-bag-pager" class="l2-char-bag-pager" hidden aria-label="Сторінки сумки"></div>
+                <p class="l2-char-bag-hint" id="char-bag-empty" hidden>Сумка порожня.</p>
+                <p class="l2-char-bag-hint" id="char-bag-filter-empty" hidden>Немає предметів за цим фільтром.</p>
                 <p class="l2-char-bag-notice" id="char-bag-notice" hidden></p>
               </div>
 
@@ -203,18 +203,18 @@
 
           <div id="char-bag-modal-overlay" class="l2-gm-modal-overlay" hidden aria-hidden="true">
             <div class="l2-gm-modal" role="dialog" aria-modal="true" aria-labelledby="char-bag-modal-section-title">
-              <button type="button" class="l2-gm-modal-close" id="char-bag-modal-close" aria-label="Р—Р°РєСЂРёС‚Рё">
-                Г—
+              <button type="button" class="l2-gm-modal-close" id="char-bag-modal-close" aria-label="Закрити">
+                ?
               </button>
               <h2 id="char-bag-modal-section-title" class="l2-item-modal-heading">
-                Р†РЅС„РѕСЂРјР°С†С–СЏ РїСЂРѕ РїСЂРµРґРјРµС‚
+                Інформація про предмет
               </h2>
               <div class="l2-gm-modal-head">
                 <img id="char-bag-modal-icon" class="l2-gm-modal-icon" width="48" height="48" alt="" />
                 <div>
                   <p id="char-bag-modal-title" class="l2-gm-modal-title"></p>
                   <p class="l2-gm-modal-sub">
-                    <span id="char-bag-modal-grade">вЂ”</span> В· <span id="char-bag-modal-kind"></span>
+                    <span id="char-bag-modal-grade">—</span> · <span id="char-bag-modal-kind"></span>
                   </p>
                 </div>
               </div>
@@ -223,7 +223,7 @@
               <div id="char-bag-modal-armor-sets" class="l2-drops-stats-modal__armor-sets" hidden></div>
               <p class="l2-char-bag-modal-craft-hint" id="char-bag-modal-craft-hint" hidden></p>
               <div class="l2-char-bag-modal-use-row" id="char-bag-modal-use-row" hidden>
-                <label class="l2-char-bag-modal-use-label" for="char-bag-modal-use-qty">РљС–Р»СЊРєС–СЃС‚СЊ</label>
+                <label class="l2-char-bag-modal-use-label" for="char-bag-modal-use-qty">Кількість</label>
                 <input
                   type="number"
                   id="char-bag-modal-use-qty"
@@ -234,11 +234,11 @@
                   inputmode="numeric"
                 />
                 <button type="button" class="l2-char-bag-modal-action" id="char-bag-modal-use">
-                  Р’РёРєРѕСЂРёСЃС‚Р°С‚Рё
+                  Використати
                 </button>
               </div>
               <button type="button" class="l2-char-bag-modal-action" id="char-bag-modal-equip" hidden>
-                РћРґС–С‚Рё
+                Одіти
               </button>
             </div>
           </div>
@@ -248,7 +248,7 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260718layoutStable2"></script>
+    <script src="/common.js?v=20260718layoutStable3"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/armor-set-bonuses-ui.js?v=5"></script>

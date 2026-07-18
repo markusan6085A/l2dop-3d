@@ -1861,20 +1861,41 @@
     /** Показати основний контент одразу (як char.html), без стрибка після fetch. */
     shouldRevealChromeShell: function (el) {
       if (!el || el.nodeType !== 1) return false;
+      if (el.classList && el.classList.contains('l2-gm-modal-overlay')) return false;
       var tag = el.tagName;
-      if (tag !== 'SECTION' && tag !== 'MAIN' && tag !== 'DIV') return false;
       var id = el.id || '';
-      if (tag === 'DIV' && !id) return false;
-      if (
-        /(?:^|-)(?:err|stub-msg|overlay|modal|toast|hint|pager|confirm|edit-wrap|announce-edit|leave-confirm|smiles-panel|reply-hint|hero-stage|buff-strip|empty|announce-read|leave-wrap|nav-bottom|nav-top|hud-panel-mount|foot-links|craft-wrap|dev-boost-wrap|bag-modal|smiles-pager|load-err|battle-content)$/.test(
-          id
-        )
-      ) {
+      if (/^l2-(pvp-incoming|clan-invite-hud|hud-notice|chat-reply-notify)$/.test(id)) {
         return false;
       }
-      if (id === 'clan-my-empty') return false;
-      if (el.classList.contains('l2-gm-modal-overlay')) return false;
-      return true;
+      if (tag === 'SECTION' || tag === 'MAIN') {
+        if (
+          /(?:^|-)(?:err|stub-msg|overlay|modal|toast|hint|pager|confirm|edit-wrap|announce-edit|leave-confirm|smiles-panel|reply-hint|hero-stage|buff-strip|empty|announce-read|leave-wrap|nav-bottom|nav-top|hud-panel-mount|foot-links|craft-wrap|dev-boost-wrap|bag-modal|smiles-pager|load-err|battle-content)$/.test(
+            id
+          )
+        ) {
+          return false;
+        }
+        return true;
+      }
+      if (tag === 'DIV' && id) {
+        if (id === 'clan-my-empty' || id === 'chat-smiles-panel') return false;
+        if (id === 'clan-my-panel') return true;
+        if (/(?:^|-)(?:content|panel)$/.test(id)) return true;
+      }
+      return false;
+    },
+
+    hideHudOverlayWidgets: function () {
+      if (typeof document === 'undefined') return;
+      var pvp = document.getElementById('l2-pvp-incoming');
+      if (
+        pvp &&
+        document.body &&
+        !document.body.classList.contains('l2-page-map') &&
+        !document.body.classList.contains('l2-page-battle')
+      ) {
+        pvp.hidden = true;
+      }
     },
 
     revealChromePageContentEarly: function () {
@@ -1891,11 +1912,12 @@
       var shouldReveal = global.L2.shouldRevealChromeShell;
       document
         .querySelectorAll(
-          '.l2-screen-inner [hidden], .l2-chrome-nav-column [hidden], .l2-townlive-column [hidden]'
+          '.l2-screen-inner section[hidden], .l2-screen-inner main[hidden], .l2-chrome-nav-column section[hidden], .l2-chrome-nav-column main[hidden], .l2-townlive-column section[hidden], .l2-townlive-column main[hidden], .l2-screen-inner div[hidden][id$="-content"], .l2-screen-inner div[hidden][id$="-panel"], .l2-screen-inner div[hidden]#clan-my-panel, .l2-chrome-nav-column div[hidden][id$="-content"], .l2-chrome-nav-column div[hidden][id$="-panel"], .l2-townlive-column div[hidden][id$="-content"], .l2-townlive-column div[hidden][id$="-panel"], .l2-townlive-column div[hidden]#clan-my-panel'
         )
         .forEach(function (el) {
           if (shouldReveal(el)) el.removeAttribute('hidden');
         });
+      global.L2.hideHudOverlayWidgets();
     },
 
     seedOnlineFootEarly: function () {

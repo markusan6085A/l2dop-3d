@@ -1,9 +1,9 @@
-п»ї<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="battle_title">Р‘С–Р№ вЂ” L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
   </head>
@@ -66,13 +66,13 @@
                 class="l2-battle-buff-strip"
                 hidden
                 data-i18n-attr="aria-label:battle_buffs_aria"
-                aria-label="РђРєС‚РёРІРЅС– РµС„РµРєС‚Рё РЅР° РїРµСЂСЃРѕРЅР°Р¶С–"
+                aria-label="Активні ефекти на персонажі"
               ></div>
               <div
                 id="battle-sonic-charges"
                 class="l2-battle-sonic-charges"
                 hidden
-                aria-label="Sonic Focus Р·Р°СЂСЏРґРё"
+                aria-label="Sonic Focus заряди"
               ></div>
             </div>
 
@@ -80,7 +80,7 @@
             <section
               class="l2-battle-mob-panel"
               data-i18n-attr="aria-label:battle_enemy_aria"
-              aria-label="Р’РѕСЂРѕРі"
+              aria-label="Ворог"
             >
               <h2 class="l2-battle-mob-title" id="battle-mob-title"></h2>
               <p class="l2-battle-buffs l2-battle-buffs--sr" id="battle-active-buffs" hidden aria-live="polite"></p>
@@ -117,13 +117,13 @@
                   id="battle-whirlwind-extras"
                   class="l2-battle-whirlwind-extras"
                   hidden
-                  aria-label="Р”РѕРґР°С‚РєРѕРІС– С†С–Р»С– Р’РёС…РѕСЂСѓ"
+                  aria-label="Додаткові цілі Вихору"
                 ></div>
               </div>
               <div class="l2-battle-skills" id="battle-skills"></div>
 
               <div class="l2-battle-log-wrap">
-                <div class="l2-battle-log-title" data-i18n="battle_log_title">Р›РѕРі Р±РѕСЋ</div>
+                <div class="l2-battle-log-title" data-i18n="battle_log_title">Лог бою</div>
                 <div class="l2-battle-log l2-battle-log--colored" id="battle-log"></div>
               </div>
 
@@ -134,7 +134,7 @@
                   id="battle-back-map"
                   data-i18n="battle_back_map"
                 >
-                  РќР°Р·Р°Рґ РЅР° РєР°СЂС‚Сѓ
+                  Назад на карту
                 </a>
               </div>
             </section>
@@ -145,14 +145,14 @@
               class="l2-battle-victory-root"
               hidden
               data-i18n-attr="aria-label:battle_victory_aria"
-              aria-label="РџРµСЂРµРјРѕРіР°"
+              aria-label="Перемога"
             >
               <p class="l2-battle-victory-mobhead" id="battle-victory-mobhead"></p>
 
               <div class="l2-battle-victory-notify">
                 <div class="l2-battle-victory-notify__title-row">
                   <span class="l2-battle-victory-notify__shout"
-                    >Р’Р РџР•Р Р•РњРћР“Р›Р РњРћРќРЎРўР Рђ!</span
+                    >ВИ ПЕРЕМОГЛИ МОНСТРА!</span
                   >
                 </div>
                 <p class="l2-battle-victory-notify__levelup" id="battle-victory-levelup" hidden></p>
@@ -166,7 +166,7 @@
                     id="battle-victory-continue"
                     data-i18n="battle_continue"
                   >
-                    РџСЂРѕРґРѕРІР¶РёС‚Рё
+                    Продовжити
                   </button>
                   <button
                     type="button"
@@ -174,14 +174,14 @@
                     id="battle-victory-hunt"
                     data-i18n="battle_hunt_more"
                   >
-                    РџРѕР»СЋРІР°С‚Рё РґР°Р»С–
+                    Полювати далі
                   </button>
                 </div>
               </div>
 
               <div class="l2-battle-victory-loghead">
                 <span class="l2-battle-victory-loghead__line l2-battle-victory-loghead__line--left" aria-hidden="true"></span>
-                <span class="l2-battle-victory-loghead__text" data-i18n="battle_log_title">Р›РѕРі Р±РѕСЋ</span>
+                <span class="l2-battle-victory-loghead__text" data-i18n="battle_log_title">Лог бою</span>
                 <span class="l2-battle-victory-loghead__line l2-battle-victory-loghead__line--right" aria-hidden="true"></span>
               </div>
               <div class="l2-battle-victory-logbox">
@@ -197,7 +197,7 @@
                   id="battle-victory-map"
                   data-i18n="battle_back_map"
                 >
-                  РќР°Р·Р°Рґ РЅР° РєР°СЂС‚Сѓ
+                  Назад на карту
                 </a>
               </div>
             </section>
@@ -207,21 +207,21 @@
               class="l2-battle-defeat-root"
               hidden
               data-i18n-attr="aria-label:battle_defeat_aria"
-              aria-label="РџРѕСЂР°Р·РєР°"
+              aria-label="Поразка"
             >
               <p class="l2-battle-defeat-mobhead" id="battle-defeat-mobhead"></p>
               <div class="l2-battle-defeat-notify">
                 <div class="l2-battle-defeat-notify__title-row">
-                  <span class="l2-battle-defeat-notify__skull" aria-hidden="true">в </span>
+                  <span class="l2-battle-defeat-notify__skull" aria-hidden="true">?</span>
                   <span class="l2-battle-defeat-notify__shout" data-i18n="battle_defeat_shout"
-                    >РўРµР±Рµ РїРµСЂРµРјС–Рі РјРѕРЅСЃС‚СЂ!</span
+                    >Тебе переміг монстр!</span
                   >
                 </div>
                 <p class="l2-battle-defeat-notify__hint" id="battle-defeat-town-hint"></p>
                 <div class="l2-battle-defeat-notify__divider" aria-hidden="true"></div>
                 <div class="l2-battle-defeat-loghead">
                   <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--left" aria-hidden="true"></span>
-                  <span class="l2-battle-defeat-loghead__text" data-i18n="battle_log_title">Р›РѕРі Р±РѕСЋ</span>
+                  <span class="l2-battle-defeat-loghead__text" data-i18n="battle_log_title">Лог бою</span>
                   <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--right" aria-hidden="true"></span>
                 </div>
                 <div class="l2-battle-defeat-logbox">
@@ -236,7 +236,7 @@
                   id="battle-defeat-tocity"
                   data-i18n="battle_defeat_tocity"
                 >
-                  РџРѕРІРµСЂРЅСѓС‚РёСЃСЏ РІ РјС–СЃС‚Рѕ
+                  Повернутися в місто
                 </button>
               </div>
             </section>
@@ -247,7 +247,7 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260718layoutStable2"></script>
+    <script src="/common.js?v=20260718layoutStable3"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/battle-hotbar.js?v=20260716atkCd1"></script>

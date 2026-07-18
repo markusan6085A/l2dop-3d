@@ -692,7 +692,7 @@
     }
 
     await markChatRepliesRead();
-    await loadChat();
+    loadChat();
   }
 
   init();

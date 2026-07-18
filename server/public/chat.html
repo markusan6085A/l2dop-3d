@@ -1,13 +1,13 @@
-п»ї<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Р§Р°С‚ вЂ” L2WAP</title>
+    <title>Чат — L2WAP</title>
     <link rel="stylesheet" href="/styles.css?v=20260718heroFeet5" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260717chatNews1" />
+    <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260718chatStable1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-chat l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -61,20 +61,20 @@
 
           <p class="err" id="chat-load-err" hidden></p>
 
-          <section class="l2-chat-panel" id="chat-content" aria-label="Р§Р°С‚">
-              <div class="l2-chat-tabs" role="tablist" aria-label="РљР°РЅР°Р»Рё С‡Р°С‚Сѓ">
+          <section class="l2-chat-panel" id="chat-content" aria-label="Чат">
+              <div class="l2-chat-tabs" role="tablist" aria-label="Канали чату">
                 <div class="l2-chat-tabs__main">
                   <button type="button" class="l2-chat-tabs__btn l2-chat-tabs__btn--active" data-channel="all" id="chat-tab-all">
-                    Р—Р°Рі
+                    Заг
                   </button>
                   <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
                   <button type="button" class="l2-chat-tabs__btn" data-channel="trade" id="chat-tab-trade">
-                    РўРѕСЂРі
+                    Торг
                   </button>
                   <span class="l2-chat-tabs__sep" aria-hidden="true">|</span>
-                  <button type="button" class="l2-chat-tabs__btn" data-channel="my" id="chat-tab-my">РњС–Р№</button>
+                  <button type="button" class="l2-chat-tabs__btn" data-channel="my" id="chat-tab-my">Мій</button>
                 </div>
-                <a class="l2-chat-tabs__news" href="/news.html" id="chat-tab-news">РќРѕРІРѕСЃС‚Рё</a>
+                <a class="l2-chat-tabs__news" href="/news.html" id="chat-tab-news">Новости</a>
               </div>
 
               <label class="l2-chat-input-wrap">
@@ -84,22 +84,22 @@
                   id="chat-input"
                   maxlength="220"
                   autocomplete="off"
-                  aria-label="РџРѕРІС–РґРѕРјР»РµРЅРЅСЏ"
-                  placeholder="Р’РІРµРґС–С‚СЊ РїРѕРІС–РґРѕРјР»РµРЅРЅСЏ..."
+                  aria-label="Повідомлення"
+                  placeholder="Введіть повідомлення..."
                 />
               </label>
 
               <p class="l2-chat-reply-hint" id="chat-reply-hint" hidden>
-                <span class="l2-chat-reply-hint__label">Р’С–РґРїРѕРІС–РґСЊ:</span>
+                <span class="l2-chat-reply-hint__label">Відповідь:</span>
                 <span class="l2-chat-reply-hint__name" id="chat-reply-hint-name"></span>
-                <button type="button" class="l2-chat-reply-hint__cancel" id="chat-reply-cancel" aria-label="РЎРєР°СЃСѓРІР°С‚Рё РІС–РґРїРѕРІС–РґСЊ">
-                  Г—
+                <button type="button" class="l2-chat-reply-hint__cancel" id="chat-reply-cancel" aria-label="Скасувати відповідь">
+                  ?
                 </button>
               </p>
 
               <div class="l2-chat-compose-actions">
-                <button type="button" class="l2-chat-send" id="chat-send-btn">РќР°РїРёСЃР°С‚Рё</button>
-                <button type="button" class="l2-chat-link" id="chat-refresh-btn">РћРЅРѕРІРёС‚Рё</button>
+                <button type="button" class="l2-chat-send" id="chat-send-btn">Написати</button>
+                <button type="button" class="l2-chat-link" id="chat-refresh-btn">Оновити</button>
                 <span class="l2-chat-actions-sep" aria-hidden="true">|</span>
                 <button
                   type="button"
@@ -108,17 +108,17 @@
                   aria-expanded="false"
                   aria-controls="chat-smiles-panel"
                 >
-                  РЎРјР°Р№Р»Рё
+                  Смайли
                 </button>
               </div>
 
               <div class="l2-chat-smiles" id="chat-smiles-panel" hidden>
                 <div class="l2-chat-smiles__grid" id="chat-smiles-grid" role="list"></div>
-                <nav class="l2-chat-smiles-pager" id="chat-smiles-pager" aria-label="РЎС‚РѕСЂС–РЅРєРё СЃРјР°Р№Р»С–РІ" hidden>
-                  <button type="button" class="l2-chat-smiles-pager__btn" id="chat-smiles-prev" aria-label="РџРѕРїРµСЂРµРґРЅСЏ СЃС‚РѕСЂС–РЅРєР°">
+                <nav class="l2-chat-smiles-pager" id="chat-smiles-pager" aria-label="Сторінки смайлів" hidden>
+                  <button type="button" class="l2-chat-smiles-pager__btn" id="chat-smiles-prev" aria-label="Попередня сторінка">
                     &lt;&lt;
                   </button>
-                  <button type="button" class="l2-chat-smiles-pager__btn" id="chat-smiles-next" aria-label="РќР°СЃС‚СѓРїРЅР° СЃС‚РѕСЂС–РЅРєР°">
+                  <button type="button" class="l2-chat-smiles-pager__btn" id="chat-smiles-next" aria-label="Наступна сторінка">
                     &gt;&gt;
                   </button>
                 </nav>
@@ -127,10 +127,10 @@
               <p class="l2-city-stub-msg" id="chat-stub-msg" hidden></p>
 
               <div class="l2-chat-list" id="chat-messages" aria-live="polite">
-                <p class="l2-chat-empty l2-chat-empty--loading">Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏвЂ¦</p>
+                <p class="l2-chat-empty l2-chat-empty--loading">Завантаження…</p>
               </div>
 
-              <nav class="l2-chat-pages" id="chat-pages" aria-label="РЎС‚РѕСЂС–РЅРєРё С‡Р°С‚Сѓ" hidden></nav>
+              <nav class="l2-chat-pages" id="chat-pages" aria-label="Сторінки чату" hidden></nav>
             </section>
 
             <div id="l2-nav-bottom"></div>
@@ -138,7 +138,7 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260718layoutStable2"></script>
+    <script src="/common.js?v=20260718layoutStable3"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/chatSmiles.js?v=20260711chatOrig5"></script>

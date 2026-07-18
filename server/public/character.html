@@ -1,9 +1,9 @@
-п»ї<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>РџРµСЂСЃРѕРЅР°Р¶ вЂ” L2WAP</title>
+    <title>Персонаж — L2WAP</title>
     <link rel="stylesheet" href="/styles.css?v=20260718heroFeet5" />
     <link rel="preload" as="image" href="/assets/fons_pers.jpg" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
@@ -67,22 +67,22 @@
           <section
             class="l2-character-panel l2-character-panel--loading"
             id="character-content"
-            aria-label="РџРµСЂСЃРѕРЅР°Р¶"
+            aria-label="Персонаж"
           >
-            <h1 class="l2-character-panel__title">РњС–Р№ РїРµСЂСЃРѕРЅР°Р¶</h1>
+            <h1 class="l2-character-panel__title">Мій персонаж</h1>
 
             <hr class="l2-pers-rule l2-character-panel__rule" />
 
-            <p class="l2-character-panel__nick" id="character-nick">вЂ”</p>
+            <p class="l2-character-panel__nick" id="character-nick">—</p>
 
             <div class="l2-character-panel__status-row" id="character-status-row">
-              <span class="l2-character-panel__status" id="character-status">РќРµРјР°С” СЃС‚Р°С‚СѓСЃСѓ</span>
+              <span class="l2-character-panel__status" id="character-status">Немає статусу</span>
               <button
                 type="button"
                 class="l2-character-panel__edit"
                 id="character-status-edit"
               >
-                СЂРµРґ.
+                ред.
               </button>
               <input
                 type="text"
@@ -90,7 +90,7 @@
                 id="character-status-input"
                 maxlength="100"
                 autocomplete="off"
-                aria-label="РЎС‚Р°С‚СѓСЃ РїСЂРѕС„С–Р»СЋ"
+                aria-label="Статус профілю"
                 hidden
               />
               <button
@@ -99,7 +99,7 @@
                 id="character-status-save"
                 hidden
               >
-                Р—Р±РµСЂРµРіС‚Рё
+                Зберегти
               </button>
             </div>
 
@@ -126,8 +126,8 @@
                     </div>
                   </div>
                 </div>
-                <p class="l2-character-hero-power" aria-label="РњРѕС‰ РіРµСЂРѕСЏ">
-                  <span class="l2-character-hero-power__label">РњРѕС‰:</span>
+                <p class="l2-character-hero-power" aria-label="Мощ героя">
+                  <span class="l2-character-hero-power__label">Мощ:</span>
                   <span class="l2-character-hero-power__val" id="character-hero-power">1000</span>
                 </p>
               </div>
@@ -143,8 +143,8 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">Р С–РІРµРЅСЊ:</span>
-                <span class="l2-character-row__val l2-character-row__val--white" id="character-level">вЂ”</span>
+                <span class="l2-character-row__label">Рівень:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-level">—</span>
               </div>
 
               <div class="l2-character-row l2-character-row--stat">
@@ -156,7 +156,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РђРґРµРЅР°:</span>
+                <span class="l2-character-row__label">Адена:</span>
                 <span class="l2-character-row__val l2-character-row__val--white" id="character-adena">0</span>
               </div>
 
@@ -182,7 +182,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">Р”РѕСЃРІС–Рґ:</span>
+                <span class="l2-character-row__label">Досвід:</span>
                 <span class="l2-character-row__val l2-character-row__val--white" id="character-exp">0</span>
               </div>
 
@@ -195,7 +195,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__info">РљС–Р»СЊРєС–СЃС‚СЊ РѕС‚СЂРёРјСѓРІР°РЅРѕРіРѕ РґРѕСЃРІС–РґСѓ:</span>
+                <span class="l2-character-row__info">Кількість отримуваного досвіду:</span>
               </div>
 
               <div class="l2-character-row l2-character-row--stat">
@@ -207,7 +207,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РћС‡РєРё СѓРјС–РЅСЊ:</span>
+                <span class="l2-character-row__label">Очки умінь:</span>
                 <span class="l2-character-row__val l2-character-row__val--white" id="character-sp">0</span>
               </div>
 
@@ -220,12 +220,12 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РџСЂРѕС„РµСЃС–СЏ:</span>
-                <span class="l2-character-row__val l2-character-row__val--white" id="character-profession">вЂ”</span>
+                <span class="l2-character-row__label">Професія:</span>
+                <span class="l2-character-row__val l2-character-row__val--white" id="character-profession">—</span>
               </div>
             </div>
 
-            <nav class="l2-character-actions" id="character-actions" aria-label="Р”С–С— РїРµСЂСЃРѕРЅР°Р¶Р°">
+            <nav class="l2-character-actions" id="character-actions" aria-label="Дії персонажа">
               <a class="l2-character-row l2-character-row--link" href="/pers.html">
                 <img
                   class="l2-character-row__ico"
@@ -235,7 +235,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєРё</span>
+                <span class="l2-character-row__label">Характеристики</span>
               </a>
 
               <a class="l2-character-row l2-character-row--link" href="/magister.html?mode=learned">
@@ -247,7 +247,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РЈРјС–РЅРЅСЏ</span>
+                <span class="l2-character-row__label">Уміння</span>
               </a>
 
               <a class="l2-character-row l2-character-row--link" href="/character-quests.html">
@@ -259,7 +259,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РњРѕС— РєРІРµСЃС‚Рё</span>
+                <span class="l2-character-row__label">Мої квести</span>
               </a>
 
               <a class="l2-character-row l2-character-row--link" href="/daily-quests.html">
@@ -271,7 +271,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">Р©РѕРґРµРЅРЅС– Р·Р°РІРґР°РЅРЅСЏ</span>
+                <span class="l2-character-row__label">Щоденні завдання</span>
               </a>
 
               <a class="l2-character-row l2-character-row--link" href="/ratings.html">
@@ -283,7 +283,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">Р РµР№С‚РёРЅРіРё</span>
+                <span class="l2-character-row__label">Рейтинги</span>
               </a>
 
               <a class="l2-character-row l2-character-row--link" href="/bonuses.html">
@@ -295,7 +295,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">Р‘РѕРЅСѓСЃРё</span>
+                <span class="l2-character-row__label">Бонуси</span>
               </a>
 
               <a class="l2-character-row l2-character-row--link" href="/donate.html">
@@ -307,10 +307,10 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РџРѕРїРѕРІРЅРёС‚Рё СЂР°С…СѓРЅРѕРє</span>
+                <span class="l2-character-row__label">Поповнити рахунок</span>
               </a>
 
-              <button type="button" class="l2-character-row l2-character-row--link" data-stub="РџСЂРµРјС–СѓРј-Р°РєР°СѓРЅС‚">
+              <button type="button" class="l2-character-row l2-character-row--link" data-stub="Преміум-акаунт">
                 <img
                   class="l2-character-row__ico"
                   src="/assets/assets/photo_2026-07-05_12-52-12.jpg"
@@ -319,7 +319,7 @@
                   height="14"
                   decoding="async"
                 />
-                <span class="l2-character-row__label">РџСЂРµРјС–СѓРј-Р°РєР°СѓРЅС‚</span>
+                <span class="l2-character-row__label">Преміум-акаунт</span>
               </button>
 
               <div
@@ -327,35 +327,35 @@
                 id="character-online-row"
                 aria-live="polite"
               >
-                <span class="l2-character-online__text" id="character-online-text">вЂ”</span>
+                <span class="l2-character-online__text" id="character-online-text">—</span>
               </div>
 
-              <p class="l2-character-registered" id="character-registered">Р РµРі-СЏ: вЂ”</p>
+              <p class="l2-character-registered" id="character-registered">Рег-я: —</p>
 
-              <h2 class="l2-character-social-title">РЎРѕС†С–Р°Р»СЊРЅРёР№ СЃС‚Р°С‚СѓСЃ</h2>
+              <h2 class="l2-character-social-title">Соціальний статус</h2>
               <table class="l2-character-social-table" width="99%">
                 <tr>
-                  <td class="l2-character-social-table__label">РљР°СЂРјР°</td>
+                  <td class="l2-character-social-table__label">Карма</td>
                   <td class="l2-character-social-table__val" id="character-karma">0</td>
                   <td class="l2-character-social-table__gap" aria-hidden="true"></td>
                   <td class="l2-character-social-table__label l2-character-social-table__label--right">PK</td>
                   <td class="l2-character-social-table__val l2-character-social-table__val--right" id="character-pk">0</td>
                 </tr>
                 <tr>
-                  <td class="l2-character-social-table__label">Р РµРє.</td>
+                  <td class="l2-character-social-table__label">Рек.</td>
                   <td class="l2-character-social-table__val l2-character-social-table__val--rec" id="character-rec">0</td>
                   <td class="l2-character-social-table__gap" aria-hidden="true"></td>
                   <td class="l2-character-social-table__rec-action" colspan="2">
                     <a class="l2-rec-nick-link" id="character-rec-nick-link" href="/recommend-nick.html"
-                      >РџРѕРєСЂР°СЃРёС‚СЊ РЅРёРє</a
+                      >Покрасить ник</a
                     >
                   </td>
                 </tr>
                 <tr>
-                  <td class="l2-character-social-table__label">РЈР±РёС‚Рѕ РјРѕР±С–РІ</td>
+                  <td class="l2-character-social-table__label">Убито мобів</td>
                   <td class="l2-character-social-table__val" id="character-mobs">0</td>
                   <td class="l2-character-social-table__gap" aria-hidden="true"></td>
-                  <td class="l2-character-social-table__label l2-character-social-table__label--right">PvP РїРµСЂРµРјРѕРі/РїРѕСЂР°Р·РѕРє</td>
+                  <td class="l2-character-social-table__label l2-character-social-table__label--right">PvP перемог/поразок</td>
                   <td class="l2-character-social-table__val l2-character-social-table__val--right" id="character-pvp">0/0</td>
                 </tr>
               </table>
@@ -365,7 +365,7 @@
                 class="l2-character-row l2-character-row--link l2-character-row--exit"
                 id="character-logout"
               >
-                <span class="l2-character-row__label">Р’РёС…С–Рґ</span>
+                <span class="l2-character-row__label">Вихід</span>
               </button>
             </nav>
           </section>
@@ -374,7 +374,7 @@
 
           <p class="l2-character-back-map-wrap">
             <a href="/map.html" class="l2-character-back-map" data-i18n="battle_back_map"
-              >РќР°Р·Р°Рґ РЅР° РєР°СЂС‚Сѓ</a
+              >Назад на карту</a
             >
           </p>
 
@@ -383,7 +383,7 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260718layoutStable2"></script>
+    <script src="/common.js?v=20260718layoutStable3"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/charHeroPortrait.js?v=20260718darkElfFighterPng4"></script>
