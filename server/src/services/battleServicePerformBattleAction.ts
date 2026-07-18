@@ -116,6 +116,12 @@ import {
 import { enrichPartialClientSnapshot, ensureClanHallOnRow } from './charClientSnapshot.js';
 import { findCharacterForUserInTx } from './charResolveForUser.js';
 import { persistPassiveAndMoveInTx } from './battleServiceApplyPassive.js';
+import {
+  isPartyBattleActionPath,
+  lockPartyBattleSessionForActionInTx,
+  peekPartyBattleIdFromBattleJson,
+} from './party/partyBattleActionLock.js';
+import { canStartPartyBattleViaRoute } from '../domain/partyBattleFlags.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
   EARTHQUAKE_EXTRA_MOB_CAP,
@@ -222,7 +228,19 @@ export async function performBattleActionInTx(
     });
     if (!char) throw new Error('no_character');
     if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
-    char = await persistPassiveAndMoveInTx(tx, char as CharacterRow);
+
+    const partyBattleIdPeek =
+      peekPartyBattleIdFromBattleJson((char as CharacterRow).battleJson) ??
+      parseBattleJson((char as CharacterRow).battleJson)?.partyBattleId ??
+      null;
+    const partyActionPath = isPartyBattleActionPath(
+      (char as CharacterRow).battleJson,
+      partyBattleIdPeek
+    );
+
+    if (!partyActionPath) {
+      char = await persistPassiveAndMoveInTx(tx, char as CharacterRow);
+    }
 
     char = await flushWorldBossPendingMobHitsForCharacterInTx(
       tx,
@@ -269,6 +287,22 @@ export async function performBattleActionInTx(
 
     const spawn = resolveBattleSpawnMeta(bj);
     if (!spawn) throw new Error('battle_spawn_gone');
+
+    const crEarly = char as CharacterRow;
+    if (partyActionPath && partyBattleIdPeek) {
+      if (!canStartPartyBattleViaRoute()) {
+        throw new Error('party_battle_not_ready');
+      }
+      const partyLocked = await lockPartyBattleSessionForActionInTx(tx, {
+        sessionId: partyBattleIdPeek,
+        characterId: crEarly.id,
+        spawnId: spawn.spawnId,
+        charRow: crEarly,
+      });
+      char = partyLocked.char;
+      /** Stage B: shared damage + continue — B0.5 лише lock order; action ще не підключено. */
+      throw new Error('party_battle_not_ready');
+    }
 
     let inv = parseInventory((char as CharacterRow).inventoryJson);
     let inventoryDirty = false;

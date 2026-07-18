@@ -360,6 +360,8 @@ export interface BattleJsonState {
    * Монотонний лічильник рядків логу (виживає обрізання `log` до MAX_BATTLE_LOG).
    */
   lastLogSeq?: number;
+  /** Party PvE: pointer на canonical PartyBattleSession (mobHp у session, не solo). */
+  partyBattleId?: string;
 }
 
 /** Касти мага: канонічний `l2_<skillId>` з каталогу Human Mystic. */

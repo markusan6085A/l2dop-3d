@@ -8,8 +8,7 @@ import { prisma } from '../lib/prisma.js';
 export function passiveAndMovePatch(
   row: CharacterRow
 ): Prisma.CharacterUncheckedUpdateInput | null {
-  const afterRegen = applyPassiveHpRegen(row);
-  const afterMove = resolveMapMovement(afterRegen);
+  const afterMove = applyPassiveAndMoveToRow(row);
   const changed =
     afterMove.hp !== row.hp ||
     afterMove.worldX !== row.worldX ||
@@ -30,6 +29,12 @@ export function passiveAndMovePatch(
     moveFromX: afterMove.moveFromX,
     moveFromY: afterMove.moveFromY,
   };
+}
+
+/** Pure: regen + interpolated map movement без DB write. */
+export function applyPassiveAndMoveToRow(row: CharacterRow): CharacterRow {
+  const afterRegen = applyPassiveHpRegen(row);
+  return resolveMapMovement(afterRegen);
 }
 
 /**

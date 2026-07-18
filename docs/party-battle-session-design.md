@@ -392,7 +392,79 @@ Idempotency: `PartyKillReward @@id([partyBattleId, characterId])` — FK на `P
 
 ---
 
-## 14. Lock order (Етап B — audit перед інтеграцією)
+## 14. Lock order (B0.5 — зафіксовано)
+
+> **B0.5:** усунено Character WRITE до `PartyBattleSession` lock у party action path.  
+> **Етап B:** shared damage під тим самим порядком.
+
+### Фінальний lock order (без циклів)
+
+| Flow | Lock 1 | Lock 2 | Lock 3 | Write order |
+|------|--------|--------|--------|-------------|
+| Party start/join | Party FU | PartyBattleSession FU/create | — | Character attacker |
+| Party regular action | **PartyBattleSession FU** | — | — | Character attacker (passive/move, MP, battleJson) |
+| Party victory Stage C | read session → Party FU → Session FU | Character[] ORDER BY id | — | rewards |
+| Party leave/kick/disband + session | Party FU | PartyBattleSession FU | — | membership / session end |
+| Session cleanup | PartyBattleSession FU | — | — | session terminal (без Party lock) |
+| Solo action | — | — | — | Character attacker |
+| RB action | WorldBossSession FU | — | — | Session HP → Character |
+| PvP action | — | — | — | Character victim → attacker |
+
+**Заборонено для party action:**
+
+- `persistPassiveAndMoveInTx` → потім session lock (**deadlock risk** з Stage C lethal).
+- Session lock → Party lock (action не lock-ить Party).
+
+**Допустимі ланцюги (acyclic):**
+
+- Party → Session → Character
+- Session → Character
+- Party → Session
+
+**Немає flow:**
+
+- Character → Session (усунено в B0.5 для party path)
+- Session → Party
+
+### Party action flow (після B0.5)
+
+1. READ Character (no lock)
+2. `expectedRevision` check (no write)
+3. Визначити `partyBattleId`
+4. **PartyBattleSession FOR UPDATE**
+5. Revalidate: active, spawnId, participant, `BATTLE_RANGE`, canonical mobHp
+6. `passiveAndMovePatch` → Character update (без revision++)
+7. Shared damage / MP / cooldown / battleJson mirror / revision++
+8. Commit (revision conflict → rollback session writes)
+
+Реалізація: `partyBattleActionLock.ts`, hook у `performBattleActionInTx`.
+
+### Feature gates (B0.5)
+
+| Env | Production default | Stage B dev/tests |
+|-----|-------------------|-------------------|
+| `PARTY_BATTLE_ENABLED` | `false` | `true` |
+| `PARTY_BATTLE_ALLOW_UNREWARDED_TESTS` | `false` | `true` |
+
+- Route start/join/action: `canStartPartyBattleViaRoute()` — потребує обидва true до Stage C (rewards ще `false`).
+- Lethal без reward: `canEndPartyBattleWithoutReward()` + `endReason=stage_b_test_victory`.
+- **Не** використовувати mobHp floor 1.
+
+### Battle sync (Stage B)
+
+GET `/game/battle/sync` для party: read-only (`partyBattleSyncGuard.ts`).  
+`lastActivityAt` — лише start/join/attack/leave.
+
+### Production migration (local ≠ VPS)
+
+Local `_prisma_migrations` **не** підтверджує VPS. Перед deploy Stage A на VPS перевірити напряму:
+
+- `20260718150000_clan_chat` — logs, finished_at, rolled_back_at, applied_steps_count
+- фактична структура `ClanChatMessage`, indexes, FK
+
+---
+
+## 14 (legacy note). Lock order (Етап B — audit перед інтеграцією)
 
 > **Етап A:** session CRUD lock-ить **лише `PartyBattleSession`** у межах своєї tx.  
 > **Не** інтегрувати універсальний lock helper у `battleService` / `performBattleActionInTx`.

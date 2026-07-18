@@ -15,6 +15,8 @@ export const PARTY_BATTLE_END_REASON = {
   timeout: 'timeout',
   no_participants: 'no_participants',
   party_disbanded: 'party_disbanded',
+  /** Stage B test-only lethal (ALLOW_UNREWARDED_TESTS); без solo reward flow. */
+  stage_b_test_victory: 'stage_b_test_victory',
 } as const;
 
 export type PartyBattleEndReasonValue =

@@ -715,5 +715,8 @@ export function parseBattleJson(
     o.playerMaxCp >= 0
       ? { playerMaxCp: Math.floor(o.playerMaxCp) }
       : {}),
+    ...(typeof o.partyBattleId === 'string' && o.partyBattleId.trim()
+      ? { partyBattleId: o.partyBattleId.trim() }
+      : {}),
   };
 }
