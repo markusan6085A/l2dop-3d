@@ -82,6 +82,9 @@ export async function buildApp() {
     app.get('/dev-boost.html', async (_request, reply) => {
       return reply.redirect('/menu.html');
     });
+    app.get('/dev-profession.html', async (_request, reply) => {
+      return reply.redirect('/menu.html');
+    });
   }
 
   /** Явна віддача нових HTML-сторінок (разом із fastifyStatic). */

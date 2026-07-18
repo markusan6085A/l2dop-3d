@@ -11,7 +11,7 @@
 /* Темна колонка, золото, теплий «void» без синьої l2mobi-гами */
 :root {
   /* Нижня сітка іконок (fixed): запас під контент (компактніший док). */
-  --l2-dock-bottom-pad: calc(74px + env(safe-area-inset-bottom, 0px));
+  --l2-dock-bottom-pad: calc(88px + env(safe-area-inset-bottom, 0px));
   --bg-void: #12100d;
   --bg-page-gradient: linear-gradient(180deg, #181410 0%, #100e0a 48%, #0c0a08 100%);
   /**

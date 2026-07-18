@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Тест: професії — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260718devProf1" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260718devProf1" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718devProf1" />
+  </head>
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-dev-prof l2-page-has-fixed-nav l2-app-l2-chrome">
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-dev-prof-root">
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
+
+          <section class="l2-dev-prof-panel" aria-labelledby="l2-dev-prof-h1">
+            <h1 class="l2-pers-h1" id="l2-dev-prof-h1">Тест: зміна професії</h1>
+            <p class="l2-dev-prof-warn">
+              Лише локальна розробка (<code>L2DOP_DEV_SELF_BOOST=1</code>). Раса і гілка
+              підтягуються автоматично. Для портретів відкрий
+              <a href="/char.html">персонажа</a> або <a href="/character.html">екіп</a>.
+            </p>
+            <p class="l2-dev-prof-current" id="l2-dev-prof-current" aria-live="polite"></p>
+            <p class="l2-city-stub-msg" id="l2-dev-prof-msg" hidden></p>
+
+            <div class="l2-dev-prof-race-tabs" id="l2-dev-prof-race-tabs" role="tablist"></div>
+            <div class="l2-dev-prof-trees" id="l2-dev-prof-trees"></div>
+
+            <div class="l2-dev-prof-actions">
+              <a class="l2-town-btn l2-dev-prof-link" href="/dev-boost.html">Lv / Адена / SP</a>
+              <a class="l2-town-btn l2-dev-prof-link" href="/char.html">Портрет (char)</a>
+              <a class="l2-town-btn l2-dev-prof-link" href="/menu.html">До меню</a>
+            </div>
+          </section>
+
+          <div id="l2-nav-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260718devProf1"></script>
+    <script src="/ui-i18n.js"></script>
+    <script src="/l2-nav.js?v=20260718devProf1"></script>
+    <script src="/dev-profession.js"></script>
+  </body>
+</html>

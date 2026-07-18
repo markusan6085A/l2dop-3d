@@ -93,6 +93,8 @@
     var wapTop = $('wap-top');
     var wapBottom = $('wap-bottom');
 
+    if (t && services) services.removeAttribute('hidden');
+
     if (!t) {
       if (errEl) {
         errEl.hidden = false;

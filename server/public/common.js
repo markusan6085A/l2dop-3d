@@ -1858,6 +1858,32 @@
       }
     },
 
+    /** Показати основний контент одразу (як char.html), без стрибка після fetch. */
+    revealChromePageContentEarly: function () {
+      if (typeof document === 'undefined' || !document.body) return;
+      if (!document.body.classList.contains('l2-app-l2-chrome')) return;
+      if (!document.getElementById('l2-nav-bottom')) return;
+      var token = null;
+      try {
+        token = localStorage.getItem('token');
+      } catch (e) {
+        token = null;
+      }
+      if (!token) return;
+      document
+        .querySelectorAll(
+          '.l2-chrome-nav-column > section[hidden], ' +
+            '.l2-townlive-column > section[hidden], ' +
+            '.l2-chrome-nav-column > main[hidden], ' +
+            '.l2-townlive-column > main[hidden], ' +
+            '.l2-screen-inner > section[hidden][id$="-content"], ' +
+            '.l2-screen-inner > main[hidden][id$="-content"]'
+        )
+        .forEach(function (el) {
+          el.removeAttribute('hidden');
+        });
+    },
+
     /** Єдині Wap-бари HP/MP/CP/EXP для всіх сторінок. */
     getHudWapBarsMarkup: function () {
       return (
@@ -2522,8 +2548,21 @@
     (document.head || document.documentElement).appendChild(script);
   }
 
+  if (typeof document !== 'undefined' && document.body && global.L2 && typeof global.L2.ensureNavMinimalChrome === 'function') {
+    global.L2.ensureNavMinimalChrome();
+  }
+  if (typeof document !== 'undefined' && document.body && global.L2 && typeof global.L2.revealChromePageContentEarly === 'function') {
+    global.L2.revealChromePageContentEarly();
+  }
+
   if (typeof document !== 'undefined') {
     function runHudMount() {
+      if (global.L2 && typeof global.L2.ensureNavMinimalChrome === 'function') {
+        global.L2.ensureNavMinimalChrome();
+      }
+      if (global.L2 && typeof global.L2.revealChromePageContentEarly === 'function') {
+        global.L2.revealChromePageContentEarly();
+      }
       if (global.L2 && typeof global.L2.mountStandardHudPanel === 'function') {
         global.L2.mountStandardHudPanel();
       }

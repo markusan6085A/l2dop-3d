@@ -21,7 +21,20 @@ body.l2-app-l2-chrome {
   --l2s-hud-citystrip-pad-x: 22px;
   --l2s-hud-citystrip-pad-bottom: 14px;
   --l2s-hud-citystrip-bars-w: 2.75cm;
-  --l2s-bottom-dock-h: calc(74px + env(safe-area-inset-bottom, 0px));
+  --l2s-bottom-dock-h: calc(88px + env(safe-area-inset-bottom, 0px));
+  /* Нижня сітка nav (miru): розмір кнопок і рамок */
+  --l2s-bottom-nav-grid-gap-x: 6px;
+  --l2s-bottom-nav-grid-gap-y: 5px;
+  --l2s-bottom-nav-grid-pad-y: 8px;
+  --l2s-bottom-nav-grid-pad-x: 8px;
+  --l2s-bottom-nav-grid-pad-bottom: 4px;
+  --l2s-bottom-nav-row2-mt: 3.5mm;
+  --l2s-bottom-nav-cell-py: 5px;
+  --l2s-bottom-nav-cell-px: 10px;
+  --l2s-bottom-nav-cell-border-w: 2px;
+  --l2s-bottom-nav-cell-radius: 11px;
+  --l2s-bottom-nav-lbl-size: 10px;
+  --l2s-bottom-nav-lbl-lh: 1.1;
   /* Тримає місце під скролбар і прибирає горизонтальний "поштовх" колонки. */
   scrollbar-gutter: stable both-edges;
 }
@@ -130,22 +143,42 @@ body.l2-app-l2-chrome .l2-outer-sframe-host > .l2-game-chrome-crest {
   left: calc(50% + var(--l2s-crest-h-align-nudge, 0px));
 }
 
-/* Сторінки з нижньою сіткою — без відступу city-strip зверху до mount HUD */
+/* Сторінки з нижньою сіткою — компактний pad як char/інвентар (без city-strip gap). */
+html body.l2-app-l2-chrome:has(#l2-nav-bottom) {
+  --l2s-content-edge-pad: 0.5cm;
+  --l2s-legacy-inner-pad-x: var(--l2s-content-edge-pad, 0.5cm);
+}
+
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host:has(#l2-nav-bottom) {
+  --l2-frame-pad-top: var(--l2-frame-top-h, clamp(54px, 12.4vw, 86px));
+}
+
 html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-nav-bottom) {
-  padding-top: 0 !important;
-  padding-left: max(8px, var(--l2-frame-pad-x, 8px)) !important;
-  padding-right: max(8px, var(--l2-frame-pad-x, 8px)) !important;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  padding:
+    0
+    var(--l2s-content-edge-pad, 0.5cm)
+    calc(12px + env(safe-area-inset-bottom, 0px))
+    var(--l2s-content-edge-pad, 0.5cm) !important;
+}
+
+/* Плоский потік як char.html: колонка-обгортка не впливає на flex */
+html body.l2-app-l2-chrome:has(#l2-nav-bottom) .l2-chrome-nav-column,
+html body.l2-app-l2-chrome:has(#l2-nav-bottom) .l2-townlive-column {
+  display: contents;
+}
+
+html body.l2-app-l2-chrome:has(#l2-nav-bottom) .l2-game-chrome-crest {
+  display: none !important;
 }
 
 body.l2-app-l2-chrome .l2-screen-inner:has(#l2-nav-bottom) #l2-hud-panel-mount {
-  min-height: 0 !important;
+  min-height: calc(var(--l2-frame-top-h, clamp(54px, 12.4vw, 86px)) + 38px) !important;
   margin: 0 !important;
 }
 
-/* mount замінюється на .l2-hud-panel--city-strip (common.js replaceWith) — обидва селектори */
-html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-hud-panel-mount),
-html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--city-strip) {
+/* mount замінюється на .l2-hud-panel--city-strip — лише без нижньої game-nav сітки */
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(#l2-hud-panel-mount):not(:has(#l2-nav-bottom)),
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner:has(.l2-hud-panel--city-strip):not(:has(#l2-nav-bottom)) {
   padding-top: calc(var(--l2s-hud-citystrip-top-gap, 0px) + env(safe-area-inset-top, 0px)) !important;
 }
 
@@ -154,8 +187,8 @@ body.l2-app-l2-chrome .l2-screen-inner > .l2-hud-panel--city-strip:first-child {
   margin-top: 0;
 }
 
-/* CLS guard: резервуємо місце до mount HUD/Nav (DOMContentLoaded). */
-body.l2-app-l2-chrome #l2-hud-panel-mount {
+/* CLS guard: резервуємо місце до mount HUD (сторінки без game-nav). */
+body.l2-app-l2-chrome:not(:has(#l2-nav-bottom)) #l2-hud-panel-mount {
   display: block;
   min-height: var(--l2s-hud-citystrip-min-h, 112px);
   margin: 0 0 6px;
@@ -168,7 +201,7 @@ body.l2-app-l2-chrome #l2-nav-top {
 
 body.l2-app-l2-chrome #l2-nav-bottom {
   display: block;
-  min-height: 56px;
+  min-height: 64px;
 }
 
 body.l2-app-l2-chrome .l2-outer-sframe__g {
@@ -2237,7 +2270,7 @@ body.l2-app-l2-chrome.l2-page-has-fixed-nav #l2-nav-bottom {
   border-top: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 /* gm-shop.html: «Купити» + підтвердження кількості — рамка 1512125, тонка */
@@ -2713,13 +2746,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal.l2-page-city.l2-page-townlive .l2-scre
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-chrome-nav-column,
 body.l2-app-l2-chrome.l2-nav-minimal .l2-townlive-column {
-  display: flex;
-  flex-direction: column;
-  flex: 0 1 auto;
-  min-height: 0;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
+  display: contents;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-screen-inner:has(#l2-nav-bottom) #l2-hud-panel-mount {
@@ -2876,16 +2903,16 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom {
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom.l2-wap-grid--miru {
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  gap: 4px 5px !important;
-  row-gap: 4px !important;
+  gap: var(--l2s-bottom-nav-grid-gap-y) var(--l2s-bottom-nav-grid-gap-x) !important;
+  row-gap: var(--l2s-bottom-nav-grid-gap-y) !important;
   border-top: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
-  padding: 6px 6px 2px !important;
+  padding: var(--l2s-bottom-nav-grid-pad-y) var(--l2s-bottom-nav-grid-pad-x) var(--l2s-bottom-nav-grid-pad-bottom) !important;
   margin-top: 2px !important;
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:nth-child(4),
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:nth-child(5) {
-  margin-top: 3mm;
+  margin-top: var(--l2s-bottom-nav-row2-mt);
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:nth-child(-n + 3) {
@@ -2910,13 +2937,13 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
   box-sizing: border-box !important;
   min-height: 0 !important;
   height: auto !important;
-  padding: 3px 7px !important;
+  padding: var(--l2s-bottom-nav-cell-py) var(--l2s-bottom-nav-cell-px) !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 4px !important;
-  border: 1px solid #303030 !important;
-  border-radius: 9px !important;
+  border: var(--l2s-bottom-nav-cell-border-w) solid #303030 !important;
+  border-radius: var(--l2s-bottom-nav-cell-radius) !important;
   background: #303030 !important;
   box-shadow: none !important;
 }
@@ -2945,8 +2972,8 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-lbl {
   display: block !important;
   padding: 0 !important;
-  font-size: 9px !important;
-  line-height: 1.05 !important;
+  font-size: var(--l2s-bottom-nav-lbl-size) !important;
+  line-height: var(--l2s-bottom-nav-lbl-lh) !important;
   text-align: left !important;
   color: #d8ccb0 !important;
   white-space: nowrap;
@@ -2961,7 +2988,7 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom:not(.l2-wap-grid--miru) {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px 6px !important;
+  gap: var(--l2s-bottom-nav-grid-gap-y) var(--l2s-bottom-nav-grid-gap-x) !important;
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
@@ -2969,10 +2996,10 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 }
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom:not(.l2-wap-grid--miru) .l2-wap-cell {
-  min-height: 22px !important;
-  padding: 2px 5px !important;
-  border: 1px solid var(--l2s-legacy-nav-cell-bg, #303030) !important;
-  border-radius: 10px !important;
+  min-height: 26px !important;
+  padding: var(--l2s-bottom-nav-cell-py) var(--l2s-bottom-nav-cell-px) !important;
+  border: var(--l2s-bottom-nav-cell-border-w) solid var(--l2s-legacy-nav-cell-bg, #303030) !important;
+  border-radius: var(--l2s-bottom-nav-cell-radius) !important;
   background: var(--l2s-legacy-nav-cell-bg, #303030) !important;
   box-shadow: none !important;
   text-decoration: none !important;
@@ -3011,8 +3038,8 @@ body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l
 
 body.l2-app-l2-chrome.l2-nav-minimal #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--bottom:not(.l2-wap-grid--miru) .l2-wap-lbl {
   display: block !important;
-  font-size: 9px !important;
-  line-height: 1.1 !important;
+  font-size: var(--l2s-bottom-nav-lbl-size) !important;
+  line-height: var(--l2s-bottom-nav-lbl-lh) !important;
   letter-spacing: 0.02em !important;
   color: #f0e6b8 !important;
   position: relative;

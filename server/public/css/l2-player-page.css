@@ -140,8 +140,6 @@ body.l2-app-l2-chrome.l2-page-player {
   --l2-hero-starter-h: 76.7%;
   --l2-hero-starter-w: 80.9%;
   --l2-hero-starter-scale: 0.88;
-  --l2-hero-shadow-before-bottom: var(--l2-hero-shadow-bottom);
-  --l2-hero-shadow-after-bottom: var(--l2-hero-shadow-bottom);
 }
 
 body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-bg {
@@ -165,49 +163,6 @@ body.l2-app-l2-chrome.l2-page-player .l2-player-hero-panel .l2-char-equip-hero-s
   pointer-events: none;
 }
 
-/* Тінь і герой — як у «Мій персонаж» (character.html) */
-body.l2-app-l2-chrome.l2-page-player
-  .l2-player-hero-panel
-  .l2-char-equip-bg--hero-on-stairs
-  .l2-char-equip-hero-stage::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: var(--l2-hero-shadow-before-bottom);
-  z-index: 0;
-  width: 58%;
-  height: 14%;
-  transform: translateX(-50%) skewX(-10deg) scaleY(0.9);
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0.92) 0%,
-    rgba(0, 0, 0, 0.62) 32%,
-    rgba(0, 0, 0, 0.28) 52%,
-    rgba(0, 0, 0, 0.08) 68%,
-    transparent 82%
-  );
-  filter: blur(2.5px);
-  opacity: 0.95;
-  pointer-events: none;
-}
-
-body.l2-app-l2-chrome.l2-page-player
-  .l2-player-hero-panel
-  .l2-char-equip-bg--hero-on-stairs
-  .l2-char-equip-hero-stage::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: var(--l2-hero-shadow-after-bottom);
-  z-index: 0;
-  width: 34%;
-  height: 6%;
-  transform: translateX(-50%) skewX(-8deg);
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 78%);
-  filter: blur(1px);
-  pointer-events: none;
-}
-
 body.l2-app-l2-chrome.l2-page-player
   .l2-player-hero-panel
   .l2-char-equip-bg--hero-on-stairs
@@ -225,7 +180,7 @@ body.l2-app-l2-chrome.l2-page-player
   margin: 0 auto;
   object-fit: contain;
   object-position: center bottom;
-  transform: scale(var(--l2-hero-starter-scale));
+  transform: scale(var(--l2-hero-starter-scale)) translateY(var(--l2-hero-feet-nudge-y));
   transform-origin: center bottom;
   filter: none;
 }

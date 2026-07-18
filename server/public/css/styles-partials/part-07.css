@@ -440,6 +440,147 @@
   margin-top: 16px;
 }
 
+/* Dev: дерево професій */
+.l2-page-dev-prof .l2-dev-prof-root {
+  padding-left: 8px;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
+
+.l2-page-dev-prof .l2-dev-prof-panel {
+  max-width: 520px;
+  margin: 0 auto;
+  padding-bottom: 20px;
+}
+
+.l2-page-dev-prof .l2-dev-prof-warn {
+  font-size: 12px;
+  color: #c8b898;
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.l2-page-dev-prof .l2-dev-prof-warn a {
+  color: var(--gold, #e8c038);
+}
+
+.l2-page-dev-prof .l2-dev-prof-current {
+  font-size: 12px;
+  color: var(--gold);
+  margin: 0 0 12px;
+  word-break: break-word;
+}
+
+.l2-page-dev-prof .l2-dev-prof-race-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.l2-page-dev-prof .l2-dev-prof-race-tab {
+  border: 1px solid #5a4a32;
+  background: rgba(0, 0, 0, 0.35);
+  color: #e8dcc8;
+  font-size: 11px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.l2-page-dev-prof .l2-dev-prof-race-tab--active {
+  border-color: var(--gold, #e8c038);
+  color: var(--gold, #e8c038);
+}
+
+.l2-page-dev-prof .l2-dev-prof-tree {
+  margin-bottom: 16px;
+}
+
+.l2-page-dev-prof .l2-dev-prof-tree__title {
+  font-size: 13px;
+  color: #e8c890;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.l2-page-dev-prof .l2-dev-prof-tree__grid {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.l2-page-dev-prof .l2-dev-prof-tree__col {
+  flex: 0 0 auto;
+  min-width: 108px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.l2-page-dev-prof .l2-dev-prof-tree__tier {
+  font-size: 10px;
+  color: #a89878;
+  text-align: center;
+  padding: 2px 0 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.l2-page-dev-prof .l2-dev-prof-node {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  border: 1px solid #4a4030;
+  background: rgba(20, 16, 10, 0.75);
+  color: #f0e6d0;
+  font-size: 10px;
+  line-height: 1.25;
+  padding: 6px 5px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.l2-page-dev-prof .l2-dev-prof-node:hover:not(:disabled),
+.l2-page-dev-prof .l2-dev-prof-node:focus-visible:not(:disabled) {
+  border-color: #c8a850;
+}
+
+.l2-page-dev-prof .l2-dev-prof-node--active {
+  border-color: var(--gold, #e8c038);
+  box-shadow: inset 0 0 0 1px rgba(232, 192, 56, 0.35);
+}
+
+.l2-page-dev-prof .l2-dev-prof-node:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.l2-page-dev-prof .l2-dev-prof-node__name {
+  font-size: 10px;
+  color: #f5ecd8;
+}
+
+.l2-page-dev-prof .l2-dev-prof-node__slug {
+  font-size: 9px;
+  color: #9a8870;
+  word-break: break-all;
+}
+
+.l2-page-dev-prof .l2-dev-prof-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 280px;
+  margin: 8px auto 0;
+}
+
+.l2-page-dev-prof .l2-dev-prof-link {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
 /* Місто — магістр / скіли */
 .l2-city-magister-hint {
   margin: 0 0 10px;

@@ -162,6 +162,11 @@
   min-height: 100vh;
 }
 
+html body.l2-app-l2-chrome .l2-page-city.l2-page-char .l2-screen:has(#l2-nav-bottom) {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
 .l2-char-root {
   padding-left: 0;
   padding-right: 0;
@@ -305,8 +310,17 @@
 }
 
 :root {
-  --l2-hero-feet-gap: 0.02cm;
-  --l2-hero-shadow-bottom: 0.04cm;
+  --l2-hero-feet-gap: 0;
+  /* Опускання PNG-героя (прозорий padding у картинках), не тіні */
+  --l2-hero-feet-nudge-y: 2.5%;
+  --l2-hero-shadow-bottom: -0.05cm;
+  --l2-hero-shadow-opacity: 1;
+  --l2-hero-shadow-soft-a0: 0.96;
+  --l2-hero-shadow-soft-a1: 0.72;
+  --l2-hero-shadow-soft-a2: 0.36;
+  --l2-hero-shadow-soft-a3: 0.14;
+  --l2-hero-shadow-core-a0: 0.92;
+  --l2-hero-shadow-core-a1: 0.48;
 }
 
 .l2-char-equip-hero-stage {
@@ -324,6 +338,48 @@
 .l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-stage {
   padding-bottom: var(--l2-hero-feet-gap);
   box-sizing: border-box;
+}
+
+/* Тінь під ногами героя (char / character / player) */
+.l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-stage::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: var(--l2-hero-shadow-bottom);
+  z-index: 0;
+  width: 58%;
+  height: 14%;
+  transform: translateX(-50%) skewX(-10deg) scaleY(0.9);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, var(--l2-hero-shadow-soft-a0)) 0%,
+    rgba(0, 0, 0, var(--l2-hero-shadow-soft-a1)) 32%,
+    rgba(0, 0, 0, var(--l2-hero-shadow-soft-a2)) 52%,
+    rgba(0, 0, 0, var(--l2-hero-shadow-soft-a3)) 68%,
+    transparent 82%
+  );
+  filter: blur(2.5px);
+  opacity: var(--l2-hero-shadow-opacity);
+  pointer-events: none;
+}
+
+.l2-char-equip-bg--hero-on-stairs .l2-char-equip-hero-stage::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: var(--l2-hero-shadow-bottom);
+  z-index: 0;
+  width: 34%;
+  height: 6%;
+  transform: translateX(-50%) skewX(-8deg);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, var(--l2-hero-shadow-core-a0)) 0%,
+    rgba(0, 0, 0, var(--l2-hero-shadow-core-a1)) 55%,
+    transparent 78%
+  );
+  filter: blur(1px);
+  pointer-events: none;
 }
 
 .l2-char-equip-hero-stage[hidden] {
@@ -795,6 +851,12 @@ body.l2-city-ui-l2.l2-page-has-fixed-nav:not(.l2-app-l2-chrome) #l2-nav-bottom {
   border-radius: 0;
   box-shadow: none;
   min-height: 100vh;
+}
+
+html body.l2-app-l2-chrome .l2-page-city.l2-page-townlive .l2-screen:has(#l2-nav-bottom),
+html body.l2-app-l2-chrome .l2-page-city.l2-page-char .l2-screen:has(#l2-nav-bottom) {
+  min-height: 0 !important;
+  height: auto !important;
 }
 
 .l2-townlive-column {

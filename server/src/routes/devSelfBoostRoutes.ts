@@ -5,7 +5,19 @@ import {
   applyDevSelfBoostForUser,
   isDevSelfBoostEnabled,
 } from '../services/devSelfBoostService.js';
+import {
+  applyDevSelfProfessionForUser,
+  isDevSelfProfessionEnabled,
+} from '../services/devSelfProfessionService.js';
+import { buildDevProfessionTreePayload } from '../data/devProfessionTree.js';
 import { GameConflictError } from '../services/charService.js';
+
+function devBoostDisabled(reply: { code: (n: number) => { send: (b: unknown) => unknown } }) {
+  return reply.code(403).send({
+    error: 'dev_boost_disabled',
+    messageUk: 'Цю функцію вимкнено на сервері (L2DOP_DEV_SELF_BOOST).',
+  });
+}
 
 function parseAdenaField(v: unknown): bigint | undefined {
   if (v === undefined || v === null) return undefined;
@@ -29,15 +41,84 @@ function parseAdenaField(v: unknown): bigint | undefined {
 
 /** POST /character/dev-self-boost — лише якщо L2DOP_DEV_SELF_BOOST=1 */
 export function registerDevSelfBoostRoutes(app: FastifyInstance): void {
+  app.get('/dev-profession-tree', async (_request, reply) => {
+    if (!isDevSelfProfessionEnabled()) {
+      return devBoostDisabled(reply);
+    }
+    return reply.send(buildDevProfessionTreePayload());
+  });
+
+  app.post(
+    '/dev-self-profession',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      if (!isDevSelfProfessionEnabled()) {
+        return devBoostDisabled(reply);
+      }
+
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+
+      const raw = request.body;
+      if (!raw || typeof raw !== 'object') {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Некоректні дані.',
+        });
+      }
+
+      const b = raw as Record<string, unknown>;
+      const er = b.expectedRevision;
+      if (typeof er !== 'number' || !Number.isInteger(er) || er < 1) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен коректний expectedRevision.',
+        });
+      }
+
+      const prof =
+        typeof b.l2Profession === 'string' ? b.l2Profession.trim() : '';
+      if (!prof) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Обери професію.',
+        });
+      }
+
+      try {
+        const character = await applyDevSelfProfessionForUser(userId, er, prof);
+        return reply.send({ character });
+      } catch (err) {
+        if (err instanceof GameConflictError) {
+          return sendGameConflict(reply, err);
+        }
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (msg === 'dev_prof_invalid') {
+          return reply.code(400).send({
+            error: 'invalid_input',
+            messageUk: 'Невідома професія для dev-режиму.',
+          });
+        }
+        request.log.error({ err }, 'POST /character/dev-self-profession');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося змінити професію.',
+        });
+      }
+    }
+  );
+
   app.post(
     '/dev-self-boost',
     { preHandler: requireAuth },
     async (request, reply) => {
       if (!isDevSelfBoostEnabled()) {
-        return reply.code(403).send({
-          error: 'dev_boost_disabled',
-          messageUk: 'Цю функцію вимкнено на сервері (L2DOP_DEV_SELF_BOOST).',
-        });
+        return devBoostDisabled(reply);
       }
 
       const userId = request.userId;

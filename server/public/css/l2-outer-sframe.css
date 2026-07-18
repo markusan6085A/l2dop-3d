@@ -128,11 +128,26 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host > .l2-screen-inner {
   background-image: none !important;
 }
 
-/* CLS guard на ранньому етапі (до повного apply app-chrome-skin). */
+/* Game-nav сторінки: одразу компактний pad (до JS / l2-nav-minimal). */
+html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host:has(#l2-nav-bottom) > .l2-screen-inner {
+  --l2-frame-pad-top: var(--l2-frame-top-h, clamp(54px, 12.4vw, 86px));
+  padding:
+    0
+    max(8px, 0.5cm)
+    calc(12px + env(safe-area-inset-bottom, 0px))
+    max(8px, 0.5cm) !important;
+}
+
+/* CLS guard на ранньому етапі (до mount HUD). */
 html body.l2-app-l2-chrome #l2-hud-panel-mount {
   display: block;
   min-height: 124px;
   margin: 0 0 6px;
+}
+
+html body.l2-app-l2-chrome:has(#l2-nav-bottom) #l2-hud-panel-mount {
+  min-height: calc(var(--l2-frame-top-h, clamp(54px, 12.4vw, 86px)) + 38px) !important;
+  margin: 0 !important;
 }
 
 html body.l2-app-l2-chrome #l2-nav-top {

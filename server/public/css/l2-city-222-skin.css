@@ -67,18 +67,18 @@ body.l2-app-l2-chrome.l2-page-city .l2-wap-lbl {
 body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru {
   border: 0 !important;
   margin-top: 0 !important;
-  padding: 6px 8px 8px !important;
+  padding: var(--l2s-bottom-nav-grid-pad-y) var(--l2s-bottom-nav-grid-pad-x) 8px !important;
   box-shadow: none !important;
   background-color: transparent !important;
   background-image: none !important;
 }
 
 body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell {
-  border: 1px solid #303030 !important;
-  border-radius: 9px !important;
+  border: var(--l2s-bottom-nav-cell-border-w) solid #303030 !important;
+  border-radius: var(--l2s-bottom-nav-cell-radius) !important;
   background: #303030 !important;
   box-shadow: none !important;
-  padding: 3px 7px !important;
+  padding: var(--l2s-bottom-nav-cell-py) var(--l2s-bottom-nav-cell-px) !important;
 }
 
 body.l2-app-l2-chrome.l2-page-city #l2-nav-bottom nav#wap-bottom.l2-wap-grid.l2-wap-grid--miru .l2-wap-cell:hover,
