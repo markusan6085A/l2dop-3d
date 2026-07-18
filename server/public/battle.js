@@ -12,6 +12,37 @@
   var huntLogPrefix = [];
   var sessionLogHuntChain = false;
   var huntLogFreezeKey = '';
+  var battlePageCharacterId = null;
+  var battlePageSpawnId = null;
+
+  function setBattlePageContext(characterId, spawnId) {
+    if (characterId != null && String(characterId).length) {
+      battlePageCharacterId = String(characterId);
+    }
+    if (spawnId != null && String(spawnId).length) {
+      battlePageSpawnId = String(spawnId);
+    }
+  }
+
+  function battleQueryString(extra) {
+    var q = extra && typeof extra === 'object' ? Object.assign({}, extra) : {};
+    if (battlePageCharacterId && !q.characterId) q.characterId = battlePageCharacterId;
+    if (battlePageSpawnId && !q.spawnId) q.spawnId = battlePageSpawnId;
+    var parts = [];
+    for (var bk in q) {
+      if (!Object.prototype.hasOwnProperty.call(q, bk)) continue;
+      if (q[bk] == null) continue;
+      parts.push(encodeURIComponent(bk) + '=' + encodeURIComponent(String(q[bk])));
+    }
+    return parts.length ? parts.join('&') : '';
+  }
+
+  function battleMutationBody(base) {
+    var body = base && typeof base === 'object' ? Object.assign({}, base) : {};
+    if (battlePageCharacterId) body.characterId = battlePageCharacterId;
+    if (battlePageSpawnId) body.battleSpawnId = battlePageSpawnId;
+    return body;
+  }
 
   function resetHuntLogChain() {
     huntLogPrefix = [];
@@ -1336,22 +1367,15 @@
   }
 
   async function getBattleState() {
-    return fetchJson('/game/battle', {
+    var qs = battleQueryString();
+    var path = '/game/battle' + (qs ? '?' + qs : '');
+    return fetchJson(path, {
       headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
     });
   }
 
   async function getBattleSync(query) {
-    var qs = '';
-    if (query && typeof query === 'object') {
-      if (query.battleVersion != null) {
-        qs += 'battleVersion=' + encodeURIComponent(String(query.battleVersion));
-      }
-      if (query.lastLogSeq != null) {
-        if (qs) qs += '&';
-        qs += 'lastLogSeq=' + encodeURIComponent(String(query.lastLogSeq));
-      }
-    }
+    var qs = battleQueryString(query);
     var path = '/game/battle/sync' + (qs ? '?' + qs : '');
     return fetchJson(path, {
       headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
@@ -1365,10 +1389,12 @@
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + localStorage.getItem('token'),
       },
-      body: JSON.stringify({
-        targetCharacterId: targetCharacterId,
-        expectedRevision: expectedRevision,
-      }),
+      body: JSON.stringify(
+        battleMutationBody({
+          targetCharacterId: targetCharacterId,
+          expectedRevision: expectedRevision,
+        })
+      ),
     });
   }
 
@@ -1379,7 +1405,9 @@
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + localStorage.getItem('token'),
       },
-      body: JSON.stringify({ spawnId: spawnId, expectedRevision: expectedRevision }),
+      body: JSON.stringify(
+        battleMutationBody({ spawnId: spawnId, expectedRevision: expectedRevision })
+      ),
     });
   }
 
@@ -1403,7 +1431,7 @@
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + localStorage.getItem('token'),
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(battleMutationBody(body)),
     });
   }
 
@@ -1421,7 +1449,7 @@
   }
 
   async function battleAction(action, expectedRevision, extraBody) {
-    var body = { action: action, expectedRevision: expectedRevision };
+    var body = battleMutationBody({ action: action, expectedRevision: expectedRevision });
     if (extraBody && typeof extraBody === 'object') {
       for (var kb in extraBody) {
         if (!Object.prototype.hasOwnProperty.call(extraBody, kb)) continue;
@@ -1445,7 +1473,7 @@
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + localStorage.getItem('token'),
       },
-      body: JSON.stringify({ expectedRevision: expectedRevision }),
+      body: JSON.stringify(battleMutationBody({ expectedRevision: expectedRevision })),
     });
   }
 
@@ -1456,7 +1484,7 @@
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + localStorage.getItem('token'),
       },
-      body: JSON.stringify({ expectedRevision: expectedRevision }),
+      body: JSON.stringify(battleMutationBody({ expectedRevision: expectedRevision })),
     });
   }
 
@@ -1500,6 +1528,8 @@
       return;
     }
 
+    if (spawnId) setBattlePageContext(null, spawnId);
+
     var state = await getBattleState();
     if (!state || state._err || !state.character) {
       if (errEl) {
@@ -1532,6 +1562,10 @@
 
     var character = state.character;
     var battle = state.battle;
+    setBattlePageContext(
+      character.id,
+      spawnId || (battle && battle.spawnId) || battlePageSpawnId
+    );
     syncBattleTrackFromView(battle);
     var battleHotbar = null;
     var battleSyncTimer = null;
@@ -1636,6 +1670,10 @@
       if (!st || st._err || !st.character) return false;
       character = st.character;
       battle = st.battle;
+      setBattlePageContext(
+        character.id,
+        battlePageSpawnId || (battle && battle.spawnId) || spawnId
+      );
       syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
@@ -1808,11 +1846,26 @@
     }
 
     async function resyncBattleAfterConflict(conflictBody) {
+      var trustConflictChar =
+        conflictBody &&
+        conflictBody.character &&
+        typeof conflictBody.character === 'object' &&
+        (!battlePageCharacterId ||
+          String(conflictBody.character.id) === String(battlePageCharacterId));
+      var resyncPayload = trustConflictChar
+        ? conflictBody
+        : Object.assign({}, conflictBody || {}, { character: null });
       if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
         try {
           await L2.resyncCharacterAfterConflict(function (snap) {
-            character = snap;
-          }, conflictBody);
+            if (
+              !battlePageCharacterId ||
+              String(snap.id) === String(battlePageCharacterId)
+            ) {
+              character = snap;
+              setBattlePageContext(snap.id, battlePageSpawnId);
+            }
+          }, resyncPayload);
         } catch (eResync) {
           /* fallback нижче */
         }
@@ -1843,6 +1896,10 @@
       if (!st || st._err || !st.character) return 'retry';
       character = st.character;
       battle = st.battle;
+      setBattlePageContext(
+        character.id,
+        battlePageSpawnId || (battle && battle.spawnId) || spawnId
+      );
       syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
@@ -2076,6 +2133,10 @@
       lastVictorySummary = null;
       character = st.character;
       battle = st.battle;
+      setBattlePageContext(
+        character.id,
+        battlePageSpawnId || (battle && battle.spawnId) || spawnId
+      );
       syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
@@ -2131,6 +2192,10 @@
       lastVictorySummary = null;
       character = st.character;
       battle = st.battle;
+      setBattlePageContext(
+        character.id,
+        battlePageSpawnId || (battle && battle.spawnId) || spawnId
+      );
       syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       if (window.L2 && L2.applyHudFromSnapshot) L2.applyHudFromSnapshot(character);
@@ -2266,6 +2331,10 @@
       }
       character = st.character;
       battle = st.battle;
+      setBattlePageContext(
+        character.id,
+        battlePageSpawnId || (battle && battle.spawnId) || spawnId
+      );
       syncBattleTrackFromView(battle);
       if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
       resetHuntLogChain();

@@ -45,7 +45,8 @@ export async function startHuntContinueBattle(
   excludeSpawnId?: string,
   levelTolerance?: number,
   preferredSpawnId?: string,
-  targetLevel?: number
+  targetLevel?: number,
+  opts?: { characterId?: string | null }
 ) {
   const tol = Math.max(
     0,
@@ -53,7 +54,9 @@ export async function startHuntContinueBattle(
   );
 
   return prisma.$transaction(async (tx) => {
-    const row = await findCharacterForUserInTx(tx, userId);
+    const row = await findCharacterForUserInTx(tx, userId, {
+      characterId: opts?.characterId,
+    });
     if (!row) throw new Error('no_character');
 
     const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));
@@ -79,7 +82,8 @@ export async function startHuntContinueBattle(
           tx,
           userId,
           cand.spawnId,
-          expectedRevision
+          expectedRevision,
+          { characterId: opts?.characterId ?? row.id }
         );
       } catch (e) {
         if (e instanceof GameConflictError) throw e;

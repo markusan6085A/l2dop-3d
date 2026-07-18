@@ -31,6 +31,8 @@ async function battleJsonWithSharedMobHp(
 export type BattleSyncQuery = {
   battleVersion?: number;
   lastLogSeq?: number;
+  characterId?: string | null;
+  battleSpawnId?: string | null;
 };
 
 /**
@@ -41,6 +43,8 @@ export async function getBattleSyncForUser(
   query: BattleSyncQuery
 ): Promise<BattleSyncResponse | null> {
   const row = await findCharacterForUser(userId, {
+    characterId: query.characterId,
+    battleSpawnId: query.battleSpawnId,
     include: {
       clan: { select: { hallBlessingAt: true, level: true } },
     },

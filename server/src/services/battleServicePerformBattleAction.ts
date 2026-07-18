@@ -201,12 +201,16 @@ export async function performBattleActionInTx(
   action: BattleActionId,
   expectedRevision: number,
   opts?: {
+    characterId?: string | null;
+    battleSpawnId?: string | null;
     fighterSoulshotItemId?: number;
     mysticSpiritshotItemId?: number;
     battlePotionItemId?: number;
   }
 ): Promise<BattleActionResponse> {
     let char = await findCharacterForUserInTx(tx, userId, {
+      characterId: opts?.characterId,
+      battleSpawnId: opts?.battleSpawnId,
       include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
     });
     if (!char) throw new Error('no_character');
@@ -1676,6 +1680,8 @@ export async function performBattleAction(
   action: BattleActionId,
   expectedRevision: number,
   opts?: {
+    characterId?: string | null;
+    battleSpawnId?: string | null;
     fighterSoulshotItemId?: number;
     mysticSpiritshotItemId?: number;
     battlePotionItemId?: number;

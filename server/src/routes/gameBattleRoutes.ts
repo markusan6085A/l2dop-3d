@@ -4,6 +4,7 @@ import {
   ensureUserId,
   logRouteMutation,
   parseExpectedRevision,
+  parseOptionalCharacterId,
   sendGameConflict,
 } from './routeHttpHelpers.js';
 import { requireAuth } from '../lib/auth.js';
@@ -45,6 +46,34 @@ import {
   sendPvpStartError,
 } from './gameBattlePvpRouteErrors.js';
 
+function battleQueryFromRequest(q: Record<string, unknown>): {
+  characterId: string | null;
+  battleSpawnId: string | null;
+  battleVersion?: number;
+  lastLogSeq?: number;
+} {
+  const characterId = parseOptionalCharacterId(q.characterId);
+  const battleSpawnId =
+    typeof q.spawnId === 'string' && q.spawnId.trim()
+      ? q.spawnId.trim()
+      : null;
+  const rawBv = q.battleVersion;
+  const battleVersion =
+    typeof rawBv === 'string' && /^\d+$/.test(rawBv)
+      ? parseInt(rawBv, 10)
+      : typeof rawBv === 'number' && Number.isFinite(rawBv)
+        ? Math.floor(rawBv)
+        : undefined;
+  const rawLs = q.lastLogSeq;
+  const lastLogSeq =
+    typeof rawLs === 'string' && /^\d+$/.test(rawLs)
+      ? parseInt(rawLs, 10)
+      : typeof rawLs === 'number' && Number.isFinite(rawLs)
+        ? Math.floor(rawLs)
+        : undefined;
+  return { characterId, battleSpawnId, battleVersion, lastLogSeq };
+}
+
 export function registerGameBattleRoutes(app: FastifyInstance): void {
   app.get(
     '/battle',
@@ -52,7 +81,13 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     async (request, reply) => {
       const userId = ensureUserId(request, reply);
       if (!userId) return;
-      const data = await getBattleState(userId);
+      const bq = battleQueryFromRequest(
+        (request.query as Record<string, unknown>) ?? {}
+      );
+      const data = await getBattleState(userId, {
+        characterId: bq.characterId,
+        battleSpawnId: bq.battleSpawnId,
+      });
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
       }
@@ -66,24 +101,14 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
     async (request, reply) => {
       const userId = ensureUserId(request, reply);
       if (!userId) return;
-      const q = request.query as Record<string, unknown>;
-      const rawBv = q.battleVersion;
-      const rawLs = q.lastLogSeq;
-      const battleVersion =
-        typeof rawBv === 'string' && /^\d+$/.test(rawBv)
-          ? parseInt(rawBv, 10)
-          : typeof rawBv === 'number' && Number.isFinite(rawBv)
-            ? Math.floor(rawBv)
-            : undefined;
-      const lastLogSeq =
-        typeof rawLs === 'string' && /^\d+$/.test(rawLs)
-          ? parseInt(rawLs, 10)
-          : typeof rawLs === 'number' && Number.isFinite(rawLs)
-            ? Math.floor(rawLs)
-            : undefined;
+      const bq = battleQueryFromRequest(
+        (request.query as Record<string, unknown>) ?? {}
+      );
       const data = await getBattleSyncForUser(userId, {
-        battleVersion,
-        lastLogSeq,
+        battleVersion: bq.battleVersion,
+        lastLogSeq: bq.lastLogSeq,
+        characterId: bq.characterId,
+        battleSpawnId: bq.battleSpawnId,
       });
       if (!data) {
         return reply.code(404).send({ error: 'forbidden' });
@@ -102,6 +127,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       if (!b) return;
       const er = parseExpectedRevision(b, reply);
       if (er == null) return;
+      const characterId = parseOptionalCharacterId(b.characterId);
       const spawnId = b.spawnId;
       if (typeof spawnId !== 'string' || !spawnId.length) {
         return reply.code(400).send({
@@ -110,7 +136,7 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         });
       }
       try {
-        const result = await startBattle(userId, spawnId, er);
+        const result = await startBattle(userId, spawnId, er, { characterId });
         await logRouteMutation(
           request,
           'battle_start',
@@ -244,13 +270,15 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           ? Math.max(1, Math.floor(rawTargetLevel))
           : undefined;
       try {
+        const characterId = parseOptionalCharacterId(b.characterId);
         const result = await startHuntContinueBattle(
           userId,
           er,
           excludeSpawnId,
           levelTolerance,
           preferredSpawnId,
-          targetLevel
+          targetLevel,
+          { characterId }
         );
         await logRouteMutation(
           request,
@@ -400,11 +428,20 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
         battlePotionOpts = { battlePotionItemId: parsedP };
       }
       try {
+        const characterId = parseOptionalCharacterId(b.characterId);
+        const battleSpawnId =
+          typeof b.battleSpawnId === 'string' && b.battleSpawnId.trim()
+            ? b.battleSpawnId.trim()
+            : typeof b.spawnId === 'string' && b.spawnId.trim()
+              ? b.spawnId.trim()
+              : null;
         const result = await performBattleAction(
           userId,
           actionNorm as BattleActionId,
           er,
           {
+            characterId,
+            battleSpawnId,
             ...fighterSoulshotOpts,
             ...mysticSpiritshotOpts,
             ...battlePotionOpts,
@@ -667,7 +704,15 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
       const er = parseExpectedRevision(b, reply);
       if (er == null) return;
       try {
-        const character = await leaveBattle(userId, er);
+        const characterId = parseOptionalCharacterId(b.characterId);
+        const battleSpawnId =
+          typeof b.battleSpawnId === 'string' && b.battleSpawnId.trim()
+            ? b.battleSpawnId.trim()
+            : null;
+        const character = await leaveBattle(userId, er, {
+          characterId,
+          battleSpawnId,
+        });
         await logRouteMutation(request, 'battle_leave', er, 'ok', character.revision, character.id, 'battle-mutation');
         return reply.send({ character });
       } catch (e) {

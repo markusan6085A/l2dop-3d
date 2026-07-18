@@ -8,6 +8,10 @@ type Tx = Prisma.TransactionClient;
 
 export type FindCharacterForUserOpts = {
   include?: Prisma.CharacterInclude;
+  /** Явний id персонажа з UI (мутації бою). */
+  characterId?: string | null;
+  /** spawnId з URL бою — знайти героя саме в цьому бою. */
+  battleSpawnId?: string | null;
 };
 
 function rowInActiveBattle(row: CharacterRow): boolean {
@@ -15,19 +19,38 @@ function rowInActiveBattle(row: CharacterRow): boolean {
   return typeof bj?.spawnId === 'string' && bj.spawnId.length > 0;
 }
 
+function rowBattleSpawnId(row: CharacterRow): string | null {
+  const bj = parseBattleJson(row.battleJson);
+  return typeof bj?.spawnId === 'string' && bj.spawnId.length > 0
+    ? bj.spawnId
+    : null;
+}
+
 function rowHasPendingPveDefeat(row: CharacterRow): boolean {
   return parsePvePendingDefeat(row.pvePendingDefeatJson) != null;
 }
 
 /**
- * Активний персонаж акаунта: спочатку той, хто в бою / з pending defeat,
- * інакше останній за lastUpdate (як раніше).
+ * Активний персонаж акаунта.
+ * Пріоритет: characterId → battleSpawnId → будь-хто в бою → pending defeat → lastUpdate.
  */
 export async function findCharacterForUserInTx(
   tx: Tx,
   userId: string,
   opts?: FindCharacterForUserOpts
 ): Promise<CharacterRow | null> {
+  const charId =
+    typeof opts?.characterId === 'string' && opts.characterId.trim()
+      ? opts.characterId.trim()
+      : null;
+  if (charId) {
+    const row = await tx.character.findFirst({
+      where: { userId, id: charId },
+      ...(opts?.include ? { include: opts.include } : {}),
+    });
+    return row ? (row as CharacterRow) : null;
+  }
+
   const rows = await tx.character.findMany({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
@@ -35,6 +58,18 @@ export async function findCharacterForUserInTx(
   });
   if (rows.length === 0) return null;
   if (rows.length === 1) return rows[0] as CharacterRow;
+
+  const spawnId =
+    typeof opts?.battleSpawnId === 'string' && opts.battleSpawnId.trim()
+      ? opts.battleSpawnId.trim()
+      : null;
+  if (spawnId) {
+    for (const row of rows) {
+      if (rowBattleSpawnId(row as CharacterRow) === spawnId) {
+        return row as CharacterRow;
+      }
+    }
+  }
 
   for (const row of rows) {
     if (rowInActiveBattle(row as CharacterRow)) return row as CharacterRow;

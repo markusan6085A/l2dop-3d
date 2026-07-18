@@ -83,7 +83,8 @@ export async function startBattleInTx(
   tx: Prisma.TransactionClient,
   userId: string,
   spawnId: string,
-  expectedRevision: number
+  expectedRevision: number,
+  opts?: { characterId?: string | null }
 ): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
   const spawn = getWorldSpawnById(spawnId);
   if (!spawn) {
@@ -96,6 +97,8 @@ export async function startBattleInTx(
   ];
 
   const char = await findCharacterForUserInTx(tx, userId, {
+    characterId: opts?.characterId,
+    battleSpawnId: spawnId,
     include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
   });
   if (!char) throw new Error('no_character');
@@ -333,15 +336,22 @@ export async function startBattleInTx(
 export async function startBattle(
   userId: string,
   spawnId: string,
-  expectedRevision: number
+  expectedRevision: number,
+  opts?: { characterId?: string | null }
 ): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
   return prisma.$transaction(async (tx) =>
-    startBattleInTx(tx, userId, spawnId, expectedRevision)
+    startBattleInTx(tx, userId, spawnId, expectedRevision, opts)
   );
 }
 
+export type BattleStateQuery = {
+  characterId?: string | null;
+  battleSpawnId?: string | null;
+};
+
 export async function getBattleState(
-  userId: string
+  userId: string,
+  query?: BattleStateQuery
 ): Promise<{
   character: CharacterSnapshot;
   battle: BattleView | null;
@@ -351,6 +361,8 @@ export async function getBattleState(
    * Read-only resync (F5 / 409): без flush RB, PvP refresh, без write у БД.
    */
   let row = (await findCharacterForUser(userId, {
+    characterId: query?.characterId,
+    battleSpawnId: query?.battleSpawnId,
     include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
   })) as CharacterRow | null;
   if (!row) return null;
@@ -416,10 +428,14 @@ export async function getBattleState(
 
 export async function leaveBattle(
   userId: string,
-  expectedRevision: number
+  expectedRevision: number,
+  opts?: { characterId?: string | null; battleSpawnId?: string | null }
 ): Promise<CharacterSnapshot> {
   return prisma.$transaction(async (tx) => {
-    const char = await findCharacterForUserInTx(tx, userId);
+    const char = await findCharacterForUserInTx(tx, userId, {
+      characterId: opts?.characterId,
+      battleSpawnId: opts?.battleSpawnId,
+    });
     if (!char) throw new Error('no_character');
     if (char.revision !== expectedRevision) throw gameConflictFromCharacter(char);
 

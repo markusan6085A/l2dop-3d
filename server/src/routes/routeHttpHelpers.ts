@@ -47,6 +47,13 @@ export function parseExpectedRevision(
   return er;
 }
 
+/** Необов'язковий characterId з body/query (мульти-перс на акаунті). */
+export function parseOptionalCharacterId(raw: unknown): string | null {
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  const id = raw.trim();
+  return id.length > 0 ? id : null;
+}
+
 export async function logRouteMutation(
   request: FastifyRequest,
   action: string,
