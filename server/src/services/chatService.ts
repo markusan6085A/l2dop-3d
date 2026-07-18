@@ -1,11 +1,6 @@
 import { prisma } from '../lib/prisma.js';
-import {
-  applyDailyQuestChatMessage,
-  dailyQuestsJsonChanged,
-  parseDailyQuestsJson,
-  serializeDailyQuestsJson,
-} from '../domain/dailyQuests.js';
-import { mutateCharacterWithRevision } from './characterMutation.js';
+import { applyDailyQuestChatMessage } from '../domain/dailyQuests.js';
+import { applyDailyQuestsJsonAtomicInTx } from './charDailyQuestPersist.js';
 
 export type ChatChannel = 'all' | 'trade' | 'my';
 
@@ -160,21 +155,9 @@ export async function sendChatMessage(
       include: { character: { select: { name: true } } },
     });
 
-    const charRow = await tx.character.findUnique({ where: { id: char.id } });
-    if (charRow) {
-      const before = parseDailyQuestsJson(charRow.dailyQuestsJson, nowMs);
-      const after = applyDailyQuestChatMessage(before, nowMs);
-      if (dailyQuestsJsonChanged(charRow.dailyQuestsJson, after)) {
-        await mutateCharacterWithRevision(tx, char.id, null, () => ({
-          changed: true,
-          data: {
-            dailyQuestsJson: serializeDailyQuestsJson(
-              after
-            ) as unknown as import('@prisma/client').Prisma.InputJsonValue,
-          },
-        }));
-      }
-    }
+    await applyDailyQuestsJsonAtomicInTx(tx, char.id, nowMs, (before) =>
+      applyDailyQuestChatMessage(before, nowMs)
+    );
 
     return created;
   });

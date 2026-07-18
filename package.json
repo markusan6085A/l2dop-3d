@@ -49,6 +49,7 @@
     "check:secrets": "tsx server/scripts/check-tracked-secrets.ts",
     "test:starter-kit": "tsx server/scripts/starter-kit-audit.ts",
     "test:world-boss-loot-idempotency": "tsx server/scripts/world-boss-loot-idempotency-smoke.ts",
+    "test:background-stats-concurrency": "tsx server/scripts/background-stats-concurrency-smoke.ts",
     "test:integration:stability": "tsx server/scripts/integration-stability-smoke.ts",
     "test:stress:rapid": "tsx server/scripts/stress-rapid-actions.ts",
     "sim:adena-farm": "tsx server/scripts/simulate-adena-farm.ts",

@@ -6,6 +6,8 @@ import type { Prisma } from '@prisma/client';
  * і для фонових tick world РБ/епіків (HP гравця, mobHp у battleJson) — клієнт
  * підхоплює через GET /game/battle, а revision++ лише на дії гравця.
  * Не для видимих дій гравця — перемога/поразка йде через mutateCharacterWithRevision.
+ * Для фонової статистики (raidBossKills increment) і progress-only dailyQuestsJson
+ * (FOR UPDATE + persist тут або в charDailyQuestPersist.ts) — теж без revision++.
  */
 export async function persistCharacterFieldsInTx(
   tx: Prisma.TransactionClient,
