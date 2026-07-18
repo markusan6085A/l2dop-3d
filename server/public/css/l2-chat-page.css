@@ -160,6 +160,10 @@ body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty {
   color: #c8c0b0;
 }
 
+body.l2-app-l2-chrome.l2-page-chat .l2-chat-empty--loading {
+  color: #9a9488;
+}
+
 body.l2-app-l2-chrome.l2-page-chat .l2-screen-inner,
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-root,
 body.l2-app-l2-chrome.l2-page-chat .l2-chat-panel {

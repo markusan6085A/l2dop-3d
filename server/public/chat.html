@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Чат — L2WAP</title>
-    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/styles.css?v=20260718heroFeet5" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chat-page.css?v=20260717chatNews1" />
@@ -56,13 +56,12 @@
           />
         </div>
         <div class="l2-screen-inner l2-chat-root">
-          <div class="l2-chrome-nav-column">
-            <div id="l2-hud-panel-mount"></div>
-            <div id="l2-nav-top"></div>
+          <div id="l2-hud-panel-mount"></div>
+          <div id="l2-nav-top"></div>
 
-            <p class="err" id="chat-load-err" hidden></p>
+          <p class="err" id="chat-load-err" hidden></p>
 
-            <section class="l2-chat-panel" id="chat-content" aria-label="Чат" hidden>
+          <section class="l2-chat-panel" id="chat-content" aria-label="Чат">
               <div class="l2-chat-tabs" role="tablist" aria-label="Канали чату">
                 <div class="l2-chat-tabs__main">
                   <button type="button" class="l2-chat-tabs__btn l2-chat-tabs__btn--active" data-channel="all" id="chat-tab-all">
@@ -127,21 +126,22 @@
 
               <p class="l2-city-stub-msg" id="chat-stub-msg" hidden></p>
 
-              <div class="l2-chat-list" id="chat-messages" aria-live="polite"></div>
+              <div class="l2-chat-list" id="chat-messages" aria-live="polite">
+                <p class="l2-chat-empty l2-chat-empty--loading">Завантаження…</p>
+              </div>
 
               <nav class="l2-chat-pages" id="chat-pages" aria-label="Сторінки чату" hidden></nav>
             </section>
 
             <div id="l2-nav-bottom"></div>
-          </div>
         </div>
       </div>
     </div>
 
-    <script src="/common.js?v=20260717perf2"></script>
+    <script src="/common.js?v=20260718layoutStable1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260717perf2"></script>
     <script src="/chatSmiles.js?v=20260711chatOrig5"></script>
-    <script src="/chat.js?v=20260711chatSmile16"></script>
+    <script src="/chat.js?v=20260718chatStable1"></script>
   </body>
 </html>
