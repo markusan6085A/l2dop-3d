@@ -1908,9 +1908,9 @@
         '</div>' +
         global.L2.getHudWapBarsMarkup() +
         global.L2.getHudNoticeMarkup() +
-        global.L2.getClanInviteHudMarkup() +
         '</div>' +
         '</header>' +
+        global.L2.getClanInviteHudMarkup() +
         global.L2.getPvpIncomingMarkup()
       );
     },
@@ -1987,17 +1987,15 @@
     applyPendingClanInviteFromSnapshot: function (c) {
       var box = document.getElementById('l2-clan-invite-hud');
       if (!box) {
-        var noticeEl = document.getElementById('l2-hud-notice');
-        var anchor = noticeEl || document.querySelector('.l2-hud-legacy-bars');
+        var hudPanel = document.querySelector('.l2-hud-panel');
+        var mount = document.getElementById('l2-hud-panel-mount');
+        var anchor = hudPanel || mount;
         if (anchor && anchor.parentNode) {
           var wrap = document.createElement('div');
           wrap.innerHTML = global.L2.getClanInviteHudMarkup();
           var created = wrap.firstElementChild;
           if (created) {
-            anchor.parentNode.insertBefore(
-              created,
-              noticeEl ? noticeEl.nextSibling : anchor.nextSibling
-            );
+            anchor.parentNode.insertBefore(created, anchor.nextSibling);
             box = created;
           }
         }

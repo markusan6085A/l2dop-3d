@@ -91,11 +91,9 @@ export async function buildCharacterClientSnapshot(
     row.id,
     row.chatRepliesReadAt ?? null
   );
-  const deliverHudNotices = opts?.deliverHudNotices !== false;
   const clanInviteExtras = await attachPendingClanInviteToSnapshot(
     row.id,
-    rowReady.clanId,
-    deliverHudNotices
+    rowReady.clanId
   );
   const result = attachClientSnapshotMeta(snap, {
     chatUnreadReplyCount,
@@ -114,14 +112,9 @@ export async function enrichPartialClientSnapshot(
 ): Promise<CharacterSnapshot> {
   const includeUnread = opts?.includeUnreadCount !== false;
   let result: CharacterSnapshot;
-  const deliverHudNotices = opts?.deliverHudNotices !== false;
   const clanInviteExtras =
     snap.id != null
-      ? await attachPendingClanInviteToSnapshot(
-          snap.id,
-          snap.clanId,
-          deliverHudNotices
-        )
+      ? await attachPendingClanInviteToSnapshot(snap.id, snap.clanId)
       : {};
   if (!includeUnread) {
     result = attachClientSnapshotMeta(snap, {

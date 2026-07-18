@@ -87,11 +87,10 @@ export async function sendClanInviteForUser(
   });
 }
 
-/** HUD-текст + блок «Прийняти/Відхилити» для snapshot. */
+/** HUD-блок «Прийняти/Відхилити» для snapshot (GET і мутації). */
 export async function attachPendingClanInviteToSnapshot(
   characterId: string,
-  characterClanId: string | null | undefined,
-  deliverHudNotices: boolean
+  characterClanId: string | null | undefined
 ): Promise<Partial<CharacterSnapshot>> {
   const selfId = String(characterId || '').trim();
   if (!selfId || characterClanId) {
@@ -108,19 +107,6 @@ export async function attachPendingClanInviteToSnapshot(
   });
   if (!invite) {
     return { pendingClanInvite: null };
-  }
-
-  let delivered = invite.deliveredAt;
-  if (deliverHudNotices && !delivered) {
-    delivered = new Date();
-    await prisma.clanInvite.update({
-      where: { id: invite.id },
-      data: { deliveredAt: delivered },
-    });
-  }
-
-  if (!delivered) {
-    return {};
   }
 
   return {
@@ -201,9 +187,7 @@ export async function acceptClanInviteForUser(
     })) as CharacterRow | null;
     if (!fresh) throw new Error('no_character');
 
-    return buildCharacterClientSnapshot(fresh, userId, { pendingClanInvite: null }, {
-      deliverHudNotices: false,
-    });
+    return buildCharacterClientSnapshot(fresh, userId, { pendingClanInvite: null });
   });
 }
 

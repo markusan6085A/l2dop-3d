@@ -595,11 +595,12 @@ button.l2-map-mob-title--tap-full:focus {
 }
 
 .l2-clan-invite-hud {
-  margin: 4px 0 0;
-  padding: 2px 4px 4px;
+  margin: 0 0 8px;
+  padding: 4px 6px 6px;
   font-size: 12px;
   line-height: 1.35;
   text-align: center;
+  border-top: 1px solid rgba(120, 120, 120, 0.45);
 }
 
 .l2-clan-invite-hud__text {
