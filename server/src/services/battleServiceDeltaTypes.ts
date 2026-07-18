@@ -40,6 +40,7 @@ export interface BattleDeltaPayload {
 
 export interface BattleSyncResponse extends BattleDeltaPayload {
   inBattle: boolean;
+  partyBattle?: import('./party/partyBattleSyncService.js').PartyBattleSyncDto;
 }
 
 export interface BattleActionDeltaResponse {
@@ -52,12 +53,24 @@ export interface BattleActionDeltaResponse {
   defeat?: BattleDefeatSummary;
 }
 
+/** Stage C: killer-only DTO для party reward split (Stage D UI). */
+export interface PartyBattleRewardSummary {
+  partyBattleId: string;
+  recipientCount: number;
+  expGain: string;
+  spGain: number;
+  adenaGain: string;
+  shared: true;
+}
+
 export interface BattleActionFullResponse {
   kind: 'full';
   character: import('./charService.js').CharacterSnapshot;
   battle: import('./battleServiceTypes.js').BattleView | null;
   victory?: BattleVictorySummary;
   defeat?: BattleDefeatSummary;
+  /** Party battle Stage C — killer share metadata. */
+  partyReward?: PartyBattleRewardSummary;
   /** Lethal / RB kill: однозначні поля для клієнта (очистити HP-бар). */
   lethalMeta?: Pick<
     BattleDeltaPayload,

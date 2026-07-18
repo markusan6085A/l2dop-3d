@@ -141,6 +141,21 @@
       }
       li.appendChild(main);
 
+      if (typeof m.online === 'boolean' || typeof m.nearby === 'boolean') {
+        var status = document.createElement('span');
+        status.className = 'l2-party-member__status';
+        if (m.online === false) {
+          status.textContent = 'Не в мережі';
+        } else if (m.nearby === false) {
+          status.textContent = 'Далеко';
+        } else if (m.activeInBattle) {
+          status.textContent = 'У бою';
+        } else if (m.online) {
+          status.textContent = 'Поруч';
+        }
+        li.appendChild(status);
+      }
+
       if (state.party.viewerIsLeader && !m.isLeader) {
         var kick = document.createElement('button');
         kick.type = 'button';
@@ -159,6 +174,28 @@
     var footer = $('party-footer-actions');
     if (!footer || !state.party) return;
     footer.innerHTML = '';
+
+    if (
+      state.party.activeBattle &&
+      state.party.activeBattle.canJoin &&
+      state.party.activeBattle.spawnId
+    ) {
+      var goBattle = document.createElement('button');
+      goBattle.type = 'button';
+      goBattle.className = 'l2-party-link l2-party-link--primary';
+      goBattle.textContent = '[Перейти до бою]';
+      goBattle.addEventListener('click', onGoBattleClick);
+      footer.appendChild(goBattle);
+    } else if (
+      state.party.activeBattle &&
+      state.party.activeBattle.partyBattleId
+    ) {
+      var battleHint = document.createElement('span');
+      battleHint.className = 'l2-party-member__status';
+      battleHint.textContent =
+        'Паті б\'ється з ' + String(state.party.activeBattle.mobName || 'монстром');
+      footer.appendChild(battleHint);
+    }
 
     if (state.party.viewerIsLeader) {
       var disband = document.createElement('button');
@@ -214,6 +251,40 @@
     } finally {
       state.inFlight = false;
     }
+  }
+
+  async function onGoBattleClick() {
+    if (
+      !state.party ||
+      !state.party.activeBattle ||
+      !state.party.activeBattle.canJoin
+    ) {
+      return;
+    }
+    var spawnId = state.party.activeBattle.spawnId;
+    await withLock(async function () {
+      var rev =
+        window.L2 && typeof L2.lastSnapshot === 'function'
+          ? (L2.lastSnapshot() || {}).revision
+          : null;
+      var res = await postJson('/game/battle/start', {
+        spawnId: spawnId,
+        expectedRevision: rev,
+      });
+      if (res.status === 409 && res.data.code === 'revision_conflict') {
+        if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+          await L2.resyncCharacterAfterConflict(res.data);
+        }
+        showErr('Стан змінився — оновлено.');
+        return;
+      }
+      if (!res.status || res.status >= 400) {
+        showErr(userMessage(res.data, 'Не вдалося приєднатися до бою.'));
+        return;
+      }
+      window.location.href =
+        '/battle.html?spawnId=' + encodeURIComponent(String(spawnId));
+    });
   }
 
   async function onLeaveClick() {

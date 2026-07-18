@@ -75,6 +75,10 @@ import {
   recordWorldBossBattlePresenceInTx,
 } from './worldBossSessionService.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
+import {
+  shouldStartPartyBattleInTx,
+  startOrJoinPartyBattleInTx,
+} from './party/partyBattleStartJoinService.js';
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
@@ -176,8 +180,26 @@ export async function startBattleInTx(
     combat0.regenMp
   );
 
-  const mobMaxCp0 = mobMaxCpFromMobMaxHp(mc.maxHp);
   const nowStartMs = Date.now();
+  const partyStart = await shouldStartPartyBattleInTx(
+    tx,
+    base.id,
+    spawn.kind,
+    dungeonMob != null
+  );
+  if (partyStart) {
+    return startOrJoinPartyBattleInTx(tx, {
+      userId,
+      char: base,
+      spawn,
+      expectedRevision,
+      partyId: partyStart.partyId,
+      wTick,
+      nowStartMs,
+    });
+  }
+
+  const mobMaxCp0 = mobMaxCpFromMobMaxHp(mc.maxHp);
   const spawnHpState = parseMobSpawnHpState(base.mobSpawnHpJson, nowStartMs);
   if (
     isRegularMobRespawnKind(spawn.kind) &&

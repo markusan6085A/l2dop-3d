@@ -200,6 +200,8 @@ model PartyKillReward {
   spGain        Int
   adenaGain     BigInt
   createdAt     DateTime @default(now())
+  /** Stage D: UI acknowledgement для non-killer reward notice. */
+  notifiedAt    DateTime?
   partyBattle   PartyBattleSession @relation(fields: [partyBattleId], references: [id], onDelete: Cascade)
 
   @@id([partyBattleId, characterId])

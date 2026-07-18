@@ -105,7 +105,7 @@ import {
   mobEvasionForBattle,
 } from './battleServiceDamageRolls.js';
 import { battleActionAllowed } from './battleServiceBattleUi.js';
-import type { BattleActionResponse } from './battleServiceDeltaTypes.js';
+import type { BattleActionDeltaResponse, BattleActionResponse } from './battleServiceDeltaTypes.js';
 import { logSkillCooldownApplied } from './battleServiceCooldown.js';
 import { battleVersionFromState } from '../domain/battleVersion.js';
 import {
@@ -121,7 +121,14 @@ import {
   lockPartyBattleSessionForActionInTx,
   peekPartyBattleIdFromBattleJson,
 } from './party/partyBattleActionLock.js';
-import { canStartPartyBattleViaRoute } from '../domain/partyBattleFlags.js';
+import { throwIfPartyBattleRouteBlocked } from '../domain/partyBattleFlags.js';
+import {
+  persistPartyBattleContinueTurnInTx,
+  resolvePartyBattleStageBTestVictoryInTx,
+} from './party/partyBattleOutcomeTx.js';
+import { resolvePartyBattleVictoryInTx } from './party/partyBattleVictoryTx.js';
+import { isPartyBattleRewardDistributionReady } from '../domain/partyBattleFlags.js';
+import type { PartyBattleActionLockContext } from './party/partyBattleActionLock.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
   EARTHQUAKE_EXTRA_MOB_CAP,
@@ -288,20 +295,22 @@ export async function performBattleActionInTx(
     const spawn = resolveBattleSpawnMeta(bj);
     if (!spawn) throw new Error('battle_spawn_gone');
 
+    let partyBattleCtx: PartyBattleActionLockContext | null = null;
+    let partyBattleMobHpAtTurnOpen = 0;
     const crEarly = char as CharacterRow;
     if (partyActionPath && partyBattleIdPeek) {
-      if (!canStartPartyBattleViaRoute()) {
-        throw new Error('party_battle_not_ready');
-      }
-      const partyLocked = await lockPartyBattleSessionForActionInTx(tx, {
+      throwIfPartyBattleRouteBlocked();
+      partyBattleCtx = await lockPartyBattleSessionForActionInTx(tx, {
         sessionId: partyBattleIdPeek,
         characterId: crEarly.id,
         spawnId: spawn.spawnId,
         charRow: crEarly,
       });
-      char = partyLocked.char;
-      /** Stage B: shared damage + continue — B0.5 лише lock order; action ще не підключено. */
-      throw new Error('party_battle_not_ready');
+      char = partyBattleCtx.char;
+      if (partyBattleCtx.session.mobHp <= 0) {
+        throw new Error('party_battle_session_not_active');
+      }
+      partyBattleMobHpAtTurnOpen = partyBattleCtx.session.mobHp;
     }
 
     let inv = parseInventory((char as CharacterRow).inventoryJson);
@@ -354,6 +363,11 @@ export async function performBattleActionInTx(
     }
 
     let st = { ...bj };
+    if (partyBattleCtx) {
+      st.mobHp = partyBattleCtx.session.mobHp;
+      st.partyBattleId = partyBattleCtx.session.id;
+      st.battleVersion = partyBattleCtx.session.battleVersion;
+    }
     const worldBossBattle = isSharedWorldBossKind(spawn.kind);
     if (worldBossBattle) {
       const presenceMs = Date.now();
@@ -1033,6 +1047,18 @@ export async function performBattleActionInTx(
       playerHp
     );
 
+    if (
+      process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL === '1' &&
+      partyBattleCtx &&
+      action === 'attack' &&
+      partyBattleMobHpAtTurnOpen <= 1
+    ) {
+      pDmg = Math.max(pDmg, partyBattleMobHpAtTurnOpen);
+      if (pDmg > 0 && physOutcome === 'miss') {
+        physOutcome = 'hit';
+      }
+    }
+
     mobHp = Math.max(0, mobHp - pDmg);
 
     const landedPhysicalHit =
@@ -1255,7 +1281,7 @@ export async function performBattleActionInTx(
         log.push('Сон знято: ціль прокинулась від урону.');
       }
     }
-    if (action === 'whirlwind' && pDmg > 0) {
+    if (action === 'whirlwind' && pDmg > 0 && !partyBattleCtx) {
       ensureWhirlwindExtraMobs(
         st,
         char.worldX,
@@ -1590,7 +1616,7 @@ export async function performBattleActionInTx(
     }
 
     let nearbyExtraEconomy: NearbyExtraMobEconomyPatch | undefined;
-    if (!isPvpBattleJson(bj) && !worldBossBattle) {
+    if (!isPvpBattleJson(bj) && !worldBossBattle && !partyBattleCtx) {
       const extraLoot = applyNearbyExtraMobKillLoot({
         st,
         char: char as CharacterRow,
@@ -1667,7 +1693,81 @@ export async function performBattleActionInTx(
 
     const logLinesAdded = Math.max(0, log.length - initialLogLen);
 
+    const persistTurnOrParty = async (): Promise<BattleActionDeltaResponse> => {
+      if (partyBattleCtx) {
+        return persistPartyBattleContinueTurnInTx(tx, {
+          sessionId: partyBattleCtx.session.id,
+          characterId: cr.id,
+          expectedRevision: writeRevision,
+          char: char as CharacterRow,
+          st,
+          playerHp,
+          mobHpBefore: partyBattleMobHpAtTurnOpen,
+          mobHpAfter: mobHp,
+          log,
+          logLinesAdded,
+          maxMpEff,
+          side: persistSide,
+        });
+      }
+      return persistBattleContinueFromTurn(
+        tx,
+        { ...continueBase, char: char as CharacterRow, playerHp, mobHp, st },
+        persistSide,
+        logLinesAdded
+      );
+    };
+
     if (mobHp <= 0) {
+      let partyCtx = partyBattleCtx;
+      let partyMobHpOpen = partyBattleMobHpAtTurnOpen;
+      if (!partyCtx && !isPvpBattleJson(bj) && !worldBossBattle) {
+        const sid =
+          (typeof st.partyBattleId === 'string' && st.partyBattleId.trim()) ||
+          peekPartyBattleIdFromBattleJson(bj) ||
+          null;
+        if (sid) {
+          throwIfPartyBattleRouteBlocked();
+          partyCtx = await lockPartyBattleSessionForActionInTx(tx, {
+            sessionId: sid,
+            characterId: cr.id,
+            spawnId: spawn.spawnId,
+            charRow: char as CharacterRow,
+          });
+          char = partyCtx.char;
+          partyMobHpOpen = partyCtx.session.mobHp;
+        }
+      }
+
+      if (partyCtx) {
+        const partyVictoryBase = {
+          sessionId: partyCtx.session.id,
+          characterId: cr.id,
+          expectedRevision: writeRevision,
+          char: char as CharacterRow,
+          st,
+          playerHp,
+          mobHpBefore: partyMobHpOpen,
+          mobHpAfter: mobHp,
+          log,
+          logLinesAdded,
+          maxMpEff,
+          side: persistSide,
+        };
+        if (isPartyBattleRewardDistributionReady()) {
+          return resolvePartyBattleVictoryInTx(tx, {
+            ...partyVictoryBase,
+            userId,
+            bj,
+            spawn,
+            inv,
+            preLevel,
+            currentMp,
+            cr: char as CharacterRow,
+          });
+        }
+        return resolvePartyBattleStageBTestVictoryInTx(tx, partyVictoryBase);
+      }
       const victory = await resolveMobDeadVictoryInTx(tx, {
         ...continueBase,
         cr: char as CharacterRow,
@@ -1717,12 +1817,7 @@ export async function performBattleActionInTx(
       });
       return wrapBattleDefeatAsDelta(d);
     }
-    return persistBattleContinueFromTurn(
-      tx,
-      { ...continueBase, char: char as CharacterRow, playerHp, mobHp, st },
-      persistSide,
-      logLinesAdded
-    );
+    return persistTurnOrParty();
   }
 
   const shouldMobCounterAttack = resolveMobShouldCounterAttack({
@@ -1736,12 +1831,7 @@ export async function performBattleActionInTx(
     });
 
     if (!shouldMobCounterAttack) {
-      return persistBattleContinueFromTurn(
-        tx,
-        continueBase,
-        persistSide,
-        logLinesAdded
-      );
+      return persistTurnOrParty();
     }
 
     const countered = applyMobCounterDamage({
@@ -1772,12 +1862,7 @@ export async function performBattleActionInTx(
       return wrapBattleDefeatAsDelta(d);
     }
 
-    return persistBattleContinueFromTurn(
-      tx,
-      { ...continueBase, playerHp, mobHp },
-      persistSide,
-      logLinesAdded
-    );
+    return persistTurnOrParty();
 }
 
 export async function performBattleAction(

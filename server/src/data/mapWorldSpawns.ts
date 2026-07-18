@@ -13,6 +13,7 @@ import { L2DOP_MAP_CHAMPION_SPAWNS } from './l2dopMapChampionSpawns.generated.js
 import { L2DOP_LINEAGE_EPIC_BOSS_SPAWNS } from './l2dopMapEpicBossSpawns.generated.js';
 import { L2DOP_LINEAGE_EPIC_GUARD_SPAWNS } from './l2dopMapEpicGuardSpawns.js';
 import { L2DOP_LINEAGE_RAID_BOSS_SPAWNS } from './l2dopMapRaidBossSpawns.generated.js';
+import { BATTLE_RANGE } from '../domain/battleTypes.js';
 
 export type MapSpawnKind =
   | 'passive'
@@ -29,7 +30,8 @@ export type MapSpawnKind =
  * Радіус «поруч» для списку й маркерів (світові одиниці).
  * Менше ~15k — епіки/зона (на кшталт Валакаса) часто не потрапляли в список; занадто велико — зайвий шум.
  */
-export const MAP_NEARBY_LIST_RADIUS = 26_000;
+/** Список/маркери мобів — canonical BATTLE_RANGE (28_000), узгоджено з join/attack. */
+export const MAP_NEARBY_LIST_RADIUS = BATTLE_RANGE;
 
 /** Радіус «поруч» для інших гравців на карті (менший за мобів). */
 export const MAP_NEARBY_HERO_RADIUS = 12_000;

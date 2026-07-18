@@ -12,11 +12,15 @@ import {
   battleCooldownsForSync,
   buildBattleSyncResponse,
 } from './battleServiceDelta.js';
-import type { BattleSyncResponse } from './battleServiceDeltaTypes.js';
+import { isPartyBattleSyncStale, readPartyBattleSyncDtoForViewer } from './party/partyBattleSyncService.js';
+import { isPartyBattleEngineEnabled, isPartyBattleRewardDistributionReady } from '../domain/partyBattleFlags.js';
+import { isPartyBattleSyncContext } from './party/partyBattleSyncGuard.js';
 import {
   computeCharacterVitalsBundle,
   resolveClanHallBonusForCharacter,
 } from './characterClanHallVitals.js';
+import type { BattleSyncResponse } from './battleServiceDeltaTypes.js';
+import { prisma } from '../lib/prisma.js';
 import type { CharacterRow } from './charTypes.js';
 async function battleJsonWithSharedMobHp(
   bj: BattleJsonState
@@ -170,7 +174,71 @@ export async function getBattleSyncForUser(
   const nowMs = Date.now();
   const mysticSkillCdUntil = battleCooldownsForSync(cr, bj, nowMs);
 
-  return buildBattleSyncResponse({
+  let partyBattle: BattleSyncResponse['partyBattle'];
+  if (isPartyBattleEngineEnabled() && isPartyBattleSyncContext(bjRaw)) {
+    const partySessionId = bjRaw.partyBattleId!.trim();
+    const sessionRow = await prisma.partyBattleSession.findUnique({
+      where: { id: partySessionId },
+    });
+    if (sessionRow && !isPartyBattleSyncStale(bjRaw, sessionRow)) {
+      const participantCount = await prisma.partyBattleParticipant.count({
+        where: { partyBattleId: sessionRow.id, active: true },
+      });
+      const membership = sessionRow.activePartyKey
+        ? await prisma.partyMember.findUnique({
+            where: { characterId: cr.id },
+            select: { partyId: true },
+          })
+        : null;
+      const viewerPlayfield = {
+        worldX: cr.worldX,
+        worldY: cr.worldY,
+        dungeonStateJson: cr.dungeonStateJson,
+      };
+      if (
+        membership &&
+        sessionRow.activePartyKey === membership.partyId &&
+        isPartyBattleRewardDistributionReady()
+      ) {
+        partyBattle =
+          (await readPartyBattleSyncDtoForViewer(
+            sessionRow.id,
+            membership.partyId,
+            cr.id,
+            viewerPlayfield,
+            nowMs
+          )) ?? undefined;
+      } else {
+        partyBattle = {
+          partyBattleId: sessionRow.id,
+          battleVersion: sessionRow.battleVersion,
+          spawnId: sessionRow.spawnId,
+          mobHp: sessionRow.mobHp,
+          mobMaxHp: sessionRow.mobMaxHp,
+          state: sessionRow.state,
+          participantCount,
+        };
+      }
+      bj.mobHp = sessionRow.mobHp;
+      bj.battleVersion = sessionRow.battleVersion;
+    } else if (!sessionRow || isPartyBattleSyncStale(bjRaw, sessionRow)) {
+      return {
+        changed: true,
+        revision,
+        battleVersion: 0,
+        logSeq: 0,
+        logTail: [],
+        inBattle: false,
+        battleEnded: true,
+        outcome: null,
+        mobHp: 0,
+        mobMaxHp: bj.mobMaxHp,
+        mobDead: true,
+      };
+    }
+  }
+
+  const syncResponse = buildBattleSyncResponse({
     row: cr,
     st: bj,
     maxHpEff,
@@ -182,4 +250,8 @@ export async function getBattleSyncForUser(
     clientLastLogSeq: clientLogSeq,
     mysticSkillCdUntil,
   });
+  if (partyBattle) {
+    syncResponse.partyBattle = partyBattle;
+  }
+  return syncResponse;
 }

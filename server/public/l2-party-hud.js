@@ -6,12 +6,13 @@
   'use strict';
 
   var POLL_MS = 5000;
-  var ASSET_VER = '20260718partyHud4';
+  var ASSET_VER = '20260719partyHudD1';
 
   var hudState = null;
   var fetchSeq = 0;
   var fetchInFlight = false;
-  var respondInFlight = false;
+  var rewardAckInFlight = false;
+  var joinBattleInFlight = false;
   var pollTimer = null;
   var flashTimer = null;
   var isMounted = false;
@@ -212,6 +213,150 @@
     inner.appendChild(row);
   }
 
+  function renderRewardNoticeRow(inner, data) {
+    inner.className = 'l2-party-hud-inner l2-party-hud-inner--reward';
+    clearInner(inner);
+    var notice = data.rewardNotice;
+    var row = document.createElement('div');
+    row.className = 'l2-party-hud__row l2-party-hud__row--stack';
+    var title = document.createElement('span');
+    title.className = 'l2-party-hud__member-label';
+    title.textContent = 'Паті перемогло монстра';
+    row.appendChild(title);
+    var loot = document.createElement('span');
+    loot.className = 'l2-party-hud__reward-loot';
+    loot.textContent =
+      '+' +
+      String(notice.expGain) +
+      ' EXP, +' +
+      String(notice.spGain) +
+      ' SP, +' +
+      String(notice.adenaGain) +
+      ' Adena';
+    row.appendChild(loot);
+    var okBtn = document.createElement('button');
+    okBtn.type = 'button';
+    okBtn.className = 'l2-party-hud__btn l2-party-hud__btn--accept';
+    okBtn.textContent = 'OK';
+    okBtn.disabled = rewardAckInFlight;
+    okBtn.addEventListener('click', function () {
+      ackRewardNotice(notice.partyBattleId);
+    });
+    row.appendChild(okBtn);
+    inner.appendChild(row);
+  }
+
+  function renderActiveBattleRow(inner, data) {
+    inner.className = 'l2-party-hud-inner l2-party-hud-inner--battle';
+    clearInner(inner);
+    var ab = data.activeBattle;
+    var row = document.createElement('div');
+    row.className = 'l2-party-hud__row l2-party-hud__row--stack';
+    var label = document.createElement('span');
+    label.className = 'l2-party-hud__member-label';
+    label.textContent = 'Паті б\'ється з ' + String(ab.mobName || 'монстром');
+    row.appendChild(label);
+    if (ab.canJoin) {
+      var joinBtn = document.createElement('button');
+      joinBtn.type = 'button';
+      joinBtn.className = 'l2-party-hud__btn l2-party-hud__btn--accept';
+      joinBtn.textContent = 'Приєднатися';
+      joinBtn.disabled = joinBattleInFlight;
+      joinBtn.addEventListener('click', function () {
+        joinPartyBattle(ab.spawnId);
+      });
+      row.appendChild(joinBtn);
+    } else if (ab.memberNearby && !ab.mobInBattleRange) {
+      var hintNear = document.createElement('span');
+      hintNear.className = 'l2-party-hud__hint';
+      hintNear.textContent = 'Підійдіть ближче до монстра';
+      row.appendChild(hintNear);
+    } else if (!ab.memberNearby) {
+      var hintFar = document.createElement('span');
+      hintFar.className = 'l2-party-hud__hint';
+      hintFar.textContent = 'Паті веде бій в іншій частині локації';
+      row.appendChild(hintFar);
+    }
+    appendViewLink(row, '/party.html');
+    inner.appendChild(row);
+  }
+
+  async function ackRewardNotice(partyBattleId) {
+    if (rewardAckInFlight || !partyBattleId) return;
+    rewardAckInFlight = true;
+    render(hudState);
+    try {
+      var r = await fetch('/game/party/reward-notice/ack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token(),
+        },
+        body: JSON.stringify({ partyBattleId: String(partyBattleId) }),
+      });
+      if (!r.ok) {
+        setFlash('Не вдалося підтвердити нагороду.');
+      }
+      await fetchHud();
+    } catch (_e) {
+      setFlash('Збій мережі. Спробуйте ще раз.');
+    } finally {
+      rewardAckInFlight = false;
+    }
+  }
+
+  async function joinPartyBattle(spawnId) {
+    if (joinBattleInFlight || !spawnId) return;
+    joinBattleInFlight = true;
+    render(hudState);
+    try {
+      var rev =
+        window.L2 && typeof L2.lastSnapshot === 'function'
+          ? (L2.lastSnapshot() || {}).revision
+          : null;
+      var r = await fetch('/game/battle/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token(),
+        },
+        body: JSON.stringify({
+          spawnId: String(spawnId),
+          expectedRevision: rev,
+        }),
+      });
+      var j = null;
+      try {
+        j = await r.json();
+      } catch (_ej) {
+        j = null;
+      }
+      if (r.status === 409 && j && j.code === 'revision_conflict') {
+        if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+          await L2.resyncCharacterAfterConflict(j);
+        }
+        setFlash('Стан змінився — оновлено.');
+        await fetchHud();
+        return;
+      }
+      if (!r.ok) {
+        var msg =
+          j && j.messageUk
+            ? String(j.messageUk)
+            : 'Не вдалося приєднатися до бою.';
+        setFlash(msg);
+        await fetchHud();
+        return;
+      }
+      window.location.href =
+        '/battle.html?spawnId=' + encodeURIComponent(String(spawnId));
+    } catch (_eNet) {
+      setFlash('Збій мережі. Спробуйте ще раз.');
+    } finally {
+      joinBattleInFlight = false;
+    }
+  }
+
   function render(data) {
     ensureSlot();
     var inner = $('l2-party-hud-inner');
@@ -224,15 +369,27 @@
       return;
     }
 
-    if (data.party && data.party.partyId) {
-      renderMemberRow(inner);
-      captureLayoutDebug('member');
-      return;
-    }
-
     if (data.invite && data.invite.inviteId) {
       renderInviteRow(inner, data);
       captureLayoutDebug('invite');
+      return;
+    }
+
+    if (data.rewardNotice && data.rewardNotice.partyBattleId) {
+      renderRewardNoticeRow(inner, data);
+      captureLayoutDebug('reward');
+      return;
+    }
+
+    if (data.activeBattle && data.activeBattle.partyBattleId) {
+      renderActiveBattleRow(inner, data);
+      captureLayoutDebug('battle');
+      return;
+    }
+
+    if (data.party && data.party.partyId) {
+      renderMemberRow(inner);
+      captureLayoutDebug('member');
     }
   }
 

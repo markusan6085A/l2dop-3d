@@ -13,7 +13,14 @@ import {
   purgeAllPartyInvitesForTargetInTx,
 } from './partyMemberHelpers.js';
 import { buildPartyView, loadPartyViewForCharacter } from './partySnapshot.js';
+import { enrichPartyViewStageD } from './partyViewEnrichService.js';
 import { isPartyMemberCharacterUniqueViolation } from './partyPrismaErrors.js';
+import { isPartyBattleEngineEnabled } from '../../domain/partyBattleFlags.js';
+import { PARTY_BATTLE_END_REASON } from '../../domain/partyBattleSessionConstants.js';
+import {
+  finalizePartyBattleOnPartyDissolveInTx,
+  syncPartyBattleOnMemberRemovalInTx,
+} from './partyBattleSocialSession.js';
 import type { GetPartyResult, PartyLeaveResult, PartyMutationResult } from './partyTypes.js';
 
 type Tx = Prisma.TransactionClient;
@@ -62,7 +69,10 @@ export async function getPartyForUser(
     select: { id: true },
   });
   if (!char) throw new Error('no_character');
-  const party = await loadPartyViewForCharacter(char.id);
+  const partyRaw = await loadPartyViewForCharacter(char.id);
+  const party = partyRaw
+    ? await enrichPartyViewStageD(partyRaw)
+    : null;
   return { party };
 }
 
@@ -125,6 +135,13 @@ export async function leavePartyForUser(
 
     if (locked.leaderCharacterId === char.id) {
       if (memberCount <= 1) {
+        if (isPartyBattleEngineEnabled()) {
+          await finalizePartyBattleOnPartyDissolveInTx(
+            tx,
+            locked.id,
+            PARTY_BATTLE_END_REASON.no_participants
+          );
+        }
         await tx.party.delete({ where: { id: locked.id } });
         return { party: null };
       }
@@ -138,6 +155,13 @@ export async function leavePartyForUser(
         select: { characterId: true },
       });
       if (!nextLeader) throw new Error('party_not_found');
+
+      if (isPartyBattleEngineEnabled()) {
+        await syncPartyBattleOnMemberRemovalInTx(tx, {
+          partyId: locked.id,
+          removedCharacterId: char.id,
+        });
+      }
 
       await tx.partyMember.delete({
         where: {
@@ -155,6 +179,13 @@ export async function leavePartyForUser(
         },
       });
       return { party: null };
+    }
+
+    if (isPartyBattleEngineEnabled()) {
+      await syncPartyBattleOnMemberRemovalInTx(tx, {
+        partyId: locked.id,
+        removedCharacterId: char.id,
+      });
     }
 
     await tx.partyMember.delete({
@@ -204,6 +235,13 @@ export async function kickPartyMemberForUser(
       throw new Error('party_kick_not_member');
     }
 
+    if (isPartyBattleEngineEnabled()) {
+      await syncPartyBattleOnMemberRemovalInTx(tx, {
+        partyId: locked.id,
+        removedCharacterId: targetCharacterId,
+      });
+    }
+
     await tx.partyMember.delete({
       where: {
         partyId_characterId: {
@@ -237,6 +275,14 @@ export async function disbandPartyForUser(
 
     if (locked.leaderCharacterId !== char.id) {
       throw new Error('party_forbidden');
+    }
+
+    if (isPartyBattleEngineEnabled()) {
+      await finalizePartyBattleOnPartyDissolveInTx(
+        tx,
+        locked.id,
+        PARTY_BATTLE_END_REASON.party_disbanded
+      );
     }
 
     await tx.party.delete({ where: { id: locked.id } });

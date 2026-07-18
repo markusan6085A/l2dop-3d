@@ -165,12 +165,14 @@ export function wrapVictoryAsFull(v: {
   victory?: BattleVictorySummary;
   battle: null;
   lethalMeta?: BattleActionFullResponse['lethalMeta'];
+  partyReward?: BattleActionFullResponse['partyReward'];
 }): BattleActionFullResponse {
   return {
     kind: 'full',
     character: v.character,
     battle: null,
     victory: v.victory,
+    ...(v.partyReward ? { partyReward: v.partyReward } : {}),
     ...(v.lethalMeta ? { lethalMeta: v.lethalMeta } : {}),
   };
 }

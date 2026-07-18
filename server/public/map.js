@@ -3,19 +3,34 @@
  * Клік по карті — рух; рядок моба з посиланням — /battle.html?spawnId=…; клік по маркеру — те саме.
  */
 (function () {
-  /** Як BATTLE_RANGE у server/src/domain/battle.ts. */
-  var MAP_BATTLE_RANGE_UNITS = 28000;
-  /** Як MAP_NEARBY_LIST_RADIUS у server/src/data/mapWorldSpawns.ts — список «моби поруч». */
-  var MAP_NEARBY_LIST_RADIUS = 26000;
-  /** Як MAP_NEARBY_HERO_RADIUS — інші гравці на карті (менший радіус). */
-  var MAP_NEARBY_HERO_RADIUS = 12000;
+  /** Canonical radii з GET /game/map/sync (mapRadii DTO). */
+  var serverMapRadii = {
+    mobInteractionRadius: null,
+    playerVisibilityRadius: null,
+  };
   var MOBS_PER_PAGE = 15;
   var mobListPage = 0;
   var mobDetailPage = 0;
   var MAP_SNAPSHOT_CACHE_KEY = 'l2-map-snapshot-cache-v1';
 
-  function $(id) {
-    return document.getElementById(id);
+  function applyMapRadiiFromSync(sync) {
+    if (!sync || !sync.mapRadii) return;
+    var mobR = Number(sync.mapRadii.mobInteractionRadius);
+    var heroR = Number(sync.mapRadii.playerVisibilityRadius);
+    if (Number.isFinite(mobR) && mobR > 0) {
+      serverMapRadii.mobInteractionRadius = mobR;
+    }
+    if (Number.isFinite(heroR) && heroR > 0) {
+      serverMapRadii.playerVisibilityRadius = heroR;
+    }
+  }
+
+  function mobInteractionRadiusUnits() {
+    return serverMapRadii.mobInteractionRadius;
+  }
+
+  function playerVisibilityRadiusUnits() {
+    return serverMapRadii.playerVisibilityRadius;
   }
 
   function readCachedMapSnapshot() {
@@ -637,9 +652,13 @@
       pin.className = 'l2-map-hero-pin';
       if (h.pvpNickColor === 'pk') pin.className += ' l2-map-hero-pin--pk';
       else if (h.pvpNickColor === 'aggressor') pin.className += ' l2-map-hero-pin--aggressor';
+      if (h.isPartyMember) pin.className += ' l2-map-hero-pin--party';
+      if (h.isPartyLeader) pin.className += ' l2-map-hero-pin--party-leader';
       pin.style.left = lx + '%';
       pin.style.top = ly + '%';
       var title = (h.name || '—') + (h.level ? ' · ур. ' + h.level : '');
+      if (h.isPartyMember) title += ' · Паті';
+      if (h.isPartyLeader) title += ' · Лідер';
       pin.setAttribute('aria-label', title);
       pin.title = title;
       pin.dataset.characterId = h.characterId || '';
@@ -735,7 +754,9 @@
     if (!Number.isFinite(plx) || !Number.isFinite(ply)) return null;
     var dx = plx - px;
     var dy = ply - py;
-    var r2 = MAP_NEARBY_HERO_RADIUS * MAP_NEARBY_HERO_RADIUS;
+    var heroR = playerVisibilityRadiusUnits();
+    if (!Number.isFinite(heroR) || heroR <= 0) return null;
+    var r2 = heroR * heroR;
     if (dx * dx + dy * dy > r2) return null;
     return mammon;
   }
@@ -965,13 +986,51 @@
     updateMobPager(pagerEl, prevBtn, nextBtn, indEl, p, pages, total);
   }
 
+  function renderPartyNearbyBlock(members, blockEl) {
+    if (!blockEl) return;
+    var list = members && members.length ? members : [];
+    var sig = list.map(function (m) {
+      return String(m.characterId || '') + ':' + String(m.name || '');
+    }).join('|');
+    if (blockEl.dataset.l2PartyNearbySig === sig) {
+      blockEl.hidden = !list.length;
+      return;
+    }
+    blockEl.dataset.l2PartyNearbySig = sig;
+    blockEl.hidden = !list.length;
+    while (blockEl.firstChild) blockEl.removeChild(blockEl.firstChild);
+    if (!list.length) return;
+    var label = document.createElement('span');
+    label.className = 'l2-map-party-nearby__label';
+    label.textContent = 'У локації з вами:';
+    blockEl.appendChild(label);
+    var names = document.createElement('span');
+    names.className = 'l2-map-party-nearby__names';
+    names.textContent = list
+      .map(function (m) {
+        return String(m.name || '—');
+      })
+      .join(', ');
+    blockEl.appendChild(names);
+  }
+
   function render(c, img, dot, viewRadiusEl, heroViewRadiusEl, moveTargetEl, viewport, around, centerOnPlayer) {
     if (!c) return;
     var wx = num(c.worldX, 83400);
     var wy = num(c.worldY, 147943);
     placeDot(img, dot, wx, wy);
-    placeViewRadius(img, viewRadiusEl, wx, wy, MAP_NEARBY_LIST_RADIUS);
-    placeViewRadius(img, heroViewRadiusEl, wx, wy, MAP_NEARBY_HERO_RADIUS);
+    var mobR = mobInteractionRadiusUnits();
+    var heroR = playerVisibilityRadiusUnits();
+    if (Number.isFinite(mobR) && mobR > 0) {
+      placeViewRadius(img, viewRadiusEl, wx, wy, mobR);
+    } else if (viewRadiusEl) {
+      viewRadiusEl.style.display = 'none';
+    }
+    if (Number.isFinite(heroR) && heroR > 0) {
+      placeViewRadius(img, heroViewRadiusEl, wx, wy, heroR);
+    } else if (heroViewRadiusEl) {
+      heroViewRadiusEl.style.display = 'none';
+    }
     var tgx = c.targetX != null ? Number(c.targetX) : 0;
     var tgy = c.targetY != null ? Number(c.targetY) : 0;
     var hasTarget = Number.isFinite(tgx) && Number.isFinite(tgy) && (tgx !== 0 || tgy !== 0);
@@ -1016,6 +1075,7 @@
     var dungeonEnterLabel = $('map-dungeon-enter-label');
     var heroMarkersLayer = $('map-hero-markers');
     var heroSection = $('map-hero-section');
+    var partyNearbyBlock = $('map-party-nearby');
     var heroList = $('map-hero-list');
     var moveTarget = $('map-move-target');
     var markersLayer = $('map-mob-markers');
@@ -1200,6 +1260,8 @@
       opts = opts || {};
       if (!sync || !sync.mapState) return false;
 
+      applyMapRadiiFromSync(sync);
+
       if (typeof sync.mapCatalogVersion === 'number') {
         lastMapCatalogVersion = Math.floor(sync.mapCatalogVersion);
       }
@@ -1233,6 +1295,7 @@
         if (sync.around) {
           aroundData = Object.assign({}, aroundData || {}, {
             nearbyHeroes: sync.around.nearbyHeroes || [],
+            partyNearbyMembers: sync.around.partyNearbyMembers || [],
           });
         }
         applyPvpIncomingFromSync(sync);
@@ -1242,6 +1305,12 @@
         }
         renderHeroList(aroundData, heroList, heroSection);
         renderHeroMarkers(img, heroMarkersLayer, (aroundData && aroundData.nearbyHeroes) || []);
+        renderPartyNearbyBlock(
+          aroundData && aroundData.partyNearbyMembers
+            ? aroundData.partyNearbyMembers
+            : [],
+          partyNearbyBlock
+        );
         renderNpcMarker(img, npcMarkersLayer, mammonMerchant);
         renderDungeonEntrance(img, dungeonEntrance);
         if (listMode === 'npc') {
@@ -1307,6 +1376,10 @@
       render(c, img, dot, viewRadius, heroViewRadius, moveTarget, viewport, aroundData, centerOnPlayer);
       renderHeroList(aroundData, heroList, heroSection);
       renderHeroMarkers(img, heroMarkersLayer, aroundData.nearbyHeroes || []);
+      renderPartyNearbyBlock(
+        aroundData && aroundData.partyNearbyMembers ? aroundData.partyNearbyMembers : [],
+        partyNearbyBlock
+      );
       renderNpcMarker(img, npcMarkersLayer, mammonMerchant);
       renderDungeonEntrance(img, dungeonEntrance);
       if (listMode === 'npc') {

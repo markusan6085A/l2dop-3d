@@ -461,9 +461,27 @@
   }
 
   /** Рядок підсумку на екрані перемоги у компактному текстовому форматі. */
-  function fillVictoryLootLine(el, victory) {
+  function fillVictoryLootLine(el, victory, partyReward) {
     if (!el || !victory) return;
     el.className = 'l2-battle-victory-notify__loot';
+    if (partyReward && partyReward.shared) {
+      el.textContent =
+        'Нагороду поділено між ' +
+        String(partyReward.recipientCount) +
+        ' учасниками паті. Ваша частка: +' +
+        String(partyReward.expGain) +
+        ' ' +
+        tr('battle_exp_abbr', 'EXP') +
+        ', +' +
+        String(partyReward.spGain) +
+        ' ' +
+        tr('battle_sp_abbr', 'SP') +
+        ', +' +
+        String(partyReward.adenaGain) +
+        tr('battle_loot_adena', ' аден') +
+        '.';
+      return;
+    }
     el.textContent =
       tr('battle_victory_dropped', 'Випало: ') +
       '+' +
@@ -1620,6 +1638,7 @@
     var BATTLE_SYNC_MS = 5000;
     var lastBattleVisualSig = '';
     var lastBattleVersion = 0;
+    var lastPartyBattleDto = null;
     var lastBattleLogSeq = 0;
     /** serverNowMs - Date.now() — для розрахунку cooldown без локального drift. */
     var serverTimeOffsetMs = 0;
@@ -2217,7 +2236,11 @@
           if (typeof st.logSeq === 'number') {
             lastBattleLogSeq = Math.floor(st.logSeq);
           }
-          if (battle && (st.mobHp != null || st.mobMaxHp != null)) {
+          if (st.partyBattle) {
+          lastPartyBattleDto = st.partyBattle;
+          renderPartyBattleMembers(lastPartyBattleDto);
+        }
+        if (battle && (st.mobHp != null || st.mobMaxHp != null)) {
             refreshBattleUI(false);
           }
           return false;
@@ -2230,6 +2253,10 @@
           return syncBattleFromServerFull();
         }
         applyBattleDelta(st);
+        if (st.partyBattle) {
+          lastPartyBattleDto = st.partyBattle;
+          renderPartyBattleMembers(lastPartyBattleDto);
+        }
         if (checkPvpDefeatFromCharacter(character)) {
           stopBattleSyncPoll();
           return true;
@@ -2486,7 +2513,7 @@
       }
       if (outcome === 'pvp_defeat') return;
       if (outcome === 'victory') {
-        await handleVictoryOutcome(res.victory);
+        await handleVictoryOutcome(res.victory, res.partyReward);
         return;
       }
       if (outcome === 'defeat') {
@@ -2907,7 +2934,7 @@
         }
         if (outcome === 'pvp_defeat') return;
         if (outcome === 'victory') {
-          await handleVictoryOutcome(res.victory);
+          await handleVictoryOutcome(res.victory, res.partyReward);
           return;
         }
         if (outcome === 'defeat') {
@@ -3164,7 +3191,7 @@
       }
     }
 
-    async function handleVictoryOutcome(victory) {
+    async function handleVictoryOutcome(victory, partyReward) {
       clearLocalBattleStateAfterVictory();
       clearDefeatFromSession();
       renderPlayerBars(character);
@@ -3176,10 +3203,10 @@
           mobHp: 0,
         });
       }
-      showVictoryScreen(victory);
+      showVictoryScreen(victory, partyReward);
     }
 
-    function showVictoryScreen(victory) {
+    function showVictoryScreen(victory, partyReward) {
       lastVictorySummary = victory || null;
       saveVictoryToSession(victory);
       var active = $('battle-active-root');
@@ -3217,7 +3244,7 @@
       }
       var lootLine = $('battle-victory-lootline');
       if (lootLine && victory) {
-        fillVictoryLootLine(lootLine, victory);
+        fillVictoryLootLine(lootLine, victory, partyReward);
       }
       var vlog = $('battle-victory-log');
       if (vlog && victory && victory.fullLog) {
@@ -3341,9 +3368,152 @@
       }
     }
 
+    function partyMemberStatusUk(member) {
+      if (member.dead) return 'Загинув';
+      if (!member.online) return 'Не в мережі';
+      if (!member.nearby) return 'Далеко';
+      if (!member.activeInBattle) return 'Не в бою';
+      return '';
+    }
+
+    function partyBuffLimit() {
+      return window.matchMedia && window.matchMedia('(min-width: 520px)').matches
+        ? 6
+        : 4;
+    }
+
+    function renderPartyBattleMembers(dto) {
+      var panel = $('battle-party-panel');
+      var list = $('battle-party-members');
+      if (!panel || !list) return;
+      if (!dto || !dto.members || !dto.members.length) {
+        panel.hidden = true;
+        list.innerHTML = '';
+        return;
+      }
+      panel.hidden = false;
+      var sig = JSON.stringify(dto.members);
+      if (list.dataset.l2PartyBattleSig === sig) return;
+      list.dataset.l2PartyBattleSig = sig;
+      list.innerHTML = '';
+      var buffMax = partyBuffLimit();
+      for (var mi = 0; mi < dto.members.length; mi++) {
+        var m = dto.members[mi];
+        var li = document.createElement('li');
+        li.className = 'l2-battle-party-member';
+        if (m.dead) li.className += ' l2-battle-party-member--dead';
+        else if (!m.online) li.className += ' l2-battle-party-member--offline';
+        else if (!m.nearby) li.className += ' l2-battle-party-member--far';
+
+        var head = document.createElement('div');
+        head.className = 'l2-battle-party-member__head';
+        var nameEl = document.createElement('span');
+        nameEl.className = 'l2-battle-party-member__name';
+        nameEl.textContent = String(m.name || '—');
+        nameEl.title = String(m.name || '');
+        head.appendChild(nameEl);
+        var meta = document.createElement('span');
+        meta.className = 'l2-battle-party-member__meta';
+        meta.textContent =
+          'ур. ' + String(m.level != null ? m.level : '?') +
+          (m.isLeader ? ' ★' : '');
+        head.appendChild(meta);
+        li.appendChild(head);
+
+        var status = partyMemberStatusUk(m);
+        if (status) {
+          var stEl = document.createElement('span');
+          stEl.className = 'l2-battle-party-member__status';
+          stEl.textContent = status;
+          li.appendChild(stEl);
+        }
+
+        var bars = document.createElement('div');
+        bars.className = 'l2-battle-party-member__bars';
+        bars.appendChild(
+          buildPartyMemberBar(
+            'HP',
+            Number(m.hp) || 0,
+            Number(m.maxHp) || 1,
+            'hp'
+          )
+        );
+        bars.appendChild(
+          buildPartyMemberBar(
+            'MP',
+            Number(m.mp) || 0,
+            Number(m.maxMp) || 1,
+            'mp'
+          )
+        );
+        li.appendChild(bars);
+
+        if (m.buffIcons && m.buffIcons.length) {
+          var buffs = document.createElement('div');
+          buffs.className =
+            'l2-battle-party-member__buffs' +
+            (buffMax >= 6 ? ' l2-battle-party-member__buffs--wide' : '');
+          var shown = 0;
+          for (var bi = 0; bi < m.buffIcons.length && shown < buffMax; bi++) {
+            var b = m.buffIcons[bi];
+            var img = document.createElement('img');
+            img.className = 'l2-battle-party-member__buff';
+            img.alt = '';
+            img.src =
+              window.L2 && typeof L2.sanitizeClientIconUrl === 'function'
+                ? L2.sanitizeClientIconUrl(String(b.icon || ''))
+                : String(b.icon || '/icons/drops/other.svg');
+            img.title =
+              String(b.name || '') +
+              (b.remainingSeconds > 0
+                ? ' · ' + String(b.remainingSeconds) + 'с'
+                : '');
+            buffs.appendChild(img);
+            shown++;
+          }
+          var overflow = Math.max(
+            0,
+            (Number(m.buffOverflow) || 0) +
+              Math.max(0, (m.buffIcons.length || 0) - shown)
+          );
+          if (overflow > 0) {
+            var more = document.createElement('span');
+            more.className = 'l2-battle-party-member__buff-more';
+            more.textContent = '+' + String(overflow);
+            buffs.appendChild(more);
+          }
+          li.appendChild(buffs);
+        }
+
+        list.appendChild(li);
+      }
+    }
+
+    function buildPartyMemberBar(label, cur, max, kind) {
+      var row = document.createElement('div');
+      row.className = 'l2-battle-party-member__bar-row';
+      var lbl = document.createElement('span');
+      lbl.className = 'l2-battle-party-member__bar-lbl';
+      lbl.textContent = label;
+      row.appendChild(lbl);
+      var outer = document.createElement('div');
+      outer.className = 'l2-battle-party-member__bar-outer';
+      var inner = document.createElement('div');
+      inner.className =
+        'l2-battle-party-member__bar-inner l2-battle-party-member__bar-inner--' +
+        kind;
+      var pct =
+        max > 0 ? Math.max(0, Math.min(100, Math.round((cur / max) * 100))) : 0;
+      inner.style.width = pct + '%';
+      outer.appendChild(inner);
+      row.appendChild(outer);
+      return row;
+    }
+
     function refreshUI() {
       renderPlayerBars(character);
       renderMobAndLog(battle);
+      renderPartyBattleMembers(lastPartyBattleDto);
       var skillsBox = $('battle-skills');
       if (
         battle &&
