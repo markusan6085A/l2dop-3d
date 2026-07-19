@@ -3140,6 +3140,13 @@
       el.appendChild(lvl);
     }
 
+    function setMobCombatChromeVisible(visible) {
+      var title = $('battle-mob-title');
+      var bars = document.querySelector('.l2-battle-mob-bars');
+      if (title) title.hidden = !visible;
+      if (bars) bars.hidden = !visible;
+    }
+
     function hideVictoryInline() {
       var inline = $('battle-victory-inline');
       if (inline) inline.hidden = true;
@@ -3160,6 +3167,7 @@
       if (skillsBox) skillsBox.classList.remove('l2-battle-skills--victory-locked');
       var vicRoot = $('battle-victory-root');
       if (vicRoot) vicRoot.hidden = true;
+      setMobCombatChromeVisible(true);
     }
 
     function applyVictoryMobPanelFromSummary(victory) {
@@ -3363,6 +3371,7 @@
       }
       var skillsBox = $('battle-skills');
       if (skillsBox) skillsBox.classList.add('l2-battle-skills--victory-locked');
+      setMobCombatChromeVisible(false);
       refreshUI();
     }
 
