@@ -1,8 +1,8 @@
-/** Емблеми без файлу в `server/public/clans-emblems/` (37 шт. загалом). */
-export const CLAN_EMBLEM_GAP_IDS = [36, 38, 39] as const;
+/** Емблеми клану: `server/public/clans-emblems/<id>.jpg` (1…76). */
+export const CLAN_EMBLEM_GAP_IDS = [] as const;
 
 export const CLAN_EMBLEM_MIN_ID = 1;
-export const CLAN_EMBLEM_MAX_ID = 40;
+export const CLAN_EMBLEM_MAX_ID = 76;
 export const CLAN_EMBLEM_COUNT =
   CLAN_EMBLEM_MAX_ID - CLAN_EMBLEM_MIN_ID + 1 - CLAN_EMBLEM_GAP_IDS.length;
 
@@ -30,7 +30,7 @@ export function isValidClanEmblemId(raw: number): boolean {
 }
 
 export function clanEmblemPublicUrl(emblemId: number): string {
-  return `/clans-emblems/${Math.floor(emblemId)}.png`;
+  return `/clans-emblems/${Math.floor(emblemId)}.jpg`;
 }
 
 export function parseClanEmblemId(raw: unknown): ParsedClanEmblemId {

@@ -2507,24 +2507,28 @@
         if (!global.L2.isValidClanEmblemId(Number(emblemId))) return null;
       } else {
         var n = Number(emblemId);
-        if (!Number.isInteger(n) || n < 1 || n > 40) return null;
+        if (!Number.isInteger(n) || n < 1 || n > 76) return null;
       }
-      return '/clans-emblems/' + Math.floor(Number(emblemId)) + '.png';
+      return '/clans-emblems/' + Math.floor(Number(emblemId)) + '.jpg';
     },
 
-    /** 37 емблем: id 1–35, 37, 40 (немає 36, 38, 39). */
+    /** 76 емблем: id 1–76. */
     isValidClanEmblemId: function (emblemId) {
       var n = Number(emblemId);
-      if (!Number.isInteger(n) || n < 1 || n > 40) return false;
-      return n !== 36 && n !== 38 && n !== 39;
+      return Number.isInteger(n) && n >= 1 && n <= 76;
     },
 
     listClanEmblemIds: function () {
       var ids = [];
-      for (var id = 1; id <= 40; id++) {
+      for (var id = 1; id <= 76; id++) {
         if (global.L2.isValidClanEmblemId(id)) ids.push(id);
       }
       return ids;
+    },
+
+    clanEmblemPickerPerPage: function (total) {
+      var count = Math.max(1, Math.floor(Number(total) || 76));
+      return Math.ceil(count / 3);
     },
 
     createClanEmblemElement: function (emblemId, sizePx) {
@@ -2601,40 +2605,110 @@
           : null;
       var size = opts.size || 40;
       container.innerHTML = '';
-      container.className = 'l2-clan-emblem-picker';
+      container.className = 'l2-clan-emblem-picker-wrap';
       var emblemIds =
         typeof global.L2.listClanEmblemIds === 'function'
           ? global.L2.listClanEmblemIds()
           : [];
       if (!emblemIds.length) {
-        for (var fallbackId = 1; fallbackId <= 40; fallbackId++) {
+        for (var fallbackId = 1; fallbackId <= 76; fallbackId++) {
           if (global.L2.isValidClanEmblemId(fallbackId)) emblemIds.push(fallbackId);
         }
       }
-      for (var idx = 0; idx < emblemIds.length; idx++) {
-        (function (emblemId) {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'l2-clan-emblem-picker__btn';
-          if (selected === emblemId) {
-            btn.className += ' l2-clan-emblem-picker__btn--selected';
-          }
-          btn.setAttribute('data-emblem-id', String(emblemId));
-          btn.setAttribute('aria-label', 'Емблема ' + emblemId);
-          var img = global.L2.createClanEmblemElement(emblemId, size);
-          if (img) btn.appendChild(img);
-          btn.addEventListener('click', function () {
-            container
-              .querySelectorAll('.l2-clan-emblem-picker__btn--selected')
-              .forEach(function (el) {
-                el.classList.remove('l2-clan-emblem-picker__btn--selected');
-              });
-            btn.classList.add('l2-clan-emblem-picker__btn--selected');
-            if (typeof opts.onSelect === 'function') opts.onSelect(emblemId);
-          });
-          container.appendChild(btn);
-        })(emblemIds[idx]);
+      var perPage =
+        opts.perPage != null && Number.isFinite(Number(opts.perPage))
+          ? Math.max(8, Math.floor(Number(opts.perPage)))
+          : global.L2.clanEmblemPickerPerPage(emblemIds.length);
+      var totalPages = Math.max(1, Math.ceil(emblemIds.length / perPage));
+      var currentPage = 0;
+      if (selected != null) {
+        var selIdx = emblemIds.indexOf(selected);
+        if (selIdx >= 0) currentPage = Math.floor(selIdx / perPage);
       }
+
+      var grid = document.createElement('div');
+      grid.className = 'l2-clan-emblem-picker';
+      grid.setAttribute('role', 'listbox');
+      grid.setAttribute('aria-label', 'Обери емблему');
+      container.appendChild(grid);
+
+      var nav =
+        totalPages > 1
+          ? document.createElement('div')
+          : null;
+      var prevBtn = null;
+      var nextBtn = null;
+      var pageLabel = null;
+      if (nav) {
+        nav.className = 'l2-clan-emblem-picker-nav';
+        prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'l2-clan-emblem-picker-nav__btn';
+        prevBtn.textContent = '← Назад';
+        pageLabel = document.createElement('span');
+        pageLabel.className = 'l2-clan-emblem-picker-nav__label';
+        nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'l2-clan-emblem-picker-nav__btn';
+        nextBtn.textContent = 'Далі →';
+        nav.appendChild(prevBtn);
+        nav.appendChild(pageLabel);
+        nav.appendChild(nextBtn);
+        container.appendChild(nav);
+      }
+
+      function renderPage(page) {
+        currentPage = Math.max(0, Math.min(totalPages - 1, page));
+        grid.innerHTML = '';
+        var start = currentPage * perPage;
+        var end = Math.min(start + perPage, emblemIds.length);
+        for (var idx = start; idx < end; idx++) {
+          (function (emblemId) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'l2-clan-emblem-picker__btn';
+            if (selected === emblemId) {
+              btn.className += ' l2-clan-emblem-picker__btn--selected';
+            }
+            btn.setAttribute('data-emblem-id', String(emblemId));
+            btn.setAttribute('aria-label', 'Емблема ' + emblemId);
+            btn.setAttribute('role', 'option');
+            btn.setAttribute('aria-selected', selected === emblemId ? 'true' : 'false');
+            var img = global.L2.createClanEmblemElement(emblemId, size);
+            if (img) btn.appendChild(img);
+            btn.addEventListener('click', function () {
+              selected = emblemId;
+              grid
+                .querySelectorAll('.l2-clan-emblem-picker__btn')
+                .forEach(function (el) {
+                  el.classList.remove('l2-clan-emblem-picker__btn--selected');
+                  el.setAttribute('aria-selected', 'false');
+                });
+              btn.classList.add('l2-clan-emblem-picker__btn--selected');
+              btn.setAttribute('aria-selected', 'true');
+              if (typeof opts.onSelect === 'function') opts.onSelect(emblemId);
+            });
+            grid.appendChild(btn);
+          })(emblemIds[idx]);
+        }
+        if (nav && prevBtn && nextBtn && pageLabel) {
+          pageLabel.textContent =
+            'Сторінка ' + (currentPage + 1) + ' з ' + totalPages;
+          prevBtn.disabled = currentPage <= 0;
+          nextBtn.disabled = currentPage >= totalPages - 1;
+        }
+      }
+
+      if (nav && prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', function () {
+          if (currentPage > 0) renderPage(currentPage - 1);
+        });
+        nextBtn.addEventListener('click', function () {
+          if (currentPage < totalPages - 1) renderPage(currentPage + 1);
+        });
+      }
+
+      renderPage(currentPage);
     },
 
     createPlayerProfileNickEl: function (opts) {

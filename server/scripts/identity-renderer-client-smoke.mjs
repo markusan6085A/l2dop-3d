@@ -254,7 +254,7 @@ const emblemImgs = collectByTag(withEmblem, 'img');
 const nickLinks = collectByTag(withEmblem, 'a');
 assert.equal(emblemImgs.length, 1);
 assert.equal(nickLinks.length, 1);
-assert.equal(emblemImgs[0].src, '/clans-emblems/7.png');
+assert.equal(emblemImgs[0].src, '/clans-emblems/7.jpg');
 assert.equal(nickLinks[0].classList.contains('nick-extra'), true);
 assert.equal(nickLinks[0].classList.contains('wrap-test'), false);
 
@@ -342,10 +342,16 @@ assert.equal(legacyNick.tagName, 'span');
 assert.equal(legacyNick.classList.contains('legacy-nick'), true);
 assert.equal(collectByTag(legacyNick, 'img').length, 0);
 
-// Picker mounts 40 emblem buttons.
+// Picker paginates emblem buttons (~3 pages for 76).
 const pickerHost = document.createElement('div');
 L2.mountClanEmblemPicker(pickerHost, { selectedId: 5, size: 32 });
-assert.equal(pickerHost.querySelectorAll('.l2-clan-emblem-picker__btn').length, 37);
+assert.equal(L2.listClanEmblemIds().length, 76);
+assert.equal(L2.clanEmblemPickerPerPage(76), 26);
+assert.equal(
+  pickerHost.querySelectorAll('.l2-clan-emblem-picker__btn').length,
+  26
+);
+assert.ok(pickerHost.querySelector('.l2-clan-emblem-picker-nav'));
 assert.equal(
   pickerHost.querySelector('.l2-clan-emblem-picker__btn--selected').getAttribute(
     'data-emblem-id'

@@ -1,4 +1,4 @@
-/* Централізовані розміри емблем клану (emblemId → /clans-emblems/<id>.png). */
+/* Централізовані розміри емблем клану (emblemId → /clans-emblems/<id>.jpg). */
 .l2-clan-emblem-inline,
 .clan-emblem-inline {
   width: 16px;
@@ -40,11 +40,46 @@
   color: var(--l2-nick-color, #bfa88a);
 }
 
+.l2-clan-emblem-picker-wrap {
+  margin: 8px 0 12px;
+}
+
 .l2-clan-emblem-picker {
   display: grid;
   grid-template-columns: repeat(8, 40px);
   gap: 4px;
-  margin: 8px 0 12px;
+  margin: 0;
+}
+
+.l2-clan-emblem-picker-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #bfa88a;
+}
+
+.l2-clan-emblem-picker-nav__btn {
+  padding: 4px 10px;
+  border: 1px solid #5a4a32;
+  background: #1a140c;
+  color: #d4c4a8;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.l2-clan-emblem-picker-nav__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.l2-clan-emblem-picker-nav__label {
+  min-width: 7em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .l2-clan-emblem-picker__btn {

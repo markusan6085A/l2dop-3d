@@ -163,26 +163,23 @@ async function main(): Promise<void> {
   if (parseClanEmblemId(1).ok) assert.equal(parseClanEmblemId(1).emblemId, 1);
   ok('Clan.emblemId accepts 1');
 
-  assert.equal(parseClanEmblemId(40).ok, true);
-  ok('Clan.emblemId accepts 40');
+  assert.equal(parseClanEmblemId(76).ok, true);
+  ok('Clan.emblemId accepts 76');
 
-  assert.equal(parseClanEmblemId(36).ok, false);
-  ok('gap id 36 blocked');
+  assert.equal(parseClanEmblemId(77).ok, false);
+  ok('value 77 blocked');
 
   assert.equal(parseClanEmblemId(0).ok, false);
   ok('value 0 blocked');
 
-  assert.equal(parseClanEmblemId(41).ok, false);
-  ok('value 41 blocked');
-
   assert.equal(parseClanEmblemId(1.5).ok, false);
   ok('non-integer blocked');
 
-  assert.equal(clanEmblemPublicUrl(7), '/clans-emblems/7.png');
+  assert.equal(clanEmblemPublicUrl(7), '/clans-emblems/7.jpg');
   ok('emblem URL for id 7');
 
-  assert.equal(listClanEmblemIds().length, 37);
-  ok('catalog has 37 emblem ids');
+  assert.equal(listClanEmblemIds().length, 76);
+  ok('catalog has 76 emblem ids');
 
   const leader = await createUserWithClan('L', 3);
   const member = await createUserWithClan('M', null);
