@@ -19,6 +19,39 @@ export function isPvpBattleJson(bj: BattleJsonState): boolean {
   return bj.battleMode === 'pvp' && !!bj.pvpTargetCharacterId;
 }
 
+/** Canonical PvP victory payload fields (server → client). */
+export function buildPvpVictoryCanonicalFields(st: BattleJsonState): {
+  isPvp: true;
+  battleType: 'pvp';
+  defeatedCharacterId: string;
+} {
+  return {
+    isPvp: true,
+    battleType: 'pvp',
+    defeatedCharacterId: String(st.pvpTargetCharacterId || '').trim(),
+  };
+}
+
+/** Надійна перевірка PvP-перемоги (не покладатися лише на spawnId у кеші). */
+export function isPvpVictoryPayload(
+  v:
+    | {
+        isPvp?: boolean;
+        battleType?: string;
+        spawnId?: string;
+      }
+    | null
+    | undefined
+): boolean {
+  if (!v) return false;
+  if (v.isPvp === true || v.battleType === 'pvp') return true;
+  return parsePvpTargetIdFromSpawnId(String(v.spawnId || '')) != null;
+}
+
+export function isPvpSpawnId(spawnId: string | null | undefined): boolean {
+  return parsePvpTargetIdFromSpawnId(String(spawnId || '')) != null;
+}
+
 /** Мета цілі бою для UI / логу (моб або гравець). */
 export interface BattleSpawnMeta {
   spawnId: string;

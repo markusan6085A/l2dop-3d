@@ -289,6 +289,8 @@ export async function persistBattleVictoryInTx(
     mobName: spawn.name,
     mobLevel: spawn.level,
     aggressive: spawn.aggressive,
+    isPvp: false,
+    battleType: 'pve',
     fullLog: log.map((x) => String(x)),
     adenaGain: adenaGainTotal.toString(),
     expGain: (

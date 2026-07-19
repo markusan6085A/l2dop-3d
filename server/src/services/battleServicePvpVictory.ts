@@ -24,7 +24,10 @@ import {
   type CharacterRow,
   type CharacterSnapshot,
 } from './charService.js';
-import type { BattleSpawnMeta } from '../domain/battlePvpContext.js';
+import {
+  buildPvpVictoryCanonicalFields,
+  type BattleSpawnMeta,
+} from '../domain/battlePvpContext.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -198,12 +201,13 @@ export async function persistPvpVictoryInTx(
   if (!result.ok) throw gameConflictFromMutation(result);
 
   const snap = toSnapshot(result.character as CharacterRow);
+  const pvpVictory = buildPvpVictoryCanonicalFields(st);
   const victory: BattleVictorySummary = {
     spawnId: st.spawnId,
     mobName: spawn.name,
     mobLevel: spawn.level,
     aggressive: spawn.aggressive,
-    isPvp: true,
+    ...pvpVictory,
     fullLog: trimmedLog,
     adenaGain: '0',
     expGain: '0',

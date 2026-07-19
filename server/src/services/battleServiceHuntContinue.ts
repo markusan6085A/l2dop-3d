@@ -4,6 +4,11 @@ import {
   GameConflictError,
   type CharacterRow,
 } from './charService.js';
+import {
+  isPvpBattleJson,
+  isPvpSpawnId,
+} from '../domain/battlePvpContext.js';
+import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 import { findCharacterForUserInTx } from './charResolveForUser.js';
 import { HUNT_LEVEL_TOLERANCE } from '../domain/battleHuntChain.js';
@@ -53,6 +58,10 @@ export async function startHuntContinueBattle(
     Math.min(10, Math.floor(levelTolerance ?? HUNT_LEVEL_TOLERANCE))
   );
 
+  if (isPvpSpawnId(excludeSpawnId) || isPvpSpawnId(preferredSpawnId)) {
+    throw new Error('battle_hunt_not_available_for_pvp');
+  }
+
   return prisma.$transaction(async (tx) => {
     const row = await findCharacterForUserInTx(tx, userId, {
       characterId: opts?.characterId,
@@ -60,6 +69,10 @@ export async function startHuntContinueBattle(
     if (!row) throw new Error('no_character');
 
     const base = resolveMapMovement(applyPassiveHpRegen(row as CharacterRow));
+    const activeBj = parseBattleJson(base.battleJson);
+    if (activeBj && isPvpBattleJson(activeBj)) {
+      throw new Error('battle_hunt_not_available_for_pvp');
+    }
     const nowMs = Date.now();
     const huntLevel = resolveHuntTargetLevel(targetLevel, excludeSpawnId);
     const candidates = resolveHuntCandidatesForCharacter(base, {
