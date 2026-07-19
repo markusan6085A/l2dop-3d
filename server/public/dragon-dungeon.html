@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Підземелля драконів — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
+    <link rel="stylesheet" href="/css/l2-dragon-dungeon.css?v=20260719dragonDungeon1" />
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-dragon-dungeon l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-city-root">
+          <div class="l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="dragon-dungeon-err" hidden></p>
+            <p class="l2-dragon-dungeon-ok" id="dragon-dungeon-ok" hidden></p>
+
+            <section class="l2-dragon-dungeon-main" aria-label="Підземелля драконів">
+              <p class="l2-dragon-dungeon-title">Підземелля драконів</p>
+              <p class="l2-dragon-dungeon-diamonds">
+                Ваші алмази: <span id="dragon-dungeon-diamonds">0</span>
+              </p>
+              <div id="dragon-dungeon-list" class="l2-dragon-dungeon-list"></div>
+              <p class="l2-dragon-dungeon-back">
+                <a class="l2-dragon-dungeon-back__link" href="/menu.html">&lt;&lt; Назад до меню</a>
+              </p>
+            </section>
+
+            <div id="l2-foot-links"></div>
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
+    <script src="/l2-nav.js?v=20260718layoutStable2"></script>
+    <script src="/dragon-dungeon.js?v=20260719dragonDungeon1"></script>
+  </body>
+</html>

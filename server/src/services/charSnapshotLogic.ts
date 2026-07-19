@@ -426,6 +426,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     gender: row.gender === 'female' ? 'female' : 'male',
     l2Profession: l2ProfResolved,
     adena: row.adena.toString(),
+    diamonds: Math.max(0, Math.floor(Number(row.diamonds) || 0)),
     exp: row.exp.toString(),
     expBarCur: expSeg.cur.toString(),
     expBarMax: expSeg.max.toString(),

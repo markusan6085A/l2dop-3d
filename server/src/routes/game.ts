@@ -13,6 +13,7 @@ import { registerGameNewsRoutes } from './gameNewsRoutes.js';
 import { registerClanRoutes } from './clanRoutes.js';
 import { registerClanSiegeRoutes } from './clanSiegeRoutes.js';
 import { registerPartyRoutes } from './partyRoutes.js';
+import { registerDragonDungeonRoutes } from './dragonDungeonRoutes.js';
 
 export const gameRoutes: FastifyPluginAsync = async (app) => {
   registerGameIconRoutes(app);
@@ -26,6 +27,7 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
   registerClanRoutes(app);
   registerClanSiegeRoutes(app);
   registerPartyRoutes(app);
+  registerDragonDungeonRoutes(app);
   await app.register(marketReadRoutes);
   registerGameChatRoutes(app);
   registerGamePlayerRoutes(app);

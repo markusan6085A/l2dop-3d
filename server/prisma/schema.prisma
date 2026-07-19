@@ -30,6 +30,8 @@ model Character {
   /** human_fighter → гілки 1–3 профи (rogue→hawkeye|th→sagittarius|adventurer; scout→hawkeye тощо) */
   l2Profession String  @default("human_fighter")
   adena      BigInt   @default(0)
+  /** Преміум-валюта персонажа (алмази) — підземелля драконів тощо. */
+  diamonds   Int      @default(0)
   /** Накопичений досвід (як у l2dop / lineage npc.exp за кілл) */
   exp        BigInt   @default(0)
   /** Накопичені очки вмінь (npc.sp) */
@@ -126,9 +128,22 @@ model Character {
   partyBattleParticipants PartyBattleParticipant[]
   clanSiegeParticipations ClanSiegeParticipant[]
   clanSiegeWallActions    ClanSiegeWallAction[]
+  dragonDungeonUnlocks    CharacterDragonDungeonUnlock[]
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
+}
+
+/** Відкриті дракони в «Підземеллі драконів» (green | blue | red). */
+model CharacterDragonDungeonUnlock {
+  id          String   @id @default(cuid())
+  characterId String
+  dragonId    String
+  unlockedAt  DateTime @default(now())
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, dragonId])
+  @@index([characterId])
 }
 
 /** Група до 5 гравців (лідер + 4). Соціальний стан — partyVersion, не Character.revision. */

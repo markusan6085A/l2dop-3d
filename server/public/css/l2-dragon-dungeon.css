@@ -1,0 +1,139 @@
+/* dragon-dungeon.html — Підземелля драконів */
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-main {
+  padding: 0 10px 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-title {
+  margin: 0 0 8px;
+  font-family: var(--l2-font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #d4923a;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-diamonds {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e8e0d4;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card {
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__img-wrap {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__img {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid #3a342c;
+  background: #1a1612;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__name {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e8e0d4;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__subtitle {
+  margin: 0 0 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #bfa88a;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__cost {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: #c8bfb0;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__missing {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: #c88a6a;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__unlocked {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: #6ecf6e;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__btn {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #e8e0d4;
+  background: #2a241c;
+  border: 1px solid #5a4a32;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__btn:hover,
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__btn:focus {
+  border-color: #8a7048;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__enter {
+  display: inline-block;
+  font-size: 11px;
+  color: #bfa88a;
+  text-decoration: none;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__enter:hover,
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__enter:focus {
+  text-decoration: underline;
+  outline: none;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-back {
+  margin: 16px 0 0;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-back__link {
+  font-size: 12px;
+  color: #bfa88a;
+  text-decoration: none;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-ok {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: #6ecf6e;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-ok[hidden],
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__btn[hidden],
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__enter[hidden],
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__missing[hidden],
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__unlocked[hidden] {
+  display: none !important;
+}
