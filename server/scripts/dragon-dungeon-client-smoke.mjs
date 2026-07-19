@@ -18,7 +18,7 @@ const css = fs.readFileSync(path.join(__dirname, '../public/css/l2-dragon-dungeo
 
 assert.match(html, /Підземелля драконів/);
 assert.match(html, /Алмази клану/);
-assert.match(html, /dragon-dungeon-clan-name/);
+assert.match(html, /clan-my\.html/);
 assert.match(html, /dragon-dungeon-active/);
 assert.match(html, /dragon-dungeon-contrib/);
 assert.doesNotMatch(html, /Незабаром/);
@@ -37,9 +37,13 @@ assert.match(bossJs, /\/game\/dragon-dungeon\/active\/attack/);
 assert.match(bossJs, /attackInFlight/);
 assert.doesNotMatch(bossHtml, /наступним етапом/);
 
-assert.match(menuHtml, /href="\/dragon-dungeon\.html"/);
+assert.match(html, /ui-i18n\.js/);
+assert.doesNotMatch(menuHtml, /dragon-dungeon\.html/);
 assert.match(clanMyHtml, /href="\/dragon-dungeon\.html"/);
 assert.doesNotMatch(clanMyHtml, /clan_my_stub_dungeons/);
+
+const cityHtml = fs.readFileSync(path.join(__dirname, '../public/city.html'), 'utf8');
+assert.doesNotMatch(cityHtml, /dragon-dungeon\.html/);
 
 assert.match(css, /l2-dragon-hp-bar/);
 

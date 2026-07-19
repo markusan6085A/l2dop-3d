@@ -180,6 +180,9 @@
     if (window.L2 && typeof L2.mountFootLinkBar === 'function') {
       L2.mountFootLinkBar('l2-foot-links', { inset: true });
     }
+    if (window.L2 && typeof L2.applyPageI18n === 'function') {
+      L2.applyPageI18n(document);
+    }
     state.dungeonId = queryDungeonId();
     var t = localStorage.getItem('token');
     if (!t || !state.dungeonId) {
