@@ -91,22 +91,6 @@
     if (panel) panel.classList.remove('l2-clan-manage-panel--loading');
   }
 
-  function renderCurrentEmblem(emblemId) {
-    var el = $('clan-manage-emblem-current');
-    if (!el) return;
-    el.textContent = '';
-    if (emblemId == null) {
-      el.textContent = 'Не обрана';
-      return;
-    }
-    if (window.L2 && typeof L2.createClanEmblemElement === 'function') {
-      var img = L2.createClanEmblemElement(emblemId, 32);
-      if (img) el.appendChild(img);
-    } else {
-      el.textContent = 'Емблема #' + emblemId;
-    }
-  }
-
   function setEmblemPickerOpen(open) {
     emblemPickerOpen = !!open;
     var picker = $('clan-manage-emblem-picker');
@@ -206,7 +190,6 @@
       }
       if (data.clan) {
         selectedEmblemId = data.clan.emblemId != null ? data.clan.emblemId : null;
-        renderCurrentEmblem(selectedEmblemId);
         setEmblemPickerOpen(false);
         var nameEl = $('clan-manage-name');
         if (nameEl) {
@@ -216,7 +199,7 @@
               L2.renderClanIdentity({
                 name: data.clan.name,
                 emblemId: data.clan.emblemId,
-                emblemSize: 32,
+                emblemSize: 16,
               })
             );
           } else {
@@ -299,7 +282,7 @@
             L2.renderClanIdentity({
               name: clan.name,
               emblemId: clan.emblemId,
-              emblemSize: 32,
+              emblemSize: 16,
             })
           );
         } else {
@@ -308,7 +291,6 @@
       }
       selectedEmblemId = clan.emblemId != null ? clan.emblemId : null;
       applyManageStats(clan);
-      renderCurrentEmblem(selectedEmblemId);
       bindEmblemToggle();
       setEmblemPickerOpen(false);
       var saveBtn = $('clan-manage-emblem-save');
