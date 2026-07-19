@@ -30,6 +30,80 @@
     });
   }
 
+  var SIEGE_CITY_IDS = {
+    l2dop_oren: 1,
+    l2dop_giran: 1,
+    l2dop_aden: 1,
+    l2dop_goddard: 1,
+    l2dop_rune: 1,
+    l2dop_gludio: 1,
+    l2dop_dion: 1,
+    l2dop_schuttgart: 1,
+  };
+
+  function isSiegeCityId(id) {
+    return !!SIEGE_CITY_IDS[String(id || '').trim()];
+  }
+
+  async function applySiegeCityBanner(c) {
+    if (!c || !isSiegeCityId(c.cityId)) return;
+    var nav = document.querySelector('.l2-town-miru-list');
+    if (!nav || document.getElementById('city-siege-link')) return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'l2-town-miru-item l2-town-miru-item--siege';
+    wrap.id = 'city-siege-banner';
+
+    var status = document.createElement('span');
+    status.id = 'city-siege-status';
+    status.textContent = 'Облога: завантаження…';
+
+    var link = document.createElement('a');
+    link.id = 'city-siege-link';
+    link.className = 'l2-town-miru-item';
+    link.href = '/siege.html?cityId=' + encodeURIComponent(String(c.cityId));
+    link.textContent = 'Захоплення міста';
+
+    wrap.appendChild(status);
+    nav.insertBefore(wrap, nav.firstChild);
+    nav.insertBefore(link, wrap.nextSibling);
+
+    var t = localStorage.getItem('token');
+    if (!t) return;
+    try {
+      var r = await fetch(
+        '/game/siege/' + encodeURIComponent(String(c.cityId)) + '/state',
+        { headers: { Authorization: 'Bearer ' + t } }
+      );
+      if (!r.ok) return;
+      var data = await r.json();
+      if (!status) return;
+      if (data.state === 'scheduled' && data.startsAt) {
+        var hhmm = new Date(data.startsAt).toLocaleString('uk-UA', {
+          timeZone: 'Europe/Kyiv',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        status.textContent = 'Облога: сьогодні о ' + hhmm + ' за київським часом';
+      } else if (data.state === 'active' && data.endsAt) {
+        var end = new Date(data.endsAt).toLocaleString('uk-UA', {
+          timeZone: 'Europe/Kyiv',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        status.textContent = 'Облога триває до ' + end;
+      } else if (data.state === 'finished') {
+        status.textContent =
+          'Власник: клан ' +
+          (data.ownerClan && data.ownerClan.name ? data.ownerClan.name : '—');
+      } else {
+        status.textContent = 'Облога міста';
+      }
+    } catch (_eNet) {
+      status.textContent = 'Облога міста';
+    }
+  }
+
   function applyCityLocation(c) {
     var locText = document.querySelector('#city-loc-name .l2-town-miru-loc-text');
     if (!locText || !c) return;
@@ -140,6 +214,7 @@
       L2.applyMutationSnapshot(c);
     }
     applyCityLocation(c);
+    void applySiegeCityBanner(c);
 
     if (services) services.removeAttribute('hidden');
     if (wapTop) wapTop.hidden = false;

@@ -1,0 +1,46 @@
+.l2-siege-panel {
+  padding: 0.75rem 0.5rem 1rem;
+  color: #c8b898;
+  font-size: 0.95rem;
+}
+.l2-siege-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: #e8dcc0;
+}
+.l2-siege-line,
+.l2-siege-msg,
+.l2-siege-result {
+  margin: 0.35rem 0;
+  line-height: 1.35;
+}
+.l2-siege-top {
+  margin: 0.5rem 0;
+  padding-left: 1.1rem;
+}
+.l2-siege-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.l2-siege-btn {
+  cursor: pointer;
+  border: 1px solid #5a4a32;
+  background: #2a2218;
+  color: #e8dcc0;
+  padding: 0.35rem 0.65rem;
+  font: inherit;
+  text-decoration: none;
+  display: inline-block;
+}
+.l2-siege-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.l2-siege-btn--secondary {
+  background: #1e1812;
+}
+.l2-siege-btn--link {
+  line-height: 1.2;
+}

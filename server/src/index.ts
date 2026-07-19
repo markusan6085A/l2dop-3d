@@ -3,6 +3,7 @@ import { buildApp } from './app.js';
 import { assertProductionEnv } from './lib/productionGuards.js';
 import { startWorldBossAutoAttackLoop } from './services/worldBossAutoAttackLoop.js';
 import { startMammonNewsLoop } from './services/mammonNewsLoop.js';
+import { startClanSiegeLoop } from './services/clanSiege/clanSiegeLoop.js';
 
 const port = Number(process.env.PORT) || 3000;
 
@@ -11,6 +12,7 @@ async function main() {
   const app = await buildApp();
   startWorldBossAutoAttackLoop();
   startMammonNewsLoop();
+  startClanSiegeLoop();
   await app.listen({ port, host: '0.0.0.0' });
   app.log.info(`listening on ${port}`);
 }

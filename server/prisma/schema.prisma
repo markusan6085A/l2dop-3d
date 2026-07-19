@@ -124,6 +124,7 @@ model Character {
   partyInvitesSent PartyInvite[] @relation("PartyInviteInviter")
   partyInvitesRecv PartyInvite[] @relation("PartyInviteTarget")
   partyBattleParticipants PartyBattleParticipant[]
+  clanSiegeParticipations ClanSiegeParticipant[]
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
@@ -257,9 +258,15 @@ model Clan {
   hallBlessingAt DateTime?
   /** Рівень клану (1–8). */
   level          Int         @default(1)
+  /** Очки клану (нагороди облог, майбутнє підвищення рівня). Не рейтинг. */
+  clanPoints     Int         @default(0)
   createdAt      DateTime    @default(now())
   invites        ClanInvite[]
   chatMessages   ClanChatMessage[]
+  ownedCastles   CityCastle[] @relation("CityCastleOwner")
+  siegeClanDamages ClanSiegeClanDamage[]
+  siegeWins        ClanSiege[] @relation("ClanSiegeWinner")
+  siegeRewards     ClanSiegeRewardLedger[]
 }
 
 model ClanInvite {
@@ -292,6 +299,92 @@ model ClanChatMessage {
   createdAt   DateTime  @default(now())
 
   @@index([clanId, createdAt(sort: Desc)])
+}
+
+/** Власник замку / міста облоги (Stage A — 8 міст). */
+model CityCastle {
+  cityId      String    @id
+  ownerClanId String?
+  ownerClan   Clan?     @relation("CityCastleOwner", fields: [ownerClanId], references: [id], onDelete: SetNull)
+  capturedAt  DateTime?
+  updatedAt   DateTime  @updatedAt
+}
+
+/** Конкретна облога міста (розклад + стіна). */
+model ClanSiege {
+  id              String    @id @default(uuid())
+  cityId          String
+  startsAt        DateTime
+  endsAt          DateTime
+  /** scheduled | active | finished */
+  state           String
+  wallHp          Int
+  wallMaxHp       Int
+  version         Int       @default(0)
+  winnerClanId    String?
+  winnerClan      Clan?     @relation("ClanSiegeWinner", fields: [winnerClanId], references: [id], onDelete: SetNull)
+  finishedAt      DateTime?
+  /** wall_destroyed | time_expired */
+  finishReason    String?
+  rewardGrantedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  clanDamages     ClanSiegeClanDamage[]
+  participants    ClanSiegeParticipant[]
+  rewardLedger    ClanSiegeRewardLedger?
+
+  @@unique([cityId, startsAt])
+  @@index([state, startsAt])
+  @@index([state, endsAt])
+  @@index([cityId, state])
+}
+
+/** Сумарний урон клану по стіні за одну облогу. */
+model ClanSiegeClanDamage {
+  id          String    @id @default(uuid())
+  siegeId     String
+  siege       ClanSiege @relation(fields: [siegeId], references: [id], onDelete: Cascade)
+  clanId      String
+  clan        Clan      @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  totalDamage Int       @default(0)
+  firstHitAt  DateTime?
+  lastHitAt   DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([siegeId, clanId])
+  @@index([siegeId])
+  @@index([siegeId, totalDamage(sort: Desc)])
+  @@index([clanId])
+}
+
+/** Участь персонажа в облозі (cooldown, idempotency, персональний урон). */
+model ClanSiegeParticipant {
+  id               String    @id @default(uuid())
+  siegeId          String
+  siege            ClanSiege @relation(fields: [siegeId], references: [id], onDelete: Cascade)
+  characterId      String
+  character        Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  clanId           String
+  totalWallDamage  Int       @default(0)
+  lastWallAttackAt DateTime?
+  lastActionId     String?
+  lastSeenAt       DateTime?
+  joinedAt         DateTime  @default(now())
+
+  @@unique([siegeId, characterId])
+  @@index([siegeId])
+  @@index([characterId])
+}
+
+/** Ідемпотентний ledger нагороди за облогу (один запис на siegeId). */
+model ClanSiegeRewardLedger {
+  id        String    @id @default(uuid())
+  siegeId   String    @unique
+  siege     ClanSiege @relation(fields: [siegeId], references: [id], onDelete: Cascade)
+  clanId    String
+  clan      Clan      @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  points    Int
+  grantedAt DateTime  @default(now())
 }
 
 model MarketListing {
