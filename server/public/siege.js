@@ -222,59 +222,28 @@
       wrap.appendChild(nameEl);
     }
 
-    var clanLine = document.createElement('p');
-    clanLine.className = 'l2-siege-participant-meta l2-siege-enemy-clan';
-    clanLine.appendChild(document.createTextNode('Клан: '));
-    if (window.L2 && typeof L2.renderClanIdentity === 'function') {
-      clanLine.appendChild(
-        L2.renderClanIdentity({
-          name: row.clanName,
-          emblemId: row.clanEmblemId,
-          emblemSize: 16,
-        })
-      );
-    } else {
-      var clanName = document.createElement('span');
-      clanName.className = 'l2-siege-enemy-clan-name';
-      clanName.textContent = String(row.clanName || '—');
-      clanLine.appendChild(clanName);
-    }
-    wrap.appendChild(clanLine);
-
-    if (row.hp != null && row.maxHp != null) {
-      var hpLine = document.createElement('p');
-      hpLine.className = 'l2-siege-participant-meta';
-      hpLine.appendChild(document.createTextNode('HP: '));
-      var hpVal = document.createElement('span');
-      hpVal.className = 'l2-siege-enemy-hp-value';
-      hpVal.textContent = formatNum(row.hp) + '/' + formatNum(row.maxHp);
-      hpLine.appendChild(hpVal);
-      wrap.appendChild(hpLine);
-    }
-
-    li.appendChild(wrap);
-
     if (row.eliminated) {
-      var elimLine = document.createElement('p');
-      elimLine.className = 'l2-siege-participant-meta l2-siege-eliminated';
-      elimLine.textContent = 'Вибув';
-      li.appendChild(elimLine);
+      wrap.appendChild(document.createTextNode(' — '));
+      var tag = document.createElement('span');
+      tag.className = 'l2-siege-eliminated';
+      tag.textContent = 'Вибув';
+      wrap.appendChild(tag);
+      li.appendChild(wrap);
       return;
     }
 
-    var actions = document.createElement('p');
-    actions.className = 'l2-siege-participant-actions';
+    wrap.appendChild(document.createTextNode(' '));
     var attackBtn = document.createElement('button');
     attackBtn.type = 'button';
     attackBtn.className = 'l2-siege-pvp-attack-btn';
-    attackBtn.textContent = pvpInFlight ? 'Зачекайте…' : 'Атакувати';
+    attackBtn.textContent = pvpInFlight ? '[Зачекайте…]' : '[Атакувати]';
     attackBtn.dataset.siegePvpAttack = row.characterId;
     if (pvpInFlight || !stateData || !stateData.canStartSiegePvp) {
       attackBtn.disabled = true;
       attackBtn.classList.add('l2-siege-link--disabled');
     }
-    actions.appendChild(attackBtn);
-    li.appendChild(actions);
+    wrap.appendChild(attackBtn);
+    li.appendChild(wrap);
   }
 
   function cityLabel(data) {
@@ -491,7 +460,6 @@
       enemiesUl.className = 'l2-siege-participants';
       parts.enemies.forEach(function (row) {
         var li = document.createElement('li');
-        li.className = 'l2-siege-enemy-card';
         appendEnemyParticipantLine(li, row);
         enemiesUl.appendChild(li);
       });

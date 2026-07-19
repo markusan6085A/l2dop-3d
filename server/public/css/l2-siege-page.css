@@ -100,6 +100,10 @@
 }
 
 .l2-siege-participant-row--enemy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.35rem;
   margin-bottom: 0.15rem;
 }
 
@@ -178,11 +182,4 @@
 
 .l2-siege-divider--back {
   margin-top: 14px;
-}
-
-.l2-siege-enemy-card {
-  margin: 0.75rem 0;
-  padding: 0.5rem;
-  border: 1px solid #333;
-  list-style: none;
 }
