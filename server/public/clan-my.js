@@ -171,7 +171,7 @@
           L2.renderClanIdentity({
             name: clan.name || '—',
             emblemId: clan.emblemId,
-            emblemSize: 32,
+            emblemSize: 16,
           })
         );
       } else {
