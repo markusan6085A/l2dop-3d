@@ -28,8 +28,13 @@
     return String(spawnIdValue || '').indexOf('pvp:') === 0;
   }
 
-  function clearPvpBattlePageContext() {
-    if (!isPvpSpawnContext(battlePageSpawnId) && !isPvpSpawnContext(spawnId)) {
+  function clearPvpBattlePageContext(spawnIdValue) {
+    var currentSpawnId =
+      spawnIdValue != null ? String(spawnIdValue) : '';
+    if (
+      !isPvpSpawnContext(battlePageSpawnId) &&
+      !isPvpSpawnContext(currentSpawnId)
+    ) {
       return;
     }
     battlePageSpawnId = null;
@@ -3292,7 +3297,11 @@
       clearLocalBattleStateAfterVictory();
       clearDefeatFromSession();
       if (isPvpVictory(victory)) {
-        clearPvpBattlePageContext();
+        clearPvpBattlePageContext(
+          victory && victory.spawnId != null
+            ? victory.spawnId
+            : battlePageSpawnId || spawnId
+        );
       }
       renderPlayerBars(character);
       if (victory) {
@@ -3741,7 +3750,7 @@
           L2.setLastSnapshot(character);
         }
         saveVictoryToSession(null);
-        clearPvpBattlePageContext();
+        clearPvpBattlePageContext(spawnId);
         window.location.href = resolveBattleReturnUrl(
           spawnId,
           lastVictorySummary,

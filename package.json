@@ -60,6 +60,7 @@
     "test:party-battle-stage-d": "tsx server/scripts/party-battle-stage-d-smoke.ts",
     "test:party-battle-dungeon": "tsx server/scripts/party-battle-dungeon-smoke.ts",
     "test:warehouse-deposit-atomic": "tsx server/scripts/warehouse-deposit-atomic-smoke.ts",
+    "test:battle-pvp-map-nav": "node server/scripts/battle-pvp-map-nav-smoke.mjs",
     "check:public-js": "node server/scripts/check-public-js-syntax.mjs",
     "test:stress:rapid": "tsx server/scripts/stress-rapid-actions.ts",
     "sim:adena-farm": "tsx server/scripts/simulate-adena-farm.ts",
