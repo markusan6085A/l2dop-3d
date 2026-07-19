@@ -13,6 +13,19 @@
   var MAP_SCALE_KEY = 'l2dungeonMapScale';
   var DRAG_CLICK_MAX_PX = 8;
 
+  function isInteractiveDungeonTarget(target) {
+    return !!(
+      target &&
+      target.closest &&
+      target.closest(
+        'button, a, input, select, textarea, ' +
+          '.l2-map-mob-pin, ' +
+          '.l2-map-hero-pin, ' +
+          '.l2-map-zoom-btns'
+      )
+    );
+  }
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -642,6 +655,7 @@
       if (!el) return;
       el.addEventListener('mousedown', function (e) {
         if (e.button !== 0) return;
+        if (isInteractiveDungeonTarget(e.target)) return;
         lastDragWasPan = false;
         panDrag = {
           x: e.clientX,
@@ -673,8 +687,6 @@
     if (viewport) {
       viewport.style.cursor = 'grab';
       bindPan(viewport);
-      bindPan(inner);
-      bindPan(img);
 
       viewport.addEventListener(
         'mousemove',
@@ -767,6 +779,7 @@
 
     if (img && typeof opts.onImageClick === 'function') {
       img.addEventListener('click', function (e) {
+        if (isInteractiveDungeonTarget(e.target)) return;
         if (Date.now() - lastPinchEnd < 380) return;
         if (lastDragWasPan) {
           lastDragWasPan = false;
@@ -1232,21 +1245,31 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && mobModal && !mobModal.hidden) closeMobModal();
     });
+    function onDungeonMobPinClick(e, pin) {
+      e.preventDefault();
+      e.stopPropagation();
+      var sid = pin.dataset.spawnId;
+      if (!sid) return;
+      var mob = findNearbyMob(sid);
+      if (mob && mob.inBattleRange) {
+        startBattleFromDungeon(sid);
+        return;
+      }
+      walkToMobBySpawnId(sid);
+    }
+
     if (mobMarkers) {
-      mobMarkers.addEventListener('click', function (e) {
+      mobMarkers.addEventListener('pointerdown', function (e) {
         var pin =
           e.target && e.target.closest ? e.target.closest('.l2-map-mob-pin') : null;
         if (!pin) return;
         e.stopPropagation();
-        e.preventDefault();
-        var sid = pin.dataset.spawnId;
-        if (!sid) return;
-        var mob = findNearbyMob(sid);
-        if (mob && mob.inBattleRange) {
-          startBattleFromDungeon(sid);
-          return;
-        }
-        walkToMobBySpawnId(sid);
+      });
+      mobMarkers.addEventListener('click', function (e) {
+        var pin =
+          e.target && e.target.closest ? e.target.closest('.l2-map-mob-pin') : null;
+        if (!pin) return;
+        onDungeonMobPinClick(e, pin);
       });
     }
 

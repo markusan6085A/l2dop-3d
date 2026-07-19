@@ -69,6 +69,14 @@
       body.l2-page-dungeon #dungeon-mob-modal.l2-map-mob-modal {
         z-index: 500;
       }
+      body.l2-page-dungeon .l2-map-mob-markers {
+        pointer-events: none;
+        z-index: 7;
+      }
+      body.l2-page-dungeon .l2-map-mob-pin {
+        pointer-events: auto;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body
@@ -238,6 +246,6 @@
     <script src="/common.js?v=20260718layoutStable4"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/dungeon.js?v=20260717worldSync2"></script>
+    <script src="/dungeon.js?v=20260719desktopMobClickFix1"></script>
   </body>
 </html>
