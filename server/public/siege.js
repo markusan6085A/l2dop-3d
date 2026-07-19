@@ -217,7 +217,7 @@
     }
 
     var clanLine = document.createElement('p');
-    clanLine.className = 'l2-siege-participant-meta';
+    clanLine.className = 'l2-siege-participant-meta l2-siege-enemy-clan';
     clanLine.appendChild(document.createTextNode('Клан: '));
     if (window.L2 && typeof L2.renderClanIdentity === 'function') {
       clanLine.appendChild(
@@ -228,15 +228,21 @@
         })
       );
     } else {
-      clanLine.appendChild(document.createTextNode(String(row.clanName || '—')));
+      var clanName = document.createElement('span');
+      clanName.className = 'l2-siege-enemy-clan-name';
+      clanName.textContent = String(row.clanName || '—');
+      clanLine.appendChild(clanName);
     }
     wrap.appendChild(clanLine);
 
     if (row.hp != null && row.maxHp != null) {
       var hpLine = document.createElement('p');
       hpLine.className = 'l2-siege-participant-meta';
-      hpLine.textContent =
-        'HP: ' + formatNum(row.hp) + '/' + formatNum(row.maxHp);
+      hpLine.appendChild(document.createTextNode('HP: '));
+      var hpVal = document.createElement('span');
+      hpVal.className = 'l2-siege-enemy-hp-value';
+      hpVal.textContent = formatNum(row.hp) + '/' + formatNum(row.maxHp);
+      hpLine.appendChild(hpVal);
       wrap.appendChild(hpLine);
     }
 
@@ -254,7 +260,7 @@
     actions.className = 'l2-siege-participant-actions';
     var attackBtn = document.createElement('button');
     attackBtn.type = 'button';
-    attackBtn.className = 'l2-siege-pvp-attack-btn l2-siege-link';
+    attackBtn.className = 'l2-siege-pvp-attack-btn';
     attackBtn.textContent = pvpInFlight ? 'Зачекайте…' : 'Атакувати';
     attackBtn.dataset.siegePvpAttack = row.characterId;
     if (pvpInFlight || !stateData || !stateData.canStartSiegePvp) {
@@ -301,11 +307,31 @@
     return p;
   }
 
+  function addStatLine(parent, label, value, valueClass) {
+    var p = document.createElement('p');
+    p.className = 'l2-siege-line';
+    p.appendChild(document.createTextNode(label));
+    var val = document.createElement('span');
+    val.className = valueClass;
+    val.textContent = value;
+    p.appendChild(val);
+    parent.appendChild(p);
+    return p;
+  }
+
   function addLine(parent, text, id) {
     var p = document.createElement('p');
     p.className = 'l2-siege-line';
     if (id) p.id = id;
     p.textContent = text;
+    parent.appendChild(p);
+    return p;
+  }
+
+  function addEnemiesTitle(parent) {
+    var p = document.createElement('p');
+    p.className = 'l2-siege-line l2-siege-enemies-title';
+    p.textContent = 'Вороги:';
     parent.appendChild(p);
     return p;
   }
@@ -443,7 +469,7 @@
       parent.appendChild(alliesUl);
     }
     if (parts.enemies && parts.enemies.length) {
-      addLine(parent, 'Вороги:');
+      addEnemiesTitle(parent);
       var enemiesUl = document.createElement('ul');
       enemiesUl.className = 'l2-siege-participants';
       parts.enemies.forEach(function (row) {
@@ -505,28 +531,21 @@
         addLine(body, 'Ви завдали шкоди стіні: ' + formatNum(lastOwnDamage));
       }
 
-      if (data.canAttackWall) {
-        addActionLink(
-          body,
-          'Ударити стіну [' + formatNum(data.wallHp) + '/' + formatNum(data.wallMaxHp) + ']',
-          'siege-attack-link',
-          attackInFlight
-        );
-      } else {
-        var blocked = blockedWallMessage(data.wallAttackBlockReason);
-        if (blocked) {
-          var blockedEl = document.createElement('p');
-          blockedEl.className = 'l2-siege-msg';
-          blockedEl.textContent = blocked;
-          body.appendChild(blockedEl);
-        }
-      }
-
       renderIncomingDamageNotice(body, data);
 
       addActionLink(body, 'Оновити', 'siege-refresh-link', false);
-      addLine(body, 'Мій урон: ' + formatNum(data.viewerCharacterDamage || 0));
-      addLine(body, 'Урон мого клану: ' + formatNum(data.viewerClanDamage || 0));
+      addStatLine(
+        body,
+        'Мій урон: ',
+        formatNum(data.viewerCharacterDamage || 0),
+        'l2-siege-damage-self'
+      );
+      addStatLine(
+        body,
+        'Урон мого клану: ',
+        formatNum(data.viewerClanDamage || 0),
+        'l2-siege-damage-clan'
+      );
       renderTopClans(body, data.topClans);
       renderParticipants(body, data);
     } else if (data.state === 'finished') {
