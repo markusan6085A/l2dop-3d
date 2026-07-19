@@ -7,20 +7,45 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
+    <link rel="stylesheet" href="/css/l2-dragon-boss.css?v=20260719clanDragon1" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-dragon-boss l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-screen-inner l2-city-root">
-          <div class="l2-townlive-column" style="padding: 12px">
-            <p style="margin: 0 0 8px; color: #e8e0d4; font-size: 13px">Бій із драконом</p>
-            <p style="margin: 0 0 12px; color: #bfa88a; font-size: 12px">
-              Бій із драконом буде додано наступним етапом.
-            </p>
-            <a href="/dragon-dungeon.html" style="font-size: 12px; color: #bfa88a">&lt;&lt; Назад</a>
+          <div class="l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="dragon-boss-err" hidden></p>
+            <section class="l2-dragon-boss-main" aria-label="Бій із драконом">
+              <p class="l2-dragon-boss-title" id="dragon-boss-title">Бій із драконом</p>
+              <img id="dragon-boss-img" class="l2-dragon-boss-img" src="/icons/drops/other.svg" alt="" />
+              <p class="l2-dragon-boss-name" id="dragon-boss-name"></p>
+              <p class="l2-dragon-boss-hp" id="dragon-boss-hp"></p>
+              <div class="l2-dragon-hp-bar"><div class="l2-dragon-hp-bar__fill" id="dragon-boss-hp-bar"></div></div>
+              <p class="l2-dragon-boss-player" id="dragon-boss-player-hp"></p>
+              <p class="l2-dragon-boss-player" id="dragon-boss-player-mp"></p>
+              <p class="l2-dragon-boss-stat" id="dragon-boss-damage"></p>
+              <p class="l2-dragon-boss-stat" id="dragon-boss-timer"></p>
+              <p class="l2-dragon-boss-stat" id="dragon-boss-stun" hidden></p>
+              <div class="l2-dragon-boss-actions">
+                <button type="button" class="l2-dragon-boss-btn" id="dragon-boss-attack">Атакувати</button>
+                <button type="button" class="l2-dragon-boss-btn" id="dragon-boss-leave">Вийти з бою</button>
+              </div>
+              <ul class="l2-dragon-boss-log" id="dragon-boss-log"></ul>
+              <p class="l2-dragon-boss-back">
+                <a href="/dragon-dungeon.html">&lt;&lt; Назад до підземелля</a>
+              </p>
+            </section>
+            <div id="l2-foot-links"></div>
+            <div id="l2-nav-bottom"></div>
           </div>
         </div>
       </div>
     </div>
+    <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
+    <script src="/l2-nav.js?v=20260718layoutStable2"></script>
+    <script src="/dragon-boss.js?v=20260719clanDragon1"></script>
   </body>
 </html>

@@ -30,8 +30,6 @@ model Character {
   /** human_fighter → гілки 1–3 профи (rogue→hawkeye|th→sagittarius|adventurer; scout→hawkeye тощо) */
   l2Profession String  @default("human_fighter")
   adena      BigInt   @default(0)
-  /** Преміум-валюта персонажа (алмази) — підземелля драконів тощо. */
-  diamonds   Int      @default(0)
   /** Накопичений досвід (як у l2dop / lineage npc.exp за кілл) */
   exp        BigInt   @default(0)
   /** Накопичені очки вмінь (npc.sp) */
@@ -128,22 +126,11 @@ model Character {
   partyBattleParticipants PartyBattleParticipant[]
   clanSiegeParticipations ClanSiegeParticipant[]
   clanSiegeWallActions    ClanSiegeWallAction[]
-  dragonDungeonUnlocks    CharacterDragonDungeonUnlock[]
+  openedDragonDungeons    ClanDragonDungeon[] @relation("ClanDragonOpenedBy")
+  dragonContributions     ClanDragonContribution[]
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
-}
-
-/** Відкриті дракони в «Підземеллі драконів» (green | blue | red). */
-model CharacterDragonDungeonUnlock {
-  id          String   @id @default(cuid())
-  characterId String
-  dragonId    String
-  unlockedAt  DateTime @default(now())
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-
-  @@unique([characterId, dragonId])
-  @@index([characterId])
 }
 
 /** Група до 5 гравців (лідер + 4). Соціальний стан — partyVersion, не Character.revision. */
@@ -276,6 +263,12 @@ model Clan {
   level          Int         @default(0)
   /** Очки клану (нагороди облог, майбутнє підвищення рівня). Не рейтинг. */
   clanPoints     Int         @default(0)
+  /** Кланові алмази (підземелля драконів, кланові завдання). */
+  diamonds       Int         @default(0)
+  /** Казна клану — адена. */
+  treasuryAdena  BigInt      @default(0)
+  /** Казна клану — Coin of Luck. */
+  treasuryCoinOfLuck Int       @default(0)
   /** Емблема клану (1–40); null — ще не обрана. */
   emblemId       Int?
   createdAt      DateTime    @default(now())
@@ -285,6 +278,55 @@ model Clan {
   siegeClanDamages ClanSiegeClanDamage[]
   siegeWins        ClanSiege[] @relation("ClanSiegeWinner")
   siegeRewards     ClanSiegeRewardLedger[]
+  dragonDungeons   ClanDragonDungeon[]
+}
+
+/** Активний або історичний дракон клану в «Підземеллі драконів». */
+model ClanDragonDungeon {
+  id            String    @id @default(cuid())
+  clanId        String
+  dragonId      String
+  maxHp         BigInt
+  currentHp     BigInt
+  openedById    String
+  openedAt      DateTime  @default(now())
+  expiresAt     DateTime
+  defeatedAt    DateTime?
+  expiredAt     DateTime?
+  rewardPaidAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  clan          Clan      @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  openedBy      Character @relation("ClanDragonOpenedBy", fields: [openedById], references: [id], onDelete: Restrict)
+  contributions ClanDragonContribution[]
+
+  @@index([clanId])
+  @@index([clanId, dragonId])
+  @@index([expiresAt])
+}
+
+/** Особистий внесок у бій з клановим драконом. */
+model ClanDragonContribution {
+  id              String    @id @default(cuid())
+  dungeonId       String
+  characterId     String
+  damageDealt     BigInt    @default(0)
+  attempts        Int       @default(0)
+  deaths          Int       @default(0)
+  activeBattleAt  DateTime?
+  battleEndsAt    DateTime?
+  lastEnteredAt   DateTime?
+  nextEntryAt     DateTime?
+  /** HP/MP/stun/log під час активної спроби. */
+  battleStateJson Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  dungeon         ClanDragonDungeon @relation(fields: [dungeonId], references: [id], onDelete: Cascade)
+  character       Character         @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([dungeonId, characterId])
+  @@index([dungeonId, damageDealt])
+  @@index([characterId])
 }
 
 model ClanInvite {

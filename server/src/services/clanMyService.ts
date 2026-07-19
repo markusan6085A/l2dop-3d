@@ -34,6 +34,8 @@ const CLAN_MY_SELECT = {
   announcement: true,
   level: true,
   clanPoints: true,
+  treasuryAdena: true,
+  treasuryCoinOfLuck: true,
   emblemId: true,
   leader: { select: { name: true } },
   _count: { select: { members: true } },
@@ -56,6 +58,8 @@ function buildClanMyView(
     announcement: string;
     level: number;
     clanPoints: number;
+    treasuryAdena: bigint;
+    treasuryCoinOfLuck: number;
     emblemId: number | null;
     leader: { name: string };
     _count: { members: number };
@@ -73,8 +77,8 @@ function buildClanMyView(
     reputation: 0,
     ratingRank,
     skillPoints: clan.clanPoints,
-    adena: '0',
-    luckCoins: 0,
+    adena: clan.treasuryAdena.toString(),
+    luckCoins: clan.treasuryCoinOfLuck,
     memberCount: clan._count.members,
     maxMembers: CLAN_MAX_MEMBERS,
     viewerRole,

@@ -1,5 +1,5 @@
 /**
- * Client smoke: dragon dungeon page markers.
+ * Client smoke: clan dragon dungeon UI.
  * npm run test:dragon-dungeon-client
  */
 import assert from 'node:assert/strict';
@@ -8,50 +8,47 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const html = fs.readFileSync(
-  path.join(__dirname, '../public/dragon-dungeon.html'),
-  'utf8'
-);
-const js = fs.readFileSync(
-  path.join(__dirname, '../public/dragon-dungeon.js'),
-  'utf8'
-);
-const menuHtml = fs.readFileSync(
-  path.join(__dirname, '../public/menu.html'),
-  'utf8'
-);
+const html = fs.readFileSync(path.join(__dirname, '../public/dragon-dungeon.html'), 'utf8');
+const js = fs.readFileSync(path.join(__dirname, '../public/dragon-dungeon.js'), 'utf8');
+const bossHtml = fs.readFileSync(path.join(__dirname, '../public/dragon-boss.html'), 'utf8');
+const bossJs = fs.readFileSync(path.join(__dirname, '../public/dragon-boss.js'), 'utf8');
+const menuHtml = fs.readFileSync(path.join(__dirname, '../public/menu.html'), 'utf8');
+const clanMyHtml = fs.readFileSync(path.join(__dirname, '../public/clan-my.html'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../public/css/l2-dragon-dungeon.css'), 'utf8');
 
 assert.match(html, /Підземелля драконів/);
-assert.match(html, /Ваші алмази:/);
-assert.match(html, /l2-dragon-dungeon-list/);
-assert.match(html, /20260719dragonDungeon1/);
-
-const css = fs.readFileSync(
-  path.join(__dirname, '../public/css/l2-dragon-dungeon.css'),
-  'utf8'
-);
-assert.match(css, /flex-direction:\s*column/);
+assert.match(html, /Алмази клану/);
+assert.match(html, /dragon-dungeon-clan-name/);
+assert.match(html, /dragon-dungeon-active/);
+assert.match(html, /dragon-dungeon-contrib/);
+assert.doesNotMatch(html, /Незабаром/);
 
 assert.match(js, /\/game\/dragon-dungeon/);
 assert.match(js, /unlockInFlight/);
-assert.match(js, /createElement/);
-assert.match(js, /textContent/);
-assert.match(js, /Green_Dragon\.jpg|imageUrl/);
-assert.match(js, /unlockCostDiamonds/);
-assert.match(js, /btn\.hidden = true/);
-assert.match(js, /btn\.disabled = true/);
+assert.match(js, /clan\.diamonds/);
+assert.match(js, /clan\.isLeader/);
+assert.match(js, /Увійти в бій/);
 assert.match(js, /r\.status === 409/);
 assert.doesNotMatch(js, /innerHTML\s*=/);
-assert.doesNotMatch(js, /innerHTML\s*\+=/);
+
+assert.match(bossHtml, /dragon-boss-attack/);
+assert.match(bossJs, /\/game\/dragon-dungeon\/active\/enter/);
+assert.match(bossJs, /\/game\/dragon-dungeon\/active\/attack/);
+assert.match(bossJs, /attackInFlight/);
+assert.doesNotMatch(bossHtml, /наступним етапом/);
+
+assert.match(menuHtml, /href="\/dragon-dungeon\.html"/);
+assert.match(clanMyHtml, /href="\/dragon-dungeon\.html"/);
+assert.doesNotMatch(clanMyHtml, /clan_my_stub_dungeons/);
+
+assert.match(css, /l2-dragon-hp-bar/);
 
 const domainTs = fs.readFileSync(
   path.join(__dirname, '../src/domain/dragonDungeon.ts'),
   'utf8'
 );
+assert.match(domainTs, /maxHp: 150_000/);
 assert.match(domainTs, /unlockCostDiamonds: 35/);
-assert.match(domainTs, /unlockCostDiamonds: 75/);
-assert.match(domainTs, /unlockCostDiamonds: 120/);
-assert.match(menuHtml, /dragon-dungeon\.html/);
-assert.match(menuHtml, /Підземелля драконів/);
+assert.match(domainTs, /rewardClanAdena|adena: 10_000_000/);
 
 console.log('dragon-dungeon-client-smoke: OK');

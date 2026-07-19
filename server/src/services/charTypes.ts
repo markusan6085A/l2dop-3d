@@ -25,7 +25,6 @@ export interface CharacterRow {
   /** human_fighter | human_warrior | … */
   l2Profession: string;
   adena: bigint;
-  diamonds: number;
   exp: bigint;
   sp: number;
   mobsKilled: number;
@@ -234,8 +233,6 @@ export interface CharacterSnapshot {
   dailyQuests: DailyQuestsSnapshot;
   /** Coin of Luck у сумці (item 4037). */
   coinOfLuck: number;
-  /** Алмази персонажа. */
-  diamonds: number;
   /** Мощ героя (формула на сервері). */
   heroPower: number;
   /** Непрочитані відповіді в чаті (replyToCharacterId = цей герой). */

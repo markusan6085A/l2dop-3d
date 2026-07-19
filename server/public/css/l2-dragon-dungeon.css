@@ -11,6 +11,61 @@ body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-title {
   color: #d4923a;
 }
 
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-clan,
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-diamonds {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e8e0d4;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-no-clan {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #c88a6a;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-active {
+  max-width: 340px;
+  margin: 0 auto 16px;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-hp-bar {
+  height: 8px;
+  background: #1a1612;
+  border: 1px solid #3a342c;
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-hp-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1a4a1a, #3ecf3e);
+  width: 100%;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__reward,
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__hp,
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__timer {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: #c8bfb0;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-contrib__title {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #d4923a;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-contrib__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 11px;
+  color: #bfa88a;
+}
+
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-diamonds {
   margin: 0 0 14px;
   font-size: 12px;
