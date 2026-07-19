@@ -115,6 +115,26 @@
     return p;
   }
 
+  function createDiamondIcon() {
+    var img = document.createElement('img');
+    img.className = 'l2-clan-tasks-diamond-ico';
+    img.src = '/assets/diamond-.png';
+    img.alt = '';
+    img.width = 16;
+    img.height = 16;
+    img.decoding = 'async';
+    return img;
+  }
+
+  function appendClanRewardLine(parent, diamonds) {
+    var p = document.createElement('p');
+    p.appendChild(document.createTextNode('Нагорода клану: '));
+    p.appendChild(createDiamondIcon());
+    p.appendChild(document.createTextNode(' ' + String(diamonds) + ' алмази'));
+    parent.appendChild(p);
+    return p;
+  }
+
   function renderActiveTasks(view) {
     var wrap = $('clan-tasks-active-list');
     if (!wrap) return;
@@ -173,7 +193,7 @@
         '',
         'Особиста нагорода власнику: ' + rewardText(task.personalReward)
       );
-      appendText(card, '', 'Нагорода клану: ' + task.clanRewardDiamonds + ' алмази');
+      appendClanRewardLine(card, task.clanRewardDiamonds);
 
       if (task.contributions && task.contributions.length) {
         var contrib = document.createElement('div');
@@ -241,7 +261,7 @@
       appendText(card, 'l2-clan-tasks-card__name', def.name);
       appendText(card, 'l2-clan-tasks-card__desc', def.description);
       appendText(card, '', 'Особиста нагорода: ' + rewardText(def.personalReward));
-      appendText(card, '', 'Нагорода клану: ' + def.clanRewardDiamonds + ' алмази');
+      appendClanRewardLine(card, def.clanRewardDiamonds);
 
       var actions = document.createElement('div');
       actions.className = 'l2-clan-tasks-actions';

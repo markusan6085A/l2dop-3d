@@ -1,11 +1,35 @@
+.l2-page-clan-tasks {
+  --l2-clan-tasks-gold: #a08c70;
+}
+
 .l2-page-clan-tasks .l2-clan-tasks-title {
   font-weight: bold;
   margin: 0.5rem 0;
+  color: var(--l2-clan-tasks-gold);
 }
 
 .l2-clan-tasks-clan,
 .l2-clan-tasks-diamonds {
   margin: 0.25rem 0;
+}
+
+.l2-clan-tasks-clan {
+  color: var(--l2-clan-tasks-gold);
+}
+
+.l2-clan-tasks-diamonds__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 0.15rem;
+}
+
+.l2-clan-tasks-diamond-ico {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  object-fit: contain;
 }
 
 .l2-clan-tasks-no-clan {
@@ -26,6 +50,7 @@
 .l2-clan-tasks-active-title {
   font-weight: bold;
   margin-bottom: 0.5rem;
+  color: var(--l2-clan-tasks-gold);
 }
 
 .l2-clan-tasks-card {
@@ -36,6 +61,7 @@
 
 .l2-clan-tasks-card__name {
   font-weight: bold;
+  color: var(--l2-clan-tasks-gold);
 }
 
 .l2-clan-tasks-card__desc {

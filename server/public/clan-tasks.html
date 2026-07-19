@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-clan-tasks.css?v=20260719clanTasks1" />
+    <link rel="stylesheet" href="/css/l2-clan-tasks.css?v=20260719clanTasks2" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-clan-tasks l2-page-has-fixed-nav l2-app-l2-chrome"
@@ -48,7 +48,18 @@
                 Клан: <span id="clan-tasks-clan-name">—</span>
               </p>
               <p class="l2-clan-tasks-diamonds">
-                Алмази клану: <span id="clan-tasks-diamonds">0</span>
+                Алмази клану:
+                <span class="l2-clan-tasks-diamonds__value">
+                  <img
+                    class="l2-clan-tasks-diamond-ico"
+                    src="/assets/diamond-.png"
+                    alt=""
+                    width="16"
+                    height="16"
+                    decoding="async"
+                  />
+                  <span id="clan-tasks-diamonds">0</span>
+                </span>
               </p>
               <p class="l2-clan-tasks-no-clan" id="clan-tasks-no-clan" hidden></p>
 
@@ -70,6 +81,6 @@
     <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
     <script src="/ui-i18n.js?v=20260718clans13"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/clan-tasks.js?v=20260719clanTasksAuth1"></script>
+    <script src="/clan-tasks.js?v=20260719clanTasks2"></script>
   </body>
 </html>

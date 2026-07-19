@@ -48,7 +48,11 @@ assert.match(js, /login\.html/);
 assert.match(clanMyHtml, /href="\/clan-tasks\.html"/);
 assert.doesNotMatch(clanMyHtml, /clan_my_stub_quests/);
 
-assert.match(css, /l2-clan-tasks-progress-bar/);
+assert.match(html, /diamond-\.png/);
+assert.match(js, /appendClanRewardLine/);
+assert.match(js, /createDiamondIcon/);
+assert.match(css, /--l2-clan-tasks-gold/);
+assert.match(css, /l2-clan-tasks-card__name/);
 
 assert.match(domainTs, /target: 150_000/);
 assert.match(domainTs, /target: 500/);

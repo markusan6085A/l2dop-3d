@@ -157,6 +157,32 @@
   color: #ffffff;
 }
 
+.l2-siege-ally-clan .l2-clan-identity__name,
+.l2-siege-ally-clan-name {
+  color: #ffffff;
+}
+
 .l2-siege-enemy-hp-value {
   color: #e05050;
+}
+
+.l2-siege-divider {
+  display: block;
+  width: 100%;
+  margin: 10px 0 14px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #333;
+  background: transparent;
+}
+
+.l2-siege-divider--back {
+  margin-top: 14px;
+}
+
+.l2-siege-enemy-card {
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  border: 1px solid #333;
+  list-style: none;
 }
