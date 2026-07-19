@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260718clanInvite4" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260711cityMiruTone1" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260719citySiegeOwner1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -81,17 +81,23 @@
                     height="48"
                     decoding="async"
                   />
-                  <p class="l2-town-miru-loc-title">
-                    <img
-                      class="l2-town-miru-loc-pin"
-                      src="/assets/assets/photo_2026-07-05_12-52-33.jpg"
-                      alt=""
-                      width="14"
-                      height="14"
-                      decoding="async"
-                    />
-                    <span class="l2-town-miru-loc-text">—</span>
-                  </p>
+                  <div class="l2-town-miru-loc-meta">
+                    <p class="l2-town-miru-loc-title">
+                      <img
+                        class="l2-town-miru-loc-pin"
+                        src="/assets/assets/photo_2026-07-05_12-52-33.jpg"
+                        alt=""
+                        width="14"
+                        height="14"
+                        decoding="async"
+                      />
+                      <span class="l2-town-miru-loc-text">—</span>
+                    </p>
+                    <p class="l2-town-miru-loc-owner" id="city-siege-owner-line" hidden>
+                      <span class="l2-town-miru-loc-owner-label">Під владою клану:</span>
+                      <span class="l2-town-miru-loc-owner-name" id="city-siege-owner-name">—</span>
+                    </p>
+                  </div>
                 </div>
                 <nav class="l2-town-miru-list" aria-label="Місто">
                   <a class="l2-town-miru-item" href="/teleport.html">
@@ -168,6 +174,6 @@
     <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/city.js?v=20260719clanSiegeWapUi1"></script>
+    <script src="/city.js?v=20260719citySiegeOwner1"></script>
   </body>
 </html>

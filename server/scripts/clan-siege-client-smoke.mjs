@@ -24,6 +24,14 @@ const citySrc = fs.readFileSync(
   path.join(__dirname, '../public/city.js'),
   'utf8'
 );
+const cityHtml = fs.readFileSync(
+  path.join(__dirname, '../public/city.html'),
+  'utf8'
+);
+const cityCss = fs.readFileSync(
+  path.join(__dirname, '../public/css/l2-city-222-skin.css'),
+  'utf8'
+);
 
 var SIEGE_ACTIVE_POLL_MS = 4000;
 var SIEGE_WAITING_SYNC_MS = 60000;
@@ -63,6 +71,20 @@ assert.match(siegeCss, /flex-wrap:\s*wrap/);
 assert.doesNotMatch(citySrc, /Захоплення міста/);
 assert.doesNotMatch(citySrc, /Облога міста/);
 assert.match(citySrc, /\/siege\.html\?cityId=/);
+assert.match(citySrc, /loadSiegeCityOwner/);
+assert.match(citySrc, /\/game\/siege\//);
+assert.match(citySrc, /ownerClan/);
+assert.match(citySrc, /Немає/);
+assert.match(cityHtml, /city-siege-owner-line/);
+assert.match(cityHtml, /l2-town-miru-loc-owner-label/);
+assert.match(cityHtml, /Під владою клану/);
+assert.match(cityCss, /\.l2-town-miru-loc-link[\s\S]*#ffffff/);
+assert.match(cityCss, /\.l2-town-miru-loc-owner-label[\s\S]*#bfa88a/);
+assert.match(cityCss, /\.l2-town-miru-loc-owner-name[\s\S]*#ffffff/);
+assert.match(
+  citySrc,
+  /l2dop_oren[\s\S]*l2dop_giran[\s\S]*l2dop_aden[\s\S]*l2dop_goddard[\s\S]*l2dop_rune[\s\S]*l2dop_gludio[\s\S]*l2dop_dion[\s\S]*l2dop_schuttgart/
+);
 
 assert.equal(resolvePollDelay({ state: 'active' }), 4000);
 assert.equal(resolvePollDelay({ state: 'scheduled' }), 60000);

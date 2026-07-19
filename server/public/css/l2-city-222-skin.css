@@ -97,11 +97,16 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru {
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin: 0 0 8px;
   padding: 0 0 8px;
   border-bottom: 1px solid rgba(48, 48, 48, 0.95);
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-meta {
+  min-width: 0;
+  flex: 1;
 }
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-art {
@@ -138,9 +143,24 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-text {
 }
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-link {
-  color: #d4b870;
+  color: #ffffff;
   text-decoration: underline;
   cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-owner {
+  margin: 0.2rem 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-owner-label {
+  color: #bfa88a;
+}
+
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-owner-name {
+  color: #ffffff;
 }
 
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-list {

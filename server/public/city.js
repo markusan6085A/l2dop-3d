@@ -45,6 +45,43 @@
     return !!SIEGE_CITY_IDS[String(id || '').trim()];
   }
 
+  function setSiegeOwnerLineVisible(visible) {
+    var ownerLine = $('city-siege-owner-line');
+    if (ownerLine) ownerLine.hidden = !visible;
+  }
+
+  function renderSiegeOwnerName(ownerClan) {
+    var ownerName = $('city-siege-owner-name');
+    if (!ownerName) return;
+    ownerName.textContent =
+      ownerClan && ownerClan.name ? String(ownerClan.name) : 'Немає';
+  }
+
+  async function loadSiegeCityOwner(cityId) {
+    if (!isSiegeCityId(cityId)) {
+      setSiegeOwnerLineVisible(false);
+      return;
+    }
+
+    setSiegeOwnerLineVisible(true);
+    renderSiegeOwnerName(null);
+
+    var t = localStorage.getItem('token');
+    if (!t) return;
+
+    try {
+      var r = await fetch(
+        '/game/siege/' + encodeURIComponent(String(cityId)) + '/state',
+        { headers: { Authorization: 'Bearer ' + t } }
+      );
+      if (!r.ok) return;
+      var data = await r.json();
+      renderSiegeOwnerName(data.ownerClan);
+    } catch (_eNet) {
+      /* залишити «Немає» */
+    }
+  }
+
   function applyCityLocation(c) {
     var locTitle = document.querySelector('#city-loc-name .l2-town-miru-loc-title');
     if (!locTitle || !c) return;
@@ -69,9 +106,11 @@
           locTitle.appendChild(link);
         }
       }
+      void loadSiegeCityOwner(cityId);
       return;
     }
 
+    setSiegeOwnerLineVisible(false);
     if (existing && existing.tagName === 'A') {
       existing.remove();
       existing = null;
