@@ -53,6 +53,17 @@
   function renderSiegeOwnerName(ownerClan) {
     var ownerName = $('city-siege-owner-name');
     if (!ownerName) return;
+    ownerName.textContent = '';
+    if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+      ownerName.appendChild(
+        L2.renderClanIdentity({
+          name: ownerClan && ownerClan.name ? ownerClan.name : 'Немає',
+          emblemId: ownerClan && ownerClan.emblemId != null ? ownerClan.emblemId : null,
+          emblemSize: 16,
+        })
+      );
+      return;
+    }
     ownerName.textContent =
       ownerClan && ownerClan.name ? String(ownerClan.name) : 'Немає';
   }

@@ -1,6 +1,7 @@
 import type { BattleActionId, BattleJsonState } from '../domain/battle.js';
 import { BASIC_ATTACK_COOLDOWN_SEC } from '../domain/battleBasicAttackCooldown.js';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
+import { prisma } from '../lib/prisma.js';
 import { ZEALOT_EFFECT_DURATION_MS } from '../domain/battleTypes.js';
 import {
   battleLogSeqFromState,
@@ -418,10 +419,30 @@ function mobIconUrlForBattleView(spawnId: string, mobName: string): string {
   return resolveMobIconFromName(mobName) ?? '/mobs/1.png';
 }
 
+export type BattleViewSpawnMeta = {
+  name: string;
+  level: number;
+  aggressive: boolean;
+  kind: string;
+  clanEmblemId?: number | null;
+};
+
+export async function resolvePvpTargetClanEmblemId(
+  st: BattleJsonState
+): Promise<number | null> {
+  if (!isPvpBattleJson(st) || !st.pvpTargetCharacterId) return null;
+  const row = await prisma.character.findUnique({
+    where: { id: String(st.pvpTargetCharacterId).trim() },
+    select: { clan: { select: { emblemId: true } } },
+  });
+  const id = row?.clan?.emblemId;
+  return typeof id === 'number' && id >= 1 && id <= 40 ? id : null;
+}
+
 export function battleViewFromState(
   spawnId: string,
   st: BattleJsonState,
-  spawnMeta: { name: string; level: number; aggressive: boolean; kind: string },
+  spawnMeta: BattleViewSpawnMeta,
   charLevel: number,
   race: string,
   classBranch: string,
@@ -463,10 +484,18 @@ export function battleViewFromState(
     }
   }
   const isPvp = isPvpBattleJson(st);
+  const mobClanEmblemId =
+    isPvp &&
+    typeof spawnMeta.clanEmblemId === 'number' &&
+    spawnMeta.clanEmblemId >= 1 &&
+    spawnMeta.clanEmblemId <= 40
+      ? spawnMeta.clanEmblemId
+      : null;
   return {
     spawnId,
     mobName: spawnMeta.name,
     battleMode: isPvp ? 'pvp' : 'pve',
+    ...(mobClanEmblemId != null ? { mobClanEmblemId } : {}),
     ...(isPvp
       ? {}
       : { mobIconUrl: mobIconUrlForBattleView(spawnId, spawnMeta.name) }),

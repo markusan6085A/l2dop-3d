@@ -103,6 +103,7 @@
             ? L2.createPlayerProfileNickEl({
                 characterId: r.characterId,
                 name: r.name,
+                clanEmblemId: r.clanEmblemId,
                 className: 'l2-ratings-row__name',
               })
             : (function () {

@@ -22,6 +22,7 @@ export type ClanMyView = {
   viewerRole: string | null;
   canEditAnnouncement: boolean;
   canLeaveClan: boolean;
+  emblemId: number | null;
 };
 
 const CLAN_MAX_MEMBERS = 40;
@@ -33,6 +34,7 @@ const CLAN_MY_SELECT = {
   announcement: true,
   level: true,
   clanPoints: true,
+  emblemId: true,
   leader: { select: { name: true } },
   _count: { select: { members: true } },
 } as const;
@@ -54,6 +56,7 @@ function buildClanMyView(
     announcement: string;
     level: number;
     clanPoints: number;
+    emblemId: number | null;
     leader: { name: string };
     _count: { members: number };
   },
@@ -77,6 +80,7 @@ function buildClanMyView(
     viewerRole,
     canEditAnnouncement: viewerRole === 'leader',
     canLeaveClan: viewerRole === 'member',
+    emblemId: clan.emblemId ?? null,
   };
 }
 

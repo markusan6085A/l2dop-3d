@@ -34,6 +34,7 @@ export interface NearbyHeroEntry {
   canPkAttack: boolean;
   /** Колір ніка: default | aggressor | pk */
   pvpNickColor: PvpNickColor;
+  clanEmblemId: number | null;
   isOnline: boolean;
   gender: string;
   l2Profession: string;
@@ -78,6 +79,7 @@ const HERO_MAP_SELECT = {
   buffZealotStacks: true,
   skillsLearnedJson: true,
   worldCombatStateJson: true,
+  clan: { select: { emblemId: true } },
 } as const;
 
 type HeroMapRow = MapMovementFields & {
@@ -92,6 +94,7 @@ type HeroMapRow = MapMovementFields & {
   hp: number;
   pvpPendingDefeatJson: unknown;
   pvePendingDefeatJson: unknown;
+  clan?: { emblemId: number | null } | null;
 };
 
 function canPkAttackHero(
@@ -165,6 +168,7 @@ export async function getNearbyHeroesForMap(
       inBattle: row.battleJson != null,
       canPkAttack: pkAllowed,
       pvpNickColor,
+      clanEmblemId: row.clan?.emblemId ?? null,
       isOnline: isCharacterOnlineNow(row.id),
       gender: row.gender || 'male',
       l2Profession: row.l2Profession || '',

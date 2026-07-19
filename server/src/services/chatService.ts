@@ -9,6 +9,8 @@ export type ChatMessageDto = {
   channel: ChatChannel;
   characterId: string;
   characterName: string;
+  clanName: string | null;
+  clanEmblemId: number | null;
   text: string;
   replyToCharacterId: string | null;
   replyToCharacterName: string | null;
@@ -49,13 +51,15 @@ function toDto(row: {
   replyToCharacterId: string | null;
   replyToCharacterName: string | null;
   createdAt: Date;
-  character: { name: string };
+  character: { name: string; clan?: { name: string; emblemId: number | null } | null };
 }): ChatMessageDto {
   return {
     id: row.id,
     channel: parseChatChannel(row.channel),
     characterId: row.characterId,
     characterName: row.character.name,
+    clanName: row.character.clan?.name ?? null,
+    clanEmblemId: row.character.clan?.emblemId ?? null,
     text: row.text,
     replyToCharacterId: row.replyToCharacterId,
     replyToCharacterName: row.replyToCharacterName,
@@ -112,7 +116,14 @@ export async function listChatMessages(
     orderBy: { createdAt: 'desc' },
     skip,
     take: PAGE_SIZE,
-    include: { character: { select: { name: true } } },
+    include: {
+      character: {
+        select: {
+          name: true,
+          clan: { select: { name: true, emblemId: true } },
+        },
+      },
+    },
   });
 
   return {
@@ -152,7 +163,14 @@ export async function sendChatMessage(
         replyToCharacterId: replyTarget?.id ?? null,
         replyToCharacterName: replyTarget?.name ?? null,
       },
-      include: { character: { select: { name: true } } },
+      include: {
+      character: {
+        select: {
+          name: true,
+          clan: { select: { name: true, emblemId: true } },
+        },
+      },
+    },
     });
 
     await applyDailyQuestsJsonAtomicInTx(tx, char.id, nowMs, (before) =>

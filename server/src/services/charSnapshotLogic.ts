@@ -584,6 +584,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     }),
     clanId: row.clanId ?? null,
     clanName: row.clan?.name ?? null,
+    clanEmblemId: row.clan?.emblemId ?? null,
     clanRole: row.clanRole ?? null,
     clanHallBonus: clanHallPassive
       ? {

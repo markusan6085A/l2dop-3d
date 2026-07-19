@@ -163,7 +163,21 @@
     if (empty) empty.hidden = true;
     if (panel) panel.hidden = false;
 
-    setText('clan-my-name', clan.name || '—');
+    setText('clan-my-name', '');
+    var nameEl = $('clan-my-name');
+    if (nameEl) {
+      if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+        nameEl.appendChild(
+          L2.renderClanIdentity({
+            name: clan.name || '—',
+            emblemId: clan.emblemId,
+            emblemSize: 32,
+          })
+        );
+      } else {
+        nameEl.textContent = clan.name || '—';
+      }
+    }
     setText('clan-my-founded', formatFoundedUk(clan.foundedAt));
     setText('clan-my-level', clan.level != null ? String(clan.level) : '1');
     setText('clan-my-leader', clan.leaderName || '—');

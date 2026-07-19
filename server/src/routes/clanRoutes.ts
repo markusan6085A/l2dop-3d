@@ -13,6 +13,7 @@ import {
   listClansForClient,
 } from '../services/clanCreateService.js';
 import { getClanMyForUser, updateClanAnnouncementForUser } from '../services/clanMyService.js';
+import { updateClanEmblemForUser } from '../services/clanEmblemService.js';
 import {
   getClanHallForUser,
   purchaseClanHallBlessingForUser,
@@ -91,6 +92,35 @@ export function registerClanRoutes(app: FastifyInstance): void {
         return reply.code(500).send({
           error: 'internal_error',
           messageUk: 'Не вдалося створити клан.',
+        });
+      }
+    }
+  );
+
+  app.post(
+    '/clans/emblem',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+
+      try {
+        const clan = await updateClanEmblemForUser(userId, b.emblemId);
+        await logRouteMutation(request, 'clan_emblem', 0, 'ok');
+        return reply.send({ clan });
+      } catch (err) {
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_emblem', 0, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_emblem', 0, 'error');
+        request.log.error({ err }, 'POST /game/clans/emblem');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося змінити емблему клану.',
         });
       }
     }

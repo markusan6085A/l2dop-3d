@@ -247,6 +247,7 @@
           ? L2.createPlayerProfileNickEl({
               characterId: p.characterId,
               name: p.name,
+              clanEmblemId: p.clanEmblemId,
               className: 'l2-online-player__nick',
             })
           : (function () {

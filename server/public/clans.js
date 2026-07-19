@@ -30,7 +30,18 @@
     rows.forEach(function (row) {
       var li = document.createElement('li');
       li.className = 'l2-clans-list__item';
-      li.textContent = String(row.leaderName || '—') + ': ' + String(row.name || '—');
+      if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+        li.appendChild(
+          L2.renderClanIdentity({
+            name: row.name,
+            emblemId: row.emblemId,
+            emblemSize: 16,
+          })
+        );
+        li.appendChild(document.createTextNode(': ' + String(row.leaderName || '—')));
+      } else {
+        li.textContent = String(row.leaderName || '—') + ': ' + String(row.name || '—');
+      }
       list.appendChild(li);
     });
   }

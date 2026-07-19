@@ -30,6 +30,7 @@ export function buildPartyView(
       isLeader: m.characterId === leaderId,
       slotOrder: m.slotOrder,
       joinedAt: m.joinedAt.toISOString(),
+      clanEmblemId: m.character.clan?.emblemId ?? null,
     })),
   };
 }

@@ -107,9 +107,20 @@
       var main = document.createElement('div');
       main.className = 'l2-party-member__main';
 
-      var nick = document.createElement('span');
-      nick.className = 'l2-party-member__nick';
-      nick.textContent = m.name || '—';
+      var nick =
+        window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+          ? L2.createPlayerProfileNickEl({
+              characterId: m.characterId,
+              name: m.name,
+              clanEmblemId: m.clanEmblemId,
+              className: 'l2-party-member__nick',
+            })
+          : (function () {
+              var span = document.createElement('span');
+              span.className = 'l2-party-member__nick';
+              span.textContent = m.name || '—';
+              return span;
+            })();
 
       var sep1 = document.createElement('span');
       sep1.className = 'l2-party-member__sep';

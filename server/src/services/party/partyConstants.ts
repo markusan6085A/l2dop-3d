@@ -13,6 +13,7 @@ export const PARTY_MEMBER_INCLUDE = {
       name: true,
       level: true,
       l2Profession: true,
+      clan: { select: { emblemId: true } },
     },
   },
 } satisfies Prisma.PartyMemberInclude;

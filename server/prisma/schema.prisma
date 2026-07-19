@@ -261,6 +261,8 @@ model Clan {
   level          Int         @default(1)
   /** Очки клану (нагороди облог, майбутнє підвищення рівня). Не рейтинг. */
   clanPoints     Int         @default(0)
+  /** Емблема клану (1–40); null — ще не обрана. */
+  emblemId       Int?
   createdAt      DateTime    @default(now())
   invites        ClanInvite[]
   chatMessages   ClanChatMessage[]

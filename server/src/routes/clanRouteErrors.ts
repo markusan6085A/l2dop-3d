@@ -134,6 +134,18 @@ const CLAN_CREATE_ERRORS: Record<string, { status: number; messageUk: string }> 
     status: 400,
     messageUk: 'Неможливо вийти з клану під час бою.',
   },
+  clan_emblem_invalid: {
+    status: 400,
+    messageUk: 'Обери емблему клану від 1 до 40.',
+  },
+  clan_emblem_forbidden: {
+    status: 403,
+    messageUk: 'Змінити емблему може лише лідер клану.',
+  },
+  clan_emblem_not_in_clan: {
+    status: 400,
+    messageUk: 'Ти не в клані.',
+  },
 };
 
 export function sendClanCreateError(

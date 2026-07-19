@@ -73,7 +73,7 @@ export interface CharacterRow {
   clanId: string | null;
   clanRole: string | null;
   /** Якщо завантажено з include clan. */
-  clan?: { name: string; hallBlessingAt?: Date | null; level?: number } | null;
+  clan?: { name: string; hallBlessingAt?: Date | null; level?: number; emblemId?: number | null } | null;
 }
 
 /** Активний баф у снепшоті (для UI): з урахуванням `expiresAt` (L2 abnormalTime). */
@@ -249,6 +249,8 @@ export interface CharacterSnapshot {
   clanId?: string | null;
   /** Назва клану для UI. */
   clanName?: string | null;
+  /** Емблема клану (1–40) або null. */
+  clanEmblemId?: number | null;
   /** leader | member | null */
   clanRole?: string | null;
   /** Пасивний бонус Клан-холу (для UI профілю). */

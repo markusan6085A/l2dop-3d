@@ -4,6 +4,7 @@ import {
   CLAN_CREATE_MIN_LEVEL,
   normalizeClanName,
 } from '../domain/clanCreate.js';
+import { parseClanEmblemId } from '../domain/clanEmblem.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { gameConflictFromMutation } from './charConflict.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
@@ -12,12 +13,12 @@ import { mutateCharacterWithRevision } from './characterMutation.js';
 
 const CHARACTER_WITH_CLAN = {
   include: {
-    clan: { select: { name: true } },
+    clan: { select: { name: true, emblemId: true } },
   },
 } as const;
 
 type CharacterWithClanRow = CharacterRow & {
-  clan?: { name: string } | null;
+  clan?: { name: string; emblemId?: number | null } | null;
 };
 
 function rowWithClanInclude(row: CharacterWithClanRow): CharacterRow {
@@ -48,13 +49,22 @@ function assertCanCreateClan(row: CharacterRow, clanName: string): void {
 export async function createClanForUser(
   userId: string,
   expectedRevision: number,
-  rawName: unknown
+  rawName: unknown,
+  rawEmblemId?: unknown
 ): Promise<CharacterSnapshot> {
   const parsed = normalizeClanName(rawName);
   if (!parsed.ok) {
     throw new Error(parsed.code);
   }
   const clanName = parsed.name;
+  let emblemId: number | null = null;
+  if (rawEmblemId !== undefined && rawEmblemId !== null && rawEmblemId !== '') {
+    const emblemParsed = parseClanEmblemId(rawEmblemId);
+    if (!emblemParsed.ok) {
+      throw new Error(emblemParsed.code);
+    }
+    emblemId = emblemParsed.emblemId;
+  }
 
   return prisma.$transaction(async (tx) => {
     const char = (await tx.character.findFirst({
@@ -77,6 +87,7 @@ export async function createClanForUser(
       data: {
         name: clanName,
         leaderId: char.id,
+        emblemId,
       },
     });
 
@@ -124,6 +135,7 @@ export type ClanListEntry = {
   id: string;
   name: string;
   leaderName: string;
+  emblemId: number | null;
 };
 
 /** Список кланів для hub-сторінки (нік лідера: назва клану). */
@@ -134,6 +146,7 @@ export async function listClansForClient(): Promise<ClanListEntry[]> {
     select: {
       id: true,
       name: true,
+      emblemId: true,
       leader: { select: { name: true } },
     },
   });
@@ -141,6 +154,7 @@ export async function listClansForClient(): Promise<ClanListEntry[]> {
     id: r.id,
     name: r.name,
     leaderName: r.leader.name,
+    emblemId: r.emblemId ?? null,
   }));
 }
 

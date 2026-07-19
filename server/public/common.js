@@ -1846,11 +1846,22 @@
       if (hasWapBars) {
         var lvlAbbr =
           global.L2 && global.L2.tr ? global.L2.tr('abbr_level') : 'ур.';
-        set(
-          'l2-hud-legacy-lvl',
-          String(c.level != null ? c.level : '—') + ' ' + lvlAbbr
-        );
-        set('l2-hud-legacy-name', c.name != null ? c.name : '—');
+        set('l2-hud-legacy-lvl', String(c.level != null ? c.level : '—') + ' ' + lvlAbbr);
+        var legacyNameEl = document.getElementById('l2-hud-legacy-name');
+        if (legacyNameEl) {
+          legacyNameEl.textContent = '';
+          if (typeof global.L2.renderPlayerIdentity === 'function') {
+            legacyNameEl.appendChild(
+              global.L2.renderPlayerIdentity({
+                name: c.name,
+                clanEmblemId: c.clanEmblemId,
+                emblemSize: 16,
+              })
+            );
+          } else {
+            legacyNameEl.textContent = c.name != null ? c.name : '—';
+          }
+        }
       }
       if (instantFill && barsRoot) {
         hudFirstFillDone = true;
@@ -2491,12 +2502,138 @@
       return '/player.html';
     },
 
+    clanEmblemUrl: function (emblemId) {
+      var n = Number(emblemId);
+      if (!Number.isInteger(n) || n < 1 || n > 40) return null;
+      return '/clans-emblems/' + n + '.jpg';
+    },
+
+    createClanEmblemElement: function (emblemId, sizePx) {
+      var url = global.L2.clanEmblemUrl(emblemId);
+      if (!url) return null;
+      var px = sizePx != null ? Math.max(1, Math.floor(Number(sizePx))) : 16;
+      var img = document.createElement('img');
+      if (px >= 32) {
+        img.className = 'l2-clan-emblem--' + px;
+      } else {
+        img.className = 'l2-clan-emblem-inline clan-emblem-inline';
+      }
+      img.src = url;
+      img.alt = '';
+      img.width = px;
+      img.height = px;
+      img.decoding = 'async';
+      return img;
+    },
+
+    renderClanIdentity: function (opts) {
+      opts = opts || {};
+      var wrap = document.createElement('span');
+      wrap.className = 'l2-clan-identity';
+      if (opts.className) wrap.className += ' ' + String(opts.className);
+      var emblem = global.L2.createClanEmblemElement(
+        opts.emblemId != null ? opts.emblemId : opts.clanEmblemId,
+        opts.emblemSize || 16
+      );
+      if (emblem) wrap.appendChild(emblem);
+      var nameEl = document.createElement('span');
+      nameEl.className = 'l2-clan-identity__name l2-player-identity__nick';
+      if (opts.nameClassName) nameEl.className += ' ' + String(opts.nameClassName);
+      nameEl.textContent = opts.name != null ? String(opts.name) : '—';
+      wrap.appendChild(nameEl);
+      return wrap;
+    },
+
+    renderPlayerIdentity: function (opts) {
+      opts = opts || {};
+      var wrap = document.createElement('span');
+      wrap.className = 'l2-player-identity';
+      if (opts.className) wrap.className += ' ' + String(opts.className);
+      var emblem = global.L2.createClanEmblemElement(
+        opts.clanEmblemId != null ? opts.clanEmblemId : opts.emblemId,
+        opts.emblemSize || 16
+      );
+      if (emblem) wrap.appendChild(emblem);
+      var nickClass =
+        'l2-player-identity__nick' +
+        (opts.nickClassName ? ' ' + String(opts.nickClassName) : '') +
+        (opts.className ? ' ' + String(opts.className) : '');
+      if (opts.pvpNickColor === 'pk') nickClass += ' l2-pvp-nick--pk';
+      else if (opts.pvpNickColor === 'aggressor') {
+        nickClass += ' l2-pvp-nick--aggressor';
+      }
+      var nick =
+        typeof global.L2.createPlayerProfileNickEl === 'function'
+          ? global.L2.createPlayerProfileNickEl({
+              characterId: opts.characterId,
+              name: opts.name,
+              className: nickClass,
+            })
+          : (function () {
+              var span = document.createElement('span');
+              span.className = nickClass;
+              span.textContent = opts.name != null ? String(opts.name) : '—';
+              return span;
+            })();
+      wrap.appendChild(nick);
+      return wrap;
+    },
+
+    mountClanEmblemPicker: function (container, opts) {
+      if (!container) return;
+      opts = opts || {};
+      var selected =
+        opts.selectedId != null && Number.isFinite(Number(opts.selectedId))
+          ? Math.floor(Number(opts.selectedId))
+          : null;
+      var size = opts.size || 40;
+      container.innerHTML = '';
+      container.className = 'l2-clan-emblem-picker';
+      for (var id = 1; id <= 40; id++) {
+        (function (emblemId) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'l2-clan-emblem-picker__btn';
+          if (selected === emblemId) {
+            btn.className += ' l2-clan-emblem-picker__btn--selected';
+          }
+          btn.setAttribute('data-emblem-id', String(emblemId));
+          btn.setAttribute('aria-label', 'Емблема ' + emblemId);
+          var img = global.L2.createClanEmblemElement(emblemId, size);
+          if (img) btn.appendChild(img);
+          btn.addEventListener('click', function () {
+            container
+              .querySelectorAll('.l2-clan-emblem-picker__btn--selected')
+              .forEach(function (el) {
+                el.classList.remove('l2-clan-emblem-picker__btn--selected');
+              });
+            btn.classList.add('l2-clan-emblem-picker__btn--selected');
+            if (typeof opts.onSelect === 'function') opts.onSelect(emblemId);
+          });
+          container.appendChild(btn);
+        })(id);
+      }
+    },
+
     createPlayerProfileNickEl: function (opts) {
       opts = opts || {};
       var label = opts.name != null ? String(opts.name) : '—';
       var className = opts.className != null ? String(opts.className) : '';
       var id = opts.characterId != null ? String(opts.characterId).trim() : '';
       var name = opts.name != null ? String(opts.name).trim() : '';
+      var clanEmblemId =
+        opts.clanEmblemId != null ? opts.clanEmblemId : opts.emblemId;
+      if (typeof global.L2.renderPlayerIdentity === 'function') {
+        return global.L2.renderPlayerIdentity({
+          characterId: id,
+          name: name || label,
+          clanEmblemId: clanEmblemId,
+          className: className,
+          nickClassName: className,
+          emblemSize: opts.emblemSize || 16,
+          pvpNickColor: opts.pvpNickColor,
+        });
+      }
       if (
         !global.L2.shouldLinkPlayerProfile() ||
         (!id && !name)

@@ -75,6 +75,7 @@ function opponentCombatFromRow(row: CharacterRow) {
     mDef: combat.mDef,
     evasion: combat.evasion,
     name: row.name,
+    clanEmblemId: row.clan?.emblemId ?? null,
   };
 }
 
@@ -106,6 +107,7 @@ export async function refreshPvpOpponentHpForCharacterInTx(
   }
   const targetRow = await tx.character.findFirst({
     where: { id: bj.pvpTargetCharacterId },
+    include: { clan: { select: { emblemId: true } } },
   });
   if (!targetRow) return char;
 
@@ -185,6 +187,7 @@ function buildPvpBattleView(
       level: opp.effLv,
       aggressive: true,
       kind: 'aggressive',
+      clanEmblemId: opp.clanEmblemId,
     },
     effLv0,
     attackerRow.race,
@@ -400,6 +403,7 @@ export async function resumePlayerPvpBattleInTx(
   }
   const targetRow = await tx.character.findFirst({
     where: { id: targetId },
+    include: { clan: { select: { emblemId: true } } },
   });
   if (!targetRow) throw new Error('pvp_target_unknown');
   const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow, {
@@ -447,6 +451,7 @@ export async function startPvpBattleInTx(
 
   const targetRow = await tx.character.findFirst({
     where: { id: targetId },
+    include: { clan: { select: { emblemId: true } } },
   });
   if (!targetRow) throw new Error('pvp_target_unknown');
 

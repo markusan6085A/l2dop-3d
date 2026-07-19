@@ -3,6 +3,7 @@
  */
 (function () {
   var createInFlight = false;
+  var selectedEmblemId = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -57,7 +58,11 @@
           Authorization: 'Bearer ' + t,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ clanName: clanName, expectedRevision: rev }),
+        body: JSON.stringify({
+          clanName: clanName,
+          emblemId: selectedEmblemId,
+          expectedRevision: rev,
+        }),
       });
       if (r.status === 409) {
         if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
@@ -113,6 +118,16 @@
     if (c && c.clanId) {
       window.location.href = '/clan-my.html';
       return;
+    }
+
+    var picker = $('clan-emblem-picker');
+    if (picker && typeof L2.mountClanEmblemPicker === 'function') {
+      L2.mountClanEmblemPicker(picker, {
+        size: 40,
+        onSelect: function (id) {
+          selectedEmblemId = id;
+        },
+      });
     }
 
     var btn = $('clan-create-submit');

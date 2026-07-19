@@ -570,6 +570,7 @@
         ? L2.createPlayerProfileNickEl({
             characterId: m.characterId,
             name: m.characterName,
+            clanEmblemId: m.clanEmblemId,
             className: 'l2-chat-msg__nick',
           })
         : (function () {

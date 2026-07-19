@@ -38,11 +38,16 @@ import {
 } from './clanSiegeWallActionService.js';
 import { isPrismaUniqueViolation } from '../party/partyPrismaErrors.js';
 import { maybeClearPveBattleOnSiegeEnterInTx } from './clanSiegeBattleClearService.js';
-export type SiegeClanBrief = { id: string; name: string } | null;
+export type SiegeClanBrief = {
+  id: string;
+  name: string;
+  emblemId: number | null;
+} | null;
 
 export type SiegeTopClanRow = {
   clanId: string;
   clanName: string;
+  clanEmblemId: number | null;
   totalDamage: number;
   place: number;
 };
@@ -52,6 +57,7 @@ export type SiegeParticipantBrief = {
   nickname: string;
   clanId: string;
   clanName: string;
+  clanEmblemId: number | null;
   eliminated: boolean;
 };
 
@@ -98,10 +104,10 @@ async function loadClanBrief(clanId: string | null | undefined): Promise<SiegeCl
   if (!clanId) return null;
   const row = await prisma.clan.findUnique({
     where: { id: clanId },
-    select: { id: true, name: true },
+    select: { id: true, name: true, emblemId: true },
   });
   if (!row) return null;
-  return { id: row.id, name: row.name };
+  return { id: row.id, name: row.name, emblemId: row.emblemId ?? null };
 }
 
 async function loadTopClans(siegeId: string): Promise<SiegeTopClanRow[]> {
@@ -116,12 +122,13 @@ async function loadTopClans(siegeId: string): Promise<SiegeTopClanRow[]> {
     select: {
       clanId: true,
       totalDamage: true,
-      clan: { select: { name: true } },
+      clan: { select: { name: true, emblemId: true } },
     },
   });
   return rows.map((r, idx) => ({
     clanId: r.clanId,
     clanName: r.clan.name,
+    clanEmblemId: r.clan.emblemId ?? null,
     totalDamage: r.totalDamage,
     place: idx + 1,
   }));
@@ -220,10 +227,13 @@ async function loadNearbySiegeParticipants(
     clanIds.length > 0
       ? await prisma.clan.findMany({
           where: { id: { in: clanIds } },
-          select: { id: true, name: true },
+          select: { id: true, name: true, emblemId: true },
         })
       : [];
   const clanNameById = new Map(clans.map((c) => [c.id, c.name]));
+  const clanEmblemById = new Map(
+    clans.map((c) => [c.id, c.emblemId ?? null] as const)
+  );
   const allies: SiegeParticipantBrief[] = [];
   const enemies: SiegeParticipantBrief[] = [];
   for (const row of rows) {
@@ -232,6 +242,7 @@ async function loadNearbySiegeParticipants(
       nickname: row.character.name,
       clanId: row.clanId,
       clanName: clanNameById.get(row.clanId) ?? '—',
+      clanEmblemId: clanEmblemById.get(row.clanId) ?? null,
       eliminated: !!row.eliminatedAt,
     };
     if (row.clanId === viewerClanId) {
@@ -339,7 +350,7 @@ export async function getSiegeStateForUser(
       ...(characterId ? { id: characterId } : {}),
     },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true, clanId: true, cityId: true, hp: true, clan: { select: { id: true, name: true } } },
+    select: { id: true, clanId: true, cityId: true, hp: true, clan: { select: { id: true, name: true, emblemId: true } } },
   });
   if (!char) throw new Error('no_character');
 
@@ -383,7 +394,11 @@ export async function getSiegeStateForUser(
       pvpBlockReason: perms.pvpBlockReason,
       viewerEliminated: false,
       viewerClan: char.clan
-        ? { id: char.clan.id, name: char.clan.name }
+        ? {
+            id: char.clan.id,
+            name: char.clan.name,
+            emblemId: char.clan.emblemId ?? null,
+          }
         : null,
       viewerClanDamage: 0,
       viewerCharacterDamage: 0,
@@ -493,7 +508,11 @@ export async function getSiegeStateForUser(
     pvpBlockReason: perms.pvpBlockReason,
     viewerEliminated,
     viewerClan: char.clan
-      ? { id: char.clan.id, name: char.clan.name }
+      ? {
+          id: char.clan.id,
+          name: char.clan.name,
+          emblemId: char.clan.emblemId ?? null,
+        }
       : null,
     viewerClanDamage,
     viewerCharacterDamage,

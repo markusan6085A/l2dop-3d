@@ -17,6 +17,7 @@ type PresenceEntry = {
   cityId: string;
   cityLabelUk: string;
   cityLabelEn: string;
+  clanEmblemId: number | null;
   lastSeenMs: number;
 };
 
@@ -35,6 +36,7 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
+    include: { clan: { select: { emblemId: true } } },
   });
   const labels = resolveCityLabels(row?.cityId ?? '');
   const heroRow = row as CharacterRow | null;
@@ -50,6 +52,7 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
     cityId: row?.cityId?.trim() || '',
     cityLabelUk: labels.cityLabelUk,
     cityLabelEn: labels.cityLabelEn,
+    clanEmblemId: row?.clan?.emblemId ?? null,
     lastSeenMs: Date.now(),
   };
 }
@@ -70,6 +73,7 @@ export type OnlinePresencePlayer = {
   cityId: string;
   cityLabelUk: string;
   cityLabelEn: string;
+  clanEmblemId: number | null;
 };
 
 export type OnlinePresenceSnapshot = {
@@ -128,8 +132,9 @@ export function getOnlinePresenceSnapshot(
             ? entry.heroPower
             : HERO_POWER_BASE,
         cityId: entry.cityId,
-        cityLabelUk: entry.cityLabelUk,
-        cityLabelEn: entry.cityLabelEn,
+      cityLabelUk: entry.cityLabelUk,
+      cityLabelEn: entry.cityLabelEn,
+      clanEmblemId: entry.clanEmblemId,
       });
     }
   }

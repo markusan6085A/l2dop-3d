@@ -3,6 +3,8 @@
  */
 (function () {
   var layoutDebug = false;
+  var selectedEmblemId = null;
+  var emblemSaveInFlight = false;
 
   function $(id) {
     return document.getElementById(id);
@@ -115,6 +117,52 @@
     });
   }
 
+  async function saveClanEmblem(token) {
+    if (emblemSaveInFlight || selectedEmblemId == null) return;
+    emblemSaveInFlight = true;
+    var btn = $('clan-manage-emblem-save');
+    if (btn) btn.disabled = true;
+    try {
+      var r = await fetch('/game/clans/emblem', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emblemId: selectedEmblemId }),
+      });
+      var data = await r.json().catch(function () {
+        return {};
+      });
+      if (!r.ok) {
+        showErr(data.messageUk || 'Не вдалося зберегти емблему.');
+        return;
+      }
+      if (data.clan) {
+        var nameEl = $('clan-manage-name');
+        if (nameEl) {
+          nameEl.textContent = '';
+          if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+            nameEl.appendChild(
+              L2.renderClanIdentity({
+                name: data.clan.name,
+                emblemId: data.clan.emblemId,
+                emblemSize: 32,
+              })
+            );
+          } else {
+            nameEl.textContent = data.clan.name || '—';
+          }
+        }
+      }
+    } catch (_e) {
+      showErr('Не вдалося зберегти емблему.');
+    } finally {
+      emblemSaveInFlight = false;
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function init() {
     layoutDebug = isLayoutDebugEnabled();
     installLayoutShiftObserver();
@@ -165,7 +213,37 @@
         return;
       }
       var nameEl = $('clan-manage-name');
-      if (nameEl) nameEl.textContent = clan.name || '—';
+      if (nameEl) {
+        nameEl.textContent = '';
+        if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+          nameEl.appendChild(
+            L2.renderClanIdentity({
+              name: clan.name,
+              emblemId: clan.emblemId,
+              emblemSize: 32,
+            })
+          );
+        } else {
+          nameEl.textContent = clan.name || '—';
+        }
+      }
+      selectedEmblemId = clan.emblemId != null ? clan.emblemId : null;
+      var picker = $('clan-manage-emblem-picker');
+      if (picker && typeof L2.mountClanEmblemPicker === 'function') {
+        L2.mountClanEmblemPicker(picker, {
+          size: 40,
+          selectedId: selectedEmblemId,
+          onSelect: function (id) {
+            selectedEmblemId = id;
+          },
+        });
+      }
+      var saveBtn = $('clan-manage-emblem-save');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', function () {
+          saveClanEmblem(t);
+        });
+      }
       revealClanManagePanel();
       logLayoutPhase('fetch-finished');
     } catch (_e) {

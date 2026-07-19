@@ -30,6 +30,8 @@ export type RatingsRow = {
   professionUk: string;
   level: number;
   value: string;
+  clanName?: string | null;
+  clanEmblemId?: number | null;
 };
 
 export type RatingsViewer = {
@@ -351,7 +353,9 @@ export async function getRatingsSnapshot(args: {
   });
   const viewerCharacterId = viewerRow?.id?.trim() || null;
 
-  const allRows = (await prisma.character.findMany()) as CharacterRow[];
+  const allRows = (await prisma.character.findMany({
+    include: { clan: { select: { name: true, emblemId: true } } },
+  })) as CharacterRow[];
   const scored = allRows.map((row) => scoreEntry(row, type));
   scored.sort((a, b) => compareEntries(a, b, type));
 
@@ -368,6 +372,8 @@ export async function getRatingsSnapshot(args: {
     professionUk: professionDisplayUk(e.row.l2Profession),
     level: e.level,
     value: e.value,
+    clanName: e.row.clan?.name ?? null,
+    clanEmblemId: e.row.clan?.emblemId ?? null,
   }));
 
   const viewerHit = findViewerEntry(scored, viewerCharacterId);

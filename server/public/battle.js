@@ -1357,11 +1357,25 @@
     }
     if (title) {
       var aggL = tr('battle_aggressive', 'агресивний');
-      title.textContent =
-        battle.mobName +
-        ' · ур. ' +
-        battle.mobLevel +
-        (battle.aggressive ? ' · ' + aggL : '');
+      title.textContent = '';
+      if (battleIsPvpView(battle) && window.L2 && typeof L2.renderPlayerIdentity === 'function') {
+        title.appendChild(
+          L2.renderPlayerIdentity({
+            name: battle.mobName,
+            clanEmblemId: battle.mobClanEmblemId,
+            emblemSize: 16,
+          })
+        );
+      } else {
+        title.appendChild(document.createTextNode(String(battle.mobName || '—')));
+      }
+      title.appendChild(
+        document.createTextNode(
+          ' · ур. ' +
+            String(battle.mobLevel != null ? battle.mobLevel : '—') +
+            (battle.aggressive ? ' · ' + aggL : '')
+        )
+      );
     }
     if (battleIsPvpView(battle)) {
       clearBattleMobPortrait(mobIconEl, mobHpWrapEl);
@@ -3592,9 +3606,20 @@
 
         var head = document.createElement('div');
         head.className = 'l2-battle-party-member__head';
-        var nameEl = document.createElement('span');
-        nameEl.className = 'l2-battle-party-member__name';
-        nameEl.textContent = String(m.name || '—');
+        var nameEl =
+          window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+            ? L2.createPlayerProfileNickEl({
+                characterId: m.characterId,
+                name: m.name,
+                clanEmblemId: m.clanEmblemId,
+                className: 'l2-battle-party-member__name',
+              })
+            : (function () {
+                var span = document.createElement('span');
+                span.className = 'l2-battle-party-member__name';
+                span.textContent = String(m.name || '—');
+                return span;
+              })();
         nameEl.title = String(m.name || '');
         head.appendChild(nameEl);
         var meta = document.createElement('span');

@@ -6,6 +6,7 @@ export type PartyMemberView = {
   isLeader: boolean;
   slotOrder: number;
   joinedAt: string;
+  clanEmblemId: number | null;
   /** Stage D — read-only status (null коли UI вимкнено). */
   online?: boolean;
   nearby?: boolean;

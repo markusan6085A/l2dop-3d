@@ -52,11 +52,11 @@ async function ensureClanHallOnRow(
   const clan = tx
     ? await tx.clan.findUnique({
         where: { id: row.clanId },
-        select: { name: true, hallBlessingAt: true, level: true },
+        select: { name: true, hallBlessingAt: true, level: true, emblemId: true },
       })
     : await prisma.clan.findUnique({
         where: { id: row.clanId },
-        select: { name: true, hallBlessingAt: true, level: true },
+        select: { name: true, hallBlessingAt: true, level: true, emblemId: true },
       });
   if (!clan) return row;
   return {
@@ -65,6 +65,7 @@ async function ensureClanHallOnRow(
       name: clan.name,
       hallBlessingAt: clan.hallBlessingAt,
       level: clan.level,
+      emblemId: clan.emblemId,
     },
   };
 }

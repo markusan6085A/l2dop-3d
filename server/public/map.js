@@ -585,12 +585,27 @@
     main.className = 'l2-map-hero-item__main';
     applyHeroRowNickColor(main, h);
 
-    var nameLink = document.createElement('a');
-    nameLink.className = 'l2-map-hero-name-link';
-    if (h.pvpNickColor === 'pk') nameLink.classList.add('l2-pvp-nick--pk');
-    else if (h.pvpNickColor === 'aggressor') nameLink.classList.add('l2-pvp-nick--aggressor');
-    nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-    nameLink.textContent = h.name || '—';
+    if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
+      var identity = L2.renderPlayerIdentity({
+        name: h.name,
+        clanEmblemId: h.clanEmblemId,
+        emblemSize: 16,
+        pvpNickColor: h.pvpNickColor,
+      });
+      var nameLink = document.createElement('a');
+      nameLink.className = 'l2-map-hero-name-link';
+      nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+      while (identity.firstChild) nameLink.appendChild(identity.firstChild);
+      main.appendChild(nameLink);
+    } else {
+      var nameLink = document.createElement('a');
+      nameLink.className = 'l2-map-hero-name-link';
+      if (h.pvpNickColor === 'pk') nameLink.classList.add('l2-pvp-nick--pk');
+      else if (h.pvpNickColor === 'aggressor') nameLink.classList.add('l2-pvp-nick--aggressor');
+      nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+      nameLink.textContent = h.name || '—';
+      main.appendChild(nameLink);
+    }
 
     var levelSpan = document.createElement('span');
     levelSpan.className = 'l2-map-hero-level';

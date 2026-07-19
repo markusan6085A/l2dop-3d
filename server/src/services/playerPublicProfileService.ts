@@ -19,6 +19,7 @@ export type PlayerPublicProfileDto = {
   cityLabelUk: string;
   profileStatus: string | null;
   clanName: string | null;
+  clanEmblemId: number | null;
   karma: number;
   pk: number;
   recommendations: number;
@@ -61,7 +62,7 @@ const PROFILE_SELECT = {
   buffHeroicTier: true,
   buffZealotStacks: true,
   worldCombatStateJson: true,
-  clan: { select: { name: true } },
+  clan: { select: { name: true, emblemId: true } },
 } as const;
 
 type ProfileRow = {
@@ -86,7 +87,7 @@ type ProfileRow = {
   buffHeroicTier: number | null;
   buffZealotStacks: number | null;
   worldCombatStateJson: unknown;
-  clan: { name: string } | null;
+  clan: { name: string; emblemId: number | null } | null;
 };
 
 function resolveCityLabelUk(cityId: string): string {
@@ -114,6 +115,7 @@ function rowToProfile(row: ProfileRow): PlayerPublicProfileDto {
         ? String(row.profileStatus).trim()
         : null,
     clanName: row.clan?.name ?? null,
+    clanEmblemId: row.clan?.emblemId ?? null,
     karma: Math.max(0, Math.floor(Number(row.karma) || 0)),
     pk: 0,
     recommendations: 0,

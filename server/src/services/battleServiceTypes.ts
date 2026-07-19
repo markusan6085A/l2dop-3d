@@ -43,6 +43,8 @@ export interface BattleView {
   mobIconUrl?: string;
   /** PvP — без портрета моба; детальніший лог урону. */
   battleMode?: 'pvp' | 'pve';
+  /** Емблема клану PvP-цілі (лише battleMode=pvp). */
+  mobClanEmblemId?: number | null;
   mobLevel: number;
   mobHp: number;
   mobMaxHp: number;

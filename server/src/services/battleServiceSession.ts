@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import { getDungeonMobSpawnById } from '../data/sevenSignsDungeonMobSpawns.js';
 import { findSevenSignsDungeonById } from '../data/sevenSignsDungeons.js';
-import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
+import { resolveBattleSpawnMeta, isPvpBattleJson } from '../domain/battlePvpContext.js';
 import {
   dungeonMobBattleDistancePx,
   DUNGEON_BATTLE_RANGE_PX,
@@ -46,7 +46,7 @@ import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { parseSkillsLearnedJson } from './skillLearnService.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
-import { battleViewFromState, skillCooldownUiContextFromRow } from './battleServiceBattleUi.js';
+import { battleViewFromState, resolvePvpTargetClanEmblemId, skillCooldownUiContextFromRow } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
 import { applyCharacterReadView } from './charReadView.js';
 import { findCharacterForUser, findCharacterForUserInTx } from './charResolveForUser.js';
@@ -451,6 +451,9 @@ export async function getBattleState(
     row.race,
     row.classBranch
   );
+  const pvpEmblemId = isPvpBattleJson(bj)
+    ? await resolvePvpTargetClanEmblemId(bj)
+    : null;
   const view = battleViewFromState(
     bj.spawnId,
     bj,
@@ -459,6 +462,7 @@ export async function getBattleState(
       level: spawnMeta.level,
       aggressive: spawnMeta.aggressive,
       kind: spawnMeta.kind,
+      clanEmblemId: pvpEmblemId,
     },
     snap.level,
     row.race,

@@ -209,7 +209,19 @@
     if (!clanBtn) return;
     clanBtn.removeAttribute('data-stub');
     if (viewedProfile.clanName) {
-      clanBtn.textContent = 'Клан: ' + String(viewedProfile.clanName);
+      clanBtn.textContent = '';
+      if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+        clanBtn.appendChild(document.createTextNode('Клан: '));
+        clanBtn.appendChild(
+          L2.renderClanIdentity({
+            name: viewedProfile.clanName,
+            emblemId: viewedProfile.clanEmblemId,
+            emblemSize: 16,
+          })
+        );
+      } else {
+        clanBtn.textContent = 'Клан: ' + String(viewedProfile.clanName);
+      }
       clanBtn.disabled = true;
     } else if (canInviteToClan(viewedProfile, selfCharacter)) {
       clanBtn.textContent = 'Запросити в клан';
@@ -225,8 +237,23 @@
     viewedProfile = p;
     var headline = $('player-headline');
     if (headline) {
-      headline.textContent =
-        String(p.name || '—') + ' — ' + String(p.level != null ? p.level : '—') + ' ур.';
+      headline.textContent = '';
+      if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
+        headline.appendChild(
+          L2.renderPlayerIdentity({
+            name: p.name,
+            clanEmblemId: p.clanEmblemId,
+            emblemSize: 16,
+          })
+        );
+      } else {
+        headline.appendChild(document.createTextNode(String(p.name || '—')));
+      }
+      headline.appendChild(
+        document.createTextNode(
+          ' — ' + String(p.level != null ? p.level : '—') + ' ур.'
+        )
+      );
     }
 
     var statusEl = $('player-status');
