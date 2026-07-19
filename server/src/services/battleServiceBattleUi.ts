@@ -1,4 +1,5 @@
 import type { BattleActionId, BattleJsonState } from '../domain/battle.js';
+import { isValidClanEmblemId } from '../domain/clanEmblem.js';
 import { BASIC_ATTACK_COOLDOWN_SEC } from '../domain/battleBasicAttackCooldown.js';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
 import { prisma } from '../lib/prisma.js';
@@ -436,7 +437,7 @@ export async function resolvePvpTargetClanEmblemId(
     select: { clan: { select: { emblemId: true } } },
   });
   const id = row?.clan?.emblemId;
-  return typeof id === 'number' && id >= 1 && id <= 40 ? id : null;
+  return typeof id === 'number' && isValidClanEmblemId(id) ? id : null;
 }
 
 export function battleViewFromState(
@@ -487,8 +488,7 @@ export function battleViewFromState(
   const mobClanEmblemId =
     isPvp &&
     typeof spawnMeta.clanEmblemId === 'number' &&
-    spawnMeta.clanEmblemId >= 1 &&
-    spawnMeta.clanEmblemId <= 40
+    isValidClanEmblemId(spawnMeta.clanEmblemId)
       ? spawnMeta.clanEmblemId
       : null;
   return {

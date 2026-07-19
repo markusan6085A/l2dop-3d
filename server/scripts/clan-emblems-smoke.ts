@@ -16,6 +16,7 @@ import { SIEGE_WALL_MAX_HP } from '../src/domain/clanSiegeConfig.js';
 import { CLAN_SIEGE_STATE } from '../src/domain/clanSiegeConstants.js';
 import {
   clanEmblemPublicUrl,
+  listClanEmblemIds,
   parseClanEmblemId,
 } from '../src/domain/clanEmblem.js';
 import { prisma } from '../src/lib/prisma.js';
@@ -165,6 +166,9 @@ async function main(): Promise<void> {
   assert.equal(parseClanEmblemId(40).ok, true);
   ok('Clan.emblemId accepts 40');
 
+  assert.equal(parseClanEmblemId(36).ok, false);
+  ok('gap id 36 blocked');
+
   assert.equal(parseClanEmblemId(0).ok, false);
   ok('value 0 blocked');
 
@@ -174,8 +178,11 @@ async function main(): Promise<void> {
   assert.equal(parseClanEmblemId(1.5).ok, false);
   ok('non-integer blocked');
 
-  assert.equal(clanEmblemPublicUrl(7), '/clans-emblems/7.jpg');
+  assert.equal(clanEmblemPublicUrl(7), '/clans-emblems/7.png');
   ok('emblem URL for id 7');
+
+  assert.equal(listClanEmblemIds().length, 37);
+  ok('catalog has 37 emblem ids');
 
   const leader = await createUserWithClan('L', 3);
   const member = await createUserWithClan('M', null);

@@ -254,7 +254,7 @@ const emblemImgs = collectByTag(withEmblem, 'img');
 const nickLinks = collectByTag(withEmblem, 'a');
 assert.equal(emblemImgs.length, 1);
 assert.equal(nickLinks.length, 1);
-assert.equal(emblemImgs[0].src, '/clans-emblems/7.jpg');
+assert.equal(emblemImgs[0].src, '/clans-emblems/7.png');
 assert.equal(nickLinks[0].classList.contains('nick-extra'), true);
 assert.equal(nickLinks[0].classList.contains('wrap-test'), false);
 
@@ -265,9 +265,11 @@ assert.equal(collectByTag(noEmblem, 'a').length, 1);
 
 // 5. 1000 calls must not throw or explode DOM.
 for (let i = 0; i < 1000; i++) {
+  const emblemIds = L2.listClanEmblemIds();
+  const emblemId = emblemIds[i % emblemIds.length];
   const node = L2.renderPlayerIdentity({
     name: 'Nick' + i,
-    clanEmblemId: (i % 40) + 1,
+    clanEmblemId: emblemId,
     characterId: 'char-' + i,
   });
   assert.ok(node);
@@ -343,7 +345,7 @@ assert.equal(collectByTag(legacyNick, 'img').length, 0);
 // Picker mounts 40 emblem buttons.
 const pickerHost = document.createElement('div');
 L2.mountClanEmblemPicker(pickerHost, { selectedId: 5, size: 32 });
-assert.equal(pickerHost.querySelectorAll('.l2-clan-emblem-picker__btn').length, 40);
+assert.equal(pickerHost.querySelectorAll('.l2-clan-emblem-picker__btn').length, 37);
 assert.equal(
   pickerHost.querySelector('.l2-clan-emblem-picker__btn--selected').getAttribute(
     'data-emblem-id'

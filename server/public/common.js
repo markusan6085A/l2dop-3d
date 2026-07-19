@@ -2503,9 +2503,28 @@
     },
 
     clanEmblemUrl: function (emblemId) {
+      if (typeof global.L2.isValidClanEmblemId === 'function') {
+        if (!global.L2.isValidClanEmblemId(Number(emblemId))) return null;
+      } else {
+        var n = Number(emblemId);
+        if (!Number.isInteger(n) || n < 1 || n > 40) return null;
+      }
+      return '/clans-emblems/' + Math.floor(Number(emblemId)) + '.png';
+    },
+
+    /** 37 емблем: id 1–35, 37, 40 (немає 36, 38, 39). */
+    isValidClanEmblemId: function (emblemId) {
       var n = Number(emblemId);
-      if (!Number.isInteger(n) || n < 1 || n > 40) return null;
-      return '/clans-emblems/' + n + '.jpg';
+      if (!Number.isInteger(n) || n < 1 || n > 40) return false;
+      return n !== 36 && n !== 38 && n !== 39;
+    },
+
+    listClanEmblemIds: function () {
+      var ids = [];
+      for (var id = 1; id <= 40; id++) {
+        if (global.L2.isValidClanEmblemId(id)) ids.push(id);
+      }
+      return ids;
     },
 
     createClanEmblemElement: function (emblemId, sizePx) {
@@ -2582,7 +2601,16 @@
       var size = opts.size || 40;
       container.innerHTML = '';
       container.className = 'l2-clan-emblem-picker';
-      for (var id = 1; id <= 40; id++) {
+      var emblemIds =
+        typeof global.L2.listClanEmblemIds === 'function'
+          ? global.L2.listClanEmblemIds()
+          : [];
+      if (!emblemIds.length) {
+        for (var fallbackId = 1; fallbackId <= 40; fallbackId++) {
+          if (global.L2.isValidClanEmblemId(fallbackId)) emblemIds.push(fallbackId);
+        }
+      }
+      for (var idx = 0; idx < emblemIds.length; idx++) {
         (function (emblemId) {
           var btn = document.createElement('button');
           btn.type = 'button';
@@ -2604,7 +2632,7 @@
             if (typeof opts.onSelect === 'function') opts.onSelect(emblemId);
           });
           container.appendChild(btn);
-        })(id);
+        })(emblemIds[idx]);
       }
     },
 

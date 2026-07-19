@@ -249,7 +249,7 @@ export interface CharacterSnapshot {
   clanId?: string | null;
   /** Назва клану для UI. */
   clanName?: string | null;
-  /** Емблема клану (1–40) або null. */
+  /** Емблема клану (1–35, 37, 40) або null. */
   clanEmblemId?: number | null;
   /** leader | member | null */
   clanRole?: string | null;
