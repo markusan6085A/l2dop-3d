@@ -125,6 +125,7 @@ model Character {
   partyInvitesRecv PartyInvite[] @relation("PartyInviteTarget")
   partyBattleParticipants PartyBattleParticipant[]
   clanSiegeParticipations ClanSiegeParticipant[]
+  clanSiegeWallActions    ClanSiegeWallAction[]
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
@@ -331,6 +332,7 @@ model ClanSiege {
   updatedAt       DateTime  @updatedAt
   clanDamages     ClanSiegeClanDamage[]
   participants    ClanSiegeParticipant[]
+  wallActions     ClanSiegeWallAction[]
   rewardLedger    ClanSiegeRewardLedger?
 
   @@unique([cityId, startsAt])
@@ -357,7 +359,7 @@ model ClanSiegeClanDamage {
   @@index([clanId])
 }
 
-/** Участь персонажа в облозі (cooldown, idempotency, персональний урон). */
+/** Участь персонажа в облозі (cooldown, персональний урон). */
 model ClanSiegeParticipant {
   id               String    @id @default(uuid())
   siegeId          String
@@ -367,13 +369,31 @@ model ClanSiegeParticipant {
   clanId           String
   totalWallDamage  Int       @default(0)
   lastWallAttackAt DateTime?
-  lastActionId     String?
   lastSeenAt       DateTime?
   joinedAt         DateTime  @default(now())
 
   @@unique([siegeId, characterId])
   @@index([siegeId])
   @@index([characterId])
+}
+
+/** Ledger ударів по стіні — idempotency (siegeId + characterId + actionId). */
+model ClanSiegeWallAction {
+  id                   String    @id @default(uuid())
+  siegeId              String
+  siege                ClanSiege @relation(fields: [siegeId], references: [id], onDelete: Cascade)
+  characterId          String
+  character            Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  actionId             String
+  damage               Int
+  wallHpAfter          Int
+  siegeVersionAfter    Int
+  characterTotalAfter  Int
+  clanTotalAfter       Int
+  createdAt            DateTime  @default(now())
+
+  @@unique([siegeId, characterId, actionId])
+  @@index([siegeId])
 }
 
 /** Ідемпотентний ledger нагороди за облогу (один запис на siegeId). */

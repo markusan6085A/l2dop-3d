@@ -155,14 +155,29 @@ async function main(): Promise<void> {
     state: 'active',
     wallHp: 100,
   });
-  try {
-    await attackSiegeWallForUser(leaderB.userId, CITY, 'post-end', leaderB.characterId);
-    assert.fail('expected post-end reject');
-  } catch (e) {
-    assert.ok(e instanceof SiegeAttackError);
-    assert.equal(e.code, 'siege_finished');
-  }
-  ok('after endsAt attack blocked');
+  const postEnd = await attackSiegeWallForUser(
+    leaderB.userId,
+    CITY,
+    'post-end',
+    leaderB.characterId
+  );
+  assert.equal(postEnd.finished, true);
+  assert.equal(postEnd.damage, 0);
+  assert.equal(postEnd.state, 'finished');
+  const pastDb = await prisma.clanSiege.findUniqueOrThrow({
+    where: { id: past.id },
+  });
+  assert.equal(pastDb.state, 'finished');
+  assert.equal(pastDb.finishReason, CLAN_SIEGE_FINISH_REASON.timeExpired);
+  assert.equal(pastDb.wallHp, 100);
+  const pastState = await getSiegeStateForUser(
+    leaderB.userId,
+    CITY,
+    leaderB.characterId
+  );
+  assert.equal(pastState.state, 'finished');
+  assert.equal(pastState.canAttack, false);
+  ok('after endsAt attack finishes atomically without damage');
   await resetCitySieges();
 
   await seedActiveSiege({ wallHp: 1000 });
@@ -295,8 +310,10 @@ async function main(): Promise<void> {
     cdChar.characterId
   );
   assert.equal(replay.idempotentReplay, true);
-  assert.equal(replay.damage, 0);
-  ok('same actionId is idempotent');
+  assert.equal(replay.damage, afterCd.damage);
+  assert.equal(replay.wallHp, afterCd.wallHp);
+  assert.equal(replay.siegeVersion, afterCd.siegeVersion);
+  ok('same actionId is idempotent replay with original payload');
 
   await resetCitySieges();
   const sameCharSiege = await seedActiveSiege({ wallHp: 5000 });
@@ -309,6 +326,113 @@ async function main(): Promise<void> {
   ).length;
   assert.equal(appliedSame, 1);
   ok('parallel POST same character — one damage application');
+
+  await resetCitySieges();
+  const seqSiege = await seedActiveSiege({ wallHp: 20_000 });
+  const seqChar = await createTestAccount('SEQ', { clanId: leaderB.clanId });
+  users.push(seqChar.userId);
+  const hitA = await attackSiegeWallForUser(
+    seqChar.userId,
+    CITY,
+    'seq-a',
+    seqChar.characterId
+  );
+  await new Promise((r) => setTimeout(r, SIEGE_ATTACK_MIN_INTERVAL_MS + 30));
+  const hitB = await attackSiegeWallForUser(
+    seqChar.userId,
+    CITY,
+    'seq-b',
+    seqChar.characterId
+  );
+  const siegeAfterB = await prisma.clanSiege.findUniqueOrThrow({
+    where: { id: seqSiege.id },
+  });
+  const clanAfterB = await prisma.clanSiegeClanDamage.findUnique({
+    where: {
+      siegeId_clanId: { siegeId: seqSiege.id, clanId: leaderB.clanId },
+    },
+  });
+  const retryA = await attackSiegeWallForUser(
+    seqChar.userId,
+    CITY,
+    'seq-a',
+    seqChar.characterId
+  );
+  assert.equal(retryA.idempotentReplay, true);
+  assert.equal(retryA.damage, hitA.damage);
+  const siegeAfterRetry = await prisma.clanSiege.findUniqueOrThrow({
+    where: { id: seqSiege.id },
+  });
+  assert.equal(siegeAfterRetry.wallHp, siegeAfterB.wallHp);
+  assert.equal(clanAfterB!.totalDamage, hitA.damage + hitB.damage);
+  ok('A → B → retry A does not apply duplicate damage');
+
+  await resetCitySieges();
+  const parActSiege = await seedActiveSiege({ wallHp: 50_000 });
+  const parAcc = await createTestAccount('PID', { clanId: leaderB.clanId });
+  users.push(parAcc.userId);
+  const [pa1, pa2] = await Promise.allSettled([
+    attackSiegeWallForUser(parAcc.userId, CITY, 'same-act', parAcc.characterId),
+    attackSiegeWallForUser(parAcc.userId, CITY, 'same-act', parAcc.characterId),
+  ]);
+  const fulfilledSame = [pa1, pa2]
+    .filter(
+      (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof attackSiegeWallForUser>>> =>
+        r.status === 'fulfilled'
+    )
+    .map((r) => r.value);
+  assert.equal(fulfilledSame.length, 2);
+  const firstHits = fulfilledSame.filter((r) => !r.idempotentReplay);
+  const replayHits = fulfilledSame.filter((r) => r.idempotentReplay);
+  assert.equal(firstHits.length, 1);
+  assert.equal(replayHits.length, 1);
+  assert.equal(replayHits[0]!.damage, firstHits[0]!.damage);
+  assert.equal(
+    await prisma.clanSiegeWallAction.count({
+      where: { siegeId: parActSiege.id, actionId: 'same-act' },
+    }),
+    1
+  );
+  ok('parallel same actionId applies once');
+
+  await resetCitySieges();
+  const endsAtMs = Date.now() - 1;
+  const endsAt = new Date(endsAtMs);
+  const barelyEnded = await seedActiveSiege({
+    startsAt: new Date(endsAtMs - 3_600_000),
+    endsAt,
+    state: 'active',
+    wallHp: 5000,
+  });
+  const lateHit = await attackSiegeWallForUser(
+    leaderB.userId,
+    CITY,
+    'late-1ms',
+    leaderB.characterId,
+    endsAtMs + 1
+  );
+  assert.equal(lateHit.damage, 0);
+  assert.equal(lateHit.finished, true);
+  const barelyDb = await prisma.clanSiege.findUniqueOrThrow({
+    where: { id: barelyEnded.id },
+  });
+  assert.equal(barelyDb.wallHp, 5000);
+  assert.equal(barelyDb.finishReason, CLAN_SIEGE_FINISH_REASON.timeExpired);
+  const lateAgain = await attackSiegeWallForUser(
+    leaderB.userId,
+    CITY,
+    'late-again',
+    leaderB.characterId,
+    endsAtMs + 2
+  );
+  assert.equal(lateAgain.finished, true);
+  assert.equal(lateAgain.damage, 0);
+  const barelyDb2 = await prisma.clanSiege.findUniqueOrThrow({
+    where: { id: barelyEnded.id },
+  });
+  assert.equal(barelyDb2.state, 'finished');
+  assert.equal(barelyDb2.finishReason, CLAN_SIEGE_FINISH_REASON.timeExpired);
+  ok('attack 1ms after endsAt forbidden and time_expired finish is once');
 
   await resetCitySieges();
   const wallBattle = await seedActiveSiege({ wallHp: 100 });
@@ -346,6 +470,14 @@ async function main(): Promise<void> {
     'final-blow',
     clanC.characterId
   );
+  const finalReplay = await attackSiegeWallForUser(
+    clanC.userId,
+    CITY,
+    'final-blow',
+    clanC.characterId
+  );
+  assert.equal(finalReplay.idempotentReplay, true);
+  assert.ok(finalReplay.damage > 0);
   const finished = await prisma.clanSiege.findUniqueOrThrow({
     where: { id: wallBattle.id },
   });
@@ -371,6 +503,7 @@ async function main(): Promise<void> {
     SIEGE_REWARD_CLAN_POINTS
   );
   ok('wall destroyed grants 8000 clanPoints once + updates owner');
+  ok('reward not duplicated on replay');
 
   await resetCitySieges();
   await prisma.cityCastle.update({

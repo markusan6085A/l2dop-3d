@@ -23,6 +23,12 @@ import {
   lockClanSiegeParticipantInTx,
   rollSiegeWallDamage,
 } from './clanSiegeFinishService.js';
+import {
+  createClanSiegeWallActionInTx,
+  findClanSiegeWallActionInTx,
+  siegeViewFromWallAction,
+} from './clanSiegeWallActionService.js';
+import { isPrismaUniqueViolation } from '../party/partyPrismaErrors.js';
 
 export type SiegeClanBrief = { id: string; name: string } | null;
 
@@ -282,11 +288,62 @@ async function buildAttackResponseFromRows(args: {
     finished: args.finished,
     winnerClan,
     rewardPoints:
-      args.finished && args.siege.finishReason === CLAN_SIEGE_FINISH_REASON.wallDestroyed
+      args.finished &&
+      args.siege.finishReason === CLAN_SIEGE_FINISH_REASON.wallDestroyed
         ? SIEGE_REWARD_CLAN_POINTS
         : null,
     idempotentReplay: args.idempotentReplay,
   };
+}
+
+async function buildReplayFromWallAction(
+  siege: Awaited<ReturnType<typeof lockClanSiegeInTx>> & object,
+  action: Awaited<ReturnType<typeof findClanSiegeWallActionInTx>> & object
+): Promise<SiegeAttackResult> {
+  const view = siegeViewFromWallAction(siege, action);
+  return buildAttackResponseFromRows({
+    siege: view,
+    damage: action.damage,
+    clanTotalDamage: action.clanTotalAfter,
+    characterTotalDamage: action.characterTotalAfter,
+    finished:
+      view.state === CLAN_SIEGE_STATE.finished ||
+      view.finishReason === CLAN_SIEGE_FINISH_REASON.timeExpired,
+    idempotentReplay: true,
+  });
+}
+
+async function ensureParticipantLockedInTx(
+  tx: Parameters<typeof lockClanSiegeParticipantInTx>[0],
+  siegeId: string,
+  characterId: string,
+  clanId: string,
+  nowMs: number
+) {
+  let participant = await lockClanSiegeParticipantInTx(tx, siegeId, characterId);
+  if (!participant) {
+    try {
+      await tx.clanSiegeParticipant.create({
+        data: {
+          siegeId,
+          characterId,
+          clanId,
+          lastSeenAt: new Date(nowMs),
+        },
+      });
+    } catch (_eUnique) {
+      /* concurrent first hit */
+    }
+    participant = await lockClanSiegeParticipantInTx(tx, siegeId, characterId);
+  }
+  if (!participant) {
+    throw new SiegeAttackError(
+      'internal_error',
+      'internal_error',
+      'Не вдалося зареєструвати учасника.'
+    );
+  }
+  return participant;
 }
 
 export async function attackSiegeWallForUser(
@@ -378,14 +435,67 @@ export async function attackSiegeWallForUser(
         'Облога ще не розпочалась.'
       );
     }
-    if (now >= locked.endsAt.getTime() || locked.state === CLAN_SIEGE_STATE.finished) {
-      throw new SiegeAttackError(
-        'siege_finished',
-        'siege_finished',
-        'Облога вже завершилась.'
-      );
+
+    const existingAction = await findClanSiegeWallActionInTx(
+      tx,
+      locked.id,
+      char.id,
+      act
+    );
+    if (existingAction) {
+      return buildReplayFromWallAction(locked, existingAction);
     }
+
+    if (now >= locked.endsAt.getTime() || locked.state === CLAN_SIEGE_STATE.finished) {
+      let finalSiege = locked;
+      if (locked.state !== CLAN_SIEGE_STATE.finished) {
+        const fin = await finishClanSiegeInTx(
+          tx,
+          locked.id,
+          CLAN_SIEGE_FINISH_REASON.timeExpired,
+          now
+        );
+        if (fin) finalSiege = fin;
+      }
+      const clanRow = await tx.clanSiegeClanDamage.findUnique({
+        where: {
+          siegeId_clanId: { siegeId: locked.id, clanId: char.clanId! },
+        },
+        select: { totalDamage: true },
+      });
+      const partRow = await tx.clanSiegeParticipant.findUnique({
+        where: {
+          siegeId_characterId: { siegeId: locked.id, characterId: char.id },
+        },
+        select: { totalWallDamage: true },
+      });
+      return buildAttackResponseFromRows({
+        siege: finalSiege,
+        damage: 0,
+        clanTotalDamage: clanRow?.totalDamage ?? 0,
+        characterTotalDamage: partRow?.totalWallDamage ?? 0,
+        finished: true,
+      });
+    }
+
     if (locked.wallHp <= 0) {
+      if (locked.state !== CLAN_SIEGE_STATE.finished) {
+        const fin = await finishClanSiegeInTx(
+          tx,
+          locked.id,
+          CLAN_SIEGE_FINISH_REASON.wallDestroyed,
+          now
+        );
+        if (fin) {
+          return buildAttackResponseFromRows({
+            siege: fin,
+            damage: 0,
+            clanTotalDamage: 0,
+            characterTotalDamage: 0,
+            finished: true,
+          });
+        }
+      }
       throw new SiegeAttackError(
         'siege_finished',
         'siege_finished',
@@ -393,56 +503,13 @@ export async function attackSiegeWallForUser(
       );
     }
 
-    let participant = await lockClanSiegeParticipantInTx(
+    const participant = await ensureParticipantLockedInTx(
       tx,
       locked.id,
-      char.id
+      char.id,
+      char.clanId!,
+      now
     );
-
-    if (!participant) {
-      try {
-        await tx.clanSiegeParticipant.create({
-          data: {
-            siegeId: locked.id,
-            characterId: char.id,
-            clanId: char.clanId!,
-            lastSeenAt: new Date(now),
-          },
-        });
-      } catch (_eUnique) {
-        /* concurrent first hit */
-      }
-      participant = await lockClanSiegeParticipantInTx(
-        tx,
-        locked.id,
-        char.id
-      );
-    }
-
-    if (!participant) {
-      throw new SiegeAttackError(
-        'internal_error',
-        'internal_error',
-        'Не вдалося зареєструвати учасника.'
-      );
-    }
-
-    if (participant.lastActionId === act) {
-      const clanRow = await tx.clanSiegeClanDamage.findUnique({
-        where: {
-          siegeId_clanId: { siegeId: locked.id, clanId: char.clanId! },
-        },
-        select: { totalDamage: true },
-      });
-      return buildAttackResponseFromRows({
-        siege: locked,
-        damage: 0,
-        clanTotalDamage: clanRow?.totalDamage ?? 0,
-        characterTotalDamage: participant.totalWallDamage,
-        finished: locked.state === CLAN_SIEGE_STATE.finished,
-        idempotentReplay: true,
-      });
-    }
 
     if (
       participant.lastWallAttackAt &&
@@ -459,12 +526,48 @@ export async function attackSiegeWallForUser(
     const appliedDamage = Math.min(randomDamage, locked.wallHp);
     const newWallHp = locked.wallHp - appliedDamage;
     const hitAt = new Date(now);
+    const nextVersion = locked.version + 1;
+
+    const clanRowBefore = await tx.clanSiegeClanDamage.findUnique({
+      where: {
+        siegeId_clanId: { siegeId: locked.id, clanId: char.clanId! },
+      },
+      select: { totalDamage: true },
+    });
+    const nextCharTotal = participant.totalWallDamage + appliedDamage;
+    const nextClanTotal = (clanRowBefore?.totalDamage ?? 0) + appliedDamage;
+
+    try {
+      await createClanSiegeWallActionInTx(tx, {
+        siegeId: locked.id,
+        characterId: char.id,
+        actionId: act,
+        damage: appliedDamage,
+        wallHpAfter: newWallHp,
+        siegeVersionAfter: nextVersion,
+        characterTotalAfter: nextCharTotal,
+        clanTotalAfter: nextClanTotal,
+      });
+    } catch (err) {
+      if (isPrismaUniqueViolation(err)) {
+        const replay = await findClanSiegeWallActionInTx(
+          tx,
+          locked.id,
+          char.id,
+          act
+        );
+        if (replay) {
+          return buildReplayFromWallAction(locked, replay);
+        }
+      }
+      throw err;
+    }
 
     const updatedSiege = await tx.clanSiege.update({
       where: { id: locked.id },
       data: {
         wallHp: newWallHp,
-        version: { increment: 1 },
+        version: nextVersion,
         state: CLAN_SIEGE_STATE.active,
       },
     });
@@ -472,9 +575,8 @@ export async function attackSiegeWallForUser(
     const updatedParticipant = await tx.clanSiegeParticipant.update({
       where: { id: participant.id },
       data: {
-        totalWallDamage: { increment: appliedDamage },
+        totalWallDamage: nextCharTotal,
         lastWallAttackAt: hitAt,
-        lastActionId: act,
         lastSeenAt: hitAt,
       },
     });
@@ -491,7 +593,7 @@ export async function attackSiegeWallForUser(
         lastHitAt: hitAt,
       },
       update: {
-        totalDamage: { increment: appliedDamage },
+        totalDamage: nextClanTotal,
         lastHitAt: hitAt,
       },
     });

@@ -63,7 +63,6 @@ export async function lockClanSiegeParticipantInTx(
   id: string;
   totalWallDamage: number;
   lastWallAttackAt: Date | null;
-  lastActionId: string | null;
   clanId: string;
 } | null> {
   const sid = String(siegeId || '').trim();
@@ -74,11 +73,10 @@ export async function lockClanSiegeParticipantInTx(
       id: string;
       totalWallDamage: number;
       lastWallAttackAt: Date | null;
-      lastActionId: string | null;
       clanId: string;
     }[]
   >`
-    SELECT id, "totalWallDamage", "lastWallAttackAt", "lastActionId", "clanId"
+    SELECT id, "totalWallDamage", "lastWallAttackAt", "clanId"
     FROM "ClanSiegeParticipant"
     WHERE "siegeId" = ${sid} AND "characterId" = ${cid}
     FOR UPDATE
