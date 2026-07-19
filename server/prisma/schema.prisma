@@ -148,16 +148,25 @@ enum PartyBattleSessionState {
   ended
 }
 
+enum PartyBattlePlayfield {
+  world
+  dungeon
+}
+
 /** Спільний PvE-бій паті: одне mobHp на групу (фаза 2). Історія зберігається після disband Party. */
 model PartyBattleSession {
   id                     String                   @id @default(uuid())
   partyId                String?
   originPartyId          String
   activePartyKey         String?                  @unique
+  playfield              PartyBattlePlayfield     @default(world)
+  dungeonId              String?
   spawnId                String
   canonicalMobTemplateId String
-  mobWorldX              Int
-  mobWorldY              Int
+  mobWorldX              Int?
+  mobWorldY              Int?
+  mobMapX                Int?
+  mobMapY                Int?
   mobHp                  Int
   mobMaxHp               Int
   battleVersion          Int                      @default(1)

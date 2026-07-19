@@ -3,6 +3,7 @@
  *
  * Production defaults (усі false):
  * - PARTY_BATTLE_ENABLED=false → solo PvE, zero party battle table access
+ * - PARTY_BATTLE_DUNGEON_ENABLED=false → dungeon лишається solo
  * - PARTY_BATTLE_REWARDS_ENABLED=false
  * - PARTY_BATTLE_ALLOW_UNREWARDED_TESTS=false
  */
@@ -14,6 +15,11 @@ function envTruthy(key: string): boolean {
 /** Master switch — без true жодних party battle services/reads. */
 export function isPartyBattleEngineEnabled(): boolean {
   return envTruthy('PARTY_BATTLE_ENABLED');
+}
+
+/** Stage E: party battle у Seven Signs dungeons (потребує engine ON). */
+export function isPartyBattleDungeonEnabled(): boolean {
+  return isPartyBattleEngineEnabled() && envTruthy('PARTY_BATTLE_DUNGEON_ENABLED');
 }
 
 /** Stage C: atomic EXP/SP/adena split + PartyKillReward. */

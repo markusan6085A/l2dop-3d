@@ -1,21 +1,20 @@
 import { Prisma } from '@prisma/client';
-import type { MapWorldSpawn } from '../../data/mapWorldSpawns.js';
+import type { SevenSignsDungeonMobSpawn } from '../../data/sevenSignsDungeonMobSpawns.js';
 import { mobMaxCpFromMobMaxHp } from '../../data/wrathSkillConstants.js';
 import {
   mobCombatFromSpawn,
   type BattleJsonState,
+  jsonFiniteNum,
 } from '../../domain/battle.js';
 import { applyRiposteReflectToBattleMods } from '../../domain/riposteStance.js';
-import { isWithinMobBattleRange } from '../../domain/mapNearbyRadius.js';
-import { jsonFiniteNum } from '../../domain/battle.js';
 import {
-  canStartPartyBattleViaRoute,
-  isPartyBattleDungeonEnabled,
-  isPartyBattleEngineEnabled,
-  throwIfPartyBattleRouteBlocked,
-} from '../../domain/partyBattleFlags.js';
-import type { MapSpawnKind } from '../../data/mapWorldSpawns.js';
-import { isSharedWorldBossKind } from '../../domain/worldBossSession.js';
+  assertDungeonSessionMatchesMob,
+  buildDungeonMovementStopState,
+  isWithinDungeonPartyBattleRadius,
+  resolveLiveDungeonMapPosition,
+} from '../../domain/partyBattlePlayfield.js';
+import { dungeonMobSpawnToMapWorldSpawn } from '../../data/sevenSignsDungeonMobSpawns.js';
+import { throwIfPartyBattleRouteBlocked } from '../../domain/partyBattleFlags.js';
 import {
   gameConflictFromMutation,
   combatOptsFromRow,
@@ -24,13 +23,19 @@ import {
   type CharacterSnapshot,
 } from '../charService.js';
 import { ensureClanHallOnRow } from '../charClientSnapshot.js';
-import { computeCombatStats, effectiveMaxMpWithJewelFlat } from '../../data/l2dopCombatFormulas.js';
+import {
+  computeCombatStats,
+  effectiveMaxMpWithJewelFlat,
+} from '../../data/l2dopCombatFormulas.js';
 import { parseInventory } from '../../data/inventory.js';
 import { computeVitals } from '../../data/l2dopVitals.js';
 import { levelFromTotalExp } from '../../data/l2dopExpgain.js';
 import { parseSkillsLearnedJson } from '../skillLearnService.js';
 import { serializeBattleJsonForDb } from '../battleServiceBattleBuffs.js';
-import { battleViewFromState, skillCooldownUiContextFromRow } from '../battleServiceBattleUi.js';
+import {
+  battleViewFromState,
+  skillCooldownUiContextFromRow,
+} from '../battleServiceBattleUi.js';
 import type { BattleView } from '../battleServiceTypes.js';
 import { persistableActiveBuffsFromJson } from '../../data/l2dopActiveBuffs.js';
 import { parseSkillCooldowns } from '../../data/skillCooldowns.js';
@@ -41,6 +46,12 @@ import {
   findActivePartyBattleSessionByPartyIdInTx,
   joinPartyBattleParticipantInTx,
 } from './partyBattleSessionService.js';
+import {
+  parseDungeonStateJson,
+} from '../../domain/dungeonState.js';
+import { dungeonStateToJson } from '../../domain/dungeonMoveLogic.js';
+import { resolveDungeonMovementPatch } from '../../domain/dungeonMapMovement.js';
+import { resolveDungeonMoveSpeedStatsForRow } from '../../domain/dungeonRunSpeed.js';
 import type { Prisma as PrismaTypes } from '@prisma/client';
 
 type Tx = PrismaTypes.TransactionClient;
@@ -49,10 +60,10 @@ function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
 }
 
-export type PartyBattleStartJoinArgs = {
+export type DungeonPartyBattleStartJoinArgs = {
   userId: string;
   char: CharacterRow;
-  spawn: MapWorldSpawn;
+  dungeonMob: SevenSignsDungeonMobSpawn;
   expectedRevision: number;
   partyId: string;
   wTick: ReturnType<
@@ -62,20 +73,38 @@ export type PartyBattleStartJoinArgs = {
 };
 
 /**
- * Party → Session → Character. Regular world PvE only (caller перевіряє RB/dungeon).
+ * Party → Session → Character. Seven Signs dungeon mobs (regular only).
  */
-export async function startOrJoinPartyBattleInTx(
+export async function startOrJoinDungeonPartyBattleInTx(
   tx: Tx,
-  args: PartyBattleStartJoinArgs
+  args: DungeonPartyBattleStartJoinArgs
 ): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
   throwIfPartyBattleRouteBlocked();
 
-  const mc = mobCombatFromSpawn(args.spawn);
-  const pos = args.char;
+  const spawn =
+    dungeonMobSpawnToMapWorldSpawn(args.dungeonMob) ??
+    ({
+      id: args.dungeonMob.id,
+      worldX: 0,
+      worldY: 0,
+      templateId: String(args.dungeonMob.npcId),
+      name: args.dungeonMob.name,
+      level: args.dungeonMob.level,
+      kind: args.dungeonMob.kind === 'raid' ? 'raid' : args.dungeonMob.aggressive ? 'aggressive' : 'passive',
+      aggressive: args.dungeonMob.kind === 'raid' ? true : args.dungeonMob.aggressive,
+    } as import('../../data/mapWorldSpawns.js').MapWorldSpawn);
+
+  const mc = mobCombatFromSpawn(spawn);
+  const livePos = resolveLiveDungeonMapPosition(args.char, args.nowStartMs);
+  if (!livePos || livePos.dungeonId !== args.dungeonMob.dungeonId) {
+    throw new Error('battle_too_far');
+  }
   if (
-    !isWithinMobBattleRange(
-      { worldX: pos.worldX, worldY: pos.worldY },
-      { worldX: args.spawn.worldX, worldY: args.spawn.worldY }
+    !isWithinDungeonPartyBattleRadius(
+      livePos.mapX,
+      livePos.mapY,
+      args.dungeonMob.mapX,
+      args.dungeonMob.mapY
     )
   ) {
     throw new Error('battle_too_far');
@@ -89,11 +118,12 @@ export async function startOrJoinPartyBattleInTx(
     try {
       session = await createActivePartyBattleSessionInTx(tx, {
         partyId: args.partyId,
-        spawnId: args.spawn.id,
-        canonicalMobTemplateId: args.spawn.templateId ?? args.spawn.id,
-        playfield: 'world',
-        mobWorldX: args.spawn.worldX,
-        mobWorldY: args.spawn.worldY,
+        spawnId: args.dungeonMob.id,
+        canonicalMobTemplateId: spawn.templateId ?? args.dungeonMob.id,
+        playfield: 'dungeon',
+        dungeonId: args.dungeonMob.dungeonId,
+        mobMapX: args.dungeonMob.mapX,
+        mobMapY: args.dungeonMob.mapY,
         mobMaxHp: mc.maxHp,
         starterCharacterId: args.char.id,
         nowMs: args.nowStartMs,
@@ -101,7 +131,8 @@ export async function startOrJoinPartyBattleInTx(
     } catch (err) {
       if (err instanceof Error && err.message === 'party_battle_session_already_active') {
         session = await findActivePartyBattleSessionByPartyIdInTx(tx, args.partyId);
-        if (session && session.spawnId === args.spawn.id) {
+        if (session && session.spawnId === args.dungeonMob.id) {
+          assertDungeonSessionMatchesMob(session, args.dungeonMob);
           await joinPartyBattleParticipantInTx(tx, {
             sessionId: session.id,
             characterId: args.char.id,
@@ -111,9 +142,18 @@ export async function startOrJoinPartyBattleInTx(
       }
       if (!session) throw err;
     }
-  } else if (session.spawnId !== args.spawn.id) {
-    throw new Error('party_battle_wrong_spawn');
   } else {
+    assertDungeonSessionMatchesMob(session, args.dungeonMob);
+    if (
+      !isWithinDungeonPartyBattleRadius(
+        livePos.mapX,
+        livePos.mapY,
+        session.mobMapX ?? args.dungeonMob.mapX,
+        session.mobMapY ?? args.dungeonMob.mapY
+      )
+    ) {
+      throw new Error('battle_too_far');
+    }
     await joinPartyBattleParticipantInTx(tx, {
       sessionId: session.id,
       characterId: args.char.id,
@@ -127,7 +167,7 @@ export async function startOrJoinPartyBattleInTx(
   const mobHpStart = session.mobHp;
   const mobMaxCp0 = mobMaxCpFromMobMaxHp(mc.maxHp);
   const startLog = [
-    'Бій розпочато: [' + args.spawn.name + '] (ур. ' + args.spawn.level + ').',
+    'Бій розпочато: [' + spawn.name + '] (ур. ' + spawn.level + ').',
     'Паті-бій: спільне HP монстра.',
   ];
 
@@ -158,7 +198,7 @@ export async function startOrJoinPartyBattleInTx(
         );
 
   const st: BattleJsonState = {
-    spawnId: args.spawn.id,
+    spawnId: args.dungeonMob.id,
     partyBattleId: session.id,
     mobHp: mobHpStart,
     mobMaxHp: mc.maxHp,
@@ -207,8 +247,18 @@ export async function startOrJoinPartyBattleInTx(
     st.warCryPatkMul = wcSync;
   }
 
-  const freezeX = args.char.worldX;
-  const freezeY = args.char.worldY;
+  const dStateRaw = parseDungeonStateJson(args.char.dungeonStateJson);
+  if (!dStateRaw || dStateRaw.dungeonId !== args.dungeonMob.dungeonId) {
+    throw new Error('battle_too_far');
+  }
+  const speed = resolveDungeonMoveSpeedStatsForRow(args.char, args.nowStartMs);
+  const liveDungeon = resolveDungeonMovementPatch(
+    dStateRaw,
+    speed.mapMoveSpeedPx,
+    args.nowStartMs
+  ).state;
+  const stoppedDungeon = buildDungeonMovementStopState(liveDungeon);
+
   const result = await mutateCharacterWithRevision(
     tx,
     args.char.id,
@@ -217,13 +267,7 @@ export async function startOrJoinPartyBattleInTx(
       changed: true,
       data: {
         hp: args.char.hp,
-        worldX: freezeX,
-        worldY: freezeY,
-        targetX: 0,
-        targetY: 0,
-        moveStartAt: null,
-        moveFromX: freezeX,
-        moveFromY: freezeY,
+        dungeonStateJson: dungeonStateToJson(stoppedDungeon),
         battleJson: serializeBattleJsonForDb(st),
         worldCombatStateJson: Prisma.JsonNull,
       },
@@ -245,13 +289,13 @@ export async function startOrJoinPartyBattleInTx(
     args.char.classBranch
   );
   const view = battleViewFromState(
-    args.spawn.id,
+    args.dungeonMob.id,
     st,
     {
-      name: args.spawn.name,
-      level: args.spawn.level,
-      aggressive: args.spawn.aggressive,
-      kind: args.spawn.kind,
+      name: spawn.name,
+      level: spawn.level,
+      aggressive: spawn.aggressive,
+      kind: spawn.kind,
     },
     effLv0,
     args.char.race,
@@ -264,32 +308,4 @@ export async function startOrJoinPartyBattleInTx(
     skillCooldownUiContextFromRow(args.char, effLv0, snap.learnedBattleSkillsDetail)
   );
   return { character: snap, battle: view };
-}
-
-/** Чи цей start має йти через party battle (не викликає party tables якщо false). */
-export async function shouldStartPartyBattleInTx(
-  tx: Tx,
-  characterId: string,
-  spawnKind: string,
-  isDungeonMob: boolean,
-  isDungeonRaidMob?: boolean
-): Promise<{ partyId: string; dungeon: boolean } | null> {
-  if (!isPartyBattleEngineEnabled()) return null;
-  if (isSharedWorldBossKind(spawnKind as MapSpawnKind)) return null;
-  if (isDungeonMob) {
-    if (!isPartyBattleDungeonEnabled()) return null;
-    if (isDungeonRaidMob) return null;
-  }
-
-  const membership = await tx.partyMember.findUnique({
-    where: { characterId },
-    select: { partyId: true },
-  });
-  if (!membership) return null;
-
-  if (!canStartPartyBattleViaRoute()) {
-    throwIfPartyBattleRouteBlocked();
-  }
-
-  return { partyId: membership.partyId, dungeon: isDungeonMob };
 }

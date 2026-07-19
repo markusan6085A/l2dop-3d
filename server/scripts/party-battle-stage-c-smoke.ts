@@ -222,6 +222,7 @@ function testEligibilityPure(): void {
   const eligible = resolvePartyBattleRewardEligibleIds({
     killerCharacterId: 'k',
     killerResolved: killerPos,
+    playfield: 'world',
     partyMemberIds: ['k', 'near', 'far', 'dead', 'offline'],
     memberSnapshots: [
       { characterId: 'k', hp: 100, pvePendingDefeatJson: null, resolvedPosition: killerPos },
@@ -238,6 +239,7 @@ function testEligibilityPure(): void {
   const noParticipantNeeded = resolvePartyBattleRewardEligibleIds({
     killerCharacterId: 'k',
     killerResolved: killerPos,
+    playfield: 'world',
     partyMemberIds: ['k', 'buffer'],
     memberSnapshots: [
       { characterId: 'k', hp: 100, pvePendingDefeatJson: null, resolvedPosition: killerPos },

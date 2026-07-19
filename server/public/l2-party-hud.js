@@ -267,12 +267,17 @@
         joinPartyBattle(ab.spawnId);
       });
       row.appendChild(joinBtn);
+    } else if (ab.playfield === 'dungeon' && !ab.mobInBattleRange) {
+      var hintDungeon = document.createElement('span');
+      hintDungeon.className = 'l2-party-hud__hint';
+      hintDungeon.textContent = 'Підійдіть ближче до монстра';
+      row.appendChild(hintDungeon);
     } else if (ab.memberNearby && !ab.mobInBattleRange) {
       var hintNear = document.createElement('span');
       hintNear.className = 'l2-party-hud__hint';
       hintNear.textContent = 'Підійдіть ближче до монстра';
       row.appendChild(hintNear);
-    } else if (!ab.memberNearby) {
+    } else if (!ab.memberNearby && ab.playfield !== 'dungeon') {
       var hintFar = document.createElement('span');
       hintFar.className = 'l2-party-hud__hint';
       hintFar.textContent = 'Паті веде бій в іншій частині локації';

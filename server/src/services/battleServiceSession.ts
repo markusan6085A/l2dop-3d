@@ -79,6 +79,7 @@ import {
   shouldStartPartyBattleInTx,
   startOrJoinPartyBattleInTx,
 } from './party/partyBattleStartJoinService.js';
+import { startOrJoinDungeonPartyBattleInTx } from './party/partyBattleDungeonStartJoinService.js';
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
@@ -185,8 +186,20 @@ export async function startBattleInTx(
     tx,
     base.id,
     spawn.kind,
-    dungeonMob != null
+    dungeonMob != null,
+    dungeonMob?.kind === 'raid'
   );
+  if (partyStart?.dungeon && dungeonMob) {
+    return startOrJoinDungeonPartyBattleInTx(tx, {
+      userId,
+      char: base,
+      dungeonMob,
+      expectedRevision,
+      partyId: partyStart.partyId,
+      wTick,
+      nowStartMs,
+    });
+  }
   if (partyStart) {
     return startOrJoinPartyBattleInTx(tx, {
       userId,

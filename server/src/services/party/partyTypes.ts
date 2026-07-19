@@ -19,6 +19,8 @@ export type PartyHudActiveBattle = {
   mobHp: number;
   mobMaxHp: number;
   state: string;
+  playfield?: 'world' | 'dungeon';
+  dungeonId?: string | null;
   memberNearby: boolean;
   mobInBattleRange: boolean;
   canJoin: boolean;

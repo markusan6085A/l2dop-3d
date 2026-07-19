@@ -11,6 +11,9 @@ import {
   type PartyBattleEndReasonValue,
   type PartyBattleSessionStateValue,
 } from '../../domain/partyBattleSessionConstants.js';
+import {
+  validatePartyBattleSessionCoords,
+} from '../../domain/partyBattlePlayfield.js';
 import { isPrismaUniqueViolation } from './partyPrismaErrors.js';
 
 type Tx = Prisma.TransactionClient;
@@ -19,11 +22,15 @@ export type CreatePartyBattleSessionArgs = {
   partyId: string;
   spawnId: string;
   canonicalMobTemplateId: string;
-  mobWorldX: number;
-  mobWorldY: number;
   mobMaxHp: number;
   starterCharacterId: string;
   nowMs?: number;
+  playfield?: 'world' | 'dungeon';
+  dungeonId?: string | null;
+  mobWorldX?: number | null;
+  mobWorldY?: number | null;
+  mobMapX?: number | null;
+  mobMapY?: number | null;
 };
 
 export type EndPartyBattleSessionArgs = {
@@ -79,6 +86,28 @@ export async function createActivePartyBattleSessionInTx(
   }
   const mobMaxHp = Math.max(1, Math.floor(args.mobMaxHp));
   const now = sessionNow(args.nowMs);
+  const playfield = args.playfield ?? 'world';
+
+  const sessionCoords =
+    playfield === 'dungeon'
+      ? {
+          playfield: 'dungeon' as const,
+          dungeonId: String(args.dungeonId || '').trim(),
+          mobWorldX: null,
+          mobWorldY: null,
+          mobMapX: Math.floor(Number(args.mobMapX)),
+          mobMapY: Math.floor(Number(args.mobMapY)),
+        }
+      : {
+          playfield: 'world' as const,
+          dungeonId: null,
+          mobWorldX: Math.floor(Number(args.mobWorldX)),
+          mobWorldY: Math.floor(Number(args.mobWorldY)),
+          mobMapX: null,
+          mobMapY: null,
+        };
+
+  validatePartyBattleSessionCoords(sessionCoords);
 
   try {
     const session = await tx.partyBattleSession.create({
@@ -86,10 +115,14 @@ export async function createActivePartyBattleSessionInTx(
         partyId,
         originPartyId: partyId,
         activePartyKey: partyId,
+        playfield: sessionCoords.playfield,
+        dungeonId: sessionCoords.dungeonId,
         spawnId,
         canonicalMobTemplateId: String(args.canonicalMobTemplateId || '').trim(),
-        mobWorldX: Math.floor(args.mobWorldX),
-        mobWorldY: Math.floor(args.mobWorldY),
+        mobWorldX: sessionCoords.mobWorldX,
+        mobWorldY: sessionCoords.mobWorldY,
+        mobMapX: sessionCoords.mobMapX,
+        mobMapY: sessionCoords.mobMapY,
         mobHp: mobMaxHp,
         mobMaxHp,
         battleVersion: 1,
@@ -105,6 +138,7 @@ export async function createActivePartyBattleSessionInTx(
         },
       },
     });
+    validatePartyBattleSessionCoords(session);
     return session;
   } catch (err) {
     if (isPrismaUniqueViolation(err)) {
@@ -195,7 +229,6 @@ export async function joinPartyBattleParticipantInTx(
   });
 }
 
-/** Idempotent leave: повторний виклик не ламає стан. */
 export async function leavePartyBattleParticipantInTx(
   tx: Tx,
   args: {
@@ -225,6 +258,27 @@ export async function leavePartyBattleParticipantInTx(
       leftAt: now,
       lastActivityAt: now,
     },
+  });
+}
+
+/** Після leave: якщо active participants = 0 → end session (без reward). */
+export async function endPartyBattleIfNoActiveParticipantsInTx(
+  tx: Tx,
+  args: {
+    sessionId: string;
+    endReason: PartyBattleEndReasonValue;
+    nowMs?: number;
+  }
+): Promise<void> {
+  const locked = await lockPartyBattleSessionInTx(tx, args.sessionId);
+  if (!locked || isPartyBattleSessionTerminal(locked.state)) return;
+  const activeCount = await countActiveParticipantsInTx(tx, locked.id);
+  if (activeCount > 0) return;
+  await endPartyBattleSessionInTx(tx, {
+    sessionId: locked.id,
+    terminalState: PARTY_BATTLE_SESSION_STATE.ended,
+    endReason: args.endReason,
+    nowMs: args.nowMs,
   });
 }
 

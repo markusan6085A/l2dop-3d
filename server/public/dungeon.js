@@ -125,7 +125,11 @@
           ':' +
           String(h.mapY != null ? h.mapY : '') +
           ':' +
-          String(h.distance != null ? h.distance : '')
+          String(h.distance != null ? h.distance : '') +
+          ':' +
+          (h.isPartyMember ? '1' : '0') +
+          ':' +
+          (h.isPartyLeader ? '1' : '0')
       );
     }
     return String(heroes.length) + '|' + parts.join(',');
@@ -155,6 +159,10 @@
       pin.title = title;
       pin.dataset.characterId = h.characterId || '';
       pin.dataset.heroName = h.name || '';
+      if (h.isPartyMember) {
+        pin.classList.add('l2-map-hero-pin--party');
+        pin.title = (pin.title || '') + (h.isPartyLeader ? ' · Паті (лідер)' : ' · Паті');
+      }
       layer.appendChild(pin);
     }
   }
@@ -185,6 +193,13 @@
       }
       nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
       nameLink.textContent = h.name || '—';
+      if (h.isPartyMember) {
+        var partyTag = document.createElement('span');
+        partyTag.className = 'l2-dungeon-party-tag';
+        partyTag.textContent = h.isPartyLeader ? ' Паті★' : ' Паті';
+        partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
+        nameLink.appendChild(partyTag);
+      }
       var levelSpan = document.createElement('span');
       levelSpan.className = 'l2-map-hero-level';
       levelSpan.textContent = heroLevelPart(h);

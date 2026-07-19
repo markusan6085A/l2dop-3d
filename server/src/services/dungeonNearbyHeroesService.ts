@@ -28,6 +28,8 @@ export interface DungeonNearbyHeroEntry {
   canPkAttack: boolean;
   pvpNickColor: PvpNickColor;
   pk: number;
+  isPartyMember?: boolean;
+  isPartyLeader?: boolean;
 }
 
 const MAX_NEARBY_HEROES = 30;
@@ -90,6 +92,24 @@ export async function getNearbyHeroesForDungeon(
   const R = DUNGEON_NEARBY_RADIUS_PX;
   const R2 = R * R;
 
+  const viewerMembership = await prisma.partyMember.findUnique({
+    where: { characterId: exclude },
+    select: {
+      partyId: true,
+      party: { select: { leaderCharacterId: true } },
+    },
+  });
+  const partyMemberIds = new Set<string>();
+  let partyLeaderId = '';
+  if (viewerMembership?.partyId) {
+    partyLeaderId = viewerMembership.party.leaderCharacterId;
+    const members = await prisma.partyMember.findMany({
+      where: { partyId: viewerMembership.partyId },
+      select: { characterId: true },
+    });
+    for (const m of members) partyMemberIds.add(m.characterId);
+  }
+
   const rows = await prisma.character.findMany({
     where: {
       id: { not: exclude },
@@ -140,6 +160,8 @@ export async function getNearbyHeroesForDungeon(
       canPkAttack: canPkAttackHero(row, exclude),
       pvpNickColor,
       pk: karma > 0 ? karma : 0,
+      isPartyMember: partyMemberIds.has(row.id),
+      isPartyLeader: partyLeaderId === row.id,
     });
   }
 

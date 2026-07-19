@@ -20,6 +20,7 @@ import {
   PARTY_BATTLE_SESSION_STATE,
 } from '../../domain/partyBattleSessionConstants.js';
 import { resolveMapMovement } from '../../domain/mapMovement.js';
+import { resolveLiveDungeonMapPosition } from '../../domain/partyBattlePlayfield.js';
 import {
   lockCharacterRowsInStableOrderInTx,
   mergeUniqueCharacterIds,
@@ -152,7 +153,8 @@ async function loadIdempotentVictoryResponseInTx(
 
 async function buildMemberSnapshotsInTx(
   lockedRows: Map<string, CharacterRow>,
-  memberIds: readonly string[]
+  memberIds: readonly string[],
+  nowMs: number = Date.now()
 ): Promise<PartyBattleRewardMemberSnapshot[]> {
   const out: PartyBattleRewardMemberSnapshot[] = [];
   for (const memberId of memberIds) {
@@ -168,6 +170,7 @@ async function buildMemberSnapshotsInTx(
         worldY: resolved.worldY,
         dungeonStateJson: resolved.dungeonStateJson,
       },
+      dungeonMap: resolveLiveDungeonMapPosition(row, nowMs),
     });
   }
   return out;
@@ -266,8 +269,10 @@ export async function resolvePartyBattleVictoryInTx(
   const snapshotMemberIds = mergeUniqueCharacterIds(partyMemberIds, participantIds);
   const memberSnapshots = await buildMemberSnapshotsInTx(
     lockedRows,
-    snapshotMemberIds
+    snapshotMemberIds,
+    nowMs
   );
+  const killerDungeonMap = resolveLiveDungeonMapPosition(killerRow, nowMs);
   const eligibleIds = resolvePartyBattleRewardEligibleIds({
     killerCharacterId: args.characterId,
     killerResolved: {
@@ -275,6 +280,8 @@ export async function resolvePartyBattleVictoryInTx(
       worldY: killerResolved.worldY,
       dungeonStateJson: killerResolved.dungeonStateJson,
     },
+    killerDungeonMap,
+    playfield: sessionAfterDamage.playfield,
     partyMemberIds,
     memberSnapshots,
     isOnline: (characterId) =>

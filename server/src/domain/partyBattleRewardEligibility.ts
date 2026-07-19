@@ -2,6 +2,10 @@ import {
   isPartyMemberNearbyForReward,
   type PlayfieldPosition,
 } from './mapNearbyRadius.js';
+import {
+  isWithinDungeonMemberRadius,
+  type ResolvedDungeonMapPosition,
+} from './partyBattlePlayfield.js';
 import { parsePvePendingDefeat } from './pvePendingDefeat.js';
 
 /** Поля для pure eligibility (без DB write). */
@@ -10,11 +14,14 @@ export type PartyBattleRewardMemberSnapshot = {
   hp: number;
   pvePendingDefeatJson: unknown;
   resolvedPosition: PlayfieldPosition;
+  dungeonMap?: ResolvedDungeonMapPosition | null;
 };
 
 export type PartyBattleRewardEligibilityInput = {
   killerCharacterId: string;
   killerResolved: PlayfieldPosition;
+  killerDungeonMap?: ResolvedDungeonMapPosition | null;
+  playfield: 'world' | 'dungeon';
   partyMemberIds: readonly string[];
   memberSnapshots: readonly PartyBattleRewardMemberSnapshot[];
   isOnline: (characterId: string) => boolean;
@@ -55,6 +62,25 @@ export function resolvePartyBattleRewardEligibleIds(
 
     if (memberId === killerId) {
       eligible.push(memberId);
+      continue;
+    }
+
+    if (input.playfield === 'dungeon') {
+      const killerDungeon = input.killerDungeonMap;
+      const memberDungeon = snap.dungeonMap;
+      if (
+        killerDungeon &&
+        memberDungeon &&
+        killerDungeon.dungeonId === memberDungeon.dungeonId &&
+        isWithinDungeonMemberRadius(
+          killerDungeon.mapX,
+          killerDungeon.mapY,
+          memberDungeon.mapX,
+          memberDungeon.mapY
+        )
+      ) {
+        eligible.push(memberId);
+      }
       continue;
     }
 

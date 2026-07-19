@@ -1,9 +1,12 @@
 import { Prisma } from '@prisma/client';
+import { isPartyBattleEngineEnabled } from '../domain/partyBattleFlags.js';
 import { gameConflictFromMutation } from './charConflict.js';
 import { prisma } from '../lib/prisma.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { peekPartyBattleIdFromBattleJson } from './party/partyBattleActionLock.js';
+import { syncPartyBattleOnDungeonExitInTx } from './party/partyBattleSocialSession.js';
 
 /**
  * Вихід із сесії подземелля (світова карта / місто).
@@ -20,16 +23,37 @@ export async function performDungeonLeave(
     })) as CharacterRow | null;
     if (!char) throw new Error('no_character');
 
+    const partyBattleId = isPartyBattleEngineEnabled()
+      ? peekPartyBattleIdFromBattleJson(char.battleJson)
+      : null;
+
+    if (partyBattleId) {
+      await syncPartyBattleOnDungeonExitInTx(trx, {
+        characterId: char.id,
+        skipCharacterMutation: true,
+      });
+    }
+
     const result = await mutateCharacterWithRevision(
       trx,
       char.id,
       expectedRevision,
       (current) => {
-        if (current.dungeonStateJson == null) return { changed: false };
+        const hasDungeon = current.dungeonStateJson != null;
+        const pointer = peekPartyBattleIdFromBattleJson(current.battleJson);
+        const clearBattle =
+          partyBattleId != null && pointer === partyBattleId;
+        if (!hasDungeon && !clearBattle) return { changed: false };
         return {
           changed: true,
           data: {
-            dungeonStateJson: Prisma.JsonNull,
+            ...(hasDungeon ? { dungeonStateJson: Prisma.JsonNull } : {}),
+            ...(clearBattle
+              ? {
+                  battleJson: Prisma.JsonNull,
+                  worldCombatStateJson: Prisma.JsonNull,
+                }
+              : {}),
           } as Prisma.CharacterUpdateManyMutationInput,
         };
       }
