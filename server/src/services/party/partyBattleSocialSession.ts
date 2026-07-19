@@ -108,6 +108,8 @@ export async function syncPartyBattleOnDungeonExitInTx(
   args: {
     characterId: string;
     nowMs?: number;
+    /** Session/participant only; Character write — у зовнішньому mutate (dungeon leave). */
+    skipCharacterMutation?: boolean;
   }
 ): Promise<void> {
   if (!isPartyBattleEngineEnabled()) return;
@@ -131,12 +133,14 @@ export async function syncPartyBattleOnDungeonExitInTx(
     nowMs: args.nowMs,
   });
 
-  await clearPartyBattlePointerForCharacterInTx(
-    tx,
-    characterId,
-    locked.id,
-    null
-  );
+  if (!args.skipCharacterMutation) {
+    await clearPartyBattlePointerForCharacterInTx(
+      tx,
+      characterId,
+      locked.id,
+      null
+    );
+  }
 
   await endPartyBattleIfNoActiveParticipantsInTx(tx, {
     sessionId: locked.id,

@@ -137,17 +137,21 @@ async function placeInDungeon(
   characterId: string,
   mapX: number,
   mapY: number,
-  dungeonId: string = DUNGEON_ID
+  dungeonId: string = DUNGEON_ID,
+  opts?: { preserveBattle?: boolean }
 ): Promise<void> {
   const d = findSevenSignsDungeonById(dungeonId)!;
+  const data: Prisma.CharacterUpdateInput = {
+    worldX: d.worldX,
+    worldY: d.worldY,
+    dungeonStateJson: dungeonStateAt(mapX, mapY, dungeonId),
+  };
+  if (!opts?.preserveBattle) {
+    data.battleJson = Prisma.JsonNull;
+  }
   await prisma.character.update({
     where: { id: characterId },
-    data: {
-      worldX: d.worldX,
-      worldY: d.worldY,
-      dungeonStateJson: dungeonStateAt(mapX, mapY, dungeonId),
-      battleJson: Prisma.JsonNull,
-    },
+    data,
   });
 }
 
@@ -303,27 +307,28 @@ async function testOutOfRange(): Promise<void> {
 
     await placeInDungeon(a.characterId, DUNGEON_MOB.mapX, DUNGEON_MOB.mapY);
     const charNear = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
-    const started = await prisma.$transaction((tx) =>
+    await prisma.$transaction((tx) =>
       startBattleInTx(tx, a.userId, DUNGEON_MOB.id, charNear.revision, {
         characterId: a.characterId,
       })
     );
-    const bj = parseBattleJson(started.character.battleJson as never)!;
-    await placeInDungeon(a.characterId, farX, DUNGEON_MOB.mapY);
+    await placeInDungeon(a.characterId, farX, DUNGEON_MOB.mapY, DUNGEON_ID, {
+      preserveBattle: true,
+    });
     const charFar = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
+    const bj = parseBattleJson(charFar.battleJson as never);
     let actionErr = '';
     try {
       await prisma.$transaction((tx) =>
-        performBattleActionInTx(tx, a.userId, {
-          action: 'attack',
-          expectedRevision: charFar.revision,
+        performBattleActionInTx(tx, a.userId, 'attack', charFar.revision, {
+          characterId: a.characterId,
         })
       );
     } catch (e) {
       actionErr = e instanceof Error ? e.message : String(e);
     }
     assert.equal(actionErr, 'battle_out_of_range');
-    assert.ok(bj.partyBattleId);
+    assert.ok(bj?.partyBattleId);
     ok('action denied when moved >70px from mob');
 
     await cleanupCharacter(a.characterId, a.userId);
@@ -514,9 +519,12 @@ async function testBattleSyncNearby(): Promise<void> {
       })
     );
 
-    const sync = await getBattleSyncForUser(a.userId);
-    assert.ok(sync.members && sync.members.length >= 1);
-    const mate = sync.members!.find((m) => m.characterId === b.characterId);
+    const sync = await getBattleSyncForUser(a.userId, {
+      characterId: a.characterId,
+      battleVersion: 0,
+    });
+    assert.ok(sync?.partyBattle?.members && sync.partyBattle.members.length >= 1);
+    const mate = sync.partyBattle.members.find((m) => m.characterId === b.characterId);
     assert.ok(mate);
     assert.equal(mate!.nearby, true);
     ok('battle sync marks party member nearby in dungeon');
