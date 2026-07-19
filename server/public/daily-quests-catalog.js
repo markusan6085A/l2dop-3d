@@ -10,6 +10,7 @@
  */
 (function (global) {
   global.L2DailyQuestsCatalog = {
+    resetHintUk: 'Оновлення щодня о 00:00 за київським часом.',
     tasks: [
       {
         id: 'hunt_start_500',
