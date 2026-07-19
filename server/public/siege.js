@@ -151,30 +151,24 @@
     );
   }
 
-  function appendParticipantLine(li, row, asLink) {
-    var content = document.createElement(asLink ? 'a' : 'span');
-    if (asLink) {
-      content.className = 'l2-siege-link';
-      content.href = '#';
-      content.dataset.siegePvpTarget = row.characterId;
-      if (pvpInFlight || !stateData || !stateData.canStartSiegePvp) {
-        content.classList.add('l2-siege-link--disabled');
-      }
-    }
+  function appendAllyParticipantLine(li, row) {
+    var wrap = document.createElement('span');
+    wrap.className = 'l2-siege-participant-row';
     if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
-      content.appendChild(
+      wrap.appendChild(
         L2.renderPlayerIdentity({
           name: row.nickname,
+          characterId: row.characterId,
           clanEmblemId: row.clanEmblemId,
           emblemSize: 16,
         })
       );
     } else {
-      content.appendChild(document.createTextNode(String(row.nickname || '—')));
+      wrap.appendChild(document.createTextNode(String(row.nickname || '—')));
     }
-    content.appendChild(document.createTextNode(' — '));
+    wrap.appendChild(document.createTextNode(' — '));
     if (window.L2 && typeof L2.renderClanIdentity === 'function') {
-      content.appendChild(
+      wrap.appendChild(
         L2.renderClanIdentity({
           name: row.clanName,
           emblemId: row.clanEmblemId,
@@ -182,9 +176,16 @@
         })
       );
     } else {
-      content.appendChild(document.createTextNode(String(row.clanName || '—')));
+      wrap.appendChild(document.createTextNode(String(row.clanName || '—')));
     }
-    li.appendChild(content);
+    if (row.hp != null && row.maxHp != null) {
+      wrap.appendChild(
+        document.createTextNode(
+          ' — HP: ' + formatNum(row.hp) + '/' + formatNum(row.maxHp)
+        )
+      );
+    }
+    li.appendChild(wrap);
     if (row.eliminated) {
       li.appendChild(document.createTextNode(' — '));
       var tag = document.createElement('span');
@@ -192,6 +193,76 @@
       tag.textContent = 'Вибув';
       li.appendChild(tag);
     }
+  }
+
+  function appendEnemyParticipantLine(li, row) {
+    var wrap = document.createElement('div');
+    wrap.className = 'l2-siege-participant-row l2-siege-participant-row--enemy';
+
+    if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
+      wrap.appendChild(
+        L2.renderPlayerIdentity({
+          name: row.nickname,
+          characterId: row.characterId,
+          clanEmblemId: row.clanEmblemId,
+          emblemSize: 16,
+          linkProfile: false,
+        })
+      );
+    } else {
+      var nameEl = document.createElement('span');
+      nameEl.className = 'l2-siege-participant-name';
+      nameEl.textContent = String(row.nickname || '—');
+      wrap.appendChild(nameEl);
+    }
+
+    var clanLine = document.createElement('p');
+    clanLine.className = 'l2-siege-participant-meta';
+    clanLine.appendChild(document.createTextNode('Клан: '));
+    if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+      clanLine.appendChild(
+        L2.renderClanIdentity({
+          name: row.clanName,
+          emblemId: row.clanEmblemId,
+          emblemSize: 16,
+        })
+      );
+    } else {
+      clanLine.appendChild(document.createTextNode(String(row.clanName || '—')));
+    }
+    wrap.appendChild(clanLine);
+
+    if (row.hp != null && row.maxHp != null) {
+      var hpLine = document.createElement('p');
+      hpLine.className = 'l2-siege-participant-meta';
+      hpLine.textContent =
+        'HP: ' + formatNum(row.hp) + '/' + formatNum(row.maxHp);
+      wrap.appendChild(hpLine);
+    }
+
+    li.appendChild(wrap);
+
+    if (row.eliminated) {
+      var elimLine = document.createElement('p');
+      elimLine.className = 'l2-siege-participant-meta l2-siege-eliminated';
+      elimLine.textContent = 'Вибув';
+      li.appendChild(elimLine);
+      return;
+    }
+
+    var actions = document.createElement('p');
+    actions.className = 'l2-siege-participant-actions';
+    var attackBtn = document.createElement('button');
+    attackBtn.type = 'button';
+    attackBtn.className = 'l2-siege-pvp-attack-btn l2-siege-link';
+    attackBtn.textContent = pvpInFlight ? 'Зачекайте…' : 'Атакувати';
+    attackBtn.dataset.siegePvpAttack = row.characterId;
+    if (pvpInFlight || !stateData || !stateData.canStartSiegePvp) {
+      attackBtn.disabled = true;
+      attackBtn.classList.add('l2-siege-link--disabled');
+    }
+    actions.appendChild(attackBtn);
+    li.appendChild(actions);
   }
 
   function cityLabel(data) {
@@ -366,7 +437,7 @@
       alliesUl.className = 'l2-siege-participants';
       parts.allies.forEach(function (row) {
         var li = document.createElement('li');
-        appendParticipantLine(li, row, false);
+        appendAllyParticipantLine(li, row);
         alliesUl.appendChild(li);
       });
       parent.appendChild(alliesUl);
@@ -377,11 +448,7 @@
       enemiesUl.className = 'l2-siege-participants';
       parts.enemies.forEach(function (row) {
         var li = document.createElement('li');
-        if (row.eliminated) {
-          appendParticipantLine(li, row, false);
-        } else {
-          appendParticipantLine(li, row, true);
-        }
+        appendEnemyParticipantLine(li, row);
         enemiesUl.appendChild(li);
       });
       parent.appendChild(enemiesUl);
@@ -730,6 +797,7 @@
         } else {
           alert(errMsg);
         }
+        refreshSiegeNow();
         return;
       }
       var j = await r.json();
@@ -749,11 +817,18 @@
   function onSiegeBodyClick(e) {
     var t = e.target;
     if (!t) return;
-    if (t.dataset && t.dataset.siegePvpTarget) {
+
+    var attackBtn =
+      t.closest && typeof t.closest === 'function'
+        ? t.closest('[data-siege-pvp-attack]')
+        : null;
+    if (attackBtn && attackBtn.dataset && attackBtn.dataset.siegePvpAttack) {
       e.preventDefault();
-      void startSiegePvp(String(t.dataset.siegePvpTarget));
+      if (attackBtn.disabled) return;
+      void startSiegePvp(String(attackBtn.dataset.siegePvpAttack));
       return;
     }
+
     if (!t.id) return;
     if (t.id === 'siege-attack-link') {
       e.preventDefault();

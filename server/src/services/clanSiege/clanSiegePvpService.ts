@@ -328,7 +328,7 @@ export async function startSiegePvpBattleInTx(
         ? 'siege_pvp_target_eliminated'
         : 'siege_pvp_target_not_participant',
       targetParticipant?.eliminatedAt
-        ? 'Гравець вибув з облоги.'
+        ? 'Цей учасник уже вибув з облоги.'
         : 'Гравець не поруч або не бере участі в облозі.'
     );
   }

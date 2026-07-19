@@ -59,6 +59,8 @@ export type SiegeParticipantBrief = {
   clanId: string;
   clanName: string;
   clanEmblemId: number | null;
+  hp: number;
+  maxHp: number;
   eliminated: boolean;
 };
 
@@ -218,7 +220,7 @@ async function loadNearbySiegeParticipants(
       characterId: true,
       clanId: true,
       eliminatedAt: true,
-      character: { select: { name: true, hp: true } },
+      character: { select: { name: true, hp: true, maxHp: true } },
     },
     orderBy: [{ character: { name: 'asc' } }],
     take: 40,
@@ -244,6 +246,8 @@ async function loadNearbySiegeParticipants(
       clanId: row.clanId,
       clanName: clanNameById.get(row.clanId) ?? '—',
       clanEmblemId: clanEmblemById.get(row.clanId) ?? null,
+      hp: Math.max(0, Math.floor(Number(row.character.hp) || 0)),
+      maxHp: Math.max(1, Math.floor(Number(row.character.maxHp) || 1)),
       eliminated: !!row.eliminatedAt,
     };
     if (row.clanId === viewerClanId) {

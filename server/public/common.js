@@ -2581,6 +2581,7 @@
           name: opts.name,
           nickClassName: opts.nickClassName || '',
           pvpNickColor: opts.pvpNickColor,
+          linkProfile: opts.linkProfile,
         });
         wrap.appendChild(nick);
         return wrap;
@@ -2654,6 +2655,7 @@
         nickClass += ' l2-pvp-nick--aggressor';
       }
       if (
+        opts.linkProfile === false ||
         !global.L2.shouldLinkPlayerProfile() ||
         (!id && !name)
       ) {
