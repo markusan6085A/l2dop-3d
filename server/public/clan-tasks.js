@@ -413,15 +413,50 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    state.token = L2.getToken();
-    if (!state.token) {
-      window.location.href = '/login.html';
+  async function init() {
+    if (window.L2 && typeof L2.mountL2Nav === 'function') L2.mountL2Nav({});
+    if (window.L2 && typeof L2.mountFootLinkBar === 'function') {
+      L2.mountFootLinkBar('l2-foot-links', { inset: true });
+    }
+    if (window.L2 && typeof L2.applyPageI18n === 'function') {
+      L2.applyPageI18n(document);
+    }
+
+    var t =
+      window.L2 && typeof L2.token === 'function'
+        ? L2.token()
+        : localStorage.getItem('token');
+    if (!t || !window.L2) {
+      if (window.L2 && typeof L2.clearHudPanel === 'function') L2.clearHudPanel();
+      showErr('Потрібен вхід.');
       return;
     }
-    if (typeof L2.mountL2Nav === 'function') L2.mountL2Nav(document);
-    if (typeof L2.mountFootLinkBar === 'function') L2.mountFootLinkBar(document);
-    if (typeof L2.applyPageI18n === 'function') L2.applyPageI18n(document);
-    loadView();
-  });
+    state.token = t;
+
+    if (typeof L2.renderCharacterFromCache === 'function') {
+      L2.renderCharacterFromCache();
+    }
+    if (typeof L2.resyncCharacterWhenRequired === 'function') {
+      void L2.resyncCharacterWhenRequired()
+        .then(function (snap) {
+          if (snap && typeof L2.applyMutationSnapshot === 'function') {
+            L2.applyMutationSnapshot(snap);
+          }
+        })
+        .catch(function () {});
+    }
+
+    try {
+      await loadView();
+      clearMsgs();
+    } catch (_e) {
+      showErr('Не вдалося завантажити кланові завдання.');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

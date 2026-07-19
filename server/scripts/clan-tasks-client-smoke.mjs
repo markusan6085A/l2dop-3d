@@ -33,6 +33,17 @@ assert.match(js, /Допомогти/);
 assert.match(js, /Завершити завдання/);
 assert.match(js, /r\.status === 409/);
 assert.doesNotMatch(js, /innerHTML\s*=/);
+assert.doesNotMatch(js, /L2\.getToken/);
+assert.doesNotMatch(js, /L2\.api\b/);
+assert.doesNotMatch(js, /L2\.fetch\b/);
+assert.doesNotMatch(js, /L2\.authFetch\b/);
+assert.match(js, /L2\.token\s*\(/);
+assert.match(js, /\/game\/clan-tasks/);
+assert.match(js, /function init|async function init/);
+assert.match(js, /DOMContentLoaded|document\.readyState/);
+assert.match(js, /await loadView|loadView\(\)/);
+assert.match(js, /r\.status === 401/);
+assert.match(js, /login\.html/);
 
 assert.match(clanMyHtml, /href="\/clan-tasks\.html"/);
 assert.doesNotMatch(clanMyHtml, /clan_my_stub_quests/);
