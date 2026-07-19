@@ -61,6 +61,34 @@
     el.textContent = text == null ? '' : String(text);
   }
 
+  function createDiamondIcon(small) {
+    var img = document.createElement('img');
+    img.className =
+      'l2-dragon-dungeon-diamond-ico' +
+      (small ? ' l2-dragon-dungeon-diamond-ico--sm' : '');
+    img.src = '/assets/diamond-.png';
+    img.alt = '';
+    img.width = small ? 12 : 16;
+    img.height = small ? 12 : 16;
+    img.decoding = 'async';
+    return img;
+  }
+
+  function missingDiamondsCount(boss) {
+    if (!boss || !state.view || !state.view.clan) return 0;
+    return Math.max(0, boss.unlockCostDiamonds - state.view.clan.diamonds);
+  }
+
+  function fillMissingDiamondsNote(noteEl, missing) {
+    if (!noteEl) return;
+    noteEl.textContent = '';
+    noteEl.appendChild(document.createTextNode('Не вистачає '));
+    noteEl.appendChild(createDiamondIcon(true));
+    noteEl.appendChild(
+      document.createTextNode(' ' + fmtNum(missing) + ' алмазів')
+    );
+  }
+
   function lockedReasonUk(code, boss) {
     if (code === 'clan_required') return 'Для участі потрібен клан.';
     if (code === 'clan_leader_required') return 'Дракона може відкрити глава клану.';
@@ -245,9 +273,20 @@
         leaderNote.textContent = 'Дракона може відкрити глава клану';
       }
       if (note) {
-        var msg = lockedReasonUk(boss.lockedReason, boss);
-        note.hidden = !msg;
-        note.textContent = msg;
+        if (boss.lockedReason === 'clan_diamonds_insufficient') {
+          var missing = missingDiamondsCount(boss);
+          if (missing > 0) {
+            note.hidden = false;
+            fillMissingDiamondsNote(note, missing);
+          } else {
+            note.hidden = false;
+            note.textContent = 'У клану недостатньо алмазів.';
+          }
+        } else {
+          var msg = lockedReasonUk(boss.lockedReason, boss);
+          note.hidden = !msg;
+          note.textContent = msg;
+        }
       }
     });
   }

@@ -49,10 +49,15 @@ assert.match(clanMyHtml, /href="\/clan-tasks\.html"/);
 assert.doesNotMatch(clanMyHtml, /clan_my_stub_quests/);
 
 assert.match(html, /diamond-\.png/);
-assert.match(js, /appendClanRewardLine/);
-assert.match(js, /createDiamondIcon/);
-assert.match(css, /--l2-clan-tasks-gold/);
-assert.match(css, /l2-clan-tasks-card__name/);
+assert.match(js, /appendPersonalRewardLine/);
+assert.match(js, /createPlayerProfileNickEl/);
+assert.match(css, /l2-clan-tasks-personal-reward/);
+assert.match(js, /appendMetaSpan/);
+assert.match(js, /appendProgressLine/);
+assert.match(css, /l2-clan-tasks-meta/);
+assert.match(js, /appendClanTasksDivider/);
+assert.match(css, /l2-clan-tasks-divider/);
+assert.match(css, /\.l2-clan-tasks-card \{\s*margin:[\s\S]*?padding: 0;/);
 
 assert.match(domainTs, /target: 150_000/);
 assert.match(domainTs, /target: 500/);

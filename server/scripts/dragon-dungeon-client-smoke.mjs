@@ -45,7 +45,10 @@ assert.doesNotMatch(clanMyHtml, /clan_my_stub_dungeons/);
 const cityHtml = fs.readFileSync(path.join(__dirname, '../public/city.html'), 'utf8');
 assert.doesNotMatch(cityHtml, /dragon-dungeon\.html/);
 
-assert.match(css, /l2-dragon-hp-bar/);
+assert.match(html, /diamond-\.png/);
+assert.match(js, /createDiamondIcon/);
+assert.match(js, /fillMissingDiamondsNote/);
+assert.match(css, /l2-dragon-dungeon-diamond-ico--sm/);
 
 const domainTs = fs.readFileSync(
   path.join(__dirname, '../src/domain/dragonDungeon.ts'),

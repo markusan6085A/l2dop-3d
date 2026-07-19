@@ -74,6 +74,43 @@ body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-diamonds {
   font-weight: 600;
 }
 
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-diamonds__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 0.15rem;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-diamond-ico {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  object-fit: contain;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-diamond-ico--sm {
+  width: 12px;
+  height: 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__missing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: #c88a6a;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__unlocked {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: #6ecf6e;
+  font-weight: 600;
+}
+
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-list {
   display: flex;
   flex-direction: column;
@@ -141,19 +178,6 @@ body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__cost {
   margin: 0 0 8px;
   font-size: 11px;
   color: #c8bfb0;
-}
-
-body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__missing {
-  margin: 0 0 8px;
-  font-size: 11px;
-  color: #c88a6a;
-}
-
-body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__unlocked {
-  margin: 0 0 8px;
-  font-size: 11px;
-  color: #6ecf6e;
-  font-weight: 600;
 }
 
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__btn {

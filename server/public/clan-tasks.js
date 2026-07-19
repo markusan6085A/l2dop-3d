@@ -53,15 +53,91 @@
     el.textContent = text == null ? '' : String(text);
   }
 
-  function rewardText(reward) {
-    if (!reward) return '—';
-    var parts = [];
-    if (reward.exp > 0) parts.push(fmtNum(reward.exp) + ' досвіду');
-    if (reward.adena > 0) parts.push(fmtNum(reward.adena) + ' адени');
-    if (reward.coinOfLuck > 0) {
-      parts.push(reward.coinOfLuck + ' Coin of Luck');
+  function appendAccentSpan(parent, text) {
+    var span = document.createElement('span');
+    span.className = 'l2-clan-tasks-accent';
+    span.textContent = text;
+    parent.appendChild(span);
+    return span;
+  }
+
+  function appendMetaSpan(parent, text) {
+    var span = document.createElement('span');
+    span.className = 'l2-clan-tasks-meta';
+    span.textContent = text;
+    parent.appendChild(span);
+    return span;
+  }
+
+  function progressUnitLabel(taskType) {
+    if (taskType === 'earn_adena') return 'адени';
+    if (taskType === 'kill_monsters') return 'монстрів';
+    if (taskType === 'earn_sp_from_monsters') return 'SP';
+    if (taskType === 'kill_raid_boss') return 'рейдовий бос';
+    return 'урону стіні';
+  }
+
+  function appendProgressLine(parent, task) {
+    var p = document.createElement('p');
+    appendAccentSpan(p, 'Прогрес: ');
+    appendNormalText(
+      p,
+      fmtNum(task.progress) + ' / ' + fmtNum(task.target) + ' '
+    );
+    appendAccentSpan(p, progressUnitLabel(task.taskType));
+    parent.appendChild(p);
+    return p;
+  }
+
+  function appendNormalText(parent, text) {
+    parent.appendChild(document.createTextNode(text));
+  }
+
+  function appendDescLine(parent, className, text) {
+    var p = document.createElement('p');
+    if (className) p.className = className;
+    var s = text == null ? '' : String(text);
+    var re = /\d[\d\s]*/g;
+    var last = 0;
+    var match;
+    while ((match = re.exec(s))) {
+      if (match.index > last) {
+        appendAccentSpan(p, s.slice(last, match.index));
+      }
+      appendNormalText(p, match[0]);
+      last = match.index + match[0].length;
     }
-    return parts.length ? parts.join(', ') : '—';
+    if (last < s.length) {
+      appendAccentSpan(p, s.slice(last));
+    }
+    parent.appendChild(p);
+    return p;
+  }
+
+  function appendRewardValueParts(parent, reward) {
+    if (!reward) {
+      appendNormalText(parent, '—');
+      return;
+    }
+    var first = true;
+    if (reward.exp > 0) {
+      if (!first) appendNormalText(parent, ', ');
+      appendNormalText(parent, fmtNum(reward.exp) + ' ');
+      appendAccentSpan(parent, 'досвіду');
+      first = false;
+    }
+    if (reward.adena > 0) {
+      if (!first) appendNormalText(parent, ', ');
+      appendNormalText(parent, fmtNum(reward.adena) + ' ');
+      appendAccentSpan(parent, 'адени');
+      first = false;
+    }
+    if (reward.coinOfLuck > 0) {
+      if (!first) appendNormalText(parent, ', ');
+      appendNormalText(parent, String(reward.coinOfLuck) + ' ');
+      appendAccentSpan(parent, 'Coin of Luck');
+    }
+    if (first) appendNormalText(parent, '—');
   }
 
   function apiErrUk(body) {
@@ -115,6 +191,15 @@
     return p;
   }
 
+  function appendClanTasksDivider(parent) {
+    if (!parent) return null;
+    var hr = document.createElement('hr');
+    hr.className = 'l2-clan-tasks-divider';
+    hr.setAttribute('aria-hidden', 'true');
+    parent.appendChild(hr);
+    return hr;
+  }
+
   function createDiamondIcon() {
     var img = document.createElement('img');
     img.className = 'l2-clan-tasks-diamond-ico';
@@ -128,9 +213,58 @@
 
   function appendClanRewardLine(parent, diamonds) {
     var p = document.createElement('p');
-    p.appendChild(document.createTextNode('Нагорода клану: '));
+    p.className = 'l2-clan-tasks-clan-reward';
+    appendAccentSpan(p, 'Нагорода клану: ');
     p.appendChild(createDiamondIcon());
-    p.appendChild(document.createTextNode(' ' + String(diamonds) + ' алмази'));
+    appendNormalText(p, ' ' + String(diamonds) + ' алмази');
+    parent.appendChild(p);
+    return p;
+  }
+
+  function appendPlayerNickEl(parent, player) {
+    if (window.L2 && typeof L2.createPlayerProfileNickEl === 'function') {
+      parent.appendChild(
+        L2.createPlayerProfileNickEl({
+          characterId: player.id || player.characterId,
+          name: player.name || player.characterName,
+        })
+      );
+      return;
+    }
+    var nick = document.createElement('span');
+    nick.className = 'l2-clan-tasks-nick';
+    nick.textContent =
+      (player && (player.name || player.characterName)) || '—';
+    parent.appendChild(nick);
+  }
+
+  function appendPlayerLabelLine(parent, label, player, emptyText) {
+    var p = document.createElement('p');
+    appendAccentSpan(p, label);
+    if (player && (player.name || player.characterName)) {
+      appendPlayerNickEl(p, player);
+    } else {
+      appendAccentSpan(p, emptyText || '—');
+    }
+    parent.appendChild(p);
+    return p;
+  }
+
+  function appendPersonalRewardLine(parent, label, reward) {
+    var p = document.createElement('p');
+    p.className = 'l2-clan-tasks-personal-reward';
+    appendAccentSpan(p, label);
+    appendRewardValueParts(p, reward);
+    parent.appendChild(p);
+    return p;
+  }
+
+  function appendContributionLine(parent, contribution) {
+    var p = document.createElement('p');
+    appendPlayerNickEl(p, contribution);
+    p.appendChild(
+      document.createTextNode(' — ' + fmtNum(contribution.progress))
+    );
     parent.appendChild(p);
     return p;
   }
@@ -146,39 +280,15 @@
     wrap.hidden = false;
     appendText(wrap, 'l2-clan-tasks-active-title', 'Активні завдання клану');
 
-    view.activeClanTasks.forEach(function (task) {
+    view.activeClanTasks.forEach(function (task, idx) {
+      if (idx > 0) appendClanTasksDivider(wrap);
       var card = document.createElement('div');
       card.className = 'l2-clan-tasks-card';
 
       appendText(card, 'l2-clan-tasks-card__name', task.name);
-      appendText(
-        card,
-        '',
-        'Виконує: ' + (task.owner && task.owner.name ? task.owner.name : '—')
-      );
-      appendText(
-        card,
-        '',
-        'Допомагає: ' + (task.helper && task.helper.name ? task.helper.name : 'немає')
-      );
-      appendText(
-        card,
-        '',
-        'Прогрес: ' +
-          fmtNum(task.progress) +
-          ' / ' +
-          fmtNum(task.target) +
-          ' ' +
-          (task.taskType === 'earn_adena'
-            ? 'адени'
-            : task.taskType === 'kill_monsters'
-              ? 'монстрів'
-              : task.taskType === 'earn_sp_from_monsters'
-                ? 'SP'
-                : task.taskType === 'kill_raid_boss'
-                  ? 'рейдовий бос'
-                  : 'урону стіні')
-      );
+      appendPlayerLabelLine(card, 'Виконує: ', task.owner);
+      appendPlayerLabelLine(card, 'Допомагає: ', task.helper, 'немає');
+      appendProgressLine(card, task);
 
       var bar = document.createElement('div');
       bar.className = 'l2-clan-tasks-progress-bar';
@@ -188,23 +298,21 @@
       bar.appendChild(fill);
       card.appendChild(bar);
 
-      appendText(
+      appendPersonalRewardLine(
         card,
-        '',
-        'Особиста нагорода власнику: ' + rewardText(task.personalReward)
+        'Особиста нагорода власнику: ',
+        task.personalReward
       );
       appendClanRewardLine(card, task.clanRewardDiamonds);
 
       if (task.contributions && task.contributions.length) {
         var contrib = document.createElement('div');
         contrib.className = 'l2-clan-tasks-contrib';
-        appendText(contrib, '', 'Внесок:');
+        var contribTitle = document.createElement('p');
+        appendMetaSpan(contribTitle, 'Внесок:');
+        contrib.appendChild(contribTitle);
         task.contributions.forEach(function (c) {
-          appendText(
-            contrib,
-            '',
-            (c.characterName || '—') + ' — ' + fmtNum(c.progress)
-          );
+          appendContributionLine(contrib, c);
         });
         card.appendChild(contrib);
       }
@@ -255,12 +363,15 @@
     if (!wrap) return;
     wrap.textContent = '';
 
-    (view.taskDefinitions || []).forEach(function (def) {
+    var hadActive = !!(view.activeClanTasks && view.activeClanTasks.length);
+
+    (view.taskDefinitions || []).forEach(function (def, idx) {
+      if (idx > 0 || hadActive) appendClanTasksDivider(wrap);
       var card = document.createElement('div');
       card.className = 'l2-clan-tasks-card';
       appendText(card, 'l2-clan-tasks-card__name', def.name);
-      appendText(card, 'l2-clan-tasks-card__desc', def.description);
-      appendText(card, '', 'Особиста нагорода: ' + rewardText(def.personalReward));
+      appendDescLine(card, 'l2-clan-tasks-card__desc', def.description);
+      appendPersonalRewardLine(card, 'Особиста нагорода: ', def.personalReward);
       appendClanRewardLine(card, def.clanRewardDiamonds);
 
       var actions = document.createElement('div');

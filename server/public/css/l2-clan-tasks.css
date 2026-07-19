@@ -1,5 +1,6 @@
 .l2-page-clan-tasks {
   --l2-clan-tasks-gold: #a08c70;
+  --l2-clan-tasks-accent: var(--gold, #e8c038);
 }
 
 .l2-page-clan-tasks .l2-clan-tasks-title {
@@ -15,6 +16,14 @@
 
 .l2-clan-tasks-clan {
   color: var(--l2-clan-tasks-gold);
+}
+
+.l2-page-clan-tasks .l2-clan-tasks-diamonds {
+  color: #ffffff;
+}
+
+.l2-clan-tasks-meta {
+  color: #ffffff;
 }
 
 .l2-clan-tasks-diamonds__value {
@@ -43,8 +52,7 @@
 
 .l2-clan-tasks-active-list {
   margin: 1rem 0;
-  padding: 0.5rem;
-  border: 1px solid #444;
+  padding: 0;
 }
 
 .l2-clan-tasks-active-title {
@@ -53,10 +61,24 @@
   color: var(--l2-clan-tasks-gold);
 }
 
+.l2-clan-tasks-definitions {
+  margin: 0;
+  padding: 0;
+}
+
 .l2-clan-tasks-card {
   margin: 0.75rem 0;
-  padding: 0.5rem;
-  border: 1px solid #333;
+  padding: 0;
+}
+
+.l2-clan-tasks-divider {
+  display: block;
+  width: 100%;
+  margin: 10px 0 14px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #333;
+  background: transparent;
 }
 
 .l2-clan-tasks-card__name {
@@ -67,6 +89,10 @@
 .l2-clan-tasks-card__desc {
   margin: 0.25rem 0;
   font-size: 0.95em;
+}
+
+.l2-clan-tasks-accent {
+  color: var(--l2-clan-tasks-accent);
 }
 
 .l2-clan-tasks-progress-bar {
@@ -101,6 +127,30 @@
   font-size: 0.9em;
 }
 
+.l2-clan-tasks-personal-reward,
+.l2-clan-tasks-clan-reward {
+  margin: 0;
+}
+
+.l2-page-clan-tasks .l2-clan-tasks-card .l2-player-identity__nick,
+.l2-page-clan-tasks .l2-clan-tasks-card .l2-player-profile-link,
+.l2-page-clan-tasks .l2-clan-tasks-nick {
+  color: var(--l2-nick-color, #bfa88a);
+  text-shadow: var(--l2-nick-shadow, 0 1px 2px rgba(0, 0, 0, 0.85));
+}
+
 .l2-clan-tasks-back {
   margin-top: 1rem;
+}
+
+.l2-clan-tasks-back__link {
+  color: #d94a4a;
+  text-decoration: none;
+}
+
+.l2-clan-tasks-back__link:hover,
+.l2-clan-tasks-back__link:focus {
+  color: #f06060;
+  text-decoration: underline;
+  outline: none;
 }
