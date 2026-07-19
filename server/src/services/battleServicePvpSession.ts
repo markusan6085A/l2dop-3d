@@ -78,13 +78,21 @@ function opponentCombatFromRow(row: CharacterRow) {
   };
 }
 
-/** Актуальні HP/макс цілі PvP з рядка персонажа (з урахуванням пасивного регену, без write). */
-export function resolvePvpTargetCombatFromRow(row: CharacterRow) {
-  const regen = applyPassiveHpRegenPure(row);
-  return opponentCombatFromRow({
+/** Актуальні HP/макс цілі PvP з рядка персонажа (без пасивного регену під час активного PvP). */
+export function resolvePvpTargetCombatFromRow(
+  row: CharacterRow,
+  opts?: { allowPassiveRegen?: boolean }
+) {
+  const allowPassiveRegen = opts?.allowPassiveRegen === true;
+  const hp = allowPassiveRegen
+    ? applyPassiveHpRegenPure(row).nextHp
+    : Math.max(0, Math.floor(Number(row.hp) || 0));
+  const opp = opponentCombatFromRow({
     ...row,
-    hp: regen.nextHp,
+    hp,
   });
+  opp.hp = hp;
+  return opp;
 }
 
 /** Підтягнути HP суперника з БД у battleJson атакуючого (без revision++). */
@@ -101,7 +109,9 @@ export async function refreshPvpOpponentHpForCharacterInTx(
   });
   if (!targetRow) return char;
 
-  const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow);
+  const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow, {
+    allowPassiveRegen: false,
+  });
   let oppCp = opp.maxCp;
   const tgtBj = parseBattleJson(targetRow.battleJson);
   if (
@@ -271,7 +281,9 @@ export async function commitPlayerPvpBattleStartInTx(
     }
   }
 
-  const opp = resolvePvpTargetCombatFromRow(tgtBase as CharacterRow);
+  const opp = resolvePvpTargetCombatFromRow(tgtBase as CharacterRow, {
+    allowPassiveRegen: false,
+  });
   const startLog = [
     pvpStartLogLine(ctx.playerCombatMode, defenderCounter, opp),
   ];
@@ -377,12 +389,9 @@ export async function resumePlayerPvpBattleInTx(
   targetId: string,
   mode: PlayerCombatMode
 ): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
-  const atkBase = resolveMapMovement(
-    applyPassiveHpRegen(attackerRow as CharacterRow)
-  );
   const refreshed = await refreshPvpOpponentHpForCharacterInTx(
     tx,
-    atkBase as CharacterRow
+    attackerRow as CharacterRow
   );
   const st = parseBattleJson(refreshed.battleJson);
   if (!st) throw new Error('battle_none');
@@ -393,7 +402,9 @@ export async function resumePlayerPvpBattleInTx(
     where: { id: targetId },
   });
   if (!targetRow) throw new Error('pvp_target_unknown');
-  const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow);
+  const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow, {
+    allowPassiveRegen: false,
+  });
   const snap = toSnapshot(refreshed);
   return {
     character: snap,

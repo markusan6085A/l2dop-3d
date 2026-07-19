@@ -37,6 +37,7 @@ import {
   siegeViewFromWallAction,
 } from './clanSiegeWallActionService.js';
 import { isPrismaUniqueViolation } from '../party/partyPrismaErrors.js';
+import { maybeClearPveBattleOnSiegeEnterInTx } from './clanSiegeBattleClearService.js';
 export type SiegeClanBrief = { id: string; name: string } | null;
 
 export type SiegeTopClanRow = {
@@ -423,6 +424,15 @@ export async function getSiegeStateForUser(
     char.clanId &&
     String(char.cityId || '').trim() === cid
   ) {
+    await prisma.$transaction(async (tx) => {
+      await maybeClearPveBattleOnSiegeEnterInTx(tx, {
+        characterId: char.id,
+        siegeId: siege.id,
+        cityId: cid,
+        viewerCityId: char.cityId,
+        effectiveStateActive: true,
+      });
+    });
     await touchSiegeParticipantPresence(
       siege.id,
       char.id,

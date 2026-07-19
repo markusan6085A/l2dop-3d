@@ -23,7 +23,7 @@ export async function applyPvpHitToVictimInTx(
     /** Якщо false — без world PK/aggressor (siege/arena/olympiad). */
     applyWorldPkRules?: boolean;
   }
-): Promise<{ mirrorLogLineUk?: string }> {
+): Promise<{ mirrorLogLineUk?: string; victimHp?: number }> {
   let dmg = Math.max(0, Math.floor(args.damage));
   if (dmg <= 0) return {};
 
@@ -63,7 +63,7 @@ export async function applyPvpHitToVictimInTx(
         Array<{ hp: number; battleJson: Prisma.JsonValue | null }>
       >`
         UPDATE "Character"
-        SET hp = GREATEST(0, hp - ${mirror.reflectDamage})
+        SET hp = GREATEST(0, hp - ${mirror.reflectDamage}), "lastUpdate" = NOW()
         WHERE id = ${attackerId}
         RETURNING hp, "battleJson"
       `;
@@ -94,7 +94,7 @@ export async function applyPvpHitToVictimInTx(
     Array<{ hp: number; battleJson: Prisma.JsonValue | null }>
   >`
     UPDATE "Character"
-    SET hp = GREATEST(0, hp - ${dmg})
+    SET hp = GREATEST(0, hp - ${dmg}), "lastUpdate" = NOW()
     WHERE id = ${victimId}
     RETURNING hp, "battleJson"
   `;
@@ -129,7 +129,10 @@ export async function applyPvpHitToVictimInTx(
       pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
     });
   }
-  return { ...(mirrorLogLineUk ? { mirrorLogLineUk } : {}) };
+  return {
+    victimHp: newHp,
+    ...(mirrorLogLineUk ? { mirrorLogLineUk } : {}),
+  };
 }
 
 /**

@@ -20,6 +20,10 @@ import { resolvePlayerCombatMode } from '../../domain/playerCombatMode.js';
 import type { CharacterRow, CharacterSnapshot } from '../charService.js';
 import type { BattleView } from '../battleServiceTypes.js';
 import { lockClanSiegeParticipantInTx } from './clanSiegeFinishService.js';
+import {
+  clearNonPlayerBattleForSiegeInTx,
+  type ClearBattleForSiegeResult,
+} from './clanSiegeBattleClearService.js';
 
 export class SiegePvpError extends Error {
   constructor(
@@ -108,6 +112,26 @@ function assertCharacterAliveInSiegeCity(
   }
 }
 
+function rowAfterSiegeBattleClear(
+  result: ClearBattleForSiegeResult
+): CharacterRow {
+  if (result.action === 'incompatible_pvp') {
+    if (result.role === 'attacker') {
+      throw new SiegePvpError(
+        'already_in_battle',
+        'already_in_battle',
+        'Персонаж уже в бою.'
+      );
+    }
+    throw new SiegePvpError(
+      'siege_pvp_target_busy',
+      'siege_pvp_target_busy',
+      'Гравець уже в бою.'
+    );
+  }
+  return result.row;
+}
+
 export async function startSiegePvpBattleInTx(
   tx: Prisma.TransactionClient,
   userId: string,
@@ -134,7 +158,7 @@ export async function startSiegePvpBattleInTx(
     );
   }
 
-  const attackerRow = await tx.character.findFirst({
+  let attackerRow = await tx.character.findFirst({
     where: {
       userId,
       ...(characterId ? { id: characterId } : {}),
@@ -158,6 +182,7 @@ export async function startSiegePvpBattleInTx(
       'Для участі в облозі потрібно перебувати в клані.'
     );
   }
+  const attackerClanId = attackerRow.clanId;
 
   let siegeRow = await findSiegeRowForCityAtTime(cid, nowMs);
   if (!siegeRow) {
@@ -201,6 +226,14 @@ export async function startSiegePvpBattleInTx(
 
   assertCharacterAliveInSiegeCity(attackerRow as CharacterRow, cid, 'attacker');
 
+  const atkClear = await clearNonPlayerBattleForSiegeInTx(tx, {
+    row: attackerRow as CharacterRow,
+    siegeId: siegeRow.id,
+    role: 'attacker',
+    strictPvpCheck: true,
+  });
+  attackerRow = rowAfterSiegeBattleClear(atkClear);
+
   const existingBj = parseBattleJson(attackerRow.battleJson);
   if (existingBj && isPvpBattleJson(existingBj)) {
     if (
@@ -229,7 +262,7 @@ export async function startSiegePvpBattleInTx(
     );
   }
 
-  const targetRow = await tx.character.findFirst({
+  let targetRow = await tx.character.findFirst({
     where: { id: targetId },
   });
   if (!targetRow) {
@@ -241,6 +274,14 @@ export async function startSiegePvpBattleInTx(
   }
   assertCharacterAliveInSiegeCity(targetRow as CharacterRow, cid, 'target');
 
+  const tgtClear = await clearNonPlayerBattleForSiegeInTx(tx, {
+    row: targetRow as CharacterRow,
+    siegeId: siegeRow.id,
+    role: 'target',
+    strictPvpCheck: true,
+  });
+  targetRow = rowAfterSiegeBattleClear(tgtClear);
+
   if (!targetRow.clanId) {
     throw new SiegePvpError(
       'siege_pvp_target_no_clan',
@@ -248,7 +289,7 @@ export async function startSiegePvpBattleInTx(
       'Ціль не бере участі в облозі.'
     );
   }
-  if (targetRow.clanId === attackerRow.clanId) {
+  if (targetRow.clanId === attackerClanId) {
     throw new SiegePvpError(
       'siege_pvp_same_clan',
       'siege_pvp_same_clan',
@@ -261,7 +302,7 @@ export async function startSiegePvpBattleInTx(
     tx,
     siegeRow.id,
     attackerRow.id,
-    attackerRow.clanId,
+    attackerClanId,
     nowMs
   );
 

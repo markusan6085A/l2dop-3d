@@ -245,8 +245,11 @@ export async function performBattleActionInTx(
       (char as CharacterRow).battleJson,
       partyBattleIdPeek
     );
+    const bjPeekPrePassive = parseBattleJson((char as CharacterRow).battleJson);
+    const pvpActionPath =
+      bjPeekPrePassive != null && isPvpBattleJson(bjPeekPrePassive);
 
-    if (!partyActionPath) {
+    if (!partyActionPath && !pvpActionPath) {
       char = await persistPassiveAndMoveInTx(tx, char as CharacterRow);
     }
 
@@ -1104,6 +1107,10 @@ export async function performBattleActionInTx(
       });
       if (pvpHit.mirrorLogLineUk) {
         log.push(pvpHit.mirrorLogLineUk);
+      }
+      if (typeof pvpHit.victimHp === 'number') {
+        mobHp = pvpHit.victimHp;
+        st.mobHp = mobHp;
       }
     }
 
