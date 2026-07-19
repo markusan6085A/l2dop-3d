@@ -51,6 +51,7 @@ import {
   sendBattleHuntNotAvailableForPvp,
   sendPartyBattleWrongSpawn,
 } from './gameBattlePartyRouteErrors.js';
+import { ackPvpPendingDefeatForUser } from '../services/pvpPendingDefeatAckService.js';
 
 function battleQueryFromRequest(q: Record<string, unknown>): {
   characterId: string | null;
@@ -883,6 +884,65 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           });
         }
         await logRouteMutation(request, 'battle_return_to_town', er, 'error', undefined, undefined, 'battle-mutation');
+        throw e;
+      }
+    }
+  );
+
+  app.post(
+    '/battle/pvp-defeat/ack',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const deathEventId =
+        typeof b.deathEventId === 'string' ? b.deathEventId.trim() : '';
+      if (!deathEventId) {
+        return reply.code(400).send({
+          error: 'invalid_input',
+          messageUk: 'Потрібен deathEventId.',
+        });
+      }
+      try {
+        const result = await ackPvpPendingDefeatForUser(
+          userId,
+          deathEventId,
+          parseOptionalCharacterId(b.characterId)
+        );
+        await logRouteMutation(
+          request,
+          'battle_pvp_defeat_ack',
+          0,
+          'ok',
+          undefined,
+          parseOptionalCharacterId(b.characterId) ?? undefined,
+          'battle-mutation'
+        );
+        return reply.send(result);
+      } catch (e) {
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && e.message === 'invalid_input') {
+          await logRouteMutation(
+            request,
+            'battle_pvp_defeat_ack',
+            0,
+            'error'
+          );
+          return reply.code(400).send({
+            error: 'invalid_input',
+            messageUk: 'Невірний deathEventId.',
+          });
+        }
+        await logRouteMutation(
+          request,
+          'battle_pvp_defeat_ack',
+          0,
+          'error'
+        );
         throw e;
       }
     }

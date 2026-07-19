@@ -22,6 +22,97 @@
   var lastOwnDamage = null;
   var bodyBuiltState = '';
   var bodyParticipantsFp = '';
+  var shownSiegeDeathEventIds = {};
+
+  function parseSiegeDeathFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get('siegeDeath') === '1';
+  }
+
+  function readSnapshotPvpDefeat() {
+    if (!window.L2 || typeof L2.lastSnapshot !== 'function') return null;
+    var snap = L2.lastSnapshot();
+    if (!snap || !snap.pvpDefeat) return null;
+    if (snap.pvpDefeat.scope !== 'clan_siege') return null;
+    return snap.pvpDefeat;
+  }
+
+  async function ackSiegePvpDefeat(pvpDefeat) {
+    if (!pvpDefeat || !pvpDefeat.deathEventId) return;
+    try {
+      var body = { deathEventId: String(pvpDefeat.deathEventId) };
+      var snap =
+        window.L2 && typeof L2.lastSnapshot === 'function'
+          ? L2.lastSnapshot()
+          : null;
+      if (snap && snap.id) body.characterId = snap.id;
+      await fetch('/game/battle/pvp-defeat/ack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token(),
+        },
+        body: JSON.stringify(body),
+      });
+      if (snap && snap.pvpDefeat) {
+        delete snap.pvpDefeat;
+        if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+          L2.setLastSnapshot(snap);
+        }
+      }
+    } catch (_eAck) {
+      /* ignore */
+    }
+  }
+
+  function ensureSiegeDeathResultBlock() {
+    var existing = $('siege-death-result');
+    if (existing) return existing;
+    var body = $('siege-body');
+    if (!body) return null;
+    var box = document.createElement('div');
+    box.id = 'siege-death-result';
+    box.className = 'l2-siege-death-result l2-siege-msg';
+    box.hidden = true;
+    box.innerHTML =
+      '<p class="l2-siege-death-result__title"><strong>Поразка</strong></p>' +
+      '<p class="l2-siege-death-result__text" id="siege-death-result-text"></p>' +
+      '<button type="button" class="l2-siege-death-result__ok" id="siege-death-result-ok">Зрозуміло</button>';
+    body.insertBefore(box, body.firstChild);
+    var okBtn = $('siege-death-result-ok');
+    if (okBtn) {
+      okBtn.addEventListener('click', function () {
+        box.hidden = true;
+      });
+    }
+    return box;
+  }
+
+  function tryShowSiegeDeathResult(pvpDefeat) {
+    if (!pvpDefeat) return false;
+    var id = pvpDefeat.deathEventId ? String(pvpDefeat.deathEventId) : '';
+    if (id && shownSiegeDeathEventIds[id]) return false;
+    if (id) shownSiegeDeathEventIds[id] = true;
+    var box = ensureSiegeDeathResultBlock();
+    if (!box) return false;
+    var textEl = $('siege-death-result-text');
+    if (textEl) {
+      textEl.textContent =
+        pvpDefeat.messageUk ||
+        'Ви вибули з облоги після поразки від ' +
+          (pvpDefeat.killerName || '—') +
+          '.';
+    }
+    box.hidden = false;
+    void ackSiegePvpDefeat(pvpDefeat);
+    return true;
+  }
+
+  function maybeShowPendingSiegeDeath() {
+    var pvpDefeat = readSnapshotPvpDefeat();
+    if (!pvpDefeat) return;
+    tryShowSiegeDeathResult(pvpDefeat);
+  }
 
   function $(id) {
     return document.getElementById(id);
@@ -1120,6 +1211,10 @@
     }
     if (window.L2 && typeof L2.fetchSnapshot === 'function') {
       await L2.fetchSnapshot();
+    }
+
+    if (parseSiegeDeathFromUrl() || readSnapshotPvpDefeat()) {
+      maybeShowPendingSiegeDeath();
     }
 
     var body = $('siege-body');

@@ -16,7 +16,10 @@ import {
 } from '../data/l2dopHumanFighterBattleSkills.js';
 import { mapMoveSpeedFromRunSpeed } from '../domain/mapMovement.js';
 import { nickColorFromKarmaRow } from '../domain/pvpKarma.js';
-import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
+import {
+  parsePvpPendingDefeat,
+  pvpPendingDefeatToClientSummary,
+} from '../domain/pvpPendingDefeat.js';
 import {
   parsePvePendingDefeat,
   pvePendingDefeatToSummary,
@@ -538,13 +541,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     pvpDefeat: (() => {
       const pending = parsePvpPendingDefeat(row.pvpPendingDefeatJson);
       if (!pending) return null;
-      return {
-        killerName: pending.killerName,
-        killerCharacterId: pending.killerCharacterId,
-        ...(pending.fullLog && pending.fullLog.length > 0
-          ? { fullLog: pending.fullLog }
-          : {}),
-      };
+      return pvpPendingDefeatToClientSummary(pending);
     })(),
     pveDefeat: (() => {
       const pending = parsePvePendingDefeat(row.pvePendingDefeatJson);

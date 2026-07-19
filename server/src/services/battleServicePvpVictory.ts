@@ -120,6 +120,12 @@ export async function persistPvpVictoryInTx(
     const siegeCityId = st.siegeCityId
       ? String(st.siegeCityId).trim()
       : '';
+    const siegeId = st.siegeId ? String(st.siegeId).trim() : '';
+    const isSiegePvp = st.playerCombatMode === 'siege' && !!siegeCityId;
+    const deathEventId =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : 'd' + String(Date.now()) + '-' + String(Math.random()).slice(2, 10);
     const victimPatch: Prisma.CharacterUncheckedUpdateInput = {
       hp: recoverHp,
       battleJson: Prisma.JsonNull,
@@ -127,6 +133,15 @@ export async function persistPvpVictoryInTx(
         killerName: char.name,
         killerCharacterId: char.id,
         atMs: Date.now(),
+        deathEventId,
+        scope: isSiegePvp ? 'clan_siege' : 'world',
+        ...(isSiegePvp
+          ? {
+              siegeCityId,
+              ...(siegeId ? { siegeId } : {}),
+              eliminatedFromSiege: true,
+            }
+          : {}),
         fullLog: defeatLog,
       }),
     };

@@ -19,6 +19,9 @@ const clanCommonCss = fs.readFileSync(
   'utf8'
 );
 const clanUiJs = fs.readFileSync(path.join(__dirname, '../public/l2-clan-ui.js'), 'utf8');
+const mapJs = fs.readFileSync(path.join(__dirname, '../public/map.js'), 'utf8');
+
+assert.match(mapJs, /scope === 'clan_siege'\) return;/);
 
 assert.match(cityHtml, /city-siege-card/);
 assert.match(cityHtml, /data-siege-schedule/);

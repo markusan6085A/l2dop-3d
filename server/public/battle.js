@@ -2339,6 +2339,14 @@
           return false;
         }
         if (st.outcome === 'DEFEAT' || st.battleEnded) {
+          if (st.pvpDefeat && character) {
+            mergePvpDefeatIntoCharacter(character, st.pvpDefeat);
+            applyBattleDelta(st);
+            if (tryConsumePvpDefeatShow(st.pvpDefeat)) {
+              stopBattleSyncPoll();
+              return true;
+            }
+          }
           if (st.battleEnded && !battle) {
             stopBattleSyncPoll();
             return false;
@@ -2346,6 +2354,13 @@
           return syncBattleFromServerFull();
         }
         applyBattleDelta(st);
+        if (st.pvpDefeat && character) {
+          mergePvpDefeatIntoCharacter(character, st.pvpDefeat);
+          if (tryConsumePvpDefeatShow(st.pvpDefeat)) {
+            stopBattleSyncPoll();
+            return true;
+          }
+        }
         if (st.partyBattle) {
           lastPartyBattleDto = st.partyBattle;
           renderPartyBattleMembers(lastPartyBattleDto);
@@ -3133,6 +3148,53 @@
 
     var DEFEAT_LOG_MAX = 12;
     var pvpDefeatTrapInstalled = false;
+    var shownPvpDeathEventIds = {};
+
+    function isSiegePvpDefeat(pvpDefeat) {
+      return !!(pvpDefeat && pvpDefeat.scope === 'clan_siege');
+    }
+
+    function mergePvpDefeatIntoCharacter(c, pvpDefeat) {
+      if (!c || !pvpDefeat) return;
+      c.pvpDefeat = pvpDefeat;
+      if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(c);
+    }
+
+    async function ackPvpDefeatNotice(pvpDefeat) {
+      if (!pvpDefeat || !pvpDefeat.deathEventId) return;
+      try {
+        var body = { deathEventId: String(pvpDefeat.deathEventId) };
+        if (character && character.id) body.characterId = character.id;
+        await fetch('/game/battle/pvp-defeat/ack', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + localStorage.getItem('token'),
+          },
+          body: JSON.stringify(body),
+        });
+        if (character && character.pvpDefeat) {
+          delete character.pvpDefeat;
+          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        }
+      } catch (_eAck) {
+        /* ignore — повторний показ на siege.html */
+      }
+    }
+
+    function goToSiegeFromDefeat(pvpDefeat) {
+      var cityId =
+        pvpDefeat && pvpDefeat.siegeCityId
+          ? String(pvpDefeat.siegeCityId).trim()
+          : '';
+      if (!cityId) return;
+      window.location.href =
+        '/siege.html?cityId=' + encodeURIComponent(cityId);
+    }
+
+    function goToCityFromSiegeDefeat() {
+      window.location.href = '/city.html';
+    }
 
     function trapPvpDefeatBack() {
       if (pvpDefeatTrapInstalled) return;
@@ -3164,26 +3226,44 @@
       var defRoot = $('battle-defeat-root');
       if (active) active.hidden = true;
       if (defRoot) defRoot.hidden = false;
+      var isSiege = isSiegePvpDefeat(pvpDefeat);
       var mobHead = $('battle-defeat-mobhead');
-      if (mobHead) mobHead.textContent = '';
+      if (mobHead) {
+        mobHead.textContent = isSiege ? 'Поразка' : '';
+      }
       var shout = defRoot
         ? defRoot.querySelector('.l2-battle-defeat-notify__shout')
         : null;
       if (shout) {
         shout.textContent =
-          'Вас вбив гравець [' + (pvpDefeat.killerName || '—') + ']!';
+          pvpDefeat && pvpDefeat.messageUk
+            ? pvpDefeat.messageUk
+            : 'Вас вбив гравець [' + (pvpDefeat.killerName || '—') + ']!';
       }
       var hint = $('battle-defeat-town-hint');
       if (hint) {
-        hint.textContent =
-          'Натисни «Повернутися в місто» або «Город» — опинишся у найближчому селищі.';
+        hint.textContent = isSiege
+          ? 'Ви більше не можете атакувати на цій облозі.'
+          : 'Натисни «Повернутися в місто» або «Город» — опинишся у найближчому селищі.';
+      }
+      var toCityBtn = $('battle-defeat-tocity');
+      if (toCityBtn) {
+        toCityBtn.textContent = isSiege ? 'До міста' : 'Повернутися в місто';
+      }
+      var siegeBtn = $('battle-defeat-siege');
+      if (siegeBtn) {
+        siegeBtn.hidden = !isSiege;
       }
       var dlog = $('battle-defeat-log');
       if (dlog) {
         if (pvpDefeat && pvpDefeat.fullLog && pvpDefeat.fullLog.length) {
           var pvpTail = defeatLogTail(pvpDefeat.fullLog, DEFEAT_LOG_MAX);
           pvpTail = pvpTail.filter(function (line) {
-            return String(line).indexOf('Вас вбив гравець') === -1;
+            var s = String(line);
+            return (
+              s.indexOf('Вас вбив гравець') === -1 &&
+              s.indexOf('Вас переміг') === -1
+            );
           });
           renderColoredLog(dlog, pvpTail, { newestFirst: false });
         } else {
@@ -3194,10 +3274,19 @@
       trapPvpDefeatBack();
     }
 
+    function tryConsumePvpDefeatShow(pvpDefeat) {
+      if (!pvpDefeat) return false;
+      var id = pvpDefeat.deathEventId ? String(pvpDefeat.deathEventId) : '';
+      if (id && shownPvpDeathEventIds[id]) return false;
+      if (id) shownPvpDeathEventIds[id] = true;
+      showPvpDefeatScreen(pvpDefeat);
+      void ackPvpDefeatNotice(pvpDefeat);
+      return true;
+    }
+
     function checkPvpDefeatFromCharacter(c) {
       if (c && c.pvpDefeat) {
-        showPvpDefeatScreen(c.pvpDefeat);
-        return true;
+        return tryConsumePvpDefeatShow(c.pvpDefeat);
       }
       return false;
     }
@@ -3397,7 +3486,12 @@
       var shoutEl = vicInline
         ? vicInline.querySelector('.l2-battle-victory-notify__shout')
         : null;
-      if (shoutEl && isPvpVic) {
+      if (shoutEl && isSiegeVic) {
+        shoutEl.textContent =
+          'Ви перемогли ' +
+          (victory.mobName || '—') +
+          '. Противник вибув з облоги.';
+      } else if (shoutEl && isPvpVic) {
         shoutEl.textContent =
           'Ви перемогли гравця ' + (victory.mobName || '—') + '!';
       } else if (shoutEl) {
@@ -4013,6 +4107,11 @@
           (character && (character.pveDefeat || character.pvpDefeat))
         ) {
           e.preventDefault();
+          var pd = character && character.pvpDefeat;
+          if (pd && isSiegePvpDefeat(pd)) {
+            goToCityFromSiegeDefeat();
+            return;
+          }
           returnToTownAndGoCity();
           return;
         }
@@ -4029,7 +4128,19 @@
     var defTown = $('battle-defeat-tocity');
     if (defTown) {
       defTown.addEventListener('click', function () {
+        var pd = character && character.pvpDefeat;
+        if (pd && isSiegePvpDefeat(pd)) {
+          goToCityFromSiegeDefeat();
+          return;
+        }
         returnToTownAndGoCity();
+      });
+    }
+    var defSiege = $('battle-defeat-siege');
+    if (defSiege) {
+      defSiege.addEventListener('click', function () {
+        var pd = character && character.pvpDefeat;
+        goToSiegeFromDefeat(pd || {});
       });
     }
 
@@ -4039,7 +4150,7 @@
       if (character && character.pvpDefeat) {
         if (content) content.hidden = false;
         if (errEl) errEl.hidden = true;
-        showPvpDefeatScreen(character.pvpDefeat);
+        tryConsumePvpDefeatShow(character.pvpDefeat);
         return;
       }
       if (pvpDeathMode) {

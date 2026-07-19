@@ -41,6 +41,8 @@ export interface BattleDeltaPayload {
 export interface BattleSyncResponse extends BattleDeltaPayload {
   inBattle: boolean;
   partyBattle?: import('./party/partyBattleSyncService.js').PartyBattleSyncDto;
+  /** PvP-поразка (sync poll), якщо battleJson очищено, а pending defeat ще не ack. */
+  pvpDefeat?: import('../domain/pvpPendingDefeat.js').PvpDefeatClientSummary;
 }
 
 export interface BattleActionDeltaResponse {

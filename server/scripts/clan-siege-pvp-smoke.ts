@@ -18,7 +18,10 @@ import { isInPvpSafeZone } from '../src/domain/pvpSafeZones.js';
 import { prisma } from '../src/lib/prisma.js';
 import { parseBattleJson } from '../src/services/battleServiceParseBattleJson.js';
 import { performBattleActionInTx } from '../src/services/battleServicePerformBattleAction.js';
+import { getBattleSyncForUser } from '../src/services/battleServiceSync.js';
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
+import { parsePvpPendingDefeat } from '../src/domain/pvpPendingDefeat.js';
+import { ackPvpPendingDefeatForUser } from '../src/services/pvpPendingDefeatAckService.js';
 import {
   SiegePvpError,
   startSiegePvpBattleInTx,
@@ -480,12 +483,116 @@ async function testSiegeVictoryNoKarmaAndReturnUrl(): Promise<void> {
   await prisma.clanSiege.delete({ where: { id: siege.id } });
 }
 
+async function testSiegePvpDefeatEventSyncAndAck(): Promise<void> {
+  const nowMs = Date.now();
+  await prisma.clanSiege.deleteMany({ where: { cityId: CITY } });
+  const siege = await seedActiveSiege(nowMs);
+  const a = await createClanAccount('sd');
+  const b = await createClanAccount('sv');
+  await registerParticipants(siege.id, a, b, nowMs);
+  await syncPvpPair({ a, b, targetHp: 1 });
+
+  const atk0 = await prisma.character.findUniqueOrThrow({
+    where: { id: a.characterId },
+  });
+  await prisma.$transaction((tx) =>
+    startSiegePvpBattleInTx(
+      tx,
+      a.userId,
+      CITY,
+      b.characterId,
+      atk0.revision,
+      a.characterId,
+      nowMs
+    )
+  );
+
+  const atk1 = await prisma.character.findUniqueOrThrow({
+    where: { id: a.characterId },
+  });
+
+  let res = await prisma.$transaction((tx) =>
+    performBattleActionInTx(tx, a.userId, 'attack', atk1.revision, {
+      characterId: a.characterId,
+    })
+  );
+  for (let attempt = 0; attempt < 12 && (!res.victory || res.kind !== 'full'); attempt++) {
+    await new Promise((r) => setTimeout(r, 600));
+    const row = await prisma.character.findUniqueOrThrow({
+      where: { id: a.characterId },
+    });
+    if (!row.battleJson) break;
+    res = await prisma.$transaction((tx) =>
+      performBattleActionInTx(tx, a.userId, 'attack', row.revision, {
+        characterId: a.characterId,
+      })
+    );
+  }
+  assert.equal(res.kind, 'full');
+  assert.ok(res.victory, 'attacker wins siege pvp');
+
+  const victim = await prisma.character.findUniqueOrThrow({
+    where: { id: b.characterId },
+  });
+  assert.equal(victim.battleJson, null);
+  const pending = parsePvpPendingDefeat(victim.pvpPendingDefeatJson);
+  assert.ok(pending);
+  assert.equal(pending!.scope, 'clan_siege');
+  assert.equal(pending!.eliminatedFromSiege, true);
+  assert.equal(pending!.siegeCityId, CITY);
+  assert.ok(pending!.deathEventId);
+  assert.match(pending!.killerName, /.+/);
+  ok('victim pending defeat: clan_siege + deathEventId');
+
+  const sync = await getBattleSyncForUser(b.userId, {
+    characterId: b.characterId,
+    battleVersion: 999,
+  });
+  assert.ok(sync);
+  assert.equal(sync!.outcome, 'DEFEAT');
+  assert.equal(sync!.battleEnded, true);
+  assert.ok(sync!.pvpDefeat);
+  assert.equal(sync!.pvpDefeat!.deathEventId, pending!.deathEventId);
+  assert.equal(sync!.pvpDefeat!.scope, 'clan_siege');
+  assert.match(String(sync!.pvpDefeat!.messageUk), /вибули з облоги/i);
+  ok('victim battle sync: DEFEAT + pvpDefeat');
+
+  const ack1 = await ackPvpPendingDefeatForUser(
+    b.userId,
+    pending!.deathEventId,
+    b.characterId
+  );
+  assert.equal(ack1.ok, true);
+  const ack2 = await ackPvpPendingDefeatForUser(
+    b.userId,
+    pending!.deathEventId,
+    b.characterId
+  );
+  assert.equal(ack2.ok, true);
+  ok('pvp defeat ack idempotent');
+
+  const victimAfter = await prisma.character.findUniqueOrThrow({
+    where: { id: b.characterId },
+  });
+  assert.equal(victimAfter.pvpPendingDefeatJson, null);
+
+  const part = await prisma.clanSiegeParticipant.findFirst({
+    where: { siegeId: siege.id, characterId: b.characterId },
+  });
+  assert.ok(part?.eliminatedAt);
+  ok('victim eliminated from siege');
+
+  await prisma.user.deleteMany({ where: { id: { in: [a.userId, b.userId] } } });
+  await prisma.clanSiege.delete({ where: { id: siege.id } });
+}
+
 async function main(): Promise<void> {
   console.log('clan-siege-pvp-smoke\n');
   assert.ok(FAR_X - (FAR_X + 1000) < BATTLE_RANGE, 'pair within battle range');
   await testWorldVsSiegeSameDamage();
   await testSiegeRules();
   await testSiegeVictoryNoKarmaAndReturnUrl();
+  await testSiegePvpDefeatEventSyncAndAck();
   console.log(`\n${passed} passed`);
 }
 

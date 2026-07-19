@@ -130,11 +130,30 @@ assert.doesNotMatch(citySrc, /Початок:/);
 assert.doesNotMatch(citySrc, /city-siege-schedule-line/);
 assert.match(siegeSrc, /patchActiveBody/);
 assert.match(siegeSrc, /dataset\.siegeBuilt/);
+assert.match(siegeSrc, /siege-death-result/);
+assert.match(siegeSrc, /maybeShowPendingSiegeDeath/);
+assert.match(siegeSrc, /pvp-defeat\/ack/);
+assert.match(siegeSrc, /tryShowSiegeDeathResult/);
 assert.doesNotMatch(siegeSrc, /\[Зачекайте…\]/);
 assert.match(
   citySrc,
   /l2dop_oren[\s\S]*l2dop_giran[\s\S]*l2dop_aden[\s\S]*l2dop_goddard[\s\S]*l2dop_rune[\s\S]*l2dop_gludio[\s\S]*l2dop_dion[\s\S]*l2dop_schuttgart/
 );
+
+const battleSrc = fs.readFileSync(
+  path.join(__dirname, '../public/battle.js'),
+  'utf8'
+);
+const mapSrc = fs.readFileSync(path.join(__dirname, '../public/map.js'), 'utf8');
+
+assert.match(battleSrc, /tryConsumePvpDefeatShow/);
+assert.match(battleSrc, /pvp-defeat\/ack/);
+assert.match(battleSrc, /isSiegePvpDefeat/);
+assert.match(battleSrc, /battle-defeat-siege/);
+assert.match(battleSrc, /Противник вибув з облоги/);
+assert.match(battleSrc, /st\.pvpDefeat/);
+assert.match(mapSrc, /scope === 'clan_siege'\) return;/);
+assert.match(mapSrc, /battle\.html\?pvpDeath=1/);
 
 assert.equal(resolvePollDelay({ state: 'active' }), 4000);
 assert.equal(resolvePollDelay({ state: 'scheduled' }), 60000);

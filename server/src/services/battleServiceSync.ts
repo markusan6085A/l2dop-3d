@@ -1,9 +1,14 @@
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
+import {
+  parsePvpPendingDefeat,
+  pvpPendingDefeatToClientSummary,
+} from '../domain/pvpPendingDefeat.js';
 import { resolveBattleSpawnMeta } from '../domain/battlePvpContext.js';
 import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import { findCharacterForUser } from './charResolveForUser.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import type { BattleJsonState } from '../domain/battle.js';
+import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import {
   readWorldBossSessionState,
   clampSharedWorldBossMobHp,
@@ -96,6 +101,30 @@ export async function getBattleSyncForUser(
       characterMaxMp: vitals.maxMp,
       outcome: 'DEFEAT',
       battleEnded: true,
+    };
+  }
+
+  const pendingPvp = parsePvpPendingDefeat(cr.pvpPendingDefeatJson);
+  if (pendingPvp) {
+    const vitals = computeCharacterVitalsBundle({
+      row: cr,
+      clanHallBonus,
+    });
+    const pvpDefeat = pvpPendingDefeatToClientSummary(pendingPvp);
+    return {
+      changed: true,
+      revision,
+      battleVersion: 0,
+      logSeq: pvpDefeat.fullLog?.length ?? 0,
+      logTail: pvpDefeat.fullLog?.slice(-MAX_BATTLE_LOG) ?? [],
+      inBattle: false,
+      characterHp: vitals.displayHp,
+      characterMp: vitals.maxMp,
+      characterMaxHp: vitals.maxHpChain.maxHpWithClanHall,
+      characterMaxMp: vitals.maxMp,
+      outcome: 'DEFEAT',
+      battleEnded: true,
+      pvpDefeat,
     };
   }
 

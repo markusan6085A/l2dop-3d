@@ -27,7 +27,7 @@ import {
   findPvpIncomingForCharacter,
   type PvpIncomingAttack,
 } from './pvpIncomingService.js';
-import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
+import { parsePvpPendingDefeat, pvpPendingDefeatToClientSummary } from '../domain/pvpPendingDefeat.js';
 import {
   parsePvePendingDefeat,
   pvePendingDefeatToSummary,
@@ -114,11 +114,7 @@ export interface MapSyncPayload {
   };
   spawns: ReturnType<typeof buildMapNearbySpawnViews>['markerEntries'];
   pvpIncoming: PvpIncomingAttack | null;
-  pvpDefeat: {
-    killerName: string;
-    killerCharacterId: string;
-    fullLog?: string[];
-  } | null;
+  pvpDefeat: import('../domain/pvpPendingDefeat.js').PvpDefeatClientSummary | null;
   pveDefeat: ReturnType<typeof pvePendingDefeatToSummary> | null;
 }
 
@@ -198,13 +194,7 @@ export async function getMapSyncForUser(
 
   const pendingDefeat = parsePvpPendingDefeat(row.pvpPendingDefeatJson);
   const pvpDefeat = pendingDefeat
-    ? {
-        killerName: pendingDefeat.killerName,
-        killerCharacterId: pendingDefeat.killerCharacterId,
-        ...(pendingDefeat.fullLog && pendingDefeat.fullLog.length > 0
-          ? { fullLog: pendingDefeat.fullLog }
-          : {}),
-      }
+    ? pvpPendingDefeatToClientSummary(pendingDefeat)
     : null;
 
   const pendingPveDefeat = parsePvePendingDefeat(row.pvePendingDefeatJson);

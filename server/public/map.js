@@ -546,6 +546,7 @@
 
   function handlePvpDefeatRedirect(sync) {
     if (!sync || !sync.pvpDefeat) return;
+    if (sync.pvpDefeat.scope === 'clan_siege') return;
     window.location.replace('/battle.html?pvpDeath=1');
   }
 

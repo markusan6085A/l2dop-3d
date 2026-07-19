@@ -211,10 +211,16 @@ export interface CharacterSnapshot {
   battleHotbarSlots: (BattleHotbarSlot | null)[] | null;
   /** Колір ніка для HUD (#rrggbb): карма / агресор / стандарт. */
   nickColor: string;
-  /** PvP-поразка, що чекає кнопки «В місто». */
+  /** PvP-поразка, що чекає підтвердження на battle/siege. */
   pvpDefeat: {
     killerName: string;
     killerCharacterId: string;
+    deathEventId: string;
+    scope: 'world' | 'clan_siege';
+    playerDied: true;
+    eliminatedFromSiege?: boolean;
+    siegeCityId?: string;
+    messageUk: string;
     fullLog?: string[];
   } | null;
   /** PvE-поразка — обов'язкова кнопка «В місто». */
