@@ -18,6 +18,7 @@ import {
   resolveCharacterPlayfieldPosition,
   type PartyMemberStatusCharacterRow,
 } from './partyMemberStatusReadService.js';
+import { resolveLiveDungeonMapPosition } from '../../domain/partyBattlePlayfield.js';
 import type { PartyBattleMemberSyncDto } from './partyBattleSyncService.js';
 
 const MEMBER_BATTLE_SELECT = {
@@ -119,6 +120,23 @@ export async function buildPartyBattleMemberSyncDtos(
     participantRows.map((p) => p.characterId)
   );
   const leaderId = partyRow?.leaderCharacterId ?? '';
+  const viewerMember = membershipRows.find((m) => m.characterId === viewerId);
+  const viewerRow = viewerMember?.character as unknown as PartyMemberStatusCharacterRow & {
+    exp: bigint;
+    race: string;
+    classBranch: string;
+    inventoryJson: unknown;
+    activeBuffsJson?: unknown;
+    buffHeroicTier?: number | null;
+    buffZealotStacks?: number | null;
+    skillsLearnedJson?: unknown;
+    l2Profession?: string;
+    worldCombatStateJson?: unknown;
+    level: number;
+  };
+  const viewerDungeon = viewerRow
+    ? resolveLiveDungeonMapPosition(viewerRow as import('../charTypes.js').CharacterRow, nowMs)
+    : null;
 
   const out: PartyBattleMemberSyncDto[] = [];
   for (const m of membershipRows) {
@@ -129,14 +147,30 @@ export async function buildPartyBattleMemberSyncDtos(
       classBranch: string;
       inventoryJson: unknown;
       l2Profession: string;
-      activeBuffsJson: unknown;
+      activeBuffsJson?: unknown;
       battleJson: unknown;
+      level: number;
+      buffHeroicTier?: number | null;
+      buffZealotStacks?: number | null;
+      skillsLearnedJson?: unknown;
+      worldCombatStateJson?: unknown;
     };
     const playfield = resolveCharacterPlayfieldPosition(row);
+    const memberDungeon = resolveLiveDungeonMapPosition(
+      row as import('../charTypes.js').CharacterRow,
+      nowMs
+    );
     const online = isCharacterOnlineNow(row.id);
     const dead = isCharacterDeadForPartyStatus(row);
     const nearby =
-      online && !dead && isMemberNearbyToViewer(viewerPlayfield, playfield);
+      online &&
+      !dead &&
+      isMemberNearbyToViewer(
+        viewerPlayfield,
+        playfield,
+        viewerDungeon,
+        memberDungeon
+      );
     const vit = memberVitalsFromRow(row);
     const bj = parseBattleJson(row.battleJson as import('@prisma/client').Prisma.JsonValue);
     const activeInBattle =

@@ -12,6 +12,7 @@ import {
   lockCharacterRowsInStableOrderInTx,
 } from './partyBattleCharacterLock.js';
 import {
+  endPartyBattleIfNoActiveParticipantsInTx,
   endPartyBattleSessionInTx,
   findActivePartyBattleSessionByPartyIdInTx,
   leavePartyBattleParticipantInTx,
@@ -91,6 +92,57 @@ export async function syncPartyBattleOnMemberRemovalInTx(
     locked.id,
     null
   );
+
+  await endPartyBattleIfNoActiveParticipantsInTx(tx, {
+    sessionId: locked.id,
+    endReason: PARTY_BATTLE_END_REASON.no_participants,
+    nowMs: args.nowMs,
+  });
+}
+
+/**
+ * Explicit dungeon exit: participant inactive, clear pointer, maybe end session.
+ */
+export async function syncPartyBattleOnDungeonExitInTx(
+  tx: Tx,
+  args: {
+    characterId: string;
+    nowMs?: number;
+  }
+): Promise<void> {
+  if (!isPartyBattleEngineEnabled()) return;
+
+  const characterId = String(args.characterId || '').trim();
+  if (!characterId) return;
+
+  const char = await tx.character.findUnique({
+    where: { id: characterId },
+    select: { battleJson: true },
+  });
+  const sessionId = peekPartyBattleIdFromBattleJson(char?.battleJson);
+  if (!sessionId) return;
+
+  const locked = await lockPartyBattleSessionInTx(tx, sessionId);
+  if (!locked || isPartyBattleSessionTerminal(locked.state)) return;
+
+  await leavePartyBattleParticipantInTx(tx, {
+    sessionId: locked.id,
+    characterId,
+    nowMs: args.nowMs,
+  });
+
+  await clearPartyBattlePointerForCharacterInTx(
+    tx,
+    characterId,
+    locked.id,
+    null
+  );
+
+  await endPartyBattleIfNoActiveParticipantsInTx(tx, {
+    sessionId: locked.id,
+    endReason: PARTY_BATTLE_END_REASON.dungeon_exit,
+    nowMs: args.nowMs,
+  });
 }
 
 /**

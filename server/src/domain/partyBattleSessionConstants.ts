@@ -17,6 +17,8 @@ export const PARTY_BATTLE_END_REASON = {
   party_disbanded: 'party_disbanded',
   /** Stage B test-only lethal (ALLOW_UNREWARDED_TESTS); без solo reward flow. */
   stage_b_test_victory: 'stage_b_test_victory',
+  /** Stage E: explicit dungeon exit / last participant left dungeon. */
+  dungeon_exit: 'dungeon_exit',
 } as const;
 
 export type PartyBattleEndReasonValue =

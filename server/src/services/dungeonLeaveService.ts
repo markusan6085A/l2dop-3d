@@ -4,6 +4,8 @@ import { prisma } from '../lib/prisma.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { syncPartyBattleOnDungeonExitInTx } from './party/partyBattleSocialSession.js';
+import { isPartyBattleEngineEnabled } from '../domain/partyBattleFlags.js';
 
 /**
  * Вихід із сесії подземелля (світова карта / місто).
@@ -19,6 +21,12 @@ export async function performDungeonLeave(
       orderBy: { lastUpdate: 'desc' },
     })) as CharacterRow | null;
     if (!char) throw new Error('no_character');
+
+    if (isPartyBattleEngineEnabled()) {
+      await syncPartyBattleOnDungeonExitInTx(trx, {
+        characterId: char.id,
+      });
+    }
 
     const result = await mutateCharacterWithRevision(
       trx,

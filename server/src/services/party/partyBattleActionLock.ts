@@ -15,6 +15,10 @@ import type { PartyBattleSession, Prisma } from '@prisma/client';
 import { resolveMapMovement } from '../../domain/mapMovement.js';
 import { isWithinMobBattleRange } from '../../domain/mapNearbyRadius.js';
 import {
+  isWithinDungeonPartyBattleRadius,
+  resolveLiveDungeonMapPosition,
+} from '../../domain/partyBattlePlayfield.js';
+import {
   isPartyBattleSessionTerminal,
 } from '../../domain/partyBattleSessionConstants.js';
 import { isPartyBattleEngineEnabled } from '../../domain/partyBattleFlags.js';
@@ -115,7 +119,26 @@ export async function lockPartyBattleSessionForActionInTx(
   }
 
   const pos = resolveMapMovement(args.charRow);
-  if (
+  if (locked.playfield === 'dungeon') {
+    const live = resolveLiveDungeonMapPosition(args.charRow);
+    if (!live || live.dungeonId !== locked.dungeonId) {
+      throw new Error('battle_out_of_range');
+    }
+    if (
+      locked.mobMapX == null ||
+      locked.mobMapY == null ||
+      !isWithinDungeonPartyBattleRadius(
+        live.mapX,
+        live.mapY,
+        locked.mobMapX,
+        locked.mobMapY
+      )
+    ) {
+      throw new Error('battle_out_of_range');
+    }
+  } else if (
+    locked.mobWorldX == null ||
+    locked.mobWorldY == null ||
     !isWithinMobBattleRange(
       { worldX: pos.worldX, worldY: pos.worldY },
       { worldX: locked.mobWorldX, worldY: locked.mobWorldY }
