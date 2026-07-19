@@ -1,0 +1,80 @@
+.l2-page-clan-tasks .l2-clan-tasks-title {
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.l2-clan-tasks-clan,
+.l2-clan-tasks-diamonds {
+  margin: 0.25rem 0;
+}
+
+.l2-clan-tasks-no-clan {
+  color: #c88;
+  margin: 0.75rem 0;
+}
+
+.l2-clan-tasks-ok {
+  color: #8c8;
+}
+
+.l2-clan-tasks-active-list {
+  margin: 1rem 0;
+  padding: 0.5rem;
+  border: 1px solid #444;
+}
+
+.l2-clan-tasks-active-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.l2-clan-tasks-card {
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  border: 1px solid #333;
+}
+
+.l2-clan-tasks-card__name {
+  font-weight: bold;
+}
+
+.l2-clan-tasks-card__desc {
+  margin: 0.25rem 0;
+  font-size: 0.95em;
+}
+
+.l2-clan-tasks-progress-bar {
+  height: 8px;
+  background: #222;
+  border: 1px solid #555;
+  margin: 0.35rem 0;
+}
+
+.l2-clan-tasks-progress-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #486, #8a4);
+  max-width: 100%;
+}
+
+.l2-clan-tasks-contrib {
+  font-size: 0.9em;
+  margin: 0.35rem 0;
+}
+
+.l2-clan-tasks-actions {
+  margin-top: 0.5rem;
+}
+
+.l2-clan-tasks-actions button {
+  margin-right: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.l2-clan-tasks-busy-note {
+  color: #aa8;
+  font-size: 0.9em;
+}
+
+.l2-clan-tasks-back {
+  margin-top: 1rem;
+}

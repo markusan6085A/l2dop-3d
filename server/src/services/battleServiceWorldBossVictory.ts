@@ -40,6 +40,7 @@ import {
 } from './worldBossSessionService.js';
 import { creditDailyQuestRaidBossParticipationInTx } from './dailyQuestProgressService.js';
 import { creditRaidBossKillInTx } from './ratingsStatsService.js';
+import { creditClanTaskRaidBossKillInTx } from './clanTask/clanTaskProgressService.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -320,11 +321,27 @@ export async function resolveWorldBossVictoryInTx(
   }
 
   const participantIds = Object.keys(session.participants);
+  const isRaidBoss = args.spawn.kind === 'raid';
   for (const pid of participantIds) {
     const participant = session.participants[pid];
     if (participant && participant.totalDamageDealt > 0) {
       await creditDailyQuestRaidBossParticipationInTx(tx, pid, nowMs);
       await creditRaidBossKillInTx(tx, pid);
+      if (isRaidBoss) {
+        const participantRow = await tx.character.findUnique({
+          where: { id: pid },
+          select: { level: true },
+        });
+        if (participantRow) {
+          await creditClanTaskRaidBossKillInTx(
+            tx,
+            pid,
+            args.bj.spawnId,
+            participantRow.level,
+            args.spawn.level
+          );
+        }
+      }
     }
   }
 

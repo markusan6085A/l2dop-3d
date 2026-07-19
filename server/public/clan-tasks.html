@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Кланові завдання — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
+    <link rel="stylesheet" href="/css/l2-clan-tasks.css?v=20260719clanTasks1" />
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-clan-tasks l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img class="l2-outer-sframe__cap-tl-img" src="/ref/19.png" alt="" width="28" height="52" decoding="async" />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img class="l2-outer-sframe__cap-tr-img" src="/ref/18.png" alt="" width="28" height="52" decoding="async" />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img class="l2-game-chrome-crest__img" src="/ref/2.png" alt="" width="40" height="40" decoding="async" />
+        </div>
+        <div class="l2-screen-inner l2-city-root">
+          <div class="l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="clan-tasks-err" hidden></p>
+            <p class="l2-clan-tasks-ok" id="clan-tasks-ok" hidden></p>
+
+            <section class="l2-clan-tasks-main" aria-label="Кланові завдання">
+              <p class="l2-clan-tasks-title">Кланові завдання</p>
+              <p class="l2-clan-tasks-clan">
+                Клан: <span id="clan-tasks-clan-name">—</span>
+              </p>
+              <p class="l2-clan-tasks-diamonds">
+                Алмази клану: <span id="clan-tasks-diamonds">0</span>
+              </p>
+              <p class="l2-clan-tasks-no-clan" id="clan-tasks-no-clan" hidden></p>
+
+              <div id="clan-tasks-active-list" class="l2-clan-tasks-active-list" hidden></div>
+              <div id="clan-tasks-definitions" class="l2-clan-tasks-definitions"></div>
+
+              <p class="l2-clan-tasks-back">
+                <a class="l2-clan-tasks-back__link" href="/clan-my.html">&lt;&lt; Назад до клану</a>
+              </p>
+            </section>
+
+            <div id="l2-foot-links"></div>
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
+    <script src="/ui-i18n.js?v=20260718clans13"></script>
+    <script src="/l2-nav.js?v=20260718layoutStable2"></script>
+    <script src="/clan-tasks.js?v=20260719clanTasks1"></script>
+  </body>
+</html>

@@ -128,6 +128,11 @@ model Character {
   clanSiegeWallActions    ClanSiegeWallAction[]
   openedDragonDungeons    ClanDragonDungeon[] @relation("ClanDragonOpenedBy")
   dragonContributions     ClanDragonContribution[]
+  ownedClanTasks          ClanTask[] @relation("ClanTaskOwner")
+  helpedClanTasks         ClanTask[] @relation("ClanTaskHelper")
+  completedClanTasks      ClanTask[] @relation("ClanTaskCompletedBy")
+  clanTaskContributions   ClanTaskContribution[]
+  clanTaskParticipantLock ClanTaskParticipantLock?
 
   @@index([userId, lastUpdate(sort: Desc)])
   @@index([clanId])
@@ -279,6 +284,82 @@ model Clan {
   siegeWins        ClanSiege[] @relation("ClanSiegeWinner")
   siegeRewards     ClanSiegeRewardLedger[]
   dragonDungeons   ClanDragonDungeon[]
+  clanTasks        ClanTask[]
+}
+
+/** Активне або завершене кланове завдання. */
+model ClanTask {
+  id             String    @id @default(cuid())
+  clanId         String
+  taskType       String
+  ownerId        String
+  helperId       String?
+  target         BigInt
+  progress       BigInt    @default(0)
+  status         String    @default("ACTIVE")
+  takenAt        DateTime  @default(now())
+  helperJoinedAt DateTime?
+  completedAt    DateTime?
+  completedById  String?
+  rewardPaidAt   DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  clan           Clan      @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  owner          Character @relation("ClanTaskOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  helper         Character? @relation("ClanTaskHelper", fields: [helperId], references: [id], onDelete: SetNull)
+  completedBy    Character? @relation("ClanTaskCompletedBy", fields: [completedById], references: [id], onDelete: SetNull)
+  contributions  ClanTaskContribution[]
+  progressEvents ClanTaskProgressEvent[]
+  participantLocks ClanTaskParticipantLock[]
+
+  @@index([clanId, status])
+  @@index([ownerId, status])
+  @@index([helperId, status])
+  @@index([clanId, taskType])
+}
+
+/** Внесок учасника в кланове завдання. */
+model ClanTaskContribution {
+  id          String   @id @default(cuid())
+  taskId      String
+  characterId String
+  progress    BigInt   @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  task        ClanTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, characterId])
+  @@index([taskId, progress])
+  @@index([characterId])
+}
+
+/** Блокування участі: один персонаж — одне незавершене завдання. */
+model ClanTaskParticipantLock {
+  characterId String   @id
+  taskId      String
+  role        String
+  createdAt   DateTime @default(now())
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  task        ClanTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+/** Idempotent ledger прогресу кланових завдань. */
+model ClanTaskProgressEvent {
+  id          String   @id @default(cuid())
+  taskId      String
+  characterId String
+  eventKey    String
+  eventType   String
+  amount      BigInt
+  createdAt   DateTime @default(now())
+  task        ClanTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, eventKey])
+  @@index([taskId, characterId])
 }
 
 /** Активний або історичний дракон клану в «Підземеллі драконів». */

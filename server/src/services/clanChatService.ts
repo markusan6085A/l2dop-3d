@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import { gameConflictFromCharacter, gameConflictFromMutation } from './charConflict.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { handleClanTaskParticipantClanLeaveInTx } from './clanTask/clanTaskLeaveHooks.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 
 export type ClanChatMessageDto = {
@@ -148,6 +149,8 @@ export async function leaveClanForUser(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
+
+    await handleClanTaskParticipantClanLeaveInTx(tx, char.id);
 
     const fresh = (await tx.character.findUnique({
       where: { id: char.id },

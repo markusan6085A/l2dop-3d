@@ -68,6 +68,7 @@ import {
 } from '../domain/huntContinueCandidates.js';
 import { MOB_KILL_KARMA_WASH } from '../domain/pvpKarma.js';
 import type { NearbyExtraMobEconomyPatch } from './battleNearbyExtraMobLoot.js';
+import { creditClanTaskPveVictoryInTx } from './clanTask/clanTaskBattleHooks.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -228,6 +229,18 @@ export async function persistBattleVictoryInTx(
     isWorldBoss: isSharedWorldBossKind(spawn.kind),
   });
   const dailyJsonChanged = dailyQuestsJsonChanged(char.dailyQuestsJson, dailyAfter);
+
+  await creditClanTaskPveVictoryInTx(tx, {
+    characterId: char.id,
+    spawnId: bj.spawnId,
+    spawnKind: spawn.kind,
+    expectedRevision,
+    charRevision: char.revision,
+    adenaGain: adenaGainTotal,
+    spGain: spGainTotal,
+    mobKills: mobsKilledTotal,
+  });
+
   const result = await mutateCharacterWithRevision(
     tx,
     char.id,

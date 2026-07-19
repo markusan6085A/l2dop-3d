@@ -38,6 +38,7 @@ import {
 } from './clanSiegeWallActionService.js';
 import { isPrismaUniqueViolation } from '../party/partyPrismaErrors.js';
 import { maybeClearPveBattleOnSiegeEnterInTx } from './clanSiegeBattleClearService.js';
+import { creditClanTaskSiegeWallDamageInTx } from '../clanTask/clanTaskBattleHooks.js';
 export type SiegeClanBrief = {
   id: string;
   name: string;
@@ -870,6 +871,13 @@ export async function attackSiegeWallForUser(
       }
       throw err;
     }
+
+    await creditClanTaskSiegeWallDamageInTx(tx, {
+      characterId: char.id,
+      siegeId: locked.id,
+      actionId: act,
+      appliedDamage,
+    });
 
     const updatedSiege = await tx.clanSiege.update({
       where: { id: locked.id },
