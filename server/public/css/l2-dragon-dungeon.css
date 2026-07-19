@@ -28,7 +28,7 @@ body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-no-clan {
 
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-active {
   max-width: 340px;
-  margin: 0 auto 16px;
+  margin: 0 0 16px;
 }
 
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-hp-bar {
@@ -80,25 +80,47 @@ body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-list {
   gap: 18px;
 }
 
-body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card {
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card,
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-dungeon-active.l2-dragon-card--row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
   max-width: 340px;
-  margin: 0 auto;
+  margin: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__body {
+  flex: 1;
+  min-width: 0;
 }
 
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__img-wrap {
-  width: 100%;
-  max-width: 340px;
-  margin: 0 auto 8px;
+  flex: 0 0 170px;
+  width: 170px;
+  max-width: 42%;
+  margin: 0;
 }
 
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__img {
   display: block;
   width: 100%;
-  max-width: 340px;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border: 1px solid #3a342c;
-  background: #1a1612;
+  border: none;
+  background: transparent;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 90% at 42% 50%,
+    #000 52%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 90% at 42% 50%,
+    #000 52%,
+    transparent 100%
+  );
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
 }
 
 body.l2-app-l2-chrome.l2-page-dragon-dungeon .l2-dragon-card__name {

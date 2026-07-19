@@ -96,59 +96,67 @@
     if (!d) {
       el.hidden = true;
       el.textContent = '';
+      el.className = 'l2-dragon-dungeon-active';
       return;
     }
     el.hidden = false;
     el.textContent = '';
+    el.className = 'l2-dragon-dungeon-active l2-dragon-card--row';
+    var imgWrap = document.createElement('div');
+    imgWrap.className = 'l2-dragon-card__img-wrap';
     var img = document.createElement('img');
     img.className = 'l2-dragon-card__img';
     img.src = d.imageUrl;
     img.alt = d.nameUk;
-    el.appendChild(img);
+    imgWrap.appendChild(img);
+    el.appendChild(imgWrap);
+    var body = document.createElement('div');
+    body.className = 'l2-dragon-card__body';
+    el.appendChild(body);
     var name = document.createElement('p');
     name.className = 'l2-dragon-card__name';
     name.textContent = d.nameUk;
-    el.appendChild(name);
+    body.appendChild(name);
     var sub = document.createElement('p');
     sub.className = 'l2-dragon-card__subtitle';
     sub.textContent = d.nameEn + ' — ' + d.titleEn;
-    el.appendChild(sub);
+    body.appendChild(sub);
     var hp = document.createElement('p');
     hp.className = 'l2-dragon-card__hp';
     hp.textContent =
       'HP: ' + fmtNum(d.currentHp) + ' / ' + fmtNum(d.maxHp) + ' (' + d.hpPercent + '%)';
-    el.appendChild(hp);
+    body.appendChild(hp);
     var bar = document.createElement('div');
     bar.className = 'l2-dragon-hp-bar';
     var fill = document.createElement('div');
     fill.className = 'l2-dragon-hp-bar__fill';
     fill.style.width = Math.max(0, Math.min(100, d.hpPercent)) + '%';
     bar.appendChild(fill);
-    el.appendChild(bar);
+    body.appendChild(bar);
     var timer = document.createElement('p');
     timer.className = 'l2-dragon-card__timer';
     timer.textContent = 'До завершення: ' + fmtTime(d.remainingSeconds);
-    el.appendChild(timer);
-    renderReward(el, d.reward);
+    body.appendChild(timer);
+    renderReward(body, d.reward);
     var mc = view.myContribution;
     if (mc && mc.cooldownRemainingSeconds > 0 && !mc.inBattle) {
       var cd = document.createElement('p');
       cd.className = 'l2-dragon-card__missing';
       cd.textContent = 'Кулдаун входу: ' + fmtTime(mc.cooldownRemainingSeconds);
-      el.appendChild(cd);
+      body.appendChild(cd);
     }
     if (mc && mc.canEnter) {
       var enter = document.createElement('a');
       enter.className = 'l2-dragon-card__enter';
       enter.href = '/dragon-boss.html?dungeonId=' + encodeURIComponent(d.id);
       enter.textContent = 'Увійти в бій';
-      el.appendChild(enter);
+      body.appendChild(enter);
     } else if (mc && mc.inBattle) {
       var resume = document.createElement('a');
       resume.className = 'l2-dragon-card__enter';
       resume.href = '/dragon-boss.html?dungeonId=' + encodeURIComponent(d.id);
       resume.textContent = 'Продовжити бій';
-      el.appendChild(resume);
+      body.appendChild(resume);
     }
   }
 
@@ -175,32 +183,35 @@
         img.loading = 'lazy';
         imgWrap.appendChild(img);
         card.appendChild(imgWrap);
+        var body = document.createElement('div');
+        body.className = 'l2-dragon-card__body';
+        card.appendChild(body);
         var name = document.createElement('p');
         name.className = 'l2-dragon-card__name';
         name.textContent = boss.nameUk;
-        card.appendChild(name);
+        body.appendChild(name);
         var subtitle = document.createElement('p');
         subtitle.className = 'l2-dragon-card__subtitle';
         subtitle.textContent = boss.nameEn + ' — ' + boss.titleEn;
-        card.appendChild(subtitle);
+        body.appendChild(subtitle);
         var cost = document.createElement('p');
         cost.className = 'l2-dragon-card__cost';
         cost.textContent = 'Відкриття: ' + boss.unlockCostDiamonds + ' алмазів';
-        card.appendChild(cost);
-        renderReward(card, boss.reward);
+        body.appendChild(cost);
+        renderReward(body, boss.reward);
         var note = document.createElement('p');
         note.className = 'l2-dragon-card__missing';
-        card.appendChild(note);
+        body.appendChild(note);
         var leaderNote = document.createElement('p');
         leaderNote.className = 'l2-dragon-card__subtitle';
-        card.appendChild(leaderNote);
+        body.appendChild(leaderNote);
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'l2-dragon-card__btn';
         btn.addEventListener('click', function () {
           void unlockDragon(boss.id);
         });
-        card.appendChild(btn);
+        body.appendChild(btn);
         listEl.appendChild(card);
       });
       listEl.dataset.built = '1';
