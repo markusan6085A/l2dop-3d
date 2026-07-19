@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260719victoryInline1" />
+    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260719victoryChromeHide1" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
   </head>
@@ -88,13 +88,17 @@
               <ul id="battle-party-members" class="l2-battle-party-members"></ul>
             </aside>
             <section
+              id="battle-mob-panel"
               class="l2-battle-mob-panel"
               data-i18n-attr="aria-label:battle_enemy_aria"
               aria-label="Ворог"
             >
               <h2 class="l2-battle-mob-title" id="battle-mob-title"></h2>
               <p class="l2-battle-buffs l2-battle-buffs--sr" id="battle-active-buffs" hidden aria-live="polite"></p>
-              <div class="l2-battle-bar-row l2-battle-bar-row--mob l2-battle-mob-bars">
+              <div
+                id="battle-mob-combat-chrome"
+                class="l2-battle-bar-row l2-battle-bar-row--mob l2-battle-mob-bars"
+              >
                 <div class="l2-battle-mob-hp-wrap" id="battle-mob-hp-wrap">
                   <img
                     id="battle-mob-icon"
@@ -247,6 +251,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/battle-hotbar.js?v=20260716atkCd1"></script>
-    <script src="/battle.js?v=20260719victoryMobHide1"></script>
+    <script src="/battle.js?v=20260719victoryChromeHide1"></script>
   </body>
 </html>

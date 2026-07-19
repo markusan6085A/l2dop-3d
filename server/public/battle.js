@@ -1266,6 +1266,13 @@
     );
     var debuffStripEl = $('battle-mob-debuff-strip');
     var logEl = $('battle-log');
+    var mobPanelVictory = document.getElementById('battle-mob-panel');
+    if (
+      mobPanelVictory &&
+      mobPanelVictory.classList.contains('l2-battle-mob-panel--victory')
+    ) {
+      return;
+    }
     if (!battle) {
       var vicInlineEarly = document.getElementById('battle-victory-inline');
       if (vicInlineEarly && !vicInlineEarly.hidden) {
@@ -3140,11 +3147,15 @@
       el.appendChild(lvl);
     }
 
-    function setMobCombatChromeVisible(visible) {
-      var title = $('battle-mob-title');
-      var bars = document.querySelector('.l2-battle-mob-bars');
-      if (title) title.hidden = !visible;
-      if (bars) bars.hidden = !visible;
+    function setMobVictoryUiState(isVictory) {
+      var panel = $('battle-mob-panel');
+      var chrome = $('battle-mob-combat-chrome');
+      if (panel) {
+        panel.classList.toggle('l2-battle-mob-panel--victory', !!isVictory);
+      }
+      if (chrome) {
+        chrome.setAttribute('aria-hidden', isVictory ? 'true' : 'false');
+      }
     }
 
     function hideVictoryInline() {
@@ -3167,42 +3178,7 @@
       if (skillsBox) skillsBox.classList.remove('l2-battle-skills--victory-locked');
       var vicRoot = $('battle-victory-root');
       if (vicRoot) vicRoot.hidden = true;
-      setMobCombatChromeVisible(true);
-    }
-
-    function applyVictoryMobPanelFromSummary(victory) {
-      if (!victory || victory.isPvp) return;
-      var title = $('battle-mob-title');
-      var mobIconEl = $('battle-mob-icon');
-      var mobHpWrapEl = $('battle-mob-hp-wrap');
-      var hpInner = $('battle-mob-hp-inner');
-      var hpVal = $('battle-mob-hp-val');
-      if (title) {
-        var aggL = tr('battle_aggressive', 'агресивний');
-        title.textContent =
-          String(victory.mobName || '—') +
-          ' · ур. ' +
-          String(victory.mobLevel != null ? victory.mobLevel : '?') +
-          (victory.aggressive ? ' · ' + aggL : '');
-      }
-      if (victory.mobIconUrl) {
-        applyBattleMobPortrait(
-          mobIconEl,
-          mobHpWrapEl,
-          victory.mobIconUrl,
-          victory.mobName || ''
-        );
-      }
-      setBar(hpInner, 0, victory.mobMaxHp || 1);
-      if (hpVal) {
-        hpVal.textContent = mobHpBarLabelText(
-          victory.kind,
-          0,
-          victory.mobMaxHp || 1,
-          victory.spawnId
-        );
-        hpVal.classList.add('l2-battle-bar-innertext--pair');
-      }
+      setMobVictoryUiState(false);
     }
 
     function resetBattleOutcomePanels() {
@@ -3214,6 +3190,7 @@
     }
 
     function prepareActiveBattleUi() {
+      setMobVictoryUiState(false);
       clearDefeatFromSession();
       saveVictoryToSession(null);
       lastVictorySummary = null;
@@ -3284,6 +3261,7 @@
     }
 
     function showVictoryScreen(victory, partyReward) {
+      setMobVictoryUiState(true);
       lastVictorySummary = victory || null;
       saveVictoryToSession(victory);
       syncBattleTopGridPartyLayout(null);
@@ -3311,7 +3289,6 @@
           'ВИ ПЕРЕМОГЛИ МОНСТРА!'
         );
       }
-      applyVictoryMobPanelFromSummary(victory);
       var lu = $('battle-victory-levelup');
       if (lu) {
         if (victory && victory.levelUp) {
@@ -3371,7 +3348,6 @@
       }
       var skillsBox = $('battle-skills');
       if (skillsBox) skillsBox.classList.add('l2-battle-skills--victory-locked');
-      setMobCombatChromeVisible(false);
       refreshUI();
     }
 
