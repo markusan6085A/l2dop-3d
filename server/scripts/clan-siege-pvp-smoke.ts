@@ -440,11 +440,23 @@ async function testSiegeVictoryNoKarmaAndReturnUrl(): Promise<void> {
   assert.equal(bj.playerCombatMode, 'siege');
   assert.equal(bj.siegeCityId, CITY);
 
-  const res = await prisma.$transaction((tx) =>
+  let res = await prisma.$transaction((tx) =>
     performBattleActionInTx(tx, a.userId, 'attack', atk1.revision, {
       characterId: a.characterId,
     })
   );
+  for (let attempt = 0; attempt < 12 && (!res.victory || res.kind !== 'full'); attempt++) {
+    await new Promise((r) => setTimeout(r, 600));
+    const row = await prisma.character.findUniqueOrThrow({
+      where: { id: a.characterId },
+    });
+    if (!row.battleJson) break;
+    res = await prisma.$transaction((tx) =>
+      performBattleActionInTx(tx, a.userId, 'attack', row.revision, {
+        characterId: a.characterId,
+      })
+    );
+  }
   assert.equal(res.kind, 'full');
   assert.ok(res.victory, 'siege pvp victory');
   assert.equal(res.victory!.expGain, '0');

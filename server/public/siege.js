@@ -130,12 +130,15 @@
     return (data && data.cityId) || cityId || '—';
   }
 
-  function blockedMessage(reason) {
+  function blockedWallMessage(reason) {
     if (reason === 'siege_no_clan') {
       return 'Для участі в облозі потрібно перебувати в клані';
     }
     if (reason === 'siege_defender') {
-      return 'Ваш клан захищає це місто';
+      return 'Ваш клан захищає це місто!';
+    }
+    if (reason === 'siege_eliminated') {
+      return 'Ви вибули з цієї облоги.';
     }
     if (reason === 'siege_not_started') {
       return 'Захоплення міста ще не розпочалось';
@@ -248,7 +251,16 @@
       alliesUl.className = 'l2-siege-participants';
       parts.allies.forEach(function (row) {
         var li = document.createElement('li');
-        li.textContent = row.nickname + ' — ' + row.clanName;
+        if (row.eliminated) {
+          li.textContent =
+            row.nickname + ' — ' + row.clanName + ' — ';
+          var tag = document.createElement('span');
+          tag.className = 'l2-siege-eliminated';
+          tag.textContent = 'Вибув';
+          li.appendChild(tag);
+        } else {
+          li.textContent = row.nickname + ' — ' + row.clanName;
+        }
         alliesUl.appendChild(li);
       });
       parent.appendChild(alliesUl);
@@ -259,13 +271,23 @@
       enemiesUl.className = 'l2-siege-participants';
       parts.enemies.forEach(function (row) {
         var li = document.createElement('li');
-        var link = document.createElement('a');
-        link.className = 'l2-siege-link';
-        link.href = '#';
-        link.dataset.siegePvpTarget = row.characterId;
-        link.textContent = row.nickname + ' — ' + row.clanName;
-        if (pvpInFlight) link.classList.add('l2-siege-link--disabled');
-        li.appendChild(link);
+        if (row.eliminated) {
+          li.textContent = row.nickname + ' — ' + row.clanName + ' — ';
+          var tag = document.createElement('span');
+          tag.className = 'l2-siege-eliminated';
+          tag.textContent = 'Вибув';
+          li.appendChild(tag);
+        } else {
+          var link = document.createElement('a');
+          link.className = 'l2-siege-link';
+          link.href = '#';
+          link.dataset.siegePvpTarget = row.characterId;
+          link.textContent = row.nickname + ' — ' + row.clanName;
+          if (pvpInFlight || !data.canStartSiegePvp) {
+            link.classList.add('l2-siege-link--disabled');
+          }
+          li.appendChild(link);
+        }
         enemiesUl.appendChild(li);
       });
       parent.appendChild(enemiesUl);
@@ -303,19 +325,26 @@
           'siege-countdown-line'
         );
       }
-      var schedMsg = blockedMessage(data.attackBlockedReason);
-      if (schedMsg && data.attackBlockedReason === 'siege_no_clan') {
+      var schedMsg = blockedWallMessage(data.wallAttackBlockReason);
+      if (schedMsg && data.wallAttackBlockReason === 'siege_no_clan') {
         var msgEl = document.createElement('p');
         msgEl.className = 'l2-siege-msg';
         msgEl.textContent = schedMsg;
         body.appendChild(msgEl);
       }
     } else if (data.state === 'active') {
+      if (data.viewerEliminated) {
+        var elimEl = document.createElement('p');
+        elimEl.className = 'l2-siege-msg';
+        elimEl.textContent = 'Ви вибули з цієї облоги.';
+        body.appendChild(elimEl);
+      }
+
       if (lastOwnDamage != null && lastOwnDamage > 0) {
         addLine(body, 'Ви завдали шкоди стіні: ' + formatNum(lastOwnDamage));
       }
 
-      if (data.canAttack) {
+      if (data.canAttackWall) {
         addActionLink(
           body,
           'Ударити стіну [' + formatNum(data.wallHp) + '/' + formatNum(data.wallMaxHp) + ']',
@@ -323,7 +352,7 @@
           attackInFlight
         );
       } else {
-        var blocked = blockedMessage(data.attackBlockedReason);
+        var blocked = blockedWallMessage(data.wallAttackBlockReason);
         if (blocked) {
           var blockedEl = document.createElement('p');
           blockedEl.className = 'l2-siege-msg';
@@ -348,6 +377,13 @@
       } else if (data.finishReason === 'time_expired') {
         addLine(body, 'Облога завершилася.');
         addLine(body, 'Стіна не була зруйнована.');
+        addLine(
+          body,
+          'Місто залишилося під контролем клану: ' + clanLine(data.ownerClan) + '.'
+        );
+      } else if (data.finishReason === 'wall_destroyed_no_eligible_attacker') {
+        addLine(body, 'Стіна зруйнована.');
+        addLine(body, 'Жоден атакуючий клан не має живих учасників.');
         addLine(
           body,
           'Місто залишилося під контролем клану: ' + clanLine(data.ownerClan) + '.'
@@ -402,7 +438,8 @@
         ? 'wall_destroyed'
         : stateData.finishReason;
       stateData.winnerClan = resp.winnerClan;
-      stateData.canAttack = false;
+      stateData.canAttackWall = false;
+      stateData.canStartSiegePvp = false;
       stopSiegePolling();
     }
     renderState(stateData);
@@ -539,6 +576,7 @@
 
   async function startSiegePvp(targetCharacterId) {
     if (!targetCharacterId || pvpInFlight) return;
+    if (stateData && stateData.canStartSiegePvp === false) return;
     pvpInFlight = true;
     try {
       var snap =

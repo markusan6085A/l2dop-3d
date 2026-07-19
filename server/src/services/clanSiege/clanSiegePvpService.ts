@@ -40,6 +40,13 @@ async function ensureSiegeParticipantInTx(
   nowMs: number
 ) {
   let participant = await lockClanSiegeParticipantInTx(tx, siegeId, characterId);
+  if (participant?.eliminatedAt) {
+    throw new SiegePvpError(
+      'siege_eliminated',
+      'siege_eliminated',
+      'Ви вибули з цієї облоги.'
+    );
+  }
   if (!participant) {
     try {
       await tx.clanSiegeParticipant.create({
@@ -60,6 +67,13 @@ async function ensureSiegeParticipantInTx(
       'internal_error',
       'internal_error',
       'Не вдалося зареєструвати учасника облоги.'
+    );
+  }
+  if (participant.eliminatedAt) {
+    throw new SiegePvpError(
+      'siege_eliminated',
+      'siege_eliminated',
+      'Ви вибули з цієї облоги.'
     );
   }
   await tx.clanSiegeParticipant.update({
@@ -142,18 +156,6 @@ export async function startSiegePvpBattleInTx(
       'siege_no_clan',
       'siege_no_clan',
       'Для участі в облозі потрібно перебувати в клані.'
-    );
-  }
-
-  const castle = await tx.cityCastle.findUnique({
-    where: { cityId: cid },
-    select: { ownerClanId: true },
-  });
-  if (castle?.ownerClanId && castle.ownerClanId === attackerRow.clanId) {
-    throw new SiegePvpError(
-      'siege_defender',
-      'siege_defender',
-      'Ваш клан захищає це місто.'
     );
   }
 
@@ -273,13 +275,20 @@ export async function startSiegePvpBattleInTx(
   });
   if (
     !targetParticipant ||
+    targetParticipant.eliminatedAt ||
     !targetParticipant.lastSeenAt ||
     targetParticipant.lastSeenAt < presenceSince
   ) {
     throw new SiegePvpError(
-      'siege_pvp_target_not_participant',
-      'siege_pvp_target_not_participant',
-      'Гравець не поруч або не бере участі в облозі.'
+      targetParticipant?.eliminatedAt
+        ? 'siege_pvp_target_eliminated'
+        : 'siege_pvp_target_not_participant',
+      targetParticipant?.eliminatedAt
+        ? 'siege_pvp_target_eliminated'
+        : 'siege_pvp_target_not_participant',
+      targetParticipant?.eliminatedAt
+        ? 'Гравець вибув з облоги.'
+        : 'Гравець не поруч або не бере участі в облозі.'
     );
   }
   if (targetParticipant.clanId !== targetRow.clanId) {

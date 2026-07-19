@@ -29,6 +29,7 @@ import {
   type BattleSpawnMeta,
 } from '../domain/battlePvpContext.js';
 import { shouldApplyWorldPvpPkRules } from '../domain/playerCombatMode.js';
+import { markSiegeParticipantEliminatedInTx } from './clanSiege/clanSiegeEliminationService.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -160,6 +161,18 @@ export async function persistPvpVictoryInTx(
       })
     );
     if (!victimResult.ok) throw gameConflictFromMutation(victimResult);
+
+    if (
+      st.playerCombatMode === 'siege' &&
+      st.siegeId &&
+      victimId
+    ) {
+      await markSiegeParticipantEliminatedInTx(tx, {
+        siegeId: String(st.siegeId),
+        characterId: victimId,
+        eliminatedByCharacterId: char.id,
+      });
+    }
   }
 
   const cr = char;

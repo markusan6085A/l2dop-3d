@@ -225,7 +225,7 @@ async function main(): Promise<void> {
     leaderB.characterId
   );
   assert.equal(pastState.state, 'finished');
-  assert.equal(pastState.canAttack, false);
+  assert.equal(pastState.canAttackWall, false);
   ok('after endsAt attack finishes atomically without damage');
   await resetCitySieges();
 
@@ -508,6 +508,18 @@ async function main(): Promise<void> {
   await prisma.clanSiege.update({
     where: { id: wallBattle.id },
     data: { wallHp: 100 },
+  });
+  await prisma.clanSiegeParticipant.create({
+    data: {
+      siegeId: wallBattle.id,
+      characterId: leaderB.characterId,
+      clanId: leaderB.clanId,
+      lastSeenAt: new Date(),
+    },
+  });
+  await prisma.character.update({
+    where: { id: leaderB.characterId },
+    data: { hp: 1000 },
   });
   const rewardClanBefore = await prisma.clan.findUniqueOrThrow({
     where: { id: leaderB.clanId },

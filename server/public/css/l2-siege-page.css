@@ -62,6 +62,12 @@
   cursor: pointer;
 }
 
+.l2-siege-eliminated {
+  color: #8a8070;
+  font-style: normal;
+  pointer-events: none;
+}
+
 .l2-siege-link--disabled {
   opacity: 0.55;
   pointer-events: none;

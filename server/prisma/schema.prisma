@@ -371,9 +371,11 @@ model ClanSiegeParticipant {
   character        Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
   clanId           String
   totalWallDamage  Int       @default(0)
-  lastWallAttackAt DateTime?
-  lastSeenAt       DateTime?
-  joinedAt         DateTime  @default(now())
+  lastWallAttackAt           DateTime?
+  lastSeenAt                 DateTime?
+  joinedAt                   DateTime  @default(now())
+  eliminatedAt               DateTime?
+  eliminatedByCharacterId    String?
 
   @@unique([siegeId, characterId])
   @@index([siegeId])

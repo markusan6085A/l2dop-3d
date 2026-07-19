@@ -21,23 +21,39 @@ export type SiegeWinnerRow = {
 
 export async function resolveSiegeWinnerClanInTx(
   tx: Tx,
-  siegeId: string
+  siegeId: string,
+  ownerClanId: string | null | undefined
 ): Promise<SiegeWinnerRow | null> {
-  const row = await tx.clanSiegeClanDamage.findFirst({
+  const ownerId = ownerClanId ? String(ownerClanId).trim() : '';
+  const rows = await tx.clanSiegeClanDamage.findMany({
     where: { siegeId, totalDamage: { gt: 0 } },
     orderBy: [
       { totalDamage: 'desc' },
-      { lastHitAt: 'asc' },
+      { firstHitAt: 'asc' },
       { clanId: 'asc' },
     ],
     select: { clanId: true, totalDamage: true, lastHitAt: true },
   });
-  if (!row) return null;
-  return {
-    clanId: row.clanId,
-    totalDamage: row.totalDamage,
-    lastHitAt: row.lastHitAt,
-  };
+
+  for (const row of rows) {
+    if (ownerId && row.clanId === ownerId) continue;
+    const aliveCount = await tx.clanSiegeParticipant.count({
+      where: {
+        siegeId,
+        clanId: row.clanId,
+        eliminatedAt: null,
+        character: { hp: { gt: 0 } },
+      },
+    });
+    if (aliveCount > 0) {
+      return {
+        clanId: row.clanId,
+        totalDamage: row.totalDamage,
+        lastHitAt: row.lastHitAt,
+      };
+    }
+  }
+  return null;
 }
 
 export async function lockClanSiegeInTx(
@@ -64,6 +80,7 @@ export async function lockClanSiegeParticipantInTx(
   totalWallDamage: number;
   lastWallAttackAt: Date | null;
   clanId: string;
+  eliminatedAt: Date | null;
 } | null> {
   const sid = String(siegeId || '').trim();
   const cid = String(characterId || '').trim();
@@ -74,9 +91,10 @@ export async function lockClanSiegeParticipantInTx(
       totalWallDamage: number;
       lastWallAttackAt: Date | null;
       clanId: string;
+      eliminatedAt: Date | null;
     }[]
   >`
-    SELECT id, "totalWallDamage", "lastWallAttackAt", "clanId"
+    SELECT id, "totalWallDamage", "lastWallAttackAt", "clanId", "eliminatedAt"
     FROM "ClanSiegeParticipant"
     WHERE "siegeId" = ${sid} AND "characterId" = ${cid}
     FOR UPDATE
@@ -142,10 +160,23 @@ export async function finishClanSiegeInTx(
 
   const now = new Date(nowMs);
   let winnerClanId: string | null = null;
+  let resolvedFinishReason = finishReason;
 
   if (finishReason === CLAN_SIEGE_FINISH_REASON.wallDestroyed) {
-    const winner = await resolveSiegeWinnerClanInTx(tx, locked.id);
+    const castle = await tx.cityCastle.findUnique({
+      where: { cityId: locked.cityId },
+      select: { ownerClanId: true },
+    });
+    const winner = await resolveSiegeWinnerClanInTx(
+      tx,
+      locked.id,
+      castle?.ownerClanId ?? null
+    );
     winnerClanId = winner?.clanId ?? null;
+    if (!winnerClanId) {
+      resolvedFinishReason =
+        CLAN_SIEGE_FINISH_REASON.wallDestroyedNoEligibleAttacker;
+    }
   }
 
   const updated = await tx.clanSiege.update({
@@ -153,7 +184,7 @@ export async function finishClanSiegeInTx(
     data: {
       state: CLAN_SIEGE_STATE.finished,
       finishedAt: now,
-      finishReason,
+      finishReason: resolvedFinishReason,
       winnerClanId,
       wallHp:
         finishReason === CLAN_SIEGE_FINISH_REASON.wallDestroyed
@@ -163,7 +194,7 @@ export async function finishClanSiegeInTx(
   });
 
   if (
-    finishReason === CLAN_SIEGE_FINISH_REASON.wallDestroyed &&
+    resolvedFinishReason === CLAN_SIEGE_FINISH_REASON.wallDestroyed &&
     winnerClanId
   ) {
     await grantSiegeRewardOnceInTx(tx, updated, winnerClanId, now);

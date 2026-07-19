@@ -1,6 +1,7 @@
 import {
   SIEGE_ATTACK_MIN_INTERVAL_MS,
   SIEGE_PARTICIPANT_PRESENCE_MS,
+  SIEGE_PARTICIPANT_PRESENCE_TOUCH_MS,
   SIEGE_REWARD_CLAN_POINTS,
   SIEGE_TIME_ZONE,
   SIEGE_WALL_MAX_HP,
@@ -36,7 +37,6 @@ import {
   siegeViewFromWallAction,
 } from './clanSiegeWallActionService.js';
 import { isPrismaUniqueViolation } from '../party/partyPrismaErrors.js';
-
 export type SiegeClanBrief = { id: string; name: string } | null;
 
 export type SiegeTopClanRow = {
@@ -51,6 +51,7 @@ export type SiegeParticipantBrief = {
   nickname: string;
   clanId: string;
   clanName: string;
+  eliminated: boolean;
 };
 
 export type SiegeParticipantsView = {
@@ -71,8 +72,11 @@ export type SiegeStateView = {
   version: number;
   ownerClan: SiegeClanBrief;
   winnerClan: SiegeClanBrief;
-  canAttack: boolean;
-  attackBlockedReason: string | null;
+  canAttackWall: boolean;
+  canStartSiegePvp: boolean;
+  wallAttackBlockReason: string | null;
+  pvpBlockReason: string | null;
+  viewerEliminated: boolean;
   viewerClan: SiegeClanBrief;
   viewerClanDamage: number;
   viewerCharacterDamage: number;
@@ -121,17 +125,44 @@ async function touchSiegeParticipantPresence(
   clanId: string,
   nowMs: number
 ): Promise<void> {
-  const seenAt = new Date(nowMs);
   const existing = await prisma.clanSiegeParticipant.findUnique({
     where: {
       siegeId_characterId: { siegeId, characterId },
     },
-    select: { id: true },
+    select: { id: true, lastSeenAt: true, clanId: true, eliminatedAt: true },
   });
+  if (existing?.eliminatedAt) {
+    if (existing.lastSeenAt) {
+      const ageMs = nowMs - existing.lastSeenAt.getTime();
+      if (ageMs >= 0 && ageMs < SIEGE_PARTICIPANT_PRESENCE_TOUCH_MS) {
+        return;
+      }
+    }
+    const seenAt = new Date(nowMs);
+    await prisma.clanSiegeParticipant.update({
+      where: { id: existing.id },
+      data: {
+        lastSeenAt: seenAt,
+        ...(existing.clanId !== clanId ? { clanId } : {}),
+      },
+    });
+    return;
+  }
+  if (existing?.lastSeenAt) {
+    const ageMs = nowMs - existing.lastSeenAt.getTime();
+    if (ageMs >= 0 && ageMs < SIEGE_PARTICIPANT_PRESENCE_TOUCH_MS) {
+      return;
+    }
+  }
+
+  const seenAt = new Date(nowMs);
   if (existing) {
     await prisma.clanSiegeParticipant.update({
       where: { id: existing.id },
-      data: { lastSeenAt: seenAt },
+      data: {
+        lastSeenAt: seenAt,
+        ...(existing.clanId !== clanId ? { clanId } : {}),
+      },
     });
     return;
   }
@@ -147,7 +178,7 @@ async function touchSiegeParticipantPresence(
   } catch (_eUnique) {
     await prisma.clanSiegeParticipant.updateMany({
       where: { siegeId, characterId },
-      data: { lastSeenAt: seenAt },
+      data: { lastSeenAt: seenAt, clanId },
     });
   }
 }
@@ -162,12 +193,16 @@ async function loadNearbySiegeParticipants(
   const rows = await prisma.clanSiegeParticipant.findMany({
     where: {
       siegeId,
-      lastSeenAt: { gte: presenceSince },
+      OR: [
+        { lastSeenAt: { gte: presenceSince } },
+        { eliminatedAt: { not: null } },
+      ],
     },
     select: {
       characterId: true,
       clanId: true,
-      character: { select: { name: true } },
+      eliminatedAt: true,
+      character: { select: { name: true, hp: true } },
     },
     orderBy: [{ character: { name: 'asc' } }],
     take: 40,
@@ -189,6 +224,7 @@ async function loadNearbySiegeParticipants(
       nickname: row.character.name,
       clanId: row.clanId,
       clanName: clanNameById.get(row.clanId) ?? '—',
+      eliminated: !!row.eliminatedAt,
     };
     if (row.clanId === viewerClanId) {
       allies.push(brief);
@@ -199,27 +235,74 @@ async function loadNearbySiegeParticipants(
   return { allies, enemies };
 }
 
-function resolveAttackBlockedReason(args: {
+function resolveWallAttackBlockedReason(args: {
   effectiveState: string;
   viewerClanId: string | null;
   ownerClanId: string | null;
-}): { canAttack: boolean; reason: string | null } {
+  viewerEliminated: boolean;
+  viewerHp: number;
+}): { canAttackWall: boolean; reason: string | null } {
   if (args.effectiveState === CLAN_SIEGE_STATE.scheduled) {
-    return { canAttack: false, reason: 'siege_not_started' };
+    return { canAttackWall: false, reason: 'siege_not_started' };
   }
   if (args.effectiveState === CLAN_SIEGE_STATE.finished) {
-    return { canAttack: false, reason: 'siege_finished' };
+    return { canAttackWall: false, reason: 'siege_finished' };
   }
   if (!args.viewerClanId) {
-    return { canAttack: false, reason: 'siege_no_clan' };
+    return { canAttackWall: false, reason: 'siege_no_clan' };
   }
-  if (
-    args.ownerClanId &&
-    args.ownerClanId === args.viewerClanId
-  ) {
-    return { canAttack: false, reason: 'siege_defender' };
+  if (args.viewerEliminated) {
+    return { canAttackWall: false, reason: 'siege_eliminated' };
   }
-  return { canAttack: true, reason: null };
+  if (Math.max(0, Math.floor(args.viewerHp)) <= 0) {
+    return { canAttackWall: false, reason: 'siege_dead' };
+  }
+  if (args.ownerClanId && args.ownerClanId === args.viewerClanId) {
+    return { canAttackWall: false, reason: 'siege_defender' };
+  }
+  return { canAttackWall: true, reason: null };
+}
+
+function resolveSiegePvpBlockedReason(args: {
+  effectiveState: string;
+  viewerClanId: string | null;
+  viewerEliminated: boolean;
+  viewerHp: number;
+}): { canStartSiegePvp: boolean; reason: string | null } {
+  if (args.effectiveState === CLAN_SIEGE_STATE.scheduled) {
+    return { canStartSiegePvp: false, reason: 'siege_not_started' };
+  }
+  if (args.effectiveState === CLAN_SIEGE_STATE.finished) {
+    return { canStartSiegePvp: false, reason: 'siege_finished' };
+  }
+  if (!args.viewerClanId) {
+    return { canStartSiegePvp: false, reason: 'siege_no_clan' };
+  }
+  if (args.viewerEliminated) {
+    return { canStartSiegePvp: false, reason: 'siege_eliminated' };
+  }
+  if (Math.max(0, Math.floor(args.viewerHp)) <= 0) {
+    return { canStartSiegePvp: false, reason: 'siege_dead' };
+  }
+  return { canStartSiegePvp: true, reason: null };
+}
+
+function buildSiegeActionPermissions(args: {
+  effectiveState: string;
+  viewerClanId: string | null;
+  ownerClanId: string | null;
+  viewerEliminated: boolean;
+  viewerHp: number;
+  wallHp: number;
+}) {
+  const wall = resolveWallAttackBlockedReason(args);
+  const pvp = resolveSiegePvpBlockedReason(args);
+  return {
+    canAttackWall: wall.canAttackWall && args.wallHp > 0,
+    wallAttackBlockReason: wall.reason,
+    canStartSiegePvp: pvp.canStartSiegePvp,
+    pvpBlockReason: pvp.reason,
+  };
 }
 
 function resolveVirtualSiegeSchedule(
@@ -248,7 +331,7 @@ export async function getSiegeStateForUser(
       ...(characterId ? { id: characterId } : {}),
     },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true, clanId: true, cityId: true, clan: { select: { id: true, name: true } } },
+    select: { id: true, clanId: true, cityId: true, hp: true, clan: { select: { id: true, name: true } } },
   });
   if (!char) throw new Error('no_character');
 
@@ -265,10 +348,13 @@ export async function getSiegeStateForUser(
 
   if (!siege) {
     const virtual = resolveVirtualSiegeSchedule(cid, nowMs);
-    const attack = resolveAttackBlockedReason({
+    const perms = buildSiegeActionPermissions({
       effectiveState: CLAN_SIEGE_STATE.scheduled,
       viewerClanId: char.clanId,
       ownerClanId: castle?.ownerClanId ?? null,
+      viewerEliminated: false,
+      viewerHp: char.hp,
+      wallHp: SIEGE_WALL_MAX_HP,
     });
     return {
       serverTime: new Date(nowMs).toISOString(),
@@ -283,8 +369,11 @@ export async function getSiegeStateForUser(
       version: 0,
       ownerClan,
       winnerClan: null,
-      canAttack: attack.canAttack,
-      attackBlockedReason: attack.reason,
+      canAttackWall: perms.canAttackWall,
+      canStartSiegePvp: perms.canStartSiegePvp,
+      wallAttackBlockReason: perms.wallAttackBlockReason,
+      pvpBlockReason: perms.pvpBlockReason,
+      viewerEliminated: false,
       viewerClan: char.clan
         ? { id: char.clan.id, name: char.clan.name }
         : null,
@@ -314,14 +403,18 @@ export async function getSiegeStateForUser(
     where: {
       siegeId_characterId: { siegeId: siege.id, characterId: char.id },
     },
-    select: { totalWallDamage: true },
+    select: { totalWallDamage: true, eliminatedAt: true },
   });
   viewerCharacterDamage = partRow?.totalWallDamage ?? 0;
+  const viewerEliminated = !!partRow?.eliminatedAt;
 
-  const attack = resolveAttackBlockedReason({
+  const perms = buildSiegeActionPermissions({
     effectiveState,
     viewerClanId: char.clanId,
     ownerClanId: castle?.ownerClanId ?? null,
+    viewerEliminated,
+    viewerHp: char.hp,
+    wallHp: siege.wallHp,
   });
 
   let participants: SiegeParticipantsView | undefined;
@@ -356,8 +449,11 @@ export async function getSiegeStateForUser(
     version: siege.version,
     ownerClan,
     winnerClan,
-    canAttack: attack.canAttack && siege.wallHp > 0,
-    attackBlockedReason: attack.reason,
+    canAttackWall: perms.canAttackWall,
+    canStartSiegePvp: perms.canStartSiegePvp,
+    wallAttackBlockReason: perms.wallAttackBlockReason,
+    pvpBlockReason: perms.pvpBlockReason,
+    viewerEliminated,
     viewerClan: char.clan
       ? { id: char.clan.id, name: char.clan.name }
       : null,
@@ -454,7 +550,8 @@ async function ensureParticipantLockedInTx(
   siegeId: string,
   characterId: string,
   clanId: string,
-  nowMs: number
+  nowMs: number,
+  viewerHp: number
 ) {
   let participant = await lockClanSiegeParticipantInTx(tx, siegeId, characterId);
   if (!participant) {
@@ -477,6 +574,20 @@ async function ensureParticipantLockedInTx(
       'internal_error',
       'internal_error',
       'Не вдалося зареєструвати учасника.'
+    );
+  }
+  if (participant.eliminatedAt) {
+    throw new SiegeAttackError(
+      'siege_eliminated',
+      'siege_eliminated',
+      'Ви вибули з цієї облоги.'
+    );
+  }
+  if (Math.max(0, Math.floor(viewerHp)) <= 0) {
+    throw new SiegeAttackError(
+      'siege_dead',
+      'siege_dead',
+      'Персонаж неживий.'
     );
   }
   return participant;
@@ -512,7 +623,7 @@ export async function attackSiegeWallForUser(
       ...(characterId ? { id: characterId } : {}),
     },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true, clanId: true },
+    select: { id: true, clanId: true, hp: true },
   });
   if (!char) throw new SiegeAttackError('no_character', 'no_character', 'Немає персонажа.');
   if (!char.clanId) {
@@ -644,7 +755,8 @@ export async function attackSiegeWallForUser(
       locked.id,
       char.id,
       char.clanId!,
-      now
+      now,
+      char.hp
     );
 
     if (

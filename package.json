@@ -60,6 +60,8 @@
     "test:party-battle-stage-d": "tsx server/scripts/party-battle-stage-d-smoke.ts",
     "test:clan-siege-core": "tsx server/scripts/clan-siege-core-smoke.ts",
     "test:clan-siege-pvp": "tsx server/scripts/clan-siege-pvp-smoke.ts",
+    "test:clan-siege-presence": "tsx server/scripts/clan-siege-presence-smoke.ts",
+    "test:clan-siege-elimination": "tsx server/scripts/clan-siege-elimination-smoke.ts",
     "test:clan-siege-client": "node server/scripts/clan-siege-client-smoke.mjs",
     "test:party-hud-revision-client": "node server/scripts/party-hud-revision-client-smoke.mjs",
     "test:party-battle-dungeon": "tsx server/scripts/party-battle-dungeon-smoke.ts",

@@ -9,6 +9,7 @@ export type ClanSiegeStateValue =
 
 export const CLAN_SIEGE_FINISH_REASON = {
   wallDestroyed: 'wall_destroyed',
+  wallDestroyedNoEligibleAttacker: 'wall_destroyed_no_eligible_attacker',
   timeExpired: 'time_expired',
 } as const;
 
