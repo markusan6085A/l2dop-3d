@@ -332,6 +332,39 @@ async function main(): Promise<void> {
     where: { id: { in: [killer2.userId, mate2.userId] } },
   });
 
+  assert.ok(typeof hud.characterRevision === 'number');
+  ok('HUD always returns characterRevision');
+
+  console.log('\n[snapshot] expired invite filtered without HUD purge');
+  const inviteTarget = await createTestAccount('IT');
+  const inviteLeader = await createTestAccount('IL');
+  await createPartyForUser(inviteLeader.userId, inviteLeader.characterId);
+  const leaderParty = await prisma.partyMember.findUniqueOrThrow({
+    where: { characterId: inviteLeader.characterId },
+  });
+  const expiredInvite = await prisma.partyInvite.create({
+    data: {
+      partyId: leaderParty.partyId,
+      targetCharacterId: inviteTarget.characterId,
+      inviterCharacterId: inviteLeader.characterId,
+      expiresAt: new Date(Date.now() - 60_000),
+    },
+  });
+  const hudExpired = await getPartyHudForUser(
+    inviteTarget.userId,
+    inviteTarget.characterId
+  );
+  assert.equal(hudExpired.invite, null);
+  const stillThere = await prisma.partyInvite.findUnique({
+    where: { id: expiredInvite.id },
+  });
+  assert.ok(stillThere);
+  ok('expired invite not returned by HUD GET (no DELETE on read)');
+
+  await prisma.user.deleteMany({
+    where: { id: { in: [inviteTarget.userId, inviteLeader.userId] } },
+  });
+
   const clientSmoke = spawnSync(
     process.execPath,
     ['server/scripts/party-hud-revision-client-smoke.mjs'],
@@ -343,6 +376,18 @@ async function main(): Promise<void> {
     );
   }
   ok('client revision comparison smoke');
+
+  const pollingSmoke = spawnSync(
+    process.execPath,
+    ['server/scripts/party-hud-polling-client-smoke.mjs'],
+    { cwd: path.join(__dirname, '../..'), stdio: 'pipe', encoding: 'utf8' }
+  );
+  if (pollingSmoke.status !== 0) {
+    throw new Error(
+      pollingSmoke.stderr || pollingSmoke.stdout || 'party-hud-polling-client-smoke failed'
+    );
+  }
+  ok('client adaptive polling smoke');
 
   await prisma.user.deleteMany({
     where: { id: { in: [leader.userId, mate.userId] } },

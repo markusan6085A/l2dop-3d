@@ -1,12 +1,14 @@
 /**
  * Глобальний party HUD під HP/MP/CP — invite + «Ви в паті».
- * Фіксована висота slot (без CLS), poll 5s, safe textContent.
+ * Фіксована висота slot (без CLS), адаптивний poll, safe textContent.
  */
 (function (global) {
   'use strict';
 
-  var POLL_MS = 5000;
-  var ASSET_VER = '20260719partyRewardSnapshotFix1';
+  var POLL_MS_ACTIVE_BATTLE = 5000;
+  var POLL_MS_IN_PARTY = 10000;
+  var POLL_MS_NO_PARTY = 20000;
+  var ASSET_VER = '20260719partyHudPollOpt1';
 
   var hudState = null;
   var fetchSeq = 0;
@@ -15,6 +17,7 @@
   var respondInFlight = false;
   var joinBattleInFlight = false;
   var pollTimer = null;
+  var pollActive = false;
   var flashTimer = null;
   var isMounted = false;
   var eventsWired = false;
@@ -471,10 +474,98 @@
     }
   }
 
+  function isActivePartyBattleState(state) {
+    return state === 'active';
+  }
+
+  function resolvePartyHudPollDelay(data) {
+    if (
+      data &&
+      data.activeBattle &&
+      data.activeBattle.partyBattleId &&
+      isActivePartyBattleState(data.activeBattle.state)
+    ) {
+      return POLL_MS_ACTIVE_BATTLE;
+    }
+    if (data && data.party && data.party.partyId) {
+      return POLL_MS_IN_PARTY;
+    }
+    return POLL_MS_NO_PARTY;
+  }
+
+  function scheduleNextPartyHudPoll(delayMs) {
+    if (!pollActive) return;
+    if (document.visibilityState !== 'visible') return;
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+    var delay =
+      typeof delayMs === 'number' && delayMs > 0 ? delayMs : POLL_MS_NO_PARTY;
+    pollTimer = setTimeout(function () {
+      pollTimer = null;
+      void fetchHud();
+    }, delay);
+  }
+
+  function stopPartyHudPolling() {
+    pollActive = false;
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+    if (global.partyHudDebug) {
+      global.partyHudDebug.pollActive = false;
+    }
+  }
+
+  function startPartyHudPolling() {
+    if (!shouldRun()) return;
+    if (document.visibilityState !== 'visible') return;
+    if (pollActive) return;
+    pollActive = true;
+    if (global.partyHudDebug) {
+      global.partyHudDebug.pollActive = true;
+    }
+    void fetchHud();
+  }
+
+  function refreshPartyHudNow(reason) {
+    if (!shouldRun()) return;
+    if (document.visibilityState !== 'visible') return;
+    if (!pollActive) {
+      pollActive = true;
+      if (global.partyHudDebug) {
+        global.partyHudDebug.pollActive = true;
+      }
+    }
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+    void fetchHud();
+  }
+
+  function resumePartyHudPolling() {
+    stopPartyHudPolling();
+    if (!shouldRun()) return;
+    if (document.visibilityState !== 'visible') return;
+    pollActive = true;
+    if (global.partyHudDebug) {
+      global.partyHudDebug.pollActive = true;
+    }
+    void fetchHud();
+  }
+
   async function fetchHud() {
     if (!shouldRun()) return;
     if (document.visibilityState !== 'visible') return;
     if (fetchInFlight) return;
+
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
 
     fetchInFlight = true;
     var mySeq = ++fetchSeq;
@@ -512,37 +603,10 @@
       /* keep current HUD on network error */
     } finally {
       fetchInFlight = false;
-    }
-  }
-
-  function stopPartyHudPolling() {
-    if (!pollTimer) return;
-    clearInterval(pollTimer);
-    pollTimer = null;
-    if (global.partyHudDebug) {
-      global.partyHudDebug.pollActive = false;
-    }
-  }
-
-  function startPartyHudPolling() {
-    if (!shouldRun()) return;
-    if (document.visibilityState !== 'visible') return;
-    if (pollTimer) return;
-
-    pollTimer = setInterval(function () {
-      if (document.visibilityState === 'visible') {
-        void fetchHud();
+      if (pollActive && document.visibilityState === 'visible') {
+        scheduleNextPartyHudPoll(resolvePartyHudPollDelay(hudState));
       }
-    }, POLL_MS);
-    if (global.partyHudDebug) {
-      global.partyHudDebug.pollActive = true;
     }
-  }
-
-  function resumePartyHudPolling() {
-    stopPartyHudPolling();
-    void fetchHud();
-    startPartyHudPolling();
   }
 
   function onVisibilityChange() {
@@ -669,7 +733,7 @@
       mount();
       return;
     }
-    void fetchHud();
+    refreshPartyHudNow('manual');
   }
 
   global.L2PartyHud = {
@@ -677,7 +741,11 @@
     refresh: refreshPartyHud,
     fetchHud: fetchHud,
     stopPoll: stopPartyHudPolling,
-    startPoll: resumePartyHudPolling,
+    startPoll: startPartyHudPolling,
+    resumePoll: resumePartyHudPolling,
+    scheduleNextPoll: scheduleNextPartyHudPoll,
+    refreshNow: refreshPartyHudNow,
+    resolvePollDelay: resolvePartyHudPollDelay,
     captureLayoutDebug: captureLayoutDebug,
     showFlash: setFlash,
     ASSET_VER: ASSET_VER,

@@ -1,6 +1,5 @@
 import { prisma } from '../../lib/prisma.js';
 import { PARTY_MAX_MEMBERS } from './partyConstants.js';
-import { purgeExpiredPartyInvitesInTx } from './partyExpire.js';
 import {
   isPartyBattleRewardDistributionReady,
 } from '../../domain/partyBattleFlags.js';
@@ -8,7 +7,7 @@ import { buildPartyHudActiveBattle } from './partyBattleHudReadService.js';
 import { getUnreadPartyRewardNotice } from './partyRewardNoticeService.js';
 import type { PartyHudResult } from './partyTypes.js';
 
-/** GET /game/party/hud — легкий стан для глобального HUD (без full PartyView). */
+/** GET /game/party/hud — легкий read-only стан для глобального HUD (без full PartyView). */
 export async function getPartyHudForUser(
   userId: string,
   characterId?: string | null
@@ -19,16 +18,11 @@ export async function getPartyHudForUser(
       ...(characterId ? { id: characterId } : {}),
     },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true },
+    select: { id: true, revision: true },
   });
   if (!char) throw new Error('no_character');
 
-  const nowMs = Date.now();
-  await prisma.$transaction(async (tx) => {
-    await purgeExpiredPartyInvitesInTx(tx, nowMs, {
-      targetCharacterId: char.id,
-    });
-  });
+  const now = new Date();
 
   const membership = await prisma.partyMember.findUnique({
     where: { characterId: char.id },
@@ -70,7 +64,10 @@ export async function getPartyHudForUser(
   }
 
   const invites = await prisma.partyInvite.findMany({
-    where: { targetCharacterId: char.id },
+    where: {
+      targetCharacterId: char.id,
+      expiresAt: { gt: now },
+    },
     orderBy: { createdAt: 'asc' },
     select: {
       id: true,
@@ -92,16 +89,11 @@ export async function getPartyHudForUser(
       }
     : null;
 
-  const revRow = await prisma.character.findUnique({
-    where: { id: char.id },
-    select: { revision: true },
-  });
-
   const result: PartyHudResult = {
     party,
     invite,
     extraInviteCount: Math.max(0, invites.length - 1),
-    characterRevision: revRow?.revision ?? 0,
+    characterRevision: char.revision ?? 0,
   };
 
   if (isPartyBattleRewardDistributionReady()) {

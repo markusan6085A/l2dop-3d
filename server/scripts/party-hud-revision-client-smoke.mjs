@@ -33,6 +33,9 @@ assert.match(partyHudSrc, /characterRevision/);
 assert.match(partyHudSrc, /L2\.fetchSnapshot\(\)/);
 assert.match(partyHudSrc, /shownRewardNoticeKeys/);
 assert.match(partyHudSrc, /pendingPartyReward/);
+assert.match(partyHudSrc, /resolvePartyHudPollDelay/);
+assert.match(partyHudSrc, /scheduleNextPartyHudPoll/);
+assert.doesNotMatch(partyHudSrc, /setInterval/);
 assert.doesNotMatch(
   partyHudSrc,
   /if \(data\.rewardNotice && data\.rewardNotice\.partyBattleId\) \{\s*renderRewardNoticeRow/
