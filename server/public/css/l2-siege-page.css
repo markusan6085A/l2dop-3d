@@ -82,3 +82,13 @@
   margin: 0.2rem 0;
   color: #bfa88a;
 }
+
+.l2-siege-participants {
+  margin: 0.1rem 0 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.l2-siege-participants li {
+  margin: 0.08rem 0;
+}

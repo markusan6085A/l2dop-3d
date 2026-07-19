@@ -10,6 +10,8 @@ export const SIEGE_WALL_MAX_HP = 600_000;
 export const SIEGE_WALL_DAMAGE_MIN = 1;
 export const SIEGE_WALL_DAMAGE_MAX = 1000;
 export const SIEGE_ATTACK_MIN_INTERVAL_MS = 350;
+/** Учасник «поруч» на облозі, якщо lastSeenAt свіжіший за цей інтервал. */
+export const SIEGE_PARTICIPANT_PRESENCE_MS = 120_000;
 export const SIEGE_REWARD_CLAN_POINTS = 8000;
 export const SIEGE_ACTIVE_POLL_MS = 4000;
 export const SIEGE_WAITING_SYNC_MS = 60_000;

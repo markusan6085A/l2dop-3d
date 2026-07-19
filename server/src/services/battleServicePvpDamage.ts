@@ -20,6 +20,8 @@ export async function applyPvpHitToVictimInTx(
     isBowAttack?: boolean;
     /** Для Physical Mirror (350): фізичний скіл або магія. */
     mirrorReflectKind?: PhysicalMirrorReflectKind;
+    /** Якщо false — без world PK/aggressor (siege/arena/olympiad). */
+    applyWorldPkRules?: boolean;
   }
 ): Promise<{ mirrorLogLineUk?: string }> {
   let dmg = Math.max(0, Math.floor(args.damage));
@@ -122,9 +124,11 @@ export async function applyPvpHitToVictimInTx(
     await persistCharacterFieldsInTx(tx, victimId, victimData);
   }
 
-  await persistCharacterFieldsInTx(tx, attackerId, {
-    pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
-  });
+  if (args.applyWorldPkRules !== false) {
+    await persistCharacterFieldsInTx(tx, attackerId, {
+      pvpAggressorUntilMs: nextPvpAggressorUntilMs(args.nowMs),
+    });
+  }
   return { ...(mirrorLogLineUk ? { mirrorLogLineUk } : {}) };
 }
 

@@ -1,6 +1,10 @@
 import type { BattleJsonState } from './battleTypes.js';
 import type { MapSpawnKind } from '../data/mapWorldSpawns.js';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
+import {
+  resolvePlayerCombatMode,
+  type PlayerCombatMode,
+} from './playerCombatMode.js';
 
 export const PVP_SPAWN_ID_PREFIX = 'pvp:';
 
@@ -19,16 +23,39 @@ export function isPvpBattleJson(bj: BattleJsonState): boolean {
   return bj.battleMode === 'pvp' && !!bj.pvpTargetCharacterId;
 }
 
+export function isSiegePvpBattleJson(bj: BattleJsonState): boolean {
+  return isPvpBattleJson(bj) && resolvePlayerCombatMode(bj) === 'siege';
+}
+
+export function isWorldPvpBattleJson(bj: BattleJsonState): boolean {
+  return isPvpBattleJson(bj) && resolvePlayerCombatMode(bj) === 'world';
+}
+
 /** Canonical PvP victory payload fields (server → client). */
 export function buildPvpVictoryCanonicalFields(st: BattleJsonState): {
   isPvp: true;
   battleType: 'pvp';
   defeatedCharacterId: string;
+  playerCombatMode: PlayerCombatMode;
+  siegeCityId?: string;
+  returnUrl?: string;
 } {
+  const mode = resolvePlayerCombatMode(st);
+  const siegeCityId = st.siegeCityId
+    ? String(st.siegeCityId).trim()
+    : undefined;
   return {
     isPvp: true,
     battleType: 'pvp',
     defeatedCharacterId: String(st.pvpTargetCharacterId || '').trim(),
+    playerCombatMode: mode,
+    ...(siegeCityId
+      ? {
+          siegeCityId,
+          returnUrl:
+            '/siege.html?cityId=' + encodeURIComponent(siegeCityId),
+        }
+      : {}),
   };
 }
 

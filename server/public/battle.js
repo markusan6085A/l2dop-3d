@@ -24,6 +24,31 @@
     return sid.indexOf('pvp:') === 0;
   }
 
+  function isSiegePvpVictory(victory) {
+    if (!victory) return false;
+    if (victory.playerCombatMode === 'siege') return true;
+    return !!(victory.siegeCityId && victory.returnUrl);
+  }
+
+  function pvpVictoryReturnHref(victory) {
+    if (victory && victory.returnUrl) return victory.returnUrl;
+    if (victory && victory.siegeCityId) {
+      return (
+        '/siege.html?cityId=' + encodeURIComponent(String(victory.siegeCityId))
+      );
+    }
+    return null;
+  }
+
+  async function goToPvpVictoryReturn(victory) {
+    var href = pvpVictoryReturnHref(victory);
+    if (href) {
+      window.location.href = href;
+      return;
+    }
+    await goToMap();
+  }
+
   function isPvpSpawnContext(spawnIdValue) {
     return String(spawnIdValue || '').indexOf('pvp:') === 0;
   }
@@ -3249,6 +3274,10 @@
     var lastVictorySummary = null;
 
     async function huntContinueManual(victory) {
+      if (isSiegePvpVictory(victory)) {
+        await goToPvpVictoryReturn(victory);
+        return;
+      }
       if (isPvpVictory(victory)) {
         await goToMap();
         return;
@@ -3350,6 +3379,7 @@
       if (vicRoot) vicRoot.hidden = true;
       if (vicInline) vicInline.hidden = false;
       var isPvpVic = isPvpVictory(victory);
+      var isSiegeVic = isSiegePvpVictory(victory);
       var shoutEl = vicInline
         ? vicInline.querySelector('.l2-battle-victory-notify__shout')
         : null;
@@ -3391,9 +3421,11 @@
       if (vContBtn) {
         vContBtn.hidden = false;
         vContBtn.disabled = false;
-        vContBtn.textContent = isPvpVic
-          ? tr('battle_back_map', 'До карти')
-          : tr('battle_continue', 'Продовжити');
+        vContBtn.textContent = isSiegeVic
+          ? 'Повернутися назад'
+          : isPvpVic
+            ? tr('battle_back_map', 'До карти')
+            : tr('battle_continue', 'Продовжити');
         vContBtn.classList.add('l2-battle-victory-link--primary');
         vContBtn.classList.remove('l2-battle-victory-link--muted');
       }
@@ -3804,6 +3836,14 @@
     var vCont = $('battle-victory-continue');
     if (vCont) {
       vCont.addEventListener('click', function () {
+        var victory =
+          lastVictorySummary ||
+          loadVictoryFromSession() ||
+          null;
+        if (isSiegePvpVictory(victory)) {
+          void goToPvpVictoryReturn(victory);
+          return;
+        }
         goToMap();
       });
     }
@@ -3819,6 +3859,10 @@
             showBattleToast(
               tr('battle_hunt_no_context', 'Немає даних перемоги — онови сторінку.')
             );
+            return;
+          }
+          if (isSiegePvpVictory(victory)) {
+            await goToPvpVictoryReturn(victory);
             return;
           }
           if (isPvpVictory(victory)) {

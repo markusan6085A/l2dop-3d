@@ -11,6 +11,8 @@ import {
   isPvpBattleJson,
   pvpSpawnIdForCharacter,
 } from '../domain/battlePvpContext.js';
+import type { PlayerCombatMode } from '../domain/playerCombatMode.js';
+import { resolvePlayerCombatMode } from '../domain/playerCombatMode.js';
 import {
   parseWorldCombatState,
   tickWorldCombatState,
@@ -190,7 +192,7 @@ function buildPvpBattleView(
   );
 }
 
-async function markAggressorVictimFoughtBackInTx(
+export async function markAggressorVictimFoughtBackInTx(
   tx: Prisma.TransactionClient,
   aggressorId: string,
   defenderId: string
@@ -209,90 +211,69 @@ async function markAggressorVictimFoughtBackInTx(
   });
 }
 
-export async function startPvpBattleInTx(
+export type PlayerPvpStartCtx = {
+  playerCombatMode: PlayerCombatMode;
+  siegeId?: string;
+  siegeCityId?: string;
+  skipWorldGeoChecks?: boolean;
+};
+
+function pvpStartLogLine(
+  mode: PlayerCombatMode,
+  defenderCounter: boolean,
+  opp: ReturnType<typeof opponentCombatFromRow>
+): string {
+  const who = '[' + opp.name + '] (ур. ' + opp.effLv + ').';
+  if (mode === 'siege') {
+    return defenderCounter
+      ? 'Відсіч на облозі: ' + who
+      : 'PvP на облозі розпочато: ' + who;
+  }
+  return defenderCounter
+    ? 'Відсіч у PvP: ' + who
+    : 'PvP-бій розпочато: ' + who;
+}
+
+/** Спільний старт PvP (world / siege / …) — однакові формули, різні правила режиму. */
+export async function commitPlayerPvpBattleStartInTx(
   tx: Prisma.TransactionClient,
-  userId: string,
-  targetCharacterId: string,
-  expectedRevision: number
+  args: {
+    attackerRow: CharacterRow;
+    targetRow: CharacterRow;
+    expectedRevision: number;
+    ctx: PlayerPvpStartCtx;
+    defenderCounter?: boolean;
+  }
 ): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
-  const targetId = String(targetCharacterId || '').trim();
-  if (!targetId) throw new Error('pvp_target_unknown');
-
-  const attackerRow = await tx.character.findFirst({
-    where: { userId },
-    orderBy: { lastUpdate: 'desc' },
-  });
-  if (!attackerRow) throw new Error('no_character');
-  if (attackerRow.id === targetId) throw new Error('pvp_self');
-
-  const existingBj = parseBattleJson(attackerRow.battleJson);
-  if (existingBj && isPvpBattleJson(existingBj)) {
-    if (existingBj.pvpTargetCharacterId === targetId) {
-      const atkBase = resolveMapMovement(
-        applyPassiveHpRegen(attackerRow as CharacterRow)
-      );
-      const refreshed = await refreshPvpOpponentHpForCharacterInTx(
-        tx,
-        atkBase as CharacterRow
-      );
-      const st = parseBattleJson(refreshed.battleJson);
-      if (!st) throw new Error('battle_none');
-      const targetRow = await tx.character.findFirst({
-        where: { id: targetId },
-      });
-      if (!targetRow) throw new Error('pvp_target_unknown');
-      const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow);
-      const snap = toSnapshot(refreshed);
-      return {
-        character: snap,
-        battle: buildPvpBattleView(refreshed, st, opp, snap),
-      };
-    }
-    throw new Error('already_in_battle');
-  }
-  if (attackerRow.battleJson != null) throw new Error('already_in_battle');
-
-  const targetRow = await tx.character.findFirst({
-    where: { id: targetId },
-  });
-  if (!targetRow) throw new Error('pvp_target_unknown');
-
-  const tgtBj = parseBattleJson(targetRow.battleJson);
-  let defenderCounter = false;
-  if (tgtBj && isPvpBattleJson(tgtBj)) {
-    if (tgtBj.pvpTargetCharacterId === attackerRow.id) {
-      defenderCounter = true;
-      await markAggressorVictimFoughtBackInTx(
-        tx,
-        targetId,
-        attackerRow.id
-      );
-    } else {
-      throw new Error('pvp_target_busy');
-    }
-  }
-
-  const atkBase = resolveMapMovement(applyPassiveHpRegen(attackerRow as CharacterRow));
-  const tgtBase = resolveMapMovement(applyPassiveHpRegen(targetRow as CharacterRow));
-  const distAtCommit = Math.hypot(
-    atkBase.worldX - tgtBase.worldX,
-    atkBase.worldY - tgtBase.worldY
+  const { attackerRow, targetRow, expectedRevision, ctx } = args;
+  const defenderCounter = args.defenderCounter === true;
+  const targetId = targetRow.id;
+  const atkBase = resolveMapMovement(
+    applyPassiveHpRegen(attackerRow as CharacterRow)
   );
-  if (distAtCommit > BATTLE_RANGE) {
-    throw new Error('pvp_too_far');
-  }
-  if (isInPvpSafeZone(tgtBase.worldX, tgtBase.worldY)) {
-    throw new Error('pvp_target_safe');
-  }
-  if (isInPvpSafeZone(atkBase.worldX, atkBase.worldY)) {
-    throw new Error('pvp_attacker_safe');
+  const tgtBase = resolveMapMovement(
+    applyPassiveHpRegen(targetRow as CharacterRow)
+  );
+
+  if (!ctx.skipWorldGeoChecks) {
+    const distAtCommit = Math.hypot(
+      atkBase.worldX - tgtBase.worldX,
+      atkBase.worldY - tgtBase.worldY
+    );
+    if (distAtCommit > BATTLE_RANGE) {
+      throw new Error('pvp_too_far');
+    }
+    if (isInPvpSafeZone(tgtBase.worldX, tgtBase.worldY)) {
+      throw new Error('pvp_target_safe');
+    }
+    if (isInPvpSafeZone(atkBase.worldX, atkBase.worldY)) {
+      throw new Error('pvp_attacker_safe');
+    }
   }
 
   const opp = resolvePvpTargetCombatFromRow(tgtBase as CharacterRow);
   const startLog = [
-    defenderCounter
-      ? 'Відсіч у PvP: [' + opp.name + '] (ур. ' + opp.effLv + ').'
-      : 'PvP-бій розпочато: [' + opp.name + '] (ур. ' + opp.effLv + ').',
+    pvpStartLogLine(ctx.playerCombatMode, defenderCounter, opp),
   ];
 
   const inv0 = parseInventory(atkBase.inventoryJson);
@@ -325,6 +306,9 @@ export async function startPvpBattleInTx(
   const st: BattleJsonState = {
     spawnId,
     battleMode: 'pvp',
+    playerCombatMode: ctx.playerCombatMode,
+    ...(ctx.siegeId ? { siegeId: ctx.siegeId } : {}),
+    ...(ctx.siegeCityId ? { siegeCityId: ctx.siegeCityId } : {}),
     pvpTargetCharacterId: targetId,
     pvpTargetName: opp.name,
     pvpTargetLevel: opp.effLv,
@@ -385,6 +369,101 @@ export async function startPvpBattleInTx(
   const snap = toSnapshot(row);
   const view = buildPvpBattleView(row, st, opp, snap);
   return { character: snap, battle: view };
+}
+
+export async function resumePlayerPvpBattleInTx(
+  tx: Prisma.TransactionClient,
+  attackerRow: CharacterRow,
+  targetId: string,
+  mode: PlayerCombatMode
+): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
+  const atkBase = resolveMapMovement(
+    applyPassiveHpRegen(attackerRow as CharacterRow)
+  );
+  const refreshed = await refreshPvpOpponentHpForCharacterInTx(
+    tx,
+    atkBase as CharacterRow
+  );
+  const st = parseBattleJson(refreshed.battleJson);
+  if (!st) throw new Error('battle_none');
+  if (resolvePlayerCombatMode(st) !== mode) {
+    throw new Error('already_in_battle');
+  }
+  const targetRow = await tx.character.findFirst({
+    where: { id: targetId },
+  });
+  if (!targetRow) throw new Error('pvp_target_unknown');
+  const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow);
+  const snap = toSnapshot(refreshed);
+  return {
+    character: snap,
+    battle: buildPvpBattleView(refreshed, st, opp, snap),
+  };
+}
+
+export async function startPvpBattleInTx(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  targetCharacterId: string,
+  expectedRevision: number
+): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
+  const targetId = String(targetCharacterId || '').trim();
+  if (!targetId) throw new Error('pvp_target_unknown');
+
+  const attackerRow = await tx.character.findFirst({
+    where: { userId },
+    orderBy: { lastUpdate: 'desc' },
+  });
+  if (!attackerRow) throw new Error('no_character');
+  if (attackerRow.id === targetId) throw new Error('pvp_self');
+
+  const existingBj = parseBattleJson(attackerRow.battleJson);
+  if (existingBj && isPvpBattleJson(existingBj)) {
+    if (
+      existingBj.pvpTargetCharacterId === targetId &&
+      resolvePlayerCombatMode(existingBj) === 'world'
+    ) {
+      return resumePlayerPvpBattleInTx(
+        tx,
+        attackerRow as CharacterRow,
+        targetId,
+        'world'
+      );
+    }
+    throw new Error('already_in_battle');
+  }
+  if (attackerRow.battleJson != null) throw new Error('already_in_battle');
+
+  const targetRow = await tx.character.findFirst({
+    where: { id: targetId },
+  });
+  if (!targetRow) throw new Error('pvp_target_unknown');
+
+  const tgtBj = parseBattleJson(targetRow.battleJson);
+  let defenderCounter = false;
+  if (tgtBj && isPvpBattleJson(tgtBj)) {
+    if (
+      tgtBj.pvpTargetCharacterId === attackerRow.id &&
+      resolvePlayerCombatMode(tgtBj) === 'world'
+    ) {
+      defenderCounter = true;
+      await markAggressorVictimFoughtBackInTx(
+        tx,
+        targetId,
+        attackerRow.id
+      );
+    } else {
+      throw new Error('pvp_target_busy');
+    }
+  }
+
+  return commitPlayerPvpBattleStartInTx(tx, {
+    attackerRow: attackerRow as CharacterRow,
+    targetRow: targetRow as CharacterRow,
+    expectedRevision,
+    ctx: { playerCombatMode: 'world' },
+    defenderCounter,
+  });
 }
 
 export async function startPvpBattle(

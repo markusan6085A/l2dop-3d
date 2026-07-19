@@ -1,5 +1,6 @@
 import {
   SIEGE_ATTACK_MIN_INTERVAL_MS,
+  SIEGE_PARTICIPANT_PRESENCE_MS,
   SIEGE_REWARD_CLAN_POINTS,
   SIEGE_TIME_ZONE,
   SIEGE_WALL_MAX_HP,
@@ -45,6 +46,18 @@ export type SiegeTopClanRow = {
   place: number;
 };
 
+export type SiegeParticipantBrief = {
+  characterId: string;
+  nickname: string;
+  clanId: string;
+  clanName: string;
+};
+
+export type SiegeParticipantsView = {
+  allies: SiegeParticipantBrief[];
+  enemies: SiegeParticipantBrief[];
+};
+
 export type SiegeStateView = {
   serverTime: string;
   timeZone: string;
@@ -66,6 +79,7 @@ export type SiegeStateView = {
   topClans: SiegeTopClanRow[];
   rewardPoints: number;
   finishReason: string | null;
+  participants?: SiegeParticipantsView;
 };
 
 async function loadClanBrief(clanId: string | null | undefined): Promise<SiegeClanBrief> {
@@ -99,6 +113,90 @@ async function loadTopClans(siegeId: string): Promise<SiegeTopClanRow[]> {
     totalDamage: r.totalDamage,
     place: idx + 1,
   }));
+}
+
+async function touchSiegeParticipantPresence(
+  siegeId: string,
+  characterId: string,
+  clanId: string,
+  nowMs: number
+): Promise<void> {
+  const seenAt = new Date(nowMs);
+  const existing = await prisma.clanSiegeParticipant.findUnique({
+    where: {
+      siegeId_characterId: { siegeId, characterId },
+    },
+    select: { id: true },
+  });
+  if (existing) {
+    await prisma.clanSiegeParticipant.update({
+      where: { id: existing.id },
+      data: { lastSeenAt: seenAt },
+    });
+    return;
+  }
+  try {
+    await prisma.clanSiegeParticipant.create({
+      data: {
+        siegeId,
+        characterId,
+        clanId,
+        lastSeenAt: seenAt,
+      },
+    });
+  } catch (_eUnique) {
+    await prisma.clanSiegeParticipant.updateMany({
+      where: { siegeId, characterId },
+      data: { lastSeenAt: seenAt },
+    });
+  }
+}
+
+async function loadNearbySiegeParticipants(
+  siegeId: string,
+  viewerClanId: string | null,
+  nowMs: number
+): Promise<SiegeParticipantsView | undefined> {
+  if (!viewerClanId) return undefined;
+  const presenceSince = new Date(nowMs - SIEGE_PARTICIPANT_PRESENCE_MS);
+  const rows = await prisma.clanSiegeParticipant.findMany({
+    where: {
+      siegeId,
+      lastSeenAt: { gte: presenceSince },
+    },
+    select: {
+      characterId: true,
+      clanId: true,
+      character: { select: { name: true } },
+    },
+    orderBy: [{ character: { name: 'asc' } }],
+    take: 40,
+  });
+  const clanIds = [...new Set(rows.map((r) => r.clanId))];
+  const clans =
+    clanIds.length > 0
+      ? await prisma.clan.findMany({
+          where: { id: { in: clanIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+  const clanNameById = new Map(clans.map((c) => [c.id, c.name]));
+  const allies: SiegeParticipantBrief[] = [];
+  const enemies: SiegeParticipantBrief[] = [];
+  for (const row of rows) {
+    const brief: SiegeParticipantBrief = {
+      characterId: row.characterId,
+      nickname: row.character.name,
+      clanId: row.clanId,
+      clanName: clanNameById.get(row.clanId) ?? '—',
+    };
+    if (row.clanId === viewerClanId) {
+      allies.push(brief);
+    } else {
+      enemies.push(brief);
+    }
+  }
+  return { allies, enemies };
 }
 
 function resolveAttackBlockedReason(args: {
@@ -150,7 +248,7 @@ export async function getSiegeStateForUser(
       ...(characterId ? { id: characterId } : {}),
     },
     orderBy: { lastUpdate: 'desc' },
-    select: { id: true, clanId: true, clan: { select: { id: true, name: true } } },
+    select: { id: true, clanId: true, cityId: true, clan: { select: { id: true, name: true } } },
   });
   if (!char) throw new Error('no_character');
 
@@ -226,6 +324,25 @@ export async function getSiegeStateForUser(
     ownerClanId: castle?.ownerClanId ?? null,
   });
 
+  let participants: SiegeParticipantsView | undefined;
+  if (
+    effectiveState === CLAN_SIEGE_STATE.active &&
+    char.clanId &&
+    String(char.cityId || '').trim() === cid
+  ) {
+    await touchSiegeParticipantPresence(
+      siege.id,
+      char.id,
+      char.clanId,
+      nowMs
+    );
+    participants = await loadNearbySiegeParticipants(
+      siege.id,
+      char.clanId,
+      nowMs
+    );
+  }
+
   return {
     serverTime: new Date(nowMs).toISOString(),
     timeZone: SIEGE_TIME_ZONE,
@@ -249,6 +366,7 @@ export async function getSiegeStateForUser(
     topClans: await loadTopClans(siege.id),
     rewardPoints: SIEGE_REWARD_CLAN_POINTS,
     finishReason: siege.finishReason,
+    participants,
   };
 }
 

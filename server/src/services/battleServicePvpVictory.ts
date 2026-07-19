@@ -28,6 +28,7 @@ import {
   buildPvpVictoryCanonicalFields,
   type BattleSpawnMeta,
 } from '../domain/battlePvpContext.js';
+import { shouldApplyWorldPvpPkRules } from '../domain/playerCombatMode.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -68,8 +69,9 @@ export async function persistPvpVictoryInTx(
   const victimId = st.pvpTargetCharacterId
     ? String(st.pvpTargetCharacterId).trim()
     : '';
+  const worldPk = shouldApplyWorldPvpPkRules(st);
   const unfairKill =
-    st.pvpIsAggressor !== false && st.pvpVictimFoughtBack !== true;
+    worldPk && st.pvpIsAggressor !== false && st.pvpVictimFoughtBack !== true;
   const karmaGain = unfairKill ? PVP_KILL_KARMA_GAIN : 0;
   if (karmaGain > 0) {
     trimmedLog.push('Карма +' + karmaGain + '.');
@@ -92,11 +94,6 @@ export async function persistPvpVictoryInTx(
       victimLog,
     });
     const vCr = victimRow as CharacterRow | null;
-    const town =
-      vCr != null
-        ? resolveNearestTownTeleport(vCr.worldX, vCr.worldY)
-        : null;
-    if (!town) throw new Error('teleport_unknown');
     let recoverHp = 1;
     if (vCr) {
       const vLv = levelFromTotalExp(vCr.exp);
@@ -118,30 +115,48 @@ export async function persistPvpVictoryInTx(
       const vMaxHp = effectiveMaxHpWithJewelFlat(vVit.maxHp, vCombat);
       recoverHp = Math.max(1, Math.floor(vMaxHp * 0.15));
     }
+
+    const siegeCityId = st.siegeCityId
+      ? String(st.siegeCityId).trim()
+      : '';
+    const victimPatch: Prisma.CharacterUncheckedUpdateInput = {
+      hp: recoverHp,
+      battleJson: Prisma.JsonNull,
+      pvpPendingDefeatJson: serializePvpPendingDefeat({
+        killerName: char.name,
+        killerCharacterId: char.id,
+        atMs: Date.now(),
+        fullLog: defeatLog,
+      }),
+    };
+
+    if (worldPk) {
+      const town =
+        vCr != null
+          ? resolveNearestTownTeleport(vCr.worldX, vCr.worldY)
+          : null;
+      if (!town) throw new Error('teleport_unknown');
+      Object.assign(victimPatch, {
+        worldX: town.worldX,
+        worldY: town.worldY,
+        targetX: 0,
+        targetY: 0,
+        moveStartAt: null,
+        moveFromX: town.worldX,
+        moveFromY: town.worldY,
+        cityId: town.cityId,
+      });
+    } else if (siegeCityId) {
+      victimPatch.cityId = siegeCityId;
+    }
+
     const victimResult = await mutateCharacterWithRevision(
       tx,
       victimId,
       null,
       () => ({
         changed: true,
-        data: {
-          hp: recoverHp,
-          battleJson: Prisma.JsonNull,
-          pvpPendingDefeatJson: serializePvpPendingDefeat({
-            killerName: char.name,
-            killerCharacterId: char.id,
-            atMs: Date.now(),
-            fullLog: defeatLog,
-          }),
-          worldX: town.worldX,
-          worldY: town.worldY,
-          targetX: 0,
-          targetY: 0,
-          moveStartAt: null,
-          moveFromX: town.worldX,
-          moveFromY: town.worldY,
-          cityId: town.cityId,
-        },
+        data: victimPatch,
       })
     );
     if (!victimResult.ok) throw gameConflictFromMutation(victimResult);
@@ -170,10 +185,9 @@ export async function persistPvpVictoryInTx(
     Date.now()
   );
 
-  const nextKarma = Math.max(
-    0,
-    Math.floor(Number(char.karma) || 0) + karmaGain
-  );
+  const nextKarma = worldPk
+    ? Math.max(0, Math.floor(Number(char.karma) || 0) + karmaGain)
+    : Math.max(0, Math.floor(Number(char.karma) || 0));
 
   const result = await mutateCharacterWithRevision(
     tx,
@@ -184,7 +198,12 @@ export async function persistPvpVictoryInTx(
       data: {
         hp: Math.max(0, Math.floor(playerHp)),
         karma: nextKarma,
-        pvpWins: Math.max(0, Math.floor(Number(char.pvpWins) || 0)) + 1,
+        ...(worldPk
+          ? {
+              pvpWins:
+                Math.max(0, Math.floor(Number(char.pvpWins) || 0)) + 1,
+            }
+          : {}),
         battleJson: Prisma.JsonNull,
         worldCombatStateJson: worldLeave
           ? (JSON.parse(JSON.stringify(worldLeave)) as Prisma.InputJsonValue)

@@ -2,6 +2,7 @@ import {
   isPvpBattleJson,
   resolveBattleSpawnMeta,
 } from '../domain/battlePvpContext.js';
+import { shouldApplyWorldPvpPkRules } from '../domain/playerCombatMode.js';
 import {
   applyBattleModsPatch,
   effectiveBattleMaxHp,
@@ -1099,6 +1100,7 @@ export async function performBattleActionInTx(
           equippedWeaponKind(inv)
         ),
         mirrorReflectKind,
+        applyWorldPkRules: shouldApplyWorldPvpPkRules(st),
       });
       if (pvpHit.mirrorLogLineUk) {
         log.push(pvpHit.mirrorLogLineUk);

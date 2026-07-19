@@ -76,8 +76,8 @@ function assertBattleJsSourceContract() {
   const html = readFileSync(battleHtmlPath, 'utf8');
   assert.match(
     html,
-    /battle\.js\?v=20260719pvpMapNavFix1/,
-    'battle.html cache bust must be 20260719pvpMapNavFix1'
+    /battle\.js\?v=20260719clanSiegePvp1/,
+    'battle.html cache bust must be 20260719clanSiegePvp1'
   );
 }
 

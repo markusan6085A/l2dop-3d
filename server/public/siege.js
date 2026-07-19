@@ -15,6 +15,7 @@
   var pollActive = false;
   var fetchInFlight = false;
   var attackInFlight = false;
+  var pvpInFlight = false;
   var lastAttackAtMs = 0;
   var countdownTimer = null;
   var startsAtRefreshDone = false;
@@ -227,6 +228,50 @@
     }
   }
 
+  function renderParticipants(parent, data) {
+    var parts = data && data.participants;
+    var nearbyLine = $('siege-nearby-line');
+    if (!parts || data.state !== 'active') {
+      if (nearbyLine) nearbyLine.hidden = true;
+      return;
+    }
+    var hasAny =
+      (parts.allies && parts.allies.length) ||
+      (parts.enemies && parts.enemies.length);
+    if (nearbyLine) {
+      nearbyLine.hidden = hasAny;
+      if (!hasAny) nearbyLine.textContent = 'Поруч нікого немає';
+    }
+    if (parts.allies && parts.allies.length) {
+      addLine(parent, 'Союзники:');
+      var alliesUl = document.createElement('ul');
+      alliesUl.className = 'l2-siege-participants';
+      parts.allies.forEach(function (row) {
+        var li = document.createElement('li');
+        li.textContent = row.nickname + ' — ' + row.clanName;
+        alliesUl.appendChild(li);
+      });
+      parent.appendChild(alliesUl);
+    }
+    if (parts.enemies && parts.enemies.length) {
+      addLine(parent, 'Вороги:');
+      var enemiesUl = document.createElement('ul');
+      enemiesUl.className = 'l2-siege-participants';
+      parts.enemies.forEach(function (row) {
+        var li = document.createElement('li');
+        var link = document.createElement('a');
+        link.className = 'l2-siege-link';
+        link.href = '#';
+        link.dataset.siegePvpTarget = row.characterId;
+        link.textContent = row.nickname + ' — ' + row.clanName;
+        if (pvpInFlight) link.classList.add('l2-siege-link--disabled');
+        li.appendChild(link);
+        enemiesUl.appendChild(li);
+      });
+      parent.appendChild(enemiesUl);
+    }
+  }
+
   function renderState(data) {
     stateData = data;
     var ownerLine = $('siege-owner-line');
@@ -238,8 +283,7 @@
       ownerLine.textContent = 'Контролює клан: ' + clanLine(data.ownerClan);
     }
     if (nearbyLine) {
-      nearbyLine.hidden = data.state !== 'active';
-      nearbyLine.textContent = 'Поруч нікого немає';
+      nearbyLine.hidden = true;
     }
     if (!body) return;
 
@@ -292,6 +336,7 @@
       addLine(body, 'Мій урон: ' + formatNum(data.viewerCharacterDamage || 0));
       addLine(body, 'Урон мого клану: ' + formatNum(data.viewerClanDamage || 0));
       renderTopClans(body, data.topClans);
+      renderParticipants(body, data);
     } else if (data.state === 'finished') {
       if (data.finishReason === 'wall_destroyed' && data.winnerClan) {
         addLine(body, 'Місто захопив клан: ' + data.winnerClan.name);
@@ -492,9 +537,96 @@
     }
   }
 
+  async function startSiegePvp(targetCharacterId) {
+    if (!targetCharacterId || pvpInFlight) return;
+    pvpInFlight = true;
+    try {
+      var snap =
+        window.L2 && typeof L2.lastSnapshot === 'function'
+          ? L2.lastSnapshot()
+          : null;
+      if (!token() || !snap) {
+        window.location.href = '/';
+        return;
+      }
+      async function postStart(revision) {
+        return fetch(
+          '/game/siege/' + encodeURIComponent(cityId) + '/pvp/start',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token(),
+            },
+            body: JSON.stringify({
+              targetCharacterId: targetCharacterId,
+              expectedRevision: revision,
+            }),
+          }
+        );
+      }
+      var r = await postStart(snap.revision);
+      if (r.status === 401) {
+        window.location.href = '/';
+        return;
+      }
+      if (r.status === 409) {
+        if (
+          window.L2 &&
+          typeof L2.resyncCharacterAfterConflict === 'function'
+        ) {
+          var ej409 = null;
+          try {
+            ej409 = await r.json();
+          } catch (_e409) {
+            ej409 = null;
+          }
+          await L2.resyncCharacterAfterConflict(function (freshSnap) {
+            snap = freshSnap;
+          }, ej409);
+          if (snap && snap.revision != null) {
+            r = await postStart(snap.revision);
+          }
+        }
+      }
+      if (!r.ok) {
+        var errMsg = 'Не вдалося розпочати PvP на облозі.';
+        try {
+          var ej = await r.json();
+          if (ej && ej.messageUk) errMsg = ej.messageUk;
+        } catch (_eErr) {
+          /* ignore */
+        }
+        if (window.L2 && typeof L2.showToast === 'function') {
+          L2.showToast(errMsg);
+        } else {
+          alert(errMsg);
+        }
+        return;
+      }
+      var j = await r.json();
+      if (j.character && window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(j.character);
+      } else if (j.character && window.L2 && typeof L2.setLastSnapshot === 'function') {
+        L2.setLastSnapshot(j.character);
+      }
+      window.location.href =
+        '/battle.html?pvpTargetId=' + encodeURIComponent(targetCharacterId);
+    } finally {
+      pvpInFlight = false;
+      if (stateData) renderState(stateData);
+    }
+  }
+
   function onSiegeBodyClick(e) {
     var t = e.target;
-    if (!t || !t.id) return;
+    if (!t) return;
+    if (t.dataset && t.dataset.siegePvpTarget) {
+      e.preventDefault();
+      void startSiegePvp(String(t.dataset.siegePvpTarget));
+      return;
+    }
+    if (!t.id) return;
     if (t.id === 'siege-attack-link') {
       e.preventDefault();
       void attackWall();

@@ -311,6 +311,12 @@ export interface BattleJsonState {
   pvpVictimFoughtBack?: boolean;
   /** PvP: цей гравець першим розпочав атаку (для карми). */
   pvpIsAggressor?: boolean;
+  /** Контекст PvP: world / siege / arena / olympiad (формули однакові). */
+  playerCombatMode?: import('./playerCombatMode.js').PlayerCombatMode;
+  /** Clan Siege: id активної облоги (server-authoritative). */
+  siegeId?: string;
+  /** Clan Siege: cityId облоги для return URL. */
+  siegeCityId?: string;
   /**
    * Після успішного Вихору: скільки наступних базових автоатак мають cleave по `whirlwindExtras`.
    * Зараз використовуємо 1 (лише наступна автоатака).

@@ -707,6 +707,18 @@ export function parseBattleJson(
     ...(o.pvpVictimFoughtBack === true
       ? { pvpVictimFoughtBack: true as const }
       : {}),
+    ...(o.playerCombatMode === 'world' ||
+    o.playerCombatMode === 'siege' ||
+    o.playerCombatMode === 'arena' ||
+    o.playerCombatMode === 'olympiad'
+      ? { playerCombatMode: o.playerCombatMode }
+      : {}),
+    ...(typeof o.siegeId === 'string' && o.siegeId.trim()
+      ? { siegeId: o.siegeId.trim() }
+      : {}),
+    ...(typeof o.siegeCityId === 'string' && o.siegeCityId.trim()
+      ? { siegeCityId: o.siegeCityId.trim() }
+      : {}),
     ...(typeof o.playerCp === 'number' && Number.isFinite(o.playerCp) && o.playerCp >= 0
       ? { playerCp: Math.floor(o.playerCp) }
       : {}),

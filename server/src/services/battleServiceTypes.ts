@@ -121,6 +121,12 @@ export interface BattleVictorySummary {
   battleType?: 'pvp' | 'pve';
   /** PvP: characterId переможеного гравця. */
   defeatedCharacterId?: string | null;
+  /** PvP контекст (world / siege / …). */
+  playerCombatMode?: import('../domain/playerCombatMode.js').PlayerCombatMode;
+  /** Clan Siege: cityId для повернення на siege.html. */
+  siegeCityId?: string;
+  /** Клієнтський return URL після PvP (напр. облога). */
+  returnUrl?: string;
 }
 
 /** Поразка в бою — екран поразки + підказка найближчого міста для кнопки «в місто». */
