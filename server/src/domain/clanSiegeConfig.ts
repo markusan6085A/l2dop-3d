@@ -2,9 +2,6 @@
 
 export const SIEGE_TIME_ZONE = 'Europe/Kyiv';
 
-/** 0=неділя … 6=субота (JS getDay у Europe/Kyiv). Змінюй тут без переписування логіки. */
-export const SIEGE_WEEKDAY = 6;
-
 export const SIEGE_DURATION_MINUTES = 20;
 export const SIEGE_WALL_MAX_HP = 600_000;
 export const SIEGE_WALL_DAMAGE_MIN = 1;

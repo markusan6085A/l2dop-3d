@@ -4,13 +4,13 @@ import {
   SIEGE_DURATION_MINUTES,
   SIEGE_TIME_ZONE,
   SIEGE_WALL_MAX_HP,
-  SIEGE_WEEKDAY,
   getSiegeCitySlot,
   type SiegeCitySlot,
 } from '../../domain/clanSiegeConfig.js';
 import { CLAN_SIEGE_STATE } from '../../domain/clanSiegeConstants.js';
 import { getZonedParts, zonedLocalToUtc } from '../../domain/clanSiegeTime.js';
 import { prisma } from '../../lib/prisma.js';
+import { isPrismaUniqueViolation } from '../party/partyPrismaErrors.js';
 
 export function resolveSiegeWindowForSlotOnKyivDate(
   slot: SiegeCitySlot,
@@ -30,21 +30,22 @@ export function resolveSiegeWindowForSlotOnKyivDate(
   return { startsAt, endsAt };
 }
 
-export function resolveCurrentSiegeKyivDate(nowMs = Date.now()): {
-  year: number;
-  month: number;
-  day: number;
-} | null {
-  const parts = getZonedParts(new Date(nowMs), SIEGE_TIME_ZONE);
-  if (parts.weekday !== SIEGE_WEEKDAY) return null;
-  return { year: parts.year, month: parts.month, day: parts.day };
-}
-
 export type KyivCalendarDate = {
   year: number;
   month: number;
   day: number;
 };
+
+/** Поточна календарна дата в Europe/Kyiv. */
+export function resolveKyivCalendarDate(nowMs = Date.now()): KyivCalendarDate {
+  const parts = getZonedParts(new Date(nowMs), SIEGE_TIME_ZONE);
+  return { year: parts.year, month: parts.month, day: parts.day };
+}
+
+/** @deprecated alias — облоги щоденні, завжди «сьогодні» за Kyiv. */
+export function resolveCurrentSiegeKyivDate(nowMs = Date.now()): KyivCalendarDate {
+  return resolveKyivCalendarDate(nowMs);
+}
 
 /** +N календарних днів у Europe/Kyiv (без зсуву через DST-пастки опівдні). */
 export function addKyivCalendarDays(
@@ -57,56 +58,71 @@ export function addKyivCalendarDays(
   return { year: parts.year, month: parts.month, day: parts.day };
 }
 
-/** Найближче майбутнє вікно облоги міста за canonical weekly schedule (без БД). */
-export function resolveUpcomingWeeklySiegeWindowForCity(
+/** Найближче майбутнє вікно облоги міста за щоденним розкладом (без БД). */
+export function resolveUpcomingDailySiegeWindowForCity(
   cityId: string,
   nowMs = Date.now()
 ): { startsAt: Date; endsAt: Date } | null {
   const slot = getSiegeCitySlot(cityId);
   if (!slot) return null;
 
-  const parts = getZonedParts(new Date(nowMs), SIEGE_TIME_ZONE);
-  const daysToSiegeDay = (SIEGE_WEEKDAY - parts.weekday + 7) % 7;
-  let siegeDay = addKyivCalendarDays(
-    { year: parts.year, month: parts.month, day: parts.day },
-    daysToSiegeDay
-  );
-
-  for (let week = 0; week < 4; week++) {
-    const window = resolveSiegeWindowForSlotOnKyivDate(slot, siegeDay);
-    if (window.endsAt.getTime() > nowMs) {
-      return window;
-    }
-    siegeDay = addKyivCalendarDays(siegeDay, 7);
+  const today = resolveKyivCalendarDate(nowMs);
+  const todayWindow = resolveSiegeWindowForSlotOnKyivDate(slot, today);
+  if (todayWindow.endsAt.getTime() > nowMs) {
+    return todayWindow;
   }
 
-  return resolveSiegeWindowForSlotOnKyivDate(slot, siegeDay);
+  const tomorrow = addKyivCalendarDays(today, 1);
+  return resolveSiegeWindowForSlotOnKyivDate(slot, tomorrow);
+}
+
+/** @deprecated — використовуй resolveUpcomingDailySiegeWindowForCity. */
+export const resolveUpcomingWeeklySiegeWindowForCity =
+  resolveUpcomingDailySiegeWindowForCity;
+
+/** Усі 8 слотів одного календарного дня Kyiv. */
+export function resolveDailySiegeWindowsForKyivDate(
+  kyivDate: KyivCalendarDate
+): Array<{ cityId: string; startsAt: Date; endsAt: Date }> {
+  return SIEGE_CITY_SLOTS.map((slot) => {
+    const window = resolveSiegeWindowForSlotOnKyivDate(slot, kyivDate);
+    return { cityId: slot.cityId, ...window };
+  });
 }
 
 /** Створити scheduled-рядки на день облог (idempotent upsert). */
 export async function ensureSiegeScheduleForKyivDate(
-  kyivDate: { year: number; month: number; day: number }
+  kyivDate: KyivCalendarDate
 ): Promise<void> {
   for (const slot of SIEGE_CITY_SLOTS) {
     const { startsAt, endsAt } = resolveSiegeWindowForSlotOnKyivDate(
       slot,
       kyivDate
     );
-    await prisma.clanSiege.upsert({
-      where: {
-        cityId_startsAt: { cityId: slot.cityId, startsAt },
-      },
-      create: {
-        cityId: slot.cityId,
-        startsAt,
-        endsAt,
-        state: CLAN_SIEGE_STATE.scheduled,
-        wallHp: SIEGE_WALL_MAX_HP,
-        wallMaxHp: SIEGE_WALL_MAX_HP,
-      },
-      update: {},
-    });
+    try {
+      await prisma.clanSiege.upsert({
+        where: {
+          cityId_startsAt: { cityId: slot.cityId, startsAt },
+        },
+        create: {
+          cityId: slot.cityId,
+          startsAt,
+          endsAt,
+          state: CLAN_SIEGE_STATE.scheduled,
+          wallHp: SIEGE_WALL_MAX_HP,
+          wallMaxHp: SIEGE_WALL_MAX_HP,
+        },
+        update: {},
+      });
+    } catch (err) {
+      if (!isPrismaUniqueViolation(err)) throw err;
+    }
   }
+}
+
+/** Idempotent: сьогоднішні 8 слотів (GET/tick). */
+export async function ensureTodaySiegeSchedule(nowMs = Date.now()): Promise<void> {
+  await ensureSiegeScheduleForKyivDate(resolveKyivCalendarDate(nowMs));
 }
 
 export async function findSiegeRowForCityAtTime(
@@ -117,6 +133,7 @@ export async function findSiegeRowForCityAtTime(
   return prisma.clanSiege.findFirst({
     where: {
       cityId: String(cityId || '').trim(),
+      testKey: null,
       startsAt: { lte: now },
       endsAt: { gte: now },
     },
@@ -128,7 +145,10 @@ export async function findLatestSiegeForCity(
   cityId: string
 ): Promise<ClanSiege | null> {
   return prisma.clanSiege.findFirst({
-    where: { cityId: String(cityId || '').trim() },
+    where: {
+      cityId: String(cityId || '').trim(),
+      testKey: null,
+    },
     orderBy: { startsAt: 'desc' },
   });
 }
@@ -144,11 +164,33 @@ export async function findUpcomingSiegeForCity(
   return prisma.clanSiege.findFirst({
     where: {
       cityId: String(cityId || '').trim(),
+      testKey: null,
       startsAt: { gt: now },
       state: CLAN_SIEGE_STATE.scheduled,
     },
     orderBy: { startsAt: 'asc' },
   });
+}
+
+/** Рядок для GET state: поточна / майбутня / завершена в межах вікна. */
+export async function resolveSiegeRowForCityView(
+  cityId: string,
+  nowMs = Date.now()
+): Promise<ClanSiege | null> {
+  const current = await findSiegeRowForCityAtTime(cityId, nowMs);
+  if (current) return current;
+
+  const upcoming = await findUpcomingSiegeForCity(cityId, nowMs);
+  if (upcoming) return upcoming;
+
+  const latest = await findLatestSiegeForCity(cityId);
+  if (!latest) return null;
+
+  const effective = deriveEffectiveSiegeState(latest, nowMs);
+  if (effective !== CLAN_SIEGE_STATE.finished) return latest;
+  if (nowMs < latest.endsAt.getTime()) return latest;
+
+  return null;
 }
 
 export function deriveEffectiveSiegeState(

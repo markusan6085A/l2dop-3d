@@ -79,6 +79,20 @@
     void fetchState(false);
   }
 
+  function formatKyivDate(iso) {
+    if (!iso) return '—';
+    try {
+      return new Intl.DateTimeFormat('uk-UA', {
+        timeZone: 'Europe/Kyiv',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(new Date(iso));
+    } catch (_eFmt) {
+      return '—';
+    }
+  }
+
   function formatKyivTime(iso) {
     if (!iso) return '—';
     try {
@@ -293,6 +307,8 @@
 
   function renderScheduleHeader(data) {
     var castleName = $('siege-castle-name');
+    var dateWrap = $('siege-date-wrap');
+    var dateEl = $('siege-date');
     var startWrap = $('siege-start-wrap');
     var endWrap = $('siege-end-wrap');
     var startTime = $('siege-start-time');
@@ -300,6 +316,15 @@
 
     if (castleName) {
       castleName.textContent = 'Замок: ' + cityLabel(data);
+    }
+    if (dateWrap && dateEl) {
+      if (data.startsAt) {
+        dateWrap.hidden = false;
+        dateEl.textContent = formatKyivDate(data.startsAt);
+      } else {
+        dateWrap.hidden = true;
+        dateEl.textContent = '—';
+      }
     }
     if (startWrap && startTime) {
       if (data.startsAt) {

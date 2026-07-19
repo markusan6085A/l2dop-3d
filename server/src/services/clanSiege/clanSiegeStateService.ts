@@ -15,11 +15,11 @@ import {
 import { prisma } from '../../lib/prisma.js';
 import {
   deriveEffectiveSiegeState,
-  findLatestSiegeForCity,
+  ensureTodaySiegeSchedule,
   findSiegeRowForCityAtTime,
-  findUpcomingSiegeForCity,
   resolveCurrentSiegeKyivDate,
-  resolveUpcomingWeeklySiegeWindowForCity,
+  resolveSiegeRowForCityView,
+  resolveUpcomingDailySiegeWindowForCity,
 } from './clanSiegeScheduleService.js';
 import {
   readClanSiegeTestConfig,
@@ -332,7 +332,7 @@ function resolveVirtualSiegeSchedule(
   if (testCfg.enabled && testCfg.cityId === cityId) {
     return resolveTestSiegeWindowFromConfig(nowMs);
   }
-  return resolveUpcomingWeeklySiegeWindowForCity(cityId, nowMs);
+  return resolveUpcomingDailySiegeWindowForCity(cityId, nowMs);
 }
 
 export async function getSiegeStateForUser(
@@ -354,10 +354,12 @@ export async function getSiegeStateForUser(
   });
   if (!char) throw new Error('no_character');
 
-  let siege =
-    (await findSiegeRowForCityAtTime(cid, nowMs)) ??
-    (await findUpcomingSiegeForCity(cid, nowMs)) ??
-    (await findLatestSiegeForCity(cid));
+  const testCfg = readClanSiegeTestConfig();
+  if (!(testCfg.enabled && testCfg.cityId === cid)) {
+    await ensureTodaySiegeSchedule(nowMs);
+  }
+
+  let siege = await resolveSiegeRowForCityView(cid, nowMs);
 
   const castle = await prisma.cityCastle.findUnique({
     where: { cityId: cid },

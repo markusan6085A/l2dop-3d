@@ -45,6 +45,61 @@
     return !!SIEGE_CITY_IDS[String(id || '').trim()];
   }
 
+  function setSiegeScheduleLineVisible(visible) {
+    var line = $('city-siege-schedule-line');
+    if (line) line.hidden = !visible;
+  }
+
+  function formatKyivDate(iso) {
+    if (!iso) return '—';
+    try {
+      return new Intl.DateTimeFormat('uk-UA', {
+        timeZone: 'Europe/Kyiv',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(new Date(iso));
+    } catch (_eFmt) {
+      return '—';
+    }
+  }
+
+  function formatKyivTime(iso) {
+    if (!iso) return '—';
+    try {
+      var parts = new Intl.DateTimeFormat('uk-UA', {
+        timeZone: 'Europe/Kyiv',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).formatToParts(new Date(iso));
+      var hour = '';
+      var minute = '';
+      parts.forEach(function (part) {
+        if (part.type === 'hour') hour = part.value;
+        if (part.type === 'minute') minute = part.value;
+      });
+      if (!hour || !minute) return '—';
+      return hour + ':' + minute;
+    } catch (_eFmt2) {
+      return '—';
+    }
+  }
+
+  function renderSiegeSchedule(data) {
+    var textEl = $('city-siege-schedule-text');
+    if (!textEl) return;
+    if (!data || !data.startsAt) {
+      textEl.textContent = '—';
+      return;
+    }
+    var datePart = formatKyivDate(data.startsAt);
+    var startPart = formatKyivTime(data.startsAt);
+    var endPart = data.endsAt ? formatKyivTime(data.endsAt) : '—';
+    textEl.textContent =
+      datePart + ' · Початок: ' + startPart + ' · Кінець: ' + endPart;
+  }
+
   function setSiegeOwnerLineVisible(visible) {
     var ownerLine = $('city-siege-owner-line');
     if (ownerLine) ownerLine.hidden = !visible;
@@ -71,11 +126,14 @@
   async function loadSiegeCityOwner(cityId) {
     if (!isSiegeCityId(cityId)) {
       setSiegeOwnerLineVisible(false);
+      setSiegeScheduleLineVisible(false);
       return;
     }
 
     setSiegeOwnerLineVisible(true);
+    setSiegeScheduleLineVisible(true);
     renderSiegeOwnerName(null);
+    renderSiegeSchedule(null);
 
     var t = localStorage.getItem('token');
     if (!t) return;
@@ -88,6 +146,7 @@
       if (!r.ok) return;
       var data = await r.json();
       renderSiegeOwnerName(data.ownerClan);
+      renderSiegeSchedule(data);
     } catch (_eNet) {
       /* залишити «Немає» */
     }
@@ -122,6 +181,7 @@
     }
 
     setSiegeOwnerLineVisible(false);
+    setSiegeScheduleLineVisible(false);
     if (existing && existing.tagName === 'A') {
       existing.remove();
       existing = null;

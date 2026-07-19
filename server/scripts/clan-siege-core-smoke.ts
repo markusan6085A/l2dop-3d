@@ -125,15 +125,8 @@ async function resetTestSiege(cityId: string): Promise<void> {
   });
 }
 
-function findKyivSaturdayDate(): { year: number; month: number; day: number } {
-  for (let i = 0; i < 21; i++) {
-    const probe = new Date(Date.UTC(2026, 0, 1 + i));
-    const parts = getZonedParts(probe, 'Europe/Kyiv');
-    if (parts.weekday === 6) {
-      return { year: parts.year, month: parts.month, day: parts.day };
-    }
-  }
-  throw new Error('no Kyiv Saturday in probe window');
+function findKyivCalendarProbeDate(): { year: number; month: number; day: number } {
+  return { year: 2026, month: 7, day: 19 };
 }
 
 async function main(): Promise<void> {
@@ -172,14 +165,13 @@ async function main(): Promise<void> {
   assert.equal(gludioSchedule.state, 'scheduled');
   assert.ok(gludioSchedule.startsAt);
   assert.ok(gludioSchedule.endsAt);
-  const expectedGludioStart = zonedLocalToUtc(2026, 7, 18, 19, 40, 'Europe/Kyiv');
+  const expectedGludioStart = zonedLocalToUtc(2026, 7, 15, 19, 40, 'Europe/Kyiv');
   const expectedGludioEnd = new Date(
     expectedGludioStart.getTime() + 20 * 60_000
   );
   assert.equal(gludioSchedule.startsAt, expectedGludioStart.toISOString());
   assert.equal(gludioSchedule.endsAt, expectedGludioEnd.toISOString());
-  assert.equal(getZonedParts(expectedGludioStart, 'Europe/Kyiv').weekday, 6);
-  ok('GET state without DB row returns upcoming Kyiv schedule for gludio');
+  ok('GET state without DB row returns upcoming daily Kyiv schedule for gludio');
 
   await resetCitySieges();
 
@@ -222,7 +214,8 @@ async function main(): Promise<void> {
   const pastState = await getSiegeStateForUser(
     leaderB.userId,
     CITY,
-    leaderB.characterId
+    leaderB.characterId,
+    past.endsAt.getTime() - 500
   );
   assert.equal(pastState.state, 'finished');
   assert.equal(pastState.canAttackWall, false);
@@ -694,19 +687,19 @@ async function main(): Promise<void> {
   );
   ok('test mode disabled does not create new siege');
 
-  const satDate = findKyivSaturdayDate();
-  const satWindowStart = zonedLocalToUtc(
-    satDate.year,
-    satDate.month,
-    satDate.day,
+  const dayDate = findKyivCalendarProbeDate();
+  const dayWindowStart = zonedLocalToUtc(
+    dayDate.year,
+    dayDate.month,
+    dayDate.day,
     17,
     59,
     'Europe/Kyiv'
   );
-  const satWindowEnd = zonedLocalToUtc(
-    satDate.year,
-    satDate.month,
-    satDate.day,
+  const dayWindowEnd = zonedLocalToUtc(
+    dayDate.year,
+    dayDate.month,
+    dayDate.day,
     21,
     0,
     'Europe/Kyiv'
@@ -714,20 +707,20 @@ async function main(): Promise<void> {
   await prisma.clanSiege.deleteMany({
     where: {
       testKey: null,
-      startsAt: { gte: satWindowStart, lt: satWindowEnd },
+      startsAt: { gte: dayWindowStart, lt: dayWindowEnd },
     },
   });
-  await ensureSiegeScheduleForKyivDate(satDate);
+  await ensureSiegeScheduleForKyivDate(dayDate);
   assert.equal(
     await prisma.clanSiege.count({
       where: {
         testKey: null,
-        startsAt: { gte: satWindowStart, lt: satWindowEnd },
+        startsAt: { gte: dayWindowStart, lt: dayWindowEnd },
       },
     }),
     8
   );
-  ok('weekly schedule unchanged when test mode disabled');
+  ok('daily schedule creates 8 slots when test mode disabled');
 
   await prisma.clan.update({
     where: { id: leaderB.clanId },

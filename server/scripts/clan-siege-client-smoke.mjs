@@ -67,7 +67,7 @@ assert.match(siegeSrc, /Союзники:/);
 assert.match(siegeSrc, /Вороги:/);
 assert.match(siegeSrc, /startSiegePvp/);
 assert.match(siegeSrc, /\/pvp\/start/);
-assert.match(siegeHtml, /20260719clanSiegePvp1/);
+assert.match(siegeHtml, /20260719clanSiegeDaily1/);
 assert.match(siegeHtml, /Початок:/);
 assert.match(siegeHtml, /Кінець:/);
 assert.match(siegeHtml, /siege-start-time/);
@@ -91,6 +91,15 @@ assert.match(cityHtml, /l2-town-miru-loc-owner-label/);
 assert.match(cityHtml, /Під владою клану/);
 assert.match(cityCss, /\.l2-town-miru-loc-link[\s\S]*#ffffff/);
 assert.match(cityCss, /\.l2-town-miru-loc-owner-label[\s\S]*#bfa88a/);
+assert.match(siegeSrc, /formatKyivDate/);
+assert.match(siegeSrc, /siege-date-wrap/);
+assert.match(siegeHtml, /siege-date-wrap/);
+assert.match(siegeHtml, /Наступна облога:/);
+assert.match(citySrc, /city-siege-schedule-line/);
+assert.match(citySrc, /renderSiegeSchedule/);
+assert.match(citySrc, /formatKyivDate/);
+assert.match(cityHtml, /city-siege-schedule-line/);
+assert.match(cityHtml, /Наступна облога:/);
 assert.match(cityCss, /\.l2-town-miru-loc-owner-name[\s\S]*#ffffff/);
 assert.match(
   citySrc,

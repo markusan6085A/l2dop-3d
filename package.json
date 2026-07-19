@@ -64,6 +64,7 @@
     "test:clan-siege-elimination": "tsx server/scripts/clan-siege-elimination-smoke.ts",
     "test:clan-siege-pvp-state": "tsx server/scripts/clan-siege-pvp-state-smoke.ts",
     "test:clan-siege-finish-race": "tsx server/scripts/clan-siege-finish-race-smoke.ts",
+    "test:clan-siege-daily-schedule": "tsx server/scripts/clan-siege-daily-schedule-smoke.ts",
     "test:clan-emblems": "tsx server/scripts/clan-emblems-smoke.ts",
     "test:clan-level-up": "tsx server/scripts/clan-level-up-smoke.ts",
     "test:clan-level-client": "node server/scripts/clan-level-client-smoke.mjs",
