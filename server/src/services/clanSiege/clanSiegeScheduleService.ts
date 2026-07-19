@@ -5,6 +5,7 @@ import {
   SIEGE_TIME_ZONE,
   SIEGE_WALL_MAX_HP,
   SIEGE_WEEKDAY,
+  getSiegeCitySlot,
   type SiegeCitySlot,
 } from '../../domain/clanSiegeConfig.js';
 import { CLAN_SIEGE_STATE } from '../../domain/clanSiegeConstants.js';
@@ -37,6 +38,49 @@ export function resolveCurrentSiegeKyivDate(nowMs = Date.now()): {
   const parts = getZonedParts(new Date(nowMs), SIEGE_TIME_ZONE);
   if (parts.weekday !== SIEGE_WEEKDAY) return null;
   return { year: parts.year, month: parts.month, day: parts.day };
+}
+
+export type KyivCalendarDate = {
+  year: number;
+  month: number;
+  day: number;
+};
+
+/** +N календарних днів у Europe/Kyiv (без зсуву через DST-пастки опівдні). */
+export function addKyivCalendarDays(
+  date: KyivCalendarDate,
+  days: number
+): KyivCalendarDate {
+  const anchor = zonedLocalToUtc(date.year, date.month, date.day, 12, 0, SIEGE_TIME_ZONE);
+  const shifted = new Date(anchor.getTime() + days * 86_400_000);
+  const parts = getZonedParts(shifted, SIEGE_TIME_ZONE);
+  return { year: parts.year, month: parts.month, day: parts.day };
+}
+
+/** Найближче майбутнє вікно облоги міста за canonical weekly schedule (без БД). */
+export function resolveUpcomingWeeklySiegeWindowForCity(
+  cityId: string,
+  nowMs = Date.now()
+): { startsAt: Date; endsAt: Date } | null {
+  const slot = getSiegeCitySlot(cityId);
+  if (!slot) return null;
+
+  const parts = getZonedParts(new Date(nowMs), SIEGE_TIME_ZONE);
+  const daysToSiegeDay = (SIEGE_WEEKDAY - parts.weekday + 7) % 7;
+  let siegeDay = addKyivCalendarDays(
+    { year: parts.year, month: parts.month, day: parts.day },
+    daysToSiegeDay
+  );
+
+  for (let week = 0; week < 4; week++) {
+    const window = resolveSiegeWindowForSlotOnKyivDate(slot, siegeDay);
+    if (window.endsAt.getTime() > nowMs) {
+      return window;
+    }
+    siegeDay = addKyivCalendarDays(siegeDay, 7);
+  }
+
+  return resolveSiegeWindowForSlotOnKyivDate(slot, siegeDay);
 }
 
 /** Створити scheduled-рядки на день облог (idempotent upsert). */

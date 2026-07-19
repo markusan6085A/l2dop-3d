@@ -24,3 +24,15 @@ export function readClanSiegeTestConfig(
       Number.isFinite(durationRaw) && durationRaw >= 1 ? durationRaw : 20,
   };
 }
+
+/** Virtual test window when CLAN_SIEGE_TEST_ENABLED row ще не створено. */
+export function resolveTestSiegeWindowFromConfig(
+  nowMs = Date.now(),
+  env: NodeJS.ProcessEnv = process.env
+): { startsAt: Date; endsAt: Date } | null {
+  const cfg = readClanSiegeTestConfig(env);
+  if (!cfg.enabled) return null;
+  const startsAt = new Date(nowMs + cfg.startInMinutes * 60_000);
+  const endsAt = new Date(startsAt.getTime() + cfg.durationMinutes * 60_000);
+  return { startsAt, endsAt };
+}

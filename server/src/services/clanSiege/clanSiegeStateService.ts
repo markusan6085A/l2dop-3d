@@ -2,6 +2,7 @@ import {
   SIEGE_ATTACK_MIN_INTERVAL_MS,
   SIEGE_REWARD_CLAN_POINTS,
   SIEGE_TIME_ZONE,
+  SIEGE_WALL_MAX_HP,
   isSiegeCityId,
   siegeCityLabelUk,
 } from '../../domain/clanSiegeConfig.js';
@@ -16,7 +17,12 @@ import {
   findSiegeRowForCityAtTime,
   findUpcomingSiegeForCity,
   resolveCurrentSiegeKyivDate,
+  resolveUpcomingWeeklySiegeWindowForCity,
 } from './clanSiegeScheduleService.js';
+import {
+  readClanSiegeTestConfig,
+  resolveTestSiegeWindowFromConfig,
+} from './clanSiegeTestConfig.js';
 import {
   finishClanSiegeInTx,
   lockClanSiegeInTx,
@@ -118,6 +124,17 @@ function resolveAttackBlockedReason(args: {
   return { canAttack: true, reason: null };
 }
 
+function resolveVirtualSiegeSchedule(
+  cityId: string,
+  nowMs: number
+): { startsAt: Date; endsAt: Date } | null {
+  const testCfg = readClanSiegeTestConfig();
+  if (testCfg.enabled && testCfg.cityId === cityId) {
+    return resolveTestSiegeWindowFromConfig(nowMs);
+  }
+  return resolveUpcomingWeeklySiegeWindowForCity(cityId, nowMs);
+}
+
 export async function getSiegeStateForUser(
   userId: string,
   cityId: string,
@@ -149,6 +166,7 @@ export async function getSiegeStateForUser(
   const ownerClan = await loadClanBrief(castle?.ownerClanId);
 
   if (!siege) {
+    const virtual = resolveVirtualSiegeSchedule(cid, nowMs);
     const attack = resolveAttackBlockedReason({
       effectiveState: CLAN_SIEGE_STATE.scheduled,
       viewerClanId: char.clanId,
@@ -160,10 +178,10 @@ export async function getSiegeStateForUser(
       cityId: cid,
       cityName: siegeCityLabelUk(cid),
       state: CLAN_SIEGE_STATE.scheduled,
-      startsAt: null,
-      endsAt: null,
-      wallHp: 0,
-      wallMaxHp: 0,
+      startsAt: virtual?.startsAt.toISOString() ?? null,
+      endsAt: virtual?.endsAt.toISOString() ?? null,
+      wallHp: SIEGE_WALL_MAX_HP,
+      wallMaxHp: SIEGE_WALL_MAX_HP,
       version: 0,
       ownerClan,
       winnerClan: null,

@@ -161,6 +161,26 @@ async function main(): Promise<void> {
     update: { ownerClanId: leaderA.clanId },
   });
 
+  await prisma.clanSiege.deleteMany({});
+  const scheduleProbeMs = zonedLocalToUtc(2026, 7, 15, 12, 0, 'Europe/Kyiv').getTime();
+  const gludioSchedule = await getSiegeStateForUser(
+    leaderB.userId,
+    'l2dop_gludio',
+    leaderB.characterId,
+    scheduleProbeMs
+  );
+  assert.equal(gludioSchedule.state, 'scheduled');
+  assert.ok(gludioSchedule.startsAt);
+  assert.ok(gludioSchedule.endsAt);
+  const expectedGludioStart = zonedLocalToUtc(2026, 7, 18, 19, 40, 'Europe/Kyiv');
+  const expectedGludioEnd = new Date(
+    expectedGludioStart.getTime() + 20 * 60_000
+  );
+  assert.equal(gludioSchedule.startsAt, expectedGludioStart.toISOString());
+  assert.equal(gludioSchedule.endsAt, expectedGludioEnd.toISOString());
+  assert.equal(getZonedParts(expectedGludioStart, 'Europe/Kyiv').weekday, 6);
+  ok('GET state without DB row returns upcoming Kyiv schedule for gludio');
+
   await resetCitySieges();
 
   const future = await seedActiveSiege({
