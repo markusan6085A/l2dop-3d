@@ -3607,19 +3607,25 @@
         var head = document.createElement('div');
         head.className = 'l2-battle-party-member__head';
         var nameEl =
-          window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
-            ? L2.createPlayerProfileNickEl({
+          window.L2 && typeof L2.renderPlayerIdentity === 'function'
+            ? L2.renderPlayerIdentity({
                 characterId: m.characterId,
                 name: m.name,
                 clanEmblemId: m.clanEmblemId,
-                className: 'l2-battle-party-member__name',
+                nickClassName: 'l2-battle-party-member__name',
               })
-            : (function () {
-                var span = document.createElement('span');
-                span.className = 'l2-battle-party-member__name';
-                span.textContent = String(m.name || '—');
-                return span;
-              })();
+            : window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+              ? L2.createPlayerProfileNickEl({
+                  characterId: m.characterId,
+                  name: m.name,
+                  className: 'l2-battle-party-member__name',
+                })
+              : (function () {
+                  var span = document.createElement('span');
+                  span.className = 'l2-battle-party-member__name';
+                  span.textContent = String(m.name || '—');
+                  return span;
+                })();
         nameEl.title = String(m.name || '');
         head.appendChild(nameEl);
         var meta = document.createElement('span');

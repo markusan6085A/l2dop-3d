@@ -243,19 +243,25 @@
       img.decoding = 'async';
 
       var nick =
-        window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
-          ? L2.createPlayerProfileNickEl({
+        window.L2 && typeof L2.renderPlayerIdentity === 'function'
+          ? L2.renderPlayerIdentity({
               characterId: p.characterId,
               name: p.name,
               clanEmblemId: p.clanEmblemId,
-              className: 'l2-online-player__nick',
+              nickClassName: 'l2-online-player__nick',
             })
-          : (function () {
-              var span = document.createElement('span');
-              span.className = 'l2-online-player__nick';
-              span.textContent = String(p.name || '—');
-              return span;
-            })();
+          : window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+            ? L2.createPlayerProfileNickEl({
+                characterId: p.characterId,
+                name: p.name,
+                className: 'l2-online-player__nick',
+              })
+            : (function () {
+                var span = document.createElement('span');
+                span.className = 'l2-online-player__nick';
+                span.textContent = String(p.name || '—');
+                return span;
+              })();
 
       row.appendChild(img);
       row.appendChild(nick);

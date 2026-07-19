@@ -66,6 +66,7 @@
     "test:clan-siege-finish-race": "tsx server/scripts/clan-siege-finish-race-smoke.ts",
     "test:clan-emblems": "tsx server/scripts/clan-emblems-smoke.ts",
     "test:clan-siege-client": "node server/scripts/clan-siege-client-smoke.mjs",
+    "test:identity-renderer-client": "node server/scripts/identity-renderer-client-smoke.mjs",
     "test:party-hud-revision-client": "node server/scripts/party-hud-revision-client-smoke.mjs",
     "test:party-battle-dungeon": "tsx server/scripts/party-battle-dungeon-smoke.ts",
     "test:warehouse-deposit-atomic": "tsx server/scripts/warehouse-deposit-atomic-smoke.ts",

@@ -79,9 +79,26 @@
                 <hr class="l2-clans-divider" aria-hidden="true" />
 
                 <div class="l2-clan-manage-emblem">
-                  <p class="l2-clan-manage-emblem__label">Емблема клану</p>
-                  <div id="clan-manage-emblem-picker" aria-label="Обери емблему"></div>
-                  <p class="l2-clan-manage-emblem__actions">
+                  <p class="l2-clan-manage-emblem__label">Поточна емблема:</p>
+                  <div id="clan-manage-emblem-current" class="l2-clan-manage-emblem__current">
+                    —
+                  </div>
+                  <p class="l2-clan-manage-emblem__toggle">
+                    <button
+                      type="button"
+                      class="l2-clan-manage-nav-link"
+                      id="clan-manage-emblem-toggle"
+                    >
+                      Вибір емблеми
+                    </button>
+                  </p>
+                  <div
+                    id="clan-manage-emblem-picker"
+                    class="l2-clan-manage-emblem__picker"
+                    hidden
+                    aria-label="Обери емблему"
+                  ></div>
+                  <p class="l2-clan-manage-emblem__actions" id="clan-manage-emblem-save-wrap" hidden>
                     <button type="button" class="l2-clans-submit-btn" id="clan-manage-emblem-save">
                       Зберегти емблему
                     </button>

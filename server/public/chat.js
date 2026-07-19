@@ -566,19 +566,25 @@
     img.decoding = 'async';
 
     var nick =
-      window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
-        ? L2.createPlayerProfileNickEl({
+      window.L2 && typeof L2.renderPlayerIdentity === 'function'
+        ? L2.renderPlayerIdentity({
             characterId: m.characterId,
             name: m.characterName,
             clanEmblemId: m.clanEmblemId,
-            className: 'l2-chat-msg__nick',
+            nickClassName: 'l2-chat-msg__nick',
           })
-        : (function () {
-            var span = document.createElement('span');
-            span.className = 'l2-chat-msg__nick';
-            span.textContent = String(m.characterName || '—');
-            return span;
-          })();
+        : window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+          ? L2.createPlayerProfileNickEl({
+              characterId: m.characterId,
+              name: m.characterName,
+              className: 'l2-chat-msg__nick',
+            })
+          : (function () {
+              var span = document.createElement('span');
+              span.className = 'l2-chat-msg__nick';
+              span.textContent = String(m.characterName || '—');
+              return span;
+            })();
 
     var reply = document.createElement('button');
     reply.type = 'button';

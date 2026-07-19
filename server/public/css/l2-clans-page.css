@@ -721,6 +721,41 @@ body.l2-app-l2-chrome.l2-page-clan-manage .l2-city-stub-msg {
   padding-left: 2px;
 }
 
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem {
+  margin: 0 0 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__label {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: #bfa88a;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__current {
+  min-height: 32px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 32px;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__toggle {
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__picker[hidden],
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__actions[hidden] {
+  display: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__picker {
+  margin: 0 0 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__actions {
+  margin: 0 0 12px;
+}
+
 /* clan-hall.html */
 body.l2-app-l2-chrome.l2-page-clan-hall .l2-clans-main,
 body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-panel {

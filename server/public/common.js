@@ -2546,37 +2546,30 @@
 
     renderPlayerIdentity: function (opts) {
       opts = opts || {};
-      var wrap = document.createElement('span');
-      wrap.className = 'l2-player-identity';
-      if (opts.className) wrap.className += ' ' + String(opts.className);
-      var emblem = global.L2.createClanEmblemElement(
-        opts.clanEmblemId != null ? opts.clanEmblemId : opts.emblemId,
-        opts.emblemSize || 16
-      );
-      if (emblem) wrap.appendChild(emblem);
-      var nickClass =
-        'l2-player-identity__nick' +
-        (opts.nickClassName ? ' ' + String(opts.nickClassName) : '') +
-        (opts.className ? ' ' + String(opts.className) : '');
-      if (opts.pvpNickColor === 'pk') nickClass += ' l2-pvp-nick--pk';
-      else if (opts.pvpNickColor === 'aggressor') {
-        nickClass += ' l2-pvp-nick--aggressor';
+      try {
+        var wrap = document.createElement('span');
+        wrap.className = 'l2-player-identity';
+        if (opts.className) wrap.className += ' ' + String(opts.className);
+        var emblemId =
+          opts.clanEmblemId != null ? opts.clanEmblemId : opts.emblemId;
+        var emblem = global.L2.createClanEmblemElement(
+          emblemId,
+          opts.emblemSize || 16
+        );
+        if (emblem) wrap.appendChild(emblem);
+        var nick = global.L2.createPlayerProfileNickEl({
+          characterId: opts.characterId,
+          name: opts.name,
+          nickClassName: opts.nickClassName || '',
+          pvpNickColor: opts.pvpNickColor,
+        });
+        wrap.appendChild(nick);
+        return wrap;
+      } catch (_eIdentity) {
+        var fallback = document.createElement('span');
+        fallback.textContent = opts.name != null ? String(opts.name) : '—';
+        return fallback;
       }
-      var nick =
-        typeof global.L2.createPlayerProfileNickEl === 'function'
-          ? global.L2.createPlayerProfileNickEl({
-              characterId: opts.characterId,
-              name: opts.name,
-              className: nickClass,
-            })
-          : (function () {
-              var span = document.createElement('span');
-              span.className = nickClass;
-              span.textContent = opts.name != null ? String(opts.name) : '—';
-              return span;
-            })();
-      wrap.appendChild(nick);
-      return wrap;
     },
 
     mountClanEmblemPicker: function (container, opts) {
@@ -2618,35 +2611,31 @@
     createPlayerProfileNickEl: function (opts) {
       opts = opts || {};
       var label = opts.name != null ? String(opts.name) : '—';
-      var className = opts.className != null ? String(opts.className) : '';
       var id = opts.characterId != null ? String(opts.characterId).trim() : '';
       var name = opts.name != null ? String(opts.name).trim() : '';
-      var clanEmblemId =
-        opts.clanEmblemId != null ? opts.clanEmblemId : opts.emblemId;
-      if (typeof global.L2.renderPlayerIdentity === 'function') {
-        return global.L2.renderPlayerIdentity({
-          characterId: id,
-          name: name || label,
-          clanEmblemId: clanEmblemId,
-          className: className,
-          nickClassName: className,
-          emblemSize: opts.emblemSize || 16,
-          pvpNickColor: opts.pvpNickColor,
-        });
+      var nickClass = 'l2-player-identity__nick';
+      var extraClass =
+        opts.nickClassName != null
+          ? String(opts.nickClassName)
+          : opts.className != null
+            ? String(opts.className)
+            : '';
+      if (extraClass) nickClass += ' ' + extraClass;
+      if (opts.pvpNickColor === 'pk') nickClass += ' l2-pvp-nick--pk';
+      else if (opts.pvpNickColor === 'aggressor') {
+        nickClass += ' l2-pvp-nick--aggressor';
       }
       if (
         !global.L2.shouldLinkPlayerProfile() ||
         (!id && !name)
       ) {
         var span = document.createElement('span');
-        if (className) span.className = className;
+        span.className = nickClass;
         span.textContent = label;
         return span;
       }
       var link = document.createElement('a');
-      link.className = className
-        ? className + ' l2-player-profile-link'
-        : 'l2-player-profile-link';
+      link.className = nickClass + ' l2-player-profile-link';
       link.href = global.L2.playerProfileHref({ characterId: id, name: name });
       link.textContent = label;
       return link;

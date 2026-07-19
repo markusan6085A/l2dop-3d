@@ -99,19 +99,25 @@
         rank.textContent = String(r.rank);
 
         var name =
-          window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
-            ? L2.createPlayerProfileNickEl({
+          window.L2 && typeof L2.renderPlayerIdentity === 'function'
+            ? L2.renderPlayerIdentity({
                 characterId: r.characterId,
                 name: r.name,
                 clanEmblemId: r.clanEmblemId,
-                className: 'l2-ratings-row__name',
+                nickClassName: 'l2-ratings-row__name',
               })
-            : (function () {
-                var span = document.createElement('span');
-                span.className = 'l2-ratings-row__name';
-                span.textContent = String(r.name || '—');
-                return span;
-              })();
+            : window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
+              ? L2.createPlayerProfileNickEl({
+                  characterId: r.characterId,
+                  name: r.name,
+                  className: 'l2-ratings-row__name',
+                })
+              : (function () {
+                  var span = document.createElement('span');
+                  span.className = 'l2-ratings-row__name';
+                  span.textContent = String(r.name || '—');
+                  return span;
+                })();
 
         var prof = document.createElement('span');
         prof.className = 'l2-ratings-row__prof';

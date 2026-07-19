@@ -5,6 +5,8 @@
   var layoutDebug = false;
   var selectedEmblemId = null;
   var emblemSaveInFlight = false;
+  var emblemPickerMounted = false;
+  var emblemPickerOpen = false;
 
   function $(id) {
     return document.getElementById(id);
@@ -89,6 +91,57 @@
     if (panel) panel.classList.remove('l2-clan-manage-panel--loading');
   }
 
+  function renderCurrentEmblem(emblemId) {
+    var el = $('clan-manage-emblem-current');
+    if (!el) return;
+    el.textContent = '';
+    if (emblemId == null) {
+      el.textContent = 'Не обрана';
+      return;
+    }
+    if (window.L2 && typeof L2.createClanEmblemElement === 'function') {
+      var img = L2.createClanEmblemElement(emblemId, 32);
+      if (img) el.appendChild(img);
+    } else {
+      el.textContent = 'Емблема #' + emblemId;
+    }
+  }
+
+  function setEmblemPickerOpen(open) {
+    emblemPickerOpen = !!open;
+    var picker = $('clan-manage-emblem-picker');
+    var saveWrap = $('clan-manage-emblem-save-wrap');
+    if (picker) picker.hidden = !emblemPickerOpen;
+    if (saveWrap) saveWrap.hidden = !emblemPickerOpen;
+  }
+
+  function mountEmblemPickerIfNeeded() {
+    if (emblemPickerMounted) return;
+    var picker = $('clan-manage-emblem-picker');
+    if (!picker || !window.L2 || typeof L2.mountClanEmblemPicker !== 'function') return;
+    L2.mountClanEmblemPicker(picker, {
+      size: 40,
+      selectedId: selectedEmblemId,
+      onSelect: function (id) {
+        selectedEmblemId = id;
+      },
+    });
+    emblemPickerMounted = true;
+  }
+
+  function bindEmblemToggle() {
+    var toggleBtn = $('clan-manage-emblem-toggle');
+    if (!toggleBtn) return;
+    toggleBtn.addEventListener('click', function () {
+      if (!emblemPickerOpen) {
+        mountEmblemPickerIfNeeded();
+        setEmblemPickerOpen(true);
+        return;
+      }
+      setEmblemPickerOpen(false);
+    });
+  }
+
   async function loadClanMy(token) {
     var r = await fetch('/game/clans/my', {
       headers: { Authorization: 'Bearer ' + token },
@@ -139,6 +192,9 @@
         return;
       }
       if (data.clan) {
+        selectedEmblemId = data.clan.emblemId != null ? data.clan.emblemId : null;
+        renderCurrentEmblem(selectedEmblemId);
+        setEmblemPickerOpen(false);
         var nameEl = $('clan-manage-name');
         if (nameEl) {
           nameEl.textContent = '';
@@ -152,6 +208,16 @@
             );
           } else {
             nameEl.textContent = data.clan.name || '—';
+          }
+        }
+        if (window.L2 && typeof L2.fetchSnapshot === 'function') {
+          try {
+            var snap = await L2.fetchSnapshot();
+            if (snap && typeof L2.applyMutationSnapshot === 'function') {
+              L2.applyMutationSnapshot(snap);
+            }
+          } catch (_syncErr) {
+            /* HUD resync optional after emblem save */
           }
         }
       }
@@ -228,16 +294,9 @@
         }
       }
       selectedEmblemId = clan.emblemId != null ? clan.emblemId : null;
-      var picker = $('clan-manage-emblem-picker');
-      if (picker && typeof L2.mountClanEmblemPicker === 'function') {
-        L2.mountClanEmblemPicker(picker, {
-          size: 40,
-          selectedId: selectedEmblemId,
-          onSelect: function (id) {
-            selectedEmblemId = id;
-          },
-        });
-      }
+      renderCurrentEmblem(selectedEmblemId);
+      bindEmblemToggle();
+      setEmblemPickerOpen(false);
       var saveBtn = $('clan-manage-emblem-save');
       if (saveBtn) {
         saveBtn.addEventListener('click', function () {
