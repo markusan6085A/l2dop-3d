@@ -16,12 +16,13 @@ export type ClanHallView = {
   canBuy: boolean;
   costAdena: string;
   clanLevel: number;
+  activeBonus: ClanHallBuffRow | null;
   bonusTable: ClanHallBuffRow[];
 };
 
-/** Бонуси благословення Клан-холу за рівнем клану (1–8). */
+/** Бонуси благословення Клан-холу за рівнем клану (0 = нуль, 1–8 = ×75 / ×300 HP). */
 export function clanHallBuffForLevel(rawLevel: number): ClanHallBuffRow {
-  const level = Math.max(1, Math.min(CLAN_HALL_MAX_LEVEL, Math.trunc(rawLevel)));
+  const level = Math.max(0, Math.min(CLAN_HALL_MAX_LEVEL, Math.trunc(rawLevel)));
   const stat = level * 75;
   return {
     level,
@@ -42,11 +43,24 @@ export function clanHallBonusTable(): ClanHallBuffRow[] {
   return rows;
 }
 
-export function isClanHallLevelActive(
+/** Поточний рівень клану в таблиці (лише один активний рядок). */
+export function isClanHallLevelCurrent(
   rowLevel: number,
-  clanLevel: number
+  clanLevel: number,
+  hasBlessing: boolean
 ): boolean {
-  return rowLevel >= 1 && rowLevel <= Math.trunc(clanLevel);
+  const lv = Math.trunc(clanLevel);
+  return hasBlessing && lv >= 1 && rowLevel === lv;
+}
+
+/** Попередні досягнуті рівні в таблиці. */
+export function isClanHallLevelAchieved(
+  rowLevel: number,
+  clanLevel: number,
+  hasBlessing: boolean
+): boolean {
+  const lv = Math.trunc(clanLevel);
+  return hasBlessing && lv >= 1 && rowLevel >= 1 && rowLevel < lv;
 }
 
 /** Пасивний бонус поточного рівня клану (лише якщо куплено Клан-хол і level >= 1). */
@@ -71,11 +85,16 @@ export function buildClanHallView(
   clanLevel: number
 ): ClanHallView {
   const normalized = Math.max(0, Math.min(CLAN_HALL_MAX_LEVEL, Math.trunc(clanLevel)));
+  const activeBonus =
+    hasBlessing && normalized >= 1
+      ? clanHallBuffForLevel(normalized)
+      : null;
   return {
     hasBlessing,
     canBuy,
     costAdena: CLAN_HALL_BLESSING_COST_ADENA.toString(),
     clanLevel: normalized,
+    activeBonus,
     bonusTable: clanHallBonusTable(),
   };
 }

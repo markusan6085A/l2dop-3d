@@ -31,6 +31,38 @@
     return '+' + String(n);
   }
 
+  function renderStatus(hall) {
+    var levelEl = $('clan-hall-clan-level');
+    if (levelEl) {
+      levelEl.textContent = hall && hall.clanLevel != null ? String(hall.clanLevel) : '0';
+    }
+
+    var noneEl = $('clan-hall-active-none');
+    var statsEl = $('clan-hall-active-stats');
+    var bonus = hall && hall.activeBonus ? hall.activeBonus : null;
+    var showStats =
+      !!hall &&
+      hall.hasBlessing &&
+      Number(hall.clanLevel) >= 1 &&
+      bonus &&
+      Number(bonus.level) >= 1;
+
+    if (noneEl) noneEl.hidden = showStats;
+    if (statsEl) statsEl.hidden = !showStats;
+    if (!showStats || !bonus) return;
+
+    var patk = $('clan-hall-active-patk');
+    var matk = $('clan-hall-active-matk');
+    var pdef = $('clan-hall-active-pdef');
+    var mdef = $('clan-hall-active-mdef');
+    var hp = $('clan-hall-active-hp');
+    if (patk) patk.textContent = fmtBonus(bonus.pAtk);
+    if (matk) matk.textContent = fmtBonus(bonus.mAtk);
+    if (pdef) pdef.textContent = fmtBonus(bonus.pDef);
+    if (mdef) mdef.textContent = fmtBonus(bonus.mDef);
+    if (hp) hp.textContent = fmtBonus(bonus.maxHp);
+  }
+
   function renderBonusTable(hall) {
     var body = $('clan-hall-stats-body');
     if (!body || !hall || !Array.isArray(hall.bonusTable)) {
@@ -40,10 +72,16 @@
     var clanLevel = hall.clanLevel != null ? Number(hall.clanLevel) : 0;
     var html = '';
     hall.bonusTable.forEach(function (row) {
-      var active = hall.hasBlessing && row.level <= clanLevel;
+      var active =
+        hall.hasBlessing && clanLevel >= 1 && row.level === clanLevel;
+      var achieved =
+        hall.hasBlessing && clanLevel >= 1 && row.level >= 1 && row.level < clanLevel;
+      var rowClass = 'l2-clan-hall-stats__row';
+      if (active) rowClass += ' l2-clan-hall-stats__row--active';
+      else if (achieved) rowClass += ' l2-clan-hall-stats__row--achieved';
       html +=
-        '<tr class="l2-clan-hall-stats__row' +
-        (active ? ' l2-clan-hall-stats__row--active' : '') +
+        '<tr class="' +
+        rowClass +
         '">' +
         '<td>' +
         String(row.level) +
@@ -81,6 +119,7 @@
     var ownedWrap = $('clan-hall-owned-wrap');
     if (!hall) return;
 
+    renderStatus(hall);
     renderBuyLabel(hall);
 
     if (hall.hasBlessing) {

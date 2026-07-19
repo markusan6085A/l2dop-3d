@@ -851,6 +851,36 @@ body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-desc {
   color: #9a8468;
 }
 
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-status {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e8e0d4;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-status-level {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-active-title {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-active-none {
+  margin: 0;
+  color: #9a9288;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-active-stats {
+  margin: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-active-line {
+  margin: 0 0 2px;
+}
+
 body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-buy {
   display: flex;
   align-items: center;
@@ -916,7 +946,11 @@ body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats__row--active td {
   font-weight: 600;
 }
 
-body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats__row:not(.l2-clan-hall-stats__row--active) td {
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats__row--achieved td {
+  color: #a8b8a0;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-hall .l2-clan-hall-stats__row:not(.l2-clan-hall-stats__row--active):not(.l2-clan-hall-stats__row--achieved) td {
   color: #7a7268;
 }
 
