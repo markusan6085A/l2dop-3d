@@ -478,6 +478,7 @@
     el.className = 'l2-battle-victory-notify__loot';
     if (partyReward && partyReward.shared) {
       el.textContent =
+        tr('battle_victory_dropped', 'Випало: ') +
         '+' +
         String(partyReward.adenaGain) +
         tr('battle_loot_adena', ' аден') +
@@ -3260,6 +3261,27 @@
       showVictoryScreen(victory, partyReward);
     }
 
+    function syncVictoryRowSeparators(isPvpVic) {
+      var loot = $('battle-victory-lootline');
+      var summarySep = document.querySelector(
+        '.battle-victory-summary-row .battle-victory-row-separator'
+      );
+      if (summarySep) {
+        summarySep.hidden = !!(
+          isPvpVic ||
+          !loot ||
+          !String(loot.textContent || '').trim()
+        );
+      }
+      var hunt = $('battle-victory-hunt');
+      var actionsSep = document.querySelector(
+        '.battle-victory-actions-row .battle-victory-row-separator'
+      );
+      if (actionsSep) {
+        actionsSep.hidden = !!(isPvpVic || !hunt || hunt.hidden);
+      }
+    }
+
     function showVictoryScreen(victory, partyReward) {
       setMobVictoryUiState(true);
       lastVictorySummary = victory || null;
@@ -3286,7 +3308,7 @@
       } else if (shoutEl) {
         shoutEl.textContent = tr(
           'battle_victory_shout',
-          'ВИ ПЕРЕМОГЛИ МОНСТРА!'
+          'Ти переміг монстра!'
         );
       }
       var lu = $('battle-victory-levelup');
@@ -3346,6 +3368,7 @@
           partySplitPvp.textContent = '';
         }
       }
+      syncVictoryRowSeparators(!!isPvpVic);
       var skillsBox = $('battle-skills');
       if (skillsBox) skillsBox.classList.add('l2-battle-skills--victory-locked');
       refreshUI();

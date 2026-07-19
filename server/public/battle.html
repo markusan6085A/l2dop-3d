@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260719victoryChromeHide1" />
+    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260719victoryCompactRows1" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
   </head>
@@ -142,19 +142,20 @@
                 aria-label="Перемога"
               >
                 <div class="l2-battle-victory-notify">
-                  <div class="l2-battle-victory-notify__title-row">
-                    <span class="l2-battle-victory-notify__shout"
-                      >ВИ ПЕРЕМОГЛИ МОНСТРА!</span
-                    >
-                  </div>
                   <p
                     id="battle-victory-party-split"
                     class="l2-battle-victory-notify__party-split"
                     hidden
                   ></p>
                   <p class="l2-battle-victory-notify__levelup" id="battle-victory-levelup" hidden></p>
-                  <p class="l2-battle-victory-notify__loot" id="battle-victory-lootline"></p>
-                  <div class="l2-battle-victory-notify__links">
+                  <div class="battle-victory-summary-row">
+                    <span class="l2-battle-victory-notify__shout"
+                      >Ти переміг монстра!</span
+                    >
+                    <span class="battle-victory-row-separator" aria-hidden="true">|</span>
+                    <span class="l2-battle-victory-notify__loot" id="battle-victory-lootline"></span>
+                  </div>
+                  <div class="battle-victory-actions-row">
                     <button
                       type="button"
                       class="l2-battle-victory-link l2-battle-victory-link--primary"
@@ -163,6 +164,7 @@
                     >
                       Продовжити
                     </button>
+                    <span class="battle-victory-row-separator" aria-hidden="true">|</span>
                     <button
                       type="button"
                       class="l2-battle-victory-link l2-battle-victory-link--muted"
@@ -251,6 +253,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/battle-hotbar.js?v=20260716atkCd1"></script>
-    <script src="/battle.js?v=20260719victoryChromeHide1"></script>
+    <script src="/battle.js?v=20260719victoryCompactRows1"></script>
   </body>
 </html>

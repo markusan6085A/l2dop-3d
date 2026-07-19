@@ -309,8 +309,36 @@
   margin: 0;
 }
 
+.battle-victory-summary-row,
+.battle-victory-actions-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.battle-victory-summary-row {
+  margin: 0 0 6px;
+}
+
+.battle-victory-actions-row {
+  margin: 0;
+}
+
+.battle-victory-row-separator {
+  flex: 0 0 auto;
+  margin: 0 8px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: #8a7860;
+  opacity: 0.85;
+  user-select: none;
+}
+
 .l2-battle-victory-notify__party-split {
-  margin: 4px 0 2px;
+  margin: 0 0 4px;
   padding: 0 4px;
   font-size: 11px;
   line-height: 1.35;
@@ -318,23 +346,22 @@
   color: #c8b890;
 }
 
-.l2-battle-victory-inline .l2-battle-victory-notify__title-row {
-  justify-content: center;
-}
-
-.l2-battle-victory-inline .l2-battle-victory-notify__shout {
-  text-align: center;
-}
-
-.l2-battle-victory-inline .l2-battle-victory-notify__levelup,
+.l2-battle-victory-inline .l2-battle-victory-notify__shout,
 .l2-battle-victory-inline .l2-battle-victory-notify__loot {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
   text-align: center;
 }
 
-.l2-battle-victory-inline .l2-battle-victory-notify__links {
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
+.l2-battle-victory-inline .l2-battle-victory-notify__levelup {
+  margin: 0 0 4px;
+  text-align: center;
+}
+
+.l2-battle-victory-inline .l2-battle-victory-notify__loot {
+  text-align: left;
+  color: #ffffff;
 }
 
 .l2-battle-skills--victory-locked {
@@ -343,9 +370,20 @@
 }
 
 @media (max-width: 320px) {
+  .battle-victory-summary-row,
+  .battle-victory-actions-row {
+    padding: 0 2px;
+  }
+
+  .battle-victory-row-separator {
+    margin: 0 5px;
+    font-size: 11px;
+  }
+
   .l2-battle-victory-inline .l2-battle-victory-notify__loot,
   .l2-battle-victory-inline .l2-battle-victory-notify__party-split,
-  .l2-battle-victory-inline .l2-battle-victory-notify__levelup {
+  .l2-battle-victory-inline .l2-battle-victory-notify__levelup,
+  .l2-battle-victory-inline .l2-battle-victory-notify__shout {
     font-size: 10px;
     line-height: 1.3;
     word-break: break-word;
@@ -354,8 +392,6 @@
   .l2-battle-victory-inline .l2-battle-victory-link {
     min-width: 0;
     max-width: 100%;
-    padding-left: 8px;
-    padding-right: 8px;
     font-size: 10px;
   }
 }
