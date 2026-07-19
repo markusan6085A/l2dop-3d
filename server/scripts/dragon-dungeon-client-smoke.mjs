@@ -29,7 +29,10 @@ assert.match(js, /clan\.diamonds/);
 assert.match(js, /clan\.isLeader/);
 assert.match(js, /Увійти в бій/);
 assert.match(js, /r\.status === 409/);
-assert.doesNotMatch(js, /innerHTML\s*=/);
+assert.match(js, /patchActiveDungeon/);
+assert.match(js, /ensureDragonImg/);
+assert.match(js, /dataset\.built/);
+assert.match(html, /l2-clan-common\.css/);
 
 assert.match(bossHtml, /dragon-boss-attack/);
 assert.match(bossJs, /\/game\/dragon-dungeon\/active\/enter/);

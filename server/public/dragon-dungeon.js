@@ -117,75 +117,135 @@
     parent.appendChild(p);
   }
 
+  function ensureDragonImg(img) {
+    if (!img) return;
+    img.width = 170;
+    img.height = 170;
+    img.decoding = 'async';
+    if (!img.getAttribute('loading')) img.loading = 'lazy';
+  }
+
+  function patchActiveDungeon(view) {
+    var el = $('dragon-dungeon-active');
+    if (!el || el.dataset.built !== '1') return;
+    var d = view.activeDungeon;
+    if (!d) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    var img = el.querySelector('.l2-dragon-card__img');
+    if (img && img.src !== d.imageUrl) {
+      img.src = d.imageUrl;
+      img.alt = d.nameUk;
+    }
+    var hp = $('dragon-active-hp');
+    if (hp) {
+      hp.textContent =
+        'HP: ' + fmtNum(d.currentHp) + ' / ' + fmtNum(d.maxHp) + ' (' + d.hpPercent + '%)';
+    }
+    var fill = el.querySelector('.l2-dragon-hp-bar__fill');
+    if (fill) fill.style.width = Math.max(0, Math.min(100, d.hpPercent)) + '%';
+    var timer = $('dragon-active-timer');
+    if (timer) timer.textContent = 'До завершення: ' + fmtTime(d.remainingSeconds);
+    var cd = $('dragon-active-cooldown');
+    var mc = view.myContribution;
+    if (cd) {
+      if (mc && mc.cooldownRemainingSeconds > 0 && !mc.inBattle) {
+        cd.hidden = false;
+        cd.textContent = 'Кулдаун входу: ' + fmtTime(mc.cooldownRemainingSeconds);
+      } else {
+        cd.hidden = true;
+      }
+    }
+    var enter = $('dragon-active-enter');
+    if (enter) {
+      if (mc && (mc.canEnter || mc.inBattle)) {
+        enter.hidden = false;
+        enter.href = '/dragon-boss.html?dungeonId=' + encodeURIComponent(d.id);
+        enter.textContent = mc.inBattle ? 'Продовжити бій' : 'Увійти в бій';
+      } else {
+        enter.hidden = true;
+      }
+    }
+  }
+
   function renderActiveBlock(view) {
     var el = $('dragon-dungeon-active');
     if (!el) return;
     var d = view.activeDungeon;
     if (!d) {
       el.hidden = true;
-      el.textContent = '';
-      el.className = 'l2-dragon-dungeon-active';
+      el.dataset.built = '';
       return;
     }
     el.hidden = false;
+
+    if (el.dataset.built === '1') {
+      patchActiveDungeon(view);
+      return;
+    }
+
     el.textContent = '';
     el.className = 'l2-dragon-dungeon-active l2-dragon-card--row';
+    el.dataset.built = '1';
+
     var imgWrap = document.createElement('div');
     imgWrap.className = 'l2-dragon-card__img-wrap';
     var img = document.createElement('img');
     img.className = 'l2-dragon-card__img';
     img.src = d.imageUrl;
     img.alt = d.nameUk;
+    ensureDragonImg(img);
     imgWrap.appendChild(img);
     el.appendChild(imgWrap);
+
     var body = document.createElement('div');
     body.className = 'l2-dragon-card__body';
     el.appendChild(body);
+
     var name = document.createElement('p');
     name.className = 'l2-dragon-card__name';
     name.textContent = d.nameUk;
     body.appendChild(name);
+
     var sub = document.createElement('p');
     sub.className = 'l2-dragon-card__subtitle';
     sub.textContent = d.nameEn + ' — ' + d.titleEn;
     body.appendChild(sub);
+
     var hp = document.createElement('p');
     hp.className = 'l2-dragon-card__hp';
-    hp.textContent =
-      'HP: ' + fmtNum(d.currentHp) + ' / ' + fmtNum(d.maxHp) + ' (' + d.hpPercent + '%)';
+    hp.id = 'dragon-active-hp';
     body.appendChild(hp);
+
     var bar = document.createElement('div');
     bar.className = 'l2-dragon-hp-bar';
     var fill = document.createElement('div');
     fill.className = 'l2-dragon-hp-bar__fill';
-    fill.style.width = Math.max(0, Math.min(100, d.hpPercent)) + '%';
     bar.appendChild(fill);
     body.appendChild(bar);
+
     var timer = document.createElement('p');
-    timer.className = 'l2-dragon-card__timer';
-    timer.textContent = 'До завершення: ' + fmtTime(d.remainingSeconds);
+    timer.className = 'l2-dragon-card__timer l2-clan-timer';
+    timer.id = 'dragon-active-timer';
     body.appendChild(timer);
+
     renderReward(body, d.reward);
-    var mc = view.myContribution;
-    if (mc && mc.cooldownRemainingSeconds > 0 && !mc.inBattle) {
-      var cd = document.createElement('p');
-      cd.className = 'l2-dragon-card__missing';
-      cd.textContent = 'Кулдаун входу: ' + fmtTime(mc.cooldownRemainingSeconds);
-      body.appendChild(cd);
-    }
-    if (mc && mc.canEnter) {
-      var enter = document.createElement('a');
-      enter.className = 'l2-dragon-card__enter';
-      enter.href = '/dragon-boss.html?dungeonId=' + encodeURIComponent(d.id);
-      enter.textContent = 'Увійти в бій';
-      body.appendChild(enter);
-    } else if (mc && mc.inBattle) {
-      var resume = document.createElement('a');
-      resume.className = 'l2-dragon-card__enter';
-      resume.href = '/dragon-boss.html?dungeonId=' + encodeURIComponent(d.id);
-      resume.textContent = 'Продовжити бій';
-      body.appendChild(resume);
-    }
+
+    var cd = document.createElement('p');
+    cd.className = 'l2-dragon-card__missing';
+    cd.id = 'dragon-active-cooldown';
+    cd.hidden = true;
+    body.appendChild(cd);
+
+    var enter = document.createElement('a');
+    enter.className = 'l2-dragon-card__enter';
+    enter.id = 'dragon-active-enter';
+    enter.hidden = true;
+    body.appendChild(enter);
+
+    patchActiveDungeon(view);
   }
 
   function renderBossCards(view) {
@@ -208,7 +268,7 @@
         img.className = 'l2-dragon-card__img';
         img.src = boss.imageUrl;
         img.alt = boss.nameUk;
-        img.loading = 'lazy';
+        ensureDragonImg(img);
         imgWrap.appendChild(img);
         card.appendChild(imgWrap);
         var body = document.createElement('div');

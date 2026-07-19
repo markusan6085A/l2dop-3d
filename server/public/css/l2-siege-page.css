@@ -48,7 +48,20 @@
 }
 
 .l2-siege-body {
+  min-height: 8rem;
   min-width: 0;
+}
+
+.l2-siege-line,
+.l2-siege-msg,
+#siege-countdown-line {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.l2-siege-pvp-attack-btn {
+  min-height: 1.75rem;
+  min-width: 6.5rem;
 }
 
 .l2-siege-line {

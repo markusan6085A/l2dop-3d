@@ -179,7 +179,7 @@
       return;
     }
     if (noClan) noClan.hidden = true;
-    setText($('clan-tasks-clan-name'), view.clan.name);
+    setText($('clan-tasks-clan-name'), view.clan.name || '—');
     setText($('clan-tasks-diamonds'), fmtNum(view.clan.diamonds));
   }
 
@@ -269,129 +269,252 @@
     return p;
   }
 
+  function setBusyTaskButton(btn, busy) {
+    if (!btn) return;
+    btn.disabled = !!busy;
+    btn.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+
+  function activeTasksKey(tasks) {
+    return (tasks || [])
+      .map(function (task) {
+        return String(task.id || '');
+      })
+      .join(',');
+  }
+
+  function definitionIdsKey(defs) {
+    return (defs || [])
+      .map(function (def) {
+        return String(def.id || '');
+      })
+      .join(',');
+  }
+
+  function patchActiveTaskCard(card, task) {
+    if (!card || !task) return;
+    var fill = card.querySelector('.l2-clan-tasks-progress-bar__fill');
+    if (fill) {
+      fill.style.width = Math.min(100, Number(task.progressPercent) || 0) + '%';
+    }
+    var progressLine = card.querySelector('[data-task-progress-line]');
+    if (progressLine) {
+      progressLine.textContent = '';
+      appendAccentSpan(progressLine, 'Прогрес: ');
+      appendNormalText(
+        progressLine,
+        fmtNum(task.progress) + ' / ' + fmtNum(task.target) + ' '
+      );
+      appendAccentSpan(progressLine, progressUnitLabel(task.taskType));
+    }
+    card.querySelectorAll('[data-task-help-btn]').forEach(function (btn) {
+      setBusyTaskButton(btn, state.helpInFlight);
+      btn.disabled = state.helpInFlight || !task.canHelp;
+    });
+    card.querySelectorAll('[data-task-claim-btn]').forEach(function (btn) {
+      setBusyTaskButton(btn, state.claimInFlight);
+      btn.disabled = state.claimInFlight || !task.canClaim;
+    });
+    card.querySelectorAll('[data-task-cancel-btn]').forEach(function (btn) {
+      setBusyTaskButton(btn, state.cancelInFlight);
+      btn.disabled = state.cancelInFlight || !task.canCancel;
+    });
+  }
+
+  function buildActiveTaskCard(task, idx) {
+    var card = document.createElement('div');
+    card.className = 'l2-clan-tasks-card';
+    card.dataset.taskId = String(task.id || '');
+
+    appendText(card, 'l2-clan-tasks-card__name', task.name);
+    appendPlayerLabelLine(card, 'Виконує: ', task.owner);
+    appendPlayerLabelLine(card, 'Допомагає: ', task.helper, 'немає');
+
+    var progressLine = document.createElement('p');
+    progressLine.dataset.taskProgressLine = '1';
+    appendAccentSpan(progressLine, 'Прогрес: ');
+    appendNormalText(
+      progressLine,
+      fmtNum(task.progress) + ' / ' + fmtNum(task.target) + ' '
+    );
+    appendAccentSpan(progressLine, progressUnitLabel(task.taskType));
+    card.appendChild(progressLine);
+
+    var bar = document.createElement('div');
+    bar.className = 'l2-clan-tasks-progress-bar';
+    var fill = document.createElement('div');
+    fill.className = 'l2-clan-tasks-progress-bar__fill';
+    fill.style.width = Math.min(100, Number(task.progressPercent) || 0) + '%';
+    bar.appendChild(fill);
+    card.appendChild(bar);
+
+    appendPersonalRewardLine(card, 'Особиста нагорода власнику: ', task.personalReward);
+    appendClanRewardLine(card, task.clanRewardDiamonds);
+
+    if (task.contributions && task.contributions.length) {
+      var contrib = document.createElement('div');
+      contrib.className = 'l2-clan-tasks-contrib';
+      var contribTitle = document.createElement('p');
+      appendMetaSpan(contribTitle, 'Внесок:');
+      contrib.appendChild(contribTitle);
+      task.contributions.forEach(function (c) {
+        appendContributionLine(contrib, c);
+      });
+      card.appendChild(contrib);
+    }
+
+    var actions = document.createElement('div');
+    actions.className = 'l2-clan-tasks-actions l2-clan-actions';
+
+    if (task.canHelp) {
+      var helpBtn = document.createElement('button');
+      helpBtn.type = 'button';
+      helpBtn.dataset.taskHelpBtn = '1';
+      helpBtn.textContent = 'Допомогти';
+      helpBtn.disabled = state.helpInFlight;
+      helpBtn.addEventListener('click', function () {
+        postHelp(task.id);
+      });
+      actions.appendChild(helpBtn);
+    }
+
+    if (task.canClaim) {
+      var claimBtn = document.createElement('button');
+      claimBtn.type = 'button';
+      claimBtn.dataset.taskClaimBtn = '1';
+      claimBtn.textContent = 'Завершити завдання';
+      claimBtn.disabled = state.claimInFlight;
+      claimBtn.addEventListener('click', function () {
+        postClaim(task);
+      });
+      actions.appendChild(claimBtn);
+    }
+
+    if (task.canCancel) {
+      var cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.dataset.taskCancelBtn = '1';
+      cancelBtn.textContent = 'Скасувати завдання';
+      cancelBtn.disabled = state.cancelInFlight;
+      cancelBtn.addEventListener('click', function () {
+        postCancel(task);
+      });
+      actions.appendChild(cancelBtn);
+    }
+
+    card.appendChild(actions);
+    return card;
+  }
+
   function renderActiveTasks(view) {
     var wrap = $('clan-tasks-active-list');
+    var emptyEl = $('clan-tasks-active-empty');
     if (!wrap) return;
-    wrap.textContent = '';
-    if (!view.activeClanTasks || !view.activeClanTasks.length) {
+
+    var tasks = view.activeClanTasks || [];
+    var key = activeTasksKey(tasks);
+
+    if (!tasks.length) {
       wrap.hidden = true;
+      wrap.textContent = '';
+      wrap.dataset.tasksKey = '';
+      wrap.dataset.built = '';
+      if (emptyEl) emptyEl.hidden = false;
       return;
     }
+
+    if (emptyEl) emptyEl.hidden = true;
     wrap.hidden = false;
+
+    if (wrap.dataset.built === '1' && wrap.dataset.tasksKey === key) {
+      tasks.forEach(function (task) {
+        patchActiveTaskCard(
+          wrap.querySelector('[data-task-id="' + String(task.id || '') + '"]'),
+          task
+        );
+      });
+      return;
+    }
+
+    wrap.textContent = '';
+    wrap.dataset.built = '1';
+    wrap.dataset.tasksKey = key;
     appendText(wrap, 'l2-clan-tasks-active-title', 'Активні завдання клану');
 
-    view.activeClanTasks.forEach(function (task, idx) {
+    tasks.forEach(function (task, idx) {
       if (idx > 0) appendClanTasksDivider(wrap);
-      var card = document.createElement('div');
-      card.className = 'l2-clan-tasks-card';
-
-      appendText(card, 'l2-clan-tasks-card__name', task.name);
-      appendPlayerLabelLine(card, 'Виконує: ', task.owner);
-      appendPlayerLabelLine(card, 'Допомагає: ', task.helper, 'немає');
-      appendProgressLine(card, task);
-
-      var bar = document.createElement('div');
-      bar.className = 'l2-clan-tasks-progress-bar';
-      var fill = document.createElement('div');
-      fill.className = 'l2-clan-tasks-progress-bar__fill';
-      fill.style.width = Math.min(100, Number(task.progressPercent) || 0) + '%';
-      bar.appendChild(fill);
-      card.appendChild(bar);
-
-      appendPersonalRewardLine(
-        card,
-        'Особиста нагорода власнику: ',
-        task.personalReward
-      );
-      appendClanRewardLine(card, task.clanRewardDiamonds);
-
-      if (task.contributions && task.contributions.length) {
-        var contrib = document.createElement('div');
-        contrib.className = 'l2-clan-tasks-contrib';
-        var contribTitle = document.createElement('p');
-        appendMetaSpan(contribTitle, 'Внесок:');
-        contrib.appendChild(contribTitle);
-        task.contributions.forEach(function (c) {
-          appendContributionLine(contrib, c);
-        });
-        card.appendChild(contrib);
-      }
-
-      var actions = document.createElement('div');
-      actions.className = 'l2-clan-tasks-actions';
-
-      if (task.canHelp) {
-        var helpBtn = document.createElement('button');
-        helpBtn.type = 'button';
-        helpBtn.textContent = state.helpInFlight ? 'Зачекайте…' : 'Допомогти';
-        helpBtn.disabled = state.helpInFlight;
-        helpBtn.addEventListener('click', function () {
-          postHelp(task.id);
-        });
-        actions.appendChild(helpBtn);
-      }
-
-      if (task.canClaim) {
-        var claimBtn = document.createElement('button');
-        claimBtn.type = 'button';
-        claimBtn.textContent = state.claimInFlight ? 'Зачекайте…' : 'Завершити завдання';
-        claimBtn.disabled = state.claimInFlight;
-        claimBtn.addEventListener('click', function () {
-          postClaim(task);
-        });
-        actions.appendChild(claimBtn);
-      }
-
-      if (task.canCancel) {
-        var cancelBtn = document.createElement('button');
-        cancelBtn.type = 'button';
-        cancelBtn.textContent = state.cancelInFlight ? 'Зачекайте…' : 'Скасувати завдання';
-        cancelBtn.disabled = state.cancelInFlight;
-        cancelBtn.addEventListener('click', function () {
-          postCancel(task);
-        });
-        actions.appendChild(cancelBtn);
-      }
-
-      card.appendChild(actions);
-      wrap.appendChild(card);
+      wrap.appendChild(buildActiveTaskCard(task, idx));
     });
+  }
+
+  function syncDefinitionCard(card, def) {
+    if (!card || !def) return;
+    var btn = card.querySelector('[data-task-take-btn]');
+    if (btn) {
+      btn.disabled = !def.canTake || state.takeInFlight;
+      setBusyTaskButton(btn, state.takeInFlight && state.pendingTaskType === def.id);
+    }
+    var note = card.querySelector('.l2-clan-tasks-busy-note');
+    var showNote = !def.canTake && def.blockedReason === 'participant_busy';
+    if (note) note.hidden = !showNote;
+  }
+
+  function buildDefinitionCard(def, hadActive, idx) {
+    var card = document.createElement('div');
+    card.className = 'l2-clan-tasks-card';
+    card.dataset.taskDefId = String(def.id || '');
+    appendText(card, 'l2-clan-tasks-card__name', def.name);
+    appendDescLine(card, 'l2-clan-tasks-card__desc', def.description);
+    appendPersonalRewardLine(card, 'Особиста нагорода: ', def.personalReward);
+    appendClanRewardLine(card, def.clanRewardDiamonds);
+
+    var actions = document.createElement('div');
+    actions.className = 'l2-clan-tasks-actions l2-clan-actions';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.taskTakeBtn = '1';
+    btn.textContent = 'Взяти завдання';
+    btn.disabled = !def.canTake || state.takeInFlight;
+    btn.addEventListener('click', function () {
+      postTake(def.id);
+    });
+    actions.appendChild(btn);
+    card.appendChild(actions);
+
+    if (!def.canTake && def.blockedReason === 'participant_busy') {
+      var note = document.createElement('p');
+      note.className = 'l2-clan-tasks-busy-note';
+      note.textContent = 'Ви вже виконуєте інше завдання.';
+      card.appendChild(note);
+    }
+    return card;
   }
 
   function renderDefinitions(view) {
     var wrap = $('clan-tasks-definitions');
     if (!wrap) return;
-    wrap.textContent = '';
 
+    var defs = view.taskDefinitions || [];
+    var key = definitionIdsKey(defs);
     var hadActive = !!(view.activeClanTasks && view.activeClanTasks.length);
 
-    (view.taskDefinitions || []).forEach(function (def, idx) {
-      if (idx > 0 || hadActive) appendClanTasksDivider(wrap);
-      var card = document.createElement('div');
-      card.className = 'l2-clan-tasks-card';
-      appendText(card, 'l2-clan-tasks-card__name', def.name);
-      appendDescLine(card, 'l2-clan-tasks-card__desc', def.description);
-      appendPersonalRewardLine(card, 'Особиста нагорода: ', def.personalReward);
-      appendClanRewardLine(card, def.clanRewardDiamonds);
-
-      var actions = document.createElement('div');
-      actions.className = 'l2-clan-tasks-actions';
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent =
-        state.takeInFlight && state.pendingTaskType === def.id
-          ? 'Зачекайте…'
-          : 'Взяти завдання';
-      btn.disabled = !def.canTake || state.takeInFlight;
-      if (!def.canTake && def.blockedReason === 'participant_busy') {
-        appendText(card, 'l2-clan-tasks-busy-note', 'Ви вже виконуєте інше завдання.');
-      }
-      btn.addEventListener('click', function () {
-        postTake(def.id);
+    if (wrap.dataset.built === '1' && wrap.dataset.defKey === key) {
+      defs.forEach(function (def) {
+        syncDefinitionCard(
+          wrap.querySelector('[data-task-def-id="' + String(def.id || '') + '"]'),
+          def
+        );
       });
-      actions.appendChild(btn);
-      card.appendChild(actions);
-      wrap.appendChild(card);
+      return;
+    }
+
+    wrap.textContent = '';
+    wrap.dataset.built = '1';
+    wrap.dataset.defKey = key;
+
+    defs.forEach(function (def, idx) {
+      if (idx > 0 || hadActive) appendClanTasksDivider(wrap);
+      wrap.appendChild(buildDefinitionCard(def, hadActive, idx));
     });
   }
 

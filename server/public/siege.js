@@ -20,6 +20,8 @@
   var countdownTimer = null;
   var startsAtRefreshDone = false;
   var lastOwnDamage = null;
+  var bodyBuiltState = '';
+  var bodyParticipantsFp = '';
 
   function $(id) {
     return document.getElementById(id);
@@ -236,7 +238,8 @@
     var attackBtn = document.createElement('button');
     attackBtn.type = 'button';
     attackBtn.className = 'l2-siege-pvp-attack-btn';
-    attackBtn.textContent = pvpInFlight ? '[Зачекайте…]' : '[Атакувати]';
+    attackBtn.textContent = '[Атакувати]';
+    attackBtn.setAttribute('aria-busy', pvpInFlight ? 'true' : 'false');
     attackBtn.dataset.siegePvpAttack = row.characterId;
     if (pvpInFlight || !stateData || !stateData.canStartSiegePvp) {
       attackBtn.disabled = true;
@@ -282,12 +285,13 @@
     return p;
   }
 
-  function addStatLine(parent, label, value, valueClass) {
+  function addStatLine(parent, label, value, valueClass, valueId) {
     var p = document.createElement('p');
     p.className = 'l2-siege-line';
     p.appendChild(document.createTextNode(label));
     var val = document.createElement('span');
     val.className = valueClass;
+    if (valueId) val.id = valueId;
     val.textContent = value;
     p.appendChild(val);
     parent.appendChild(p);
@@ -386,6 +390,346 @@
     parent.appendChild(ul);
   }
 
+  function participantsFp(data) {
+    if (window.L2 && L2.clanUi && typeof L2.clanUi.participantsFingerprint === 'function') {
+      return L2.clanUi.participantsFingerprint(data && data.participants);
+    }
+    return '';
+  }
+
+  function updateIncomingDamageLine(data) {
+    var line = $('siege-incoming-damage-line');
+    if (!line) return;
+    var notice = data && data.incomingDamageNotice;
+    if (!notice || !notice.attackerName || !(Number(notice.damage) > 0)) {
+      line.hidden = true;
+      return;
+    }
+    line.hidden = false;
+    line.textContent =
+      String(notice.attackerName) +
+      ' наніс вам ' +
+      String(Math.floor(Number(notice.damage))) +
+      ' урону.';
+  }
+
+  function updateWallAttackUi(data) {
+    var attackWrap = $('siege-attack-wrap');
+    var blockedEl = $('siege-wall-blocked-msg');
+    if (!attackWrap || !blockedEl) return;
+
+    if (data.canAttackWall) {
+      blockedEl.hidden = true;
+      attackWrap.hidden = false;
+      var link = $('siege-attack-link');
+      if (!link) {
+        attackWrap.textContent = '';
+        link = document.createElement('a');
+        link.className = 'l2-siege-link' + (attackInFlight ? ' l2-siege-link--disabled' : '');
+        link.href = '#';
+        link.id = 'siege-attack-link';
+        attackWrap.appendChild(link);
+      }
+      link.textContent =
+        'Ударити стіну [' + formatNum(data.wallHp) + '/' + formatNum(data.wallMaxHp) + ']';
+      link.classList.toggle('l2-siege-link--disabled', attackInFlight);
+    } else {
+      attackWrap.hidden = true;
+      var blocked = blockedWallMessage(data.wallAttackBlockReason);
+      if (blocked) {
+        blockedEl.hidden = false;
+        blockedEl.textContent = blocked;
+      } else {
+        blockedEl.hidden = true;
+      }
+    }
+  }
+
+  function renderTopClansInto(parent, list) {
+    if (!parent) return;
+    parent.textContent = '';
+    if (!list || !list.length) return;
+    addLine(parent, 'Топ кланів:');
+    var ul = document.createElement('ul');
+    ul.className = 'l2-siege-top';
+    ul.id = 'siege-top-clans-list';
+    list.forEach(function (row) {
+      var li = document.createElement('li');
+      li.dataset.clanId = String(row.clanId || row.clanName || '');
+      li.textContent = String(row.place) + '. ';
+      if (window.L2 && typeof L2.renderClanIdentity === 'function') {
+        li.appendChild(
+          L2.renderClanIdentity({
+            name: row.clanName,
+            emblemId: row.clanEmblemId,
+            emblemSize: 16,
+          })
+        );
+      } else {
+        li.appendChild(document.createTextNode(String(row.clanName)));
+      }
+      li.appendChild(document.createTextNode(' — ' + formatNum(row.totalDamage)));
+      ul.appendChild(li);
+    });
+    parent.appendChild(ul);
+  }
+
+  function patchTopClans(list) {
+    var ul = $('siege-top-clans-list');
+    if (!list || !list.length) {
+      var root = $('siege-top-clans-root');
+      if (root) root.textContent = '';
+      return;
+    }
+    if (!ul) {
+      renderTopClansInto($('siege-top-clans-root'), list);
+      return;
+    }
+    list.forEach(function (row) {
+      var key = String(row.clanId || row.clanName || '');
+      var li = ul.querySelector('li[data-clan-id="' + key + '"]');
+      if (!li) {
+        renderTopClansInto($('siege-top-clans-root'), list);
+        return;
+      }
+      var parts = li.childNodes;
+      if (parts.length >= 3) {
+        parts[parts.length - 1].textContent = ' — ' + formatNum(row.totalDamage);
+      }
+    });
+  }
+
+  function renderParticipantsInto(parent, data) {
+    if (!parent) return;
+    parent.textContent = '';
+    var parts = data && data.participants;
+    var nearbyLine = $('siege-nearby-line');
+    if (!parts || data.state !== 'active') {
+      if (nearbyLine) nearbyLine.hidden = true;
+      return;
+    }
+    var hasAny =
+      (parts.allies && parts.allies.length) ||
+      (parts.enemies && parts.enemies.length);
+    if (nearbyLine) {
+      nearbyLine.hidden = hasAny;
+      if (!hasAny) nearbyLine.textContent = 'Поруч нікого немає';
+    }
+    if (parts.allies && parts.allies.length) {
+      addSiegeDivider(parent);
+      addLine(parent, 'Союзники:');
+      var alliesUl = document.createElement('ul');
+      alliesUl.className = 'l2-siege-participants';
+      alliesUl.id = 'siege-allies-list';
+      parts.allies.forEach(function (row) {
+        var li = document.createElement('li');
+        li.dataset.characterId = String(row.characterId || '');
+        appendAllyParticipantLine(li, row);
+        alliesUl.appendChild(li);
+      });
+      parent.appendChild(alliesUl);
+    }
+    if (parts.enemies && parts.enemies.length) {
+      addSiegeDivider(parent);
+      addEnemiesTitle(parent);
+      var enemiesUl = document.createElement('ul');
+      enemiesUl.className = 'l2-siege-participants';
+      enemiesUl.id = 'siege-enemies-list';
+      parts.enemies.forEach(function (row) {
+        var li = document.createElement('li');
+        li.dataset.characterId = String(row.characterId || '');
+        appendEnemyParticipantLine(li, row);
+        enemiesUl.appendChild(li);
+      });
+      parent.appendChild(enemiesUl);
+    }
+  }
+
+  function patchParticipantsLists(data) {
+    var parts = data && data.participants;
+    if (!parts) return;
+    (parts.allies || []).forEach(function (row) {
+      var li = document.querySelector(
+        '#siege-allies-list li[data-character-id="' + String(row.characterId || '') + '"]'
+      );
+      if (!li) return;
+      li.textContent = '';
+      appendAllyParticipantLine(li, row);
+    });
+    (parts.enemies || []).forEach(function (row) {
+      var li = document.querySelector(
+        '#siege-enemies-list li[data-character-id="' + String(row.characterId || '') + '"]'
+      );
+      if (!li) return;
+      li.textContent = '';
+      appendEnemyParticipantLine(li, row);
+    });
+  }
+
+  function buildActiveBody(body, data) {
+    bodyBuiltState = 'active';
+    body.dataset.siegeBuilt = 'active';
+
+    var elimEl = document.createElement('p');
+    elimEl.className = 'l2-siege-msg';
+    elimEl.id = 'siege-eliminated-line';
+    elimEl.textContent = 'Ви вибули з цієї облоги.';
+    elimEl.hidden = !data.viewerEliminated;
+    body.appendChild(elimEl);
+
+    var ownDmgEl = document.createElement('p');
+    ownDmgEl.className = 'l2-siege-line';
+    ownDmgEl.id = 'siege-own-damage-line';
+    ownDmgEl.hidden = !(lastOwnDamage != null && lastOwnDamage > 0);
+    if (!ownDmgEl.hidden) {
+      ownDmgEl.textContent = 'Ви завдали шкоди стіні: ' + formatNum(lastOwnDamage);
+    }
+    body.appendChild(ownDmgEl);
+
+    var attackWrap = document.createElement('p');
+    attackWrap.className = 'l2-siege-line';
+    attackWrap.id = 'siege-attack-wrap';
+    body.appendChild(attackWrap);
+
+    var blockedEl = document.createElement('p');
+    blockedEl.className = 'l2-siege-msg';
+    blockedEl.id = 'siege-wall-blocked-msg';
+    blockedEl.hidden = true;
+    body.appendChild(blockedEl);
+    updateWallAttackUi(data);
+
+    var incEl = document.createElement('p');
+    incEl.className = 'l2-siege-line';
+    incEl.id = 'siege-incoming-damage-line';
+    incEl.hidden = true;
+    body.appendChild(incEl);
+    updateIncomingDamageLine(data);
+
+    addSiegeDivider(body);
+    addStatLine(
+      body,
+      'Мій урон: ',
+      formatNum(data.viewerCharacterDamage || 0),
+      'l2-siege-damage-self',
+      'siege-damage-self'
+    );
+    addStatLine(
+      body,
+      'Урон мого клану: ',
+      formatNum(data.viewerClanDamage || 0),
+      'l2-siege-damage-clan',
+      'siege-damage-clan'
+    );
+
+    var topRoot = document.createElement('div');
+    topRoot.id = 'siege-top-clans-root';
+    body.appendChild(topRoot);
+    renderTopClansInto(topRoot, data.topClans);
+
+    var partsRoot = document.createElement('div');
+    partsRoot.id = 'siege-participants-root';
+    body.appendChild(partsRoot);
+    renderParticipantsInto(partsRoot, data);
+    bodyParticipantsFp = participantsFp(data);
+  }
+
+  function patchActiveBody(data) {
+    var elimEl = $('siege-eliminated-line');
+    if (elimEl) elimEl.hidden = !data.viewerEliminated;
+
+    var ownDmgEl = $('siege-own-damage-line');
+    if (ownDmgEl) {
+      var showOwn = lastOwnDamage != null && lastOwnDamage > 0;
+      ownDmgEl.hidden = !showOwn;
+      if (showOwn) {
+        ownDmgEl.textContent = 'Ви завдали шкоди стіні: ' + formatNum(lastOwnDamage);
+      }
+    }
+
+    updateWallAttackUi(data);
+    updateIncomingDamageLine(data);
+
+    var selfEl = $('siege-damage-self');
+    if (selfEl) selfEl.textContent = formatNum(data.viewerCharacterDamage || 0);
+    var clanEl = $('siege-damage-clan');
+    if (clanEl) clanEl.textContent = formatNum(data.viewerClanDamage || 0);
+
+    patchTopClans(data.topClans);
+
+    var fp = participantsFp(data);
+    if (fp !== bodyParticipantsFp) {
+      var partsRoot = $('siege-participants-root');
+      if (partsRoot) {
+        renderParticipantsInto(partsRoot, data);
+        bodyParticipantsFp = fp;
+      }
+    } else {
+      patchParticipantsLists(data);
+    }
+    return true;
+  }
+
+  function buildScheduledBody(body, data) {
+    bodyBuiltState = 'scheduled';
+    body.dataset.siegeBuilt = 'scheduled';
+    if (data.startsAt) {
+      addLine(
+        body,
+        'Захоплення міста розпочнеться о ' +
+          formatKyivTime(data.startsAt) +
+          ' за київським часом.'
+      );
+      addLine(
+        body,
+        'До початку: ' + formatCountdownHms(new Date(data.startsAt).getTime()),
+        'siege-countdown-line'
+      );
+    }
+    var schedMsg = blockedWallMessage(data.wallAttackBlockReason);
+    if (schedMsg && data.wallAttackBlockReason === 'siege_no_clan') {
+      var msgEl = document.createElement('p');
+      msgEl.className = 'l2-siege-msg';
+      msgEl.id = 'siege-scheduled-msg';
+      msgEl.textContent = schedMsg;
+      body.appendChild(msgEl);
+    }
+  }
+
+  function patchScheduledBody(data) {
+    var countdownLine = $('siege-countdown-line');
+    if (countdownLine && data.startsAt) {
+      countdownLine.textContent =
+        'До початку: ' + formatCountdownHms(new Date(data.startsAt).getTime());
+    }
+    return !!countdownLine;
+  }
+
+  function setupCountdownTimer(data) {
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+    if (data.state === 'scheduled' && data.startsAt) {
+      countdownTimer = setInterval(function () {
+        if (!stateData) return;
+        if (stateData.state === 'scheduled') {
+          patchScheduledBody(stateData);
+        }
+        if (
+          stateData.state === 'scheduled' &&
+          stateData.startsAt &&
+          !startsAtRefreshDone
+        ) {
+          var startMs = new Date(stateData.startsAt).getTime();
+          if (Date.now() + serverSkewMs >= startMs) {
+            startsAtRefreshDone = true;
+            refreshSiegeNow();
+          }
+        }
+      }, 1000);
+    }
+  }
+
   function renderScheduleHeader(data) {
     var castleName = $('siege-castle-name');
     var dateWrap = $('siege-date-wrap');
@@ -428,43 +772,7 @@
   }
 
   function renderParticipants(parent, data) {
-    var parts = data && data.participants;
-    var nearbyLine = $('siege-nearby-line');
-    if (!parts || data.state !== 'active') {
-      if (nearbyLine) nearbyLine.hidden = true;
-      return;
-    }
-    var hasAny =
-      (parts.allies && parts.allies.length) ||
-      (parts.enemies && parts.enemies.length);
-    if (nearbyLine) {
-      nearbyLine.hidden = hasAny;
-      if (!hasAny) nearbyLine.textContent = 'Поруч нікого немає';
-    }
-    if (parts.allies && parts.allies.length) {
-      addSiegeDivider(parent);
-      addLine(parent, 'Союзники:');
-      var alliesUl = document.createElement('ul');
-      alliesUl.className = 'l2-siege-participants';
-      parts.allies.forEach(function (row) {
-        var li = document.createElement('li');
-        appendAllyParticipantLine(li, row);
-        alliesUl.appendChild(li);
-      });
-      parent.appendChild(alliesUl);
-    }
-    if (parts.enemies && parts.enemies.length) {
-      addSiegeDivider(parent);
-      addEnemiesTitle(parent);
-      var enemiesUl = document.createElement('ul');
-      enemiesUl.className = 'l2-siege-participants';
-      parts.enemies.forEach(function (row) {
-        var li = document.createElement('li');
-        appendEnemyParticipantLine(li, row);
-        enemiesUl.appendChild(li);
-      });
-      parent.appendChild(enemiesUl);
-    }
+    renderParticipantsInto(parent, data);
   }
 
   function renderState(data) {
@@ -482,76 +790,36 @@
     }
     if (!body) return;
 
+    if (
+      data.state === 'active' &&
+      bodyBuiltState === 'active' &&
+      body.dataset.siegeBuilt === 'active'
+    ) {
+      patchActiveBody(data);
+      setupCountdownTimer(data);
+      return;
+    }
+
+    if (
+      data.state === 'scheduled' &&
+      bodyBuiltState === 'scheduled' &&
+      body.dataset.siegeBuilt === 'scheduled'
+    ) {
+      patchScheduledBody(data);
+      setupCountdownTimer(data);
+      return;
+    }
+
     body.innerHTML = '';
+    bodyParticipantsFp = '';
+    bodyBuiltState = data.state || '';
 
     if (data.state === 'scheduled') {
-      if (data.startsAt) {
-        addLine(
-          body,
-          'Захоплення міста розпочнеться о ' +
-            formatKyivTime(data.startsAt) +
-            ' за київським часом.'
-        );
-        addLine(
-          body,
-          'До початку: ' + formatCountdownHms(new Date(data.startsAt).getTime()),
-          'siege-countdown-line'
-        );
-      }
-      var schedMsg = blockedWallMessage(data.wallAttackBlockReason);
-      if (schedMsg && data.wallAttackBlockReason === 'siege_no_clan') {
-        var msgEl = document.createElement('p');
-        msgEl.className = 'l2-siege-msg';
-        msgEl.textContent = schedMsg;
-        body.appendChild(msgEl);
-      }
+      buildScheduledBody(body, data);
     } else if (data.state === 'active') {
-      if (data.viewerEliminated) {
-        var elimEl = document.createElement('p');
-        elimEl.className = 'l2-siege-msg';
-        elimEl.textContent = 'Ви вибули з цієї облоги.';
-        body.appendChild(elimEl);
-      }
-
-      if (lastOwnDamage != null && lastOwnDamage > 0) {
-        addLine(body, 'Ви завдали шкоди стіні: ' + formatNum(lastOwnDamage));
-      }
-
-      if (data.canAttackWall) {
-        addActionLink(
-          body,
-          'Ударити стіну [' + formatNum(data.wallHp) + '/' + formatNum(data.wallMaxHp) + ']',
-          'siege-attack-link',
-          attackInFlight
-        );
-      } else {
-        var blocked = blockedWallMessage(data.wallAttackBlockReason);
-        if (blocked) {
-          var blockedEl = document.createElement('p');
-          blockedEl.className = 'l2-siege-msg';
-          blockedEl.textContent = blocked;
-          body.appendChild(blockedEl);
-        }
-      }
-
-      renderIncomingDamageNotice(body, data);
-
-      addSiegeDivider(body);
-      addStatLine(
-        body,
-        'Мій урон: ',
-        formatNum(data.viewerCharacterDamage || 0),
-        'l2-siege-damage-self'
-      );
-      addStatLine(
-        body,
-        'Урон мого клану: ',
-        formatNum(data.viewerClanDamage || 0),
-        'l2-siege-damage-clan'
-      );
-      renderTopClans(body, data.topClans);
-      renderParticipants(body, data);
+      buildActiveBody(body, data);
     } else if (data.state === 'finished') {
+      body.dataset.siegeBuilt = 'finished';
       if (data.finishReason === 'wall_destroyed' && data.winnerClan) {
         addClanLine(body, 'Місто захопив клан: ', data.winnerClan, '');
         addLine(body, 'Загальний урон клану: ' + formatNum(winnerClanDamage(data)));
@@ -572,32 +840,7 @@
       }
     }
 
-    if (countdownTimer) {
-      clearInterval(countdownTimer);
-      countdownTimer = null;
-    }
-    if (data.state === 'scheduled' && data.startsAt) {
-      countdownTimer = setInterval(function () {
-        if (!stateData) return;
-        var countdownLine = $('siege-countdown-line');
-        if (countdownLine && stateData.startsAt) {
-          countdownLine.textContent =
-            'До початку: ' +
-            formatCountdownHms(new Date(stateData.startsAt).getTime());
-        }
-        if (
-          stateData.state === 'scheduled' &&
-          stateData.startsAt &&
-          !startsAtRefreshDone
-        ) {
-          var startMs = new Date(stateData.startsAt).getTime();
-          if (Date.now() + serverSkewMs >= startMs) {
-            startsAtRefreshDone = true;
-            refreshSiegeNow();
-          }
-        }
-      }, 1000);
-    }
+    setupCountdownTimer(data);
   }
 
   function applyAttackResponse(resp) {

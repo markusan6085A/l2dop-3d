@@ -1,0 +1,174 @@
+/**
+ * Спільні кланові UI-компоненти: стабільна геометрія, loading/content, таймери.
+ */
+.l2-clan-page {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.l2-clan-header {
+  margin: 0 0 0.5rem;
+}
+
+.l2-clan-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  min-width: 0;
+}
+
+.l2-clan-summary__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 0.1rem;
+  min-height: 2.5rem;
+  min-width: 0;
+}
+
+.l2-clan-summary__item > span {
+  min-height: 1.25rem;
+  line-height: 1.35;
+}
+
+.l2-clan-summary__item > strong {
+  display: block;
+  min-height: 1.375rem;
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.l2-clan-card {
+  box-sizing: border-box;
+  min-width: 0;
+  contain: layout paint;
+}
+
+.l2-clan-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 0.15rem;
+  min-height: 3rem;
+  min-width: 0;
+}
+
+.l2-clan-label {
+  display: block;
+  min-height: 1.25rem;
+  line-height: 1.35;
+  color: #bfa88a;
+}
+
+.l2-clan-value {
+  display: block;
+  min-height: 1.375rem;
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #ffffff;
+}
+
+.l2-clan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 2.25rem;
+}
+
+.l2-clan-actions button,
+.l2-clan-actions .l2-clan-btn {
+  box-sizing: border-box;
+  min-height: 2rem;
+  min-width: 7.5rem;
+}
+
+.l2-clan-actions button[aria-busy='true'] {
+  cursor: wait;
+}
+
+.l2-clan-progress {
+  box-sizing: border-box;
+  min-height: 0.5rem;
+}
+
+.l2-clan-empty,
+.l2-clan-loading,
+.l2-clan-error {
+  box-sizing: border-box;
+  min-height: 3rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.l2-clan-loading {
+  color: #bfa88a;
+}
+
+.l2-clan-empty {
+  color: #bfa88a;
+}
+
+.l2-clan-error {
+  color: #d94a4a;
+}
+
+.l2-clan-timer,
+.l2-clan-value--timer,
+.city-siege-card__value.l2-clan-timer {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Міський блок облоги */
+.city-siege-card {
+  box-sizing: border-box;
+  margin: 0.35rem 0 0;
+  min-height: 6.5rem;
+  min-width: 0;
+  contain: layout paint;
+}
+
+.city-siege-card__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 0.1rem;
+  min-height: 3rem;
+  min-width: 0;
+}
+
+.city-siege-card__label {
+  display: block;
+  min-height: 1.25rem;
+  line-height: 1.35;
+  font-size: 12px;
+  color: #bfa88a;
+}
+
+.city-siege-card__value {
+  display: block;
+  min-height: 1.375rem;
+  line-height: 1.35;
+  font-size: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .l2-clan-skeleton,
+  .l2-clan-skeleton::after {
+    animation: none !important;
+  }
+}
+
+.l2-clan-skeleton {
+  display: block;
+  min-height: 1.375rem;
+  border-radius: 2px;
+  background: rgba(191, 168, 138, 0.12);
+}

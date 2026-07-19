@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="/styles.css?v=20260718clanInvite4" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260719citySiegeOwner1" />
+    <link rel="stylesheet" href="/css/l2-clan-common.css?v=20260719clanLayout1" />
+    <link rel="stylesheet" href="/css/l2-city-222-skin.css?v=20260719citySiegeStable1" />
   </head>
   <body
     class="l2-body l2-page-city l2-city-ui-l2 l2-page-townlive l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -91,16 +92,36 @@
                         height="14"
                         decoding="async"
                       />
-                      <span class="l2-town-miru-loc-text">—</span>
+                      <span class="l2-town-miru-loc-text">Завантаження…</span>
                     </p>
-                    <p class="l2-town-miru-loc-owner" id="city-siege-schedule-line" hidden>
-                      <span class="l2-town-miru-loc-owner-label">Наступна облога:</span>
-                      <span class="l2-town-miru-loc-owner-name" id="city-siege-schedule-text">—</span>
-                    </p>
-                    <p class="l2-town-miru-loc-owner" id="city-siege-owner-line" hidden>
-                      <span class="l2-town-miru-loc-owner-label">Під владою клану:</span>
-                      <span class="l2-town-miru-loc-owner-name" id="city-siege-owner-name">—</span>
-                    </p>
+                    <section
+                      class="city-siege-card l2-clan-card"
+                      id="city-siege-card"
+                      hidden
+                      aria-busy="true"
+                      aria-label="Облога міста"
+                    >
+                      <div class="city-siege-card__row city-siege-card__schedule">
+                        <span class="city-siege-card__label l2-clan-label" id="city-siege-schedule-label"
+                          >Наступна облога</span
+                        >
+                        <span
+                          class="city-siege-card__value l2-clan-value l2-clan-timer"
+                          id="city-siege-schedule-text"
+                          data-siege-schedule
+                          >Завантаження…</span
+                        >
+                      </div>
+                      <div class="city-siege-card__row city-siege-card__owner">
+                        <span class="city-siege-card__label l2-clan-label">Під владою клану</span>
+                        <span
+                          class="city-siege-card__value l2-clan-value"
+                          id="city-siege-owner-name"
+                          data-siege-owner
+                          >Завантаження…</span
+                        >
+                      </div>
+                    </section>
                   </div>
                 </div>
                 <nav class="l2-town-miru-list" aria-label="Місто">
@@ -178,6 +199,7 @@
     <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/city.js?v=20260719clanSiegeDaily1"></script>
+    <script src="/l2-clan-ui.js?v=20260719clanLayout1"></script>
+    <script src="/city.js?v=20260719citySiegeStable1"></script>
   </body>
 </html>

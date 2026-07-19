@@ -109,21 +109,28 @@ assert.match(citySrc, /loadSiegeCityOwner/);
 assert.match(citySrc, /\/game\/siege\//);
 assert.match(citySrc, /ownerClan/);
 assert.match(citySrc, /Немає/);
-assert.match(cityHtml, /city-siege-owner-line/);
-assert.match(cityHtml, /l2-town-miru-loc-owner-label/);
-assert.match(cityHtml, /Під владою клану/);
-assert.match(cityCss, /\.l2-town-miru-loc-link[\s\S]*#ffffff/);
-assert.match(cityCss, /\.l2-town-miru-loc-owner-label[\s\S]*#bfa88a/);
 assert.match(siegeSrc, /formatKyivDate/);
 assert.match(siegeSrc, /siege-date-wrap/);
 assert.match(siegeHtml, /siege-date-wrap/);
 assert.match(siegeHtml, /Наступна облога:/);
-assert.match(citySrc, /city-siege-schedule-line/);
-assert.match(citySrc, /renderSiegeSchedule/);
-assert.match(citySrc, /formatKyivDate/);
-assert.match(cityHtml, /city-siege-schedule-line/);
-assert.match(cityHtml, /Наступна облога:/);
+assert.match(cityHtml, /city-siege-card/);
+assert.match(cityHtml, /data-siege-schedule/);
+assert.match(cityHtml, /data-siege-owner/);
+assert.match(cityHtml, /city-siege-schedule-label/);
+assert.match(cityHtml, /Під владою клану/);
+assert.match(cityHtml, /Завантаження…/);
+assert.doesNotMatch(cityHtml, /city-siege-schedule-line/);
+assert.match(cityCss, /\.l2-town-miru-loc-link[\s\S]*#ffffff/);
 assert.match(cityCss, /\.l2-town-miru-loc-owner-name[\s\S]*#ffffff/);
+assert.match(citySrc, /city-siege-card/);
+assert.match(citySrc, /renderSiegeSchedule/);
+assert.match(citySrc, /setSiegeCardBusy/);
+assert.match(citySrc, /siegeCityScheduleParts|L2\.clanUi/);
+assert.doesNotMatch(citySrc, /Початок:/);
+assert.doesNotMatch(citySrc, /city-siege-schedule-line/);
+assert.match(siegeSrc, /patchActiveBody/);
+assert.match(siegeSrc, /dataset\.siegeBuilt/);
+assert.doesNotMatch(siegeSrc, /\[Зачекайте…\]/);
 assert.match(
   citySrc,
   /l2dop_oren[\s\S]*l2dop_giran[\s\S]*l2dop_aden[\s\S]*l2dop_goddard[\s\S]*l2dop_rune[\s\S]*l2dop_gludio[\s\S]*l2dop_dion[\s\S]*l2dop_schuttgart/

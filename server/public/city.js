@@ -7,6 +7,11 @@
     return document.getElementById(id);
   }
 
+  var siegeCityData = null;
+  var siegeCityTimer = null;
+  var siegeCityTimerTargetMs = 0;
+  var siegeCityTimerPrefix = '';
+
   function showStub(msg) {
     var el = $('city-stub-msg');
     if (!el) return;
@@ -45,64 +50,66 @@
     return !!SIEGE_CITY_IDS[String(id || '').trim()];
   }
 
-  function setSiegeScheduleLineVisible(visible) {
-    var line = $('city-siege-schedule-line');
-    if (line) line.hidden = !visible;
+  function setSiegeCardVisible(visible) {
+    var card = $('city-siege-card');
+    if (card) card.hidden = !visible;
   }
 
-  function formatKyivDate(iso) {
-    if (!iso) return '—';
-    try {
-      return new Intl.DateTimeFormat('uk-UA', {
-        timeZone: 'Europe/Kyiv',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }).format(new Date(iso));
-    } catch (_eFmt) {
-      return '—';
-    }
+  function setSiegeCardBusy(busy) {
+    var card = $('city-siege-card');
+    if (!card) return;
+    card.setAttribute('aria-busy', busy ? 'true' : 'false');
   }
 
-  function formatKyivTime(iso) {
-    if (!iso) return '—';
-    try {
-      var parts = new Intl.DateTimeFormat('uk-UA', {
-        timeZone: 'Europe/Kyiv',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }).formatToParts(new Date(iso));
-      var hour = '';
-      var minute = '';
-      parts.forEach(function (part) {
-        if (part.type === 'hour') hour = part.value;
-        if (part.type === 'minute') minute = part.value;
-      });
-      if (!hour || !minute) return '—';
-      return hour + ':' + minute;
-    } catch (_eFmt2) {
-      return '—';
+  function stopSiegeCityTimer() {
+    if (siegeCityTimer) {
+      clearInterval(siegeCityTimer);
+      siegeCityTimer = null;
     }
+    siegeCityTimerTargetMs = 0;
+    siegeCityTimerPrefix = '';
+  }
+
+  function tickSiegeCityTimer() {
+    var textEl = $('city-siege-schedule-text');
+    if (!textEl || !siegeCityTimerTargetMs) return;
+    var fmt =
+      window.L2 && L2.clanUi && typeof L2.clanUi.formatCountdownHms === 'function'
+        ? L2.clanUi.formatCountdownHms
+        : null;
+    var left = fmt
+      ? fmt(siegeCityTimerTargetMs)
+      : String(Math.max(0, siegeCityTimerTargetMs - Date.now()));
+    textEl.textContent = siegeCityTimerPrefix + left;
+  }
+
+  function startSiegeCityTimer(targetMs, prefix) {
+    stopSiegeCityTimer();
+    if (!targetMs) return;
+    siegeCityTimerTargetMs = targetMs;
+    siegeCityTimerPrefix = prefix || '';
+    tickSiegeCityTimer();
+    siegeCityTimer = setInterval(tickSiegeCityTimer, 1000);
   }
 
   function renderSiegeSchedule(data) {
+    var labelEl = $('city-siege-schedule-label');
     var textEl = $('city-siege-schedule-text');
     if (!textEl) return;
-    if (!data || !data.startsAt) {
-      textEl.textContent = '—';
-      return;
-    }
-    var datePart = formatKyivDate(data.startsAt);
-    var startPart = formatKyivTime(data.startsAt);
-    var endPart = data.endsAt ? formatKyivTime(data.endsAt) : '—';
-    textEl.textContent =
-      datePart + ' · Початок: ' + startPart + ' · Кінець: ' + endPart;
-  }
 
-  function setSiegeOwnerLineVisible(visible) {
-    var ownerLine = $('city-siege-owner-line');
-    if (ownerLine) ownerLine.hidden = !visible;
+    stopSiegeCityTimer();
+
+    var parts =
+      window.L2 && L2.clanUi && typeof L2.clanUi.siegeCityScheduleParts === 'function'
+        ? L2.clanUi.siegeCityScheduleParts(data)
+        : { label: 'Наступна облога', value: '—' };
+
+    if (labelEl) labelEl.textContent = parts.label || 'Наступна облога';
+    textEl.textContent = parts.value || '—';
+
+    if (parts.timerTargetMs) {
+      startSiegeCityTimer(parts.timerTargetMs, parts.timerPrefix || '');
+    }
   }
 
   function renderSiegeOwnerName(ownerClan) {
@@ -123,32 +130,55 @@
       ownerClan && ownerClan.name ? String(ownerClan.name) : 'Немає';
   }
 
-  async function loadSiegeCityOwner(cityId) {
+  function prepareSiegeCityCard(cityId) {
     if (!isSiegeCityId(cityId)) {
-      setSiegeOwnerLineVisible(false);
-      setSiegeScheduleLineVisible(false);
+      setSiegeCardVisible(false);
+      stopSiegeCityTimer();
       return;
     }
 
-    setSiegeOwnerLineVisible(true);
-    setSiegeScheduleLineVisible(true);
-    renderSiegeOwnerName(null);
-    renderSiegeSchedule(null);
+    setSiegeCardVisible(true);
+    setSiegeCardBusy(true);
+    stopSiegeCityTimer();
+    var labelEl = $('city-siege-schedule-label');
+    var scheduleText = $('city-siege-schedule-text');
+    var ownerName = $('city-siege-owner-name');
+    if (labelEl) labelEl.textContent = 'Наступна облога';
+    if (scheduleText) scheduleText.textContent = 'Завантаження…';
+    if (ownerName) ownerName.textContent = 'Завантаження…';
+  }
+
+  async function loadSiegeCityOwner(cityId) {
+    if (!isSiegeCityId(cityId)) {
+      setSiegeCardVisible(false);
+      stopSiegeCityTimer();
+      return;
+    }
+
+    prepareSiegeCityCard(cityId);
 
     var t = localStorage.getItem('token');
-    if (!t) return;
+    if (!t) {
+      setSiegeCardBusy(false);
+      return;
+    }
 
     try {
       var r = await fetch(
         '/game/siege/' + encodeURIComponent(String(cityId)) + '/state',
         { headers: { Authorization: 'Bearer ' + t } }
       );
-      if (!r.ok) return;
+      if (!r.ok) {
+        setSiegeCardBusy(false);
+        return;
+      }
       var data = await r.json();
+      siegeCityData = data;
       renderSiegeOwnerName(data.ownerClan);
       renderSiegeSchedule(data);
+      setSiegeCardBusy(false);
     } catch (_eNet) {
-      /* залишити «Немає» */
+      setSiegeCardBusy(false);
     }
   }
 
@@ -164,6 +194,7 @@
     var pin = locTitle.querySelector('.l2-town-miru-loc-pin');
 
     if (isSiegeCityId(cityId)) {
+      prepareSiegeCityCard(cityId);
       var link = existing && existing.tagName === 'A' ? existing : document.createElement('a');
       link.className = 'l2-town-miru-loc-text l2-town-miru-loc-link';
       link.href = '/siege.html?cityId=' + encodeURIComponent(cityId);
@@ -175,13 +206,15 @@
         } else {
           locTitle.appendChild(link);
         }
+      } else if (existing.textContent !== name) {
+        existing.textContent = name;
       }
       void loadSiegeCityOwner(cityId);
       return;
     }
 
-    setSiegeOwnerLineVisible(false);
-    setSiegeScheduleLineVisible(false);
+    setSiegeCardVisible(false);
+    stopSiegeCityTimer();
     if (existing && existing.tagName === 'A') {
       existing.remove();
       existing = null;
@@ -243,6 +276,22 @@
 
     wireStubs();
     wireMiruIcons();
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') {
+        stopSiegeCityTimer();
+        return;
+      }
+      if (siegeCityData && siegeCityData.state === 'active' && siegeCityData.endsAt) {
+        var parts =
+          window.L2 && L2.clanUi && typeof L2.clanUi.siegeCityScheduleParts === 'function'
+            ? L2.clanUi.siegeCityScheduleParts(siegeCityData)
+            : null;
+        if (parts && parts.timerTargetMs) {
+          startSiegeCityTimer(parts.timerTargetMs, parts.timerPrefix || '');
+        }
+      }
+    });
 
     var t = localStorage.getItem('token');
     var errEl = $('city-load-err');
