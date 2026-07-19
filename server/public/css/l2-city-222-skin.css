@@ -137,6 +137,12 @@ body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-text {
   overflow-wrap: anywhere;
 }
 
+body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-loc-link {
+  color: #d4b870;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 body.l2-app-l2-chrome.l2-page-city.l2-page-townlive .l2-town-miru-list {
   display: flex;
   flex-direction: column;

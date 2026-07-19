@@ -1,46 +1,64 @@
-.l2-siege-panel {
-  padding: 0.75rem 0.5rem 1rem;
+.l2-siege-wap {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 0.35rem 0.5rem 0.75rem;
+  overflow-x: hidden;
   color: #c8b898;
-  font-size: 0.95rem;
-}
-.l2-siege-title {
-  margin: 0 0 0.5rem;
-  font-size: 1.05rem;
-  color: #e8dcc0;
-}
-.l2-siege-line,
-.l2-siege-msg,
-.l2-siege-result {
-  margin: 0.35rem 0;
+  font-size: 12px;
   line-height: 1.35;
 }
-.l2-siege-top {
-  margin: 0.5rem 0;
-  padding-left: 1.1rem;
-}
-.l2-siege-actions {
+
+.l2-siege-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 0.25rem;
 }
-.l2-siege-btn {
+
+.l2-siege-castle-ico {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.l2-siege-head-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.l2-siege-body {
+  min-width: 0;
+}
+
+.l2-siege-line {
+  margin: 0.2rem 0;
+  overflow-wrap: anywhere;
+}
+
+.l2-siege-link {
+  color: #d4b870;
+  text-decoration: underline;
   cursor: pointer;
-  border: 1px solid #5a4a32;
-  background: #2a2218;
-  color: #e8dcc0;
-  padding: 0.35rem 0.65rem;
-  font: inherit;
-  text-decoration: none;
-  display: inline-block;
 }
-.l2-siege-btn:disabled {
+
+.l2-siege-link--disabled {
   opacity: 0.55;
+  pointer-events: none;
   cursor: not-allowed;
 }
-.l2-siege-btn--secondary {
-  background: #1e1812;
+
+.l2-siege-top {
+  margin: 0.15rem 0 0.25rem;
+  padding: 0;
+  list-style: none;
 }
-.l2-siege-btn--link {
-  line-height: 1.2;
+
+.l2-siege-top li {
+  margin: 0.1rem 0;
+}
+
+.l2-siege-msg {
+  margin: 0.2rem 0;
+  color: #bfa88a;
 }

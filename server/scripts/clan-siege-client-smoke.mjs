@@ -1,5 +1,5 @@
 /**
- * Client smoke: siege page polling + attack guards.
+ * Client smoke: siege page polling + attack guards + WAP UI markers.
  * npm run test:clan-siege-client
  */
 import assert from 'node:assert/strict';
@@ -10,6 +10,14 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const siegeSrc = fs.readFileSync(
   path.join(__dirname, '../public/siege.js'),
+  'utf8'
+);
+const siegeHtml = fs.readFileSync(
+  path.join(__dirname, '../public/siege.html'),
+  'utf8'
+);
+const citySrc = fs.readFileSync(
+  path.join(__dirname, '../public/city.js'),
   'utf8'
 );
 
@@ -31,6 +39,15 @@ assert.match(siegeSrc, /stopSiegePolling/);
 assert.match(siegeSrc, /scheduleNextSiegePoll/);
 assert.match(siegeSrc, /applyAttackResponse/);
 assert.match(siegeSrc, /ATTACK_MIN_INTERVAL_MS = 350/);
+assert.match(siegeSrc, /siege-attack-link/);
+assert.match(siegeSrc, /lastOwnDamage/);
+assert.match(siegeHtml, /\/assets\/gorod\.png/);
+assert.doesNotMatch(siegeHtml, /l2-siege-btn/);
+assert.doesNotMatch(siegeHtml, /l2-siege-panel/);
+assert.match(siegeHtml, /l2-siege-wap/);
+assert.doesNotMatch(citySrc, /Захоплення міста/);
+assert.doesNotMatch(citySrc, /Облога міста/);
+assert.match(citySrc, /\/siege\.html\?cityId=/);
 
 assert.equal(resolvePollDelay({ state: 'active' }), 4000);
 assert.equal(resolvePollDelay({ state: 'scheduled' }), 60000);

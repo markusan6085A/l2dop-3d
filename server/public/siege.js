@@ -1,5 +1,5 @@
 /**
- * Clan City Siege Stage A — стіна, ручний удар, adaptive polling.
+ * Clan City Siege Stage A — WAP UI, стіна, ручний удар, adaptive polling.
  */
 (function () {
   'use strict';
@@ -18,6 +18,7 @@
   var lastAttackAtMs = 0;
   var countdownTimer = null;
   var startsAtRefreshDone = false;
+  var lastOwnDamage = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -68,12 +69,6 @@
     }, delayMs);
   }
 
-  function startSiegePolling() {
-    if (pollActive) return;
-    pollActive = true;
-    void fetchState(false);
-  }
-
   function refreshSiegeNow() {
     if (document.visibilityState !== 'visible') return;
     if (pollTimer) {
@@ -96,37 +91,33 @@
     }
   }
 
-  function formatCountdown(targetMs) {
+  function pad2(n) {
+    return n < 10 ? '0' + String(n) : String(n);
+  }
+
+  function formatCountdownHms(targetMs) {
     var left = Math.max(0, targetMs - Date.now());
     var sec = Math.floor(left / 1000);
-    var m = Math.floor(sec / 60);
+    var h = Math.floor(sec / 3600);
+    var m = Math.floor((sec % 3600) / 60);
     var s = sec % 60;
-    return String(m) + ':' + (s < 10 ? '0' : '') + String(s);
+    return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
+  }
+
+  function formatNum(n) {
+    return String(Math.max(0, Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
 
   function clanLine(clan) {
     return clan && clan.name ? clan.name : '—';
   }
 
-  function renderTopClans(list) {
-    var ul = $('siege-top-clans');
-    if (!ul) return;
-    ul.innerHTML = '';
-    if (!list || !list.length) {
-      ul.hidden = true;
-      return;
+  function cityLabel(data) {
+    if (data && data.cityName) return data.cityName;
+    if (window.L2 && typeof L2.cityDisplayName === 'function') {
+      return L2.cityDisplayName(data && data.cityId ? data.cityId : cityId);
     }
-    ul.hidden = false;
-    list.forEach(function (row) {
-      var li = document.createElement('li');
-      li.textContent =
-        String(row.place) +
-        '. ' +
-        String(row.clanName) +
-        ' — ' +
-        String(row.totalDamage);
-      ul.appendChild(li);
-    });
+    return (data && data.cityId) || cityId || '—';
   }
 
   function blockedMessage(reason) {
@@ -145,111 +136,159 @@
     return '';
   }
 
+  function addLine(parent, text, id) {
+    var p = document.createElement('p');
+    p.className = 'l2-siege-line';
+    if (id) p.id = id;
+    p.textContent = text;
+    parent.appendChild(p);
+    return p;
+  }
+
+  function addActionLink(parent, text, id, disabled) {
+    var p = document.createElement('p');
+    p.className = 'l2-siege-line';
+    var link = document.createElement('a');
+    link.className = 'l2-siege-link' + (disabled ? ' l2-siege-link--disabled' : '');
+    link.href = '#';
+    link.id = id;
+    link.textContent = text;
+    p.appendChild(link);
+    parent.appendChild(p);
+    return link;
+  }
+
+  function winnerClanDamage(data) {
+    if (!data || !data.winnerClan || !data.topClans || !data.topClans.length) {
+      return data ? data.viewerClanDamage || 0 : 0;
+    }
+    for (var i = 0; i < data.topClans.length; i++) {
+      if (data.topClans[i].clanId === data.winnerClan.id) {
+        return data.topClans[i].totalDamage;
+      }
+    }
+    return data.viewerClanDamage || 0;
+  }
+
+  function renderTopClans(parent, list) {
+    if (!list || !list.length) return;
+    addLine(parent, 'Топ кланів:');
+    var ul = document.createElement('ul');
+    ul.className = 'l2-siege-top';
+    list.forEach(function (row) {
+      var li = document.createElement('li');
+      li.textContent =
+        String(row.place) +
+        '. ' +
+        String(row.clanName) +
+        ' — ' +
+        formatNum(row.totalDamage);
+      ul.appendChild(li);
+    });
+    parent.appendChild(ul);
+  }
+
   function renderState(data) {
     stateData = data;
-    var title = $('siege-city-name');
+    var castleLine = $('siege-castle-line');
     var ownerLine = $('siege-owner-line');
-    var timeLine = $('siege-time-line');
-    var wallLine = $('siege-wall-line');
-    var dmgLine = $('siege-damage-line');
-    var myLine = $('siege-my-damage-line');
-    var msgEl = $('siege-msg');
-    var resultEl = $('siege-result');
-    var attackBtn = $('siege-attack-btn');
+    var body = $('siege-body');
+    var nearbyLine = $('siege-nearby-line');
 
-    if (title) title.textContent = data.cityName || data.cityId || '—';
+    if (castleLine) {
+      castleLine.textContent = 'Замок: ' + cityLabel(data);
+    }
     if (ownerLine) {
-      ownerLine.textContent = 'Власник: клан ' + clanLine(data.ownerClan);
+      ownerLine.textContent = 'Контролює клан: ' + clanLine(data.ownerClan);
     }
+    if (nearbyLine) {
+      nearbyLine.hidden = data.state !== 'active';
+      nearbyLine.textContent = 'Поруч нікого немає';
+    }
+    if (!body) return;
 
-    if (timeLine) {
-      if (data.state === 'scheduled' && data.startsAt) {
-        timeLine.textContent =
+    body.innerHTML = '';
+
+    if (data.state === 'scheduled') {
+      if (data.startsAt) {
+        addLine(
+          body,
           'Захоплення міста розпочнеться о ' +
-          formatKyivTime(data.startsAt) +
-          ' за київським часом';
-      } else if (data.state === 'active' && data.endsAt) {
-        timeLine.textContent =
-          'Облога триває. До завершення: ' +
-          formatCountdown(new Date(data.endsAt).getTime());
-      } else if (data.state === 'finished') {
-        timeLine.textContent = 'Облога завершена';
-      } else {
-        timeLine.textContent = '—';
+            formatKyivTime(data.startsAt) +
+            ' за київським часом.'
+        );
+        addLine(
+          body,
+          'До початку: ' + formatCountdownHms(new Date(data.startsAt).getTime()),
+          'siege-countdown-line'
+        );
       }
-    }
-
-    if (wallLine) {
-      if (data.state === 'active' || data.state === 'finished') {
-        wallLine.hidden = false;
-        wallLine.textContent =
-          'HP стіни: ' + String(data.wallHp) + ' / ' + String(data.wallMaxHp);
-      } else {
-        wallLine.hidden = true;
+      var schedMsg = blockedMessage(data.attackBlockedReason);
+      if (schedMsg && data.attackBlockedReason === 'siege_no_clan') {
+        var msgEl = document.createElement('p');
+        msgEl.className = 'l2-siege-msg';
+        msgEl.textContent = schedMsg;
+        body.appendChild(msgEl);
       }
-    }
-
-    if (dmgLine) {
-      dmgLine.hidden = data.state === 'scheduled';
-      dmgLine.textContent = 'Урон мого клану: ' + String(data.viewerClanDamage || 0);
-    }
-    if (myLine) {
-      myLine.hidden = data.state === 'scheduled';
-      myLine.textContent = 'Мій урон: ' + String(data.viewerCharacterDamage || 0);
-    }
-
-    renderTopClans(data.topClans);
-
-    if (msgEl) {
-      var msg = blockedMessage(data.attackBlockedReason);
-      if (msg && data.state === 'active') {
-        msgEl.hidden = false;
-        msgEl.textContent = msg;
-      } else if (msg && data.state === 'scheduled' && data.attackBlockedReason === 'siege_no_clan') {
-        msgEl.hidden = false;
-        msgEl.textContent = msg;
-      } else {
-        msgEl.hidden = true;
-        msgEl.textContent = '';
+    } else if (data.state === 'active') {
+      if (lastOwnDamage != null && lastOwnDamage > 0) {
+        addLine(body, 'Ви завдали шкоди стіні: ' + formatNum(lastOwnDamage));
       }
-    }
 
-    if (resultEl) {
-      if (data.state === 'finished') {
-        resultEl.hidden = false;
-        if (data.finishReason === 'wall_destroyed' && data.winnerClan) {
-          resultEl.textContent =
-            'Місто захопив клан ' +
-            data.winnerClan.name +
-            '. Клан отримав ' +
-            String(data.rewardPoints || 8000) +
-            ' очок';
-        } else if (data.finishReason === 'time_expired') {
-          resultEl.textContent =
-            'Облога завершилася. Стіна не була зруйнована';
-        } else {
-          resultEl.textContent = 'Облога завершена';
+      if (data.canAttack) {
+        addActionLink(
+          body,
+          'Ударити стіну [' + formatNum(data.wallHp) + '/' + formatNum(data.wallMaxHp) + ']',
+          'siege-attack-link',
+          attackInFlight
+        );
+      } else {
+        var blocked = blockedMessage(data.attackBlockedReason);
+        if (blocked) {
+          var blockedEl = document.createElement('p');
+          blockedEl.className = 'l2-siege-msg';
+          blockedEl.textContent = blocked;
+          body.appendChild(blockedEl);
         }
-      } else {
-        resultEl.hidden = true;
-        resultEl.textContent = '';
       }
-    }
 
-    if (attackBtn) {
-      var showAttack = data.state === 'active' && data.canAttack;
-      attackBtn.hidden = !showAttack;
-      attackBtn.disabled = attackInFlight;
+      addActionLink(body, 'Оновити', 'siege-refresh-link', false);
+      addLine(body, 'Мій урон: ' + formatNum(data.viewerCharacterDamage || 0));
+      addLine(body, 'Урон мого клану: ' + formatNum(data.viewerClanDamage || 0));
+      renderTopClans(body, data.topClans);
+    } else if (data.state === 'finished') {
+      if (data.finishReason === 'wall_destroyed' && data.winnerClan) {
+        addLine(body, 'Місто захопив клан: ' + data.winnerClan.name);
+        addLine(body, 'Загальний урон клану: ' + formatNum(winnerClanDamage(data)));
+        addLine(
+          body,
+          'Клан отримав ' + formatNum(data.rewardPoints || 8000) + ' очок.'
+        );
+      } else if (data.finishReason === 'time_expired') {
+        addLine(body, 'Облога завершилася.');
+        addLine(body, 'Стіна не була зруйнована.');
+        addLine(
+          body,
+          'Місто залишилося під контролем клану: ' + clanLine(data.ownerClan) + '.'
+        );
+      } else {
+        addLine(body, 'Облога завершена.');
+      }
     }
 
     if (countdownTimer) {
       clearInterval(countdownTimer);
       countdownTimer = null;
     }
-    if (data.state === 'scheduled' || data.state === 'active') {
+    if (data.state === 'scheduled' && data.startsAt) {
       countdownTimer = setInterval(function () {
         if (!stateData) return;
-        renderState(stateData);
+        var countdownLine = $('siege-countdown-line');
+        if (countdownLine && stateData.startsAt) {
+          countdownLine.textContent =
+            'До початку: ' +
+            formatCountdownHms(new Date(stateData.startsAt).getTime());
+        }
         if (
           stateData.state === 'scheduled' &&
           stateData.startsAt &&
@@ -273,25 +312,17 @@
     stateData.viewerClanDamage = resp.clanTotalDamage;
     stateData.viewerCharacterDamage = resp.characterTotalDamage;
     stateData.state = resp.state;
+    if (resp.damage > 0) {
+      lastOwnDamage = resp.damage;
+    }
     if (resp.finished) {
       stateData.state = 'finished';
-      stateData.finishReason = resp.rewardPoints ? 'wall_destroyed' : stateData.finishReason;
+      stateData.finishReason = resp.rewardPoints
+        ? 'wall_destroyed'
+        : stateData.finishReason;
       stateData.winnerClan = resp.winnerClan;
       stateData.canAttack = false;
       stopSiegePolling();
-    }
-    if (resp.damage > 0) {
-      var wallLine = $('siege-wall-line');
-      if (wallLine) {
-        wallLine.textContent =
-          'Останній удар: ' +
-          String(resp.damage) +
-          '. HP стіни: ' +
-          String(resp.wallHp) +
-          ' / ' +
-          String(resp.wallMaxHp);
-        wallLine.hidden = false;
-      }
     }
     renderState(stateData);
   }
@@ -370,8 +401,7 @@
     if (now - lastAttackAtMs < ATTACK_MIN_INTERVAL_MS) return;
 
     attackInFlight = true;
-    var attackBtn = $('siege-attack-btn');
-    if (attackBtn) attackBtn.disabled = true;
+    if (stateData) renderState(stateData);
     try {
       var r = await fetch(
         '/game/siege/' + encodeURIComponent(cityId) + '/attack-wall',
@@ -391,26 +421,28 @@
         j = null;
       }
       if (!r.ok) {
-        var msgEl = $('siege-msg');
-        if (msgEl && j && j.messageUk) {
-          msgEl.hidden = false;
-          msgEl.textContent = j.messageUk;
+        var body = $('siege-body');
+        if (body) {
+          var msgEl = document.createElement('p');
+          msgEl.className = 'l2-siege-msg';
+          msgEl.textContent = (j && j.messageUk) || 'Не вдалося завдати удар.';
+          body.insertBefore(msgEl, body.firstChild);
         }
         return;
       }
       lastAttackAtMs = Date.now();
       applyAttackResponse(j);
     } catch (_eNet) {
-      var err = $('siege-msg');
-      if (err) {
-        err.hidden = false;
-        err.textContent = 'Збій мережі. Спробуйте ще раз.';
+      var errBody = $('siege-body');
+      if (errBody) {
+        var errEl = document.createElement('p');
+        errEl.className = 'l2-siege-msg';
+        errEl.textContent = 'Збій мережі. Спробуйте ще раз.';
+        errBody.insertBefore(errEl, errBody.firstChild);
       }
     } finally {
       attackInFlight = false;
-      if (attackBtn && stateData && stateData.canAttack) {
-        attackBtn.disabled = false;
-      }
+      if (stateData) renderState(stateData);
     }
   }
 
@@ -421,6 +453,20 @@
       refreshSiegeNow();
     } else {
       stopSiegePolling();
+    }
+  }
+
+  function onSiegeBodyClick(e) {
+    var t = e.target;
+    if (!t || !t.id) return;
+    if (t.id === 'siege-attack-link') {
+      e.preventDefault();
+      void attackWall();
+      return;
+    }
+    if (t.id === 'siege-refresh-link') {
+      e.preventDefault();
+      refreshSiegeNow();
     }
   }
 
@@ -445,17 +491,9 @@
       await L2.fetchSnapshot();
     }
 
-    var refreshBtn = $('siege-refresh-btn');
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', function () {
-        refreshSiegeNow();
-      });
-    }
-    var attackBtn = $('siege-attack-btn');
-    if (attackBtn) {
-      attackBtn.addEventListener('click', function () {
-        void attackWall();
-      });
+    var body = $('siege-body');
+    if (body) {
+      body.addEventListener('click', onSiegeBodyClick);
     }
 
     document.addEventListener('visibilitychange', onVisibilityChange);

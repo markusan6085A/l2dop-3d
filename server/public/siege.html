@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-siege-page.css?v=20260719clanSiegeStageA1" />
+    <link rel="stylesheet" href="/css/l2-siege-page.css?v=20260719clanSiegeWapUi1" />
   </head>
   <body
     class="l2-body l2-page-siege l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -38,35 +38,36 @@
           <div class="l2-chrome-nav-column">
             <div id="l2-hud-panel-mount"></div>
             <div id="l2-nav-top"></div>
-            <section class="l2-siege-panel" aria-live="polite">
+            <section class="l2-siege-wap" aria-live="polite">
               <p class="err" id="siege-load-err" hidden></p>
-              <h1 class="l2-siege-title" id="siege-city-name">—</h1>
-              <p class="l2-siege-line" id="siege-owner-line">—</p>
-              <p class="l2-siege-line" id="siege-time-line">—</p>
-              <p class="l2-siege-line" id="siege-wall-line" hidden>—</p>
-              <p class="l2-siege-line" id="siege-damage-line" hidden>—</p>
-              <p class="l2-siege-line" id="siege-my-damage-line" hidden>—</p>
-              <ul class="l2-siege-top" id="siege-top-clans" hidden></ul>
-              <p class="l2-siege-msg" id="siege-msg" hidden></p>
-              <p class="l2-siege-result" id="siege-result" hidden></p>
-              <div class="l2-siege-actions">
-                <button type="button" class="l2-siege-btn" id="siege-attack-btn" hidden>
-                  Ударити стіну
-                </button>
-                <button type="button" class="l2-siege-btn l2-siege-btn--secondary" id="siege-refresh-btn">
-                  Оновити
-                </button>
-                <a class="l2-siege-btn l2-siege-btn--link" href="/city.html">Назад у місто</a>
+              <div class="l2-siege-head">
+                <img
+                  class="l2-siege-castle-ico"
+                  src="/assets/gorod.png"
+                  alt=""
+                  width="48"
+                  height="48"
+                  decoding="async"
+                />
+                <div class="l2-siege-head-meta">
+                  <p class="l2-siege-line" id="siege-castle-line">Замок: —</p>
+                  <p class="l2-siege-line" id="siege-owner-line">Контролює клан: —</p>
+                </div>
               </div>
+              <div class="l2-siege-body" id="siege-body"></div>
+              <p class="l2-siege-line" id="siege-nearby-line" hidden>Поруч нікого немає</p>
+              <p class="l2-siege-line">
+                <a class="l2-siege-link" id="siege-back-link" href="/city.html">Повернутися до міста</a>
+              </p>
             </section>
             <div id="l2-nav-bottom"></div>
           </div>
         </div>
       </div>
     </div>
-    <script src="/common.js?v=20260719partyHudPollOpt1"></script>
+    <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/siege.js?v=20260719clanSiegeStageA1"></script>
+    <script src="/siege.js?v=20260719clanSiegeWapUi1"></script>
   </body>
 </html>
