@@ -300,6 +300,7 @@
   margin: 8px 0 6px;
 }
 
+.l2-battle-mob-panel--victory #battle-mob-title,
 .l2-battle-mob-panel--victory #battle-mob-combat-chrome {
   display: none !important;
 }
