@@ -60,6 +60,12 @@ export type SiegeParticipantsView = {
   enemies: SiegeParticipantBrief[];
 };
 
+export type SiegeIncomingDamageNotice = {
+  attackerName: string;
+  damage: number;
+  at: string;
+};
+
 export type SiegeStateView = {
   serverTime: string;
   timeZone: string;
@@ -85,6 +91,7 @@ export type SiegeStateView = {
   rewardPoints: number;
   finishReason: string | null;
   participants?: SiegeParticipantsView;
+  incomingDamageNotice: SiegeIncomingDamageNotice | null;
 };
 
 async function loadClanBrief(clanId: string | null | undefined): Promise<SiegeClanBrief> {
@@ -383,6 +390,7 @@ export async function getSiegeStateForUser(
       topClans: [],
       rewardPoints: SIEGE_REWARD_CLAN_POINTS,
       finishReason: null,
+      incomingDamageNotice: null,
     };
   }
 
@@ -404,7 +412,13 @@ export async function getSiegeStateForUser(
     where: {
       siegeId_characterId: { siegeId: siege.id, characterId: char.id },
     },
-    select: { totalWallDamage: true, eliminatedAt: true },
+    select: {
+      totalWallDamage: true,
+      eliminatedAt: true,
+      lastIncomingAttackerName: true,
+      lastIncomingDamage: true,
+      lastIncomingAt: true,
+    },
   });
   viewerCharacterDamage = partRow?.totalWallDamage ?? 0;
   const viewerEliminated = !!partRow?.eliminatedAt;
@@ -446,6 +460,20 @@ export async function getSiegeStateForUser(
     );
   }
 
+  let incomingDamageNotice: SiegeIncomingDamageNotice | null = null;
+  if (
+    partRow?.lastIncomingAt &&
+    partRow.lastIncomingAttackerName &&
+    typeof partRow.lastIncomingDamage === 'number' &&
+    partRow.lastIncomingDamage > 0
+  ) {
+    incomingDamageNotice = {
+      attackerName: partRow.lastIncomingAttackerName,
+      damage: partRow.lastIncomingDamage,
+      at: partRow.lastIncomingAt.toISOString(),
+    };
+  }
+
   return {
     serverTime: new Date(nowMs).toISOString(),
     timeZone: SIEGE_TIME_ZONE,
@@ -473,6 +501,7 @@ export async function getSiegeStateForUser(
     rewardPoints: SIEGE_REWARD_CLAN_POINTS,
     finishReason: siege.finishReason,
     participants,
+    incomingDamageNotice,
   };
 }
 

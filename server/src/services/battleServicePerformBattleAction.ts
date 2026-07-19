@@ -132,6 +132,12 @@ import { isPartyBattleRewardDistributionReady } from '../domain/partyBattleFlags
 import type { PartyBattleActionLockContext } from './party/partyBattleActionLock.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
+  computeAppliedCpHpDamage,
+  readCharacterCpHpInTx,
+  recordSiegeIncomingPvpHitInTx,
+  type CharacterCpHpSnapshot,
+} from './clanSiege/clanSiegeIncomingDamageService.js';
+import {
   EARTHQUAKE_EXTRA_MOB_CAP,
   earthquakeWorldRadius,
 } from '../data/earthquakeSkillConstants.js';
@@ -1071,6 +1077,25 @@ export async function performBattleActionInTx(
       pDmg > 0 && magicOutcome != null && magicOutcome !== 'miss';
     const damagingPlayerHit = landedPhysicalHit || landedMagicHit;
 
+    let siegeIncomingCpHpBefore: CharacterCpHpSnapshot | null = null;
+    const siegeIncomingCtx =
+      isPvpBattleJson(st) &&
+      damagingPlayerHit &&
+      st.pvpTargetCharacterId &&
+      st.playerCombatMode === 'siege' &&
+      st.siegeId
+        ? {
+            siegeId: String(st.siegeId),
+            victimId: String(st.pvpTargetCharacterId),
+          }
+        : null;
+    if (siegeIncomingCtx) {
+      siegeIncomingCpHpBefore = await readCharacterCpHpInTx(
+        tx,
+        siegeIncomingCtx.victimId
+      );
+    }
+
     if (
       lethalShotProc === true &&
       damagingPlayerHit &&
@@ -1445,6 +1470,25 @@ export async function performBattleActionInTx(
           ? Math.max(0, Math.floor(st.mobCp))
           : st.mobMaxCp;
       st.mobCp = Math.min(cur, st.mobMaxCp);
+    }
+    if (siegeIncomingCtx && siegeIncomingCpHpBefore) {
+      const cpHpAfter = await readCharacterCpHpInTx(tx, siegeIncomingCtx.victimId);
+      if (cpHpAfter) {
+        const appliedDamage = computeAppliedCpHpDamage(
+          siegeIncomingCpHpBefore,
+          cpHpAfter
+        );
+        if (appliedDamage > 0) {
+          await recordSiegeIncomingPvpHitInTx(tx, {
+            siegeId: siegeIncomingCtx.siegeId,
+            victimCharacterId: siegeIncomingCtx.victimId,
+            attackerCharacterId: char.id,
+            attackerName: char.name,
+            appliedDamage,
+            nowMs: Date.now(),
+          });
+        }
+      }
     }
     if (skillLine) {
       const compact = compactBattleSkillLogLineUk(skillLine);

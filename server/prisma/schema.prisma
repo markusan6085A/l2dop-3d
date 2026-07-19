@@ -376,6 +376,10 @@ model ClanSiegeParticipant {
   joinedAt                   DateTime  @default(now())
   eliminatedAt               DateTime?
   eliminatedByCharacterId    String?
+  lastIncomingAttackerCharacterId String?
+  lastIncomingAttackerName        String?
+  lastIncomingDamage              Int?
+  lastIncomingAt                  DateTime?
 
   @@unique([siegeId, characterId])
   @@index([siegeId])

@@ -158,6 +158,22 @@
     return p;
   }
 
+  function renderIncomingDamageNotice(parent, data) {
+    var notice = data && data.incomingDamageNotice;
+    if (!notice || !notice.attackerName || !(Number(notice.damage) > 0)) {
+      return;
+    }
+    var p = document.createElement('p');
+    p.className = 'l2-siege-line';
+    p.id = 'siege-incoming-damage-line';
+    p.textContent =
+      String(notice.attackerName) +
+      ' наніс вам ' +
+      String(Math.floor(Number(notice.damage))) +
+      ' урону.';
+    parent.appendChild(p);
+  }
+
   function addActionLink(parent, text, id, disabled) {
     var p = document.createElement('p');
     p.className = 'l2-siege-line';
@@ -360,6 +376,8 @@
           body.appendChild(blockedEl);
         }
       }
+
+      renderIncomingDamageNotice(body, data);
 
       addActionLink(body, 'Оновити', 'siege-refresh-link', false);
       addLine(body, 'Мій урон: ' + formatNum(data.viewerCharacterDamage || 0));
