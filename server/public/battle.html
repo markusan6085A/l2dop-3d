@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260719battleLayoutFix1" />
+    <title data-i18n="battle_title">Бій — L2WAP</title><link rel="stylesheet" href="/styles.css?v=20260719victoryInline1" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
   </head>
@@ -128,8 +128,48 @@
                   class="l2-battle-whirlwind-extras"
                   hidden
                   aria-label="Додаткові цілі Вихору"
-                ></div>
+                >                </div>
               </div>
+              <section
+                id="battle-victory-inline"
+                class="l2-battle-victory-inline"
+                hidden
+                data-i18n-attr="aria-label:battle_victory_aria"
+                aria-label="Перемога"
+              >
+                <div class="l2-battle-victory-notify">
+                  <div class="l2-battle-victory-notify__title-row">
+                    <span class="l2-battle-victory-notify__shout"
+                      >ВИ ПЕРЕМОГЛИ МОНСТРА!</span
+                    >
+                  </div>
+                  <p
+                    id="battle-victory-party-split"
+                    class="l2-battle-victory-notify__party-split"
+                    hidden
+                  ></p>
+                  <p class="l2-battle-victory-notify__levelup" id="battle-victory-levelup" hidden></p>
+                  <p class="l2-battle-victory-notify__loot" id="battle-victory-lootline"></p>
+                  <div class="l2-battle-victory-notify__links">
+                    <button
+                      type="button"
+                      class="l2-battle-victory-link l2-battle-victory-link--primary"
+                      id="battle-victory-continue"
+                      data-i18n="battle_continue"
+                    >
+                      Продовжити
+                    </button>
+                    <button
+                      type="button"
+                      class="l2-battle-victory-link l2-battle-victory-link--muted"
+                      id="battle-victory-hunt"
+                      data-i18n="battle_hunt_more"
+                    >
+                      Полювати далі
+                    </button>
+                  </div>
+                </div>
+              </section>
               <div class="l2-battle-skills" id="battle-skills"></div>
             </section>
             </div>
@@ -155,63 +195,8 @@
               id="battle-victory-root"
               class="l2-battle-victory-root"
               hidden
-              data-i18n-attr="aria-label:battle_victory_aria"
-              aria-label="Перемога"
-            >
-              <p class="l2-battle-victory-mobhead" id="battle-victory-mobhead"></p>
-
-              <div class="l2-battle-victory-notify">
-                <div class="l2-battle-victory-notify__title-row">
-                  <span class="l2-battle-victory-notify__shout"
-                    >ВИ ПЕРЕМОГЛИ МОНСТРА!</span
-                  >
-                </div>
-                <p class="l2-battle-victory-notify__levelup" id="battle-victory-levelup" hidden></p>
-                <div class="l2-battle-victory-notify__divider" aria-hidden="true"></div>
-                <p class="l2-battle-victory-notify__loot" id="battle-victory-lootline"></p>
-                <div class="l2-battle-victory-notify__divider" aria-hidden="true"></div>
-                <div class="l2-battle-victory-notify__links">
-                  <button
-                    type="button"
-                    class="l2-battle-victory-link l2-battle-victory-link--primary"
-                    id="battle-victory-continue"
-                    data-i18n="battle_continue"
-                  >
-                    Продовжити
-                  </button>
-                  <button
-                    type="button"
-                    class="l2-battle-victory-link l2-battle-victory-link--muted"
-                    id="battle-victory-hunt"
-                    data-i18n="battle_hunt_more"
-                  >
-                    Полювати далі
-                  </button>
-                </div>
-              </div>
-
-              <div class="l2-battle-victory-loghead">
-                <span class="l2-battle-victory-loghead__line l2-battle-victory-loghead__line--left" aria-hidden="true"></span>
-                <span class="l2-battle-victory-loghead__text" data-i18n="battle_log_title">Лог бою</span>
-                <span class="l2-battle-victory-loghead__line l2-battle-victory-loghead__line--right" aria-hidden="true"></span>
-              </div>
-              <div class="l2-battle-victory-logbox">
-                <div
-                  class="l2-battle-log l2-battle-log--colored l2-battle-log--victory"
-                  id="battle-victory-log"
-                ></div>
-              </div>
-              <div class="l2-battle-victory-logfoot">
-                <a
-                  href="/map.html"
-                  class="l2-battle-victory-backloc"
-                  id="battle-victory-map"
-                  data-i18n="battle_back_map"
-                >
-                  Назад на карту
-                </a>
-              </div>
-            </section>
+              aria-hidden="true"
+            ></section>
 
             <section
               id="battle-defeat-root"
@@ -262,6 +247,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/battle-hotbar.js?v=20260716atkCd1"></script>
-    <script src="/battle.js?v=20260719battleLayoutFix1"></script>
+    <script src="/battle.js?v=20260719victoryInline1"></script>
   </body>
 </html>

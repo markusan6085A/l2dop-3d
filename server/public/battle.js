@@ -461,14 +461,27 @@
   }
 
   /** Рядок підсумку на екрані перемоги у компактному текстовому форматі. */
-  function fillVictoryLootLine(el, victory, partyReward) {
+  function fillVictoryLootLine(el, partySplitEl, victory, partyReward) {
+    if (partySplitEl) {
+      if (partyReward && partyReward.shared) {
+        partySplitEl.hidden = false;
+        partySplitEl.textContent =
+          'Нагороду поділено між ' +
+          String(partyReward.recipientCount) +
+          ' учасниками паті';
+      } else {
+        partySplitEl.hidden = true;
+        partySplitEl.textContent = '';
+      }
+    }
     if (!el || !victory) return;
     el.className = 'l2-battle-victory-notify__loot';
     if (partyReward && partyReward.shared) {
       el.textContent =
-        'Нагороду поділено між ' +
-        String(partyReward.recipientCount) +
-        ' учасниками паті. Ваша частка: +' +
+        '+' +
+        String(partyReward.adenaGain) +
+        tr('battle_loot_adena', ' аден') +
+        ', +' +
         String(partyReward.expGain) +
         ' ' +
         tr('battle_exp_abbr', 'EXP') +
@@ -476,9 +489,6 @@
         String(partyReward.spGain) +
         ' ' +
         tr('battle_sp_abbr', 'SP') +
-        ', +' +
-        String(partyReward.adenaGain) +
-        tr('battle_loot_adena', ' аден') +
         '.';
       return;
     }
@@ -1257,6 +1267,10 @@
     var debuffStripEl = $('battle-mob-debuff-strip');
     var logEl = $('battle-log');
     if (!battle) {
+      var vicInlineEarly = document.getElementById('battle-victory-inline');
+      if (vicInlineEarly && !vicInlineEarly.hidden) {
+        return;
+      }
       if (title) title.textContent = '—';
       clearBattleMobPortrait(mobIconEl, mobHpWrapEl);
       if (hpInner) hpInner.style.width = '0%';
@@ -1639,6 +1653,7 @@
     var lastBattleVisualSig = '';
     var lastBattleVersion = 0;
     var lastPartyBattleDto = null;
+    var frozenBattleUi = null;
     var lastBattleLogSeq = 0;
     /** serverNowMs - Date.now() — для розрахунку cooldown без локального drift. */
     var serverTimeOffsetMs = 0;
@@ -1857,8 +1872,8 @@
 
     function applyBattleDelta(delta, topLevel) {
       if (!delta) return false;
-      var vicRootEarly = $('battle-victory-root');
-      if (vicRootEarly && !vicRootEarly.hidden) return false;
+      var vicInlineEarly = $('battle-victory-inline');
+      if (vicInlineEarly && !vicInlineEarly.hidden) return false;
       if (delta.battleEnded === true && !battle) return false;
       applyBattleCooldownFields(delta, topLevel);
       if (!delta.changed) {
@@ -2545,8 +2560,7 @@
           stopBattleSyncPoll();
           return;
         }
-        var vicRootPoll = $('battle-victory-root');
-        if (vicRootPoll && !vicRootPoll.hidden) {
+        if (isVictoryScreenActive()) {
           stopBattleSyncPoll();
           return;
         }
@@ -2837,13 +2851,7 @@
 
     async function runSkill(action) {
       await runWithBattleActionLock(async function () {
-        var vicRoot = $('battle-victory-root');
-        var defRoot = $('battle-defeat-root');
-        if (
-          !action ||
-          (vicRoot && !vicRoot.hidden) ||
-          (defRoot && !defRoot.hidden)
-        ) {
+        if (!action || isVictoryScreenActive() || isDefeatScreenActive()) {
           return;
         }
         if (!battle) {
@@ -3055,19 +3063,16 @@
 
     function hideBackNavForPvpDefeat() {
       var back = $('battle-back-map');
-      var vMap = $('battle-victory-map');
       if (back) back.hidden = true;
-      if (vMap) vMap.hidden = true;
     }
 
     function showPvpDefeatScreen(pvpDefeat) {
       stopBattleSyncPoll();
       syncBattleTopGridPartyLayout(null);
+      hideVictoryInline();
       var active = $('battle-active-root');
-      var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
       if (active) active.hidden = true;
-      if (vicRoot) vicRoot.hidden = true;
       if (defRoot) defRoot.hidden = false;
       var mobHead = $('battle-defeat-mobhead');
       if (mobHead) mobHead.textContent = '';
@@ -3135,12 +3140,68 @@
       el.appendChild(lvl);
     }
 
+    function hideVictoryInline() {
+      var inline = $('battle-victory-inline');
+      if (inline) inline.hidden = true;
+      var partySplit = $('battle-victory-party-split');
+      var lu = $('battle-victory-levelup');
+      var loot = $('battle-victory-lootline');
+      if (partySplit) {
+        partySplit.hidden = true;
+        partySplit.textContent = '';
+      }
+      if (lu) {
+        lu.hidden = true;
+        lu.textContent = '';
+      }
+      if (loot) loot.textContent = '';
+      frozenBattleUi = null;
+      var skillsBox = $('battle-skills');
+      if (skillsBox) skillsBox.classList.remove('l2-battle-skills--victory-locked');
+      var vicRoot = $('battle-victory-root');
+      if (vicRoot) vicRoot.hidden = true;
+    }
+
+    function applyVictoryMobPanelFromSummary(victory) {
+      if (!victory || victory.isPvp) return;
+      var title = $('battle-mob-title');
+      var mobIconEl = $('battle-mob-icon');
+      var mobHpWrapEl = $('battle-mob-hp-wrap');
+      var hpInner = $('battle-mob-hp-inner');
+      var hpVal = $('battle-mob-hp-val');
+      if (title) {
+        var aggL = tr('battle_aggressive', 'агресивний');
+        title.textContent =
+          String(victory.mobName || '—') +
+          ' · ур. ' +
+          String(victory.mobLevel != null ? victory.mobLevel : '?') +
+          (victory.aggressive ? ' · ' + aggL : '');
+      }
+      if (victory.mobIconUrl) {
+        applyBattleMobPortrait(
+          mobIconEl,
+          mobHpWrapEl,
+          victory.mobIconUrl,
+          victory.mobName || ''
+        );
+      }
+      setBar(hpInner, 0, victory.mobMaxHp || 1);
+      if (hpVal) {
+        hpVal.textContent = mobHpBarLabelText(
+          victory.kind,
+          0,
+          victory.mobMaxHp || 1,
+          victory.spawnId
+        );
+        hpVal.classList.add('l2-battle-bar-innertext--pair');
+      }
+    }
+
     function resetBattleOutcomePanels() {
       var active = $('battle-active-root');
-      var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
       if (active) active.hidden = false;
-      if (vicRoot) vicRoot.hidden = true;
+      hideVictoryInline();
       if (defRoot) defRoot.hidden = true;
     }
 
@@ -3199,6 +3260,7 @@
     }
 
     async function handleVictoryOutcome(victory, partyReward) {
+      frozenBattleUi = battle;
       clearLocalBattleStateAfterVictory();
       clearDefeatFromSession();
       renderPlayerBars(character);
@@ -3218,17 +3280,19 @@
       saveVictoryToSession(victory);
       syncBattleTopGridPartyLayout(null);
       var active = $('battle-active-root');
-      var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
-      if (active) active.hidden = true;
+      var vicInline = $('battle-victory-inline');
+      var vicRoot = $('battle-victory-root');
+      if (active) active.hidden = false;
       if (defRoot) defRoot.hidden = true;
-      if (vicRoot) vicRoot.hidden = false;
+      if (vicRoot) vicRoot.hidden = true;
+      if (vicInline) vicInline.hidden = false;
       var isPvpVic =
         victory &&
         (victory.isPvp ||
           (victory.spawnId && String(victory.spawnId).indexOf('pvp:') === 0));
-      var shoutEl = vicRoot
-        ? vicRoot.querySelector('.l2-battle-victory-notify__shout')
+      var shoutEl = vicInline
+        ? vicInline.querySelector('.l2-battle-victory-notify__shout')
         : null;
       if (shoutEl && isPvpVic) {
         shoutEl.textContent =
@@ -3239,7 +3303,7 @@
           'ВИ ПЕРЕМОГЛИ МОНСТРА!'
         );
       }
-      fillVictoryMobHead($('battle-victory-mobhead'), isPvpVic ? null : victory);
+      applyVictoryMobPanelFromSummary(victory);
       var lu = $('battle-victory-levelup');
       if (lu) {
         if (victory && victory.levelUp) {
@@ -3250,14 +3314,15 @@
           lu.textContent = '';
         }
       }
-      var lootLine = $('battle-victory-lootline');
-      if (lootLine && victory) {
-        fillVictoryLootLine(lootLine, victory, partyReward);
-      }
-      var vlog = $('battle-victory-log');
-      if (vlog && victory && victory.fullLog) {
-        /* Повний лог як під час бою (той самий порядок: новіші зверху) + нагороди вже в кінці масиву від сервера. */
-        renderColoredLog(vlog, victory.fullLog, {
+      fillVictoryLootLine(
+        $('battle-victory-lootline'),
+        $('battle-victory-party-split'),
+        victory,
+        partyReward
+      );
+      var logEl = $('battle-log');
+      if (logEl && victory && victory.fullLog) {
+        renderColoredLog(logEl, victory.fullLog, {
           showDropIcons: true,
           newestFirst: true,
           items: victory.items || [],
@@ -3290,7 +3355,15 @@
         }
         var lootPvp = $('battle-victory-lootline');
         if (lootPvp) lootPvp.textContent = '';
+        var partySplitPvp = $('battle-victory-party-split');
+        if (partySplitPvp) {
+          partySplitPvp.hidden = true;
+          partySplitPvp.textContent = '';
+        }
       }
+      var skillsBox = $('battle-skills');
+      if (skillsBox) skillsBox.classList.add('l2-battle-skills--victory-locked');
+      refreshUI();
     }
 
     /** Останні рядки логу навколо фінального повідомлення поразки. */
@@ -3333,15 +3406,14 @@
       stopBattleSyncPoll();
       battle = null;
       syncBattleTopGridPartyLayout(null);
+      hideVictoryInline();
       var contentEl = $('battle-content');
       var errLoad = $('battle-load-err');
       if (contentEl) contentEl.hidden = false;
       if (errLoad) errLoad.hidden = true;
       var active = $('battle-active-root');
-      var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
       if (active) active.hidden = true;
-      if (vicRoot) vicRoot.hidden = true;
       if (defRoot) defRoot.hidden = false;
       var isPvpDef = defeat && defeat.isPvp && defeat.killerName;
       if (isPvpDef) {
@@ -3360,8 +3432,6 @@
         fillDefeatMobHead($('battle-defeat-mobhead'), defeat);
         var backMap = $('battle-back-map');
         if (backMap) backMap.hidden = true;
-        var vMapBtn = $('battle-victory-map');
-        if (vMapBtn) vMapBtn.hidden = true;
       }
       var hint = $('battle-defeat-town-hint');
       if (hint && defeat) {
@@ -3540,7 +3610,7 @@
       renderPartyBattleMembers(lastPartyBattleDto);
       var skillsBox = $('battle-skills');
       if (
-        battle &&
+        (battle || frozenBattleUi) &&
         skillsBox &&
         window.L2BattleHotbar &&
         typeof L2BattleHotbar.mount === 'function'
@@ -3549,6 +3619,10 @@
           battleHotbar = L2BattleHotbar.mount({
             container: skillsBox,
             getBattle: function () {
+              var vicInline = $('battle-victory-inline');
+              if (vicInline && !vicInline.hidden && frozenBattleUi) {
+                return frozenBattleUi;
+              }
               return battle;
             },
             getCharacter: function () {
@@ -3582,8 +3656,11 @@
           });
         }
         battleHotbar.render();
-      } else {
-        if (skillsBox) skillsBox.innerHTML = '';
+      } else if (skillsBox) {
+        var vicInlineSkills = $('battle-victory-inline');
+        if (!(vicInlineSkills && !vicInlineSkills.hidden && frozenBattleUi)) {
+          skillsBox.innerHTML = '';
+        }
       }
     }
 
@@ -3664,13 +3741,6 @@
       });
     }
 
-    var vMap = $('battle-victory-map');
-    if (vMap) {
-      vMap.addEventListener('click', function (e) {
-        e.preventDefault();
-        goToMap();
-      });
-    }
     var vCont = $('battle-victory-continue');
     if (vCont) {
       vCont.addEventListener('click', function () {
@@ -3786,8 +3856,8 @@
     }
 
     function isVictoryScreenActive() {
-      var vicRoot = $('battle-victory-root');
-      return !!(vicRoot && !vicRoot.hidden);
+      var vicInline = $('battle-victory-inline');
+      return !!(vicInline && !vicInline.hidden);
     }
 
     function wireBattleCityNavLink() {
@@ -3875,10 +3945,11 @@
       var savedVictory =
         loadVictoryFromSession() || (spawnId ? { spawnId: spawnId } : null);
       if (savedVictory) {
+        if (content) content.hidden = false;
+        if (errEl) errEl.hidden = true;
+        renderPlayerBars(character);
         lastVictorySummary = savedVictory;
         showVictoryScreen(savedVictory);
-        if (content) content.hidden = true;
-        if (errEl) errEl.hidden = true;
       }
     }
   }
