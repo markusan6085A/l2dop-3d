@@ -25,7 +25,9 @@ import {
 import {
   isWithinDungeonMemberRadius,
   isWithinDungeonPartyBattleRadius,
+  resolveLiveDungeonMapPosition,
 } from '../src/domain/partyBattlePlayfield.js';
+import { resolveMapMovement } from '../src/domain/mapMovement.js';
 import {
   resolvePartyBattleRewardEligibleIds,
 } from '../src/domain/partyBattleRewardEligibility.js';
@@ -44,7 +46,12 @@ import { createPartyForUser } from '../src/services/party/partyService.js';
 import {
   applyPartyBattleSharedDamageInTx,
 } from '../src/services/party/partyBattleActionLock.js';
-import { touchOnlinePresence } from '../src/services/onlinePresenceService.js';
+import { touchOnlinePresence, isCharacterOnlineNow } from '../src/services/onlinePresenceService.js';
+import { buildPartyBattleRewardOnlineCheck } from '../src/services/party/partyBattleRewardOnline.js';
+import { preparePartyBattleLethalStrikeInTx } from './partyBattleSmokeLethalHelper.js';
+import type { BattleActionFullResponse } from '../src/services/battleServiceDeltaTypes.js';
+import { ensureClanHallOnRow } from '../src/services/charClientSnapshot.js';
+import { toSnapshot } from '../src/services/charService.js';
 import { parseBattleJson } from '../src/services/battleServiceParseBattleJson.js';
 
 const WORLD_SPAWN = MAP_WORLD_SPAWNS[0]!;
@@ -78,7 +85,10 @@ function withStageEFlags(fn: () => Promise<void>): Promise<void> {
   return fn().finally(resetFlags);
 }
 
-async function createTestAccount(label: string): Promise<{
+async function createTestAccount(
+  label: string,
+  opts?: { touchPresence?: boolean }
+): Promise<{
   userId: string;
   characterId: string;
 }> {
@@ -104,7 +114,9 @@ async function createTestAccount(label: string): Promise<{
     },
     include: { characters: true },
   });
-  await touchOnlinePresence(user.id);
+  if (opts?.touchPresence !== false) {
+    await touchOnlinePresence(user.id);
+  }
   return { userId: user.id, characterId: user.characters[0]!.id };
 }
 
@@ -428,6 +440,219 @@ async function testRewardEligibilityDungeon(): Promise<void> {
   ok('near member eligible without damage; far excluded; world coords ignored');
 }
 
+function dungeonEligibilityInput(
+  killerMapX: number,
+  killerMapY: number,
+  memberMapX: number,
+  memberMapY: number,
+  isOnline: (characterId: string) => boolean = () => true
+) {
+  const killerDungeon = { dungeonId: DUNGEON_ID, mapX: killerMapX, mapY: killerMapY };
+  const memberDungeon = { dungeonId: DUNGEON_ID, mapX: memberMapX, mapY: memberMapY };
+  return {
+    killerCharacterId: 'k',
+    killerResolved: { worldX: 0, worldY: 0, dungeonStateJson: { v: 1, dungeonId: DUNGEON_ID } },
+    killerDungeonMap: killerDungeon,
+    playfield: 'dungeon' as const,
+    partyMemberIds: ['k', 'm'],
+    memberSnapshots: [
+      {
+        characterId: 'k',
+        hp: 100,
+        pvePendingDefeatJson: null,
+        resolvedPosition: { worldX: 0, worldY: 0, dungeonStateJson: {} },
+        dungeonMap: killerDungeon,
+      },
+      {
+        characterId: 'm',
+        hp: 100,
+        pvePendingDefeatJson: null,
+        resolvedPosition: { worldX: 0, worldY: 0, dungeonStateJson: {} },
+        dungeonMap: memberDungeon,
+      },
+    ],
+    isOnline,
+  };
+}
+
+function testDungeonRewardBoundaryPure(): void {
+  console.log('\n[reward] dungeon boundary 70px / 71px');
+  const at70 = resolvePartyBattleRewardEligibleIds(
+    dungeonEligibilityInput(100, 100, 100 + DUNGEON_NEARBY_RADIUS_PX, 100)
+  );
+  assert.deepEqual(at70.sort(), ['k', 'm']);
+  ok('70px boundary included');
+
+  const at71 = resolvePartyBattleRewardEligibleIds(
+    dungeonEligibilityInput(100, 100, 100 + DUNGEON_NEARBY_RADIUS_PX + 1, 100)
+  );
+  assert.deepEqual(at71, ['k']);
+  ok('71px boundary excluded');
+}
+
+async function dungeonLethalAttack(
+  userId: string,
+  characterId: string
+): Promise<BattleActionFullResponse> {
+  process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL = '1';
+  try {
+    let response: BattleActionFullResponse | undefined;
+    await prisma.$transaction(async (tx) => {
+      const { revision } = await preparePartyBattleLethalStrikeInTx(tx, characterId);
+      const r = await performBattleActionInTx(tx, userId, 'attack', revision, {
+        characterId,
+        battleSpawnId: DUNGEON_MOB.id,
+      });
+      if (r.kind === 'full') {
+        response = r as BattleActionFullResponse;
+        return;
+      }
+      if (
+        r.kind === 'delta' &&
+        (r.victory != null || r.delta.battleEnded === true || r.delta.mobDead === true)
+      ) {
+        const charAfter = await tx.character.findUniqueOrThrow({
+          where: { id: characterId },
+        });
+        response = {
+          kind: 'full',
+          character: toSnapshot(await ensureClanHallOnRow(charAfter as never, tx)),
+          battle: null,
+          ...(r.victory ? { victory: r.victory } : {}),
+          ...(r.partyReward ? { partyReward: r.partyReward } : {}),
+        };
+      }
+    });
+    assert.ok(response, 'dungeonLethalAttack: no response');
+    return response!;
+  } finally {
+    delete process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL;
+  }
+}
+
+async function testDungeonNearbyMateRewardIntegration(): Promise<void> {
+  console.log('\n[reward] lethal tx — nearby mate without participant row');
+  await withStageEFlags(async () => {
+    const killer = await createTestAccount('rw');
+    const mate = await createTestAccount('rm', { touchPresence: false });
+    await createPartyForUser(killer.userId, killer.characterId);
+    const membership = await prisma.partyMember.findUniqueOrThrow({
+      where: { characterId: killer.characterId },
+    });
+    await addPartyMember(membership.partyId, mate.characterId, 1);
+
+    const mapX = DUNGEON_MOB.mapX;
+    const mapY = DUNGEON_MOB.mapY;
+    await placeInDungeon(killer.characterId, mapX, mapY);
+    await placeInDungeon(mate.characterId, mapX, mapY);
+
+    const killerBefore = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const mateBefore = await prisma.character.findUniqueOrThrow({
+      where: { id: mate.characterId },
+    });
+
+    let killerChar = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    await prisma.$transaction((tx) =>
+      startBattleInTx(tx, killer.userId, DUNGEON_MOB.id, killerChar.revision, {
+        characterId: killer.characterId,
+      })
+    );
+
+    const killerAfterStart = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const bj = parseBattleJson(killerAfterStart.battleJson as never);
+    assert.ok(bj?.partyBattleId);
+    const sessionId = bj!.partyBattleId!;
+
+    const activeParticipants = await prisma.partyBattleParticipant.count({
+      where: { partyBattleId: sessionId, active: true },
+    });
+    assert.equal(activeParticipants, 1);
+    assert.equal(isCharacterOnlineNow(mate.characterId), false);
+
+    const killerSnapRow = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const mateSnapRow = await prisma.character.findUniqueOrThrow({
+      where: { id: mate.characterId },
+    });
+    const nowMs = Date.now();
+    const killerResolved = resolveMapMovement(killerSnapRow as never);
+    const memberSnapshots = [
+      {
+        characterId: killer.characterId,
+        hp: killerSnapRow.hp,
+        pvePendingDefeatJson: killerSnapRow.pvePendingDefeatJson,
+        resolvedPosition: {
+          worldX: killerResolved.worldX,
+          worldY: killerResolved.worldY,
+          dungeonStateJson: killerResolved.dungeonStateJson,
+        },
+        dungeonMap: resolveLiveDungeonMapPosition(killerSnapRow as never, nowMs),
+      },
+      {
+        characterId: mate.characterId,
+        hp: mateSnapRow.hp,
+        pvePendingDefeatJson: mateSnapRow.pvePendingDefeatJson,
+        resolvedPosition: {
+          worldX: mateSnapRow.worldX,
+          worldY: mateSnapRow.worldY,
+          dungeonStateJson: mateSnapRow.dungeonStateJson,
+        },
+        dungeonMap: resolveLiveDungeonMapPosition(mateSnapRow as never, nowMs),
+      },
+    ];
+    const isOnline = buildPartyBattleRewardOnlineCheck({
+      playfield: 'dungeon',
+      sessionDungeonId: DUNGEON_ID,
+      memberSnapshots,
+      activeParticipantIds: new Set([killer.characterId]),
+    });
+    assert.equal(isOnline(mate.characterId), true);
+    const preEligible = resolvePartyBattleRewardEligibleIds({
+      killerCharacterId: killer.characterId,
+      killerResolved: memberSnapshots[0]!.resolvedPosition,
+      killerDungeonMap: memberSnapshots[0]!.dungeonMap,
+      playfield: 'dungeon',
+      partyMemberIds: [killer.characterId, mate.characterId],
+      memberSnapshots,
+      isOnline,
+    });
+    assert.deepEqual(preEligible.sort(), [killer.characterId, mate.characterId].sort());
+
+    const result = await dungeonLethalAttack(killer.userId, killer.characterId);
+    assert.ok(result.partyReward);
+    assert.equal(result.partyReward!.recipientCount, 2);
+    assert.equal(result.partyReward!.shared, true);
+
+    const rewards = await prisma.partyKillReward.findMany({
+      where: { partyBattleId: sessionId },
+      orderBy: { characterId: 'asc' },
+    });
+    assert.equal(rewards.length, 2);
+
+    const killerAfter = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const mateAfter = await prisma.character.findUniqueOrThrow({
+      where: { id: mate.characterId },
+    });
+    assert.ok(Number(killerAfter.exp) > Number(killerBefore.exp));
+    assert.ok(Number(mateAfter.exp) > Number(mateBefore.exp));
+    assert.ok(Number(killerAfter.adena) > Number(killerBefore.adena));
+    assert.ok(Number(mateAfter.adena) > Number(mateBefore.adena));
+    ok('both members rewarded in dungeon lethal tx');
+
+    await cleanupCharacter(killer.characterId, killer.userId);
+    await cleanupCharacter(mate.characterId, mate.userId);
+  });
+}
+
 async function testDungeonExitEndsParticipant(): Promise<void> {
   console.log('\n[exit] leave dungeon during battle');
   await withStageEFlags(async () => {
@@ -589,6 +814,8 @@ async function main(): Promise<void> {
   await testOutOfRange();
   await testSharedHp();
   await testRewardEligibilityDungeon();
+  testDungeonRewardBoundaryPure();
+  await testDungeonNearbyMateRewardIntegration();
   await testDungeonExitEndsParticipant();
   await testDungeonHudCanJoin();
   await testBattleSyncNearby();

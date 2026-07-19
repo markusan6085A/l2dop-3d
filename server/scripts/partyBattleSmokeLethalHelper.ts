@@ -176,6 +176,8 @@ async function preparePartyBattleLethalStrikeInTx(
   return { sessionId, revision: updated.revision };
 }
 
+export { preparePartyBattleLethalStrikeInTx };
+
 /** Stage B: deterministic test victory tx (no combat RNG / solo-clear flake). */
 async function performPartyBattleStageBTestLethal(args: {
   userId: string;

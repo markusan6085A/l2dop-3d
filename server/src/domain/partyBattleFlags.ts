@@ -40,6 +40,11 @@ export function isPartyBattleUnrewardedTestsAllowed(): boolean {
   return envTruthy('PARTY_BATTLE_ALLOW_UNREWARDED_TESTS');
 }
 
+/** Тимчасовий debug log eligibility/reward (production: false). */
+export function isPartyBattleDebugEnabled(): boolean {
+  return envTruthy('PARTY_BATTLE_DEBUG');
+}
+
 /**
  * HTTP start/join/action для party battle.
  * A: ENABLED=false → false (solo flow).

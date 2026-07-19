@@ -51,7 +51,8 @@ import {
 } from '../charService.js';
 import { ensureClanHallOnRow } from '../charClientSnapshot.js';
 import { resolveL2dopNpcIdByMobName } from '../spawnCatalogService.js';
-import { isCharacterOnlineNow } from '../onlinePresenceService.js';
+import { buildPartyBattleRewardOnlineCheck } from './partyBattleRewardOnline.js';
+import { logPartyBattleRewardEligibilityDebug } from './partyBattleRewardEligibilityDebug.js';
 import type {
   BattleActionFullResponse,
   PartyBattleRewardSummary,
@@ -273,7 +274,13 @@ export async function resolvePartyBattleVictoryInTx(
     nowMs
   );
   const killerDungeonMap = resolveLiveDungeonMapPosition(killerRow, nowMs);
-  const eligibleIds = resolvePartyBattleRewardEligibleIds({
+  const isOnline = buildPartyBattleRewardOnlineCheck({
+    playfield: sessionAfterDamage.playfield,
+    sessionDungeonId: sessionAfterDamage.dungeonId,
+    memberSnapshots,
+    activeParticipantIds,
+  });
+  const eligibilityInput = {
     killerCharacterId: args.characterId,
     killerResolved: {
       worldX: killerResolved.worldX,
@@ -284,9 +291,17 @@ export async function resolvePartyBattleVictoryInTx(
     playfield: sessionAfterDamage.playfield,
     partyMemberIds,
     memberSnapshots,
-    isOnline: (characterId) =>
-      isCharacterOnlineNow(characterId) || activeParticipantIds.has(characterId),
+    isOnline,
+  };
+  logPartyBattleRewardEligibilityDebug({
+    session: sessionAfterDamage,
+    killerCharacterId: args.characterId,
+    partyMemberIds,
+    participantIds,
+    memberSnapshots,
+    eligibilityInput,
   });
+  const eligibleIds = resolvePartyBattleRewardEligibleIds(eligibilityInput);
 
   if (eligibleIds.length === 0) {
     throw new Error('party_battle_no_eligible_recipients');
