@@ -19,6 +19,8 @@ export const PARTY_BATTLE_END_REASON = {
   stage_b_test_victory: 'stage_b_test_victory',
   /** Stage E: explicit dungeon exit / last participant left dungeon. */
   dungeon_exit: 'dungeon_exit',
+  /** Hunt-continue / new mob: попередня active session замінена новою ціллю. */
+  superseded: 'superseded',
 } as const;
 
 export type PartyBattleEndReasonValue =

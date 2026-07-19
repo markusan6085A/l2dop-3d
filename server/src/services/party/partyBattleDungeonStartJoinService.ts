@@ -42,7 +42,12 @@ import { parseSkillCooldowns } from '../../data/skillCooldowns.js';
 import { mutateCharacterWithRevision } from '../characterMutation.js';
 import { lockPartyForUpdateInTx } from './partyLock.js';
 import {
+  PARTY_BATTLE_END_REASON,
+  PARTY_BATTLE_SESSION_STATE,
+} from '../../domain/partyBattleSessionConstants.js';
+import {
   createActivePartyBattleSessionInTx,
+  endPartyBattleSessionInTx,
   findActivePartyBattleSessionByPartyIdInTx,
   joinPartyBattleParticipantInTx,
 } from './partyBattleSessionService.js';
@@ -52,12 +57,95 @@ import {
 import { dungeonStateToJson } from '../../domain/dungeonMoveLogic.js';
 import { resolveDungeonMovementPatch } from '../../domain/dungeonMapMovement.js';
 import { resolveDungeonMoveSpeedStatsForRow } from '../../domain/dungeonRunSpeed.js';
-import type { Prisma as PrismaTypes } from '@prisma/client';
+import type { Prisma as PrismaTypes, PartyBattleSession } from '@prisma/client';
 
 type Tx = PrismaTypes.TransactionClient;
 
 function randomMobRetaliationWindowHits(): number {
   return 1 + Math.floor(Math.random() * 3);
+}
+
+type ResolveDungeonPartyBattleSessionArgs = {
+  partyId: string;
+  dungeonMob: SevenSignsDungeonMobSpawn;
+  spawn: import('../../data/mapWorldSpawns.js').MapWorldSpawn;
+  mobMaxHp: number;
+  starterCharacterId: string;
+  nowMs: number;
+};
+
+/**
+ * Кожен dungeon start/hunt-continue: актуальна active session для цієї цілі
+ * або нова session. Стару active session з іншим spawnId завершуємо (superseded).
+ */
+async function resolveOrCreateDungeonPartyBattleSessionInTx(
+  tx: Tx,
+  args: ResolveDungeonPartyBattleSessionArgs
+): Promise<PartyBattleSession> {
+  let session = await findActivePartyBattleSessionByPartyIdInTx(tx, args.partyId);
+  if (session) {
+    if (session.spawnId === args.dungeonMob.id) {
+      assertDungeonSessionMatchesMob(session, args.dungeonMob);
+      await joinPartyBattleParticipantInTx(tx, {
+        sessionId: session.id,
+        characterId: args.starterCharacterId,
+        nowMs: args.nowMs,
+      });
+      return tx.partyBattleSession.findUniqueOrThrow({ where: { id: session.id } });
+    }
+    if (
+      session.playfield === 'dungeon' &&
+      session.dungeonId === args.dungeonMob.dungeonId
+    ) {
+      await endPartyBattleSessionInTx(tx, {
+        sessionId: session.id,
+        terminalState: PARTY_BATTLE_SESSION_STATE.ended,
+        endReason: PARTY_BATTLE_END_REASON.superseded,
+        nowMs: args.nowMs,
+      });
+      session = null;
+    } else {
+      throw new Error('party_battle_wrong_spawn');
+    }
+  }
+
+  if (!session) {
+    try {
+      session = await createActivePartyBattleSessionInTx(tx, {
+        partyId: args.partyId,
+        spawnId: args.dungeonMob.id,
+        canonicalMobTemplateId: args.spawn.templateId ?? args.dungeonMob.id,
+        playfield: 'dungeon',
+        dungeonId: args.dungeonMob.dungeonId,
+        mobMapX: args.dungeonMob.mapX,
+        mobMapY: args.dungeonMob.mapY,
+        mobMaxHp: args.mobMaxHp,
+        starterCharacterId: args.starterCharacterId,
+        nowMs: args.nowMs,
+      });
+    } catch (err) {
+      if (
+        err instanceof Error &&
+        err.message === 'party_battle_session_already_active'
+      ) {
+        session = await findActivePartyBattleSessionByPartyIdInTx(tx, args.partyId);
+        if (!session || session.spawnId !== args.dungeonMob.id) {
+          throw new Error('party_battle_wrong_spawn');
+        }
+        assertDungeonSessionMatchesMob(session, args.dungeonMob);
+        await joinPartyBattleParticipantInTx(tx, {
+          sessionId: session.id,
+          characterId: args.starterCharacterId,
+          nowMs: args.nowMs,
+        });
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  if (!session) throw new Error('party_battle_session_not_found');
+  return session;
 }
 
 export type DungeonPartyBattleStartJoinArgs = {
@@ -113,55 +201,24 @@ export async function startOrJoinDungeonPartyBattleInTx(
   const lockedParty = await lockPartyForUpdateInTx(tx, args.partyId);
   if (!lockedParty) throw new Error('party_not_found');
 
-  let session = await findActivePartyBattleSessionByPartyIdInTx(tx, args.partyId);
-  if (!session) {
-    try {
-      session = await createActivePartyBattleSessionInTx(tx, {
-        partyId: args.partyId,
-        spawnId: args.dungeonMob.id,
-        canonicalMobTemplateId: spawn.templateId ?? args.dungeonMob.id,
-        playfield: 'dungeon',
-        dungeonId: args.dungeonMob.dungeonId,
-        mobMapX: args.dungeonMob.mapX,
-        mobMapY: args.dungeonMob.mapY,
-        mobMaxHp: mc.maxHp,
-        starterCharacterId: args.char.id,
-        nowMs: args.nowStartMs,
-      });
-    } catch (err) {
-      if (err instanceof Error && err.message === 'party_battle_session_already_active') {
-        session = await findActivePartyBattleSessionByPartyIdInTx(tx, args.partyId);
-        if (session && session.spawnId === args.dungeonMob.id) {
-          assertDungeonSessionMatchesMob(session, args.dungeonMob);
-          await joinPartyBattleParticipantInTx(tx, {
-            sessionId: session.id,
-            characterId: args.char.id,
-            nowMs: args.nowStartMs,
-          });
-        }
-      }
-      if (!session) throw err;
-    }
-  } else {
-    assertDungeonSessionMatchesMob(session, args.dungeonMob);
-    if (
-      !isWithinDungeonPartyBattleRadius(
-        livePos.mapX,
-        livePos.mapY,
-        session.mobMapX ?? args.dungeonMob.mapX,
-        session.mobMapY ?? args.dungeonMob.mapY
-      )
-    ) {
-      throw new Error('battle_too_far');
-    }
-    await joinPartyBattleParticipantInTx(tx, {
-      sessionId: session.id,
-      characterId: args.char.id,
-      nowMs: args.nowStartMs,
-    });
-    session = await tx.partyBattleSession.findUniqueOrThrow({
-      where: { id: session.id },
-    });
+  const session = await resolveOrCreateDungeonPartyBattleSessionInTx(tx, {
+    partyId: args.partyId,
+    dungeonMob: args.dungeonMob,
+    spawn,
+    mobMaxHp: mc.maxHp,
+    starterCharacterId: args.char.id,
+    nowMs: args.nowStartMs,
+  });
+
+  if (
+    !isWithinDungeonPartyBattleRadius(
+      livePos.mapX,
+      livePos.mapY,
+      session.mobMapX ?? args.dungeonMob.mapX,
+      session.mobMapY ?? args.dungeonMob.mapY
+    )
+  ) {
+    throw new Error('battle_too_far');
   }
 
   const mobHpStart = session.mobHp;

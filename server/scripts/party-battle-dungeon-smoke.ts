@@ -36,8 +36,10 @@ import {
   PARTY_BATTLE_SESSION_STATE,
 } from '../src/domain/partyBattleSessionConstants.js';
 import { serializeDungeonState } from '../src/domain/dungeonState.js';
+import { L2DOP_LEVEL_MIN_EXP } from '../src/data/l2dopExpgain.js';
 import { prisma } from '../src/lib/prisma.js';
 import { startBattleInTx } from '../src/services/battleServiceSession.js';
+import { startHuntContinueBattle } from '../src/services/battleServiceHuntContinue.js';
 import { performBattleActionInTx } from '../src/services/battleServicePerformBattleAction.js';
 import { getBattleSyncForUser } from '../src/services/battleServiceSync.js';
 import { performDungeonLeave } from '../src/services/dungeonLeaveService.js';
@@ -60,6 +62,16 @@ const DUNGEON = findSevenSignsDungeonById(DUNGEON_ID)!;
 const DUNGEON_MOB = SEVEN_SIGNS_DUNGEON_MOB_SPAWNS[DUNGEON_ID]!.find(
   (m) => m.kind !== 'raid'
 )!;
+const HUNT_MOB_A =
+  SEVEN_SIGNS_DUNGEON_MOB_SPAWNS[DUNGEON_ID]!.find(
+    (m) => m.id === 'sdms_necropolis_of_sacrifice_037'
+  ) ?? DUNGEON_MOB;
+const HUNT_MOB_B =
+  SEVEN_SIGNS_DUNGEON_MOB_SPAWNS[DUNGEON_ID]!.find(
+    (m) => m.id === 'sdms_necropolis_of_sacrifice_072'
+  ) ?? DUNGEON_MOB;
+const HUNT_PLAYER_MAP_X = HUNT_MOB_A.mapX;
+const HUNT_PLAYER_MAP_Y = HUNT_MOB_A.mapY;
 const OTHER_DUNGEON_ID = 'necropolis_of_devotion';
 const OTHER_DUNGEON_MOB = SEVEN_SIGNS_DUNGEON_MOB_SPAWNS[OTHER_DUNGEON_ID]![0]!;
 
@@ -87,7 +99,7 @@ function withStageEFlags(fn: () => Promise<void>): Promise<void> {
 
 async function createTestAccount(
   label: string,
-  opts?: { touchPresence?: boolean }
+  opts?: { touchPresence?: boolean; level?: number }
 ): Promise<{
   userId: string;
   characterId: string;
@@ -95,6 +107,8 @@ async function createTestAccount(
   const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
   const login = `pbe_${label}_${suffix}`;
   const name = `E${label}${suffix.slice(-4)}`.slice(0, 16);
+  const level = Math.max(1, Math.min(80, Math.floor(opts?.level ?? 40)));
+  const exp = L2DOP_LEVEL_MIN_EXP[level - 1]!;
   const user = await prisma.user.create({
     data: {
       login,
@@ -104,7 +118,8 @@ async function createTestAccount(
           name,
           race: 'Human',
           classBranch: 'fighter',
-          level: 40,
+          level,
+          exp,
           hp: 5000,
           maxHp: 5000,
           worldX: DUNGEON.worldX,
@@ -490,9 +505,45 @@ function testDungeonRewardBoundaryPure(): void {
   ok('71px boundary excluded');
 }
 
+async function soloDungeonLethalAttack(
+  userId: string,
+  characterId: string,
+  battleSpawnId: string
+): Promise<void> {
+  process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL = '1';
+  try {
+    await prisma.$transaction(async (tx) => {
+      const char = await tx.character.findUniqueOrThrow({ where: { id: characterId } });
+      const bj = parseBattleJson(char.battleJson as never);
+      assert.ok(bj, 'soloDungeonLethalAttack: no battleJson');
+      const updated = await tx.character.update({
+        where: { id: characterId },
+        data: {
+          battleJson: { ...bj, mobHp: 1 } as unknown as Prisma.InputJsonValue,
+          hp: Math.max(1, char.maxHp),
+          skillCooldownsJson: [],
+        },
+      });
+      const r = await performBattleActionInTx(tx, userId, 'attack', updated.revision, {
+        characterId,
+        battleSpawnId,
+      });
+      assert.ok(
+        r.kind === 'full' ||
+          (r.kind === 'delta' &&
+            (r.victory != null || r.delta.battleEnded === true || r.delta.mobDead === true)),
+        'soloDungeonLethalAttack: no victory'
+      );
+    });
+  } finally {
+    delete process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL;
+  }
+}
+
 async function dungeonLethalAttack(
   userId: string,
-  characterId: string
+  characterId: string,
+  battleSpawnId: string = DUNGEON_MOB.id
 ): Promise<BattleActionFullResponse> {
   process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL = '1';
   try {
@@ -501,7 +552,7 @@ async function dungeonLethalAttack(
       const { revision } = await preparePartyBattleLethalStrikeInTx(tx, characterId);
       const r = await performBattleActionInTx(tx, userId, 'attack', revision, {
         characterId,
-        battleSpawnId: DUNGEON_MOB.id,
+        battleSpawnId,
       });
       if (r.kind === 'full') {
         response = r as BattleActionFullResponse;
@@ -644,8 +695,8 @@ async function testDungeonNearbyMateRewardIntegration(): Promise<void> {
     });
     assert.ok(Number(killerAfter.exp) > Number(killerBefore.exp));
     assert.ok(Number(mateAfter.exp) > Number(mateBefore.exp));
-    assert.ok(Number(killerAfter.adena) > Number(killerBefore.adena));
-    assert.ok(Number(mateAfter.adena) > Number(mateBefore.adena));
+    assert.ok(killerAfter.sp > killerBefore.sp);
+    assert.ok(mateAfter.sp > mateBefore.sp);
     ok('both members rewarded in dungeon lethal tx');
 
     await cleanupCharacter(killer.characterId, killer.userId);
@@ -802,6 +853,217 @@ async function testVictoryKeepsDungeonState(): Promise<void> {
   });
 }
 
+async function dungeonPartyLethalWithEconomyCheck(
+  userId: string,
+  killerId: string,
+  mateId: string,
+  spawnId: string,
+  killerBefore: { exp: bigint; sp: number; adena: bigint },
+  mateBefore: { exp: bigint; sp: number; adena: bigint }
+): Promise<{ sessionId: string; partyRewardRecipientCount: number }> {
+  const killerRow = await prisma.character.findUniqueOrThrow({
+    where: { id: killerId },
+  });
+  const bj = parseBattleJson(killerRow.battleJson as never);
+  assert.ok(bj?.partyBattleId, 'expected partyBattleId before lethal');
+  const sessionId = bj!.partyBattleId!;
+
+  const result = await dungeonLethalAttack(userId, killerId, spawnId);
+  assert.ok(result.partyReward, 'expected partyReward on lethal');
+  assert.equal(result.partyReward!.shared, true);
+
+  const rewards = await prisma.partyKillReward.findMany({
+    where: { partyBattleId: sessionId },
+  });
+  assert.equal(rewards.length, result.partyReward!.recipientCount);
+
+  const killerAfter = await prisma.character.findUniqueOrThrow({
+    where: { id: killerId },
+  });
+  const mateAfter = await prisma.character.findUniqueOrThrow({
+    where: { id: mateId },
+  });
+  assert.ok(Number(killerAfter.exp) > Number(killerBefore.exp));
+  assert.ok(Number(mateAfter.exp) > Number(mateBefore.exp));
+  assert.ok(killerAfter.sp > killerBefore.sp);
+  assert.ok(mateAfter.sp > mateBefore.sp);
+
+  const session = await prisma.partyBattleSession.findUniqueOrThrow({
+    where: { id: sessionId },
+  });
+  assert.equal(session.playfield, 'dungeon');
+  assert.equal(session.dungeonId, DUNGEON_ID);
+  assert.equal(session.spawnId, spawnId);
+
+  return {
+    sessionId,
+    partyRewardRecipientCount: result.partyReward!.recipientCount,
+  };
+}
+
+async function testDungeonHuntContinuePartyBattle(): Promise<void> {
+  console.log('\n[hunt-continue] party battle preserved across two dungeon kills');
+  await withStageEFlags(async () => {
+    const killer = await createTestAccount('h46', { level: 46 });
+    const mate = await createTestAccount('h21', { level: 21, touchPresence: false });
+    await touchOnlinePresence(killer.userId);
+    await touchOnlinePresence(mate.userId);
+
+    const party = await createPartyForUser(killer.userId, killer.characterId);
+    await addPartyMember(party.party.id, mate.characterId, 1);
+
+    await placeInDungeon(killer.characterId, HUNT_PLAYER_MAP_X, HUNT_PLAYER_MAP_Y);
+    await placeInDungeon(mate.characterId, HUNT_PLAYER_MAP_X, HUNT_PLAYER_MAP_Y);
+
+    let killerChar = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    await prisma.$transaction((tx) =>
+      startBattleInTx(tx, killer.userId, HUNT_MOB_A.id, killerChar.revision, {
+        characterId: killer.characterId,
+      })
+    );
+
+    const killerBefore1 = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const mateBefore1 = await prisma.character.findUniqueOrThrow({
+      where: { id: mate.characterId },
+    });
+    const first = await dungeonPartyLethalWithEconomyCheck(
+      killer.userId,
+      killer.characterId,
+      mate.characterId,
+      HUNT_MOB_A.id,
+      {
+        exp: killerBefore1.exp,
+        sp: killerBefore1.sp,
+        adena: killerBefore1.adena,
+      },
+      {
+        exp: mateBefore1.exp,
+        sp: mateBefore1.sp,
+        adena: mateBefore1.adena,
+      }
+    );
+    assert.equal(first.partyRewardRecipientCount, 2);
+    ok('first dungeon kill: party session + 2 rewards');
+
+    killerChar = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    assert.equal(killerChar.battleJson, null);
+
+    const hunt = await startHuntContinueBattle(
+      killer.userId,
+      killerChar.revision,
+      HUNT_MOB_A.id,
+      undefined,
+      HUNT_MOB_A.level,
+      { characterId: killer.characterId }
+    );
+    const killerAfterHunt = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const huntBj = parseBattleJson(killerAfterHunt.battleJson as never);
+    assert.ok(huntBj?.partyBattleId, 'hunt-continue must start party battle');
+    assert.notEqual(huntBj!.partyBattleId, first.sessionId);
+    assert.equal(hunt.battle?.spawnId, HUNT_MOB_B.id);
+
+    const huntSession = await prisma.partyBattleSession.findUniqueOrThrow({
+      where: { id: huntBj!.partyBattleId! },
+    });
+    assert.equal(huntSession.state, PARTY_BATTLE_SESSION_STATE.active);
+    assert.equal(huntSession.playfield, 'dungeon');
+    assert.equal(huntSession.spawnId, HUNT_MOB_B.id);
+    ok('hunt-continue created fresh dungeon PartyBattleSession');
+
+    const killerBefore2 = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const mateBefore2 = await prisma.character.findUniqueOrThrow({
+      where: { id: mate.characterId },
+    });
+    const second = await dungeonPartyLethalWithEconomyCheck(
+      killer.userId,
+      killer.characterId,
+      mate.characterId,
+      HUNT_MOB_B.id,
+      {
+        exp: killerBefore2.exp,
+        sp: killerBefore2.sp,
+        adena: killerBefore2.adena,
+      },
+      {
+        exp: mateBefore2.exp,
+        sp: mateBefore2.sp,
+        adena: mateBefore2.adena,
+      }
+    );
+    assert.equal(second.partyRewardRecipientCount, 2);
+    ok('second dungeon kill after hunt-continue: 2 rewards + economy');
+
+    await cleanupCharacter(killer.characterId, killer.userId);
+    await cleanupCharacter(mate.characterId, mate.userId);
+  });
+}
+
+async function testDungeonHuntContinueSoloThenJoinParty(): Promise<void> {
+  console.log('\n[hunt-continue] solo first kill → join party → party battle');
+  await withStageEFlags(async () => {
+    const killer = await createTestAccount('hs', { level: 40 });
+    const mate = await createTestAccount('hm', { level: 21, touchPresence: false });
+    await touchOnlinePresence(killer.userId);
+    await touchOnlinePresence(mate.userId);
+
+    await placeInDungeon(killer.characterId, HUNT_PLAYER_MAP_X, HUNT_PLAYER_MAP_Y);
+    await placeInDungeon(mate.characterId, HUNT_PLAYER_MAP_X, HUNT_PLAYER_MAP_Y);
+
+    let killerChar = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const soloStart = await prisma.$transaction((tx) =>
+      startBattleInTx(tx, killer.userId, HUNT_MOB_A.id, killerChar.revision, {
+        characterId: killer.characterId,
+      })
+    );
+    const soloBj = parseBattleJson(soloStart.character.battleJson as never);
+    assert.equal(soloBj?.partyBattleId ?? null, null);
+    ok('first battle solo without party');
+
+    await soloDungeonLethalAttack(killer.userId, killer.characterId, HUNT_MOB_A.id);
+
+    const party = await createPartyForUser(killer.userId, killer.characterId);
+    await addPartyMember(party.party.id, mate.characterId, 1);
+
+    killerChar = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const hunt = await startHuntContinueBattle(
+      killer.userId,
+      killerChar.revision,
+      HUNT_MOB_A.id,
+      undefined,
+      HUNT_MOB_A.level,
+      { characterId: killer.characterId }
+    );
+    const killerAfterHunt = await prisma.character.findUniqueOrThrow({
+      where: { id: killer.characterId },
+    });
+    const huntBj = parseBattleJson(killerAfterHunt.battleJson as never);
+    assert.ok(huntBj?.partyBattleId, 'after joining party hunt-continue must be party battle');
+    const huntSession = await prisma.partyBattleSession.findUniqueOrThrow({
+      where: { id: huntBj!.partyBattleId! },
+    });
+    assert.equal(huntSession.playfield, 'dungeon');
+    assert.equal(huntSession.state, PARTY_BATTLE_SESSION_STATE.active);
+    ok('hunt-continue after solo + join party uses PartyBattleSession');
+
+    await cleanupCharacter(killer.characterId, killer.userId);
+    await cleanupCharacter(mate.characterId, mate.userId);
+  });
+}
+
 async function main(): Promise<void> {
   console.log('party-battle-dungeon-smoke\n');
   assert.ok(isPartyBattleEngineEnabled() === false, 'engine off by default');
@@ -820,6 +1082,8 @@ async function main(): Promise<void> {
   await testDungeonHudCanJoin();
   await testBattleSyncNearby();
   await testVictoryKeepsDungeonState();
+  await testDungeonHuntContinuePartyBattle();
+  await testDungeonHuntContinueSoloThenJoinParty();
 
   console.log(`\n${passed} checks passed`);
 }
