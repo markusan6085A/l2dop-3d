@@ -14,6 +14,8 @@ import bcrypt from 'bcryptjs';
 import {
   SIEGE_PARTICIPANT_PRESENCE_TOUCH_MS,
   SIEGE_REWARD_CLAN_POINTS,
+  SIEGE_WALL_DAMAGE_MIN,
+  SIEGE_WALL_DAMAGE_MAX,
   SIEGE_WALL_MAX_HP,
 } from '../src/domain/clanSiegeConfig.js';
 import { CLAN_SIEGE_FINISH_REASON } from '../src/domain/clanSiegeConstants.js';
@@ -187,6 +189,17 @@ async function killInSiegePvp(winner: Acc, loser: Acc, siegeId: string): Promise
   }
   assert.equal(res.kind, 'full');
   assert.ok(res.victory);
+}
+
+function runWithWallDamage(damage: number, fn: () => Promise<void>): Promise<void> {
+  const span = SIEGE_WALL_DAMAGE_MAX - SIEGE_WALL_DAMAGE_MIN + 1;
+  const clamped = Math.max(SIEGE_WALL_DAMAGE_MIN, Math.min(SIEGE_WALL_DAMAGE_MAX, damage));
+  const normalized = (clamped - SIEGE_WALL_DAMAGE_MIN + 0.5) / span;
+  const saved = Math.random;
+  Math.random = () => normalized;
+  return fn().finally(() => {
+    Math.random = saved;
+  });
 }
 
 function runWithSeed(seed: number, fn: () => Promise<void>): Promise<void> {
@@ -520,6 +533,7 @@ async function main(): Promise<void> {
     where: { id: clanC.characterId },
     data: { hp: 3000, cityId: CITY },
   });
+  await runWithWallDamage(100, async () => {
   await attackSiegeWallForUser(
     clanC.userId,
     CITY,
@@ -527,6 +541,7 @@ async function main(): Promise<void> {
     clanC.characterId,
     nowMs + 7010
   );
+  });
   const finishedWall = await prisma.clanSiege.findUniqueOrThrow({
     where: { id: wallSiege.id },
   });
@@ -612,6 +627,7 @@ async function main(): Promise<void> {
   const ptsBefore = (
     await prisma.clan.findUniqueOrThrow({ where: { id: rewardAcc.clanId } })
   ).clanPoints;
+  await runWithWallDamage(100, async () => {
   await attackSiegeWallForUser(
     rewardAcc.userId,
     CITY,
@@ -619,6 +635,7 @@ async function main(): Promise<void> {
     rewardAcc.characterId,
     nowMs + 9010
   );
+  });
   const ptsAfter = (
     await prisma.clan.findUniqueOrThrow({ where: { id: rewardAcc.clanId } })
   ).clanPoints;
@@ -816,21 +833,48 @@ async function main(): Promise<void> {
       },
     ],
   });
-  const ptsParBefore = (
-    await prisma.clan.findUniqueOrThrow({ where: { id: pA.clanId } })
-  ).clanPoints;
-  await Promise.all([
+  const ptsParBeforeByClanId = {
+    [pA.clanId]: (
+      await prisma.clan.findUniqueOrThrow({ where: { id: pA.clanId } })
+    ).clanPoints,
+    [pB.clanId]: (
+      await prisma.clan.findUniqueOrThrow({ where: { id: pB.clanId } })
+    ).clanPoints,
+  };
+  await runWithWallDamage(50, async () => {
+  const [parA, parB] = await Promise.all([
     attackSiegeWallForUser(pA.userId, CITY, 'par-a', pA.characterId, nowMs + 10_010),
     attackSiegeWallForUser(pB.userId, CITY, 'par-b', pB.characterId, nowMs + 10_010),
   ]);
+  assert.ok(parA.ok);
+  assert.ok(parB.ok);
+  assert.ok(parA.finished || parB.finished);
   assert.equal(
     await prisma.clanSiegeRewardLedger.count({ where: { siegeId: parSiege.id } }),
     1
   );
-  const ptsParAfter = (
-    await prisma.clan.findUniqueOrThrow({ where: { id: pA.clanId } })
-  ).clanPoints;
-  assert.equal(ptsParAfter - ptsParBefore, SIEGE_REWARD_CLAN_POINTS);
+  const parDone = await prisma.clanSiege.findUniqueOrThrow({
+    where: { id: parSiege.id },
+  });
+  assert.ok(parDone.winnerClanId);
+  assert.ok(parDone.finishedAt);
+  assert.ok(parDone.rewardGrantedAt);
+  const parLedger = await prisma.clanSiegeRewardLedger.findUniqueOrThrow({
+    where: { siegeId: parSiege.id },
+  });
+  assert.equal(parLedger.clanId, parDone.winnerClanId);
+  assert.equal(parLedger.points, SIEGE_REWARD_CLAN_POINTS);
+  for (const [clanId, ptsBefore] of Object.entries(ptsParBeforeByClanId)) {
+    const ptsAfter = (
+      await prisma.clan.findUniqueOrThrow({ where: { id: clanId } })
+    ).clanPoints;
+    if (clanId === parDone.winnerClanId) {
+      assert.equal(ptsAfter - ptsBefore, SIEGE_REWARD_CLAN_POINTS);
+    } else {
+      assert.equal(ptsAfter - ptsBefore, 0);
+    }
+  }
+  });
   ok('22. Two simultaneous finish attempts cannot grant two rewards');
 
   await prisma.user.deleteMany({ where: { id: { in: users } } });

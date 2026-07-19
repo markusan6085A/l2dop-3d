@@ -10,6 +10,7 @@ import {
   type ClanSiegeFinishReasonValue,
 } from '../../domain/clanSiegeConstants.js';
 import { prisma } from '../../lib/prisma.js';
+import { isPrismaUniqueViolation } from '../party/partyPrismaErrors.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -102,25 +103,35 @@ export async function lockClanSiegeParticipantInTx(
   return rows[0] ?? null;
 }
 
+async function readClanSiegeByIdInTx(
+  tx: Tx,
+  siegeId: string
+): Promise<ClanSiege | null> {
+  return tx.clanSiege.findUnique({ where: { id: siegeId } });
+}
+
 async function grantSiegeRewardOnceInTx(
   tx: Tx,
   siege: ClanSiege,
   winnerClanId: string,
   now: Date
 ): Promise<boolean> {
-  const existing = await tx.clanSiegeRewardLedger.findUnique({
-    where: { siegeId: siege.id },
-    select: { id: true },
-  });
-  if (existing) return false;
+  if (siege.rewardGrantedAt) return false;
 
-  await tx.clanSiegeRewardLedger.create({
-    data: {
-      siegeId: siege.id,
-      clanId: winnerClanId,
-      points: SIEGE_REWARD_CLAN_POINTS,
-    },
-  });
+  try {
+    await tx.clanSiegeRewardLedger.create({
+      data: {
+        siegeId: siege.id,
+        clanId: winnerClanId,
+        points: SIEGE_REWARD_CLAN_POINTS,
+      },
+    });
+  } catch (err) {
+    if (isPrismaUniqueViolation(err)) {
+      return false;
+    }
+    throw err;
+  }
 
   await tx.clan.update({
     where: { id: winnerClanId },
@@ -156,7 +167,9 @@ export async function finishClanSiegeInTx(
 ): Promise<ClanSiege | null> {
   const locked = await lockClanSiegeInTx(tx, siegeId);
   if (!locked) return null;
-  if (locked.state === CLAN_SIEGE_STATE.finished) return locked;
+  if (locked.state === CLAN_SIEGE_STATE.finished) {
+    return readClanSiegeByIdInTx(tx, locked.id);
+  }
 
   const now = new Date(nowMs);
   let winnerClanId: string | null = null;
@@ -179,8 +192,11 @@ export async function finishClanSiegeInTx(
     }
   }
 
-  const updated = await tx.clanSiege.update({
-    where: { id: locked.id },
+  const claim = await tx.clanSiege.updateMany({
+    where: {
+      id: locked.id,
+      state: CLAN_SIEGE_STATE.active,
+    },
     data: {
       state: CLAN_SIEGE_STATE.finished,
       finishedAt: now,
@@ -193,6 +209,13 @@ export async function finishClanSiegeInTx(
     },
   });
 
+  if (claim.count === 0) {
+    return readClanSiegeByIdInTx(tx, locked.id);
+  }
+
+  const updated = await readClanSiegeByIdInTx(tx, locked.id);
+  if (!updated) return null;
+
   if (
     resolvedFinishReason === CLAN_SIEGE_FINISH_REASON.wallDestroyed &&
     winnerClanId
@@ -200,7 +223,7 @@ export async function finishClanSiegeInTx(
     await grantSiegeRewardOnceInTx(tx, updated, winnerClanId, now);
   }
 
-  return updated;
+  return readClanSiegeByIdInTx(tx, locked.id);
 }
 
 export async function finishExpiredActiveSieges(nowMs = Date.now()): Promise<number> {
