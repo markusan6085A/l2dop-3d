@@ -117,6 +117,10 @@ export interface BattleVictorySummary {
   huntSameLevelRemaining?: number;
   /** PvP-перемога над гравцем. */
   isPvp?: boolean;
+  /** Canonical тип перемоги для клієнта (без текстових евристик). */
+  battleType?: 'pvp' | 'pve';
+  /** PvP: characterId переможеного гравця. */
+  defeatedCharacterId?: string | null;
 }
 
 /** Поразка в бою — екран поразки + підказка найближчого міста для кнопки «в місто». */

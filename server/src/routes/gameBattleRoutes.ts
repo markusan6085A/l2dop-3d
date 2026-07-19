@@ -45,6 +45,12 @@ import {
   isPvpStartErrorMessage,
   sendPvpStartError,
 } from './gameBattlePvpRouteErrors.js';
+import {
+  isBattleHuntNotAvailableForPvpMessage,
+  isPartyBattleWrongSpawnMessage,
+  sendBattleHuntNotAvailableForPvp,
+  sendPartyBattleWrongSpawn,
+} from './gameBattlePartyRouteErrors.js';
 
 function battleQueryFromRequest(q: Record<string, unknown>): {
   characterId: string | null;
@@ -181,6 +187,10 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             error: e.message,
             messageUk: 'Ти знепритомнів. Спочатку натисни «В місто».',
           });
+        }
+        if (e instanceof Error && isPartyBattleWrongSpawnMessage(e.message)) {
+          await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
+          return sendPartyBattleWrongSpawn(reply);
         }
         await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
@@ -331,6 +341,14 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             error: 'battle_hunt_no_live_targets',
             messageUk: 'Усі цілі поруч на респавні. Зачекай кілька секунд.',
           });
+        }
+        if (e instanceof Error && isBattleHuntNotAvailableForPvpMessage(e.message)) {
+          await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
+          return sendBattleHuntNotAvailableForPvp(reply);
+        }
+        if (e instanceof Error && isPartyBattleWrongSpawnMessage(e.message)) {
+          await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
+          return sendPartyBattleWrongSpawn(reply);
         }
         await logRouteMutation(request, 'battle_hunt_continue', er, 'error', undefined, undefined, 'battle-mutation');
         throw e;
@@ -712,6 +730,18 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
             messageUk:
               'Досягнуто максимум Sonic Focus зарядів. Витрать їх sonic-скілом.',
           });
+        }
+        if (e instanceof Error && isPartyBattleWrongSpawnMessage(e.message)) {
+          await logRouteMutation(
+            request,
+            'battle_action:' + String(actionNorm),
+            er,
+            'error',
+            undefined,
+            undefined,
+            'battle-mutation'
+          );
+          return sendPartyBattleWrongSpawn(reply);
         }
         await logRouteMutation(
           request,

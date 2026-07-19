@@ -17,6 +17,29 @@
 
   var BATTLE_PAGE_CTX_KEY = 'l2dop_battle_page_ctx_v1';
 
+  function isPvpVictory(victory) {
+    if (!victory) return false;
+    if (victory.isPvp === true || victory.battleType === 'pvp') return true;
+    var sid = victory.spawnId != null ? String(victory.spawnId) : '';
+    return sid.indexOf('pvp:') === 0;
+  }
+
+  function isPvpSpawnContext(spawnIdValue) {
+    return String(spawnIdValue || '').indexOf('pvp:') === 0;
+  }
+
+  function clearPvpBattlePageContext() {
+    if (!isPvpSpawnContext(battlePageSpawnId) && !isPvpSpawnContext(spawnId)) {
+      return;
+    }
+    battlePageSpawnId = null;
+    try {
+      sessionStorage.removeItem(BATTLE_PAGE_CTX_KEY);
+    } catch (eClearCtx) {
+      /* ignore */
+    }
+  }
+
   function setBattlePageContext(characterId, spawnId) {
     if (characterId != null && String(characterId).length) {
       battlePageCharacterId = String(characterId);
@@ -2766,6 +2789,21 @@
         applyHuntContinueResult(st);
         return true;
       }
+      if (st && st._err && st.raw) {
+        try {
+          var ejHunt = await st.raw.json();
+          if (
+            ejHunt &&
+            (ejHunt.error === 'battle_hunt_not_available_for_pvp' ||
+              ejHunt.code === 'battle_hunt_not_available_for_pvp')
+          ) {
+            await goToMap();
+            return false;
+          }
+        } catch (eHuntErr) {
+          /* ignore */
+        }
+      }
       return false;
     }
 
@@ -3206,6 +3244,10 @@
     var lastVictorySummary = null;
 
     async function huntContinueManual(victory) {
+      if (isPvpVictory(victory)) {
+        await goToMap();
+        return;
+      }
       var vContBtn = $('battle-victory-continue');
       var vHuntBtn = $('battle-victory-hunt');
       if (vContBtn) vContBtn.disabled = true;
@@ -3249,6 +3291,9 @@
       frozenBattleUi = battle;
       clearLocalBattleStateAfterVictory();
       clearDefeatFromSession();
+      if (isPvpVictory(victory)) {
+        clearPvpBattlePageContext();
+      }
       renderPlayerBars(character);
       if (victory) {
         console.log('[rb-victory-client]', {
@@ -3295,16 +3340,13 @@
       if (defRoot) defRoot.hidden = true;
       if (vicRoot) vicRoot.hidden = true;
       if (vicInline) vicInline.hidden = false;
-      var isPvpVic =
-        victory &&
-        (victory.isPvp ||
-          (victory.spawnId && String(victory.spawnId).indexOf('pvp:') === 0));
+      var isPvpVic = isPvpVictory(victory);
       var shoutEl = vicInline
         ? vicInline.querySelector('.l2-battle-victory-notify__shout')
         : null;
       if (shoutEl && isPvpVic) {
         shoutEl.textContent =
-          'Ви перемогли гравця [' + (victory.mobName || '—') + ']!';
+          'Ви перемогли гравця ' + (victory.mobName || '—') + '!';
       } else if (shoutEl) {
         shoutEl.textContent = tr(
           'battle_victory_shout',
@@ -3699,6 +3741,7 @@
           L2.setLastSnapshot(character);
         }
         saveVictoryToSession(null);
+        clearPvpBattlePageContext();
         window.location.href = resolveBattleReturnUrl(
           spawnId,
           lastVictorySummary,
@@ -3767,6 +3810,10 @@
             showBattleToast(
               tr('battle_hunt_no_context', 'Немає даних перемоги — онови сторінку.')
             );
+            return;
+          }
+          if (isPvpVictory(victory)) {
+            await goToMap();
             return;
           }
           await huntContinueManual(victory);
@@ -3950,8 +3997,16 @@
         showDefeatScreen(pendingDefeat);
         return;
       }
-      var savedVictory =
-        loadVictoryFromSession() || (spawnId ? { spawnId: spawnId } : null);
+      var savedVictory = loadVictoryFromSession();
+      if (!savedVictory && spawnId && isPvpSpawnContext(spawnId)) {
+        savedVictory = {
+          spawnId: spawnId,
+          isPvp: true,
+          battleType: 'pvp',
+        };
+      } else if (!savedVictory && spawnId) {
+        savedVictory = { spawnId: spawnId };
+      }
       if (savedVictory) {
         if (content) content.hidden = false;
         if (errEl) errEl.hidden = true;
