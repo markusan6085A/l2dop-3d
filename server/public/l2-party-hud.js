@@ -6,12 +6,13 @@
   'use strict';
 
   var POLL_MS = 5000;
-  var ASSET_VER = '20260719partyHudD1';
+  var ASSET_VER = '20260719partyHudFix1';
 
   var hudState = null;
   var fetchSeq = 0;
   var fetchInFlight = false;
   var rewardAckInFlight = false;
+  var respondInFlight = false;
   var joinBattleInFlight = false;
   var pollTimer = null;
   var flashTimer = null;
@@ -599,6 +600,7 @@
     stopPoll: stopPartyHudPolling,
     startPoll: resumePartyHudPolling,
     captureLayoutDebug: captureLayoutDebug,
+    showFlash: setFlash,
     ASSET_VER: ASSET_VER,
   };
 

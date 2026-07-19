@@ -2573,7 +2573,7 @@
   }
 
   var CHAT_REPLY_NOTIFY_VER = '20260717chatSnap1';
-  var PARTY_HUD_VER = '20260718partyHud4';
+  var PARTY_HUD_VER = '20260719partyHudFix1';
   var ONLINE_FOOT_ASSET_VER = '20260717perf2';
   var GAME_HELPER_ASSET_VER = '20260717perf2';
 

@@ -377,7 +377,15 @@
           if (window.L2 && typeof L2.refreshPartyHud === 'function') {
             L2.refreshPartyHud();
           }
-          showSocialMsg('Запрошення надіслано', false);
+          var targetName = String(viewedProfile.name || '').trim() || 'гравця';
+          var sentMsg = 'Запрошення надіслано гравцю ' + targetName;
+          if (
+            window.L2PartyHud &&
+            typeof L2PartyHud.showFlash === 'function'
+          ) {
+            L2PartyHud.showFlash(sentMsg);
+          }
+          showSocialMsg(sentMsg, false);
           return;
         }
         showSocialMsg(

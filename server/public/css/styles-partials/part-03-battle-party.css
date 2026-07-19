@@ -9,6 +9,11 @@
 }
 
 .l2-battle-top-grid {
+  display: block;
+  width: 100%;
+}
+
+.l2-battle-top-grid.l2-battle-top-grid--party {
   display: grid;
   grid-template-columns: minmax(0, 41%) minmax(0, 59%);
   gap: 8px;
@@ -167,23 +172,23 @@
   white-space: nowrap;
 }
 
-.l2-battle-top-grid .l2-battle-mob-panel {
+.l2-battle-top-grid.l2-battle-top-grid--party .l2-battle-mob-panel {
   margin: 0;
   min-width: 0;
 }
 
-.l2-battle-top-grid .l2-battle-mob-hp-wrap .l2-battle-bar-outer {
+.l2-battle-top-grid.l2-battle-top-grid--party .l2-battle-mob-hp-wrap .l2-battle-bar-outer {
   max-width: 100%;
   flex: 1 1 auto;
 }
 
-.l2-battle-top-grid .l2-battle-mob-icon {
+.l2-battle-top-grid.l2-battle-top-grid--party .l2-battle-mob-icon {
   left: 50%;
   transform: translateX(-50%);
 }
 
 @media (max-width: 430px) {
-  .l2-battle-top-grid {
+  .l2-battle-top-grid.l2-battle-top-grid--party {
     grid-template-columns: minmax(0, 42%) minmax(0, 58%);
     gap: 6px;
   }
@@ -196,7 +201,7 @@
 }
 
 @media (max-width: 320px) {
-  .l2-battle-top-grid {
+  .l2-battle-top-grid.l2-battle-top-grid--party {
     grid-template-columns: minmax(0, 40%) minmax(0, 60%);
     gap: 4px;
   }

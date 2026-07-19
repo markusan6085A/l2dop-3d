@@ -2239,6 +2239,9 @@
           if (st.partyBattle) {
           lastPartyBattleDto = st.partyBattle;
           renderPartyBattleMembers(lastPartyBattleDto);
+        } else {
+          lastPartyBattleDto = null;
+          renderPartyBattleMembers(null);
         }
         if (battle && (st.mobHp != null || st.mobMaxHp != null)) {
             refreshBattleUI(false);
@@ -2256,6 +2259,9 @@
         if (st.partyBattle) {
           lastPartyBattleDto = st.partyBattle;
           renderPartyBattleMembers(lastPartyBattleDto);
+        } else {
+          lastPartyBattleDto = null;
+          renderPartyBattleMembers(null);
         }
         if (checkPvpDefeatFromCharacter(character)) {
           stopBattleSyncPoll();
@@ -3056,6 +3062,7 @@
 
     function showPvpDefeatScreen(pvpDefeat) {
       stopBattleSyncPoll();
+      syncBattleTopGridPartyLayout(null);
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
@@ -3209,6 +3216,7 @@
     function showVictoryScreen(victory, partyReward) {
       lastVictorySummary = victory || null;
       saveVictoryToSession(victory);
+      syncBattleTopGridPartyLayout(null);
       var active = $('battle-active-root');
       var vicRoot = $('battle-victory-root');
       var defRoot = $('battle-defeat-root');
@@ -3324,6 +3332,7 @@
       saveDefeatToSession(defeat);
       stopBattleSyncPoll();
       battle = null;
+      syncBattleTopGridPartyLayout(null);
       var contentEl = $('battle-content');
       var errLoad = $('battle-load-err');
       if (contentEl) contentEl.hidden = false;
@@ -3382,16 +3391,31 @@
         : 4;
     }
 
+    function syncBattleTopGridPartyLayout(partyBattle) {
+      var battleTopGrid = $('battle-top-grid');
+      var partyPanel = $('battle-party-panel');
+      if (!battleTopGrid) return;
+      var hasOtherPartyMembers =
+        partyBattle &&
+        Array.isArray(partyBattle.members) &&
+        partyBattle.members.length > 0;
+      if (partyPanel) partyPanel.hidden = !hasOtherPartyMembers;
+      battleTopGrid.classList.toggle(
+        'l2-battle-top-grid--party',
+        !!hasOtherPartyMembers
+      );
+    }
+
     function renderPartyBattleMembers(dto) {
       var panel = $('battle-party-panel');
       var list = $('battle-party-members');
       if (!panel || !list) return;
+      syncBattleTopGridPartyLayout(dto);
       if (!dto || !dto.members || !dto.members.length) {
-        panel.hidden = true;
         list.innerHTML = '';
+        delete list.dataset.l2PartyBattleSig;
         return;
       }
-      panel.hidden = false;
       var sig = JSON.stringify(dto.members);
       if (list.dataset.l2PartyBattleSig === sig) return;
       list.dataset.l2PartyBattleSig = sig;
