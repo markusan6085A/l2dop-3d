@@ -49,7 +49,7 @@ export function isClanHallLevelActive(
   return rowLevel >= 1 && rowLevel <= Math.trunc(clanLevel);
 }
 
-/** Пасивний бонус поточного рівня клану (лише якщо куплено Клан-хол). */
+/** Пасивний бонус поточного рівня клану (лише якщо куплено Клан-хол і level >= 1). */
 export function resolveClanHallPassiveBonus(
   clan:
     | {
@@ -60,7 +60,9 @@ export function resolveClanHallPassiveBonus(
     | undefined
 ): ClanHallBuffRow | null {
   if (!clan?.hallBlessingAt) return null;
-  return clanHallBuffForLevel(clan.level ?? 1);
+  const level = clan.level ?? 0;
+  if (level < 1) return null;
+  return clanHallBuffForLevel(level);
 }
 
 export function buildClanHallView(
@@ -68,11 +70,12 @@ export function buildClanHallView(
   canBuy: boolean,
   clanLevel: number
 ): ClanHallView {
+  const normalized = Math.max(0, Math.min(CLAN_HALL_MAX_LEVEL, Math.trunc(clanLevel)));
   return {
     hasBlessing,
     canBuy,
     costAdena: CLAN_HALL_BLESSING_COST_ADENA.toString(),
-    clanLevel: Math.max(1, Math.min(CLAN_HALL_MAX_LEVEL, Math.trunc(clanLevel))),
+    clanLevel: normalized,
     bonusTable: clanHallBonusTable(),
   };
 }

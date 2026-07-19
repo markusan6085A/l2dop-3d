@@ -37,7 +37,7 @@
       if (body) body.innerHTML = '';
       return;
     }
-    var clanLevel = hall.clanLevel != null ? Number(hall.clanLevel) : 1;
+    var clanLevel = hall.clanLevel != null ? Number(hall.clanLevel) : 0;
     var html = '';
     hall.bonusTable.forEach(function (row) {
       var active = hall.hasBlessing && row.level <= clanLevel;

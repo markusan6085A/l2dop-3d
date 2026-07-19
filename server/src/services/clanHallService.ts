@@ -45,7 +45,7 @@ async function loadHallStateForUser(userId: string): Promise<{
     clanId: char.clanId,
     clanRole: char.clanRole,
     hallBlessingAt: char.clan?.hallBlessingAt ?? null,
-    clanLevel: char.clan?.level ?? 1,
+    clanLevel: char.clan?.level ?? 0,
   };
 }
 
@@ -113,7 +113,8 @@ export async function purchaseClanHallBlessingForUser(
     }
 
     const nextAdena = BigInt(char.adena) - CLAN_HALL_BLESSING_COST_ADENA;
-    const purchaseBonus = clanHallBuffForLevel(clan.level ?? 1);
+    const purchaseBonus =
+      clan.level >= 1 ? clanHallBuffForLevel(clan.level) : null;
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,

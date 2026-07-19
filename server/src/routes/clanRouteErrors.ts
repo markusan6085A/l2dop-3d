@@ -146,6 +146,26 @@ const CLAN_CREATE_ERRORS: Record<string, { status: number; messageUk: string }> 
     status: 400,
     messageUk: 'Ти не в клані.',
   },
+  clan_not_found: {
+    status: 400,
+    messageUk: 'Ви не перебуваєте в клані.',
+  },
+  clan_leader_required: {
+    status: 403,
+    messageUk: 'Підвищувати рівень клану може лише лідер.',
+  },
+  clan_max_level: {
+    status: 400,
+    messageUk: 'Клан уже досяг максимального рівня.',
+  },
+  clan_points_insufficient: {
+    status: 400,
+    messageUk: 'Недостатньо очок клану.',
+  },
+  clan_level_conflict: {
+    status: 409,
+    messageUk: 'Рівень клану змінився. Оновіть сторінку.',
+  },
 };
 
 export function sendClanCreateError(

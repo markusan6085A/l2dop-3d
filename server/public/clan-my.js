@@ -179,7 +179,7 @@
       }
     }
     setText('clan-my-founded', formatFoundedUk(clan.foundedAt));
-    setText('clan-my-level', clan.level != null ? String(clan.level) : '1');
+    setText('clan-my-level', clan.level != null ? String(clan.level) : '0');
     setText('clan-my-leader', clan.leaderName || '—');
     setText('clan-my-announce', formatAnnounceDisplay(clan.announcement));
     setText('clan-my-reputation', formatIntSpaced(clan.reputation));
@@ -614,7 +614,7 @@
         applyClanView({
           name: c.clanName,
           foundedAt: null,
-          level: 1,
+          level: 0,
           leaderName: c.clanRole === 'leader' ? c.name : '—',
           announcement: '',
           reputation: 0,

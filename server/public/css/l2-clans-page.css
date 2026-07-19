@@ -716,6 +716,16 @@ body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-nav-link:focus-visible
   outline: none;
 }
 
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-stats {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-stats-sep {
+  color: #8a7a66;
+}
+
 body.l2-app-l2-chrome.l2-page-clan-manage .l2-city-stub-msg {
   margin: 0 0 8px;
   padding-left: 2px;
@@ -754,6 +764,69 @@ body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__picker {
 
 body.l2-app-l2-chrome.l2-page-clan-manage .l2-clan-manage-emblem__actions {
   margin: 0 0 12px;
+}
+
+/* clan-level.html */
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clans-main,
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-panel {
+  padding-left: 2px;
+  text-align: left;
+  min-height: clamp(280px, 45vh, 380px);
+  box-sizing: border-box;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-panel--loading {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-title {
+  margin: 0 0 8px;
+  font-family: var(--l2-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-row {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-actions {
+  margin: 8px 0 12px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-max {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #bfa88a;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-table-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #d4923a;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .l2-clan-level-table-row {
+  margin: 0 0 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #fff;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level #clan-level-cumulative {
+  margin-top: 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-clan-level .ok {
+  margin: 0 0 8px;
+  padding-left: 2px;
+  color: #7fd67f;
+  font-size: 12px;
 }
 
 /* clan-hall.html */

@@ -5,6 +5,7 @@ import {
   normalizeClanName,
 } from '../domain/clanCreate.js';
 import { parseClanEmblemId } from '../domain/clanEmblem.js';
+import { CLAN_START_LEVEL } from '../domain/clanLevel.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { gameConflictFromMutation } from './charConflict.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
@@ -88,6 +89,7 @@ export async function createClanForUser(
         name: clanName,
         leaderId: char.id,
         emblemId,
+        level: CLAN_START_LEVEL,
       },
     });
 

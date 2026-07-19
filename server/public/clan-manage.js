@@ -129,6 +129,19 @@
     emblemPickerMounted = true;
   }
 
+  function formatClanPoints(n) {
+    var num = Number(n);
+    if (!Number.isFinite(num)) return '0';
+    return String(Math.trunc(num)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
+
+  function applyManageStats(clan) {
+    var levelEl = $('clan-manage-level');
+    if (levelEl) levelEl.textContent = String(clan.level ?? 0);
+    var pointsEl = $('clan-manage-points');
+    if (pointsEl) pointsEl.textContent = formatClanPoints(clan.skillPoints);
+  }
+
   function bindEmblemToggle() {
     var toggleBtn = $('clan-manage-emblem-toggle');
     if (!toggleBtn) return;
@@ -294,6 +307,7 @@
         }
       }
       selectedEmblemId = clan.emblemId != null ? clan.emblemId : null;
+      applyManageStats(clan);
       renderCurrentEmblem(selectedEmblemId);
       bindEmblemToggle();
       setEmblemPickerOpen(false);

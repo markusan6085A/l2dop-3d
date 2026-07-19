@@ -15,6 +15,10 @@ import {
 import { getClanMyForUser, updateClanAnnouncementForUser } from '../services/clanMyService.js';
 import { updateClanEmblemForUser } from '../services/clanEmblemService.js';
 import {
+  getClanLevelProgressForUser,
+  levelUpClanForUser,
+} from '../services/clanLevelService.js';
+import {
   getClanHallForUser,
   purchaseClanHallBlessingForUser,
 } from '../services/clanHallService.js';
@@ -92,6 +96,52 @@ export function registerClanRoutes(app: FastifyInstance): void {
         return reply.code(500).send({
           error: 'internal_error',
           messageUk: 'Не вдалося створити клан.',
+        });
+      }
+    }
+  );
+
+  app.get(
+    '/clans/level',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const view = await getClanLevelProgressForUser(userId);
+      if (!view) {
+        return reply.code(400).send({
+          error: 'clan_not_found',
+          messageUk: 'Ви не перебуваєте в клані.',
+        });
+      }
+      return reply.send(view);
+    }
+  );
+
+  app.post(
+    '/clans/level-up',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+
+      try {
+        const view = await levelUpClanForUser(userId, b.expectedClanLevel);
+        await logRouteMutation(request, 'clan_level_up', 0, 'ok');
+        return reply.send(view);
+      } catch (err) {
+        const mapped = sendClanCreateError(reply, err);
+        if (mapped) {
+          await logRouteMutation(request, 'clan_level_up', 0, 'error');
+          return mapped;
+        }
+        await logRouteMutation(request, 'clan_level_up', 0, 'error');
+        request.log.error({ err }, 'POST /game/clans/level-up');
+        return reply.code(500).send({
+          error: 'internal_error',
+          messageUk: 'Не вдалося підвищити рівень клану.',
         });
       }
     }

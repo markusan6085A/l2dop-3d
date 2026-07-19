@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Підвищення рівня клану — L2WAP</title>
+    <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
+    <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
+    <link rel="stylesheet" href="/css/l2-clans-page.css?v=20260719clanLevel1" />
+  </head>
+  <body
+    class="l2-body l2-page-city l2-city-ui-l2 l2-page-clan-level l2-page-has-fixed-nav l2-app-l2-chrome"
+  >
+    <div class="l2-shell">
+      <div class="l2-screen l2-outer-sframe-host">
+        <div class="l2-outer-sframe" aria-hidden="true">
+          <div class="l2-outer-sframe__g">
+            <span class="l2-outer-sframe__n l2-outer-sframe__tl" aria-hidden="true">
+              <img
+                class="l2-outer-sframe__cap-tl-img"
+                src="/ref/19.png"
+                alt=""
+                width="28"
+                height="52"
+                decoding="async"
+              />
+            </span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__t"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__tr"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__l"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__r"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__bl"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__b"></span>
+            <span class="l2-outer-sframe__n l2-outer-sframe__br"></span>
+          </div>
+          <div class="l2-outer-sframe__cap-tr" role="presentation">
+            <img
+              class="l2-outer-sframe__cap-tr-img"
+              src="/ref/18.png"
+              alt=""
+              width="28"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+        <div class="l2-game-chrome-crest" aria-hidden="true">
+          <img
+            class="l2-game-chrome-crest__img"
+            src="/ref/2.png"
+            alt=""
+            width="40"
+            height="40"
+            decoding="async"
+          />
+        </div>
+        <div class="l2-screen-inner l2-city-root">
+          <div class="l2-townlive-column">
+            <div id="l2-hud-panel-mount"></div>
+            <div id="l2-nav-top"></div>
+
+            <p class="err" id="clan-level-err" hidden></p>
+            <p class="ok" id="clan-level-ok" hidden></p>
+
+            <section class="l2-clans-main" aria-label="Підвищення рівня клану">
+              <div id="clan-level-panel" class="l2-clan-level-panel l2-clan-level-panel--loading">
+                <p class="l2-clan-level-title">Підвищення рівня клану</p>
+
+                <p class="l2-clan-level-row">
+                  <span class="l2-clan-my-label">Клан:</span>
+                  <span id="clan-level-name" class="l2-clan-my-val l2-clan-my-val--name">—</span>
+                </p>
+                <p class="l2-clan-level-row">
+                  <span class="l2-clan-my-label">Поточний рівень:</span>
+                  <span id="clan-level-current" class="l2-clan-my-val">—</span>
+                </p>
+                <p class="l2-clan-level-row">
+                  <span class="l2-clan-my-label">Очки клану:</span>
+                  <span id="clan-level-points" class="l2-clan-my-val">—</span>
+                </p>
+
+                <div id="clan-level-next-wrap">
+                  <p class="l2-clan-level-row">
+                    <span class="l2-clan-my-label">Наступний рівень:</span>
+                    <span id="clan-level-next" class="l2-clan-my-val">—</span>
+                  </p>
+                  <p class="l2-clan-level-row">
+                    <span class="l2-clan-my-label">Вартість:</span>
+                    <span id="clan-level-cost" class="l2-clan-my-val">—</span>
+                  </p>
+                  <p class="l2-clan-level-row" id="clan-level-missing-wrap">
+                    <span class="l2-clan-my-label">Не вистачає:</span>
+                    <span id="clan-level-missing" class="l2-clan-my-val">—</span>
+                  </p>
+                  <p class="l2-clan-level-actions">
+                    <button type="button" class="l2-clans-submit-btn" id="clan-level-up-btn">
+                      Підвищити рівень
+                    </button>
+                  </p>
+                </div>
+
+                <p class="l2-clan-level-max" id="clan-level-max-msg" hidden>
+                  Ваш клан досяг максимального рівня.
+                </p>
+
+                <hr class="l2-clans-divider" aria-hidden="true" />
+
+                <div class="l2-clan-level-table-wrap">
+                  <p class="l2-clan-level-table-title">Таблиця підвищення</p>
+                  <div id="clan-level-progression"></div>
+                  <div id="clan-level-cumulative"></div>
+                </div>
+              </div>
+
+              <p class="l2-clans-back">
+                <a class="l2-clans-back__link" href="/clan-manage.html">&lt;&lt; Назад до керування</a>
+              </p>
+            </section>
+
+            <div id="l2-foot-links"></div>
+            <div id="l2-nav-bottom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
+    <script src="/ui-i18n.js?v=20260718clans8"></script>
+    <script src="/l2-nav.js?v=20260718layoutStable2"></script>
+    <script src="/clan-level.js?v=20260719clanLevel1"></script>
+  </body>
+</html>
