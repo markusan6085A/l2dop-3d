@@ -5,6 +5,7 @@
 import { config } from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 config({ path: path.join(__dirname, '../.env') });
@@ -31,7 +32,57 @@ import {
 import { buildCharacterClientSnapshot } from '../src/services/charClientSnapshot.js';
 
 const CITY = 'l2dop_oren';
+const runSuffix = `${Date.now()}_${process.pid}_${randomUUID()}`;
+let entityCounter = 0;
 let passed = 0;
+
+const created = {
+  userIds: [] as string[],
+  characterIds: [] as string[],
+  clanIds: [] as string[],
+  siegeIds: [] as string[],
+  cityCastleCityIds: [] as string[],
+};
+
+function trackUser(user: { id: string; characters: { id: string }[] }): void {
+  created.userIds.push(user.id);
+  for (const c of user.characters) {
+    created.characterIds.push(c.id);
+  }
+}
+
+function trackClan(clanId: string): void {
+  created.clanIds.push(clanId);
+}
+
+function trackSiege(siegeId: string): void {
+  created.siegeIds.push(siegeId);
+}
+
+function trackCityCastle(cityId: string): void {
+  created.cityCastleCityIds.push(cityId);
+}
+
+function nextLabel(label: string): string {
+  entityCounter += 1;
+  return `${label}${entityCounter}`;
+}
+
+function uniqueToken(): string {
+  return runSuffix.replace(/[^a-zA-Z0-9]/g, '').slice(-10);
+}
+
+function uniqueLogin(label: string): string {
+  return `emb_${label}_${runSuffix}`.slice(0, 120);
+}
+
+function uniqueCharacterName(label: string): string {
+  return `E${label}${uniqueToken()}`.slice(0, 16);
+}
+
+function uniqueClanName(label: string): string {
+  return `C${label}${uniqueToken()}`.slice(0, 16);
+}
 
 function ok(name: string): void {
   passed += 1;
@@ -39,14 +90,14 @@ function ok(name: string): void {
 }
 
 async function createUserWithClan(label: string, emblemId?: number | null) {
-  const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const tag = nextLabel(label);
   const user = await prisma.user.create({
     data: {
-      login: `emb_${label}_${suffix}`,
+      login: uniqueLogin(tag),
       password: await bcrypt.hash('test123', 8),
       characters: {
         create: {
-          name: `E${label}${suffix.slice(-4)}`.slice(0, 16),
+          name: uniqueCharacterName(tag),
           race: 'Human',
           classBranch: 'fighter',
           level: 30,
@@ -57,19 +108,51 @@ async function createUserWithClan(label: string, emblemId?: number | null) {
     },
     include: { characters: true },
   });
+  trackUser(user);
   const c = user.characters[0]!;
   const clan = await prisma.clan.create({
     data: {
-      name: `EM${label}${suffix.slice(-4)}`.slice(0, 16),
+      name: uniqueClanName(tag),
       leaderId: c.id,
       ...(emblemId != null ? { emblemId } : {}),
     },
   });
+  trackClan(clan.id);
   await prisma.character.update({
     where: { id: c.id },
     data: { clanId: clan.id, clanRole: 'leader' },
   });
   return { userId: user.id, characterId: c.id, clanId: clan.id, name: c.name };
+}
+
+async function cleanupTestData(): Promise<void> {
+  const siegeIds = [...new Set(created.siegeIds)];
+  const clanIds = [...new Set(created.clanIds)];
+  const userIds = [...new Set(created.userIds)];
+  const cityIds = [...new Set(created.cityCastleCityIds)];
+
+  if (siegeIds.length > 0) {
+    await prisma.clanSiege.deleteMany({ where: { id: { in: siegeIds } } });
+  }
+
+  if (cityIds.length > 0 && clanIds.length > 0) {
+    await prisma.cityCastle.updateMany({
+      where: { cityId: { in: cityIds }, ownerClanId: { in: clanIds } },
+      data: { ownerClanId: null },
+    });
+  }
+
+  if (clanIds.length > 0) {
+    await prisma.character.updateMany({
+      where: { clanId: { in: clanIds } },
+      data: { clanId: null, clanRole: null },
+    });
+    await prisma.clan.deleteMany({ where: { id: { in: clanIds } } });
+  }
+
+  if (userIds.length > 0) {
+    await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+  }
 }
 
 async function main(): Promise<void> {
@@ -144,12 +227,14 @@ async function main(): Promise<void> {
       wallMaxHp: SIEGE_WALL_MAX_HP,
     },
   });
+  trackSiege(siege.id);
 
   await prisma.cityCastle.upsert({
     where: { cityId: CITY },
     create: { cityId: CITY, ownerClanId: leader.clanId },
     update: { ownerClanId: leader.clanId },
   });
+  trackCityCastle(CITY);
 
   await prisma.clanSiegeParticipant.create({
     data: {
@@ -235,13 +320,14 @@ async function main(): Promise<void> {
   const otherSiege = await prisma.clanSiege.create({
     data: {
       cityId: 'l2dop_giran',
-      startsAt: new Date(nowMs - 60_000),
+      startsAt: new Date(nowMs - 30_000),
       endsAt: new Date(nowMs + 3_600_000),
       state: CLAN_SIEGE_STATE.active,
       wallHp: SIEGE_WALL_MAX_HP,
       wallMaxHp: SIEGE_WALL_MAX_HP,
     },
   });
+  trackSiege(otherSiege.id);
   await prisma.clanSiegeParticipant.create({
     data: {
       siegeId: otherSiege.id,
@@ -265,7 +351,8 @@ async function main(): Promise<void> {
   assert.equal(applied, 125);
   ok('applied damage equals CP+HP delta');
 
-  const xssName = '<img onerror=alert(1)>';
+  const xssToken = runSuffix.replace(/[^a-z0-9]/gi, '').slice(0, 8);
+  const xssName = `<i${xssToken}>`;
   await prisma.clan.update({
     where: { id: leader.clanId },
     data: { name: xssName },
@@ -280,8 +367,17 @@ async function main(): Promise<void> {
 main()
   .catch((err) => {
     console.error(err);
-    process.exit(1);
+    process.exitCode = 1;
   })
   .finally(async () => {
+    try {
+      await cleanupTestData();
+    } catch (cleanupErr) {
+      console.error('clan-emblems cleanup failed:', cleanupErr);
+      process.exitCode = 1;
+    }
     await prisma.$disconnect();
+    if (process.exitCode) {
+      process.exit(process.exitCode);
+    }
   });
