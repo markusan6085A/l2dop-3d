@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260718layoutStable2" />
-    <link rel="stylesheet" href="/css/l2-siege-page.css?v=20260719clanSiegeWapUi1" />
+    <link rel="stylesheet" href="/css/l2-siege-page.css?v=20260719clanSiegeScheduleTest1" />
   </head>
   <body
     class="l2-body l2-page-siege l2-page-has-fixed-nav l2-app-l2-chrome l2-nav-minimal"
@@ -50,7 +50,15 @@
                   decoding="async"
                 />
                 <div class="l2-siege-head-meta">
-                  <p class="l2-siege-line" id="siege-castle-line">Замок: —</p>
+                  <p class="l2-siege-line l2-siege-head-row" id="siege-castle-line">
+                    <span class="l2-siege-title" id="siege-castle-name">Замок: —</span>
+                    <span class="l2-siege-time-label" id="siege-start-wrap" hidden>
+                      Початок: <span class="l2-siege-time-value" id="siege-start-time">—</span>
+                    </span>
+                    <span class="l2-siege-time-label" id="siege-end-wrap" hidden>
+                      Кінець: <span class="l2-siege-time-value" id="siege-end-time">—</span>
+                    </span>
+                  </p>
                   <p class="l2-siege-line" id="siege-owner-line">Контролює клан: —</p>
                 </div>
               </div>
@@ -68,6 +76,6 @@
     <script src="/common.js?v=20260719partyRewardSnapshotFix1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/siege.js?v=20260719clanSiegeWapUi1"></script>
+    <script src="/siege.js?v=20260719clanSiegeScheduleTest1"></script>
   </body>
 </html>

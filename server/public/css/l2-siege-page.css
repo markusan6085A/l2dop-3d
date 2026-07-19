@@ -27,6 +27,26 @@
   flex: 1;
 }
 
+.l2-siege-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+}
+
+.l2-siege-title {
+  color: inherit;
+}
+
+.l2-siege-time-label {
+  color: #bfa88a;
+  white-space: nowrap;
+}
+
+.l2-siege-time-value {
+  color: #ffffff;
+}
+
 .l2-siege-body {
   min-width: 0;
 }

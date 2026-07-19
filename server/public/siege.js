@@ -81,13 +81,22 @@
   function formatKyivTime(iso) {
     if (!iso) return '—';
     try {
-      return new Date(iso).toLocaleString('uk-UA', {
+      var parts = new Intl.DateTimeFormat('uk-UA', {
         timeZone: 'Europe/Kyiv',
         hour: '2-digit',
         minute: '2-digit',
+        hour12: false,
+      }).formatToParts(new Date(iso));
+      var hour = '';
+      var minute = '';
+      parts.forEach(function (part) {
+        if (part.type === 'hour') hour = part.value;
+        if (part.type === 'minute') minute = part.value;
       });
+      if (!hour || !minute) return '—';
+      return hour + ':' + minute;
     } catch (_eFmt) {
-      return iso;
+      return '—';
     }
   }
 
@@ -188,16 +197,43 @@
     parent.appendChild(ul);
   }
 
+  function renderScheduleHeader(data) {
+    var castleName = $('siege-castle-name');
+    var startWrap = $('siege-start-wrap');
+    var endWrap = $('siege-end-wrap');
+    var startTime = $('siege-start-time');
+    var endTime = $('siege-end-time');
+
+    if (castleName) {
+      castleName.textContent = 'Замок: ' + cityLabel(data);
+    }
+    if (startWrap && startTime) {
+      if (data.startsAt) {
+        startWrap.hidden = false;
+        startTime.textContent = formatKyivTime(data.startsAt);
+      } else {
+        startWrap.hidden = true;
+        startTime.textContent = '—';
+      }
+    }
+    if (endWrap && endTime) {
+      if (data.endsAt) {
+        endWrap.hidden = false;
+        endTime.textContent = formatKyivTime(data.endsAt);
+      } else {
+        endWrap.hidden = true;
+        endTime.textContent = '—';
+      }
+    }
+  }
+
   function renderState(data) {
     stateData = data;
-    var castleLine = $('siege-castle-line');
     var ownerLine = $('siege-owner-line');
     var body = $('siege-body');
     var nearbyLine = $('siege-nearby-line');
 
-    if (castleLine) {
-      castleLine.textContent = 'Замок: ' + cityLabel(data);
-    }
+    renderScheduleHeader(data);
     if (ownerLine) {
       ownerLine.textContent = 'Контролює клан: ' + clanLine(data.ownerClan);
     }

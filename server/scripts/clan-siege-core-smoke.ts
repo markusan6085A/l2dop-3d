@@ -27,6 +27,18 @@ import {
   getSiegeStateForUser,
 } from '../src/services/clanSiege/clanSiegeStateService.js';
 import { finishClanSiegeInTx } from '../src/services/clanSiege/clanSiegeFinishService.js';
+import {
+  ensureSiegeScheduleForKyivDate,
+} from '../src/services/clanSiege/clanSiegeScheduleService.js';
+import { runClanSiegeServerTick } from '../src/services/clanSiege/clanSiegeTickService.js';
+import {
+  CLAN_SIEGE_TEST_ROW_KEY,
+} from '../src/services/clanSiege/clanSiegeTestConfig.js';
+import {
+  ensureClanSiegeTestSiege,
+  resetClanSiegeTestScheduleLogForTests,
+} from '../src/services/clanSiege/clanSiegeTestService.js';
+import { getClanMyForUser } from '../src/services/clanMyService.js';
 import { spawnSync } from 'node:child_process';
 
 const CITY = 'l2dop_oren';
@@ -105,6 +117,23 @@ async function cleanupUsers(ids: string[]): Promise<void> {
 
 async function resetCitySieges(cityId = CITY): Promise<void> {
   await prisma.clanSiege.deleteMany({ where: { cityId } });
+}
+
+async function resetTestSiege(cityId: string): Promise<void> {
+  await prisma.clanSiege.deleteMany({
+    where: { cityId, testKey: CLAN_SIEGE_TEST_ROW_KEY },
+  });
+}
+
+function findKyivSaturdayDate(): { year: number; month: number; day: number } {
+  for (let i = 0; i < 21; i++) {
+    const probe = new Date(Date.UTC(2026, 0, 1 + i));
+    const parts = getZonedParts(probe, 'Europe/Kyiv');
+    if (parts.weekday === 6) {
+      return { year: parts.year, month: parts.month, day: parts.day };
+    }
+  }
+  throw new Error('no Kyiv Saturday in probe window');
 }
 
 async function main(): Promise<void> {
@@ -579,6 +608,107 @@ async function main(): Promise<void> {
   assert.ok(typeof state.version === 'number');
   assert.ok(Array.isArray(state.topClans));
   ok('GET state returns contract fields');
+
+  const TEST_CITY = 'l2dop_giran';
+  const prevTestEnabled = process.env.CLAN_SIEGE_TEST_ENABLED;
+  process.env.CLAN_SIEGE_TEST_ENABLED = 'true';
+  process.env.CLAN_SIEGE_TEST_CITY_ID = TEST_CITY;
+  process.env.CLAN_SIEGE_TEST_START_IN_MINUTES = '2';
+  process.env.CLAN_SIEGE_TEST_DURATION_MINUTES = '20';
+  await resetTestSiege(TEST_CITY);
+  resetClanSiegeTestScheduleLogForTests();
+
+  const testNow = Date.now();
+  await ensureClanSiegeTestSiege(testNow);
+  await ensureClanSiegeTestSiege(testNow + 1000);
+  const testRows = await prisma.clanSiege.findMany({
+    where: { cityId: TEST_CITY, testKey: CLAN_SIEGE_TEST_ROW_KEY },
+  });
+  assert.equal(testRows.length, 1);
+  ok('test mode creates one siege row');
+
+  await runClanSiegeServerTick(testNow);
+  await runClanSiegeServerTick(testNow + 45_000);
+  assert.equal(
+    await prisma.clanSiege.count({
+      where: { cityId: TEST_CITY, testKey: CLAN_SIEGE_TEST_ROW_KEY },
+    }),
+    1
+  );
+  ok('test mode tick does not duplicate siege');
+
+  await prisma.clanSiege.update({
+    where: { id: testRows[0]!.id },
+    data: { wallHp: 12345, state: 'active' },
+  });
+  await ensureClanSiegeTestSiege(testNow + 5000);
+  const afterReinit = await prisma.clanSiege.findUniqueOrThrow({
+    where: { id: testRows[0]!.id },
+  });
+  assert.equal(afterReinit.wallHp, 12345);
+  ok('test mode re-init does not reset wall HP');
+
+  process.env.CLAN_SIEGE_TEST_ENABLED = 'false';
+  resetClanSiegeTestScheduleLogForTests();
+  const beforeDisabled = await prisma.clanSiege.count({
+    where: { cityId: TEST_CITY, testKey: CLAN_SIEGE_TEST_ROW_KEY },
+  });
+  await ensureClanSiegeTestSiege(testNow + 10_000);
+  assert.equal(
+    await prisma.clanSiege.count({
+      where: { cityId: TEST_CITY, testKey: CLAN_SIEGE_TEST_ROW_KEY },
+    }),
+    beforeDisabled
+  );
+  ok('test mode disabled does not create new siege');
+
+  const satDate = findKyivSaturdayDate();
+  const satWindowStart = zonedLocalToUtc(
+    satDate.year,
+    satDate.month,
+    satDate.day,
+    17,
+    59,
+    'Europe/Kyiv'
+  );
+  const satWindowEnd = zonedLocalToUtc(
+    satDate.year,
+    satDate.month,
+    satDate.day,
+    21,
+    0,
+    'Europe/Kyiv'
+  );
+  await prisma.clanSiege.deleteMany({
+    where: {
+      testKey: null,
+      startsAt: { gte: satWindowStart, lt: satWindowEnd },
+    },
+  });
+  await ensureSiegeScheduleForKyivDate(satDate);
+  assert.equal(
+    await prisma.clanSiege.count({
+      where: {
+        testKey: null,
+        startsAt: { gte: satWindowStart, lt: satWindowEnd },
+      },
+    }),
+    8
+  );
+  ok('weekly schedule unchanged when test mode disabled');
+
+  await prisma.clan.update({
+    where: { id: leaderB.clanId },
+    data: { clanPoints: 8000 },
+  });
+  const clanMy = await getClanMyForUser(leaderB.userId);
+  assert.ok(clanMy);
+  assert.equal(clanMy!.skillPoints, 8000);
+  ok('clan-my returns real clanPoints as skillPoints');
+
+  if (prevTestEnabled === undefined) delete process.env.CLAN_SIEGE_TEST_ENABLED;
+  else process.env.CLAN_SIEGE_TEST_ENABLED = prevTestEnabled;
+  await resetTestSiege(TEST_CITY);
 
   await cleanupUsers(users);
   await resetCitySieges();

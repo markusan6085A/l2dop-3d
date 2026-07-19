@@ -315,6 +315,8 @@ model CityCastle {
 model ClanSiege {
   id              String    @id @default(uuid())
   cityId          String
+  /** null = суботній розклад; "__clan_siege_test__" = CLAN_SIEGE_TEST_ENABLED override. */
+  testKey         String?
   startsAt        DateTime
   endsAt          DateTime
   /** scheduled | active | finished */
@@ -336,6 +338,7 @@ model ClanSiege {
   rewardLedger    ClanSiegeRewardLedger?
 
   @@unique([cityId, startsAt])
+  @@unique([cityId, testKey])
   @@index([state, startsAt])
   @@index([state, endsAt])
   @@index([cityId, state])

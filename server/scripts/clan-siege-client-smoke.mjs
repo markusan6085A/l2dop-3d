@@ -16,6 +16,10 @@ const siegeHtml = fs.readFileSync(
   path.join(__dirname, '../public/siege.html'),
   'utf8'
 );
+const siegeCss = fs.readFileSync(
+  path.join(__dirname, '../public/css/l2-siege-page.css'),
+  'utf8'
+);
 const citySrc = fs.readFileSync(
   path.join(__dirname, '../public/city.js'),
   'utf8'
@@ -41,10 +45,21 @@ assert.match(siegeSrc, /applyAttackResponse/);
 assert.match(siegeSrc, /ATTACK_MIN_INTERVAL_MS = 350/);
 assert.match(siegeSrc, /siege-attack-link/);
 assert.match(siegeSrc, /lastOwnDamage/);
+assert.match(siegeSrc, /renderScheduleHeader/);
+assert.match(siegeSrc, /data\.startsAt/);
+assert.match(siegeSrc, /data\.endsAt/);
 assert.match(siegeHtml, /\/assets\/gorod\.png/);
+assert.match(siegeHtml, /Початок:/);
+assert.match(siegeHtml, /Кінець:/);
+assert.match(siegeHtml, /siege-start-time/);
+assert.match(siegeHtml, /siege-end-time/);
 assert.doesNotMatch(siegeHtml, /l2-siege-btn/);
 assert.doesNotMatch(siegeHtml, /l2-siege-panel/);
 assert.match(siegeHtml, /l2-siege-wap/);
+assert.match(siegeCss, /\.l2-siege-time-label[\s\S]*#bfa88a/);
+assert.match(siegeCss, /\.l2-siege-time-value[\s\S]*#ffffff/);
+assert.match(siegeCss, /overflow-x:\s*hidden/);
+assert.match(siegeCss, /flex-wrap:\s*wrap/);
 assert.doesNotMatch(citySrc, /Захоплення міста/);
 assert.doesNotMatch(citySrc, /Облога міста/);
 assert.match(citySrc, /\/siege\.html\?cityId=/);
