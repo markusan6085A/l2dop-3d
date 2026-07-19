@@ -81,7 +81,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260717-5';
+  var APP_DATA_VERSION = '20260719partyRewardSnapshotFix1';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -2573,7 +2573,7 @@
   }
 
   var CHAT_REPLY_NOTIFY_VER = '20260717chatSnap1';
-  var PARTY_HUD_VER = '20260719partyHudFix1';
+  var PARTY_HUD_VER = '20260719partyRewardSnapshotFix1';
   var ONLINE_FOOT_ASSET_VER = '20260717perf2';
   var GAME_HELPER_ASSET_VER = '20260717perf2';
 

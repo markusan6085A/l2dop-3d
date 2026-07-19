@@ -38,6 +38,8 @@ import { startBattleInTx } from '../src/services/battleServiceSession.js';
 import { getBattleSyncForUser } from '../src/services/battleServiceSync.js';
 import { touchOnlinePresence } from '../src/services/onlinePresenceService.js';
 import { recordPartyKillRewardInTx } from '../src/services/party/partyBattleSessionService.js';
+import { performPartyBattleLethalAttack } from './partyBattleSmokeLethalHelper.js';
+import { spawnSync } from 'node:child_process';
 
 const CANONICAL_SPAWN = MAP_WORLD_SPAWNS[0]!;
 let passed = 0;
@@ -240,11 +242,29 @@ async function main(): Promise<void> {
   assert.equal(notice!.expGain, 100);
   ok('rewardNotice unread in HUD read path');
 
+  const mateBeforeHud = await prisma.character.findUniqueOrThrow({
+    where: { id: mate.characterId },
+  });
+  await prisma.character.update({
+    where: { id: mate.characterId },
+    data: { revision: { increment: 1 } },
+  });
+  const hudReward = await getPartyHudForUser(mate.userId, mate.characterId);
+  assert.ok(typeof hudReward.characterRevision === 'number');
+  assert.ok(hudReward.characterRevision > mateBeforeHud.revision);
+  assert.ok(hudReward.pendingPartyReward);
+  assert.equal(hudReward.pendingPartyReward!.expGain, 100);
+  assert.equal(hudReward.pendingPartyReward!.spGain, 10);
+  assert.equal(String(hudReward.pendingPartyReward!.adenaGain), '50');
+  ok('HUD characterRevision + pendingPartyReward for mate');
+
   await ackPartyRewardNoticeForUser(mate.userId, session!.id, mate.characterId);
   await ackPartyRewardNoticeForUser(mate.userId, session!.id, mate.characterId);
   const afterAck = await getUnreadPartyRewardNotice(mate.characterId);
   assert.equal(afterAck, null);
-  ok('reward ack idempotent');
+  const hudAfterAck = await getPartyHudForUser(mate.userId, mate.characterId);
+  assert.equal(hudAfterAck.pendingPartyReward ?? null, null);
+  ok('reward ack idempotent + pendingPartyReward cleared');
 
   const charL2 = await prisma.character.findUniqueOrThrow({ where: { id: leader.characterId } });
   const sync = await getBattleSyncForUser(leader.userId, {
@@ -256,6 +276,73 @@ async function main(): Promise<void> {
   assert.ok(sync!.partyBattle!.members!.every((m) => m.characterId !== leader.characterId));
   assert.ok(sync!.partyBattle!.members!.length <= 4);
   ok('battle sync members[] excludes viewer, max 4');
+
+  console.log('\n[snapshot] killer lethal — mate passive revision signal');
+  const killer2 = await createTestAccount('KL');
+  const mate2 = await createTestAccount('ML', {
+    worldX: CANONICAL_SPAWN.worldX + 500,
+    worldY: CANONICAL_SPAWN.worldY,
+  });
+  await createPartyForUser(killer2.userId, killer2.characterId);
+  const party2 = await prisma.partyMember.findUniqueOrThrow({
+    where: { characterId: killer2.characterId },
+  });
+  await addPartyMember(party2.partyId, mate2.characterId, 1);
+  await touchOnlinePresence(killer2.userId);
+  await touchOnlinePresence(mate2.userId);
+
+  const mate2Before = await prisma.character.findUniqueOrThrow({
+    where: { id: mate2.characterId },
+  });
+  const hudMateBefore = await getPartyHudForUser(mate2.userId, mate2.characterId);
+  assert.equal(hudMateBefore.characterRevision, mate2Before.revision);
+
+  const charK2 = await prisma.character.findUniqueOrThrow({
+    where: { id: killer2.characterId },
+  });
+  await prisma.$transaction((tx) =>
+    startBattleInTx(tx, killer2.userId, CANONICAL_SPAWN.id, charK2.revision, {
+      characterId: killer2.characterId,
+    })
+  );
+
+  const { response: lethalResponse } = await performPartyBattleLethalAttack({
+    userId: killer2.userId,
+    characterId: killer2.characterId,
+    battleSpawnId: CANONICAL_SPAWN.id,
+  });
+  assert.ok(lethalResponse?.partyReward);
+
+  const mate2After = await prisma.character.findUniqueOrThrow({
+    where: { id: mate2.characterId },
+  });
+  assert.ok(Number(mate2After.exp) > Number(mate2Before.exp));
+  assert.ok(Number(mate2After.sp) > Number(mate2Before.sp));
+  assert.ok(Number(mate2After.adena) > Number(mate2Before.adena));
+  assert.ok(mate2After.revision > mate2Before.revision);
+  ok('mate gains exp/sp/adena + revision without lethal action');
+
+  const hudMateAfter = await getPartyHudForUser(mate2.userId, mate2.characterId);
+  assert.ok(hudMateAfter.characterRevision > hudMateBefore.characterRevision);
+  assert.ok(hudMateAfter.pendingPartyReward);
+  assert.ok(hudMateAfter.pendingPartyReward!.expGain > 0);
+  ok('mate HUD returns higher characterRevision + pendingPartyReward');
+
+  await prisma.user.deleteMany({
+    where: { id: { in: [killer2.userId, mate2.userId] } },
+  });
+
+  const clientSmoke = spawnSync(
+    process.execPath,
+    ['server/scripts/party-hud-revision-client-smoke.mjs'],
+    { cwd: path.join(__dirname, '../..'), stdio: 'pipe', encoding: 'utf8' }
+  );
+  if (clientSmoke.status !== 0) {
+    throw new Error(
+      clientSmoke.stderr || clientSmoke.stdout || 'party-hud-revision-client-smoke failed'
+    );
+  }
+  ok('client revision comparison smoke');
 
   await prisma.user.deleteMany({
     where: { id: { in: [leader.userId, mate.userId] } },

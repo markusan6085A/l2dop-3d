@@ -98,8 +98,12 @@ export type PartyHudResult = {
   party: PartyHudParty | null;
   invite: PartyHudInvite | null;
   extraInviteCount: number;
+  /** Актуальний Character.revision — легкий сигнал для client snapshot refresh. */
+  characterRevision: number;
   activeBattle?: PartyHudActiveBattle | null;
+  /** @deprecated — використовуй pendingPartyReward */
   rewardNotice?: PartyHudRewardNotice | null;
+  pendingPartyReward?: PartyHudRewardNotice | null;
 };
 
 export type PartyProfileInviteResult = {

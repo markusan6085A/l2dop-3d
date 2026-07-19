@@ -6,7 +6,7 @@
   'use strict';
 
   var POLL_MS = 5000;
-  var ASSET_VER = '20260719partyHudFix1';
+  var ASSET_VER = '20260719partyRewardSnapshotFix1';
 
   var hudState = null;
   var fetchSeq = 0;
@@ -18,6 +18,8 @@
   var flashTimer = null;
   var isMounted = false;
   var eventsWired = false;
+  /** partyBattleId — щоб toast не дублювався між poll-ами. */
+  var shownRewardNoticeKeys = Object.create(null);
 
   if (!global.partyHudDebug) {
     global.partyHudDebug = {
@@ -120,6 +122,88 @@
       render(hudState);
     }, 3200);
     captureLayoutDebug('flash');
+  }
+
+  function getCachedRevision() {
+    var snap = null;
+    if (window.L2) {
+      if (typeof L2.lastSnapshot === 'function') snap = L2.lastSnapshot();
+      if (!snap && typeof L2.getCachedCharacter === 'function') {
+        snap = L2.getCachedCharacter();
+      }
+    }
+    var rev = Number(snap && snap.revision);
+    return Number.isFinite(rev) ? rev : 0;
+  }
+
+  function pickPendingPartyReward(data) {
+    if (!data) return null;
+    if (data.pendingPartyReward && data.pendingPartyReward.partyBattleId) {
+      return data.pendingPartyReward;
+    }
+    if (data.rewardNotice && data.rewardNotice.partyBattleId) {
+      return data.rewardNotice;
+    }
+    return null;
+  }
+
+  function formatPartyRewardNotice(notice) {
+    return (
+      'Нагорода паті: +' +
+      String(notice.expGain) +
+      ' EXP, +' +
+      String(notice.spGain) +
+      ' SP, +' +
+      String(notice.adenaGain) +
+      ' адени'
+    );
+  }
+
+  async function refreshSnapshotIfRevisionAhead(data) {
+    if (!window.L2 || typeof L2.fetchSnapshot !== 'function') return false;
+    var serverRev = Number(data && data.characterRevision);
+    if (!Number.isFinite(serverRev)) return false;
+    var cachedRev = getCachedRevision();
+    if (serverRev <= cachedRev) return false;
+    var fresh = await L2.fetchSnapshot();
+    return fresh != null;
+  }
+
+  async function postRewardNoticeAck(partyBattleId) {
+    if (!partyBattleId) return false;
+    var r = await fetch('/game/party/reward-notice/ack', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token(),
+      },
+      body: JSON.stringify({ partyBattleId: String(partyBattleId) }),
+    });
+    return r.ok;
+  }
+
+  async function maybeShowPendingPartyReward(data) {
+    var notice = pickPendingPartyReward(data);
+    if (!notice || !notice.partyBattleId) return;
+
+    var key = String(notice.partyBattleId);
+    if (shownRewardNoticeKeys[key]) return;
+
+    var serverRev = Number(data && data.characterRevision);
+    var cachedRev = getCachedRevision();
+    if (Number.isFinite(serverRev) && cachedRev < serverRev) return;
+
+    shownRewardNoticeKeys[key] = true;
+    setFlash(formatPartyRewardNotice(notice));
+
+    rewardAckInFlight = true;
+    try {
+      await postRewardNoticeAck(notice.partyBattleId);
+    } catch (_eAck) {
+      /* toast already shown — не дублюємо на наступному poll */
+    } finally {
+      rewardAckInFlight = false;
+    }
   }
 
   function playerProfileHref(characterId, name) {
@@ -290,18 +374,12 @@
   async function ackRewardNotice(partyBattleId) {
     if (rewardAckInFlight || !partyBattleId) return;
     rewardAckInFlight = true;
-    render(hudState);
     try {
-      var r = await fetch('/game/party/reward-notice/ack', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token(),
-        },
-        body: JSON.stringify({ partyBattleId: String(partyBattleId) }),
-      });
-      if (!r.ok) {
+      var ok = await postRewardNoticeAck(partyBattleId);
+      if (!ok) {
         setFlash('Не вдалося підтвердити нагороду.');
+      } else {
+        shownRewardNoticeKeys[String(partyBattleId)] = true;
       }
       await fetchHud();
     } catch (_e) {
@@ -381,12 +459,6 @@
       return;
     }
 
-    if (data.rewardNotice && data.rewardNotice.partyBattleId) {
-      renderRewardNoticeRow(inner, data);
-      captureLayoutDebug('reward');
-      return;
-    }
-
     if (data.activeBattle && data.activeBattle.partyBattleId) {
       renderActiveBattleRow(inner, data);
       captureLayoutDebug('battle');
@@ -432,6 +504,8 @@
         return;
       }
       if (mySeq !== fetchSeq) return;
+      await refreshSnapshotIfRevisionAhead(data);
+      await maybeShowPendingPartyReward(data);
       hudState = data;
       render(hudState);
     } catch (_eNet) {

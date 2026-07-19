@@ -47,7 +47,7 @@ export async function getPartyHudForUser(
 
   let party: PartyHudResult['party'] = null;
   let activeBattle: PartyHudResult['activeBattle'] = null;
-  let rewardNotice: PartyHudResult['rewardNotice'] = null;
+  let pendingPartyReward: PartyHudResult['pendingPartyReward'] = null;
 
   if (membership?.party) {
     const row = membership.party;
@@ -65,7 +65,7 @@ export async function getPartyHudForUser(
         row.id,
         char.id
       );
-      rewardNotice = await getUnreadPartyRewardNotice(char.id);
+      pendingPartyReward = await getUnreadPartyRewardNotice(char.id);
     }
   }
 
@@ -92,15 +92,24 @@ export async function getPartyHudForUser(
       }
     : null;
 
+  const revRow = await prisma.character.findUnique({
+    where: { id: char.id },
+    select: { revision: true },
+  });
+
   const result: PartyHudResult = {
     party,
     invite,
     extraInviteCount: Math.max(0, invites.length - 1),
+    characterRevision: revRow?.revision ?? 0,
   };
 
   if (isPartyBattleRewardDistributionReady()) {
     if (activeBattle) result.activeBattle = activeBattle;
-    if (rewardNotice) result.rewardNotice = rewardNotice;
+    if (pendingPartyReward) {
+      result.pendingPartyReward = pendingPartyReward;
+      result.rewardNotice = pendingPartyReward;
+    }
   }
 
   return result;
