@@ -1306,6 +1306,16 @@
     return c && c.gender === 'female' ? 'female' : 'male';
   }
 
+  /**
+   * Верхній portrait-tier (раніше 62+) тепер має вмикатись з 61.
+   * Застосовується до всіх level-rules, де історично стояло minLevel=62.
+   */
+  var HERO_PORTRAIT_TOP_TIER_MIN_LEVEL = 61;
+
+  function normalizePortraitRuleMinLevel(minLevel) {
+    return minLevel === 62 ? HERO_PORTRAIT_TOP_TIER_MIN_LEVEL : minLevel;
+  }
+
   function sceneHeroOverlayLookupKey(prof, gender) {
     if (gender === 'female') {
       var femKey = prof + '|female';
@@ -1339,9 +1349,10 @@
     var url = overlay.url;
     var portraitTier = null;
     for (var i = 0; i < tiers.length; i++) {
-      if (level >= tiers[i].minLevel) {
+      var requiredLevel = normalizePortraitRuleMinLevel(tiers[i].minLevel);
+      if (level >= requiredLevel) {
         url = tiers[i].url;
-        portraitTier = String(tiers[i].minLevel);
+        portraitTier = String(requiredLevel);
         break;
       }
     }
