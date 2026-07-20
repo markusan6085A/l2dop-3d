@@ -5,6 +5,10 @@ import {
   type RaidBossDropSpec,
 } from './l2dopRaidBossDropShared.js';
 import { RB_21_39_DROP_BAG_BY_NPC_ID } from './l2dopRaidBossDropTables21_39.js';
+import { RB_40_51_DROP_BAG_BY_NPC_ID } from './l2dopRaidBossDropTables40_51.js';
+import { RB_52_60_DROP_BAG_BY_NPC_ID } from './l2dopRaidBossDropTables52_60.js';
+import { RB_61_75_DROP_BAG_BY_NPC_ID } from './l2dopRaidBossDropTables61_75.js';
+import { RB_76_87_DROP_BAG_BY_NPC_ID } from './l2dopRaidBossDropTables76_87.js';
 
 /** Отверженный Стражник (25372): D-grade з магазину дропів — лише іконка + назва. */
 const RB_25372_DROPS: readonly RaidBossDropSpec[] = [
@@ -273,6 +277,10 @@ const RAID_BOSS_DROP_BAG_BY_NPC_ID: Readonly<Record<number, NpcDropBag>> = {
   25375: buildRbDropBagFromSpecs(25375, RB_25375_DROPS, RB20_ENCHANT_SCROLL_DROPS),
   25378: buildRbDropBagFromSpecs(25378, RB_25378_DROPS, RB20_ENCHANT_SCROLL_DROPS),
   ...RB_21_39_DROP_BAG_BY_NPC_ID,
+  ...RB_40_51_DROP_BAG_BY_NPC_ID,
+  ...RB_52_60_DROP_BAG_BY_NPC_ID,
+  ...RB_61_75_DROP_BAG_BY_NPC_ID,
+  ...RB_76_87_DROP_BAG_BY_NPC_ID,
 };
 
 export function customNpcDropBagForMob(npcId: number): NpcDropBag | undefined {
