@@ -152,42 +152,102 @@ async function withFlags<T>(
   }
 }
 
-async function testConcurrentStartOneSession(): Promise<void> {
-  console.log('\n[party] concurrent start → one session');
+async function testPartyMembersSeparateWorldBattles(): Promise<void> {
+  console.log('\n[party] world farm — separate solo battles per member');
   await withFlags(async () => {
-    const a = await createTestAccount('cs');
+    const a = await createTestAccount('wf');
+    const b = await createTestAccount('wf2');
     await createPartyForUser(a.userId, a.characterId);
-    const char = await prisma.character.findUniqueOrThrow({
-      where: { id: a.characterId },
-    });
-
-    const results = await Promise.allSettled([
-      prisma.$transaction((tx) =>
-        startBattleInTx(tx, a.userId, CANONICAL_SPAWN.id, char.revision, {
-          characterId: a.characterId,
-        })
-      ),
-      prisma.$transaction((tx) =>
-        startBattleInTx(tx, a.userId, CANONICAL_SPAWN.id, char.revision, {
-          characterId: a.characterId,
-        })
-      ),
-    ]);
-
-    const okCount = results.filter((r) => r.status === 'fulfilled').length;
-    assert.ok(okCount >= 1);
-
-    const party = await prisma.partyMember.findUniqueOrThrow({
+    const membership = await prisma.partyMember.findUniqueOrThrow({
       where: { characterId: a.characterId },
     });
-    const sessions = await prisma.partyBattleSession.findMany({
-      where: { originPartyId: party.partyId, state: PARTY_BATTLE_SESSION_STATE.active },
+    await prisma.partyMember.create({
+      data: {
+        partyId: membership.partyId,
+        characterId: b.characterId,
+        slotOrder: 1,
+      },
     });
-    assert.equal(sessions.length, 1);
-    ok('one active session after concurrent start');
 
-    await prisma.partyBattleSession.deleteMany({ where: { originPartyId: party.partyId } });
+    const spawnA = CANONICAL_SPAWN;
+    const spawnB =
+      MAP_WORLD_SPAWNS.find(
+        (s) => s.id !== spawnA.id && s.kind !== 'raid' && s.kind !== 'epic'
+      ) ?? spawnA;
+
+    await prisma.character.update({
+      where: { id: a.characterId },
+      data: { worldX: spawnA.worldX, worldY: spawnA.worldY },
+    });
+    await prisma.character.update({
+      where: { id: b.characterId },
+      data: { worldX: spawnB.worldX, worldY: spawnB.worldY },
+    });
+
+    const charA = await prisma.character.findUniqueOrThrow({
+      where: { id: a.characterId },
+    });
+    const charB = await prisma.character.findUniqueOrThrow({
+      where: { id: b.characterId },
+    });
+
+    const hint = await prisma.$transaction((tx) =>
+      shouldStartPartyBattleInTx(tx, a.characterId, spawnA.kind, false)
+    );
+    assert.equal(hint, null);
+    ok('shouldStartPartyBattleInTx → null for world mob');
+
+    await prisma.$transaction((tx) =>
+      startBattleInTx(tx, a.userId, spawnA.id, charA.revision, {
+        characterId: a.characterId,
+      })
+    );
+    await prisma.$transaction((tx) =>
+      startBattleInTx(tx, b.userId, spawnB.id, charB.revision, {
+        characterId: b.characterId,
+      })
+    );
+
+    const afterA = await prisma.character.findUniqueOrThrow({
+      where: { id: a.characterId },
+    });
+    const afterB = await prisma.character.findUniqueOrThrow({
+      where: { id: b.characterId },
+    });
+    const bjA = afterA.battleJson as Record<string, unknown> | null;
+    const bjB = afterB.battleJson as Record<string, unknown> | null;
+    assert.ok(bjA?.spawnId);
+    assert.ok(bjB?.spawnId);
+    assert.equal(bjA!.partyBattleId, undefined);
+    assert.equal(bjB!.partyBattleId, undefined);
+    if (spawnB.id !== spawnA.id) {
+      assert.notEqual(bjA!.spawnId, bjB!.spawnId);
+    }
+
+    const sessions = await prisma.partyBattleSession.findMany({
+      where: {
+        originPartyId: membership.partyId,
+        state: PARTY_BATTLE_SESSION_STATE.active,
+      },
+    });
+    assert.equal(sessions.length, 0);
+    ok('two party members — separate world battles, no party session');
+
+    let errMsg = '';
+    try {
+      await prisma.$transaction((tx) =>
+        startBattleInTx(tx, a.userId, spawnB.id, afterA.revision, {
+          characterId: a.characterId,
+        })
+      );
+    } catch (e) {
+      errMsg = e instanceof Error ? e.message : String(e);
+    }
+    assert.notEqual(errMsg, 'party_battle_wrong_spawn');
+    ok('second world mob while in battle — not party_battle_wrong_spawn');
+
     await prisma.user.delete({ where: { id: a.userId } });
+    await prisma.user.delete({ where: { id: b.userId } });
   });
 }
 
@@ -319,12 +379,21 @@ async function testSyncReadOnly(): Promise<void> {
   await withFlags(async () => {
     const a = await createTestAccount('sy');
     await createPartyForUser(a.userId, a.characterId);
+    const party = await prisma.partyMember.findUniqueOrThrow({
+      where: { characterId: a.characterId },
+    });
     const char0 = await prisma.character.findUniqueOrThrow({
       where: { id: a.characterId },
     });
     await prisma.$transaction((tx) =>
-      startBattleInTx(tx, a.userId, CANONICAL_SPAWN.id, char0.revision, {
-        characterId: a.characterId,
+      startOrJoinPartyBattleInTx(tx, {
+        userId: a.userId,
+        char: char0 as typeof char0,
+        spawn: CANONICAL_SPAWN,
+        expectedRevision: char0.revision,
+        partyId: party.partyId,
+        wTick: null,
+        nowStartMs: Date.now(),
       })
     );
 
@@ -368,12 +437,21 @@ async function testLethalZeroEconomy(): Promise<void> {
   await withFlags(async () => {
     const a = await createTestAccount('lt');
     await createPartyForUser(a.userId, a.characterId);
+    const party = await prisma.partyMember.findUniqueOrThrow({
+      where: { characterId: a.characterId },
+    });
     const char0 = await prisma.character.findUniqueOrThrow({
       where: { id: a.characterId },
     });
     await prisma.$transaction((tx) =>
-      startBattleInTx(tx, a.userId, CANONICAL_SPAWN.id, char0.revision, {
-        characterId: a.characterId,
+      startOrJoinPartyBattleInTx(tx, {
+        userId: a.userId,
+        char: char0 as typeof char0,
+        spawn: CANONICAL_SPAWN,
+        expectedRevision: char0.revision,
+        partyId: party.partyId,
+        wTick: null,
+        nowStartMs: Date.now(),
       })
     );
 
@@ -421,12 +499,21 @@ async function testSessionLockBeforeCharacterWrite(): Promise<void> {
     await withFlags(async () => {
     const a = await createTestAccount('lk');
     await createPartyForUser(a.userId, a.characterId);
+    const party = await prisma.partyMember.findUniqueOrThrow({
+      where: { characterId: a.characterId },
+    });
     const char0 = await prisma.character.findUniqueOrThrow({
       where: { id: a.characterId },
     });
     await prisma.$transaction((tx) =>
-      startBattleInTx(tx, a.userId, CANONICAL_SPAWN.id, char0.revision, {
-        characterId: a.characterId,
+      startOrJoinPartyBattleInTx(tx, {
+        userId: a.userId,
+        char: char0 as typeof char0,
+        spawn: CANONICAL_SPAWN,
+        expectedRevision: char0.revision,
+        partyId: party.partyId,
+        wTick: null,
+        nowStartMs: Date.now(),
       })
     );
 
@@ -466,7 +553,7 @@ async function main(): Promise<void> {
   process.env.PARTY_BATTLE_ENABLED = 'true';
   process.env.PARTY_BATTLE_ALLOW_UNREWARDED_TESTS = 'true';
   process.env.PARTY_BATTLE_REWARDS_ENABLED = 'false';
-  await testConcurrentStartOneSession();
+  await testPartyMembersSeparateWorldBattles();
   await testWrongSpawnError();
   await testSharedHpTwoAttackers();
   await testSyncReadOnly();
