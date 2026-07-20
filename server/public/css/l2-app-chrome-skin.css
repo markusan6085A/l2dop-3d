@@ -91,6 +91,7 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   --l2f-side-line-inset: 3px;
   --l2f-top-corner-w: 78px;
   --l2f-top-corner-h: 78px;
+  --l2f-top-corner-x-outset: 2px;
   --l2f-bottom-corner-h: 54px;
   --l2f-side-line-width: 24px;
   content: "" !important;
@@ -121,8 +122,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
     repeat-y,
     repeat-y;
   background-position:
-    top left,
-    top right,
+    left calc(0px - var(--l2f-top-corner-x-outset)) top,
+    right calc(0px - var(--l2f-top-corner-x-outset)) top,
     left calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
     right calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
     top center,
