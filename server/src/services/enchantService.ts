@@ -147,6 +147,9 @@ function assertScrollCompatible(
 }
 
 function buildFailMessageUk(previous: number, current: number): string {
+  if (previous === current) {
+    return `Заточка не вдалася. Рівень предмета залишився +${current}.`;
+  }
   if (previous >= ENCHANT_FAIL_RESET_FROM_LEVEL && current === ENCHANT_FAIL_RESET_TO_LEVEL) {
     return `Заточка не вдалася. Рівень предмета скинуто з +${previous} до +${current}.`;
   }

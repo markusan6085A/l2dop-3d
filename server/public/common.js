@@ -705,6 +705,61 @@
       var sp = global.L2.splitEnchantLevel(enchantLevel);
       return sp.under * 1 + sp.over * 3;
     },
+    /** Шанси/невдача заточки — mirror server/src/data/enchantConfig.ts */
+    ENCHANT_FAIL_FLOOR_LEVEL: 3,
+    ENCHANT_FAIL_RESET_TO_LEVEL: 20,
+    ENCHANT_FAIL_RESET_FROM_LEVEL: 21,
+    ENCHANT_SUCCESS_CHANCE_BY_LEVEL: {
+      0: 100,
+      1: 100,
+      2: 100,
+      3: 90,
+      4: 85,
+      5: 80,
+      6: 75,
+      7: 70,
+      8: 65,
+      9: 60,
+      10: 55,
+      11: 50,
+      12: 45,
+      13: 40,
+      14: 35,
+      15: 30,
+      16: 27,
+      17: 24,
+      18: 21,
+      19: 18,
+      20: 15,
+      21: 12,
+      22: 10,
+      23: 8,
+      24: 6,
+    },
+    clampEnchantLevel: function (raw) {
+      var n = Math.floor(Number(raw));
+      if (!Number.isFinite(n)) return 0;
+      return Math.max(0, Math.min(25, n));
+    },
+    getEnchantSuccessChance: function (currentEnchantLevel) {
+      var current = global.L2.clampEnchantLevel(currentEnchantLevel);
+      if (current >= 25) return 0;
+      var table = global.L2.ENCHANT_SUCCESS_CHANCE_BY_LEVEL || {};
+      return table[current] != null ? Number(table[current]) : 0;
+    },
+    getEnchantFailLevel: function (currentEnchantLevel) {
+      var current = global.L2.clampEnchantLevel(currentEnchantLevel);
+      if (current <= global.L2.ENCHANT_FAIL_FLOOR_LEVEL) {
+        return global.L2.ENCHANT_FAIL_FLOOR_LEVEL;
+      }
+      if (current <= 15) return current - 1;
+      if (current <= 20) return current - 2;
+      if (current <= 24) return global.L2.ENCHANT_FAIL_RESET_TO_LEVEL;
+      return current;
+    },
+    canAttemptEnchant: function (currentEnchantLevel) {
+      return global.L2.clampEnchantLevel(currentEnchantLevel) < 25;
+    },
     mkBagEnchantTargetId: function (itemId, enchantLevel) {
       var id = normalizePositiveInt(itemId);
       var en = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));

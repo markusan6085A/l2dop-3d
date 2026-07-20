@@ -192,6 +192,23 @@ var detailPatk = detailLines.find(function (ln) {
 });
 assert.ok(String(detailPatk.valueUk).includes('від заточення'));
 
+// enchant balance mirrors server enchantConfig.ts
+assert.equal(L2.getEnchantSuccessChance(0), 100);
+assert.equal(L2.getEnchantSuccessChance(3), 90);
+assert.equal(L2.getEnchantSuccessChance(9), 60);
+assert.equal(L2.getEnchantSuccessChance(10), 55);
+assert.equal(L2.getEnchantSuccessChance(15), 30);
+assert.equal(L2.getEnchantSuccessChance(20), 15);
+assert.equal(L2.getEnchantSuccessChance(24), 6);
+assert.equal(L2.getEnchantSuccessChance(25), 0);
+assert.equal(L2.getEnchantFailLevel(3), 3);
+assert.equal(L2.getEnchantFailLevel(4), 3);
+assert.equal(L2.getEnchantFailLevel(15), 14);
+assert.equal(L2.getEnchantFailLevel(16), 14);
+assert.equal(L2.getEnchantFailLevel(20), 18);
+assert.equal(L2.getEnchantFailLevel(21), 20);
+assert.equal(L2.getEnchantFailLevel(24), 20);
+
 // technical debt note: stacks merge by itemId+enchant (qty), not per physical instance
 var dupSnap = {
   inventory: {

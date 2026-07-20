@@ -25,6 +25,11 @@ import {
 } from '../src/services/warehouseService.js';
 import { computeCombatStats } from '../src/data/l2dopCombatFormulas.js';
 import { itemGradeForItemId } from '../src/data/itemsCatalog.js';
+import {
+  canAttemptEnchant,
+  getEnchantFailLevel,
+  getEnchantSuccessChance,
+} from '../src/data/enchantConfig.js';
 
 const D_WEAPON_ID = 128;
 const D_CHEST_ID = 2276;
@@ -90,7 +95,31 @@ async function getCharacterRow(charId: string) {
   return row;
 }
 
+function assertEnchantConfigBalance(): void {
+  assert.equal(getEnchantSuccessChance(0), 100);
+  assert.equal(getEnchantSuccessChance(1), 100);
+  assert.equal(getEnchantSuccessChance(2), 100);
+  assert.equal(getEnchantSuccessChance(3), 90);
+  assert.equal(getEnchantSuccessChance(9), 60);
+  assert.equal(getEnchantSuccessChance(10), 55);
+  assert.equal(getEnchantSuccessChance(15), 30);
+  assert.equal(getEnchantSuccessChance(20), 15);
+  assert.equal(getEnchantSuccessChance(24), 6);
+  assert.equal(getEnchantSuccessChance(25), 0);
+  assert.equal(canAttemptEnchant(25), false);
+
+  assert.equal(getEnchantFailLevel(3), 3);
+  assert.equal(getEnchantFailLevel(4), 3);
+  assert.equal(getEnchantFailLevel(15), 14);
+  assert.equal(getEnchantFailLevel(16), 14);
+  assert.equal(getEnchantFailLevel(20), 18);
+  assert.equal(getEnchantFailLevel(21), 20);
+  assert.equal(getEnchantFailLevel(24), 20);
+}
+
 async function run() {
+  assertEnchantConfigBalance();
+
   // shop: icons exist
   const expectedIcons = [
     'scroll_enchant_armor_d.png',
@@ -162,7 +191,7 @@ async function run() {
       rev = res.character.revision;
     }
 
-    // +3 -> +4 uses 70%
+    // +3 -> +4 uses 90%
     const chanceRes = await enchantEquipmentItemForUser(
       userId,
       rev,
@@ -172,7 +201,7 @@ async function run() {
       },
       { rng: () => 0.2 }
     );
-    assert.equal(chanceRes.chancePercent, 70);
+    assert.equal(chanceRes.chancePercent, 90);
     assert.equal(chanceRes.success, true);
     rev = chanceRes.character.revision;
 
@@ -247,7 +276,7 @@ async function run() {
     assert.equal(failSeven.currentEnchantLevel, 6);
     rev = failSeven.character.revision;
 
-    // +24 fail -> +10
+    // +24 fail -> +20
     const make24 = addEnchantedToBag(parseInventory(failSeven.character.inventory), D_WEAPON_ID, 1, 24);
     await prisma.character.update({
       where: { id: charId },
@@ -265,7 +294,7 @@ async function run() {
       { rng: () => 0.99 }
     );
     assert.equal(fail24.success, false);
-    assert.equal(fail24.currentEnchantLevel, 10);
+    assert.equal(fail24.currentEnchantLevel, 20);
     rev = fail24.character.revision;
 
     // +25 cannot enchant, scroll not consumed

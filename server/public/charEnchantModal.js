@@ -108,34 +108,6 @@
     return scrollTargetForItem(itemId) != null;
   }
 
-  function getEnchantSuccessChance(currentEnchantLevel) {
-    var current = Math.max(
-      0,
-      Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(currentEnchantLevel) || 0))
-    );
-    if (current <= 2) return 100;
-    if (current === 3) return 70;
-    if (current === 4) return 65;
-    if (current === 5) return 60;
-    if (current === 6) return 55;
-    if (current === 7) return 50;
-    if (current === 8) return 45;
-    if (current === 9) return 40;
-    if (current <= 14) return 30;
-    if (current <= 19) return 20;
-    return 10;
-  }
-
-  function getEnchantFailLevel(currentEnchantLevel) {
-    var current = Math.max(
-      0,
-      Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(currentEnchantLevel) || 0))
-    );
-    if (current <= 3) return 3;
-    if (current <= 10) return current - 1;
-    return 10;
-  }
-
   function scrollQtyInBag(snap, scrollItemId) {
     var inv = snap && snap.inventory ? snap.inventory : { stacks: [] };
     var total = 0;
@@ -357,13 +329,19 @@
       0,
       Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(enchant) || 0))
     );
-    var chance = getEnchantSuccessChance(current);
-    var failTo = getEnchantFailLevel(current);
+    var chance =
+      global.L2 && typeof L2.getEnchantSuccessChance === 'function'
+        ? L2.getEnchantSuccessChance(current)
+        : 0;
+    var failTo =
+      global.L2 && typeof L2.getEnchantFailLevel === 'function'
+        ? L2.getEnchantFailLevel(current)
+        : current;
     chanceEl.textContent = 'Шанс успіху: ' + String(chance) + '%';
-    if (current <= 3) {
+    if (current <= 3 && failTo === current) {
       failEl.textContent = 'При невдачі: без втрати рівня';
     } else {
-      failEl.textContent = 'При невдачі: стане +' + String(failTo);
+      failEl.textContent = 'При невдачі: предмет стане +' + String(failTo);
     }
   }
 
