@@ -48,7 +48,8 @@ async function ensureClanHallOnRow(
   const needsFetch =
     !row.clan ||
     row.clan.hallBlessingAt === undefined ||
-    row.clan.level === undefined;
+    row.clan.level === undefined ||
+    row.clan.emblemId === undefined;
   if (!needsFetch) return row;
   const clan = tx
     ? await tx.clan.findUnique({

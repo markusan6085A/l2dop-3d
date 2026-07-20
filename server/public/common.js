@@ -2245,6 +2245,24 @@
       return String(n);
     },
 
+    /** Емблема клану з character snapshot (clanEmblemId / emblemId). */
+    resolveClanEmblemIdFromSnapshot: function (c) {
+      if (!c) return null;
+      var raw =
+        c.clanEmblemId != null
+          ? c.clanEmblemId
+          : c.emblemId != null
+            ? c.emblemId
+            : null;
+      if (typeof global.L2.isValidClanEmblemId === 'function') {
+        if (!global.L2.isValidClanEmblemId(Number(raw))) return null;
+      } else {
+        var n = Number(raw);
+        if (!Number.isInteger(n) || n < 1 || n > 76) return null;
+      }
+      return Math.floor(Number(raw));
+    },
+
     /** Емблема клану у WAP-headline: лише при clanId + валідному clanEmblemId з snapshot. */
     syncHudClanEmblemFromSnapshot: function (c) {
       var slot = document.getElementById('l2-hud-clan-emblem-slot');
@@ -2253,7 +2271,11 @@
       slot.hidden = true;
       if (!c || c.clanId == null || c.clanId === '') return;
       if (typeof global.L2.createClanEmblemElement !== 'function') return;
-      var emblem = global.L2.createClanEmblemElement(c.clanEmblemId, 16);
+      var emblemId =
+        typeof global.L2.resolveClanEmblemIdFromSnapshot === 'function'
+          ? global.L2.resolveClanEmblemIdFromSnapshot(c)
+          : c.clanEmblemId;
+      var emblem = global.L2.createClanEmblemElement(emblemId, 16);
       if (!emblem) return;
       emblem.className = 'l2-hud-legacy-clan-emblem__img l2-clan-emblem-inline clan-emblem-inline';
       emblem.onerror = function () {

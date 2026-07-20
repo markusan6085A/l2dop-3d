@@ -40,6 +40,25 @@
   color: var(--l2-nick-color, #bfa88a);
 }
 
+.l2-hud-legacy-clan-emblem {
+  display: none;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.l2-hud-legacy-clan-emblem:not([hidden]) {
+  display: inline-flex;
+  align-items: center;
+}
+
+.l2-hud-legacy-clan-emblem__img {
+  width: 16px;
+  height: 16px;
+  margin: 0 4px 0 0;
+  vertical-align: middle;
+  object-fit: contain;
+}
+
 .l2-clan-emblem-picker-wrap {
   margin: 8px 0 12px;
 }

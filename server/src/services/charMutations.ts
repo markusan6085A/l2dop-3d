@@ -112,7 +112,7 @@ export async function getSnapshotForUser(
       const char = (await trx.character.findFirst({
         where: { userId },
         orderBy: { lastUpdate: 'desc' },
-        include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
+        include: { clan: { select: { name: true, hallBlessingAt: true, level: true, emblemId: true } } },
       })) as CharacterRow | null;
       if (!char) return null;
 
@@ -136,7 +136,7 @@ export async function getSnapshotForUser(
   const row = await prisma.character.findFirst({
     where: { userId },
     orderBy: { lastUpdate: 'desc' },
-    include: { clan: { select: { name: true, hallBlessingAt: true, level: true } } },
+    include: { clan: { select: { name: true, hallBlessingAt: true, level: true, emblemId: true } } },
   });
   if (!row) return null;
   const sanitized = await ensureInventoryReadPatchesRow(row as CharacterRow);
