@@ -14,10 +14,8 @@ import {
 } from '../domain/worldCombatState.js';
 import { prisma } from '../lib/prisma.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
-import {
-  combatOptsFromRow,
-  toSnapshot,
-} from './charSnapshotLogic.js';
+import { combatOptsFromRow } from './charSnapshotLogic.js';
+import { buildMutationCharacterSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
@@ -73,7 +71,7 @@ export async function applyTownRestoreVitals(
 ): Promise<TownRestoreResult> {
   const nowMs = Date.now();
 
-  return prisma.$transaction(async (tx) => {
+  const nextRow = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -151,11 +149,11 @@ export async function applyTownRestoreVitals(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-
-    const nextRow = result.character as CharacterRow;
-    return {
-      character: toSnapshot(nextRow),
-      feeAdena: '0',
-    };
+    return result.character as CharacterRow;
   });
+
+  return {
+    character: await buildMutationCharacterSnapshot(nextRow, userId),
+    feeAdena: '0',
+  };
 }

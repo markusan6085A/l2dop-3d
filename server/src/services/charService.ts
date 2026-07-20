@@ -15,6 +15,7 @@ export {
 } from './charSnapshotLogic.js';
 export {
   buildCharacterClientSnapshot,
+  buildMutationCharacterSnapshot,
   enrichPartialClientSnapshot,
   toClientSnapshot,
 } from './charClientSnapshot.js';

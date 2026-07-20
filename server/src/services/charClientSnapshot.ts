@@ -3,6 +3,7 @@ import {
   RESOURCE_CRAFT_BOOK_VERSION,
 } from '../data/characterCatalogVersion.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
+import { applyCharacterReadView } from './charReadView.js';
 import { toSnapshot } from './charSnapshotLogic.js';
 import { prisma } from '../lib/prisma.js';
 import {
@@ -79,6 +80,21 @@ export async function toSnapshotWithClanHall(
   return toSnapshot(await ensureClanHallOnRow(row));
 }
 
+/** Canonical snapshot після мутації: read-view sanitize + client meta. Після commit транзакції. */
+export async function buildMutationCharacterSnapshot(
+  row: CharacterRow,
+  userId: string,
+  extras?: Partial<CharacterSnapshot>,
+  opts?: ClientSnapshotEnrichOpts
+): Promise<CharacterSnapshot> {
+  return buildCharacterClientSnapshot(
+    applyCharacterReadView(row),
+    userId,
+    extras,
+    opts
+  );
+}
+
 /** Єдиний client snapshot для GET і POST. Після commit транзакції. */
 export async function buildCharacterClientSnapshot(
   row: CharacterRow,
@@ -88,16 +104,16 @@ export async function buildCharacterClientSnapshot(
 ): Promise<CharacterSnapshot> {
   const rowReady = await ensureClanHallOnRow(row);
   const snap = toSnapshot(rowReady);
-  const chatUnreadReplyCount = await getUnreadReplyCountForCharacter(
-    row.id,
-    row.chatRepliesReadAt ?? null
-  );
+  const includeUnread = opts?.includeUnreadCount !== false;
+  const chatUnreadReplyCount = includeUnread
+    ? await getUnreadReplyCountForCharacter(row.id, row.chatRepliesReadAt ?? null)
+    : undefined;
   const clanInviteExtras = await attachPendingClanInviteToSnapshot(
     row.id,
     rowReady.clanId
   );
   const result = attachClientSnapshotMeta(snap, {
-    chatUnreadReplyCount,
+    ...(chatUnreadReplyCount != null ? { chatUnreadReplyCount } : {}),
     ...clanInviteExtras,
     ...extras,
   });

@@ -13,7 +13,7 @@ import {
 import { L2DB_SKILL_LEVELS_BY_ID } from '../data/l2dbSkillLevelsById.generated.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
-import { toSnapshot } from './charSnapshotLogic.js';
+import { buildMutationCharacterSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 
@@ -97,7 +97,7 @@ export async function applyTownBuffer(
   userId: string,
   expectedRevision: number
 ): Promise<TownBufferResult> {
-  return prisma.$transaction(async (tx) => {
+  const nextRow = await prisma.$transaction(async (tx) => {
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -143,14 +143,15 @@ export async function applyTownBuffer(
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
-    const nextRow = result.character as CharacterRow;
-    const fee =
-      levelFromTotalExp(nextRow.exp) <= TOWN_BUFFER_FREE_MAX_LEVEL
-        ? 0n
-        : TOWN_BUFFER_FEE_ADENA;
-    return {
-      character: toSnapshot(nextRow),
-      feeAdena: String(fee),
-    };
+    return result.character as CharacterRow;
   });
+
+  const fee =
+    levelFromTotalExp(nextRow.exp) <= TOWN_BUFFER_FREE_MAX_LEVEL
+      ? 0n
+      : TOWN_BUFFER_FEE_ADENA;
+  return {
+    character: await buildMutationCharacterSnapshot(nextRow, userId),
+    feeAdena: String(fee),
+  };
 }
