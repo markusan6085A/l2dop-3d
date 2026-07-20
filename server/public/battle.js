@@ -2441,12 +2441,14 @@
           return true;
         }
         if (!battle) {
-          var savedDef = loadDefeatFromSession();
-          if (savedDef) {
-            renderPlayerBars(character);
-            showDefeatScreen(savedDef);
-            stopBattleSyncPoll();
-            return true;
+          if (initialBattleSyncResolved) {
+            var savedDef = loadDefeatFromSession();
+            if (savedDef) {
+              renderPlayerBars(character);
+              showDefeatScreen(savedDef);
+              stopBattleSyncPoll();
+              return true;
+            }
           }
           return false;
         }
@@ -2540,12 +2542,14 @@
         return 'abort';
       }
       if (!battle) {
-        var savedDef = loadDefeatFromSession();
-        if (savedDef) {
-          renderPlayerBars(character);
-          showDefeatScreen(savedDef);
-          stopBattleSyncPoll();
-          return 'abort';
+        if (initialBattleSyncResolved) {
+          var savedDef = loadDefeatFromSession();
+          if (savedDef) {
+            renderPlayerBars(character);
+            showDefeatScreen(savedDef);
+            stopBattleSyncPoll();
+            return 'abort';
+          }
         }
         refreshUI();
         return 'abort';
@@ -4232,9 +4236,8 @@
     wireBattleCityNavLink();
 
     if (pvpDeathMode || (character && character.pvpDefeat)) {
-      if (character && character.pvpDefeat) {
-        if (applyDefeatFromInitialBattleSync(character)) return;
-      }
+      if (applyDefeatFromInitialBattleSync(character)) return;
+
       if (pvpDeathMode) {
         if (errEl) {
           errEl.hidden = false;

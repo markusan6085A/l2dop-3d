@@ -19,7 +19,10 @@ import {
   type PvpNickColor,
 } from '../domain/pvpKarma.js';
 import { prisma } from '../lib/prisma.js';
-import { isCharacterOnlineNow, getPresenceCanonicalLocationKeyForCharacter } from './onlinePresenceService.js';
+import {
+  getPresenceCanonicalLocationKeyForCharacter,
+  isCharacterOnlineNow,
+} from './onlinePresenceService.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 import { isPvpTargetUnavailableForWorldPk } from '../domain/pvpPendingDefeat.js';
