@@ -199,20 +199,20 @@ function assertMapPlayerRowUiContract(): void {
     path.join(__dirname, '../public/map.js'),
     'utf8'
   );
+  const renderJs = readFileSync(
+    path.join(__dirname, '../public/mapHeroRowRender.js'),
+    'utf8'
+  );
   const dungeonJs = readFileSync(
     path.join(__dirname, '../public/dungeon.js'),
     'utf8'
   );
   assert.doesNotMatch(mapJs, /\[профіль\]/, 'map.js must not render separate [профіль] button');
   assert.doesNotMatch(dungeonJs, /\[профіль\]/, 'dungeon.js must not render separate [профіль] button');
-  assert.match(mapJs, /h\.profileOnNameClick === true/, 'map.js uses server profileOnNameClick');
-  assert.match(mapJs, /h\.showPkButton === true/, 'map.js uses server showPkButton');
-  assert.match(mapJs, /\[PK\]/, 'map.js renders inline [PK] label');
-  assert.match(
-    mapJs,
-    /linkProfile:\s*profileOnName/,
-    'map.js passes linkProfile from server profileOnNameClick'
-  );
+  assert.match(mapJs, /L2MapHeroRowRender/, 'map.js uses shared mapHeroRowRender module');
+  assert.match(renderJs, /heroShowsPkButton/, 'mapHeroRowRender defines heroShowsPkButton');
+  assert.match(renderJs, /\[PK\]/, 'mapHeroRowRender renders [PK] label');
+  assert.match(mapJs, /heroListDomMatchesPayload/, 'map.js verifies PK button exists in DOM');
 }
 
 async function testWorldPkLevelRange(): Promise<void> {
@@ -235,6 +235,9 @@ async function testWorldPkLevelRange(): Promise<void> {
   assert.equal(allowed2210.hero.showPkButton, true);
   assert.equal(allowed2210.hero.profileOnNameClick, false);
   assert.equal(allowed2210.hero.pvpEligibilityCode, null);
+  assert.equal(allowed2210.hero.activeBattle, false);
+  assert.equal(allowed2210.hero.viewerLevelUsed, 22);
+  assert.ok(allowed2210.hero.targetLocationKey.startsWith('world:'));
   ok('22 vs 10: showPkButton true, profileOnNameClick false');
 
   const allowed222 = await heroesPairAtLevels(22, 2);

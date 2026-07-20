@@ -541,6 +541,9 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-map-hero-link__pk {
   flex: 0 0 auto;
+  display: inline !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   border: none !important;
   outline: none;
   background: transparent !important;

@@ -337,9 +337,9 @@
           ':' +
           String(h.pvpNickColor || '') +
           ':' +
-          String(h.showPkButton ? 1 : 0) +
+          String((heroRowRenderApi() ? heroRowRenderApi().heroShowsPkButton(h) : h.showPkButton === true) ? 1 : 0) +
           ':' +
-          String(h.profileOnNameClick ? 1 : 0) +
+          String((heroRowRenderApi() ? heroRowRenderApi().profileOnNameClick(h) : h.profileOnNameClick === true) ? 1 : 0) +
           ':' +
           String(h.pvpEligibilityCode || '') +
           ':' +
@@ -535,12 +535,20 @@
     }
   }
 
+  function heroRowRenderApi() {
+    return window.L2MapHeroRowRender || null;
+  }
+
   function heroLevelPart(h) {
+    var api = heroRowRenderApi();
+    if (api) return api.heroLevelPart(h);
     var lv = Number(h.level);
     return Number.isFinite(lv) ? ' · ур. ' + Math.floor(lv) : '';
   }
 
   function heroNickHex(h) {
+    var api = heroRowRenderApi();
+    if (api) return api.heroNickHex(h);
     if (!h) return null;
     if (h.pvpNickColor === 'pk') return '#e85840';
     if (h.pvpNickColor === 'aggressor') return '#a060d8';
@@ -588,94 +596,33 @@
   }
 
   function heroShowsPkButton(h) {
+    var api = heroRowRenderApi();
+    if (api) return api.heroShowsPkButton(h);
     return !!(h && h.showPkButton === true);
   }
 
-  function appendHeroNameEl(titleLine, h) {
-    var profileOnName = h.profileOnNameClick === true;
-
-    if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
-      var identity = L2.renderPlayerIdentity({
-        name: h.name,
-        characterId: h.characterId,
-        clanEmblemId: h.clanEmblemId,
-        emblemSize: 16,
-        pvpNickColor: h.pvpNickColor,
-        linkProfile: profileOnName,
-        nickClassName: 'l2-map-hero-name-link',
-      });
-      titleLine.appendChild(identity);
-      return;
-    }
-
-    var nameClass = 'l2-map-hero-name-link';
-    if (h.pvpNickColor === 'pk') nameClass += ' l2-pvp-nick--pk';
-    else if (h.pvpNickColor === 'aggressor') nameClass += ' l2-pvp-nick--aggressor';
-
-    if (profileOnName) {
-      var plainLink = document.createElement('a');
-      plainLink.className = nameClass;
-      plainLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-      plainLink.textContent = h.name || '—';
-      titleLine.appendChild(plainLink);
-    } else {
-      var plainSpan = document.createElement('span');
-      plainSpan.className = nameClass;
-      plainSpan.textContent = h.name || '—';
-      titleLine.appendChild(plainSpan);
-    }
+  function appendHeroRow(listEl, h) {
+    var api = heroRowRenderApi();
+    if (!api) return;
+    api.appendHeroRow(listEl, h, { onPkClick: startPvpFromMap });
   }
 
-  function appendHeroRow(listEl, h) {
-    var li = document.createElement('li');
-    li.className = 'l2-map-hero-item';
-    var main = document.createElement('div');
-    main.className = 'l2-map-hero-item__main';
-    applyHeroRowNickColor(main, h);
-
-    var titleLine = document.createElement('div');
-    titleLine.className = 'l2-map-hero-item__title';
-
-    appendHeroNameEl(titleLine, h);
-
-    var levelSpan = document.createElement('span');
-    levelSpan.className = 'l2-map-hero-level';
-    levelSpan.textContent = heroLevelPart(h);
-    titleLine.appendChild(levelSpan);
-
-    if (heroShowsPkButton(h)) {
-      var pkBtn = document.createElement('button');
-      pkBtn.type = 'button';
-      pkBtn.className = 'l2-map-hero-link__pk';
-      pkBtn.textContent = '[PK]';
-      pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
-      pkBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var cid = h.characterId || '';
-        if (cid) startPvpFromMap(cid);
-      });
-      titleLine.appendChild(pkBtn);
+  function heroListDomMatchesPayload(listEl, heroes) {
+    if (!listEl || !heroes || !heroes.length) return true;
+    for (var i = 0; i < heroes.length; i++) {
+      var h = heroes[i];
+      if (!heroShowsPkButton(h)) continue;
+      var row = listEl.children[i];
+      if (!row || !row.querySelector('.l2-map-hero-link__pk')) return false;
     }
-
-    if (h.isPartyMember) {
-      var partyTag = document.createElement('span');
-      partyTag.className = 'l2-map-hero-party-tag';
-      partyTag.textContent = h.isPartyLeader ? ' · Паті★' : ' · Паті';
-      partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
-      titleLine.appendChild(partyTag);
-    }
-
-    main.appendChild(titleLine);
-    li.appendChild(main);
-    listEl.appendChild(li);
+    return true;
   }
 
   function renderHeroList(around, listEl, sectionEl) {
     if (!listEl) return;
     var heroes = around && around.nearbyHeroes ? around.nearbyHeroes : [];
     var sig = compactHeroSig(heroes);
-    if (listEl.dataset.l2HeroListSig === sig) {
+    if (listEl.dataset.l2HeroListSig === sig && heroListDomMatchesPayload(listEl, heroes)) {
       if (sectionEl) sectionEl.hidden = !heroes.length;
       return;
     }

@@ -45,6 +45,12 @@ export interface NearbyHeroEntry {
   pvpBlockedReasonUk: string | null;
   /** Нік відкриває профіль (коли [PK] приховано). */
   profileOnNameClick: boolean;
+  /** Canonical location key for PK rules (`world:<teleportId>`). */
+  targetLocationKey: string;
+  /** Viewer level used for level-diff eligibility (map HUD level). */
+  viewerLevelUsed: number;
+  /** Parsed active battle blocks world PK (PvE/RB/party, not raw JSON noise). */
+  activeBattle: boolean;
   /** Колір ніка: default | aggressor | pk */
   pvpNickColor: PvpNickColor;
   clanEmblemId: number | null;
@@ -217,13 +223,16 @@ export async function getNearbyHeroesForMap(
       worldY: hy,
       distance: Math.round(d),
       inBattleRange,
-      inBattle: row.battleJson != null,
+      inBattle: targetBj != null,
       canPkAttack: pkAllowed,
-      showPkButton: eligibility.showPkButton,
+      showPkButton: eligibility.showPkButton === true,
       pvpAllowed: viewerLoc.pvpAllowed,
       pvpEligibilityCode: eligibility.pvpEligibilityCode,
       pvpBlockedReasonUk: eligibility.pvpBlockedReasonUk,
-      profileOnNameClick: eligibility.profileOnNameClick,
+      profileOnNameClick: eligibility.profileOnNameClick === true,
+      targetLocationKey: targetLoc.key,
+      viewerLevelUsed: viewerLevel,
+      activeBattle: targetBj != null,
       pvpNickColor,
       clanEmblemId: row.clan?.emblemId ?? null,
       isOnline: online,
