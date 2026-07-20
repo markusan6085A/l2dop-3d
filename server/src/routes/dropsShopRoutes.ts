@@ -98,6 +98,12 @@ export const dropsShopRoutes: FastifyPluginAsync = async (app) => {
               messageUk: 'Недостатньо адени.',
             });
           }
+          if (m === 'drops_shop_no_coin_of_luck') {
+            return reply.code(400).send({
+              error: m,
+              messageUk: 'Недостатньо Coin of Luck.',
+            });
+          }
         }
         throw e;
       }

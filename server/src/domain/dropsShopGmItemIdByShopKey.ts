@@ -11,7 +11,8 @@ import {
 
 export interface GmShopPurchaseOffer {
   itemId: number;
-  priceAdena: number;
+  priceAdena: number | null;
+  priceCoinOfLuck?: number | null;
 }
 
 let memoPurchase: Map<string, GmShopPurchaseOffer> | undefined;

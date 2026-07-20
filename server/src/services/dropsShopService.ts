@@ -17,7 +17,13 @@ import { DROPS_SHOP_ENCHANT_SCROLL_ROWS } from '../data/dropsShopEnchantScrollsC
 import { prisma } from '../lib/prisma.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
-import { addItemToBag, parseInventory } from '../data/inventory.js';
+import {
+  addItemToBag,
+  countBagQty,
+  parseInventory,
+  removeBagQty,
+} from '../data/inventory.js';
+import { COIN_OF_LUCK_ITEM_ID } from '../domain/dailyQuestRewards.js';
 import type { Prisma } from '@prisma/client';
 import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
@@ -27,7 +33,7 @@ import {
   dropsShopRelPathFromGmIcon,
   type GmShopPurchaseOffer,
 } from '../domain/dropsShopGmItemIdByShopKey.js';
-import { applyCGradeWeaponGmShopPrice } from '../domain/dropsShopPurchasePrice.js';
+import { applyDropsShopPurchasePricing } from '../domain/dropsShopPurchasePrice.js';
 import embeddedDropsShopOverrides from '../data/dropsShopOverrides.json';
 import { buildDropsShopStatsPreviewUk } from '../domain/dropsShopStatsPreviewUk.js';
 import {
@@ -225,6 +231,7 @@ export interface DropsShopItemResponse {
    */
   previewItemId: number | null;
   priceAdena: number | null;
+  priceCoinOfLuck: number | null;
   purchasable: boolean;
   /** S/NG/D/C/B/A зброя — патчі; інакше ITEM_CATALOG (override / GM по іконці). */
   statsPreview?: { lines: { labelUk: string; valueUk: string }[] };
@@ -262,7 +269,15 @@ function resolveDropsShopPurchaseOfferPriced(
 ): GmShopPurchaseOffer | null {
   const offer = resolveDropsShopPurchaseOffer(row, overrides);
   if (!offer) return null;
-  return applyCGradeWeaponGmShopPrice(row, offer);
+  const meta = ITEM_CATALOG[offer.itemId];
+  return applyDropsShopPurchasePricing(row, offer, meta);
+}
+
+function offerHasPurchasablePrice(offer: GmShopPurchaseOffer): boolean {
+  const col = offer.priceCoinOfLuck;
+  if (col != null && col > 0) return true;
+  const adena = offer.priceAdena;
+  return adena != null && Number.isFinite(adena) && adena >= 0;
 }
 
 function rowToClient(
@@ -273,6 +288,10 @@ function rowToClient(
   const offer = resolveDropsShopPurchaseOfferPriced(row, overrides);
   const itemId = offer?.itemId ?? null;
   const priceAdena = offer?.priceAdena ?? null;
+  const priceCoinOfLuck =
+    offer?.priceCoinOfLuck != null && offer.priceCoinOfLuck > 0
+      ? Math.floor(offer.priceCoinOfLuck)
+      : null;
   const previewItemId = itemId ?? null;
   const previewMeta =
     previewItemId != null ? ITEM_CATALOG[previewItemId] : undefined;
@@ -316,7 +335,8 @@ function rowToClient(
   let purchasable = false;
   if (
     itemId != null &&
-    priceAdena != null &&
+    offer &&
+    offerHasPurchasablePrice(offer) &&
     ITEM_CATALOG[itemId] &&
     dropsShopItemMatchesCategory(itemId, row.category)
   ) {
@@ -369,6 +389,7 @@ function rowToClient(
     itemId,
     previewItemId,
     priceAdena,
+    priceCoinOfLuck,
     purchasable,
   };
 
@@ -520,13 +541,27 @@ export async function applyDropsShopPurchase(
 
   const overrides = loadDropsShopOverrides();
   const offer = resolveDropsShopPurchaseOfferPriced(row, overrides);
-  if (!offer) throw new Error('drops_shop_not_configured');
+  if (!offer || !offerHasPurchasablePrice(offer)) {
+    throw new Error('drops_shop_not_configured');
+  }
   const itemId = offer.itemId;
-  const priceAdena = BigInt(offer.priceAdena);
   const meta = ITEM_CATALOG[itemId];
   if (!meta) throw new Error('drops_shop_bad_item');
   if (!dropsShopItemMatchesCategory(itemId, row.category)) {
     throw new Error('drops_shop_category_mismatch');
+  }
+
+  const unitCoin =
+    offer.priceCoinOfLuck != null && offer.priceCoinOfLuck > 0
+      ? Math.floor(offer.priceCoinOfLuck)
+      : 0;
+  const useCoinOfLuck = unitCoin > 0;
+  const unitAdena =
+    !useCoinOfLuck && offer.priceAdena != null
+      ? BigInt(Math.max(0, Math.floor(offer.priceAdena)))
+      : 0n;
+  if (!useCoinOfLuck && unitAdena <= 0n) {
+    throw new Error('drops_shop_not_configured');
   }
 
   let qty = 1;
@@ -556,11 +591,22 @@ export async function applyDropsShopPurchase(
       (current) => {
         const base = resolveMapMovement(applyPassiveHpRegen(current as CharacterRow));
         const adena = BigInt(base.adena);
-        const totalPrice = priceAdena * BigInt(qty);
-        if (adena < totalPrice) throw new Error('drops_shop_no_adena');
         const inv = parseInventory(base.inventoryJson);
-        const nextInv = addItemToBag(inv, itemId, qty);
-        const nextAdena = adena - totalPrice;
+        let nextInv = inv;
+        let nextAdena = adena;
+
+        if (useCoinOfLuck) {
+          const totalCoin = unitCoin * qty;
+          const haveCoin = countBagQty(inv, COIN_OF_LUCK_ITEM_ID);
+          if (haveCoin < totalCoin) throw new Error('drops_shop_no_coin_of_luck');
+          nextInv = addItemToBag(inv, itemId, qty);
+          nextInv = removeBagQty(nextInv, COIN_OF_LUCK_ITEM_ID, totalCoin);
+        } else {
+          const totalPrice = unitAdena * BigInt(qty);
+          if (adena < totalPrice) throw new Error('drops_shop_no_adena');
+          nextInv = addItemToBag(inv, itemId, qty);
+          nextAdena = adena - totalPrice;
+        }
         const invChanged =
           JSON.stringify(nextInv) !==
           JSON.stringify(parseInventory(current.inventoryJson));

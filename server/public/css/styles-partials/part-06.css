@@ -42,6 +42,17 @@
   text-shadow: 0 0 6px rgba(255, 210, 80, 0.35);
 }
 
+.l2-gm-shop-coin {
+  margin-left: 12px;
+}
+
+.l2-gm-shop-coin strong,
+.l2-gm-shop-coin__amount {
+  color: #7ee8a8;
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(90, 220, 130, 0.25);
+}
+
 .l2-drops-shop-purchase-ok {
   margin: 0 0 8px;
   font-size: 12px;

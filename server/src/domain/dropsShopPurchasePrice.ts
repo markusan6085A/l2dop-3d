@@ -1,12 +1,13 @@
+import type { ItemMeta } from '../data/itemsCatalog.js';
 import { L2DOP_C_DROPS_WEAPON_BY_SHOP_KEY_LOWER } from '../data/l2dopCWeaponDropsPatches.js';
+import {
+  applyBasEquipmentCoinOfLuckPrice,
+  type DropsShopCatalogLike,
+} from './dropsShopCoinOfLuckPricing.js';
 import { cGradeWeaponGmShopPriceAdena } from './gmShopCWeaponPricing.js';
 import type { GmShopPurchaseOffer } from './dropsShopGmItemIdByShopKey.js';
 
-export type DropsShopCatalogLike = {
-  shopKey: string;
-  category: string;
-  grade: string;
-};
+export type { DropsShopCatalogLike };
 
 export function applyCGradeWeaponGmShopPrice(
   row: DropsShopCatalogLike,
@@ -19,5 +20,15 @@ export function applyCGradeWeaponGmShopPrice(
   return {
     itemId: offer.itemId,
     priceAdena: cGradeWeaponGmShopPriceAdena(patch),
+    priceCoinOfLuck: null,
   };
+}
+
+export function applyDropsShopPurchasePricing(
+  row: DropsShopCatalogLike,
+  offer: GmShopPurchaseOffer,
+  itemMeta?: ItemMeta
+): GmShopPurchaseOffer {
+  const afterC = applyCGradeWeaponGmShopPrice(row, offer);
+  return applyBasEquipmentCoinOfLuckPrice(row, afterC, itemMeta);
 }

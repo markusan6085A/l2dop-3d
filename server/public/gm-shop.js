@@ -93,21 +93,58 @@
     return out;
   }
 
-  function shopBuyTotalAdena(it, qty) {
-    if (!it || it.priceAdena == null) return null;
-    try {
-      return BigInt(String(it.priceAdena)) * BigInt(Math.max(1, Math.floor(Number(qty) || 1)));
-    } catch (_) {
-      return null;
-    }
+  function shopItemUsesCoin(it) {
+    return it && it.priceCoinOfLuck != null && Number(it.priceCoinOfLuck) > 0;
   }
 
-  function setPurchaseCongrats(nameUk, qty, totalAdena) {
+  function shopItemPriceLabel(it) {
+    if (shopItemUsesCoin(it)) {
+      return String(Math.floor(Number(it.priceCoinOfLuck))) + ' Coin of Luck';
+    }
+    if (it && it.priceAdena != null) {
+      return fmtAdena(String(it.priceAdena)) + ' аден.';
+    }
+    return '—';
+  }
+
+  function shopBuyPaymentInfo(it, qty) {
+    var q = Math.max(1, Math.floor(Number(qty) || 1));
+    if (shopItemUsesCoin(it)) {
+      return {
+        currency: 'coin',
+        total: Math.floor(Number(it.priceCoinOfLuck)) * q,
+        label: String(Math.floor(Number(it.priceCoinOfLuck)) * q) + ' Coin of Luck',
+      };
+    }
+    if (it && it.priceAdena != null) {
+      try {
+        var totalAdena = BigInt(String(it.priceAdena)) * BigInt(q);
+        return {
+          currency: 'adena',
+          total: totalAdena,
+          label: fmtAdena(String(totalAdena)) + ' адени',
+        };
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  function shopBuyTotalAdena(it, qty) {
+    var pay = shopBuyPaymentInfo(it, qty);
+    if (!pay || pay.currency !== 'adena') return null;
+    return pay.total;
+  }
+
+  function setPurchaseCongrats(nameUk, qty, payInfo) {
     lastPurchaseCongrats = {
       itemName: String(nameUk || 'предмет').trim(),
       qty: Math.max(1, Math.floor(Number(qty) || 1)),
       adenaLabel:
-        totalAdena != null ? fmtAdena(String(totalAdena)) : null,
+        payInfo && payInfo.currency === 'adena' ? payInfo.label : null,
+      coinOfLuckLabel:
+        payInfo && payInfo.currency === 'coin' ? payInfo.label : null,
     };
   }
 
@@ -494,7 +531,7 @@
         setPurchaseCongrats(
           it.nameUk || it.shopKey,
           qty,
-          shopBuyTotalAdena(it, qty)
+          shopBuyPaymentInfo(it, qty)
         );
         if (
           window.L2 &&
@@ -553,27 +590,19 @@
       return;
     }
     titleEl.textContent = it.nameUk || it.shopKey || '';
-    var unitTxt =
-      it.priceAdena != null
-        ? fmtAdena(String(it.priceAdena)) + ' аден.'
-        : '—';
+    var unitTxt = shopItemPriceLabel(it);
     unitEl.textContent = 'За одиницю: ' + unitTxt;
     inp.value = '1';
 
     function syncTotal() {
       var raw = parseInt(String(inp.value || '1'), 10);
       var q = Number.isFinite(raw) && raw >= 1 ? raw : 1;
-      if (it.priceAdena == null) {
+      var pay = shopBuyPaymentInfo(it, q);
+      if (!pay) {
         totalEl.textContent = '—';
         return;
       }
-      try {
-        var t = BigInt(String(it.priceAdena)) * BigInt(q);
-        totalEl.textContent =
-          'Разом: ' + fmtAdena(String(t)) + ' аден.';
-      } catch (_) {
-        totalEl.textContent = '—';
-      }
+      totalEl.textContent = 'Разом: ' + pay.label;
     }
 
     inp.oninput = syncTotal;
@@ -669,9 +698,9 @@
       statsMount.appendChild(statsBox);
     }
 
-    if (it.purchasable && it.priceAdena != null) {
+    if (it.purchasable && (it.priceAdena != null || shopItemUsesCoin(it))) {
       hintEl.hidden = false;
-      hintEl.textContent = fmtAdena(String(it.priceAdena)) + ' аден.';
+      hintEl.textContent = shopItemPriceLabel(it);
     } else {
       hintEl.hidden = true;
       hintEl.textContent = '';
@@ -844,6 +873,9 @@
     metaEl.innerHTML =
       '<span class="l2-gm-shop-adena">Адена: <strong class="l2-gm-shop-adena__amount">' +
       fmtAdena(snap.adena) +
+      '</strong></span>' +
+      '<span class="l2-gm-shop-coin">Coin of Luck: <strong class="l2-gm-shop-coin__amount">' +
+      String(snap.coinOfLuck != null ? snap.coinOfLuck : 0) +
       '</strong></span>';
   }
 
@@ -941,10 +973,13 @@
           }
           main.appendChild(statEl);
         }
-        if (it.purchasable && it.priceAdena != null) {
+        if (
+          it.purchasable &&
+          (it.priceAdena != null || shopItemUsesCoin(it))
+        ) {
           var priceEl = document.createElement('div');
           priceEl.className = 'l2-gm-shop-price';
-          priceEl.textContent = fmtAdena(String(it.priceAdena)) + ' аден.';
+          priceEl.textContent = shopItemPriceLabel(it);
           main.appendChild(priceEl);
         }
 

@@ -82,6 +82,7 @@
     "test:city-client": "node server/scripts/city-client-smoke.mjs",
     "test:hero-portrait-breakpoint": "node server/scripts/hero-portrait-breakpoint-smoke.mjs",
     "test:enchant": "tsx server/scripts/test-enchant.ts && node server/scripts/enchant-client-smoke.mjs",
+    "test:drops-shop-bas-col": "tsx server/scripts/test-drops-shop-bas-col-pricing.ts",
     "test:identity-renderer-client": "node server/scripts/identity-renderer-client-smoke.mjs",
     "test:party-hud-revision-client": "node server/scripts/party-hud-revision-client-smoke.mjs",
     "test:party-battle-dungeon": "tsx server/scripts/party-battle-dungeon-smoke.ts",

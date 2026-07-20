@@ -48,16 +48,25 @@ function resolveBuyOfferForRow(
     overrides[shopKeyNorm] ??
     (iconRel ? overrides[iconRel] : undefined);
   if (o && o.itemId > 0 && o.priceAdena > 0) {
-    return applyCGradeWeaponGmShopPrice(row, {
+    const priced = applyCGradeWeaponGmShopPrice(row, {
       itemId: o.itemId,
       priceAdena: o.priceAdena,
     });
+    if (priced.priceAdena == null || priced.priceAdena <= 0) return null;
+    return { itemId: priced.itemId, priceAdena: priced.priceAdena };
   }
   const gm = dropsGmPurchaseByShopKeyLower();
   const gmOffer =
     (iconRel ? gm.get(iconRel) : undefined) ?? gm.get(shopKeyNorm);
-  if (gmOffer && gmOffer.itemId > 0 && gmOffer.priceAdena > 0) {
-    return applyCGradeWeaponGmShopPrice(row, gmOffer);
+  if (
+    gmOffer &&
+    gmOffer.itemId > 0 &&
+    gmOffer.priceAdena != null &&
+    gmOffer.priceAdena > 0
+  ) {
+    const priced = applyCGradeWeaponGmShopPrice(row, gmOffer);
+    if (priced.priceAdena == null || priced.priceAdena <= 0) return null;
+    return { itemId: priced.itemId, priceAdena: priced.priceAdena };
   }
   return null;
 }
@@ -76,7 +85,12 @@ function buildBuyPriceByItemId(): Map<number, number> {
     if (offer) m.set(offer.itemId, offer.priceAdena);
   }
   for (const offer of dropsGmPurchaseByShopKeyLower().values()) {
-    if (offer.itemId > 0 && offer.priceAdena > 0 && !m.has(offer.itemId)) {
+    if (
+      offer.itemId > 0 &&
+      offer.priceAdena != null &&
+      offer.priceAdena > 0 &&
+      !m.has(offer.itemId)
+    ) {
       m.set(offer.itemId, offer.priceAdena);
     }
   }

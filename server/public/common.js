@@ -2042,9 +2042,13 @@
       var text = '«' + name + '»';
       if (q > 1) text += ' × ' + q;
       if (kind === 'buy') {
-        text += opts.adenaLabel
-          ? ' за ' + String(opts.adenaLabel) + ' адени.'
-          : '.';
+        if (opts.coinOfLuckLabel) {
+          text += ' за ' + String(opts.coinOfLuckLabel) + '.';
+        } else if (opts.adenaLabel) {
+          text += ' за ' + String(opts.adenaLabel) + '.';
+        } else {
+          text += '.';
+        }
       } else {
         text += ' — +' + String(opts.adenaLabel || '0') + ' адени.';
       }
@@ -2984,9 +2988,13 @@
 
     renderShopAdenaMeta: function (el, snap) {
       if (!el || !snap) return;
+      var coin = snap.coinOfLuck != null ? Math.max(0, Math.floor(Number(snap.coinOfLuck))) : 0;
       el.innerHTML =
         '<span class="l2-gm-shop-adena">Адена: <strong class="l2-gm-shop-adena__amount">' +
         global.L2.fmtAdenaUi(snap.adena) +
+        '</strong></span>' +
+        '<span class="l2-gm-shop-coin">Coin of Luck: <strong class="l2-gm-shop-coin__amount">' +
+        String(coin) +
         '</strong></span>';
     },
 
