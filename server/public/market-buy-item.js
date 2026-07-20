@@ -45,7 +45,11 @@
     return '/icons/drops/other.svg';
   }
 
-  function setItemIconSrc(img, itemId) {
+  function setItemIconSrc(img, itemId, enchantLevel) {
+    if (window.L2 && typeof L2.setItemIconWithEnchantBadge === 'function') {
+      L2.setItemIconWithEnchantBadge(img, itemId, enchantLevel != null ? enchantLevel : 0);
+      return;
+    }
     if (!img) return;
     img.decoding = 'async';
     img.src = itemIconUrlForId(itemId);
@@ -198,7 +202,7 @@
     ico.alt = '';
     ico.width = 28;
     ico.height = 28;
-    setItemIconSrc(ico, meta.itemId);
+    setItemIconSrc(ico, meta.itemId, meta.enchant);
 
     var mid = document.createElement('div');
     mid.className = 'l2-char-bag-row-text';

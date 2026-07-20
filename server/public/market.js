@@ -42,7 +42,11 @@
     return fallback;
   }
 
-  function setItemIconSrc(img, itemId) {
+  function setItemIconSrc(img, itemId, enchantLevel) {
+    if (window.L2 && typeof L2.setItemIconWithEnchantBadge === 'function') {
+      L2.setItemIconWithEnchantBadge(img, itemId, enchantLevel != null ? enchantLevel : 0);
+      return;
+    }
     if (!img) return;
     img.decoding = 'async';
     img.src = itemIconUrlForId(itemId);
@@ -148,7 +152,7 @@
     ico.alt = '';
     ico.width = 20;
     ico.height = 20;
-    setItemIconSrc(ico, itemId);
+    setItemIconSrc(ico, itemId, enchant);
     rowMain.appendChild(ico);
 
     rowMain.appendChild(document.createTextNode(' '));

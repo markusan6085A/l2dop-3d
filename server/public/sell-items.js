@@ -806,11 +806,16 @@
     icon.alt = '';
     icon.width = 32;
     icon.height = 32;
-    icon.src = itemIconUrlForId(stack.itemId);
-    icon.onerror = function () {
-      icon.onerror = null;
-      icon.src = '/icons/drops/other.svg';
-    };
+    var en = stack.enchant != null ? Math.max(0, Math.floor(Number(stack.enchant) || 0)) : 0;
+    if (window.L2 && typeof L2.setItemIconWithEnchantBadge === 'function') {
+      L2.setItemIconWithEnchantBadge(icon, stack.itemId, en, itemIconUrlForId(stack.itemId));
+    } else {
+      icon.src = itemIconUrlForId(stack.itemId);
+      icon.onerror = function () {
+        icon.onerror = null;
+        icon.src = '/icons/drops/other.svg';
+      };
+    }
 
     var body = document.createElement('div');
     body.className = 'l2-sell-items-row__body';

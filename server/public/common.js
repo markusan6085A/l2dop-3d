@@ -687,20 +687,180 @@
       if (en <= 0) return base;
       return '+' + String(en) + ' ' + base;
     },
-    /** Бонус одного рівня заточки від базового stat (не compounding). */
+    /** Canonical split enchant (server l2dopEnchant.ts). */
+    splitEnchantLevel: function (enchantLevel) {
+      var e = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
+      if (e <= 3) return { under: e, over: 0 };
+      return { under: 3, over: e - 3 };
+    },
+    weaponPatkEnchantBonus: function (enchantLevel) {
+      var sp = global.L2.splitEnchantLevel(enchantLevel);
+      return sp.under * 2 + sp.over * 4;
+    },
+    weaponMatkEnchantBonus: function (enchantLevel) {
+      var sp = global.L2.splitEnchantLevel(enchantLevel);
+      return sp.under * 3 + sp.over * 6;
+    },
+    armorPiecePDefEnchantBonus: function (enchantLevel) {
+      var sp = global.L2.splitEnchantLevel(enchantLevel);
+      return sp.under * 1 + sp.over * 3;
+    },
+    mkBagEnchantTargetId: function (itemId, enchantLevel) {
+      var id = normalizePositiveInt(itemId);
+      var en = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
+      return 'bag:' + String(id) + ':' + String(en);
+    },
+    syncEnchantTargetFromSnapshot: function (ctx, snap, preferredEnchantLevel) {
+      if (!ctx || !ctx.targetInstanceId) return null;
+      snap = snap || {};
+      var inv = snap.inventory || { stacks: [], eq: {} };
+      var token = String(ctx.targetInstanceId);
+      if (token.indexOf('eq:') === 0) {
+        var slotKey = token.slice(3);
+        var slotVal = inv.eq ? inv.eq[slotKey] : null;
+        if (!slotVal) return null;
+        var eqItemId =
+          typeof slotVal === 'number'
+            ? slotVal
+            : slotVal && typeof slotVal === 'object' && slotVal.itemId != null
+              ? Number(slotVal.itemId)
+              : NaN;
+        if (!Number.isFinite(eqItemId) || eqItemId <= 0) return null;
+        var eqEn =
+          preferredEnchantLevel != null
+            ? Math.max(0, Math.min(25, Math.floor(Number(preferredEnchantLevel) || 0)))
+            : slotVal && typeof slotVal === 'object' && slotVal.enchant != null
+              ? Math.max(0, Math.min(25, Math.floor(Number(slotVal.enchant) || 0)))
+              : 0;
+        return {
+          targetInstanceId: 'eq:' + String(slotKey),
+          itemId: eqItemId,
+          enchant: eqEn,
+        };
+      }
+      if (token.indexOf('bag:') === 0) {
+        var parts = token.split(':');
+        var itemId = Number(parts[1]);
+        if (!Number.isFinite(itemId) || itemId <= 0) return null;
+        var targetEn =
+          preferredEnchantLevel != null
+            ? Math.max(0, Math.min(25, Math.floor(Number(preferredEnchantLevel) || 0)))
+            : Math.max(0, Math.min(25, Math.floor(Number(parts[2] || 0))));
+        var found = (inv.stacks || []).some(function (st) {
+          return (
+            Number(st.itemId) === itemId &&
+            Math.max(0, Math.floor(Number(st.enchant) || 0)) === targetEn &&
+            Number(st.qty) > 0
+          );
+        });
+        if (!found) return null;
+        return {
+          targetInstanceId: global.L2.mkBagEnchantTargetId(itemId, targetEn),
+          itemId: itemId,
+          enchant: targetEn,
+        };
+      }
+      return null;
+    },
+    formatEnchantedStatLineUk: function (labelUk, baseStat, enchantLevel, statKind) {
+      var base = Number(baseStat);
+      var en = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
+      if (!Number.isFinite(base)) {
+        return { labelUk: labelUk, valueUk: '—' };
+      }
+      var bonus = 0;
+      if (statKind === 'weaponPatk') bonus = global.L2.weaponPatkEnchantBonus(en);
+      else if (statKind === 'weaponMatk') bonus = global.L2.weaponMatkEnchantBonus(en);
+      else if (statKind === 'armorPDef' || statKind === 'jewelMdef') {
+        bonus = global.L2.armorPiecePDefEnchantBonus(en);
+      }
+      if (en <= 0 || bonus <= 0) {
+        return { labelUk: labelUk, valueUk: String(base) };
+      }
+      return {
+        labelUk: labelUk,
+        valueUk: String(base + bonus) + ' (+' + String(bonus) + ' від заточення)',
+      };
+    },
+    /** Бонус одного рівня заточки від базового stat (legacy helper — не для preview). */
     enchantLevelBonusFromBase: function (baseStat, enchantLevel, ratePerLevel) {
+      void ratePerLevel;
       var base = Number(baseStat);
       var en = Math.max(0, Math.floor(Number(enchantLevel) || 0));
-      var rate = Number(ratePerLevel);
-      if (!Number.isFinite(base) || base <= 0 || !Number.isFinite(rate) || en <= 0) return 0;
-      return Math.round(base * rate * en);
+      if (!Number.isFinite(base) || base <= 0 || en <= 0) return 0;
+      return Math.max(0, global.L2.weaponPatkEnchantBonus(en));
     },
-    /** Stat предмета з урахуванням заточки (preview, linear від base). */
-    enchantedItemStatValue: function (baseStat, enchantLevel, ratePerLevel) {
+    /** Stat предмета з урахуванням заточки (preview від base). */
+    enchantedItemStatValue: function (baseStat, enchantLevel, statKind) {
       var base = Number(baseStat);
       if (!Number.isFinite(base)) return 0;
-      var bonus = global.L2.enchantLevelBonusFromBase(base, enchantLevel, ratePerLevel);
-      return base + bonus;
+      var en = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
+      var kind = statKind || 'weaponPatk';
+      if (kind === 'weaponPatk') return base + global.L2.weaponPatkEnchantBonus(en);
+      if (kind === 'weaponMatk') return base + global.L2.weaponMatkEnchantBonus(en);
+      return base + global.L2.armorPiecePDefEnchantBonus(en);
+    },
+    renderEnchantBadge: function (hostEl, enchantLevel) {
+      if (!hostEl) return;
+      var old = hostEl.querySelector
+        ? hostEl.querySelector('.l2-item-enchant-badge')
+        : null;
+      if (old) {
+        if (typeof old.remove === 'function') old.remove();
+        else if (old.parentNode && typeof old.parentNode.removeChild === 'function') {
+          old.parentNode.removeChild(old);
+        }
+      }
+      var en = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
+      if (en <= 0) return;
+      var badge = document.createElement('span');
+      badge.className = 'l2-item-enchant-badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = '+' + String(en);
+      hostEl.appendChild(badge);
+    },
+    ensureItemIconBadgeHost: function (imgEl) {
+      if (!imgEl) return null;
+      var parent = imgEl.parentNode || imgEl.parentElement;
+      if (
+        parent &&
+        ((parent.classList &&
+          parent.classList.contains &&
+          parent.classList.contains('l2-item-icon-badge-host')) ||
+          String(parent.className || '').indexOf('l2-item-icon-badge-host') >= 0)
+      ) {
+        return parent;
+      }
+      var host = document.createElement('span');
+      host.className = 'l2-item-icon-badge-host';
+      if (imgEl.parentNode) {
+        imgEl.parentNode.insertBefore(host, imgEl);
+        host.appendChild(imgEl);
+      }
+      return host;
+    },
+    wrapItemIconWithEnchantBadge: function (imgEl, enchantLevel) {
+      if (!imgEl) return null;
+      var host = global.L2.ensureItemIconBadgeHost(imgEl);
+      global.L2.renderEnchantBadge(host, enchantLevel);
+      return host;
+    },
+    setItemIconWithEnchantBadge: function (imgEl, itemId, enchantLevel, iconUrlOpt) {
+      if (!imgEl) return;
+      var url =
+        iconUrlOpt ||
+        (global.L2 && typeof global.L2.resolveItemIconUrl === 'function'
+          ? global.L2.resolveItemIconUrl(itemId, '/icons/drops/other.svg')
+          : itemId > 0
+            ? '/game/item-icon/' + itemId
+            : '/icons/drops/other.svg');
+      imgEl.decoding = 'async';
+      imgEl.src = url;
+      imgEl.onerror = function () {
+        imgEl.onerror = null;
+        imgEl.src = '/icons/drops/other.svg';
+      };
+      global.L2.wrapItemIconWithEnchantBadge(imgEl, enchantLevel);
     },
     /** Рядки preview «stat: cur → next (+delta)» для модалки заточки. */
     buildEnchantSuccessPreviewLines: function (itemId, currentEnchantLevel) {
@@ -711,11 +871,11 @@
       var slot = global.L2.itemSlotById && global.L2.itemSlotById[id];
       if (!st || typeof st !== 'object' || !slot) return [];
       var lines = [];
-      function pushLine(labelUk, baseVal, rate) {
+      function pushLine(labelUk, baseVal, statKind) {
         var base = Number(baseVal);
         if (!Number.isFinite(base) || base <= 0) return;
-        var curVal = global.L2.enchantedItemStatValue(base, current, rate);
-        var nextVal = global.L2.enchantedItemStatValue(base, current + 1, rate);
+        var curVal = global.L2.enchantedItemStatValue(base, current, statKind);
+        var nextVal = global.L2.enchantedItemStatValue(base, current + 1, statKind);
         var delta = nextVal - curVal;
         if (delta <= 0) return;
         lines.push({
@@ -726,9 +886,9 @@
         });
       }
       if (slot === 'rhand') {
-        pushLine('Фізична атака', st.pAtk, 0.02);
+        pushLine('Фіз. атака', st.pAtk, 'weaponPatk');
         if (st.mAtk != null && Number(st.mAtk) > 0) {
-          pushLine('Магічна атака', st.mAtk, 0.02);
+          pushLine('Маг. атака', st.mAtk, 'weaponMatk');
         }
         return lines;
       }
@@ -742,7 +902,7 @@
           st.jewelMdefFlat != null && Number(st.jewelMdefFlat) > 0
             ? Number(st.jewelMdefFlat)
             : st.pDef;
-        pushLine('Магічний захист', mdefBase, 0.01);
+        pushLine('Маг. захист', mdefBase, 'jewelMdef');
         return lines;
       }
       if (
@@ -755,7 +915,7 @@
         slot === 'lhand' ||
         slot === 'shield'
       ) {
-        pushLine('Фізичний захист', st.pDef, 0.01);
+        pushLine('Фіз. захист', st.pDef, 'armorPDef');
       }
       return lines;
     },

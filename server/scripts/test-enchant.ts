@@ -143,14 +143,16 @@ async function run() {
       (x) => x.target === 'armor' && x.grade === 'D'
     )!;
 
-    // +0 -> +1 -> +2 -> +3 (always)
+    // +0 -> +1 -> +2 -> +3 (always) — bag target id must advance each step
     for (const expected of [1, 2, 3]) {
+      const targetId = mkBagTarget(D_WEAPON_ID, expected - 1);
+      assert.equal(targetId, `bag:${D_WEAPON_ID}:${expected - 1}`);
       const res = await enchantEquipmentItemForUser(
         userId,
         rev,
         {
           scrollItemId: dWeaponScroll.itemId,
-          targetInstanceId: mkBagTarget(D_WEAPON_ID, expected - 1),
+          targetInstanceId: targetId,
         },
         { rng: () => 0.9999 }
       );

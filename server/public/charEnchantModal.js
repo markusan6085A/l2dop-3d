@@ -171,7 +171,11 @@
     return '/icons/drops/other.svg';
   }
 
-  function setItemIconSrc(img, itemId) {
+  function setItemIconSrc(img, itemId, enchantLevel) {
+    if (global.L2 && typeof L2.setItemIconWithEnchantBadge === 'function') {
+      L2.setItemIconWithEnchantBadge(img, itemId, enchantLevel != null ? enchantLevel : 0);
+      return;
+    }
     if (!img) return;
     img.decoding = 'async';
     img.src = itemIconUrlForId(itemId);
@@ -194,13 +198,39 @@
 
   function fillCurrentStats(statsEl, itemId, enchant) {
     statsEl.innerHTML = '';
-    if (enchant > 0) addStatRow(statsEl, 'Заточка', '+' + String(enchant));
-    if (global.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
-      var lines = L2.buildItemStatsPreviewLines(itemId);
-      lines.forEach(function (ln) {
+    var st = global.L2 && L2.itemStatsById && L2.itemStatsById[itemId];
+    var slot = global.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (!st || typeof st !== 'object' || !slot) return;
+    function pushLine(labelUk, baseVal, kind) {
+      if (global.L2 && typeof L2.formatEnchantedStatLineUk === 'function') {
+        var ln = L2.formatEnchantedStatLineUk(labelUk, baseVal, enchant, kind);
         addStatRow(statsEl, ln.labelUk, ln.valueUk);
-      });
+        return;
+      }
+      addStatRow(statsEl, labelUk, String(baseVal));
     }
+    if (slot === 'rhand') {
+      if (st.pAtk != null) pushLine('Фіз. атака', st.pAtk, 'weaponPatk');
+      if (st.mAtk != null && Number(st.mAtk) > 0) {
+        pushLine('Маг. атака', st.mAtk, 'weaponMatk');
+      }
+      if (st.atkSpd != null) addStatRow(statsEl, 'Швидкість бою', String(st.atkSpd));
+      return;
+    }
+    var isJewel =
+      slot === 'ring' ||
+      slot === 'neck' ||
+      slot === 'earring' ||
+      (st.jewelMdefFlat != null && Number(st.jewelMdefFlat) > 0);
+    if (isJewel) {
+      var mdefBase =
+        st.jewelMdefFlat != null && Number(st.jewelMdefFlat) > 0
+          ? Number(st.jewelMdefFlat)
+          : st.pDef;
+      if (mdefBase != null) pushLine('Маг. захист', mdefBase, 'jewelMdef');
+      return;
+    }
+    if (st.pDef != null) pushLine('Фіз. захист', st.pDef, 'armorPDef');
   }
 
   function fillPreviewStats(previewEl, itemId, enchant) {
@@ -337,32 +367,30 @@
     }
   }
 
-  function refreshModalContent(snap) {
+  function syncCtxFromSnapshot(snap, preferredEnchantLevel) {
+    if (!ctx || !global.L2 || typeof L2.syncEnchantTargetFromSnapshot !== 'function') {
+      return false;
+    }
+    var next = L2.syncEnchantTargetFromSnapshot(ctx, snap, preferredEnchantLevel);
+    if (!next) return false;
+    ctx.targetInstanceId = next.targetInstanceId;
+    ctx.itemId = next.itemId;
+    ctx.enchant = next.enchant;
+    return true;
+  }
+
+  function refreshModalContent(snap, options) {
     if (!ctx) return;
+    options = options || {};
     snap = snap || (global.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null);
-    if (snap && ctx.targetInstanceId.startsWith('bag:')) {
-      var parts = ctx.targetInstanceId.split(':');
-      var itemId = Number(parts[1]);
-      var enchant = Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(parts[2] || 0))));
-      (snap.inventory && snap.inventory.stacks ? snap.inventory.stacks : []).forEach(function (st) {
-        if (
-          Number(st.itemId) === itemId &&
-          Math.max(0, Math.floor(Number(st.enchant) || 0)) === enchant
-        ) {
-          ctx.enchant = enchant;
-          ctx.targetInstanceId = 'bag:' + String(itemId) + ':' + String(enchant);
-        }
-      });
-    } else if (snap && ctx.targetInstanceId.startsWith('eq:')) {
-      var slotKey = ctx.targetInstanceId.slice(3);
-      var slotVal = snap.inventory && snap.inventory.eq ? snap.inventory.eq[slotKey] : null;
-      if (slotVal) {
-        var en =
-          slotVal && typeof slotVal === 'object' && slotVal.enchant != null
-            ? Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(slotVal.enchant))))
-            : 0;
-        ctx.enchant = en;
+    var preferred =
+      options.currentEnchantLevel != null ? options.currentEnchantLevel : null;
+    if (!syncCtxFromSnapshot(snap, preferred)) {
+      if (options.requireTarget === true) {
+        showResultMessage('Предмет для заточки не знайдено.');
+        closeModal();
       }
+      return;
     }
 
     var titleEl = $('char-enchant-modal-title');
@@ -381,7 +409,7 @@
     }
     if (gradeEl) gradeEl.textContent = gradeLabelForItem(ctx.itemId);
     if (kindEl) kindEl.textContent = slotKindUk(ctx.itemId);
-    if (iconEl) setItemIconSrc(iconEl, ctx.itemId);
+    if (iconEl) setItemIconSrc(iconEl, ctx.itemId, ctx.enchant);
     if (statsEl) fillCurrentStats(statsEl, ctx.itemId, ctx.enchant);
     if (previewEl) fillPreviewStats(previewEl, ctx.itemId, ctx.enchant);
 
@@ -480,7 +508,9 @@
           await resyncCharacterFromServer();
         }
         showResultMessage('Стан оновлено — спробуй ще раз.');
-        refreshModalContent(global.L2.lastSnapshot ? L2.lastSnapshot() : null);
+        refreshModalContent(global.L2.lastSnapshot ? L2.lastSnapshot() : null, {
+          requireTarget: true,
+        });
         if (typeof ctx.onSnapshot === 'function') {
           ctx.onSnapshot(global.L2.lastSnapshot ? L2.lastSnapshot() : null);
         }
@@ -495,13 +525,23 @@
       }
 
       if (!r.ok) {
-        showResultMessage(
-          out && out.messageUk ? out.messageUk : 'Не вдалося виконати заточку.'
-        );
+        var errMsg =
+          out && out.messageUk ? out.messageUk : 'Не вдалося виконати заточку.';
+        showResultMessage(errMsg);
+        if (/не знайдено/i.test(String(errMsg))) {
+          closeModal();
+        }
         return;
       }
 
       var c = out.character;
+      var newEnchant =
+        out.currentEnchantLevel != null
+          ? Math.max(
+              0,
+              Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(out.currentEnchantLevel) || 0))
+            )
+          : null;
       if (global.L2 && typeof L2.applyMutationSnapshot === 'function') {
         L2.applyMutationSnapshot(c, function (snap) {
           if (typeof ctx.onSnapshot === 'function') ctx.onSnapshot(snap);
@@ -518,7 +558,10 @@
       }
 
       showResultMessage(out.messageUk ? String(out.messageUk) : 'Заточка виконана.');
-      refreshModalContent(c);
+      refreshModalContent(c, {
+        currentEnchantLevel: newEnchant,
+        requireTarget: true,
+      });
     } catch (_) {
       showResultMessage('Збій мережі — спробуй ще раз.');
     } finally {

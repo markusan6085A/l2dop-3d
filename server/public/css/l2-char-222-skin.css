@@ -573,6 +573,7 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row--click:focus {
 
 /* Модалка предмета: без рамки 541 — фон #1d1c1a, легка обводка */
 body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-gm-modal,
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-gm-modal,
 body.l2-app-l2-chrome #l2-item-stats-modal-overlay .l2-gm-modal {
   border: 1px solid rgba(120, 100, 72, 0.42) !important;
   border-width: 1px !important;
@@ -827,6 +828,46 @@ body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay #char-bag-modal-use:n
 }
 
 body.l2-app-l2-chrome.l2-page-char #char-bag-modal-overlay .l2-char-bag-modal-actions button.l2-char-bag-modal-action:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* enchant modal: кнопки — простий текст */
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-char-enchant-modal-actions button.l2-char-bag-modal-action:not([hidden]) {
+  display: inline !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  color: #bfa88a !important;
+  text-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-char-enchant-modal-actions button.l2-char-bag-modal-action:not([hidden]):hover,
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-char-enchant-modal-actions button.l2-char-bag-modal-action:not([hidden]):focus,
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-char-enchant-modal-actions button.l2-char-bag-modal-action:not([hidden]):focus-visible {
+  outline: none !important;
+  border: 0 !important;
+  background: none !important;
+  background-image: none !important;
+  filter: none !important;
+  color: #d8c4a8 !important;
+  text-shadow: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-char-enchant-modal-submit:disabled {
   opacity: 0.55;
   cursor: default;
 }

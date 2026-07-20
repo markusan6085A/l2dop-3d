@@ -66,7 +66,16 @@
     return '/icons/drops/other.svg';
   }
 
-  function setItemIconSrc(img, itemId) {
+  function setItemIconSrc(img, itemId, enchantLevel) {
+    if (window.L2 && typeof L2.setItemIconWithEnchantBadge === 'function') {
+      L2.setItemIconWithEnchantBadge(
+        img,
+        itemId,
+        enchantLevel != null ? enchantLevel : 0,
+        itemIconUrlForId(itemId)
+      );
+      return;
+    }
     if (!img) return;
     img.decoding = 'async';
     img.src = itemIconUrlForId(itemId);
@@ -400,7 +409,15 @@
           el.onerror = null;
           el.src = def;
         };
-        setItemIconSrc(el, id);
+        var slotVal = eq[m.key];
+        if (m.key === 'l2' && mirrorTwoHand) {
+          slotVal = eq.l1;
+        }
+        var en =
+          slotVal && typeof slotVal === 'object' && slotVal.enchant != null
+            ? Math.max(0, Math.min(25, Math.floor(Number(slotVal.enchant) || 0)))
+            : 0;
+        setItemIconSrc(el, id, en);
       } else {
         el.classList.remove('l2-char-slot-icon--filled');
         el.removeAttribute('title');
@@ -1158,7 +1175,7 @@
       ic.setAttribute('role', 'button');
       ic.setAttribute('tabindex', '0');
       ic.setAttribute('aria-label', 'Характеристики предмета');
-      setItemIconSrc(ic, st.itemId);
+      setItemIconSrc(ic, st.itemId, en);
       var mid = document.createElement('div');
       mid.className = 'l2-char-bag-row-text';
       var label = document.createElement('span');
@@ -1732,7 +1749,7 @@
     }
     if (gradeEl) gradeEl.textContent = gradeLabelForItem(itemId);
     if (kind) kind.textContent = slotKindUk(itemId);
-    if (icon) setItemIconSrc(icon, itemId);
+    if (icon) setItemIconSrc(icon, itemId, modalEn);
     statsEl.innerHTML = '';
     function addRow(k, v) {
       if (window.L2 && typeof L2.appendItemStatLine === 'function') {
@@ -1744,7 +1761,14 @@
       p.textContent = k ? k + ': ' + v : String(v);
       statsEl.appendChild(p);
     }
-    if (modalEn > 0) addRow('Заточка', '+' + modalEn);
+    function addEnchantRow(label, baseVal, kind) {
+      if (window.L2 && typeof L2.formatEnchantedStatLineUk === 'function') {
+        var ln = L2.formatEnchantedStatLineUk(label, baseVal, modalEn, kind);
+        addRow(ln.labelUk, ln.valueUk);
+        return;
+      }
+      addRow(label, String(baseVal));
+    }
     var st = window.L2 && L2.itemStatsById && L2.itemStatsById[itemId];
     var slKind = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
     var hasJewelAuthorModal =
@@ -1772,9 +1796,9 @@
       slKind === 'feet' ||
       slKind === 'fullarmor';
     if (st && typeof st === 'object') {
-      if (st.pAtk != null) addRow('Фіз. атака', String(st.pAtk));
+      if (st.pAtk != null) addEnchantRow('Фіз. атака', st.pAtk, 'weaponPatk');
       if (isShieldModal) {
-        if (st.pDef != null) addRow('P.Def', String(st.pDef));
+        if (st.pDef != null) addEnchantRow('P.Def', st.pDef, 'armorPDef');
         if (st.shieldRatePercent != null) {
           addRow('Блок щитом', String(st.shieldRatePercent) + '%');
         }
@@ -1786,7 +1810,7 @@
             : st.jewelryMAtk != null
               ? st.jewelryMAtk
               : st.mAtk;
-        if (mdef != null) addRow('Маг. захист (M.Def)', String(mdef));
+        if (mdef != null) addEnchantRow('Маг. захист (M.Def)', mdef, 'jewelMdef');
         if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
           addRow('HP макс.', '+' + String(st.jewelMaxHp));
         }
@@ -1813,13 +1837,13 @@
         ) {
           addRow('Стійкість до утримання', pctFromMulUk(st.jewelHoldResistMul));
         }
-        if (st.pDef != null) addRow('Фіз. захист (P.Def)', String(st.pDef));
+        if (st.pDef != null) addEnchantRow('Фіз. захист (P.Def)', st.pDef, 'armorPDef');
       } else {
-        if (st.mAtk != null) addRow('Маг. атака', String(st.mAtk));
+        if (st.mAtk != null) addEnchantRow('Маг. атака', st.mAtk, 'weaponMatk');
         if (isArmorModal && st.pDef != null) {
-          addRow('Фіз. захист (P.Def)', String(st.pDef));
+          addEnchantRow('Фіз. захист (P.Def)', st.pDef, 'armorPDef');
         } else if (st.pDef != null) {
-          addRow('P.Def', String(st.pDef));
+          addEnchantRow('P.Def', st.pDef, 'armorPDef');
         }
       }
       if (st.atkSpd != null) addRow('Швидкість бою', String(st.atkSpd));

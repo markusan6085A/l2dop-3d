@@ -69,7 +69,11 @@
     return '/icons/drops/other.svg';
   }
 
-  function setItemIconSrc(img, itemId) {
+  function setItemIconSrc(img, itemId, enchantLevel) {
+    if (global.L2 && typeof global.L2.setItemIconWithEnchantBadge === 'function') {
+      global.L2.setItemIconWithEnchantBadge(img, itemId, enchantLevel != null ? enchantLevel : 0);
+      return;
+    }
     if (!img) return;
     img.decoding = 'async';
     img.src = itemIconUrlForId(itemId);
@@ -118,7 +122,8 @@
           el.onerror = null;
           el.src = def;
         };
-        setItemIconSrc(el, id);
+        var en = eqItemEnchant(slotVal);
+        setItemIconSrc(el, id, en);
       } else {
         el.classList.remove('l2-char-slot-icon--filled');
         el.removeAttribute('data-l2-mirror-twohand');
@@ -126,6 +131,9 @@
         el.setAttribute('role', 'presentation');
         el.onerror = null;
         el.src = def;
+        if (global.L2 && typeof global.L2.wrapItemIconWithEnchantBadge === 'function') {
+          global.L2.wrapItemIconWithEnchantBadge(el, 0);
+        }
       }
     });
   }
