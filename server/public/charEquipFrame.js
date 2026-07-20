@@ -144,7 +144,7 @@
     return { key: key, slotVal: eq[key], mirror: false };
   }
 
-  function wireEquipSlotView(root, getEq) {
+  function wireEquipSlotView(root, getEq, onOpen) {
     var scope = resolveScope(root);
     if (!scope || scope.dataset.l2EquipViewWired === '1') return;
     scope.dataset.l2EquipViewWired = '1';
@@ -155,6 +155,16 @@
       var itemId = eqItemId(slot.slotVal);
       if (!itemId) return;
       var enchant = eqItemEnchant(slot.slotVal);
+      if (typeof onOpen === 'function') {
+        onOpen({
+          key: slot.key,
+          slotVal: slot.slotVal,
+          itemId: itemId,
+          enchant: enchant,
+          mirror: slot.mirror,
+        });
+        return;
+      }
       if (global.L2ItemStatsModal && typeof global.L2ItemStatsModal.open === 'function') {
         global.L2ItemStatsModal.open(itemId, { enchant: enchant });
       }

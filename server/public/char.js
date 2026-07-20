@@ -31,6 +31,9 @@
   }
 
   function itemDisplayName(id) {
+    if (window.L2 && typeof L2.resolveCatalogItemName === 'function') {
+      return L2.resolveCatalogItemName(id);
+    }
     var n = window.L2 && L2.itemNameById && L2.itemNameById[id];
     return n != null ? n : '#' + id;
   }
@@ -160,6 +163,10 @@
   }
 
   function gradeLabelForItem(id) {
+    if (window.L2 && typeof L2.enchantScrollGradeById === 'function') {
+      var scrollGrade = L2.enchantScrollGradeById(id);
+      if (scrollGrade) return scrollGrade;
+    }
     var g = window.L2 && L2.itemGradeById && L2.itemGradeById[id];
     if (g != null && String(g).trim() !== '') return String(g);
     return '—';
@@ -492,6 +499,9 @@
   }
 
   function consumableSubtypeForBag(itemId) {
+    if (window.L2 && typeof L2.isEnchantScrollItem === 'function' && L2.isEnchantScrollItem(itemId)) {
+      return 'enchantment';
+    }
     var tab = bagInvTabHint(itemId);
     if (tab === 'resource') return 'resources';
     if (tab === 'enchantment') return 'enchantment';
@@ -559,6 +569,9 @@
 
   function bagInvTabHint(itemId) {
     var id = Number(itemId);
+    if (window.L2 && typeof L2.isEnchantScrollItem === 'function' && L2.isEnchantScrollItem(id)) {
+      return 'enchantment';
+    }
     var t = window.L2 && L2.itemInventoryTabById && L2.itemInventoryTabById[id];
     if (t != null && String(t).trim() !== '') return String(t);
     return bagInvTabHintFromName(id);
@@ -733,6 +746,10 @@
   }
 
   function normalizedItemGradeKey(itemId) {
+    if (window.L2 && typeof L2.enchantScrollGradeById === 'function') {
+      var scrollGrade = L2.enchantScrollGradeById(itemId);
+      if (scrollGrade) return String(scrollGrade).trim().toLowerCase();
+    }
     var g = window.L2 && L2.itemGradeById && L2.itemGradeById[itemId];
     if (g == null || String(g).trim() === '') return '';
     return String(g).trim().toLowerCase();
@@ -758,51 +775,34 @@
     });
   }
 
-  function renderEquipEnchantButtons(inv) {
-    var host = $('char-equip-enchant-actions');
-    if (!host) return;
-    host.innerHTML = '';
-    inv = inv || defaultInventory();
-    var eq = inv.eq || {};
-    var rows = [
-      { key: 'l1', label: 'Зброя' },
-      { key: 'l2', label: 'Щит' },
-      { key: 'lh', label: 'Шолом' },
-      { key: 'l3', label: 'Броня' },
-      { key: 'l4', label: 'Штани' },
-      { key: 'lg', label: 'Рукавиці' },
-      { key: 'lf', label: 'Чоботи' },
-      { key: 'neck', label: 'Намисто' },
-      { key: 'lr1', label: 'Кільце' },
-      { key: 'lr2', label: 'Кільце' },
-      { key: 'le1', label: 'Сережка' },
-      { key: 'le2', label: 'Сережка' },
-    ];
-    rows.forEach(function (row) {
-      var slotVal = eq[row.key];
-      var itemId = eqItemId(slotVal);
-      if (!itemId || !isEnchantableEquipment(itemId)) return;
-      var enchant = 0;
-      if (slotVal && typeof slotVal === 'object' && slotVal.enchant != null) {
-        enchant = Math.max(
-          0,
-          Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(slotVal.enchant) || 0))
-        );
-      }
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'l2-char-equip-enchant-btn';
-      btn.setAttribute('data-enchant-target', 'eq:' + row.key);
-      btn.setAttribute('data-enchant-item-id', String(itemId));
-      btn.setAttribute('data-enchant-level', String(enchant));
-      if (enchant >= MAX_ENCHANT_LEVEL) {
-        btn.disabled = true;
-        btn.textContent = row.label + ': Максимальна заточка';
-      } else {
-        btn.textContent = row.label + ': Заточити';
-      }
-      host.appendChild(btn);
-    });
+  function configureItemInfoEnchantButton(enBtn, itemId, enchant, targetInstanceId) {
+    if (!enBtn) return;
+    if (!isEnchantableEquipment(itemId)) {
+      enBtn.hidden = true;
+      enBtn.setAttribute('hidden', '');
+      enBtn.disabled = false;
+      enBtn.textContent = 'Заточити';
+      enBtn.removeAttribute('data-enchant-target');
+      enBtn.removeAttribute('data-enchant-item-id');
+      enBtn.removeAttribute('data-enchant-level');
+      return;
+    }
+    enBtn.hidden = false;
+    enBtn.removeAttribute('hidden');
+    var en = Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(enchant) || 0)));
+    if (en >= MAX_ENCHANT_LEVEL) {
+      enBtn.disabled = true;
+      enBtn.textContent = 'Максимальна заточка';
+      enBtn.removeAttribute('data-enchant-target');
+      enBtn.removeAttribute('data-enchant-item-id');
+      enBtn.removeAttribute('data-enchant-level');
+      return;
+    }
+    enBtn.disabled = false;
+    enBtn.textContent = 'Заточити';
+    enBtn.setAttribute('data-enchant-target', String(targetInstanceId));
+    enBtn.setAttribute('data-enchant-item-id', String(itemId));
+    enBtn.setAttribute('data-enchant-level', String(en));
   }
 
   function stackPassesBagFilters(st) {
@@ -1199,21 +1199,6 @@
         btn.setAttribute('data-item-enchant', String(en));
         actions.appendChild(btn);
       }
-      if (isEnchantableEquipment(st.itemId)) {
-        var enBtn = document.createElement('button');
-        enBtn.type = 'button';
-        enBtn.className = 'l2-char-bag-equip l2-char-bag-equip--enchant';
-        enBtn.setAttribute('data-enchant-target', 'bag:' + String(st.itemId) + ':' + String(en));
-        enBtn.setAttribute('data-enchant-item-id', String(st.itemId));
-        enBtn.setAttribute('data-enchant-level', String(en));
-        if (en >= MAX_ENCHANT_LEVEL) {
-          enBtn.disabled = true;
-          enBtn.textContent = '[Максимальна заточка]';
-        } else {
-          enBtn.textContent = '[Заточити]';
-        }
-        actions.appendChild(enBtn);
-      }
       row.appendChild(actions);
       root.appendChild(row);
     });
@@ -1268,9 +1253,6 @@
     });
     measureRender('renderEquipSlots', function () {
       renderEquipSlots(inv);
-    });
-    measureRender('renderEquipEnchantButtons', function () {
-      renderEquipEnchantButtons(inv);
     });
     var wcur = $('char-w-cur');
     var wmax = $('char-w-max');
@@ -1598,30 +1580,32 @@
     }
   }
 
-  function wireEquipEnchantClicks() {
-    var host = $('char-equip-enchant-actions');
-    if (!host || host.getAttribute('data-wired') === '1') return;
-    host.setAttribute('data-wired', '1');
-    host.addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-enchant-target]');
-      if (!btn) return;
-      openEnchantForTarget(
-        btn.getAttribute('data-enchant-target'),
-        Number(btn.getAttribute('data-enchant-item-id')),
-        Number(btn.getAttribute('data-enchant-level') || 0)
-      );
-    });
-  }
-
   function wireEquipSlotClicks() {
     var frame = document.querySelector('.l2-char-equip-frame');
     if (!frame || !window.L2CharEquipFrame) return;
-    L2CharEquipFrame.wireEquipSlotUnequip(frame, function () {
-      var snap = window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
-      var inv = snap && snap.inventory ? snap.inventory : null;
-      return inv && inv.eq ? inv.eq : {};
-    }, function (key) {
-      apiUnequip(key);
+    L2CharEquipFrame.wireEquipSlotView(
+      frame,
+      function () {
+        var snap =
+          window.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+        var inv = snap && snap.inventory ? snap.inventory : null;
+        return inv && inv.eq ? inv.eq : {};
+      },
+      function (slot) {
+        if (!slot || !slot.key || !slot.itemId) return;
+        openEquippedItemModal(slot.key, slot.itemId, slot.enchant);
+      }
+    );
+  }
+
+  function openEquippedItemModal(eqSlotKey, itemId, enchant) {
+    openBagModal({
+      itemId: itemId,
+      qty: 1,
+      enchant: enchant,
+      source: 'equipped',
+      eqSlotKey: eqSlotKey,
+      targetInstanceId: 'eq:' + String(eqSlotKey),
     });
   }
 
@@ -1639,16 +1623,6 @@
       }
     }
     root.addEventListener('click', function (e) {
-      var enBtn = e.target.closest('[data-enchant-target]');
-      if (enBtn && enBtn.getAttribute('data-enchant-target')) {
-        e.stopPropagation();
-        openEnchantForTarget(
-          enBtn.getAttribute('data-enchant-target'),
-          Number(enBtn.getAttribute('data-enchant-item-id')),
-          Number(enBtn.getAttribute('data-enchant-level') || 0)
-        );
-        return;
-      }
       var depBtn = e.target.closest('[data-wh-item-id]');
       if (depBtn && depBtn.getAttribute('data-wh-item-id')) {
         e.stopPropagation();
@@ -1688,6 +1662,9 @@
     var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
     if (sl === 'chest') return 'Обладунки (верх)';
     if (sl === 'legs') return 'Обладунки (низ)';
+    if (sl === 'head') return 'Шолом';
+    if (sl === 'gloves') return 'Рукавиці';
+    if (sl === 'feet') return 'Чоботи';
     if (sl === 'rhand') return 'Зброя (права рука)';
     if (sl === 'lhand' || sl === 'shield') return 'Щит (ліва рука)';
     if (sl === 'ring') return 'Кільце';
@@ -1740,8 +1717,15 @@
     var statsEl = $('char-bag-modal-stats');
     var qtyEl = $('char-bag-modal-qty');
     var equipBtn = $('char-bag-modal-equip');
+    var enchantBtn = $('char-bag-modal-enchant');
     var armorSetsEl = $('char-bag-modal-armor-sets');
     if (!ov || !title || !statsEl || !qtyEl || !equipBtn) return;
+    var isEquipped = payload.source === 'equipped' && payload.eqSlotKey;
+    var targetInstanceId =
+      payload.targetInstanceId ||
+      (isEquipped
+        ? 'eq:' + String(payload.eqSlotKey)
+        : 'bag:' + String(itemId) + ':' + String(modalEn));
     title.textContent = formatEnchantedName(itemDisplayName(itemId), modalEn);
     if (window.L2 && typeof L2.decorateItemNameEl === 'function') {
       L2.decorateItemNameEl(title, itemId, 'l2-gm-modal-title');
@@ -1848,9 +1832,13 @@
       if (st.castSpd != null) addRow('Швидкість касту', String(st.castSpd));
       if (st.mCritPct != null) addRow('Маг. крит', String(st.mCritPct) + '%');
     }
-    qtyEl.textContent =
-      'У сумці' +
-      bagQtySuffix(itemId, Number.isFinite(qty) ? qty : 1);
+    if (isEquipped) {
+      qtyEl.textContent = 'Одягнено';
+    } else {
+      qtyEl.textContent =
+        'У сумці' +
+        bagQtySuffix(itemId, Number.isFinite(qty) ? qty : 1);
+    }
     if (armorSetsEl && window.L2ArmorSetBonusesUI) {
       if (window.L2ArmorSetBonusesUI.isArmorSlot(slKind)) {
         window.L2ArmorSetBonusesUI.showIn(
@@ -1875,19 +1863,34 @@
       itemId: itemId,
       qty: Number.isFinite(qty) ? qty : 1,
       enchant: modalEn,
+      source: isEquipped ? 'equipped' : 'bag',
+      eqSlotKey: isEquipped ? String(payload.eqSlotKey) : null,
+      targetInstanceId: targetInstanceId,
     };
 
-    if (canEq) {
+    if (isEquipped) {
       equipBtn.hidden = false;
       equipBtn.removeAttribute('hidden');
+      equipBtn.textContent = 'Зняти';
+      equipBtn.setAttribute('data-eq-slot', String(payload.eqSlotKey));
+      equipBtn.removeAttribute('data-item-id');
+      equipBtn.removeAttribute('data-item-enchant');
+    } else if (canEq) {
+      equipBtn.hidden = false;
+      equipBtn.removeAttribute('hidden');
+      equipBtn.textContent = 'Одіти';
       equipBtn.setAttribute('data-item-id', String(itemId));
       equipBtn.setAttribute('data-item-enchant', String(modalEn));
+      equipBtn.removeAttribute('data-eq-slot');
     } else {
       equipBtn.hidden = true;
       equipBtn.setAttribute('hidden', '');
       equipBtn.removeAttribute('data-item-id');
       equipBtn.removeAttribute('data-item-enchant');
+      equipBtn.removeAttribute('data-eq-slot');
     }
+
+    configureItemInfoEnchantButton(enchantBtn, itemId, modalEn, targetInstanceId);
 
     if (craftHintEl) {
       if (showCraft) {
@@ -1954,11 +1957,29 @@
     }
     if (equipBtn) {
       equipBtn.addEventListener('click', function () {
+        var slot = equipBtn.getAttribute('data-eq-slot');
+        if (slot) {
+          closeBagModal();
+          apiUnequip(slot);
+          return;
+        }
         var id = equipBtn.getAttribute('data-item-id');
         if (!id) return;
         var ben = equipBtn.getAttribute('data-item-enchant');
         closeBagModal();
         apiEquip(Number(id), ben != null ? Number(ben) : 0);
+      });
+    }
+    var enchantBtn = $('char-bag-modal-enchant');
+    if (enchantBtn) {
+      enchantBtn.addEventListener('click', function () {
+        if (enchantBtn.disabled) return;
+        var target = enchantBtn.getAttribute('data-enchant-target');
+        if (!target) return;
+        var itemId = Number(enchantBtn.getAttribute('data-enchant-item-id'));
+        var en = Number(enchantBtn.getAttribute('data-enchant-level') || 0);
+        closeBagModal();
+        openEnchantForTarget(target, itemId, en);
       });
     }
     var useBtn = $('char-bag-modal-use');
@@ -2027,7 +2048,6 @@
     wireBagInvFilters();
     wireBagModal();
     wireEquipSlotClicks();
-    wireEquipEnchantClicks();
 
     var errEl = $('char-load-err');
     var content = $('char-content');

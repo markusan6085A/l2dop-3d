@@ -27,11 +27,39 @@
   }
 
   function itemDisplayName(id) {
+    if (global.L2 && typeof L2.resolveCatalogItemName === 'function') {
+      return L2.resolveCatalogItemName(id);
+    }
     if (global.L2 && typeof L2.itemDisplayNameWithGrade === 'function') {
       return L2.itemDisplayNameWithGrade(id);
     }
     var n = global.L2 && L2.itemNameById && L2.itemNameById[id];
     return n != null ? n : '#' + id;
+  }
+
+  function gradeLabelForItem(itemId) {
+    if (global.L2 && typeof L2.enchantScrollGradeById === 'function') {
+      var scrollGrade = L2.enchantScrollGradeById(itemId);
+      if (scrollGrade) return scrollGrade;
+    }
+    var g = global.L2 && L2.itemGradeById && L2.itemGradeById[itemId];
+    if (g != null && String(g).trim() !== '') return String(g);
+    return '—';
+  }
+
+  function slotKindUk(itemId) {
+    var sl = global.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (sl === 'chest') return 'Обладунки (верх)';
+    if (sl === 'legs') return 'Обладунки (низ)';
+    if (sl === 'head') return 'Шолом';
+    if (sl === 'gloves') return 'Рукавиці';
+    if (sl === 'feet') return 'Чоботи';
+    if (sl === 'rhand') return 'Зброя';
+    if (sl === 'lhand' || sl === 'shield') return 'Щит';
+    if (sl === 'ring') return 'Кільце';
+    if (sl === 'neck') return 'Намисто';
+    if (sl === 'earring') return 'Сережки';
+    return 'Предмет';
   }
 
   function formatEnchantedName(name, enchant) {
@@ -44,6 +72,10 @@
   }
 
   function normalizedItemGradeKey(itemId) {
+    if (global.L2 && typeof L2.enchantScrollGradeById === 'function') {
+      var scrollGrade = L2.enchantScrollGradeById(itemId);
+      if (scrollGrade) return String(scrollGrade).trim().toUpperCase();
+    }
     var g = global.L2 && L2.itemGradeById && L2.itemGradeById[itemId];
     if (g == null || String(g).trim() === '') return '';
     return String(g).trim().toUpperCase();
@@ -276,7 +308,7 @@
       var text = document.createElement('span');
       text.className = 'l2-char-enchant-scroll-text';
       text.textContent =
-        itemDisplayName(row.scrollItemId) + ' (x' + String(row.qty) + ')';
+        itemDisplayName(row.scrollItemId) + ' ×' + String(row.qty);
 
       wrap.appendChild(radio);
       wrap.appendChild(ico);
@@ -291,10 +323,18 @@
     var chanceEl = $('char-enchant-modal-chance');
     var failEl = $('char-enchant-modal-fail');
     if (!chanceEl || !failEl) return;
-    var chance = getEnchantSuccessChance(enchant);
-    var failTo = getEnchantFailLevel(enchant);
+    var current = Math.max(
+      0,
+      Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(enchant) || 0))
+    );
+    var chance = getEnchantSuccessChance(current);
+    var failTo = getEnchantFailLevel(current);
     chanceEl.textContent = 'Шанс успіху: ' + String(chance) + '%';
-    failEl.textContent = 'При невдачі: стане +' + String(failTo);
+    if (current <= 3) {
+      failEl.textContent = 'При невдачі: без втрати рівня';
+    } else {
+      failEl.textContent = 'При невдачі: стане +' + String(failTo);
+    }
   }
 
   function refreshModalContent(snap) {
@@ -326,7 +366,8 @@
     }
 
     var titleEl = $('char-enchant-modal-title');
-    var enEl = $('char-enchant-modal-enchant');
+    var gradeEl = $('char-enchant-modal-grade');
+    var kindEl = $('char-enchant-modal-kind');
     var iconEl = $('char-enchant-modal-icon');
     var statsEl = $('char-enchant-modal-stats');
     var previewEl = $('char-enchant-modal-preview');
@@ -338,7 +379,8 @@
         L2.decorateItemNameEl(titleEl, ctx.itemId, 'l2-gm-modal-title');
       }
     }
-    if (enEl) enEl.textContent = 'Поточна заточка: +' + String(ctx.enchant);
+    if (gradeEl) gradeEl.textContent = gradeLabelForItem(ctx.itemId);
+    if (kindEl) kindEl.textContent = slotKindUk(ctx.itemId);
     if (iconEl) setItemIconSrc(iconEl, ctx.itemId);
     if (statsEl) fillCurrentStats(statsEl, ctx.itemId, ctx.enchant);
     if (previewEl) fillPreviewStats(previewEl, ctx.itemId, ctx.enchant);
@@ -498,8 +540,10 @@
       document.body.appendChild(ov);
     }
     var closeBtn = $('char-enchant-modal-close');
+    var cancelBtn = $('char-enchant-modal-cancel');
     var submitBtn = $('char-enchant-modal-submit');
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
     if (submitBtn) submitBtn.addEventListener('click', submitEnchant);
     if (ov) {
       ov.addEventListener('click', function (e) {

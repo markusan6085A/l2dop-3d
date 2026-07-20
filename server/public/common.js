@@ -775,6 +775,52 @@
       };
       return map[id] || '';
     },
+    isEnchantScrollItem: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      return id >= 910510 && id <= 910519;
+    },
+    enchantScrollGradeById: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      var map = {
+        910510: 'D',
+        910511: 'D',
+        910512: 'C',
+        910513: 'C',
+        910514: 'B',
+        910515: 'B',
+        910516: 'A',
+        910517: 'A',
+        910518: 'S',
+        910519: 'S',
+      };
+      return map[id] || '';
+    },
+    resolveCatalogItemName: function (itemId, baseNameOpt) {
+      var id = normalizePositiveInt(itemId);
+      if (baseNameOpt != null && String(baseNameOpt).trim() !== '') {
+        return String(baseNameOpt).trim();
+      }
+      if (global.L2.isEnchantScrollItem(id)) {
+        var scrollNames = {
+          910510: 'Сувій заточення броні D-grade',
+          910511: 'Сувій заточення зброї D-grade',
+          910512: 'Сувій заточення броні C-grade',
+          910513: 'Сувій заточення зброї C-grade',
+          910514: 'Сувій заточення броні B-grade',
+          910515: 'Сувій заточення зброї B-grade',
+          910516: 'Сувій заточення броні A-grade',
+          910517: 'Сувій заточення зброї A-grade',
+          910518: 'Сувій заточення броні S-grade',
+          910519: 'Сувій заточення зброї S-grade',
+        };
+        if (scrollNames[id]) return scrollNames[id];
+      }
+      var map = global.L2.itemNameById;
+      if (!map || id <= 0) return id > 0 ? '#' + id : '';
+      var n = map[id] != null ? map[id] : map[String(id)];
+      if (n != null && String(n).trim() !== '') return String(n).trim();
+      return id > 0 ? '#' + id : '';
+    },
     itemNameClassNames: function (itemId, baseClass) {
       var base =
         baseClass != null && String(baseClass).trim() !== ''

@@ -116,11 +116,6 @@
                     </div>
                   </div>
                 </div>
-                <div
-                  id="char-equip-enchant-actions"
-                  class="l2-char-equip-enchant-actions"
-                  aria-label="Заточка екіпіровки"
-                ></div>
                 <div class="l2-char-currency">
                   <span class="l2-char-currency-seg" title="Адена">
                     <img
@@ -242,9 +237,14 @@
                   Використати
                 </button>
               </div>
-              <button type="button" class="l2-char-bag-modal-action" id="char-bag-modal-equip" hidden>
-                Одіти
-              </button>
+              <div class="l2-char-bag-modal-actions" id="char-bag-modal-actions">
+                <button type="button" class="l2-char-bag-modal-action" id="char-bag-modal-equip" hidden>
+                  Одіти
+                </button>
+                <button type="button" class="l2-char-bag-modal-action" id="char-bag-modal-enchant" hidden>
+                  Заточити
+                </button>
+              </div>
             </div>
           </div>
 
@@ -263,31 +263,39 @@
               >
                 ×
               </button>
-              <h2 id="char-enchant-modal-heading" class="l2-item-modal-heading">Заточка предмета</h2>
+              <h2 id="char-enchant-modal-heading" class="l2-item-modal-heading">Заточення предмета</h2>
               <div class="l2-gm-modal-head">
                 <img id="char-enchant-modal-icon" class="l2-gm-modal-icon" width="48" height="48" alt="" />
                 <div>
                   <p id="char-enchant-modal-title" class="l2-gm-modal-title"></p>
-                  <p id="char-enchant-modal-enchant" class="l2-gm-modal-sub"></p>
+                  <p class="l2-gm-modal-sub">
+                    <span id="char-enchant-modal-grade">—</span> · <span id="char-enchant-modal-kind"></span>
+                  </p>
                 </div>
               </div>
+              <p class="l2-char-enchant-modal-section-title">Поточні характеристики:</p>
               <div class="l2-item-modal-stats" id="char-enchant-modal-stats"></div>
-              <p class="l2-char-enchant-modal-section-title">Після успішної заточки</p>
-              <div class="l2-item-modal-stats" id="char-enchant-modal-preview"></div>
-              <p id="char-enchant-modal-chance" class="l2-char-enchant-modal-meta"></p>
-              <p id="char-enchant-modal-fail" class="l2-char-enchant-modal-meta"></p>
-              <p class="l2-char-enchant-modal-section-title">Сумісні сувії в сумці</p>
+              <p class="l2-char-enchant-modal-section-title">Виберіть сувій:</p>
               <div id="char-enchant-modal-scrolls" class="l2-char-enchant-modal-scrolls"></div>
               <p id="char-enchant-modal-no-scroll" class="l2-char-enchant-modal-empty" hidden></p>
+              <p id="char-enchant-modal-chance" class="l2-char-enchant-modal-meta"></p>
+              <p class="l2-char-enchant-modal-section-title">Після успіху:</p>
+              <div class="l2-item-modal-stats" id="char-enchant-modal-preview"></div>
+              <p id="char-enchant-modal-fail" class="l2-char-enchant-modal-meta"></p>
               <p id="char-enchant-modal-result" class="l2-char-enchant-modal-result" hidden></p>
-              <button
-                type="button"
-                class="l2-char-bag-modal-action l2-char-enchant-modal-submit"
-                id="char-enchant-modal-submit"
-                disabled
-              >
-                Заточити
-              </button>
+              <div class="l2-char-bag-modal-actions l2-char-enchant-modal-actions">
+                <button
+                  type="button"
+                  class="l2-char-bag-modal-action l2-char-enchant-modal-submit"
+                  id="char-enchant-modal-submit"
+                  disabled
+                >
+                  Заточити
+                </button>
+                <button type="button" class="l2-char-bag-modal-action" id="char-enchant-modal-cancel">
+                  Скасувати
+                </button>
+              </div>
             </div>
           </div>
 
@@ -300,9 +308,9 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/armor-set-bonuses-ui.js?v=5"></script>
-    <script src="/charEquipFrame.js?v=20260718playerEquip1"></script>
+    <script src="/charEquipFrame.js?v=20260720enchantUx2"></script>
     <script src="/charHeroPortrait.js?v=20260718darkElfFighterPng4"></script>
-    <script src="/charEnchantModal.js?v=20260720enchantUx1"></script>
-    <script src="/char.js?v=20260720enchantUx1"></script>
+    <script src="/charEnchantModal.js?v=20260720enchantUx2"></script>
+    <script src="/char.js?v=20260720enchantUx2"></script>
   </body>
 </html>

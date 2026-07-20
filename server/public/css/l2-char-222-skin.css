@@ -777,29 +777,12 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--wa
   }
 }
 
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-enchant-actions {
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-modal-actions,
+body.l2-app-l2-chrome.l2-page-char .l2-char-enchant-modal-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 8px 0 4px;
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-enchant-btn {
-  font-size: 10px;
-  padding: 2px 6px;
-  border: 1px solid rgba(255, 220, 140, 0.35);
-  background: rgba(0, 0, 0, 0.35);
-  color: #f0e6c8;
-  cursor: pointer;
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-equip-enchant-btn:disabled {
-  opacity: 0.65;
-  cursor: default;
-}
-
-body.l2-app-l2-chrome.l2-page-char .l2-char-bag-row button.l2-char-bag-equip--enchant {
-  color: #ffd27a !important;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-enchant-modal-section-title {
@@ -841,6 +824,14 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-enchant-modal-result {
   color: #ffd27a;
 }
 
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-gm-modal {
+  max-width: min(100vw - 24px, 420px);
+}
+
 body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-char-enchant-modal-submit {
   min-width: 120px;
+}
+
+body.l2-app-l2-chrome.l2-page-char #char-enchant-modal-overlay .l2-char-enchant-modal-submit:disabled {
+  opacity: 0.65;
 }
