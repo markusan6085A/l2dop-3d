@@ -61,9 +61,6 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   max-width: var(--l2s-chrome-column-w) !important;
   margin-left: auto;
   margin-right: auto;
-  position: relative !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
   /* CLS-safe дефолт: без вертикального підскоку колонки при пізньому CSS. */
   margin-top: calc(-1 * var(--l2s-chrome-column-lift, 0px));
   min-height: auto !important;
@@ -92,7 +89,9 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   --l2f-bottom-nudge: 1px;
   --l2f-side-x-nudge: 3px;
   --l2f-side-line-inset: 3px;
-  --l2f-top-corner-x-nudge: 0px;
+  --l2f-top-corner-w: 78px;
+  --l2f-top-corner-h: 78px;
+  --l2f-bottom-corner-h: 54px;
   --l2f-side-line-width: 24px;
   content: "" !important;
   display: block !important;
@@ -103,9 +102,6 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  box-sizing: border-box !important;
-  background-origin: border-box;
-  background-clip: border-box;
   background-image:
     url('/assets/assets/top-left.png?v=20260705globalFrame1'),
     url('/assets/assets/top-right.png?v=20260705globalFrame1'),
@@ -131,17 +127,28 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
     right calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
     top center,
     center bottom var(--l2f-bottom-nudge),
-    left calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center,
-    right calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset)) center;
+    left calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset))
+      top var(--l2f-top-corner-h),
+    right calc((0px - var(--l2f-side-x-nudge)) + var(--l2f-side-line-inset))
+      top var(--l2f-top-corner-h);
   background-size:
-    78px var(--l2f-top-piece-h),
-    78px var(--l2f-top-piece-h),
-    78px 54px,
-    78px 54px,
-    calc(100% - 156px) var(--l2f-top-piece-h),
-    calc(100% - 156px + (var(--l2f-side-x-nudge) * 2)) 54px,
-    var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge)),
-    var(--l2f-side-line-width) calc(100% - 132px + var(--l2f-bottom-nudge));
+    var(--l2f-top-corner-w) auto,
+    var(--l2f-top-corner-w) auto,
+    var(--l2f-top-corner-w) var(--l2f-bottom-corner-h),
+    var(--l2f-top-corner-w) var(--l2f-bottom-corner-h),
+    calc(100% - (var(--l2f-top-corner-w) * 2)) var(--l2f-top-corner-h),
+    calc(100% - (var(--l2f-top-corner-w) * 2) + (var(--l2f-side-x-nudge) * 2))
+      var(--l2f-bottom-corner-h),
+    var(--l2f-side-line-width)
+      calc(
+        100% - var(--l2f-top-corner-h) - var(--l2f-bottom-corner-h) +
+          var(--l2f-bottom-nudge)
+      ),
+    var(--l2f-side-line-width)
+      calc(
+        100% - var(--l2f-top-corner-h) - var(--l2f-bottom-corner-h) +
+          var(--l2f-bottom-nudge)
+      );
 }
 
 /* Вирівнювання герба з центром верхнього орнаменту на HUD-рамці 14f47b34 */
