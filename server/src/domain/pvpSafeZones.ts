@@ -1,4 +1,4 @@
-import { MAP_TOWNS, type MapTownRef } from '../data/mapLocalities.js';
+import { MAP_TOWNS, nearestMapTown, type MapTownRef } from '../data/mapLocalities.js';
 
 /**
  * Стартові селища / міста з телепорту — без PvP/PK.
@@ -35,12 +35,17 @@ export const PVP_SAFE_ZONE_RADIUS = 18_000;
 const SAFE_R2 = PVP_SAFE_ZONE_RADIUS * PVP_SAFE_ZONE_RADIUS;
 
 export function isInPvpSafeZone(worldX: number, worldY: number): boolean {
-  for (const t of SAFE_TOWN_REFS) {
-    const dx = worldX - t.worldX;
-    const dy = worldY - t.worldY;
-    if (dx * dx + dy * dy <= SAFE_R2) return true;
+  const nearest = nearestMapTown(worldX, worldY);
+  if (
+    !PVP_SAFE_TELEPORT_IDS.includes(
+      nearest.teleportId as (typeof PVP_SAFE_TELEPORT_IDS)[number]
+    )
+  ) {
+    return false;
   }
-  return false;
+  const dx = worldX - nearest.worldX;
+  const dy = worldY - nearest.worldY;
+  return dx * dx + dy * dy <= SAFE_R2;
 }
 
 export function nearestPvpSafeTown(

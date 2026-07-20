@@ -1,7 +1,6 @@
 import { resolveMapLocality } from '../data/mapLocalities.js';
 import { findSevenSignsDungeonById } from '../data/sevenSignsDungeons.js';
 import { parseDungeonStateJson } from './dungeonState.js';
-import { isInPvpSafeZone } from './pvpSafeZones.js';
 
 /** Canonical instance bucket for map presence / PvP rules. */
 export type MapInstanceType =
@@ -60,7 +59,8 @@ export function resolveCanonicalMapLocation(
     key: `world:${loc.teleportId}`,
     instanceType: 'world',
     encounterType: 'world_open',
-    pvpAllowed: !isInPvpSafeZone(input.worldX, input.worldY),
+    /** Open-world farming / teleport locations allow world PK (dungeons use separate bucket). */
+    pvpAllowed: true,
     teleportId: loc.teleportId,
   };
 }

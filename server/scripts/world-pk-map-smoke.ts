@@ -23,12 +23,14 @@ import {
 import { isInPvpSafeZone } from '../src/domain/pvpSafeZones.js';
 import { BATTLE_RANGE } from '../src/domain/battle.js';
 import { serializeDungeonState } from '../src/domain/dungeonState.js';
-import { resolveMapLocality } from '../src/data/mapLocalities.js';
+import { resolveMapLocality, getTeleportDestination } from '../src/data/mapLocalities.js';
 import {
   canCharactersFightWorldPvp,
   MAX_WORLD_PVP_LEVEL_DIFFERENCE,
   WORLD_PVP_LEVEL_DIFF_BLOCKED_REASON_UK,
+  resolveWorldPvpMapEligibility,
 } from '../src/domain/worldPvpEligibility.js';
+import { resolveCanonicalMapLocation } from '../src/domain/mapPlayfieldContext.js';
 import { prisma } from '../src/lib/prisma.js';
 import { startBattleInTx } from '../src/services/battleServiceSession.js';
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
@@ -51,6 +53,7 @@ const FAR_X = 520_000;
 const FAR_Y = 520_000;
 const CATACOMB_ID = 'catacomb_of_the_heretic';
 const NECROPOLIS_ID = 'necropolis_of_devotion';
+const NECROPOLIS_SACRIFICE_ID = 'necropolis_of_sacrifice';
 const CANONICAL_SPAWN = MAP_WORLD_SPAWNS.find((s) => s.kind === 'passive')!;
 
 let passed = 0;
@@ -437,6 +440,102 @@ async function testMapSyncPayloadPkFields(): Promise<void> {
   ok('map sync nearbyHeroes: showPkButton true for 22 vs 10 (production path)');
 }
 
+async function testWorldPvpZoneClassification(): Promise<void> {
+  console.log('\n[world PvP zone classification]');
+
+  const fod = getTeleportDestination('forest_of_the_dead');
+  assert.ok(fod, 'forest_of_the_dead teleport must exist');
+  const fodLoc = resolveCanonicalMapLocation({
+    worldX: fod!.worldX,
+    worldY: fod!.worldY,
+  });
+  assert.equal(fodLoc.key, 'world:forest_of_the_dead');
+  assert.equal(fodLoc.pvpAllowed, true);
+  assert.equal(isInPvpSafeZone(fod!.worldX, fod!.worldY), false);
+  ok('world:forest_of_the_dead → pvpAllowed true');
+
+  const ti = getTeleportDestination('talking_island');
+  assert.ok(ti, 'talking_island teleport must exist');
+  const tiLoc = resolveCanonicalMapLocation({
+    worldX: ti!.worldX,
+    worldY: ti!.worldY,
+  });
+  assert.equal(tiLoc.key, 'world:talking_island');
+  assert.equal(tiLoc.pvpAllowed, true);
+  ok('world:talking_island → pvpAllowed true');
+
+  const catLoc = resolveCanonicalMapLocation({
+    worldX: WILD_X,
+    worldY: WILD_Y,
+    dungeonStateJson: dungeonState(CATACOMB_ID),
+  });
+  assert.equal(catLoc.key, `dungeon:${CATACOMB_ID}`);
+  assert.equal(catLoc.encounterType, 'catacomb');
+  assert.equal(catLoc.pvpAllowed, false);
+  ok('catacomb_of_the_heretic → pvpAllowed false');
+
+  const necLoc = resolveCanonicalMapLocation({
+    worldX: WILD_X,
+    worldY: WILD_Y,
+    dungeonStateJson: dungeonState(NECROPOLIS_SACRIFICE_ID),
+  });
+  assert.equal(necLoc.key, `dungeon:${NECROPOLIS_SACRIFICE_ID}`);
+  assert.equal(necLoc.encounterType, 'necropolis');
+  assert.equal(necLoc.pvpAllowed, false);
+  ok('necropolis_of_sacrifice → pvpAllowed false');
+
+  const partyLoc = resolveCanonicalMapLocation({
+    worldX: WILD_X,
+    worldY: WILD_Y,
+    dungeonStateJson: dungeonState('party_dungeon_instance'),
+  });
+  assert.equal(partyLoc.encounterType, 'party_dungeon');
+  assert.equal(partyLoc.pvpAllowed, false);
+  ok('party dungeon instance → pvpAllowed false');
+
+  const fodEligibility = resolveWorldPvpMapEligibility({
+    viewerLocation: fodLoc,
+    targetLocation: fodLoc,
+    viewerLevel: 22,
+    targetLevel: 10,
+    targetIsPartyMember: false,
+    inBattleRange: true,
+    targetOnline: true,
+    targetCanPkAttack: true,
+  });
+  assert.equal(fodEligibility.showPkButton, true);
+  assert.equal(fodEligibility.profileOnNameClick, false);
+  assert.equal(fodEligibility.pvpEligibilityCode, null);
+  ok('forest_of_the_dead eligibility: showPkButton true for 22 vs 10');
+
+  heroPairSlot += 1;
+  const viewer = await createAccountAtLevel('fodV', 22, {
+    worldX: fod!.worldX,
+    worldY: fod!.worldY,
+  });
+  const target = await createAccountAtLevel('fodT', 10, {
+    worldX: fod!.worldX + 400,
+    worldY: fod!.worldY,
+  });
+  await placeOnline(viewer, fod!.worldX, fod!.worldY);
+  await placeOnline(target, fod!.worldX + 400, fod!.worldY);
+
+  const heroes = await getNearbyHeroesForMap(
+    fod!.worldX,
+    fod!.worldY,
+    viewer.characterId
+  );
+  const hero = heroes.find((h) => h.characterId === target.characterId);
+  assert.ok(hero, 'target in forest_of_the_dead must be visible');
+  assert.equal(hero!.level, 10);
+  assert.equal(hero!.pvpAllowed, true);
+  assert.equal(hero!.showPkButton, true);
+  assert.equal(hero!.profileOnNameClick, false);
+  assert.equal(hero!.pvpEligibilityCode, null);
+  assert.equal(hero!.targetLocationKey, 'world:forest_of_the_dead');
+  ok('forest_of_the_dead nearbyHeroes: pvpAllowed true, showPkButton true');
+}
+
 async function testPlayerMapVisibility(): Promise<void> {
   console.log('\n[player map visibility]');
 
@@ -728,6 +827,7 @@ async function main(): Promise<void> {
   await testWorldPkLevelRange();
   await testCanonicalLevelIgnoresStalePresence();
   await testMapSyncPayloadPkFields();
+  await testWorldPvpZoneClassification();
   await testPkEligibility();
   await testPkBattleStart();
   console.log('\n' + passed + ' passed');
