@@ -49,6 +49,7 @@ body.l2-page-rb-bosses .l2-rb-back a:active {
 body.l2-page-rb-bosses .l2-rb-panel {
   margin: 0 3mm;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 body.l2-page-rb-bosses #rb-list,
@@ -90,7 +91,6 @@ body.l2-page-catacombs .l2-rb-list__error {
   text-align: center;
 }
 
-body.l2-page-rb-bosses .l2-rb-row,
 body.l2-page-catacombs .l2-rb-row {
   display: flex;
   align-items: center;
@@ -99,6 +99,26 @@ body.l2-page-catacombs .l2-rb-row {
   min-height: 34px;
   padding: 4px 0;
   border-bottom: 1px solid rgba(191, 168, 138, 0.18);
+}
+
+body.l2-page-rb-bosses .l2-rb-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 34px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(191, 168, 138, 0.18);
+}
+
+body.l2-page-rb-bosses .l2-rb-row__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
 }
 
 body.l2-page-rb-bosses .l2-rb-row__name {
@@ -113,20 +133,33 @@ body.l2-page-rb-bosses .l2-rb-row__name {
   font-size: 12px;
   text-align: left;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 body.l2-page-rb-bosses .l2-rb-row__ico {
   width: 24px;
   height: 24px;
   object-fit: contain;
-  flex-shrink: 0;
+  flex: 0 0 auto;
+}
+
+body.l2-page-rb-bosses .l2-rb-row__title {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 body.l2-page-rb-bosses .l2-rb-row__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  writing-mode: horizontal-tb;
   min-width: 0;
+}
+
+body.l2-page-rb-bosses .l2-rb-row__level {
+  white-space: nowrap;
 }
 
 body.l2-page-rb-bosses .l2-rb-row__name:hover,
@@ -145,14 +178,8 @@ body.l2-page-rb-bosses .l2-rb-row__name:focus .l2-rb-row__label {
   text-decoration: underline;
 }
 
-body.l2-page-rb-bosses .l2-rb-row__actions {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
 body.l2-page-rb-bosses .l2-rb-row__price {
+  flex: 0 0 auto;
   color: #d8d0c4;
   font-size: 11px;
   white-space: nowrap;
@@ -162,7 +189,29 @@ body.l2-page-rb-bosses .l2-rb-row__price-gold {
   color: #e8c56e;
 }
 
-body.l2-page-rb-bosses .l2-rb-row__tp {
+body.l2-page-rb-bosses .l2-rb-row__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+body.l2-page-rb-bosses .l2-rb-row__attack-hint {
+  flex: 1 1 180px;
+  min-width: 0;
+  text-align: left;
+  line-height: 1.25;
+  font-size: 10px;
+  color: #a09080;
+}
+
+body.l2-page-rb-bosses .l2-rb-row__tp,
+body.l2-page-rb-bosses .l2-rb-row__attack {
+  flex: 0 0 auto;
+  white-space: nowrap;
   box-sizing: border-box;
   min-width: auto;
   min-height: auto;
@@ -179,7 +228,11 @@ body.l2-page-rb-bosses .l2-rb-row__tp {
 body.l2-page-rb-bosses .l2-rb-row__tp:hover,
 body.l2-page-rb-bosses .l2-rb-row__tp:focus,
 body.l2-page-rb-bosses .l2-rb-row__tp:focus-visible,
-body.l2-page-rb-bosses .l2-rb-row__tp:active {
+body.l2-page-rb-bosses .l2-rb-row__tp:active,
+body.l2-page-rb-bosses .l2-rb-row__attack:hover:not(:disabled),
+body.l2-page-rb-bosses .l2-rb-row__attack:focus:not(:disabled),
+body.l2-page-rb-bosses .l2-rb-row__attack:focus-visible:not(:disabled),
+body.l2-page-rb-bosses .l2-rb-row__attack:active:not(:disabled) {
   text-decoration: underline;
   filter: none;
   outline: none !important;
@@ -188,19 +241,65 @@ body.l2-page-rb-bosses .l2-rb-row__tp:active {
   -webkit-tap-highlight-color: transparent;
 }
 
-body.l2-page-rb-bosses .l2-rb-row__tp:disabled,
 body.l2-page-rb-bosses .l2-rb-row__attack:disabled {
-  color: #6a6258;
+  opacity: 0.45;
+  color: #fff;
   cursor: not-allowed;
   text-decoration: none;
 }
 
-body.l2-page-rb-bosses .l2-rb-row__attack-hint {
-  font-size: 10px;
-  color: #a09080;
-  max-width: 140px;
-  line-height: 1.25;
-  text-align: right;
+body.l2-page-catacombs .l2-rb-row__actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.l2-page-catacombs .l2-rb-row__price {
+  color: #d8d0c4;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+body.l2-page-catacombs .l2-rb-row__price-gold {
+  color: #e8c56e;
+}
+
+body.l2-page-catacombs .l2-rb-row__tp {
+  box-sizing: border-box;
+  min-width: auto;
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+body.l2-page-catacombs .l2-rb-row__tp:hover,
+body.l2-page-catacombs .l2-rb-row__tp:focus,
+body.l2-page-catacombs .l2-rb-row__tp:focus-visible,
+body.l2-page-catacombs .l2-rb-row__tp:active {
+  text-decoration: underline;
+  filter: none;
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 480px) {
+  body.l2-page-rb-bosses .l2-rb-row__attack-hint {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  body.l2-page-rb-bosses .l2-rb-row__actions {
+    justify-content: flex-end;
+  }
 }
 
 body.l2-page-rb-bosses .l2-rb-pager {

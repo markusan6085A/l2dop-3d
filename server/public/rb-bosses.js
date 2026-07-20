@@ -167,8 +167,10 @@
     row.className = 'l2-rb-row l2-rb-row--skeleton';
     row.setAttribute('aria-hidden', 'true');
 
-    var left = document.createElement('div');
-    left.className = 'l2-rb-row__name';
+    var top = document.createElement('div');
+    top.className = 'l2-rb-row__top';
+    var name = document.createElement('div');
+    name.className = 'l2-rb-row__name';
     var ico = document.createElement('img');
     ico.className = 'l2-rb-row__ico';
     ico.src = '/mobs/1.png';
@@ -176,25 +178,29 @@
     ico.width = 24;
     ico.height = 24;
     ico.decoding = 'async';
+    var title = document.createElement('span');
+    title.className = 'l2-rb-row__title';
     var label = document.createElement('span');
     label.className = 'l2-rb-row__label';
     label.textContent = '…';
-    left.appendChild(ico);
-    left.appendChild(label);
-
-    var right = document.createElement('div');
-    right.className = 'l2-rb-row__actions';
+    title.appendChild(label);
+    name.appendChild(ico);
+    name.appendChild(title);
     var price = document.createElement('span');
     price.className = 'l2-rb-row__price';
     price.textContent = '( … )';
+    top.appendChild(name);
+    top.appendChild(price);
+
+    var actions = document.createElement('div');
+    actions.className = 'l2-rb-row__actions';
     var tp = document.createElement('span');
     tp.className = 'l2-rb-row__tp';
     tp.textContent = '…';
-    right.appendChild(price);
-    right.appendChild(tp);
+    actions.appendChild(tp);
 
-    row.appendChild(left);
-    row.appendChild(right);
+    row.appendChild(top);
+    row.appendChild(actions);
     return row;
   }
 
@@ -223,10 +229,13 @@
     var row = document.createElement('div');
     row.className = 'l2-rb-row';
 
-    var left = document.createElement('button');
-    left.type = 'button';
-    left.className = 'l2-rb-row__name';
-    left.setAttribute('data-spawn-id', b.spawnId);
+    var top = document.createElement('div');
+    top.className = 'l2-rb-row__top';
+
+    var nameBtn = document.createElement('button');
+    nameBtn.type = 'button';
+    nameBtn.className = 'l2-rb-row__name';
+    nameBtn.setAttribute('data-spawn-id', b.spawnId);
 
     var ico = document.createElement('img');
     ico.className = 'l2-rb-row__ico';
@@ -239,15 +248,18 @@
       ico.src = '/mobs/1.png';
     };
 
+    var title = document.createElement('span');
+    title.className = 'l2-rb-row__title';
     var label = document.createElement('span');
     label.className = 'l2-rb-row__label';
-    label.textContent = b.name + ' · рів. ' + b.level;
-
-    left.appendChild(ico);
-    left.appendChild(label);
-
-    var right = document.createElement('div');
-    right.className = 'l2-rb-row__actions';
+    label.textContent = b.name;
+    var level = document.createElement('span');
+    level.className = 'l2-rb-row__level';
+    level.textContent = ' · рів. ' + b.level;
+    title.appendChild(label);
+    title.appendChild(level);
+    nameBtn.appendChild(ico);
+    nameBtn.appendChild(title);
 
     var price = document.createElement('span');
     price.className = 'l2-rb-row__price';
@@ -259,11 +271,18 @@
     price.appendChild(gold);
     price.appendChild(document.createTextNode(')'));
 
-    var tp = document.createElement('button');
-    tp.type = 'button';
-    tp.className = 'l2-rb-row__tp';
-    tp.textContent = 'Телепорт';
-    tp.setAttribute('data-spawn-id', b.spawnId);
+    top.appendChild(nameBtn);
+    top.appendChild(price);
+
+    var actions = document.createElement('div');
+    actions.className = 'l2-rb-row__actions';
+
+    if (b.canAttack === false && b.attackBlockedReasonUk) {
+      var hint = document.createElement('span');
+      hint.className = 'l2-rb-row__attack-hint';
+      hint.textContent = b.attackBlockedReasonUk;
+      actions.appendChild(hint);
+    }
 
     var atk = document.createElement('button');
     atk.type = 'button';
@@ -276,17 +295,17 @@
         b.attackBlockedReasonUk || 'Недоступно: РБ нижче дозволеного рівня.';
     }
 
-    right.appendChild(price);
-    if (b.canAttack === false && b.attackBlockedReasonUk) {
-      var hint = document.createElement('span');
-      hint.className = 'l2-rb-row__attack-hint';
-      hint.textContent = b.attackBlockedReasonUk;
-      right.appendChild(hint);
-    }
-    right.appendChild(atk);
-    right.appendChild(tp);
-    row.appendChild(left);
-    row.appendChild(right);
+    var tp = document.createElement('button');
+    tp.type = 'button';
+    tp.className = 'l2-rb-row__tp';
+    tp.textContent = 'Телепорт';
+    tp.setAttribute('data-spawn-id', b.spawnId);
+
+    actions.appendChild(atk);
+    actions.appendChild(tp);
+
+    row.appendChild(top);
+    row.appendChild(actions);
     return row;
   }
 
