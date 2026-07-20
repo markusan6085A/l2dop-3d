@@ -210,41 +210,41 @@ export async function getMapSyncForUser(
     leaderCharacterId: string;
   } | null = null;
   let partyNearbyMembers: { characterId: string; name: string }[] = [];
+  let viewerDungeonStateJson: unknown = null;
 
-  if (isPartyBattleRewardDistributionReady()) {
-    const membership = await prisma.partyMember.findUnique({
-      where: { characterId: mapState.id },
-      select: {
-        partyId: true,
-        party: {
-          select: {
-            leaderCharacterId: true,
-            members: { select: { characterId: true } },
-          },
+  const membership = await prisma.partyMember.findUnique({
+    where: { characterId: mapState.id },
+    select: {
+      partyId: true,
+      party: {
+        select: {
+          leaderCharacterId: true,
+          members: { select: { characterId: true } },
         },
       },
+    },
+  });
+  if (membership?.party) {
+    partyContext = {
+      memberIds: new Set(membership.party.members.map((m) => m.characterId)),
+      leaderCharacterId: membership.party.leaderCharacterId,
+    };
+    const viewerRow = await prisma.character.findUnique({
+      where: { id: mapState.id },
+      select: {
+        worldX: true,
+        worldY: true,
+        targetX: true,
+        targetY: true,
+        moveStartAt: true,
+        moveFromX: true,
+        moveFromY: true,
+        dungeonStateJson: true,
+      },
     });
-    if (membership?.party) {
-      partyContext = {
-        memberIds: new Set(
-          membership.party.members.map((m) => m.characterId)
-        ),
-        leaderCharacterId: membership.party.leaderCharacterId,
-      };
-      const viewerRow = await prisma.character.findUnique({
-        where: { id: mapState.id },
-        select: {
-          worldX: true,
-          worldY: true,
-          targetX: true,
-          targetY: true,
-          moveStartAt: true,
-          moveFromX: true,
-          moveFromY: true,
-          dungeonStateJson: true,
-        },
-      });
-      if (viewerRow) {
+    if (viewerRow) {
+      viewerDungeonStateJson = viewerRow.dungeonStateJson;
+      if (isPartyBattleRewardDistributionReady()) {
         const viewerPlayfield = resolveCharacterPlayfieldPosition(
           viewerRow as unknown as PartyMemberStatusCharacterRow
         );
@@ -256,6 +256,12 @@ export async function getMapSyncForUser(
         partyNearbyMembers = partyNearbyMemberNames(statusEntries, mapState.id);
       }
     }
+  } else {
+    const viewerRow = await prisma.character.findUnique({
+      where: { id: mapState.id },
+      select: { dungeonStateJson: true },
+    });
+    viewerDungeonStateJson = viewerRow?.dungeonStateJson ?? null;
   }
 
   const nearbyHeroes = await getNearbyHeroesForMap(
@@ -263,7 +269,8 @@ export async function getMapSyncForUser(
     mapState.worldY,
     mapState.id,
     nowMs,
-    partyContext
+    partyContext,
+    viewerDungeonStateJson
   );
   const pvpIncoming = await findPvpIncomingForCharacter(mapState.id);
 

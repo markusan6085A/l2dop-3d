@@ -32,6 +32,15 @@ import {
 import { parseSkillsLearnedJson } from './skillLearnService.js';
 import { serializeBattleJsonForDb } from './battleServiceBattleBuffs.js';
 import { isInPvpSafeZone } from '../domain/pvpSafeZones.js';
+import {
+  isSameCanonicalMapLocation,
+  resolveCanonicalMapLocation,
+} from '../domain/mapPlayfieldContext.js';
+import {
+  areCharactersInSamePartyInTx,
+  characterBlocksWorldPvpStart,
+} from '../domain/worldPvpEligibility.js';
+import { isCharacterOnlineNow } from './onlinePresenceService.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { battleViewFromState, skillCooldownUiContextFromRow } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
@@ -455,6 +464,43 @@ export async function startPvpBattleInTx(
   });
   if (!targetRow) throw new Error('pvp_target_unknown');
 
+  if (!isCharacterOnlineNow(attackerRow.id)) {
+    throw new Error('pvp_attacker_offline');
+  }
+  if (!isCharacterOnlineNow(targetId)) {
+    throw new Error('pvp_target_offline');
+  }
+
+  const atkMoved = resolveMapMovement(attackerRow as CharacterRow);
+  const tgtMoved = resolveMapMovement(targetRow as CharacterRow);
+  const atkLoc = resolveCanonicalMapLocation({
+    worldX: atkMoved.worldX,
+    worldY: atkMoved.worldY,
+    dungeonStateJson: attackerRow.dungeonStateJson,
+  });
+  const tgtLoc = resolveCanonicalMapLocation({
+    worldX: tgtMoved.worldX,
+    worldY: tgtMoved.worldY,
+    dungeonStateJson: targetRow.dungeonStateJson,
+  });
+  if (!atkLoc.pvpAllowed || !tgtLoc.pvpAllowed) {
+    throw new Error('pvp_forbidden_zone');
+  }
+  if (!isSameCanonicalMapLocation(atkLoc, tgtLoc)) {
+    throw new Error('pvp_location_mismatch');
+  }
+
+  if (await areCharactersInSamePartyInTx(tx, attackerRow.id, targetId)) {
+    throw new Error('pvp_party_member');
+  }
+
+  const targetHp = Math.max(0, Math.floor(Number(targetRow.hp) || 0));
+  if (targetHp <= 0) throw new Error('pvp_target_dead');
+
+  if (characterBlocksWorldPvpStart(existingBj)) {
+    throw new Error('already_in_battle');
+  }
+
   const tgtBj = parseBattleJson(targetRow.battleJson);
   let defenderCounter = false;
   if (tgtBj && isPvpBattleJson(tgtBj)) {
@@ -471,6 +517,8 @@ export async function startPvpBattleInTx(
     } else {
       throw new Error('pvp_target_busy');
     }
+  } else if (characterBlocksWorldPvpStart(tgtBj)) {
+    throw new Error('pvp_target_in_battle');
   }
 
   return commitPlayerPvpBattleStartInTx(tx, {

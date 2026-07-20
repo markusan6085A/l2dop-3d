@@ -198,36 +198,49 @@
       var main = document.createElement('div');
       main.className = 'l2-map-hero-item__main';
       main.style.setProperty('--l2-map-hero-nick-color', heroNickHex(h) || '#bfa88a');
-      var nameLink = document.createElement('a');
-      nameLink.className = 'l2-map-hero-name-link';
-      if (h.pvpNickColor === 'pk') nameLink.classList.add('l2-pvp-nick--pk');
+
+      var titleLine = document.createElement('div');
+      titleLine.className = 'l2-map-hero-item__title';
+
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'l2-map-hero-name-link';
+      if (h.pvpNickColor === 'pk') nameSpan.classList.add('l2-pvp-nick--pk');
       else if (h.pvpNickColor === 'aggressor') {
-        nameLink.classList.add('l2-pvp-nick--aggressor');
+        nameSpan.classList.add('l2-pvp-nick--aggressor');
       }
-      nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-      nameLink.textContent = h.name || '—';
-      if (h.isPartyMember) {
-        var partyTag = document.createElement('span');
-        partyTag.className = 'l2-dungeon-party-tag';
-        partyTag.textContent = h.isPartyLeader ? ' Паті★' : ' Паті';
-        partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
-        nameLink.appendChild(partyTag);
-      }
+      nameSpan.textContent = h.name || '—';
+      titleLine.appendChild(nameSpan);
+
       var levelSpan = document.createElement('span');
       levelSpan.className = 'l2-map-hero-level';
       levelSpan.textContent = heroLevelPart(h);
-      var pkBtn = document.createElement('button');
-      pkBtn.type = 'button';
-      pkBtn.className = 'l2-map-hero-link__pk';
-      pkBtn.textContent = ' [pk]';
-      pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
-      var canPk = h.inBattleRange && h.canPkAttack !== false;
-      if (!canPk) {
-        pkBtn.disabled = true;
-        if (!h.inBattleRange) pkBtn.title = 'Занадто далеко';
-        else if (h.inBattle && !h.canPkAttack) pkBtn.title = 'Гравець у чужому PvP';
-        else pkBtn.title = 'Недоступно';
-      } else {
+      titleLine.appendChild(levelSpan);
+
+      if (h.isPartyMember) {
+        var partyTag = document.createElement('span');
+        partyTag.className = 'l2-map-hero-party-tag';
+        partyTag.textContent = h.isPartyLeader ? ' · Паті★' : ' · Паті';
+        partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
+        titleLine.appendChild(partyTag);
+      }
+
+      main.appendChild(titleLine);
+
+      var actions = document.createElement('div');
+      actions.className = 'l2-map-hero-item__actions';
+
+      var profileLink = document.createElement('a');
+      profileLink.className = 'l2-map-hero-link__profile';
+      profileLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+      profileLink.textContent = '[профіль]';
+      actions.appendChild(profileLink);
+
+      if (h.showPkButton === true) {
+        var pkBtn = document.createElement('button');
+        pkBtn.type = 'button';
+        pkBtn.className = 'l2-map-hero-link__pk';
+        pkBtn.textContent = ' [PK]';
+        pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
         pkBtn.addEventListener('click', (function (heroId) {
           return function (e) {
             e.preventDefault();
@@ -235,10 +248,10 @@
             if (heroId) onPkClick(heroId);
           };
         })(h.characterId));
+        actions.appendChild(pkBtn);
       }
-      main.appendChild(nameLink);
-      main.appendChild(levelSpan);
-      main.appendChild(pkBtn);
+
+      main.appendChild(actions);
       li.appendChild(main);
       listEl.appendChild(li);
     }

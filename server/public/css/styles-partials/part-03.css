@@ -481,14 +481,51 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-map-hero-item__main {
   display: flex;
-  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.l2-map-hero-item__title {
+  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 0;
   min-width: 0;
   max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.l2-map-hero-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.l2-map-hero-party-tag {
+  flex: 0 0 auto;
+  color: #8ec8ff;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.l2-map-hero-link__profile {
+  flex: 0 0 auto;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #bfa88a;
+  text-decoration: none;
+}
+
+.l2-map-hero-link__profile:hover,
+.l2-map-hero-link__profile:focus {
+  color: #d4c4a8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .l2-map-hero-name-link {

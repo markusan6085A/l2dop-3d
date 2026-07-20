@@ -335,7 +335,11 @@
           ':' +
           String(h.distance != null ? h.distance : '') +
           ':' +
-          String(h.pvpNickColor || '')
+          String(h.pvpNickColor || '') +
+          ':' +
+          String(h.showPkButton ? 1 : 0) +
+          ':' +
+          String(h.isPartyMember ? 1 : 0)
       );
     }
     return String(heroes.length) + '|' + hp.join(',');
@@ -586,6 +590,9 @@
     main.className = 'l2-map-hero-item__main';
     applyHeroRowNickColor(main, h);
 
+    var titleLine = document.createElement('div');
+    titleLine.className = 'l2-map-hero-item__title';
+
     if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
       var identity = L2.renderPlayerIdentity({
         name: h.name,
@@ -593,48 +600,59 @@
         emblemSize: 16,
         pvpNickColor: h.pvpNickColor,
       });
-      var nameLink = document.createElement('a');
-      nameLink.className = 'l2-map-hero-name-link';
-      nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-      while (identity.firstChild) nameLink.appendChild(identity.firstChild);
-      main.appendChild(nameLink);
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'l2-map-hero-name-link';
+      while (identity.firstChild) nameSpan.appendChild(identity.firstChild);
+      titleLine.appendChild(nameSpan);
     } else {
-      var nameLink = document.createElement('a');
-      nameLink.className = 'l2-map-hero-name-link';
-      if (h.pvpNickColor === 'pk') nameLink.classList.add('l2-pvp-nick--pk');
-      else if (h.pvpNickColor === 'aggressor') nameLink.classList.add('l2-pvp-nick--aggressor');
-      nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-      nameLink.textContent = h.name || '—';
-      main.appendChild(nameLink);
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'l2-map-hero-name-link';
+      if (h.pvpNickColor === 'pk') nameSpan.classList.add('l2-pvp-nick--pk');
+      else if (h.pvpNickColor === 'aggressor') nameSpan.classList.add('l2-pvp-nick--aggressor');
+      nameSpan.textContent = h.name || '—';
+      titleLine.appendChild(nameSpan);
     }
 
     var levelSpan = document.createElement('span');
     levelSpan.className = 'l2-map-hero-level';
     levelSpan.textContent = heroLevelPart(h);
+    titleLine.appendChild(levelSpan);
 
-    var pkBtn = document.createElement('button');
-    pkBtn.type = 'button';
-    pkBtn.className = 'l2-map-hero-link__pk';
-    pkBtn.textContent = ' [pk]';
-    pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
-    var canPk = h.inBattleRange && h.canPkAttack !== false;
-    if (!canPk) {
-      pkBtn.disabled = true;
-      if (!h.inBattleRange) pkBtn.title = 'Занадто далеко';
-      else if (h.inBattle && !h.canPkAttack) pkBtn.title = 'Гравець у чужому PvP';
-      else pkBtn.title = 'Недоступно';
-    } else {
+    if (h.isPartyMember) {
+      var partyTag = document.createElement('span');
+      partyTag.className = 'l2-map-hero-party-tag';
+      partyTag.textContent = h.isPartyLeader ? ' · Паті★' : ' · Паті';
+      partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
+      titleLine.appendChild(partyTag);
+    }
+
+    main.appendChild(titleLine);
+
+    var actions = document.createElement('div');
+    actions.className = 'l2-map-hero-item__actions';
+
+    var profileLink = document.createElement('a');
+    profileLink.className = 'l2-map-hero-link__profile';
+    profileLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+    profileLink.textContent = '[профіль]';
+    actions.appendChild(profileLink);
+
+    if (h.showPkButton === true) {
+      var pkBtn = document.createElement('button');
+      pkBtn.type = 'button';
+      pkBtn.className = 'l2-map-hero-link__pk';
+      pkBtn.textContent = ' [PK]';
+      pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
       pkBtn.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var cid = h.characterId || '';
         if (cid) startPvpFromMap(cid);
       });
+      actions.appendChild(pkBtn);
     }
 
-    main.appendChild(nameLink);
-    main.appendChild(levelSpan);
-    main.appendChild(pkBtn);
+    main.appendChild(actions);
     li.appendChild(main);
     listEl.appendChild(li);
   }

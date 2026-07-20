@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { isPvpBattleJson } from '../domain/battlePvpContext.js';
 import { DUNGEON_NEARBY_RADIUS_PX } from '../domain/dungeonNearbyMobsQuery.js';
 import { resolveDungeonMovementPatch } from '../domain/dungeonMapMovement.js';
 import { parseDungeonStateJson } from '../domain/dungeonState.js';
@@ -9,6 +8,11 @@ import {
   resolvePvpNickColor,
   type PvpNickColor,
 } from '../domain/pvpKarma.js';
+import {
+  canPkAttackHeroBattleState,
+  resolveShowPkButton,
+} from '../domain/worldPvpEligibility.js';
+import { resolveDungeonCanonicalLocation } from '../domain/mapPlayfieldContext.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
 import { prisma } from '../lib/prisma.js';
@@ -26,6 +30,8 @@ export interface DungeonNearbyHeroEntry {
   inBattleRange: boolean;
   inBattle: boolean;
   canPkAttack: boolean;
+  showPkButton: boolean;
+  pvpAllowed: boolean;
   pvpNickColor: PvpNickColor;
   pk: number;
   isPartyMember?: boolean;
@@ -69,14 +75,6 @@ type DungeonHeroRow = Pick<
   | 'pvePendingDefeatJson'
 >;
 
-function canPkAttackHero(row: DungeonHeroRow, viewerCharacterId: string): boolean {
-  if (!row.battleJson) return true;
-  const bj = parseBattleJson(row.battleJson);
-  if (!bj) return false;
-  if (!isPvpBattleJson(bj)) return true;
-  return bj.pvpTargetCharacterId === viewerCharacterId;
-}
-
 /** Read-only: інші гравці в тому ж подземеллі в радіусі DUNGEON_NEARBY_RADIUS_PX. */
 export async function getNearbyHeroesForDungeon(
   dungeonId: string,
@@ -88,6 +86,8 @@ export async function getNearbyHeroesForDungeon(
   const key = String(dungeonId || '').trim();
   const exclude = String(excludeCharacterId || '').trim();
   if (!key || !exclude) return [];
+
+  const viewerLoc = resolveDungeonCanonicalLocation(key);
 
   const R = DUNGEON_NEARBY_RADIUS_PX;
   const R2 = R * R;
@@ -148,6 +148,20 @@ export async function getNearbyHeroesForDungeon(
       row.pvpAggressorUntilMs,
       nowMs
     );
+    const targetBj = row.battleJson ? parseBattleJson(row.battleJson) : null;
+    const pkAllowed = canPkAttackHeroBattleState(targetBj, exclude);
+    const isPartyMember = partyMemberIds.has(row.id);
+    const inBattleRange = d <= R;
+    const online = isCharacterOnlineNow(row.id);
+    const showPkButton = resolveShowPkButton({
+      viewerLocation: viewerLoc,
+      targetLocation: viewerLoc,
+      targetIsPartyMember: isPartyMember,
+      inBattleRange,
+      targetOnline: online,
+      targetCanPkAttack: pkAllowed,
+    });
+
     candidates.push({
       characterId: row.id,
       name: row.name,
@@ -155,12 +169,14 @@ export async function getNearbyHeroesForDungeon(
       mapX: hx,
       mapY: hy,
       distance: Math.round(d),
-      inBattleRange: d <= R,
+      inBattleRange,
       inBattle: row.battleJson != null,
-      canPkAttack: canPkAttackHero(row, exclude),
+      canPkAttack: pkAllowed,
+      showPkButton,
+      pvpAllowed: viewerLoc.pvpAllowed,
       pvpNickColor,
       pk: karma > 0 ? karma : 0,
-      isPartyMember: partyMemberIds.has(row.id),
+      isPartyMember,
       isPartyLeader: partyLeaderId === row.id,
     });
   }

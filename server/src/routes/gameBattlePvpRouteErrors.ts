@@ -8,6 +8,12 @@ const PVP_START_ERRORS: Record<string, string> = {
   pvp_self: 'Не можна атакувати себе.',
   pvp_target_safe: 'У місті та селищах PvP заборонено.',
   pvp_attacker_safe: 'З безпечної зони не можна атакувати.',
+  pvp_forbidden_zone: 'У цій локації PvP заборонено.',
+  pvp_location_mismatch: 'Гравець у іншій локації.',
+  pvp_party_member: 'Не можна атакувати члена паті.',
+  pvp_target_offline: 'Гравець офлайн.',
+  pvp_attacker_offline: 'Персонаж офлайн.',
+  pvp_target_dead: 'Ціль уже мертва.',
   already_in_battle: 'Спочатку заверши поточний бій.',
 };
 

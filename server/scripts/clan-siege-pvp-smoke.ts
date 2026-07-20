@@ -20,6 +20,7 @@ import { parseBattleJson } from '../src/services/battleServiceParseBattleJson.js
 import { performBattleActionInTx } from '../src/services/battleServicePerformBattleAction.js';
 import { getBattleSyncForUser } from '../src/services/battleServiceSync.js';
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
+import { touchOnlinePresence } from '../src/services/onlinePresenceService.js';
 import { parsePvpPendingDefeat } from '../src/domain/pvpPendingDefeat.js';
 import { ackPvpPendingDefeatForUser } from '../src/services/pvpPendingDefeatAckService.js';
 import {
@@ -137,6 +138,8 @@ async function syncPvpPair(args: {
       skillCooldownsJson: null,
     },
   });
+  await touchOnlinePresence(args.a.userId);
+  await touchOnlinePresence(args.b.userId);
 }
 
 async function registerParticipants(

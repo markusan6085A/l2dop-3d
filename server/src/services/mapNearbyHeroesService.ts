@@ -6,15 +6,20 @@ import {
   type MapMovementFields,
 } from '../domain/mapMovement.js';
 import {
-  isPvpBattleJson,
-} from '../domain/battlePvpContext.js';
+  isSameCanonicalMapLocation,
+  isWorldMapOpenPlayfield,
+  resolveCanonicalMapLocation,
+} from '../domain/mapPlayfieldContext.js';
+import {
+  canPkAttackHeroBattleState,
+  resolveShowPkButton,
+} from '../domain/worldPvpEligibility.js';
 import {
   resolvePvpNickColor,
   type PvpNickColor,
 } from '../domain/pvpKarma.js';
 import { prisma } from '../lib/prisma.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
-import { isInPvpSafeZone } from '../domain/pvpSafeZones.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
@@ -30,8 +35,12 @@ export interface NearbyHeroEntry {
   /** У радіусі атаки (BATTLE_RANGE). */
   inBattleRange: boolean;
   inBattle: boolean;
-  /** Можна натиснути [pk] — не зайнятий чужим PvP. */
+  /** Ціль не зайнята несумісним бою (для PK eligibility). */
   canPkAttack: boolean;
+  /** Показати кнопку [PK] на world map (server-authoritative). */
+  showPkButton: boolean;
+  /** PvP дозволено в поточній локації переглядача. */
+  pvpAllowed: boolean;
   /** Колір ніка: default | aggressor | pk */
   pvpNickColor: PvpNickColor;
   clanEmblemId: number | null;
@@ -40,7 +49,7 @@ export interface NearbyHeroEntry {
   l2Profession: string;
   /** Карма > 0 — для маркера PK. */
   pk: number;
-  /** Stage D: член поточної паті viewer. */
+  /** Член поточної паті viewer. */
   isPartyMember?: boolean;
   isPartyLeader?: boolean;
 }
@@ -74,6 +83,7 @@ const HERO_MAP_SELECT = {
   hp: true,
   pvpPendingDefeatJson: true,
   pvePendingDefeatJson: true,
+  dungeonStateJson: true,
   activeBuffsJson: true,
   buffHeroicTier: true,
   buffZealotStacks: true,
@@ -94,32 +104,30 @@ type HeroMapRow = MapMovementFields & {
   hp: number;
   pvpPendingDefeatJson: unknown;
   pvePendingDefeatJson: unknown;
+  dungeonStateJson: unknown;
   clan?: { emblemId: number | null } | null;
 };
 
-function canPkAttackHero(
-  row: HeroMapRow,
-  viewerCharacterId: string
-): boolean {
-  if (!row.battleJson) return true;
-  const bj = parseBattleJson(row.battleJson);
-  if (!bj) return false;
-  if (!isPvpBattleJson(bj)) return true;
-  return bj.pvpTargetCharacterId === viewerCharacterId;
-}
-
-/** Read-only: герої в радіусі MAP_NEARBY_HERO_RADIUS (без мутацій позиції в БД). */
+/** Read-only: онлайн-герої в тій самій canonical world location + червоний радіус. */
 export async function getNearbyHeroesForMap(
   worldX: number,
   worldY: number,
   excludeCharacterId: string,
   nowMs: number = Date.now(),
-  partyContext: NearbyHeroesPartyContext | null = null
+  partyContext: NearbyHeroesPartyContext | null = null,
+  viewerDungeonStateJson?: unknown | null
 ): Promise<NearbyHeroEntry[]> {
   const R = MAP_NEARBY_HERO_RADIUS;
   const R2 = R * R;
   const exclude = String(excludeCharacterId || '').trim();
   if (!exclude) return [];
+
+  const viewerLoc = resolveCanonicalMapLocation({
+    worldX,
+    worldY,
+    dungeonStateJson: viewerDungeonStateJson,
+  });
+  if (!isWorldMapOpenPlayfield(viewerLoc)) return [];
 
   const rows = await prisma.character.findMany({
     where: {
@@ -140,11 +148,20 @@ export async function getNearbyHeroesForMap(
     const dx = hx - worldX;
     const dy = hy - worldY;
     if (dx * dx + dy * dy > R2) continue;
-    if (isInPvpSafeZone(hx, hy)) continue;
+
+    const targetLoc = resolveCanonicalMapLocation({
+      worldX: hx,
+      worldY: hy,
+      dungeonStateJson: row.dungeonStateJson,
+    });
+    if (!isWorldMapOpenPlayfield(targetLoc)) continue;
+    if (!isSameCanonicalMapLocation(viewerLoc, targetLoc)) continue;
+
     if (!isCharacterOnlineNow(row.id)) continue;
     if (Math.max(0, Math.floor(Number(row.hp) || 0)) <= 0) continue;
     if (parsePvpPendingDefeat(row.pvpPendingDefeatJson)) continue;
     if (parsePvePendingDefeat(row.pvePendingDefeatJson)) continue;
+
     const d = Math.hypot(dx, dy);
     const karma = Math.max(0, Math.floor(Number(row.karma) || 0));
     const pvpNickColor = resolvePvpNickColor(
@@ -152,11 +169,23 @@ export async function getNearbyHeroesForMap(
       row.pvpAggressorUntilMs,
       nowMs
     );
-    const pkAllowed = canPkAttackHero(row, exclude);
+    const targetBj = row.battleJson ? parseBattleJson(row.battleJson) : null;
+    const pkAllowed = canPkAttackHeroBattleState(targetBj, exclude);
     const isPartyMember =
       partyContext != null && partyContext.memberIds.has(row.id);
     const isPartyLeader =
       isPartyMember && partyContext!.leaderCharacterId === row.id;
+    const inBattleRange = d <= BATTLE_RANGE;
+    const online = isCharacterOnlineNow(row.id);
+    const showPkButton = resolveShowPkButton({
+      viewerLocation: viewerLoc,
+      targetLocation: targetLoc,
+      targetIsPartyMember: isPartyMember,
+      inBattleRange,
+      targetOnline: online,
+      targetCanPkAttack: pkAllowed,
+    });
+
     candidates.push({
       characterId: row.id,
       name: row.name,
@@ -164,18 +193,19 @@ export async function getNearbyHeroesForMap(
       worldX: hx,
       worldY: hy,
       distance: Math.round(d),
-      inBattleRange: d <= BATTLE_RANGE,
+      inBattleRange,
       inBattle: row.battleJson != null,
       canPkAttack: pkAllowed,
+      showPkButton,
+      pvpAllowed: viewerLoc.pvpAllowed,
       pvpNickColor,
       clanEmblemId: row.clan?.emblemId ?? null,
-      isOnline: isCharacterOnlineNow(row.id),
+      isOnline: online,
       gender: row.gender || 'male',
       l2Profession: row.l2Profession || '',
       pk: karma > 0 ? karma : 0,
-      ...(partyContext
-        ? { isPartyMember, isPartyLeader }
-        : {}),
+      isPartyMember,
+      isPartyLeader,
     });
   }
 
