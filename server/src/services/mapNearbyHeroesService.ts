@@ -22,7 +22,7 @@ import { prisma } from '../lib/prisma.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
-import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
+import { isPvpTargetUnavailableForWorldPk } from '../domain/pvpPendingDefeat.js';
 
 /** Герой у радіусі обзору карти (як nearbySpawns для мобів). */
 export interface NearbyHeroEntry {
@@ -184,8 +184,7 @@ export async function getNearbyHeroesForMap(
     if (!isSameCanonicalMapLocation(viewerLoc, targetLoc)) continue;
 
     if (!isCharacterOnlineNow(row.id)) continue;
-    if (Math.max(0, Math.floor(Number(row.hp) || 0)) <= 0) continue;
-    if (parsePvpPendingDefeat(row.pvpPendingDefeatJson)) continue;
+    if (isPvpTargetUnavailableForWorldPk(row)) continue;
     if (parsePvePendingDefeat(row.pvePendingDefeatJson)) continue;
 
     const d = Math.hypot(dx, dy);

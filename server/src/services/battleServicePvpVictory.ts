@@ -7,7 +7,6 @@ import {
 import { computeVitals } from '../data/l2dopVitals.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import { parseInventory } from '../data/inventory.js';
-import { resolveNearestTownTeleport } from '../data/mapLocalities.js';
 import type { BattleJsonState } from '../domain/battle.js';
 import { MAX_BATTLE_LOG } from '../domain/battle.js';
 import { worldCombatStateFromBattleJson } from '../domain/worldCombatState.js';
@@ -147,20 +146,13 @@ export async function persistPvpVictoryInTx(
     };
 
     if (worldPk) {
-      const town =
-        vCr != null
-          ? resolveNearestTownTeleport(vCr.worldX, vCr.worldY)
-          : null;
-      if (!town) throw new Error('teleport_unknown');
       Object.assign(victimPatch, {
-        worldX: town.worldX,
-        worldY: town.worldY,
         targetX: 0,
         targetY: 0,
         moveStartAt: null,
-        moveFromX: town.worldX,
-        moveFromY: town.worldY,
-        cityId: town.cityId,
+        ...(vCr
+          ? { moveFromX: vCr.worldX, moveFromY: vCr.worldY }
+          : {}),
       });
     } else if (siegeCityId) {
       victimPatch.cityId = siegeCityId;

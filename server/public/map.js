@@ -539,20 +539,205 @@
     mainEl.style.setProperty('--l2-map-hero-nick-color', heroNickHex(h) || '#bfa88a');
   }
 
-  function handlePvpDefeatRedirect(sync) {
-    if (!sync || !sync.pvpDefeat) return;
-    if (sync.pvpDefeat.scope === 'clan_siege') return;
-    window.location.replace('/battle.html?pvpDeath=1');
+  var lastMapSyncRevision = null;
+  var mapSyncInFlight = false;
+  var mapPollTimer = null;
+  var mapPollStopped = false;
+  var mapDefeatReturnInFlight = false;
+  var shownMapDeathEventIds = {};
+
+  function stopMapPoll() {
+    mapPollStopped = true;
+    if (mapPollTimer != null) {
+      clearInterval(mapPollTimer);
+      mapPollTimer = null;
+    }
+  }
+
+  function latestMapCharacterRevision() {
+    if (window.L2 && typeof L2.lastSnapshot === 'function') {
+      var snap = L2.lastSnapshot();
+      if (snap && typeof snap.revision === 'number') {
+        return Math.floor(snap.revision);
+      }
+    }
+    return null;
+  }
+
+  function shouldRejectIncomingMapSync(sync) {
+    if (mapPollStopped) return true;
+    if (!sync || typeof sync !== 'object') return false;
+    if (window.L2 && typeof L2.lastSnapshot === 'function') {
+      var cur = L2.lastSnapshot();
+      if (
+        cur &&
+        typeof cur.revision === 'number' &&
+        typeof sync.revision === 'number' &&
+        Math.floor(sync.revision) < Math.floor(cur.revision)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function renderMapDefeatLog(el, lines) {
+    if (!el) return;
+    el.innerHTML = '';
+    if (!lines || !lines.length) return;
+    for (var li = 0; li < lines.length; li++) {
+      var row = document.createElement('div');
+      row.className = 'l2-battle-log__line';
+      row.textContent = String(lines[li]);
+      el.appendChild(row);
+    }
+  }
+
+  function showMapDefeatBlock(defeat, kind) {
+    var defRoot = $('map-defeat-root');
+    if (!defRoot) return false;
+    var deathId =
+      defeat && defeat.deathEventId ? String(defeat.deathEventId) : '';
+    if (deathId && shownMapDeathEventIds[deathId]) return true;
+    if (deathId) shownMapDeathEventIds[deathId] = true;
+
+    defRoot.hidden = false;
+    var mobHead = $('map-defeat-mobhead');
+    var shout = $('map-defeat-shout');
+    var hint = $('map-defeat-town-hint');
+    var dlog = $('map-defeat-log');
+
+    if (kind === 'pvp') {
+      if (mobHead) mobHead.textContent = '';
+      if (shout) {
+        shout.textContent =
+          defeat && defeat.messageUk
+            ? defeat.messageUk
+            : 'Вас вбив гравець [' + (defeat.killerName || '—') + ']!';
+      }
+    } else {
+      if (mobHead && defeat) {
+        mobHead.textContent =
+          (defeat.mobName || '—') +
+          (defeat.mobLevel != null ? ' · ур. ' + defeat.mobLevel : '');
+      }
+      if (shout) shout.textContent = 'Тебе переміг монстр!';
+    }
+    if (hint) {
+      hint.textContent =
+        'Натисни «Повернутися в місто» — опинишся у найближчому селищі.';
+    }
+    if (dlog) {
+      var tail =
+        defeat && defeat.fullLog && defeat.fullLog.length
+          ? defeat.fullLog.slice(-40)
+          : [];
+      renderMapDefeatLog(dlog, tail);
+    }
+    if (defeat && defeat.deathEventId && kind === 'pvp') {
+      void fetch('/game/battle/pvp-defeat/ack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + (localStorage.getItem('token') || ''),
+        },
+        body: JSON.stringify({
+          deathEventId: String(defeat.deathEventId),
+          ...((window.L2 && L2.lastSnapshot && L2.lastSnapshot() && L2.lastSnapshot().id)
+            ? { characterId: L2.lastSnapshot().id }
+            : {}),
+        }),
+      }).catch(function () {
+        /* ignore */
+      });
+    }
+    return true;
+  }
+
+  function handleMapDefeatFromSync(sync, snapshot) {
+    if (sync && sync.pvpDefeat && sync.pvpDefeat.scope !== 'clan_siege') {
+      if (snapshot && sync.pvpDefeat) {
+        snapshot.pvpDefeat = sync.pvpDefeat;
+      }
+      return showMapDefeatBlock(sync.pvpDefeat, 'pvp');
+    }
+    var snap =
+      snapshot ||
+      (window.L2 && typeof L2.lastSnapshot === 'function'
+        ? L2.lastSnapshot()
+        : null);
+    if (snap && snap.pveDefeat) {
+      return showMapDefeatBlock(snap.pveDefeat, 'pve');
+    }
+    if (sync && sync.pveDefeat) {
+      return showMapDefeatBlock(sync.pveDefeat, 'pve');
+    }
+    return false;
+  }
+
+  async function mapReturnToTownAndGoCity() {
+    if (mapDefeatReturnInFlight) return;
+    mapDefeatReturnInFlight = true;
+    stopMapPoll();
+    try {
+      var rev = latestMapCharacterRevision();
+      if (rev == null) return;
+      var t = localStorage.getItem('token');
+      if (!t) return;
+      var r = await fetch('/game/battle/return-to-town', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + t,
+        },
+        body: JSON.stringify({ expectedRevision: rev }),
+      });
+      if (r.status === 409 && window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+        var conflict = null;
+        try {
+          conflict = await r.json();
+        } catch (e409) {
+          /* ignore */
+        }
+        await L2.resyncCharacterAfterConflict(function (snap) {
+          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(snap);
+        }, conflict);
+        rev = latestMapCharacterRevision();
+        if (rev == null) return;
+        r = await fetch('/game/battle/return-to-town', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + t,
+          },
+          body: JSON.stringify({ expectedRevision: rev }),
+        });
+      }
+      if (!r.ok) return;
+      var payload = await r.json();
+      if (!payload || !payload.character) return;
+      if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(payload.character);
+      } else if (window.L2 && L2.setLastSnapshot) {
+        L2.setLastSnapshot(payload.character);
+      }
+      try {
+        sessionStorage.removeItem('l2-battle-page-context-v1');
+      } catch (eCtx) {
+        /* ignore */
+      }
+      window.location.replace('/city.html');
+    } finally {
+      mapDefeatReturnInFlight = false;
+    }
+  }
+
+  function handlePvpDefeatRedirect(sync, snapshot) {
+    return handleMapDefeatFromSync(sync, snapshot);
   }
 
   function handlePveDefeatRedirect(sync, snapshot) {
-    if (window.L2 && typeof L2.redirectToPveDefeatScreen === 'function') {
-      if (sync && sync.pveDefeat && L2.redirectToPveDefeatScreen({ pveDefeat: sync.pveDefeat })) {
-        return true;
-      }
-      if (snapshot && L2.redirectToPveDefeatScreen(snapshot)) return true;
-    }
-    return false;
+    return handleMapDefeatFromSync(sync, snapshot);
   }
 
   function isPveDefeatPendingErrorBody(ej) {
@@ -1227,6 +1412,7 @@
     function applyMapSyncPayload(sync, opts) {
       opts = opts || {};
       if (!sync || !sync.mapState) return false;
+      if (shouldRejectIncomingMapSync(sync)) return false;
 
       applyMapRadiiFromSync(sync);
 
@@ -1268,8 +1454,7 @@
         }
         applyPvpIncomingFromSync(sync);
         if (!opts.skipDefeatRedirect) {
-          handlePvpDefeatRedirect(sync);
-          if (handlePveDefeatRedirect(sync, c)) return 'redirect';
+          handleMapDefeatFromSync(sync, c);
         }
         renderHeroList(aroundData, heroList, heroSection);
         renderHeroMarkers(img, heroMarkersLayer, (aroundData && aroundData.nearbyHeroes) || []);
@@ -1335,8 +1520,7 @@
       worldSpawns = sync.spawns || [];
       applyPvpIncomingFromSync(sync);
       if (!opts.skipDefeatRedirect) {
-        handlePvpDefeatRedirect(sync);
-        if (handlePveDefeatRedirect(sync, c)) return 'redirect';
+        handleMapDefeatFromSync(sync, c);
       }
       paintMain(!!opts.centerOnPlayer);
       renderMobMarkers(img, markersLayer, worldSpawns, markerSig);
@@ -1857,7 +2041,7 @@
     }
 
     var poll = setInterval(async function () {
-      if (mapSyncInFlight) return;
+      if (mapSyncInFlight || mapPollStopped) return;
       mapSyncInFlight = true;
       try {
         var sync = await loadMapSync();
@@ -1866,9 +2050,17 @@
         mapSyncInFlight = false;
       }
     }, MAP_POLL_MS);
+    mapPollTimer = poll;
+
+    var mapDefeatTownBtn = $('map-defeat-tocity');
+    if (mapDefeatTownBtn) {
+      mapDefeatTownBtn.addEventListener('click', function () {
+        void mapReturnToTownAndGoCity();
+      });
+    }
 
     window.addEventListener('beforeunload', function () {
-      clearInterval(poll);
+      stopMapPoll();
     });
   }
 

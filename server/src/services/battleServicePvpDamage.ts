@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
 import type { BattleJsonState } from '../domain/battleTypes.js';
 import { nextPvpAggressorUntilMs } from '../domain/pvpKarma.js';
+import { isPvpTargetUnavailableForWorldPk } from '../domain/pvpPendingDefeat.js';
 import { deflectArrowIncomingPhysMulFromActiveBuffs } from '../data/deflectArrowTables.js';
 import { rollPhysicalMirrorReflect } from '../domain/physicalMirrorReflect.js';
 import type { PhysicalMirrorReflectKind } from '../domain/physicalMirrorReflect.js';
@@ -33,8 +34,9 @@ export async function applyPvpHitToVictimInTx(
 
   const victimPre = await tx.character.findFirst({
     where: { id: victimId },
-    select: { activeBuffsJson: true, battleJson: true },
+    select: { activeBuffsJson: true, battleJson: true, hp: true, pvpPendingDefeatJson: true },
   });
+  if (!victimPre || isPvpTargetUnavailableForWorldPk(victimPre)) return {};
 
   if (args.isBowAttack === true && victimPre) {
     const mul = deflectArrowIncomingPhysMulFromActiveBuffs(

@@ -38,6 +38,16 @@ function legacyDeathEventId(pending: {
   );
 }
 
+/** Жертва world PK / pending respawn — не валідна ціль для нового удару або nearbyHeroes. */
+export function isPvpTargetUnavailableForWorldPk(row: {
+  hp?: number | null;
+  pvpPendingDefeatJson?: unknown;
+}): boolean {
+  const hp = Math.max(0, Math.floor(Number(row.hp) || 0));
+  if (hp <= 0) return true;
+  return parsePvpPendingDefeat(row.pvpPendingDefeatJson) != null;
+}
+
 export function parsePvpPendingDefeat(raw: unknown): PvpPendingDefeat | null {
   if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const r = raw as Record<string, unknown>;

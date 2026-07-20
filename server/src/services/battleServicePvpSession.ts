@@ -42,6 +42,7 @@ import {
   characterBlocksWorldPvpStart,
 } from '../domain/worldPvpEligibility.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
+import { isPvpTargetUnavailableForWorldPk } from '../domain/pvpPendingDefeat.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { battleViewFromState, skillCooldownUiContextFromRow } from './battleServiceBattleUi.js';
 import type { BattleView } from './battleServiceTypes.js';
@@ -416,6 +417,9 @@ export async function resumePlayerPvpBattleInTx(
     include: { clan: { select: { emblemId: true } } },
   });
   if (!targetRow) throw new Error('pvp_target_unknown');
+  if (isPvpTargetUnavailableForWorldPk(targetRow)) {
+    throw new Error('pvp_target_dead');
+  }
   const opp = resolvePvpTargetCombatFromRow(targetRow as CharacterRow, {
     allowPassiveRegen: false,
   });
@@ -448,6 +452,13 @@ export async function startPvpBattleInTx(
       existingBj.pvpTargetCharacterId === targetId &&
       resolvePlayerCombatMode(existingBj) === 'world'
     ) {
+      const resumeTarget = await tx.character.findFirst({
+        where: { id: targetId },
+        select: { hp: true, pvpPendingDefeatJson: true },
+      });
+      if (!resumeTarget || isPvpTargetUnavailableForWorldPk(resumeTarget)) {
+        throw new Error('pvp_target_dead');
+      }
       return resumePlayerPvpBattleInTx(
         tx,
         attackerRow as CharacterRow,
@@ -495,14 +506,16 @@ export async function startPvpBattleInTx(
     throw new Error('pvp_party_member');
   }
 
+  if (isPvpTargetUnavailableForWorldPk(targetRow)) {
+    throw new Error('pvp_target_dead');
+  }
+
   const attackerLevel = levelFromTotalExp(attackerRow.exp);
   const targetLevel = levelFromTotalExp(targetRow.exp);
   if (!canCharactersFightWorldPvp(attackerLevel, targetLevel)) {
     throw new Error('pvp_level_difference_too_high');
   }
 
-  const targetHp = Math.max(0, Math.floor(Number(targetRow.hp) || 0));
-  if (targetHp <= 0) throw new Error('pvp_target_dead');
 
   if (characterBlocksWorldPvpStart(existingBj)) {
     throw new Error('already_in_battle');

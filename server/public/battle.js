@@ -3173,10 +3173,6 @@
           },
           body: JSON.stringify(body),
         });
-        if (character && character.pvpDefeat) {
-          delete character.pvpDefeat;
-          if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
-        }
       } catch (_eAck) {
         /* ignore — повторний показ на siege.html */
       }
@@ -3241,10 +3237,11 @@
             : 'Вас вбив гравець [' + (pvpDefeat.killerName || '—') + ']!';
       }
       var hint = $('battle-defeat-town-hint');
-      if (hint) {
-        hint.textContent = isSiege
-          ? 'Ви більше не можете атакувати на цій облозі.'
-          : 'Натисни «Повернутися в місто» або «Город» — опинишся у найближчому селищі.';
+      if (hint && !isSiege) {
+        hint.textContent =
+          'Натисни «Повернутися в місто» — опинишся у найближчому селищі.';
+      } else if (hint) {
+        hint.textContent = 'Ви більше не можете атакувати на цій облозі.';
       }
       var toCityBtn = $('battle-defeat-tocity');
       if (toCityBtn) {
@@ -3615,6 +3612,13 @@
       if (active) active.hidden = true;
       if (defRoot) defRoot.hidden = false;
       var isPvpDef = defeat && defeat.isPvp && defeat.killerName;
+      var siegeBtn = $('battle-defeat-siege');
+      if (siegeBtn) {
+        siegeBtn.hidden = !(
+          defeat &&
+          defeat.scope === 'clan_siege'
+        );
+      }
       if (isPvpDef) {
         var mobHead = $('battle-defeat-mobhead');
         if (mobHead) mobHead.textContent = '';
@@ -3634,10 +3638,15 @@
       }
       var hint = $('battle-defeat-town-hint');
       if (hint && defeat) {
-        hint.textContent =
-          tr('battle_defeat_hint_prefix', 'Тебе віднесли до ') +
-          defeat.nearestTownLabelUk +
-          tr('battle_defeat_hint_suffix', '. Натисни «Повернутися в місто».');
+        if (defeat.scope === 'clan_siege') {
+          hint.textContent =
+            tr('battle_defeat_hint_prefix', 'Тебе віднесли до ') +
+            defeat.nearestTownLabelUk +
+            tr('battle_defeat_hint_suffix', '. Натисни «Повернутися в місто».');
+        } else {
+          hint.textContent =
+            'Натисни «Повернутися в місто» — опинишся у найближчому селищі.';
+        }
       }
       var dlog = $('battle-defeat-log');
       if (dlog && defeat && defeat.fullLog) {
@@ -4075,10 +4084,19 @@
           return;
         }
         character = resT.character;
-        if (window.L2 && L2.setLastSnapshot) L2.setLastSnapshot(character);
+        if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+          L2.applyCharacterSnapshot(resT.character);
+        } else if (window.L2 && L2.setLastSnapshot) {
+          L2.setLastSnapshot(character);
+        }
         clearDefeatFromSession();
         battle = null;
         stopBattleSyncPoll();
+        try {
+          sessionStorage.removeItem('l2-battle-page-context-v1');
+        } catch (eCtx) {
+          /* ignore */
+        }
         window.location.replace('/city.html');
       });
     }

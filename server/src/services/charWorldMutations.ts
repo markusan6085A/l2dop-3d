@@ -8,6 +8,7 @@ import {
 import {
   getTeleportDestination,
   getTeleportAdenaCost,
+  getCityHubTeleportDestination,
   nearestMapTown,
 } from '../data/mapLocalities.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
@@ -28,6 +29,7 @@ import {
   prepareCharacterAfterDefeatInTx,
   forceClearActiveBattleForReturnToTownInTx,
 } from './battleServiceDefeatSanitize.js';
+import { touchOnlinePresence } from './onlinePresenceService.js';
 import { RB_TELEPORT_ADENA_COST } from './raidBossListService.js';
 
 function hadDungeonState(row: CharacterRow): boolean {
@@ -349,7 +351,7 @@ export async function performReturnToNearestTown(
   userId: string,
   expectedRevision: number
 ): Promise<CharacterSnapshot> {
-  return prisma.$transaction(async (tx) => {
+  const snapshot = await prisma.$transaction(async (tx) => {
     let char = (await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
@@ -370,7 +372,9 @@ export async function performReturnToNearestTown(
       (current) => {
         const base = normalizePassiveAndMove(current as CharacterRow);
         const near = nearestMapTown(base.worldX, base.worldY);
-        const dest = getTeleportDestination(near.teleportId);
+        const dest =
+          getCityHubTeleportDestination(near.cityId) ??
+          getTeleportDestination(near.teleportId);
         if (!dest) throw new Error('teleport_unknown');
         const wx = Math.floor(dest.worldX);
         const wy = Math.floor(dest.worldY);
@@ -419,4 +423,6 @@ export async function performReturnToNearestTown(
     if (!result.ok) throw gameConflictFromMutation(result);
     return toSnapshot(result.character as CharacterRow);
   });
+  await touchOnlinePresence(userId);
+  return snapshot;
 }

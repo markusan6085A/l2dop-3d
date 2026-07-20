@@ -577,7 +577,11 @@ async function testSiegePvpDefeatEventSyncAndAck(): Promise<void> {
   const victimAfter = await prisma.character.findUniqueOrThrow({
     where: { id: b.characterId },
   });
-  assert.equal(victimAfter.pvpPendingDefeatJson, null);
+  assert.ok(
+    parsePvpPendingDefeat(victimAfter.pvpPendingDefeatJson),
+    'ack must not clear pending before respawn'
+  );
+  ok('pvp defeat ack idempotent without clearing pending');
 
   const part = await prisma.clanSiegeParticipant.findFirst({
     where: { siegeId: siege.id, characterId: b.characterId },

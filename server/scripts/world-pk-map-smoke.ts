@@ -23,7 +23,7 @@ import {
 import { isInPvpSafeZone } from '../src/domain/pvpSafeZones.js';
 import { BATTLE_RANGE } from '../src/domain/battle.js';
 import { serializeDungeonState } from '../src/domain/dungeonState.js';
-import { resolveMapLocality, getTeleportDestination } from '../src/data/mapLocalities.js';
+import { resolveMapLocality, getTeleportDestination, nearestMapTown, getCityHubTeleportDestination } from '../src/data/mapLocalities.js';
 import {
   canCharactersFightWorldPvp,
   MAX_WORLD_PVP_LEVEL_DIFFERENCE,
@@ -33,9 +33,13 @@ import {
 import { resolveCanonicalMapLocation } from '../src/domain/mapPlayfieldContext.js';
 import { prisma } from '../src/lib/prisma.js';
 import { startBattleInTx } from '../src/services/battleServiceSession.js';
+import { performBattleActionInTx } from '../src/services/battleServicePerformBattleAction.js';
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
 import { getMapSyncForUser } from '../src/services/charMapStateService.js';
 import { getNearbyHeroesForMap } from '../src/services/mapNearbyHeroesService.js';
+import { performReturnToNearestTown } from '../src/services/charWorldMutations.js';
+import { ackPvpPendingDefeatForUser } from '../src/services/pvpPendingDefeatAckService.js';
+import { parsePvpPendingDefeat } from '../src/domain/pvpPendingDefeat.js';
 import { getNearbyHeroesForDungeon } from '../src/services/dungeonNearbyHeroesService.js';
 import {
   getOnlinePresenceSnapshot,
@@ -79,13 +83,14 @@ async function createAccountAtLevel(
   const lv = Math.max(1, Math.min(80, Math.floor(level)));
   const exp = L2DOP_LEVEL_MIN_EXP[lv - 1]!;
   const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const charName = `W${suffix.replace(/[^a-zA-Z0-9]/g, '')}`.slice(0, 16);
   const user = await prisma.user.create({
     data: {
       login: `wpk_${label}_${suffix}`,
       password: await bcrypt.hash('test123', 8),
       characters: {
         create: {
-          name: `W${label}${suffix.slice(-4)}`.slice(0, 16),
+          name: charName,
           race: 'Human',
           classBranch: 'fighter',
           level: lv,
@@ -821,6 +826,160 @@ async function testPkBattleStart(): Promise<void> {
   ok('cannot attack out of battle range');
 }
 
+async function testWorldPkDeathRespawnFlow(): Promise<void> {
+  console.log('\n[world PK death respawn]');
+
+  const fod = getTeleportDestination('forest_of_the_dead');
+  assert.ok(fod, 'forest_of_the_dead teleport must exist');
+  const ax = Math.floor(fod.worldX) + 1200;
+  const ay = Math.floor(fod.worldY) + 900;
+
+  const attacker = await createAccountAtLevel('pkA', 22);
+  const victim = await createAccountAtLevel('pkV', 10);
+  await placeOnline(attacker, ax, ay);
+  await placeOnline(victim, ax + 400, ay);
+
+  await prisma.character.update({
+    where: { id: victim.characterId },
+    data: { hp: 1 },
+  });
+
+  const atk0 = await prisma.character.findUniqueOrThrow({
+    where: { id: attacker.characterId },
+  });
+  await prisma.$transaction((tx) =>
+    startPvpBattleInTx(tx, attacker.userId, victim.characterId, atk0.revision)
+  );
+
+  let atkRow = await prisma.character.findUniqueOrThrow({
+    where: { id: attacker.characterId },
+  });
+  let res = await prisma.$transaction((tx) =>
+    performBattleActionInTx(tx, attacker.userId, 'attack', atkRow.revision, {
+      characterId: attacker.characterId,
+    })
+  );
+  for (let attempt = 0; attempt < 16 && (!res.victory || res.kind !== 'full'); attempt++) {
+    await new Promise((r) => setTimeout(r, 400));
+    atkRow = await prisma.character.findUniqueOrThrow({
+      where: { id: attacker.characterId },
+    });
+    if (!atkRow.battleJson) break;
+    res = await prisma.$transaction((tx) =>
+      performBattleActionInTx(tx, attacker.userId, 'attack', atkRow.revision, {
+        characterId: attacker.characterId,
+      })
+    );
+  }
+  assert.equal(res.kind, 'full');
+  assert.ok(res.victory, 'attacker must win world PK');
+
+  const victimRow = await prisma.character.findUniqueOrThrow({
+    where: { id: victim.characterId },
+  });
+  assert.equal(victimRow.battleJson, null);
+  const pending = parsePvpPendingDefeat(victimRow.pvpPendingDefeatJson);
+  assert.ok(pending, 'victim must have pending world PK defeat');
+  assert.equal(pending!.scope, 'world');
+  ok('victim marked dead/defeated after world PK kill');
+
+  const heroesAfterKill = await getNearbyHeroesForMap(
+    ax,
+    ay,
+    attacker.characterId
+  );
+  assert.ok(
+    !heroesAfterKill.some((h) => h.characterId === victim.characterId),
+    'defeated victim must not appear in nearbyHeroes'
+  );
+  ok('victim absent from attacker nearbyHeroes while pending defeat');
+
+  await expectPvpStartBlockedNoMutation(
+    attacker,
+    victim.characterId,
+    'pvp_target_dead'
+  );
+  ok('repeat PK start blocked for defeated target');
+
+  assert.ok(pending!.deathEventId);
+  await ackPvpPendingDefeatForUser(
+    victim.userId,
+    pending!.deathEventId,
+    victim.characterId
+  );
+  const victimAfterAck = await prisma.character.findUniqueOrThrow({
+    where: { id: victim.characterId },
+  });
+  assert.ok(
+    parsePvpPendingDefeat(victimAfterAck.pvpPendingDefeatJson),
+    'ack must not clear pending before return-to-town'
+  );
+  ok('pvp defeat ack leaves pending until respawn');
+
+  const victimBeforeRespawn = await prisma.character.findUniqueOrThrow({
+    where: { id: victim.characterId },
+  });
+  const respawnSnap = await performReturnToNearestTown(
+    victim.userId,
+    victimBeforeRespawn.revision
+  );
+  assert.equal(respawnSnap.pvpDefeat, null);
+  assert.ok(respawnSnap.worldX != null && respawnSnap.worldY != null);
+
+  const victimAfterRespawn = await prisma.character.findUniqueOrThrow({
+    where: { id: victim.characterId },
+  });
+  assert.equal(victimAfterRespawn.pvpPendingDefeatJson, null);
+  const near = nearestMapTown(ax, ay);
+  const hub =
+    getCityHubTeleportDestination(near.cityId) ??
+    getTeleportDestination(near.teleportId);
+  assert.ok(hub);
+  assert.equal(victimAfterRespawn.worldX, Math.floor(hub!.worldX));
+  assert.equal(victimAfterRespawn.worldY, Math.floor(hub!.worldY));
+  assert.equal(victimAfterRespawn.cityId, hub!.cityId);
+  ok('return-to-town sets canonical city hub and clears pending');
+
+  const presence = await getOnlinePresenceSnapshot('name');
+  const onlineVictim = presence.players.find(
+    (p) => p.characterId === victim.characterId
+  );
+  assert.ok(onlineVictim, 'victim must remain online after respawn');
+  assert.equal(onlineVictim!.cityId, hub!.cityId);
+  ok('presence reflects city location immediately after respawn');
+
+  const heroesAfterRespawn = await getNearbyHeroesForMap(
+    ax,
+    ay,
+    attacker.characterId
+  );
+  assert.ok(
+    !heroesAfterRespawn.some((h) => h.characterId === victim.characterId),
+    'respawned victim must not appear on old map sync'
+  );
+  ok('attacker nearbyHeroes still excludes respawned victim');
+
+  const syncAttacker = await getMapSyncForUser(attacker.userId);
+  assert.ok(syncAttacker);
+  assert.ok(
+    !syncAttacker!.around.nearbyHeroes.some(
+      (h) => h.characterId === victim.characterId
+    )
+  );
+  ok('attacker /game/map/sync excludes respawned victim');
+
+  await expectPvpStartBlockedNoMutation(
+    attacker,
+    victim.characterId,
+    'pvp_location_mismatch'
+  );
+  ok('repeat POST attack on respawned victim blocked (location mismatch)');
+
+  await prisma.user.deleteMany({
+    where: { id: { in: [attacker.userId, victim.userId] } },
+  });
+}
+
 async function main(): Promise<void> {
   console.log('world-pk-map smoke\n');
   await testPlayerMapVisibility();
@@ -830,6 +989,7 @@ async function main(): Promise<void> {
   await testWorldPvpZoneClassification();
   await testPkEligibility();
   await testPkBattleStart();
+  await testWorldPkDeathRespawnFlow();
   console.log('\n' + passed + ' passed');
 }
 

@@ -854,6 +854,18 @@ export function getTeleportDestination(
   return MAP_TOWNS.find((t) => t.teleportId === id);
 }
 
+/** Головний хаб міста (Rune/Giran/…) для respawn після смерті — не якір полювання. */
+export function getCityHubTeleportDestination(
+  cityId: string
+): MapTownRef | undefined {
+  const cid = String(cityId || '').trim();
+  if (!cid) return undefined;
+  const hubTeleportId = cid.replace(/^l2dop_/, '');
+  const hub = getTeleportDestination(hubTeleportId);
+  if (hub && hub.cityId === cid) return hub;
+  return MAP_TOWNS.find((t) => t.cityId === cid);
+}
+
 export const TELEPORT_DEFAULT_ADENA_COST = 1;
 
 /** Вартість телепорту в адені для пункту (після 40 рівня). */

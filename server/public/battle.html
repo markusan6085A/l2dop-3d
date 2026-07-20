@@ -55,6 +55,53 @@
           <div id="l2-nav-top"></div>
           <div id="l2-hud-panel-mount"></div>
 
+          <section
+            id="battle-defeat-root"
+            class="l2-battle-defeat-root"
+            hidden
+            data-i18n-attr="aria-label:battle_defeat_aria"
+            aria-label="Поразка"
+          >
+            <p class="l2-battle-defeat-mobhead" id="battle-defeat-mobhead"></p>
+            <div class="l2-battle-defeat-notify">
+              <div class="l2-battle-defeat-notify__title-row">
+                <span class="l2-battle-defeat-notify__skull" aria-hidden="true">☠</span>
+                <span class="l2-battle-defeat-notify__shout" data-i18n="battle_defeat_shout"
+                  >Тебе переміг монстр!</span
+                >
+              </div>
+              <p class="l2-battle-defeat-notify__hint" id="battle-defeat-town-hint"></p>
+              <div class="l2-battle-defeat-notify__divider" aria-hidden="true"></div>
+              <div class="l2-battle-defeat-loghead">
+                <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--left" aria-hidden="true"></span>
+                <span class="l2-battle-defeat-loghead__text" data-i18n="battle_log_title">Лог бою</span>
+                <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--right" aria-hidden="true"></span>
+              </div>
+              <div class="l2-battle-defeat-logbox">
+                <div
+                  class="l2-battle-log l2-battle-log--colored l2-battle-log--defeat"
+                  id="battle-defeat-log"
+                ></div>
+              </div>
+              <button
+                type="button"
+                class="l2-battle-defeat-tocity"
+                id="battle-defeat-tocity"
+                data-i18n="battle_defeat_tocity"
+              >
+                Повернутися в місто
+              </button>
+              <button
+                type="button"
+                class="l2-battle-defeat-tocity l2-battle-defeat-siege"
+                id="battle-defeat-siege"
+                hidden
+              >
+                Повернутися до облоги
+              </button>
+            </div>
+          </section>
+
           <p class="err" id="battle-load-err" hidden></p>
 
           <div id="battle-content" hidden>
@@ -203,53 +250,6 @@
               hidden
               aria-hidden="true"
             ></section>
-
-            <section
-              id="battle-defeat-root"
-              class="l2-battle-defeat-root"
-              hidden
-              data-i18n-attr="aria-label:battle_defeat_aria"
-              aria-label="Поразка"
-            >
-              <p class="l2-battle-defeat-mobhead" id="battle-defeat-mobhead"></p>
-              <div class="l2-battle-defeat-notify">
-                <div class="l2-battle-defeat-notify__title-row">
-                  <span class="l2-battle-defeat-notify__skull" aria-hidden="true">☠</span>
-                  <span class="l2-battle-defeat-notify__shout" data-i18n="battle_defeat_shout"
-                    >Тебе переміг монстр!</span
-                  >
-                </div>
-                <p class="l2-battle-defeat-notify__hint" id="battle-defeat-town-hint"></p>
-                <div class="l2-battle-defeat-notify__divider" aria-hidden="true"></div>
-                <div class="l2-battle-defeat-loghead">
-                  <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--left" aria-hidden="true"></span>
-                  <span class="l2-battle-defeat-loghead__text" data-i18n="battle_log_title">Лог бою</span>
-                  <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--right" aria-hidden="true"></span>
-                </div>
-                <div class="l2-battle-defeat-logbox">
-                  <div
-                    class="l2-battle-log l2-battle-log--colored l2-battle-log--defeat"
-                    id="battle-defeat-log"
-                  ></div>
-                </div>
-                <button
-                  type="button"
-                  class="l2-battle-defeat-tocity"
-                  id="battle-defeat-tocity"
-                  data-i18n="battle_defeat_tocity"
-                >
-                  Повернутися в місто
-                </button>
-                <button
-                  type="button"
-                  class="l2-battle-defeat-tocity l2-battle-defeat-siege"
-                  id="battle-defeat-siege"
-                  hidden
-                >
-                  Повернутися до облоги
-                </button>
-              </div>
-            </section>
           </div>
 
           <div id="l2-nav-bottom"></div>
@@ -261,6 +261,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/battle-hotbar.js?v=20260716atkCd1"></script>
-    <script src="/battle.js?v=20260719siegeDeathFix1"></script>
+    <script src="/battle.js?v=20260720worldPkDeathRespawn1"></script>
   </body>
 </html>

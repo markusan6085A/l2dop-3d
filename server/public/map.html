@@ -54,6 +54,41 @@
         <div class="l2-screen-inner l2-map-root">
           <div id="l2-hud-panel-mount"></div>
 
+          <section
+            id="map-defeat-root"
+            class="l2-battle-defeat-root"
+            hidden
+            aria-label="Поразка"
+          >
+            <p class="l2-battle-defeat-mobhead" id="map-defeat-mobhead"></p>
+            <div class="l2-battle-defeat-notify">
+              <div class="l2-battle-defeat-notify__title-row">
+                <span class="l2-battle-defeat-notify__skull" aria-hidden="true">☠</span>
+                <span class="l2-battle-defeat-notify__shout" id="map-defeat-shout">Тебе переміг монстр!</span>
+              </div>
+              <p class="l2-battle-defeat-notify__hint" id="map-defeat-town-hint"></p>
+              <div class="l2-battle-defeat-notify__divider" aria-hidden="true"></div>
+              <div class="l2-battle-defeat-loghead">
+                <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--left" aria-hidden="true"></span>
+                <span class="l2-battle-defeat-loghead__text">Лог бою</span>
+                <span class="l2-battle-defeat-loghead__line l2-battle-defeat-loghead__line--right" aria-hidden="true"></span>
+              </div>
+              <div class="l2-battle-defeat-logbox">
+                <div
+                  class="l2-battle-log l2-battle-log--colored l2-battle-log--defeat"
+                  id="map-defeat-log"
+                ></div>
+              </div>
+              <button
+                type="button"
+                class="l2-battle-defeat-tocity"
+                id="map-defeat-tocity"
+              >
+                Повернутися в місто
+              </button>
+            </div>
+          </section>
+
           <div id="l2-nav-top"></div>
 
           <p class="err" id="map-load-err" hidden></p>
@@ -207,6 +242,6 @@
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
     <script src="/mapHeroRowRender.js?v=20260720worldPkVisible1"></script>
-    <script src="/map.js?v=20260720worldPkVisible1"></script>
+    <script src="/map.js?v=20260720worldPkDeathRespawn1"></script>
   </body>
 </html>

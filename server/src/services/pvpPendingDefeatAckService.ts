@@ -1,8 +1,7 @@
-import { Prisma } from '@prisma/client';
 import { parsePvpPendingDefeat } from '../domain/pvpPendingDefeat.js';
 import { prisma } from '../lib/prisma.js';
 
-/** POST ack — idempotent, без Character.revision++. */
+/** POST ack — idempotent notice only; pending defeat clears on return-to-town respawn. */
 export async function ackPvpPendingDefeatForUser(
   userId: string,
   deathEventId: string,
@@ -27,11 +26,6 @@ export async function ackPvpPendingDefeatForUser(
   if (pending.deathEventId !== eventId) {
     throw new Error('invalid_input');
   }
-
-  await prisma.character.update({
-    where: { id: char.id },
-    data: { pvpPendingDefeatJson: Prisma.JsonNull },
-  });
 
   return { ok: true };
 }
