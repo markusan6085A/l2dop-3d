@@ -257,7 +257,7 @@
 
     var modalEn =
       opts.enchant != null && Number.isFinite(Number(opts.enchant))
-        ? Math.max(0, Math.min(20, Math.floor(Number(opts.enchant))))
+        ? Math.max(0, Math.min(25, Math.floor(Number(opts.enchant))))
         : 0;
     var qty = opts.qty != null ? Number(opts.qty) : 1;
     if (!Number.isFinite(qty) || qty < 1) qty = 1;

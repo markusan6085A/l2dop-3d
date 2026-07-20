@@ -5,7 +5,7 @@
  * - M.Atk від заточки зброї: under*3 + over*6 (sums.php біля зброї).
  */
 
-const MAX_ENCHANT = 20;
+const MAX_ENCHANT = 25;
 
 /** sums.php: якщо bonus <= 3 — усе в «under», інакше under=3, over=bonus-3 */
 export function splitEnchant(total: number): { under: number; over: number } {

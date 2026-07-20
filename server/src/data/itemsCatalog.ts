@@ -35,6 +35,7 @@ import {
   L2DOP_ITEM_INVENTORY_TAB,
   type L2ItemInventoryTabHint,
 } from './l2dopItemInventoryTab.generated.js';
+import { ENCHANT_SCROLL_DEFINITIONS } from './enchantScrollCatalog.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { dropsShopConsumableGearCatalogExtras } from './dropsShopConsumableGearExtras.js';
 import { dropsShopGearCatalogExtras } from './dropsShopGearCatalogExtras.js';
@@ -370,6 +371,9 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
     3031: { nameUk: 'Spirit Ore' },
     6519: { nameUk: 'Наживка' },
   };
+  for (const scroll of ENCHANT_SCROLL_DEFINITIONS) {
+    CONSUMABLE_CATALOG_STUBS[scroll.itemId] = { nameUk: scroll.nameUk };
+  }
   for (const [idStr, row] of Object.entries(CONSUMABLE_CATALOG_STUBS)) {
     const id = Number(idStr);
     if (!Number.isFinite(id) || id <= 0 || o[id]) continue;
@@ -506,6 +510,13 @@ export function itemGradeHintsForClient(): Record<number, string> {
     out[Number(idStr)] = g;
   }
   return out;
+}
+
+export function itemGradeForItemId(itemId: number): string | null {
+  const map = itemGradeHintsForClient();
+  const raw = map[itemId];
+  if (raw == null || String(raw).trim() === '') return null;
+  return String(raw).trim().toUpperCase();
 }
 
 /**
@@ -672,6 +683,9 @@ const ITEM_INVENTORY_TAB_EXTRA: Partial<
   3031: 'resource',
   6519: 'resource',
 };
+for (const scroll of ENCHANT_SCROLL_DEFINITIONS) {
+  ITEM_INVENTORY_TAB_EXTRA[scroll.itemId] = 'enchantment';
+}
 
 export function itemInventoryTabHintsForClient(): Record<
   number,

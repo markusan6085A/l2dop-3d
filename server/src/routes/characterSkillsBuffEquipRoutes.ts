@@ -19,6 +19,7 @@ import {
   GameConflictError,
 } from '../services/charService.js';
 import { learnSkillForUser } from '../services/skillLearnService.js';
+import { MAX_ENCHANT_LEVEL } from '../data/enchantConfig.js';
 
 /** POST skills/learn, persisted-combat-buffs, equip. */
 export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): void {
@@ -518,7 +519,7 @@ export function registerCharacterSkillsBuffEquipRoutes(app: FastifyInstance): vo
           const enRaw = body.enchant;
           const enchant =
             typeof enRaw === 'number' && Number.isFinite(enRaw)
-              ? Math.max(0, Math.min(20, Math.floor(enRaw)))
+              ? Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(enRaw)))
               : 0;
           const debugDelay = parseSnapshotDebugDelayMs(request);
           const character = await applyEquipFromBag(

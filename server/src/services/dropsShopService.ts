@@ -13,6 +13,7 @@ import { DROPS_SHOP_ARROW_ROWS } from '../data/dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.js';
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
 import { DROPS_SHOP_RESOURCE_ROWS } from '../data/dropsShopResourcesCatalog.js';
+import { DROPS_SHOP_ENCHANT_SCROLL_ROWS } from '../data/dropsShopEnchantScrollsCatalog.js';
 import { prisma } from '../lib/prisma.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
@@ -72,6 +73,10 @@ import {
   type DropsShopArmorPiece,
   type DropsShopJewelrySubtype,
 } from '../domain/dropsShopGearSubtypes.js';
+import {
+  enchantScrollByItemId,
+  enchantScrollShopDescriptionUk,
+} from '../data/enchantScrollCatalog.js';
 
 export type { DropsShopWeaponSubtype } from '../domain/dropsShopWeaponSubtype.js';
 export type {
@@ -84,7 +89,8 @@ export type DropsShopConsumableSubtype =
   | 'vials'
   | 'arrows'
   | 'charges'
-  | 'resources';
+  | 'resources'
+  | 'enchantment';
 
 export interface DropsShopOverrideEntry {
   itemId: number;
@@ -405,6 +411,22 @@ function rowToClient(
       out.consumableSubtype = 'charges';
     } else if (keyNorm.startsWith('consumable/resource_')) {
       out.consumableSubtype = 'resources';
+    } else if (keyNorm.startsWith('consumable/enchant_scroll_')) {
+      out.consumableSubtype = 'enchantment';
+    }
+  }
+
+  if (row.category === 'consumable' && itemId != null) {
+    const scroll = enchantScrollByItemId(itemId);
+    if (scroll) {
+      out.statsPreview = {
+        lines: [
+          {
+            labelUk: 'Призначення',
+            valueUk: enchantScrollShopDescriptionUk(scroll.target, scroll.grade),
+          },
+        ],
+      };
     }
   }
 
@@ -434,6 +456,7 @@ export function buildDropsShopCatalogForClient(): {
     DROPS_SHOP_ARROW_ROWS,
     DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
     DROPS_SHOP_RESOURCE_ROWS,
+    DROPS_SHOP_ENCHANT_SCROLL_ROWS,
   );
   for (const row of allCatalogRows) {
     const arr = byGrade.get(row.grade);
@@ -487,6 +510,7 @@ export async function applyDropsShopPurchase(
     DROPS_SHOP_ARROW_ROWS,
     DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
     DROPS_SHOP_RESOURCE_ROWS,
+    DROPS_SHOP_ENCHANT_SCROLL_ROWS,
   );
   const row = allRows.find((r) => {
     const rk = r.shopKey.replace(/\\/g, '/');

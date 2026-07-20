@@ -2,6 +2,7 @@ import type { ArmorTypeKind, ItemSlotKind } from './itemsCatalog.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import type { WeaponKindForEnchant } from './l2dopEnchant.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
+import { MAX_ENCHANT_LEVEL } from './enchantConfig.js';
 
 /**
  * Версія стартового набору в сумці; піднімаємо при зміні складу старту.
@@ -121,7 +122,7 @@ function normEnchant(e: unknown): number {
   if (e == null) return 0;
   const n = Math.floor(Number(e));
   if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(MAX_ENCHANT, n));
+  return Math.max(0, Math.min(MAX_ENCHANT_LEVEL, n));
 }
 
 /** Рядок сумки: qty предметів з однаковою заточкою (як окремий рядок у l2dop users_items). */
@@ -210,8 +211,6 @@ export function equippedArmorKindForPassives(
 export function emptyInventory(): InventoryState {
   return { v: 1, stacks: [], eq: {} };
 }
-
-const MAX_ENCHANT = 20;
 
 /**
  * Старі маги без мантії: один раз додати tunic/stockings у сумку й одягнути, якщо слоти порожні.

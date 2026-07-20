@@ -13,6 +13,7 @@ import { applyPassiveHpRegen } from './charPassiveRegen.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
+import { MAX_ENCHANT_LEVEL } from '../data/enchantConfig.js';
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
   return resolveMapMovement(applyPassiveHpRegen(row));
@@ -48,7 +49,7 @@ function normEnchant(e: unknown): number {
   if (e == null) return 0;
   const n = Math.floor(Number(e));
   if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(20, n));
+  return Math.max(0, Math.min(MAX_ENCHANT_LEVEL, n));
 }
 
 async function transferWarehouse(

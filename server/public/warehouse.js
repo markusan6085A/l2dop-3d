@@ -29,6 +29,15 @@
       .trim();
   }
 
+  function formatEnchantedName(name, enchant) {
+    if (window.L2 && typeof L2.formatEnchantedItemName === 'function') {
+      return L2.formatEnchantedItemName(name, enchant);
+    }
+    var en = Number(enchant);
+    if (!Number.isFinite(en) || en <= 0) return String(name || '');
+    return '+' + String(Math.floor(en)) + ' ' + String(name || '');
+  }
+
   function itemIconUrlForId(id) {
     if (window.L2 && typeof L2.resolveItemIconUrl === 'function') {
       return L2.resolveItemIconUrl(id, '/icons/drops/other.svg');
@@ -274,8 +283,7 @@
 
       var name = document.createElement('div');
       name.className = itemNameClasses(itemId);
-      var line = warehouseShortName(itemId) + qtySuffix(qty);
-      if (enchant > 0) line += ' +' + enchant;
+      var line = formatEnchantedName(warehouseShortName(itemId), enchant) + qtySuffix(qty);
       name.textContent = line;
       mid.appendChild(name);
 

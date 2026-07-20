@@ -21,7 +21,7 @@
     var qty = Number(q.get('qty'));
     if (!Number.isFinite(itemId) || itemId <= 0) return null;
     if (!Number.isFinite(enchant) || enchant < 0) enchant = 0;
-    if (enchant > 20) enchant = 20;
+    if (enchant > 25) enchant = 25;
     if (!Number.isFinite(qty) || qty <= 0) qty = 1;
     return { itemId: itemId, enchant: enchant, qty: Math.floor(qty) };
   }
@@ -32,6 +32,15 @@
     }
     var n = window.L2 && L2.itemNameById && L2.itemNameById[id];
     return n != null ? n : '#' + id;
+  }
+
+  function formatEnchantedName(name, enchant) {
+    if (window.L2 && typeof L2.formatEnchantedItemName === 'function') {
+      return L2.formatEnchantedItemName(name, enchant);
+    }
+    var en = Math.floor(Number(enchant));
+    if (!Number.isFinite(en) || en <= 0) return String(name || '');
+    return '+' + String(en) + ' ' + String(name || '');
   }
 
   function itemIconUrlForId(id) {
@@ -180,8 +189,9 @@
       window.L2 && typeof L2.itemNameClassNames === 'function'
         ? L2.itemNameClassNames(ctx.itemId, 'l2-char-bag-name')
         : 'l2-char-bag-name';
-    var line = itemDisplayName(ctx.itemId) + qtySuffix(ctx.qty);
-    if (ctx.enchant > 0) line += ' +' + ctx.enchant;
+    var line =
+      formatEnchantedName(itemDisplayName(ctx.itemId), ctx.enchant) +
+      qtySuffix(ctx.qty);
     name.textContent = line;
     mid.appendChild(name);
 

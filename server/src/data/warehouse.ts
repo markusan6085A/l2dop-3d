@@ -6,6 +6,7 @@ import {
   removeEnchantedFromBag,
   type InventoryState,
 } from './inventory.js';
+import { MAX_ENCHANT_LEVEL } from './enchantConfig.js';
 
 export const DEFAULT_WAREHOUSE_MAX_SLOTS = 100;
 export const DEFAULT_BAG_MAX_SLOTS = 80;
@@ -27,7 +28,7 @@ function normEnchant(e: unknown): number {
   if (e == null) return 0;
   const n = Math.floor(Number(e));
   if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(20, n));
+  return Math.max(0, Math.min(MAX_ENCHANT_LEVEL, n));
 }
 
 export function emptyWarehouse(): WarehouseState {

@@ -27,6 +27,15 @@
     return n != null ? n : '#' + id;
   }
 
+  function formatEnchantedName(name, enchant) {
+    if (window.L2 && typeof L2.formatEnchantedItemName === 'function') {
+      return L2.formatEnchantedItemName(name, enchant);
+    }
+    var en = Math.floor(Number(enchant));
+    if (!Number.isFinite(en) || en <= 0) return String(name || '');
+    return '+' + String(en) + ' ' + String(name || '');
+  }
+
   function itemIconUrlForId(id) {
     if (window.L2 && typeof L2.resolveItemIconUrl === 'function') {
       return L2.resolveItemIconUrl(id, '/icons/drops/other.svg');
@@ -237,8 +246,7 @@
         encodeURIComponent(String(enchant)) +
         '&qty=' +
         encodeURIComponent(String(qty));
-      var line = itemDisplayName(itemId) + qtySuffix(itemId, qty);
-      if (enchant > 0) line += ' +' + enchant;
+      var line = formatEnchantedName(itemDisplayName(itemId), enchant) + qtySuffix(itemId, qty);
       name.textContent = line;
       mid.appendChild(name);
 

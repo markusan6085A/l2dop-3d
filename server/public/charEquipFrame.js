@@ -49,7 +49,7 @@
 
   function eqItemEnchant(slotVal) {
     if (slotVal && typeof slotVal === 'object' && slotVal.enchant != null) {
-      return Math.max(0, Math.min(20, Math.floor(Number(slotVal.enchant))));
+      return Math.max(0, Math.min(25, Math.floor(Number(slotVal.enchant))));
     }
     return 0;
   }

@@ -49,8 +49,7 @@
   function setSellCongrats(stack, qty, totalAdena) {
     var el = $('sell-items-msg');
     if (!el) return;
-    var name = itemDisplayName(stack.itemId);
-    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    var name = formatEnchantedName(itemDisplayName(stack.itemId), stack.enchant);
     el.hidden = false;
     el.classList.remove('err');
     el.classList.add('l2-drops-shop-purchase-ok');
@@ -87,8 +86,7 @@
   }
 
   function buildSellCongratsMsg(stack, qty, totalAdena) {
-    var name = itemDisplayName(stack.itemId);
-    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    var name = formatEnchantedName(itemDisplayName(stack.itemId), stack.enchant);
     var q = Math.max(1, Math.floor(Number(qty) || 1));
     var adenaStr = formatAdena(totalAdena);
     if (q > 1) {
@@ -140,6 +138,15 @@
     var n = map[id] != null ? map[id] : map[String(id)];
     if (n != null && String(n).trim() !== '') return String(n).trim();
     return '#' + id;
+  }
+
+  function formatEnchantedName(name, enchant) {
+    if (window.L2 && typeof L2.formatEnchantedItemName === 'function') {
+      return L2.formatEnchantedItemName(name, enchant);
+    }
+    var en = Math.floor(Number(enchant));
+    if (!Number.isFinite(en) || en <= 0) return String(name || '');
+    return '+' + String(en) + ' ' + String(name || '');
   }
 
   function itemShowsStats(itemId) {
@@ -609,8 +616,7 @@
     var tit = el.querySelector('[data-sell-confirm-title]');
     var msg = el.querySelector('[data-sell-confirm-msg]');
     var ok = el.querySelector('[data-sell-confirm-ok]');
-    var name = itemDisplayName(stack.itemId);
-    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    var name = formatEnchantedName(itemDisplayName(stack.itemId), stack.enchant);
     var total = sellTotalFor(stack.itemId, maxQty);
     if (tit) tit.textContent = 'Продаж';
     if (msg) {
@@ -649,8 +655,7 @@
     var inp = el.querySelector('[data-sell-qty-input]');
     var totalEl = el.querySelector('[data-sell-qty-total]');
     var ok = el.querySelector('[data-sell-qty-confirm]');
-    var name = itemDisplayName(stack.itemId);
-    if (stack.enchant > 0) name += ' +' + stack.enchant;
+    var name = formatEnchantedName(itemDisplayName(stack.itemId), stack.enchant);
     if (tit) tit.textContent = 'Продаж: ' + name;
     if (unitEl) {
       unitEl.textContent =
@@ -814,8 +819,7 @@
       window.L2 && typeof L2.itemNameClassNames === 'function'
         ? L2.itemNameClassNames(stack.itemId, 'l2-sell-items-row__name')
         : 'l2-sell-items-row__name';
-    var label = itemDisplayName(stack.itemId);
-    if (stack.enchant > 0) label += ' +' + stack.enchant;
+    var label = formatEnchantedName(itemDisplayName(stack.itemId), stack.enchant);
     if (stack.qty > 1) label += ' ×' + stack.qty;
     name.textContent = label;
 

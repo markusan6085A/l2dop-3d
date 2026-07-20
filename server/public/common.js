@@ -679,6 +679,14 @@
       if (!grade || global.L2.itemNameAlreadyShowsGrade(name, grade)) return name;
       return name + ' [' + grade + ']';
     },
+    formatEnchantedItemName: function (itemName, enchantLevel) {
+      var base = String(itemName == null ? '' : itemName).trim();
+      var en = Math.floor(Number(enchantLevel));
+      if (!Number.isFinite(en) || en < 0) en = 0;
+      if (!base) return en > 0 ? '+' + String(en) : '';
+      if (en <= 0) return base;
+      return '+' + String(en) + ' ' + base;
+    },
     itemNameClassNames: function (itemId, baseClass) {
       var base =
         baseClass != null && String(baseClass).trim() !== ''

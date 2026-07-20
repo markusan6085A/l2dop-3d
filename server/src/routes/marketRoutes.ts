@@ -17,6 +17,7 @@ import {
   sendGameConflict,
 } from './routeHttpHelpers.js';
 import { handleMarketRouteError } from './marketRouteErrors.js';
+import { MAX_ENCHANT_LEVEL } from '../data/enchantConfig.js';
 
 function parseMarketListBody(b: Record<string, unknown>) {
   const itemId = Number(b.itemId);
@@ -24,7 +25,7 @@ function parseMarketListBody(b: Record<string, unknown>) {
   const enRaw = b.enchant;
   const enchant =
     typeof enRaw === 'number' && Number.isFinite(enRaw)
-      ? Math.max(0, Math.min(20, Math.floor(enRaw)))
+      ? Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(enRaw)))
       : 0;
   const qtyRaw = b.qty;
   let qty: number | undefined;

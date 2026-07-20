@@ -18,6 +18,7 @@ import { DROPS_SHOP_CATALOG } from '../data/dropsShopCatalog.generated.js';
 import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.js';
 import { DROPS_SHOP_ARROW_ROWS } from '../data/dropsShopArrowsCatalog.js';
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
+import { DROPS_SHOP_ENCHANT_SCROLL_ROWS } from '../data/dropsShopEnchantScrollsCatalog.js';
 import { dropsShopRelPathFromGmIcon } from '../domain/dropsShopGmItemIdByShopKey.js';
 import type { DropsShopCatalogRow } from '../data/dropsShopCatalog.generated.js';
 import type { DropsShopOverrideEntry } from './dropsShopService.js';
@@ -32,6 +33,7 @@ import {
   shopSellTotalAdena,
   shopSellUnitAdenaFromBuyPrice,
 } from '../domain/shopSellPricing.js';
+import { MAX_ENCHANT_LEVEL } from '../data/enchantConfig.js';
 
 type OverridesMap = Record<string, DropsShopOverrideEntry>;
 
@@ -66,7 +68,8 @@ function buildBuyPriceByItemId(): Map<number, number> {
   const allRows = DROPS_SHOP_CATALOG.concat(
     DROPS_SHOP_CONSUMABLE_ROWS,
     DROPS_SHOP_ARROW_ROWS,
-    DROPS_SHOP_FIGHTER_SOULSHOT_ROWS
+    DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+    DROPS_SHOP_ENCHANT_SCROLL_ROWS
   );
   for (const row of allRows) {
     const offer = resolveBuyOfferForRow(row, overrides);
@@ -152,7 +155,7 @@ export function buildShopSellPricesForClient(): Record<string, number> {
 
 function normEnchant(raw: unknown): number {
   if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
-  return Math.max(0, Math.min(20, Math.floor(raw)));
+  return Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(raw)));
 }
 
 export async function applyShopSell(

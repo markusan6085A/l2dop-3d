@@ -13,6 +13,7 @@ import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { resolveMapMovement } from '../domain/mapMovement.js';
 import { COIN_OF_LUCK_ITEM_ID } from '../domain/dailyQuestRewards.js';
+import { MAX_ENCHANT_LEVEL } from '../data/enchantConfig.js';
 
 export interface MarketListingView {
   id: string;
@@ -41,7 +42,7 @@ function normEnchant(e: unknown): number {
   if (e == null) return 0;
   const n = Math.floor(Number(e));
   if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(20, n));
+  return Math.max(0, Math.min(MAX_ENCHANT_LEVEL, n));
 }
 
 function resolveQty(

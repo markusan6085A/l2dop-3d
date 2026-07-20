@@ -15,6 +15,7 @@ import { registerClanSiegeRoutes } from './clanSiegeRoutes.js';
 import { registerPartyRoutes } from './partyRoutes.js';
 import { registerDragonDungeonRoutes } from './dragonDungeonRoutes.js';
 import { registerClanTaskRoutes } from './clanTaskRoutes.js';
+import { registerGameInventoryEnchantRoutes } from './gameInventoryEnchantRoutes.js';
 
 export const gameRoutes: FastifyPluginAsync = async (app) => {
   registerGameIconRoutes(app);
@@ -22,6 +23,7 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
   registerGameNewsRoutes(app);
   registerGameBattleRoutes(app);
   registerGameResourceCraftRoutes(app);
+  registerGameInventoryEnchantRoutes(app);
   registerGameAncientTraderRoutes(app);
   registerGameOnlineRoutes(app);
   registerGameRatingsRoutes(app);
