@@ -61,6 +61,9 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host {
   max-width: var(--l2s-chrome-column-w) !important;
   margin-left: auto;
   margin-right: auto;
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
   /* CLS-safe дефолт: без вертикального підскоку колонки при пізньому CSS. */
   margin-top: calc(-1 * var(--l2s-chrome-column-lift, 0px));
   min-height: auto !important;
@@ -89,7 +92,7 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   --l2f-bottom-nudge: 1px;
   --l2f-side-x-nudge: 3px;
   --l2f-side-line-inset: 3px;
-  --l2f-top-corner-x-nudge: 3px;
+  --l2f-top-corner-x-nudge: 0px;
   --l2f-side-line-width: 24px;
   content: "" !important;
   display: block !important;
@@ -100,6 +103,9 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  box-sizing: border-box !important;
+  background-origin: border-box;
+  background-clip: border-box;
   background-image:
     url('/assets/assets/top-left.png?v=20260705globalFrame1'),
     url('/assets/assets/top-right.png?v=20260705globalFrame1'),
@@ -119,8 +125,8 @@ html body.l2-app-l2-chrome .l2-screen.l2-outer-sframe-host::after {
     repeat-y,
     repeat-y;
   background-position:
-    left calc(0px - var(--l2f-top-corner-x-nudge)) top,
-    right calc(0px - var(--l2f-top-corner-x-nudge)) top,
+    top left,
+    top right,
     left calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
     right calc(0px - var(--l2f-side-x-nudge)) bottom var(--l2f-bottom-nudge),
     top center,
