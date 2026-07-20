@@ -591,9 +591,24 @@
     }
   }
 
+  function clearMapDefeatBlockContent() {
+    var mobHead = $('map-defeat-mobhead');
+    var shout = $('map-defeat-shout');
+    var hint = $('map-defeat-town-hint');
+    var dlog = $('map-defeat-log');
+    if (mobHead) mobHead.textContent = '';
+    if (shout) shout.textContent = '';
+    if (hint) hint.textContent = '';
+    if (dlog) dlog.textContent = '';
+  }
+
   function hideMapDefeatBlock() {
+    clearMapDefeatBlockContent();
     var defRoot = $('map-defeat-root');
-    if (defRoot) defRoot.hidden = true;
+    if (defRoot) {
+      defRoot.hidden = true;
+      defRoot.style.display = 'none';
+    }
   }
 
   function clearStaleDefeatFromSnapshot(snap) {
@@ -634,6 +649,7 @@
     if (dedupeKey) shownMapDeathEventIds[dedupeKey] = true;
 
     defRoot.hidden = false;
+    defRoot.style.display = '';
     var mobHead = $('map-defeat-mobhead');
     var shout = $('map-defeat-shout');
     var hint = $('map-defeat-town-hint');
@@ -1264,6 +1280,11 @@
   async function init() {
     initialMapSyncResolved = false;
     hideMapDefeatBlock();
+    try {
+      sessionStorage.removeItem('l2battle_pending_defeat_v1');
+    } catch (eDefeatInit) {
+      /* ignore */
+    }
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
         onStub: function (label) {
@@ -1602,7 +1623,11 @@
         },
         isMapDefeatVisible: function () {
           var defRoot = $('map-defeat-root');
-          return !!(defRoot && !defRoot.hidden);
+          return !!(
+            defRoot &&
+            !defRoot.hidden &&
+            defRoot.style.display !== 'none'
+          );
         },
       };
       return;

@@ -20,12 +20,32 @@
     return initialBattleSyncResolved;
   }
 
-  function hideDefeatUiPendingSync() {
+  function clearDefeatBlockContent() {
     var defRoot =
       typeof document !== 'undefined'
         ? document.getElementById('battle-defeat-root')
         : null;
-    if (defRoot) defRoot.hidden = true;
+    if (!defRoot) return;
+    var mobHead = document.getElementById('battle-defeat-mobhead');
+    var hint = document.getElementById('battle-defeat-town-hint');
+    var dlog = document.getElementById('battle-defeat-log');
+    if (mobHead) mobHead.textContent = '';
+    if (hint) hint.textContent = '';
+    if (dlog) dlog.textContent = '';
+    var shout = defRoot.querySelector('.l2-battle-defeat-notify__shout');
+    if (shout) shout.textContent = '';
+  }
+
+  function hideDefeatUiPendingSync() {
+    clearDefeatBlockContent();
+    var defRoot =
+      typeof document !== 'undefined'
+        ? document.getElementById('battle-defeat-root')
+        : null;
+    if (defRoot) {
+      defRoot.hidden = true;
+      defRoot.style.display = 'none';
+    }
   }
 
   function markInitialBattleSyncResolved() {
@@ -34,6 +54,7 @@
 
   function resetInitialBattleSyncGate() {
     initialBattleSyncResolved = false;
+    clearDefeatFromSession();
     hideDefeatUiPendingSync();
   }
 
@@ -45,7 +66,11 @@
       hideDefeatUiPendingSync: hideDefeatUiPendingSync,
       isDefeatRootVisible: function () {
         var defRoot = document.getElementById('battle-defeat-root');
-        return !!(defRoot && !defRoot.hidden);
+        return !!(
+          defRoot &&
+          !defRoot.hidden &&
+          defRoot.style.display !== 'none'
+        );
       },
       tryShowDefeat: function (defeat, showFn) {
         if (!canRenderDefeatUi() || !defeat) return false;
@@ -2106,15 +2131,6 @@
         return true;
       }
       if (!battle) {
-        if (initialBattleSyncResolved) {
-          var savedDefFull = loadDefeatFromSession();
-          if (savedDefFull) {
-            renderPlayerBars(character);
-            showDefeatScreen(savedDefFull);
-            stopBattleSyncPoll();
-            return true;
-          }
-        }
         return false;
       }
       refreshBattleUI(false);
@@ -2441,15 +2457,6 @@
           return true;
         }
         if (!battle) {
-          if (initialBattleSyncResolved) {
-            var savedDef = loadDefeatFromSession();
-            if (savedDef) {
-              renderPlayerBars(character);
-              showDefeatScreen(savedDef);
-              stopBattleSyncPoll();
-              return true;
-            }
-          }
           return false;
         }
         refreshBattleUI(false);
@@ -2542,15 +2549,6 @@
         return 'abort';
       }
       if (!battle) {
-        if (initialBattleSyncResolved) {
-          var savedDef = loadDefeatFromSession();
-          if (savedDef) {
-            renderPlayerBars(character);
-            showDefeatScreen(savedDef);
-            stopBattleSyncPoll();
-            return 'abort';
-          }
-        }
         refreshUI();
         return 'abort';
       }
@@ -3291,7 +3289,10 @@
       var active = $('battle-active-root');
       var defRoot = $('battle-defeat-root');
       if (active) active.hidden = true;
-      if (defRoot) defRoot.hidden = false;
+      if (defRoot) {
+        defRoot.hidden = false;
+        defRoot.style.display = '';
+      }
       var isSiege = isSiegePvpDefeat(pvpDefeat);
       var mobHead = $('battle-defeat-mobhead');
       if (mobHead) {
@@ -3495,6 +3496,7 @@
       frozenBattleUi = battle;
       clearLocalBattleStateAfterVictory();
       clearDefeatFromSession();
+      hideDefeatUiPendingSync();
       if (isPvpVictory(victory)) {
         clearPvpBattlePageContext(
           victory && victory.spawnId != null
@@ -3536,6 +3538,8 @@
     }
 
     function showVictoryScreen(victory, partyReward) {
+      hideDefeatUiPendingSync();
+      clearDefeatFromSession();
       setMobVictoryUiState(true);
       lastVictorySummary = victory || null;
       saveVictoryToSession(victory);
@@ -3545,7 +3549,10 @@
       var vicInline = $('battle-victory-inline');
       var vicRoot = $('battle-victory-root');
       if (active) active.hidden = false;
-      if (defRoot) defRoot.hidden = true;
+      if (defRoot) {
+        defRoot.hidden = true;
+        defRoot.style.display = 'none';
+      }
       if (vicRoot) vicRoot.hidden = true;
       if (vicInline) vicInline.hidden = false;
       var isPvpVic = isPvpVictory(victory);
@@ -3681,7 +3688,10 @@
       var active = $('battle-active-root');
       var defRoot = $('battle-defeat-root');
       if (active) active.hidden = true;
-      if (defRoot) defRoot.hidden = false;
+      if (defRoot) {
+        defRoot.hidden = false;
+        defRoot.style.display = '';
+      }
       var isPvpDef = defeat && defeat.isPvp && defeat.killerName;
       var siegeBtn = $('battle-defeat-siege');
       if (siegeBtn) {
