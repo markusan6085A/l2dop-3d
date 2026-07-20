@@ -191,16 +191,12 @@
     price.textContent = '( … )';
     top.appendChild(name);
     top.appendChild(price);
-
-    var actions = document.createElement('div');
-    actions.className = 'l2-rb-row__actions';
     var tp = document.createElement('span');
     tp.className = 'l2-rb-row__tp';
     tp.textContent = '…';
-    actions.appendChild(tp);
+    top.appendChild(tp);
 
     row.appendChild(top);
-    row.appendChild(actions);
     return row;
   }
 
@@ -274,38 +270,25 @@
     top.appendChild(nameBtn);
     top.appendChild(price);
 
-    var actions = document.createElement('div');
-    actions.className = 'l2-rb-row__actions';
-
-    if (b.canAttack === false && b.attackBlockedReasonUk) {
-      var hint = document.createElement('span');
-      hint.className = 'l2-rb-row__attack-hint';
-      hint.textContent = b.attackBlockedReasonUk;
-      actions.appendChild(hint);
-    }
-
-    var atk = document.createElement('button');
-    atk.type = 'button';
-    atk.className = 'l2-rb-row__tp l2-rb-row__attack';
-    atk.textContent = 'Атакувати';
-    atk.setAttribute('data-spawn-id', b.spawnId);
-    if (b.canAttack === false) {
-      atk.disabled = true;
-      atk.title =
-        b.attackBlockedReasonUk || 'Недоступно: РБ нижче дозволеного рівня.';
-    }
-
     var tp = document.createElement('button');
     tp.type = 'button';
     tp.className = 'l2-rb-row__tp';
     tp.textContent = 'Телепорт';
     tp.setAttribute('data-spawn-id', b.spawnId);
-
-    actions.appendChild(atk);
-    actions.appendChild(tp);
+    top.appendChild(tp);
 
     row.appendChild(top);
-    row.appendChild(actions);
+
+    if (b.canAttack === false && b.attackBlockedReasonUk) {
+      var actions = document.createElement('div');
+      actions.className = 'l2-rb-row__actions';
+      var hint = document.createElement('span');
+      hint.className = 'l2-rb-row__attack-hint';
+      hint.textContent = b.attackBlockedReasonUk;
+      actions.appendChild(hint);
+      row.appendChild(actions);
+    }
+
     return row;
   }
 

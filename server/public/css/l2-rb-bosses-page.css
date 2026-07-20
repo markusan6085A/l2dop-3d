@@ -189,10 +189,15 @@ body.l2-page-rb-bosses .l2-rb-row__price-gold {
   color: #e8c56e;
 }
 
+body.l2-page-rb-bosses .l2-rb-row__top .l2-rb-row__tp {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 body.l2-page-rb-bosses .l2-rb-row__actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
   width: 100%;
@@ -200,7 +205,7 @@ body.l2-page-rb-bosses .l2-rb-row__actions {
 }
 
 body.l2-page-rb-bosses .l2-rb-row__attack-hint {
-  flex: 1 1 180px;
+  flex: 1 1 100%;
   min-width: 0;
   text-align: left;
   line-height: 1.25;
@@ -208,8 +213,7 @@ body.l2-page-rb-bosses .l2-rb-row__attack-hint {
   color: #a09080;
 }
 
-body.l2-page-rb-bosses .l2-rb-row__tp,
-body.l2-page-rb-bosses .l2-rb-row__attack {
+body.l2-page-rb-bosses .l2-rb-row__tp {
   flex: 0 0 auto;
   white-space: nowrap;
   box-sizing: border-box;
@@ -228,24 +232,13 @@ body.l2-page-rb-bosses .l2-rb-row__attack {
 body.l2-page-rb-bosses .l2-rb-row__tp:hover,
 body.l2-page-rb-bosses .l2-rb-row__tp:focus,
 body.l2-page-rb-bosses .l2-rb-row__tp:focus-visible,
-body.l2-page-rb-bosses .l2-rb-row__tp:active,
-body.l2-page-rb-bosses .l2-rb-row__attack:hover:not(:disabled),
-body.l2-page-rb-bosses .l2-rb-row__attack:focus:not(:disabled),
-body.l2-page-rb-bosses .l2-rb-row__attack:focus-visible:not(:disabled),
-body.l2-page-rb-bosses .l2-rb-row__attack:active:not(:disabled) {
+body.l2-page-rb-bosses .l2-rb-row__tp:active {
   text-decoration: underline;
   filter: none;
   outline: none !important;
   border: 0 !important;
   box-shadow: none !important;
   -webkit-tap-highlight-color: transparent;
-}
-
-body.l2-page-rb-bosses .l2-rb-row__attack:disabled {
-  opacity: 0.45;
-  color: #fff;
-  cursor: not-allowed;
-  text-decoration: none;
 }
 
 body.l2-page-catacombs .l2-rb-row__actions {
@@ -292,13 +285,12 @@ body.l2-page-catacombs .l2-rb-row__tp:active {
 }
 
 @media (max-width: 480px) {
-  body.l2-page-rb-bosses .l2-rb-row__attack-hint {
-    flex: 1 1 100%;
-    width: 100%;
+  body.l2-page-rb-bosses .l2-rb-row__top {
+    flex-wrap: wrap;
   }
 
-  body.l2-page-rb-bosses .l2-rb-row__actions {
-    justify-content: flex-end;
+  body.l2-page-rb-bosses .l2-rb-row__top .l2-rb-row__price {
+    margin-left: 32px;
   }
 }
 
