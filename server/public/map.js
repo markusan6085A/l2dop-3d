@@ -12,6 +12,7 @@
   var mobListPage = 0;
   var mobDetailPage = 0;
   var MAP_SNAPSHOT_CACHE_KEY = 'l2-map-snapshot-cache-v1';
+  var initialMapSyncResolved = false;
 
   function $(id) {
     return document.getElementById(id);
@@ -687,6 +688,7 @@
 
   function handleMapDefeatFromSync(sync, snapshot) {
     if (!sync) return false;
+    if (!initialMapSyncResolved) return false;
 
     var snap =
       snapshot ||
@@ -1260,6 +1262,8 @@
   }
 
   async function init() {
+    initialMapSyncResolved = false;
+    hideMapDefeatBlock();
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
         onStub: function (label) {
@@ -1470,6 +1474,7 @@
       opts = opts || {};
       if (!sync || !sync.mapState) return false;
       if (shouldRejectIncomingMapSync(sync)) return false;
+      initialMapSyncResolved = true;
 
       applyMapRadiiFromSync(sync);
 
@@ -1591,6 +1596,13 @@
         heroSection: heroSection,
         getAroundData: function () {
           return aroundData;
+        },
+        isInitialMapSyncResolved: function () {
+          return initialMapSyncResolved;
+        },
+        isMapDefeatVisible: function () {
+          var defRoot = $('map-defeat-root');
+          return !!(defRoot && !defRoot.hidden);
         },
       };
       return;

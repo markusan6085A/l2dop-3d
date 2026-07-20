@@ -19,7 +19,7 @@ import {
   type PvpNickColor,
 } from '../domain/pvpKarma.js';
 import { prisma } from '../lib/prisma.js';
-import { isCharacterOnlineNow } from './onlinePresenceService.js';
+import { isCharacterOnlineNow, getPresenceCanonicalLocationKeyForCharacter } from './onlinePresenceService.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
 import { isPvpTargetUnavailableForWorldPk } from '../domain/pvpPendingDefeat.js';
@@ -93,6 +93,7 @@ const HERO_MAP_SELECT = {
   hp: true,
   pvpPendingDefeatJson: true,
   pvePendingDefeatJson: true,
+  cityId: true,
   dungeonStateJson: true,
   activeBuffsJson: true,
   buffHeroicTier: true,
@@ -114,6 +115,7 @@ type HeroMapRow = MapMovementFields & {
   hp: number;
   pvpPendingDefeatJson: unknown;
   pvePendingDefeatJson: unknown;
+  cityId: string;
   dungeonStateJson: unknown;
   clan?: { emblemId: number | null } | null;
 };
@@ -182,6 +184,11 @@ export async function getNearbyHeroesForMap(
     });
     if (!isWorldMapOpenPlayfield(targetLoc)) continue;
     if (!isSameCanonicalMapLocation(viewerLoc, targetLoc)) continue;
+
+    const presenceLocKey = getPresenceCanonicalLocationKeyForCharacter(row.id);
+    if (presenceLocKey && presenceLocKey !== targetLoc.key) {
+      continue;
+    }
 
     if (!isCharacterOnlineNow(row.id)) continue;
     if (isPvpTargetUnavailableForWorldPk(row)) continue;

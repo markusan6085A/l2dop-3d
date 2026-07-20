@@ -14,6 +14,47 @@
   var huntLogFreezeKey = '';
   var battlePageCharacterId = null;
   var battlePageSpawnId = null;
+  var initialBattleSyncResolved = false;
+
+  function canRenderDefeatUi() {
+    return initialBattleSyncResolved;
+  }
+
+  function hideDefeatUiPendingSync() {
+    var defRoot =
+      typeof document !== 'undefined'
+        ? document.getElementById('battle-defeat-root')
+        : null;
+    if (defRoot) defRoot.hidden = true;
+  }
+
+  function markInitialBattleSyncResolved() {
+    initialBattleSyncResolved = true;
+  }
+
+  function resetInitialBattleSyncGate() {
+    initialBattleSyncResolved = false;
+    hideDefeatUiPendingSync();
+  }
+
+  if (window.__L2_BATTLE_DEFEAT_TEST_MODE) {
+    window.L2BattleDefeatTest = {
+      resetForTest: resetInitialBattleSyncGate,
+      markInitialBattleSyncResolved: markInitialBattleSyncResolved,
+      canRenderDefeatUi: canRenderDefeatUi,
+      hideDefeatUiPendingSync: hideDefeatUiPendingSync,
+      isDefeatRootVisible: function () {
+        var defRoot = document.getElementById('battle-defeat-root');
+        return !!(defRoot && !defRoot.hidden);
+      },
+      tryShowDefeat: function (defeat, showFn) {
+        if (!canRenderDefeatUi() || !defeat) return false;
+        if (typeof showFn === 'function') showFn(defeat);
+        return true;
+      },
+    };
+    return;
+  }
 
   var BATTLE_PAGE_CTX_KEY = 'l2dop_battle_page_ctx_v1';
 
@@ -1660,6 +1701,7 @@
     var isPvpMode = !!pvpTargetId;
     var errEl = $('battle-load-err');
     var content = $('battle-content');
+    resetInitialBattleSyncGate();
 
     if (!spawnId && !pvpTargetId && !pvpDeathMode && !pveDeathMode) {
       if (errEl) {
@@ -1716,6 +1758,25 @@
 
     var character = state.character;
     var battle = state.battle;
+    markInitialBattleSyncResolved();
+    function applyDefeatFromInitialBattleSync(c) {
+      if (c && c.pvpDefeat) {
+        if (content) content.hidden = false;
+        if (errEl) errEl.hidden = true;
+        tryConsumePvpDefeatShow(c.pvpDefeat);
+        return true;
+      }
+      if (c && c.pveDefeat) {
+        if (content) content.hidden = false;
+        if (errEl) errEl.hidden = true;
+        renderPlayerBars(c);
+        showDefeatScreen(c.pveDefeat);
+        return true;
+      }
+      clearDefeatFromSession();
+      hideDefeatUiPendingSync();
+      return false;
+    }
     setBattlePageContext(
       character.id,
       spawnId || (battle && battle.spawnId) || battlePageSpawnId
@@ -2045,12 +2106,14 @@
         return true;
       }
       if (!battle) {
-        var savedDefFull = loadDefeatFromSession();
-        if (savedDefFull) {
-          renderPlayerBars(character);
-          showDefeatScreen(savedDefFull);
-          stopBattleSyncPoll();
-          return true;
+        if (initialBattleSyncResolved) {
+          var savedDefFull = loadDefeatFromSession();
+          if (savedDefFull) {
+            renderPlayerBars(character);
+            showDefeatScreen(savedDefFull);
+            stopBattleSyncPoll();
+            return true;
+          }
         }
         return false;
       }
@@ -2870,6 +2933,8 @@
       if (isPvpMode) {
         return ensurePvpBattle();
       }
+      clearDefeatFromSession();
+      hideDefeatUiPendingSync();
       if (character && character.pveDefeat) {
         showDefeatScreen(character.pveDefeat);
         return false;
@@ -3215,6 +3280,7 @@
     }
 
     function showPvpDefeatScreen(pvpDefeat) {
+      if (!canRenderDefeatUi()) return;
       stopBattleSyncPoll();
       syncBattleTopGridPartyLayout(null);
       hideVictoryInline();
@@ -3598,6 +3664,7 @@
     }
 
     function showDefeatScreen(defeat) {
+      if (!canRenderDefeatUi()) return;
       saveDefeatToSession(defeat);
       stopBattleSyncPoll();
       battle = null;
@@ -4166,10 +4233,7 @@
 
     if (pvpDeathMode || (character && character.pvpDefeat)) {
       if (character && character.pvpDefeat) {
-        if (content) content.hidden = false;
-        if (errEl) errEl.hidden = true;
-        tryConsumePvpDefeatShow(character.pvpDefeat);
-        return;
+        if (applyDefeatFromInitialBattleSync(character)) return;
       }
       if (pvpDeathMode) {
         if (errEl) {
@@ -4180,11 +4244,7 @@
       }
     }
 
-    if (character && character.pveDefeat) {
-      if (content) content.hidden = false;
-      if (errEl) errEl.hidden = true;
-      renderPlayerBars(character);
-      showDefeatScreen(character.pveDefeat);
+    if (applyDefeatFromInitialBattleSync(character)) {
       return;
     }
 
@@ -4201,15 +4261,7 @@
     if (battleReady) {
       prepareActiveBattleUi();
       startBattleSyncPoll();
-    } else {
-      var pendingDefeat = loadDefeatFromSession();
-      if (pendingDefeat && !(character && character.pvpDefeat)) {
-        if (content) content.hidden = false;
-        if (errEl) errEl.hidden = true;
-        renderPlayerBars(character);
-        showDefeatScreen(pendingDefeat);
-        return;
-      }
+    } else if (!isDefeatScreenActive()) {
       var savedVictory = loadVictoryFromSession();
       if (!savedVictory && spawnId && isPvpSpawnContext(spawnId)) {
         savedVictory = {

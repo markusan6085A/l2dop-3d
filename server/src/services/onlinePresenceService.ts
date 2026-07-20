@@ -1,4 +1,5 @@
 import { MAP_TOWNS } from '../data/mapLocalities.js';
+import { resolveCanonicalMapLocation } from '../domain/mapPlayfieldContext.js';
 import { getEffectiveCharacterLevel } from '../domain/effectiveCharacterLevel.js';
 import { prisma } from '../lib/prisma.js';
 import { HERO_POWER_BASE } from '../domain/heroPower.js';
@@ -16,6 +17,7 @@ type PresenceEntry = {
   level: number;
   heroPower: number;
   cityId: string;
+  canonicalLocationKey: string;
   cityLabelUk: string;
   cityLabelEn: string;
   clanEmblemId: number | null;
@@ -45,12 +47,20 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
     heroRow != null
       ? resolveHeroPowerFromCharacterRow(heroRow)
       : HERO_POWER_BASE;
+  const canonicalLocationKey = row
+    ? resolveCanonicalMapLocation({
+        worldX: row.worldX,
+        worldY: row.worldY,
+        dungeonStateJson: row.dungeonStateJson,
+      }).key
+    : '';
   return {
     characterId: row?.id?.trim() || '',
     name: row?.name?.trim() || '—',
     level: row != null ? getEffectiveCharacterLevel(row.exp) : 1,
     heroPower,
     cityId: row?.cityId?.trim() || '',
+    canonicalLocationKey,
     cityLabelUk: labels.cityLabelUk,
     cityLabelEn: labels.cityLabelEn,
     clanEmblemId: row?.clan?.emblemId ?? null,
@@ -201,6 +211,38 @@ export function getCharacterLastSeenMs(characterId: string): number | null {
   for (const entry of byUserId.values()) {
     if (entry.characterId === id) {
       return entry.lastSeenMs;
+    }
+  }
+  return null;
+}
+
+/** Canonical playfield key з in-memory presence (map anti-stale). */
+export function getPresenceCanonicalLocationKeyForCharacter(
+  characterId: string
+): string | null {
+  const id = String(characterId || '').trim();
+  if (!id) return null;
+  const now = Date.now();
+  pruneExpired(now);
+  for (const entry of byUserId.values()) {
+    if (entry.characterId === id && now - entry.lastSeenMs <= ONLINE_TTL_MS) {
+      const key = String(entry.canonicalLocationKey || '').trim();
+      return key || null;
+    }
+  }
+  return null;
+}
+
+/** cityId з in-memory presence (read-path для map nearbyHeroes anti-stale). */
+export function getPresenceCityIdForCharacter(characterId: string): string | null {
+  const id = String(characterId || '').trim();
+  if (!id) return null;
+  const now = Date.now();
+  pruneExpired(now);
+  for (const entry of byUserId.values()) {
+    if (entry.characterId === id && now - entry.lastSeenMs <= ONLINE_TTL_MS) {
+      const cityId = String(entry.cityId || '').trim();
+      return cityId || null;
     }
   }
   return null;

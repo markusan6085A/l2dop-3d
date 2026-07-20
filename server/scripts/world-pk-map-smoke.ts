@@ -37,9 +37,10 @@ import { performBattleActionInTx } from '../src/services/battleServicePerformBat
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
 import { getMapSyncForUser } from '../src/services/charMapStateService.js';
 import { getNearbyHeroesForMap } from '../src/services/mapNearbyHeroesService.js';
-import { performReturnToNearestTown } from '../src/services/charWorldMutations.js';
 import { ackPvpPendingDefeatForUser } from '../src/services/pvpPendingDefeatAckService.js';
 import { parsePvpPendingDefeat } from '../src/domain/pvpPendingDefeat.js';
+import { buildApp } from '../src/app.js';
+import { signAccessToken } from '../src/lib/jwt.js';
 import { getNearbyHeroesForDungeon } from '../src/services/dungeonNearbyHeroesService.js';
 import {
   getOnlinePresenceSnapshot,
@@ -919,12 +920,23 @@ async function testWorldPkDeathRespawnFlow(): Promise<void> {
   const victimBeforeRespawn = await prisma.character.findUniqueOrThrow({
     where: { id: victim.characterId },
   });
-  const respawnSnap = await performReturnToNearestTown(
-    victim.userId,
-    victimBeforeRespawn.revision
-  );
+  const app = await buildApp();
+  const victimToken = signAccessToken(victim.userId);
+  const respawnHttp = await app.inject({
+    method: 'POST',
+    url: '/game/battle/return-to-town',
+    headers: { authorization: `Bearer ${victimToken}` },
+    payload: { expectedRevision: victimBeforeRespawn.revision },
+  });
+  assert.equal(respawnHttp.statusCode, 200, 'POST /game/battle/return-to-town must be 200');
+  const respawnBody = JSON.parse(respawnHttp.payload) as {
+    character?: { pvpDefeat?: unknown; worldX?: number; worldY?: number };
+  };
+  assert.ok(respawnBody.character, 'return-to-town must return character snapshot');
+  const respawnSnap = respawnBody.character!;
   assert.equal(respawnSnap.pvpDefeat, null);
   assert.ok(respawnSnap.worldX != null && respawnSnap.worldY != null);
+  ok('POST /game/battle/return-to-town persists city hub respawn');
 
   const victimAfterRespawn = await prisma.character.findUniqueOrThrow({
     where: { id: victim.characterId },
@@ -938,7 +950,7 @@ async function testWorldPkDeathRespawnFlow(): Promise<void> {
   assert.equal(victimAfterRespawn.worldX, Math.floor(hub!.worldX));
   assert.equal(victimAfterRespawn.worldY, Math.floor(hub!.worldY));
   assert.equal(victimAfterRespawn.cityId, hub!.cityId);
-  ok('return-to-town sets canonical city hub and clears pending');
+  ok('return-to-town DB row has city hub coordinates and cleared pending');
 
   const presence = await getOnlinePresenceSnapshot('name');
   const onlineVictim = presence.players.find(

@@ -371,10 +371,14 @@ export async function performReturnToNearestTown(
       expectedRevision,
       (current) => {
         const base = normalizePassiveAndMove(current as CharacterRow);
-        const near = nearestMapTown(base.worldX, base.worldY);
+        const nearDeath = nearestMapTown(base.worldX, base.worldY);
+        const respawnCityId =
+          String(nearDeath.cityId || base.cityId || '').trim() ||
+          nearDeath.cityId;
         const dest =
-          getCityHubTeleportDestination(near.cityId) ??
-          getTeleportDestination(near.teleportId);
+          getCityHubTeleportDestination(respawnCityId) ??
+          getCityHubTeleportDestination(base.cityId) ??
+          getTeleportDestination(nearDeath.teleportId);
         if (!dest) throw new Error('teleport_unknown');
         const wx = Math.floor(dest.worldX);
         const wy = Math.floor(dest.worldY);
@@ -382,31 +386,14 @@ export async function performReturnToNearestTown(
           base.hp <= 0
             ? Math.max(1, Math.floor(base.maxHp * 0.15))
             : base.hp;
-        const mustClearBattle = base.battleJson != null;
-        const changed =
-          mustClearBattle ||
-          base.hp <= 0 ||
-          base.hp !== recoverHp ||
-          base.pvpPendingDefeatJson != null ||
-          base.pvePendingDefeatJson != null ||
-          movementFieldsChanged(current as CharacterRow, base) ||
-          base.worldX !== wx ||
-          base.worldY !== wy ||
-          base.targetX !== 0 ||
-          base.targetY !== 0 ||
-          base.moveStartAt != null ||
-          base.moveFromX !== wx ||
-          base.moveFromY !== wy ||
-          base.cityId !== dest.cityId ||
-          hadDungeonState(current as CharacterRow);
-        if (!changed) return { changed: false };
         return {
           changed: true,
           data: {
             hp: recoverHp,
-            ...(mustClearBattle ? { battleJson: Prisma.JsonNull } : {}),
+            battleJson: Prisma.JsonNull,
             pvpPendingDefeatJson: Prisma.JsonNull,
             pvePendingDefeatJson: Prisma.JsonNull,
+            worldCombatStateJson: Prisma.JsonNull,
             worldX: wx,
             worldY: wy,
             targetX: 0,

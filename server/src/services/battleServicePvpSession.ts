@@ -430,6 +430,43 @@ export async function resumePlayerPvpBattleInTx(
   };
 }
 
+type WorldPvpTargetRow = CharacterRow & {
+  clan?: { emblemId: number | null } | null;
+};
+
+/** Canonical location / dead-state gate — read directly from Character row in tx. */
+function assertWorldPvpTargetPairEligible(
+  attackerRow: CharacterRow,
+  targetRow: WorldPvpTargetRow
+): void {
+  const atkMoved = resolveMapMovement(attackerRow);
+  const tgtMoved = resolveMapMovement(targetRow);
+  const atkLoc = resolveCanonicalMapLocation({
+    worldX: atkMoved.worldX,
+    worldY: atkMoved.worldY,
+    dungeonStateJson: attackerRow.dungeonStateJson,
+  });
+  const tgtLoc = resolveCanonicalMapLocation({
+    worldX: tgtMoved.worldX,
+    worldY: tgtMoved.worldY,
+    dungeonStateJson: targetRow.dungeonStateJson,
+  });
+  if (!atkLoc.pvpAllowed || !tgtLoc.pvpAllowed) {
+    throw new Error('pvp_forbidden_zone');
+  }
+  if (!isSameCanonicalMapLocation(atkLoc, tgtLoc)) {
+    throw new Error('pvp_location_mismatch');
+  }
+  if (isPvpTargetUnavailableForWorldPk(targetRow)) {
+    throw new Error('pvp_target_dead');
+  }
+  const attackerLevel = levelFromTotalExp(attackerRow.exp);
+  const targetLevel = levelFromTotalExp(targetRow.exp);
+  if (!canCharactersFightWorldPvp(attackerLevel, targetLevel)) {
+    throw new Error('pvp_level_difference_too_high');
+  }
+}
+
 export async function startPvpBattleInTx(
   tx: Prisma.TransactionClient,
   userId: string,
@@ -483,39 +520,14 @@ export async function startPvpBattleInTx(
     throw new Error('pvp_target_offline');
   }
 
-  const atkMoved = resolveMapMovement(attackerRow as CharacterRow);
-  const tgtMoved = resolveMapMovement(targetRow as CharacterRow);
-  const atkLoc = resolveCanonicalMapLocation({
-    worldX: atkMoved.worldX,
-    worldY: atkMoved.worldY,
-    dungeonStateJson: attackerRow.dungeonStateJson,
-  });
-  const tgtLoc = resolveCanonicalMapLocation({
-    worldX: tgtMoved.worldX,
-    worldY: tgtMoved.worldY,
-    dungeonStateJson: targetRow.dungeonStateJson,
-  });
-  if (!atkLoc.pvpAllowed || !tgtLoc.pvpAllowed) {
-    throw new Error('pvp_forbidden_zone');
-  }
-  if (!isSameCanonicalMapLocation(atkLoc, tgtLoc)) {
-    throw new Error('pvp_location_mismatch');
-  }
+  assertWorldPvpTargetPairEligible(
+    attackerRow as CharacterRow,
+    targetRow as WorldPvpTargetRow
+  );
 
   if (await areCharactersInSamePartyInTx(tx, attackerRow.id, targetId)) {
     throw new Error('pvp_party_member');
   }
-
-  if (isPvpTargetUnavailableForWorldPk(targetRow)) {
-    throw new Error('pvp_target_dead');
-  }
-
-  const attackerLevel = levelFromTotalExp(attackerRow.exp);
-  const targetLevel = levelFromTotalExp(targetRow.exp);
-  if (!canCharactersFightWorldPvp(attackerLevel, targetLevel)) {
-    throw new Error('pvp_level_difference_too_high');
-  }
-
 
   if (characterBlocksWorldPvpStart(existingBj)) {
     throw new Error('already_in_battle');
@@ -541,9 +553,19 @@ export async function startPvpBattleInTx(
     throw new Error('pvp_target_in_battle');
   }
 
+  const attackerFresh = (await tx.character.findUniqueOrThrow({
+    where: { id: attackerRow.id },
+  })) as CharacterRow;
+  const targetFresh = (await tx.character.findFirst({
+    where: { id: targetId },
+    include: { clan: { select: { emblemId: true } } },
+  })) as WorldPvpTargetRow | null;
+  if (!targetFresh) throw new Error('pvp_target_unknown');
+  assertWorldPvpTargetPairEligible(attackerFresh, targetFresh);
+
   return commitPlayerPvpBattleStartInTx(tx, {
-    attackerRow: attackerRow as CharacterRow,
-    targetRow: targetRow as CharacterRow,
+    attackerRow: attackerFresh,
+    targetRow: targetFresh,
     expectedRevision,
     ctx: { playerCombatMode: 'world' },
     defenderCounter,

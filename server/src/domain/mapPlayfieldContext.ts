@@ -1,4 +1,8 @@
-import { resolveMapLocality } from '../data/mapLocalities.js';
+import {
+  getCityHubTeleportDestination,
+  getTeleportDestination,
+  resolveMapLocality,
+} from '../data/mapLocalities.js';
 import { findSevenSignsDungeonById } from '../data/sevenSignsDungeons.js';
 import { parseDungeonStateJson } from './dungeonState.js';
 
@@ -75,6 +79,27 @@ export function isSameCanonicalMapLocation(
 /** World-map hero list — лише відкритий світ (не instanced dungeon playfield). */
 export function isWorldMapOpenPlayfield(loc: CanonicalMapLocation): boolean {
   return loc.instanceType === 'world';
+}
+
+/** Canonical playfield для city hub (Rune/Giran/…), не farming anchor. */
+export function resolveCityHubCanonicalLocation(
+  cityId: string
+): CanonicalMapLocation | null {
+  const hub = getCityHubTeleportDestination(cityId);
+  if (!hub) return null;
+  return resolveCanonicalMapLocation({
+    worldX: hub.worldX,
+    worldY: hub.worldY,
+  });
+}
+
+/** Чи canonical location — головний хаб міста (не полювання). */
+export function isCityHubCanonicalLocation(loc: CanonicalMapLocation): boolean {
+  if (loc.instanceType !== 'world' || !loc.teleportId) return false;
+  const town = getTeleportDestination(loc.teleportId);
+  if (!town?.cityId) return false;
+  const hub = getCityHubTeleportDestination(town.cityId);
+  return !!hub && hub.teleportId === loc.teleportId;
 }
 
 /** Canonical location для instanced dungeon (catacomb / necropolis). */
