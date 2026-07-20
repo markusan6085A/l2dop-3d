@@ -2837,7 +2837,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-title-inline {
 
 html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
   margin: var(--l2s-legacy-bars-gap, 0) 0 0;
-  padding: 3px 0 5px;
+  padding: 6px 0 5px;
   border: 0 !important;
   border-top: 0 !important;
   border-bottom: 1px solid var(--l2s-legacy-rule-color, #303030) !important;
@@ -2854,7 +2854,7 @@ html body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-body {
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
   display: flex;
   flex-wrap: nowrap;
-  align-items: baseline;
+  align-items: center;
   gap: 0;
   color: #d8ccb0;
   font-size: 14px;
@@ -2867,6 +2867,24 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline {
 }
 
 /* legacy text-only рядки — замінено на .l2-hud-legacy-bars (стилі в l2-hud-panel.css) */
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-clan-emblem {
+  display: none;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-clan-emblem:not([hidden]) {
+  display: inline-flex;
+  align-items: center;
+}
+
+body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-clan-emblem__img {
+  width: 16px;
+  height: 16px;
+  margin: 0 4px 0 0;
+  vertical-align: middle;
+}
 
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-headline .l2-hud-legacy-level {
   display: inline;

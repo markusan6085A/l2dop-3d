@@ -2245,6 +2245,25 @@
       return String(n);
     },
 
+    /** Емблема клану у WAP-headline: лише при clanId + валідному clanEmblemId з snapshot. */
+    syncHudClanEmblemFromSnapshot: function (c) {
+      var slot = document.getElementById('l2-hud-clan-emblem-slot');
+      if (!slot) return;
+      slot.innerHTML = '';
+      slot.hidden = true;
+      if (!c || c.clanId == null || c.clanId === '') return;
+      if (typeof global.L2.createClanEmblemElement !== 'function') return;
+      var emblem = global.L2.createClanEmblemElement(c.clanEmblemId, 16);
+      if (!emblem) return;
+      emblem.className = 'l2-hud-legacy-clan-emblem__img l2-clan-emblem-inline clan-emblem-inline';
+      emblem.onerror = function () {
+        slot.hidden = true;
+        slot.innerHTML = '';
+      };
+      slot.appendChild(emblem);
+      slot.hidden = false;
+    },
+
     /** Очистити плейсхолдери l2-hud-* (немає вхідних даних). */
     clearHudPanel: function () {
       [
@@ -2292,6 +2311,9 @@
       });
       if (typeof global.L2.applyNickColorFromSnapshot === 'function') {
         global.L2.applyNickColorFromSnapshot(null);
+      }
+      if (typeof global.L2.syncHudClanEmblemFromSnapshot === 'function') {
+        global.L2.syncHudClanEmblemFromSnapshot(null);
       }
     },
 
@@ -2403,6 +2425,9 @@
         var lvlAbbr =
           global.L2 && global.L2.tr ? global.L2.tr('abbr_level') : 'ур.';
         set('l2-hud-legacy-lvl', String(c.level != null ? c.level : '—') + ' ' + lvlAbbr);
+        if (typeof global.L2.syncHudClanEmblemFromSnapshot === 'function') {
+          global.L2.syncHudClanEmblemFromSnapshot(c);
+        }
         var legacyNameEl = document.getElementById('l2-hud-legacy-name');
         if (legacyNameEl) {
           legacyNameEl.textContent = '';
@@ -2410,8 +2435,8 @@
             legacyNameEl.appendChild(
               global.L2.renderPlayerIdentity({
                 name: c.name,
-                clanEmblemId: c.clanEmblemId,
-                emblemSize: 16,
+                characterId: c.id,
+                linkProfile: false,
               })
             );
           } else {
@@ -2651,6 +2676,7 @@
         '<div class="l2-hud-legacy-title-inline">L2WAP</div>' +
         '<div class="l2-hud-legacy-body">' +
         '<div class="l2-hud-legacy-headline">' +
+        '<span id="l2-hud-clan-emblem-slot" class="l2-hud-legacy-clan-emblem" hidden></span>' +
         '<span class="l2-hud-legacy-level" id="l2-hud-legacy-lvl">—</span>' +
         ' - ' +
         '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
