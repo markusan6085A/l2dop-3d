@@ -2,7 +2,7 @@
  * Service Worker: cache-first для статики (фото, ref, css, js).
  * HTML і API — завжди мережа (сервер = джерело правди).
  */
-var GAME_CACHE_VERSION = '20260719citySiegeOwner1';
+var GAME_CACHE_VERSION = '20260720worldPkList1';
 var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
 /** Лише безверсійні іконки/рамки — JS/CSS з ?v= не precache (інакше застрягає старий UI). */
@@ -79,6 +79,8 @@ function cacheLookup(cache, request) {
   var url = new URL(request.url);
   return cache.match(request).then(function (cached) {
     if (cached) return cached;
+    /** ?v= assets must not fall back to pathname-only (stale map.js without new ?v=). */
+    if (hasVersionQuery(url)) return null;
     if (shouldIgnoreSearchForPath(url.pathname)) {
       return cache.match(pathOnlyRequest(url));
     }
@@ -89,7 +91,7 @@ function cacheLookup(cache, request) {
 function cacheStore(cache, request, response) {
   var url = new URL(request.url);
   var jobs = [cache.put(request, response.clone())];
-  if (shouldIgnoreSearchForPath(url.pathname)) {
+  if (shouldIgnoreSearchForPath(url.pathname) && !hasVersionQuery(url)) {
     jobs.push(cache.put(pathOnlyRequest(url), response.clone()));
   }
   return Promise.all(jobs);

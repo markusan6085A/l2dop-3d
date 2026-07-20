@@ -24,5 +24,7 @@ jobs:
             git reset --hard origin/main
             npm ci
             npm run build
+            npm run verify:world-pk-map-assets
             pm2 restart l2dop-3d
             echo "deployed $(git log -1 --oneline)"
+            grep -n 'mapHeroRowRender.js\\|map.js' server/public/map.html | tail -n 5
