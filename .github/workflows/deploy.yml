@@ -27,5 +27,3 @@ jobs:
             npm run verify:world-pk-map-assets
             pm2 restart l2dop-3d
             echo "deployed $(git log -1 --oneline)"
-            grep -n 'mapHeroRowRender.js?v=20260720worldPkVisible1' server/public/map.html
-            grep -n 'map.js?v=20260720worldPkVisible1' server/public/map.html
