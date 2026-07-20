@@ -1293,7 +1293,9 @@
         sync.around && sync.around.nearbySpawns ? sync.around.nearbySpawns : []
       );
       var heroSig = compactHeroSig(
-        sync.around && sync.around.nearbyHeroes ? sync.around.nearbyHeroes : []
+        normalizeSyncNearbyHeroes(
+          sync.around && sync.around.nearbyHeroes ? sync.around.nearbyHeroes : []
+        )
       );
       var markerSig = compactMarkerSig(sync.spawns || []);
       var fullSig = posSig + '||' + spawnSig + '||' + heroSig + '||' + markerSig;
@@ -1339,6 +1341,18 @@
       paintMain(!!opts.centerOnPlayer);
       renderMobMarkers(img, markersLayer, worldSpawns, markerSig);
       return true;
+    }
+
+    if (window.__L2_MAP_SYNC_TEST_MODE) {
+      window.L2MapSyncTest = {
+        applyMapSyncPayload: applyMapSyncPayload,
+        heroList: heroList,
+        heroSection: heroSection,
+        getAroundData: function () {
+          return aroundData;
+        },
+      };
+      return;
     }
 
     function paintNpcList() {

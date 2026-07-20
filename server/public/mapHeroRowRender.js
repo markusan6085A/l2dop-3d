@@ -94,9 +94,10 @@
     if (listEl.children.length !== heroes.length) return false;
     for (var i = 0; i < heroes.length; i++) {
       var h = heroes[i];
-      if (!heroShowsPkButton(h)) continue;
+      if (h.showPkButton !== true) continue;
       var row = listEl.children[i];
       if (!row || !row.querySelector('.l2-map-hero-link__pk')) return false;
+      if (!row.textContent || row.textContent.indexOf('[PK]') < 0) return false;
     }
     return true;
   }
@@ -143,36 +144,46 @@
 
     var li = document.createElement('li');
     li.className = 'l2-map-hero-item';
+    if (hero.characterId) {
+      li.dataset.characterId = String(hero.characterId);
+    }
     var main = document.createElement('div');
     main.className = 'l2-map-hero-item__main';
     main.style.setProperty('--l2-map-hero-nick-color', heroNickHex(hero) || '#bfa88a');
 
     var titleLine = document.createElement('div');
     titleLine.className = 'l2-map-hero-item__title';
+    var identityContainer = titleLine;
 
-    appendHeroNameEl(titleLine, hero, L2);
+    appendHeroNameEl(identityContainer, hero, L2);
 
     var levelSpan = document.createElement('span');
     levelSpan.className = 'l2-map-hero-level';
     levelSpan.textContent = heroLevelPart(hero);
-    titleLine.appendChild(levelSpan);
+    identityContainer.appendChild(levelSpan);
 
-    var pkBtn = null;
-    if (heroShowsPkButton(hero)) {
-      pkBtn = document.createElement('button');
-      pkBtn.type = 'button';
-      pkBtn.className = 'l2-map-hero-link__pk';
-      pkBtn.textContent = '[PK]';
-      pkBtn.setAttribute('aria-label', 'Атакувати ' + (hero.name || ''));
+    if (hero.showPkButton === true) {
+      var pk = document.createElement('button');
+      pk.type = 'button';
+      pk.className = 'l2-map-hero-link__pk';
+      pk.textContent = '[PK]';
+      pk.dataset.targetCharacterId = String(hero.characterId || '');
+      pk.setAttribute('aria-label', 'Атакувати ' + (hero.name || ''));
       if (onPkClick) {
-        pkBtn.addEventListener('click', function (e) {
+        pk.addEventListener('click', function (e) {
           e.preventDefault();
           e.stopPropagation();
-          var cid = hero.characterId || '';
+          var cid = pk.dataset.targetCharacterId || hero.characterId || '';
           if (cid) onPkClick(cid);
         });
       }
-      titleLine.appendChild(pkBtn);
+      identityContainer.appendChild(pk);
+      if (typeof console !== 'undefined' && typeof console.assert === 'function') {
+        console.assert(
+          identityContainer.textContent.indexOf('[PK]') >= 0,
+          'PK node missing immediately after append'
+        );
+      }
     }
 
     if (hero.isPartyMember) {

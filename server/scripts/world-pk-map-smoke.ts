@@ -32,6 +32,7 @@ import {
 import { prisma } from '../src/lib/prisma.js';
 import { startBattleInTx } from '../src/services/battleServiceSession.js';
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
+import { getMapSyncForUser } from '../src/services/charMapStateService.js';
 import { getNearbyHeroesForMap } from '../src/services/mapNearbyHeroesService.js';
 import { getNearbyHeroesForDungeon } from '../src/services/dungeonNearbyHeroesService.js';
 import {
@@ -404,6 +405,38 @@ async function testCanonicalLevelIgnoresStalePresence(): Promise<void> {
   ok('stale presence level 7 ignored; canonical level 10 for /online, nearbyHeroes, PK');
 }
 
+async function testMapSyncPayloadPkFields(): Promise<void> {
+  console.log('\n[map sync payload PK fields]');
+
+  heroPairSlot += 1;
+  const baseX = WILD_X + heroPairSlot * 50_000;
+  const baseY = WILD_Y + heroPairSlot * 50_000;
+
+  const viewer = await createAccountAtLevel('syncV', 22);
+  const target = await createAccountAtLevel('syncT', 10);
+  await placeOnline(viewer, baseX, baseY);
+  await placeOnline(target, baseX + 400, baseY);
+
+  const sync = await getMapSyncForUser(viewer.userId);
+  assert.ok(sync, 'getMapSyncForUser must return payload');
+  const hero = sync!.around.nearbyHeroes.find((h) => h.characterId === target.characterId);
+  assert.ok(hero, 'KofOnline-equivalent target must appear in /game/map/sync nearbyHeroes');
+
+  assert.equal(hero!.name, target.name);
+  assert.equal(hero!.level, 10);
+  assert.equal(hero!.showPkButton, true);
+  assert.equal(hero!.profileOnNameClick, false);
+  assert.equal(hero!.pvpEligibilityCode, null);
+  assert.equal(hero!.pvpBlockedReasonUk, null);
+  assert.equal(hero!.pvpAllowed, true);
+  assert.equal(hero!.activeBattle, false);
+  assert.equal(hero!.viewerLevelUsed, 22);
+  assert.ok(hero!.targetLocationKey.startsWith('world:'));
+  assert.equal(hero!.isPartyMember, false);
+
+  ok('map sync nearbyHeroes: showPkButton true for 22 vs 10 (production path)');
+}
+
 async function testPlayerMapVisibility(): Promise<void> {
   console.log('\n[player map visibility]');
 
@@ -694,6 +727,7 @@ async function main(): Promise<void> {
   await testPlayerMapVisibility();
   await testWorldPkLevelRange();
   await testCanonicalLevelIgnoresStalePresence();
+  await testMapSyncPayloadPkFields();
   await testPkEligibility();
   await testPkBattleStart();
   console.log('\n' + passed + ' passed');

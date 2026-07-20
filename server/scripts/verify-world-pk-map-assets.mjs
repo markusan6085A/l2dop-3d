@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '../..');
 const publicDir = path.join(repoRoot, 'server/public');
-const expectedVersion = '20260720worldPkList1';
+const expectedVersion = '20260720worldPkVisible1';
 
 const mapHtmlPath = path.join(publicDir, 'map.html');
 const mapJsPath = path.join(publicDir, 'map.js');
