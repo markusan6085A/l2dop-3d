@@ -270,7 +270,8 @@ export async function getMapSyncForUser(
     mapState.id,
     nowMs,
     partyContext,
-    viewerDungeonStateJson
+    viewerDungeonStateJson,
+    mapState.level
   );
   const pvpIncoming = await findPvpIncomingForCharacter(mapState.id);
 

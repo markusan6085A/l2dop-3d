@@ -207,6 +207,12 @@ function assertMapPlayerRowUiContract(): void {
   assert.doesNotMatch(dungeonJs, /\[профіль\]/, 'dungeon.js must not render separate [профіль] button');
   assert.match(mapJs, /h\.profileOnNameClick === true/, 'map.js uses server profileOnNameClick');
   assert.match(mapJs, /h\.showPkButton === true/, 'map.js uses server showPkButton');
+  assert.match(mapJs, /\[PK\]/, 'map.js renders inline [PK] label');
+  assert.match(
+    mapJs,
+    /linkProfile:\s*profileOnName/,
+    'map.js passes linkProfile from server profileOnNameClick'
+  );
 }
 
 async function testWorldPkLevelRange(): Promise<void> {
@@ -220,7 +226,27 @@ async function testWorldPkLevelRange(): Promise<void> {
   assert.equal(canCharactersFightWorldPvp(40, 19), false);
   assert.equal(canCharactersFightWorldPvp(30, 50), true);
   assert.equal(canCharactersFightWorldPvp(30, 51), false);
+  assert.equal(canCharactersFightWorldPvp(22, 10), true);
+  assert.equal(canCharactersFightWorldPvp(22, 2), true);
+  assert.equal(canCharactersFightWorldPvp(22, 1), false);
   ok('canCharactersFightWorldPvp boundary table');
+
+  const allowed2210 = await heroesPairAtLevels(22, 10);
+  assert.equal(allowed2210.hero.showPkButton, true);
+  assert.equal(allowed2210.hero.profileOnNameClick, false);
+  assert.equal(allowed2210.hero.pvpEligibilityCode, null);
+  ok('22 vs 10: showPkButton true, profileOnNameClick false');
+
+  const allowed222 = await heroesPairAtLevels(22, 2);
+  assert.equal(allowed222.hero.showPkButton, true);
+  assert.equal(allowed222.hero.profileOnNameClick, false);
+  ok('22 vs 2: allowed (diff 20)');
+
+  const blocked221 = await heroesPairAtLevels(22, 1);
+  assert.equal(blocked221.hero.showPkButton, false);
+  assert.equal(blocked221.hero.pvpEligibilityCode, 'pvp_level_difference_too_high');
+  assert.equal(blocked221.hero.profileOnNameClick, true);
+  ok('22 vs 1: blocked (diff 21)');
 
   const blocked521 = await heroesPairAtLevels(52, 21);
   assert.equal(blocked521.hero.showPkButton, false);

@@ -230,7 +230,7 @@
         var pkBtn = document.createElement('button');
         pkBtn.type = 'button';
         pkBtn.className = 'l2-map-hero-link__pk';
-        pkBtn.textContent = ' [PK]';
+        pkBtn.textContent = '[PK]';
         pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
         pkBtn.addEventListener('click', (function (heroId) {
           return function (e) {

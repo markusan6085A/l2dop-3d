@@ -499,6 +499,7 @@ button.l2-map-mob-title--tap-full:focus {
 
 .l2-map-hero-item__title .l2-map-hero-link__pk {
   flex: 0 0 auto;
+  margin-left: 4px;
 }
 
 .l2-map-hero-party-tag {

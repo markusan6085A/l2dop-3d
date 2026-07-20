@@ -119,7 +119,9 @@ export async function getNearbyHeroesForMap(
   excludeCharacterId: string,
   nowMs: number = Date.now(),
   partyContext: NearbyHeroesPartyContext | null = null,
-  viewerDungeonStateJson?: unknown | null
+  viewerDungeonStateJson?: unknown | null,
+  /** Canonical viewer level (map HUD / snapshot); avoids stale level column vs exp drift. */
+  viewerLevelOverride?: number
 ): Promise<NearbyHeroEntry[]> {
   const R = MAP_NEARBY_HERO_RADIUS;
   const R2 = R * R;
@@ -133,13 +135,19 @@ export async function getNearbyHeroesForMap(
   });
   if (!isWorldMapOpenPlayfield(viewerLoc)) return [];
 
-  const viewerRow = await prisma.character.findUnique({
-    where: { id: exclude },
-    select: { exp: true },
-  });
-  const viewerLevel = viewerRow
-    ? getEffectiveCharacterLevel(viewerRow.exp)
-    : 1;
+  let viewerLevel =
+    viewerLevelOverride != null &&
+    Number.isFinite(Number(viewerLevelOverride)) &&
+    Number(viewerLevelOverride) >= 1
+      ? Math.floor(Number(viewerLevelOverride))
+      : 1;
+  if (viewerLevelOverride == null) {
+    const viewerRow = await prisma.character.findUnique({
+      where: { id: exclude },
+      select: { exp: true },
+    });
+    viewerLevel = viewerRow ? getEffectiveCharacterLevel(viewerRow.exp) : 1;
+  }
 
   const rows = await prisma.character.findMany({
     where: {

@@ -587,33 +587,30 @@
     });
   }
 
+  function heroShowsPkButton(h) {
+    return !!(h && h.showPkButton === true);
+  }
+
   function appendHeroNameEl(titleLine, h) {
     var profileOnName = h.profileOnNameClick === true;
-    var nameClass = 'l2-map-hero-name-link';
-    if (h.pvpNickColor === 'pk') nameClass += ' l2-pvp-nick--pk';
-    else if (h.pvpNickColor === 'aggressor') nameClass += ' l2-pvp-nick--aggressor';
 
     if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
       var identity = L2.renderPlayerIdentity({
         name: h.name,
+        characterId: h.characterId,
         clanEmblemId: h.clanEmblemId,
         emblemSize: 16,
         pvpNickColor: h.pvpNickColor,
+        linkProfile: profileOnName,
+        nickClassName: 'l2-map-hero-name-link',
       });
-      if (profileOnName) {
-        var nameLink = document.createElement('a');
-        nameLink.className = nameClass;
-        nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-        while (identity.firstChild) nameLink.appendChild(identity.firstChild);
-        titleLine.appendChild(nameLink);
-      } else {
-        var nameSpan = document.createElement('span');
-        nameSpan.className = nameClass;
-        while (identity.firstChild) nameSpan.appendChild(identity.firstChild);
-        titleLine.appendChild(nameSpan);
-      }
+      titleLine.appendChild(identity);
       return;
     }
+
+    var nameClass = 'l2-map-hero-name-link';
+    if (h.pvpNickColor === 'pk') nameClass += ' l2-pvp-nick--pk';
+    else if (h.pvpNickColor === 'aggressor') nameClass += ' l2-pvp-nick--aggressor';
 
     if (profileOnName) {
       var plainLink = document.createElement('a');
@@ -646,11 +643,11 @@
     levelSpan.textContent = heroLevelPart(h);
     titleLine.appendChild(levelSpan);
 
-    if (h.showPkButton === true) {
+    if (heroShowsPkButton(h)) {
       var pkBtn = document.createElement('button');
       pkBtn.type = 'button';
       pkBtn.className = 'l2-map-hero-link__pk';
-      pkBtn.textContent = ' [PK]';
+      pkBtn.textContent = '[PK]';
       pkBtn.setAttribute('aria-label', 'Атакувати ' + (h.name || ''));
       pkBtn.addEventListener('click', function (e) {
         e.preventDefault();
@@ -1385,6 +1382,21 @@
       var markerSig = compactMarkerSig(sync.spawns || []);
       var fullSig = posSig + '||' + spawnSig + '||' + heroSig + '||' + markerSig;
       if (!opts.force && fullSig === lastMapPaintPosSig) {
+        if (sync.around && sync.around.nearbyHeroes) {
+          aroundData = Object.assign({}, aroundData || {}, {
+            nearbyHeroes: sync.around.nearbyHeroes || [],
+            partyNearbyMembers:
+              sync.around.partyNearbyMembers ||
+              (aroundData && aroundData.partyNearbyMembers) ||
+              [],
+          });
+          renderHeroList(aroundData, heroList, heroSection);
+          renderHeroMarkers(
+            img,
+            heroMarkersLayer,
+            (aroundData && aroundData.nearbyHeroes) || []
+          );
+        }
         return false;
       }
       lastMapPaintPosSig = fullSig;
