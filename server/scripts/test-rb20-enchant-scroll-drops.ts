@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { customNpcDropBagForMob } from '../src/data/l2dopRaidBossDropPatches.js';
 import {
   RB_21_39_NPC_IDS,
+  RB_21_39_SHIELD_BY_NPC_ID,
 } from '../src/data/l2dopRaidBossDropTables21_39.js';
 import {
   RB_40_51_BOSS_COUNT,
@@ -52,6 +53,46 @@ import {
 import type { DropEntry } from '../src/types/combatDrop.js';
 
 const RB20_NPC_IDS = [25372, 25375, 25378] as const;
+
+const BRONZE_SHIELD_ID = 626;
+const HOPLON_ID = 628;
+const PLATE_SHIELD_ID = 2494;
+
+/** Усі RB з дозволеним D-grade щитом (20 lvl patches + 21–39 table). */
+const RB_ALLOWED_SHIELD_BY_NPC_ID: Readonly<
+  Record<number, { shieldId: number; chance: number }>
+> = {
+  25378: { shieldId: BRONZE_SHIELD_ID, chance: 0.06 },
+  25372: { shieldId: BRONZE_SHIELD_ID, chance: 0.06 },
+  25375: { shieldId: HOPLON_ID, chance: 0.06 },
+  ...RB_21_39_SHIELD_BY_NPC_ID,
+};
+
+const RB20_NORMALIZED_EQUIP: Readonly<
+  Record<number, ReadonlyArray<{ itemId: number; chance: number; min?: number; max?: number }>>
+> = {
+  25378: [
+    { itemId: 260, chance: 0.04 },
+    { itemId: 436, chance: 0.07 },
+    { itemId: 44, chance: 0.09 },
+    { itemId: BRONZE_SHIELD_ID, chance: 0.06 },
+    { itemId: 914, chance: 0.06 },
+  ],
+  25375: [
+    { itemId: 187, chance: 0.04 },
+    { itemId: 394, chance: 0.07 },
+    { itemId: 499, chance: 0.09 },
+    { itemId: HOPLON_ID, chance: 0.06 },
+    { itemId: 848, chance: 0.07 },
+  ],
+  25372: [
+    { itemId: 128, chance: 0.04 },
+    { itemId: 58, chance: 0.07 },
+    { itemId: 2447, chance: 0.09 },
+    { itemId: BRONZE_SHIELD_ID, chance: 0.06 },
+    { itemId: 880, chance: 0.08 },
+  ],
+};
 
 function findScrollDrop(
   drops: DropEntry[],
@@ -114,10 +155,88 @@ function assertTierScrolls(
 function assertRb21_39Structure(npcId: number): void {
   const bag = customNpcDropBagForMob(npcId);
   assert.ok(bag, `npc ${npcId} must have custom drop bag`);
-  const itemLines = bag!.drops.filter((d) => d.kind !== 'adena');
-  assert.equal(itemLines.length, 6, `${npcId}: expected 4 equipment + 2 scroll lines`);
-  const chances = itemLines.map((d) => d.chance).sort((a, b) => a - b);
+  const equipLines = bag!.drops.filter(
+    (d) =>
+      d.kind !== 'adena' && d.l2ItemId !== 910510 && d.l2ItemId !== 910511
+  );
+  const hasShield = RB_21_39_SHIELD_BY_NPC_ID[npcId] != null;
+  assert.equal(
+    equipLines.length,
+    hasShield ? 5 : 4,
+    `${npcId}: expected ${hasShield ? 5 : 4} equipment lines`
+  );
+  const chances = equipLines.map((d) => d.chance).sort((a, b) => a - b);
   assert.ok(chances.every((c) => c > 0 && c <= 1), `${npcId}: invalid chances`);
+  assertNoDuplicateDropItemIds(npcId, bag!.drops);
+}
+
+function assertNoDuplicateDropItemIds(npcId: number, drops: DropEntry[]): void {
+  const itemIds = drops
+    .filter((d) => d.l2ItemId != null && d.kind !== 'adena')
+    .map((d) => d.l2ItemId!);
+  assert.equal(
+    new Set(itemIds).size,
+    itemIds.length,
+    `${npcId}: duplicate drop item ids`
+  );
+}
+
+function assertRb20Normalized(npcId: number): void {
+  const bag = customNpcDropBagForMob(npcId)!;
+  const expected = RB20_NORMALIZED_EQUIP[npcId];
+  assert.ok(expected, `${npcId}: missing normalized spec`);
+  const equipLines = bag.drops.filter(
+    (d) =>
+      d.kind !== 'adena' && d.l2ItemId !== 910510 && d.l2ItemId !== 910511
+  );
+  assert.equal(
+    equipLines.length,
+    5,
+    `${npcId}: normalized RB20 must have exactly 5 equipment lines`
+  );
+  assert.ok(
+    equipLines.length <= 7,
+    `${npcId}: RB20 drop pool must not exceed normalized size`
+  );
+  for (const row of expected!) {
+    const line = bag.drops.find((d) => d.l2ItemId === row.itemId);
+    assert.ok(line, `${npcId}: missing item ${row.itemId}`);
+    assert.equal(line!.chance, row.chance, `${npcId}: chance for ${row.itemId}`);
+    assert.equal(line!.min, 1, `${npcId}: min qty for ${row.itemId}`);
+    assert.equal(line!.max, 1, `${npcId}: max qty for ${row.itemId}`);
+  }
+  assertNoDuplicateDropItemIds(npcId, bag.drops);
+}
+
+function assertShieldAssignments(): void {
+  for (const npcId of RB20_NPC_IDS) {
+    assertRb20Normalized(npcId);
+    assertRb20ScrollBag(npcId);
+  }
+
+  for (const [npcIdRaw, spec] of Object.entries(RB_ALLOWED_SHIELD_BY_NPC_ID)) {
+    const npcId = Number(npcIdRaw);
+    const bag = customNpcDropBagForMob(npcId);
+    assert.ok(bag, `shield RB ${npcId} must have drop bag`);
+    const shieldLine = bag!.drops.find((d) => d.l2ItemId === spec.shieldId);
+    assert.ok(shieldLine, `${npcId}: missing shield ${spec.shieldId}`);
+    assert.equal(shieldLine!.chance, spec.chance, `${npcId}: shield chance`);
+    assert.equal(shieldLine!.min, 1, `${npcId}: shield min qty`);
+    assert.equal(shieldLine!.max, 1, `${npcId}: shield max qty`);
+  }
+
+  for (const npcId of RB_21_39_NPC_IDS) {
+    const bag = customNpcDropBagForMob(npcId)!;
+    const shieldLines = bag.drops.filter((d) =>
+      [BRONZE_SHIELD_ID, HOPLON_ID, PLATE_SHIELD_ID].includes(d.l2ItemId ?? 0)
+    );
+    const allowed = RB_ALLOWED_SHIELD_BY_NPC_ID[npcId];
+    if (allowed) {
+      assert.equal(shieldLines.length, 1, `${npcId}: must have one shield line`);
+    } else {
+      assert.equal(shieldLines.length, 0, `${npcId}: must not have shield drop`);
+    }
+  }
 }
 
 function assertIndependentRollBounds(): void {
@@ -316,9 +435,7 @@ function assertRb76_87Structure(npcId: number): void {
 }
 
 function run(): void {
-  for (const npcId of RB20_NPC_IDS) {
-    assertRb20ScrollBag(npcId);
-  }
+  assertShieldAssignments();
 
   assert.equal(RB_21_39_NPC_IDS.length, 54, 'expected 54 RB 21–39 entries');
   for (const npcId of RB_21_39_NPC_IDS) {

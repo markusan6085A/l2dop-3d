@@ -1,5 +1,6 @@
 import {
   buildRbDropBag,
+  RB_DROP_ITEM,
   RB_DROP_TIER_21_26,
   RB_DROP_TIER_28_34,
   RB_DROP_TIER_35_39,
@@ -45,6 +46,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithriGloves',
     jewelry: 'blackPearlRing',
     jewelrySlot: 'ring',
+    shield: 'bronzeShield',
+    shieldChancePercent: 6,
   },
   25380: {
     tier: '21_26',
@@ -53,6 +56,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'reinforcedLeatherBoots',
     jewelry: 'elvenRing',
     jewelrySlot: 'ring',
+    shield: 'hoplon',
+    shieldChancePercent: 6,
   },
   // —— 23 lvl ——
   25366: {
@@ -70,6 +75,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilBots',
     jewelry: 'mithrilRing',
     jewelrySlot: 'ring',
+    shield: 'bronzeShield',
+    shieldChancePercent: 6,
   },
   25362: {
     tier: '21_26',
@@ -78,6 +85,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'reinforcedHelmet',
     jewelry: 'onyxbeastseyeEaring',
     jewelrySlot: 'earring',
+    shield: 'hoplon',
+    shieldChancePercent: 6,
   },
   // —— 24 lvl ——
   25127: {
@@ -87,6 +96,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithriGloves',
     jewelry: 'ringOfDevotion',
     jewelrySlot: 'ring',
+    shield: 'bronzeShield',
+    shieldChancePercent: 6,
   },
   25060: {
     tier: '21_26',
@@ -112,6 +123,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'enchantedRing',
     jewelrySlot: 'ring',
+    shield: 'hoplon',
+    shieldChancePercent: 6,
   },
   25149: {
     tier: '21_26',
@@ -120,6 +133,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilBots',
     jewelry: 'necklaceOfDarkness',
     jewelrySlot: 'necklace',
+    shield: 'bronzeShield',
+    shieldChancePercent: 6,
   },
   25019: {
     tier: '21_26',
@@ -161,6 +176,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'necklaceOfDevotion',
     jewelrySlot: 'necklace',
+    shield: 'bronzeShield',
+    shieldChancePercent: 6,
   },
   25360: {
     tier: '21_26',
@@ -178,6 +195,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithriGloves',
     jewelry: 'mithrilRing',
     jewelrySlot: 'ring',
+    shield: 'hoplon',
+    shieldChancePercent: 7,
   },
   25038: {
     tier: '28_34',
@@ -218,6 +237,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'necklaceOfDarkness',
     jewelrySlot: 'necklace',
+    shield: 'hoplon',
+    shieldChancePercent: 7,
   },
   25501: {
     tier: '28_34',
@@ -234,6 +255,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilBots',
     jewelry: 'enchantedNecklace',
     jewelrySlot: 'necklace',
+    shield: 'plateShield',
+    shieldChancePercent: 7,
   },
   25169: {
     tier: '28_34',
@@ -258,6 +281,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'enchantedRing',
     jewelrySlot: 'ring',
+    shield: 'hoplon',
+    shieldChancePercent: 7,
   },
   25401: {
     tier: '28_34',
@@ -274,6 +299,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithriGloves',
     jewelry: 'onyxbeastseyeEaring',
     jewelrySlot: 'earring',
+    shield: 'plateShield',
+    shieldChancePercent: 7,
   },
   25404: {
     tier: '28_34',
@@ -298,6 +325,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'necklaceOfDevotion',
     jewelrySlot: 'necklace',
+    shield: 'hoplon',
+    shieldChancePercent: 7,
   },
   25023: {
     tier: '28_34',
@@ -314,6 +343,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithriGloves',
     jewelry: 'blackPearlRing',
     jewelrySlot: 'ring',
+    shield: 'plateShield',
+    shieldChancePercent: 7,
   },
   25189: {
     tier: '28_34',
@@ -339,6 +370,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'mithrilRing',
     jewelrySlot: 'ring',
+    shield: 'plateShield',
+    shieldChancePercent: 8,
   },
   25354: {
     tier: '35_39',
@@ -379,6 +412,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'elvenNecklace',
     jewelrySlot: 'necklace',
+    shield: 'plateShield',
+    shieldChancePercent: 8,
   },
   25223: {
     tier: '35_39',
@@ -403,6 +438,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithriGloves',
     jewelry: 'ringOfDevotion',
     jewelrySlot: 'ring',
+    shield: 'plateShield',
+    shieldChancePercent: 8,
   },
   25385: {
     tier: '35_39',
@@ -435,6 +472,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'mithrilHelmet',
     jewelry: 'necklaceOfDevotion',
     jewelrySlot: 'necklace',
+    shield: 'plateShield',
+    shieldChancePercent: 8,
   },
   25394: {
     tier: '35_39',
@@ -459,6 +498,8 @@ const RB_21_39_DROP_ROWS: Readonly<Record<number, RbBossDropRow>> = {
     minorArmor: 'reinforcedGloves',
     jewelry: 'mithrilRing',
     jewelrySlot: 'ring',
+    shield: 'plateShield',
+    shieldChancePercent: 8,
   },
 };
 
@@ -475,3 +516,24 @@ function buildRb21_39DropBags(): Readonly<Record<number, NpcDropBag>> {
 export const RB_21_39_DROP_BAG_BY_NPC_ID = buildRb21_39DropBags();
 
 export const RB_21_39_NPC_IDS = Object.keys(RB_21_39_DROP_ROWS).map(Number);
+
+/** RB 21–39 з D-grade щитом у таблиці (npcId → itemId + шанс). */
+export const RB_21_39_SHIELD_BY_NPC_ID: Readonly<
+  Record<number, { shieldId: number; chance: number }>
+> = Object.fromEntries(
+  Object.entries(RB_21_39_DROP_ROWS)
+    .filter((entry): entry is [string, RbBossDropRow & Required<Pick<RbBossDropPick, 'shield' | 'shieldChancePercent'>>] => {
+      const row = entry[1];
+      return row.shield != null && row.shieldChancePercent != null;
+    })
+    .map(([npcIdRaw, row]) => {
+      const shieldDef = RB_DROP_ITEM[row.shield];
+      return [
+        Number(npcIdRaw),
+        {
+          shieldId: shieldDef.l2ItemId,
+          chance: row.shieldChancePercent / 100,
+        },
+      ];
+    })
+);

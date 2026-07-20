@@ -99,6 +99,9 @@ export const RB_DROP_ITEM = {
     `${A}/stockings_of_knowledge.jpg`
   ),
   tunicOfKnowledge: item(436, 'Tunic Of Knowledge', `${A}/tunic_of_knowledge.jpg`),
+  bronzeShield: item(626, 'Bronze Shield', `${A}/shield_bronze_shield_i00_0.jpg`),
+  hoplon: item(628, 'Hoplon', `${A}/shield_hoplon_i00_0.jpg`),
+  plateShield: item(2494, 'Plate Shield', `${A}/shield_plate_shield_i00_0.jpg`),
   blackPearlRing: item(
     880,
     'Accessary Black Pearl Ring I00',
@@ -245,9 +248,12 @@ export interface RbBossDropPick {
   minorArmor: RbDropItemKey;
   jewelry: RbDropItemKey;
   jewelrySlot: RbJewelrySlot;
+  /** D-grade щит; шанс у відсотках (зазвичай 6–8). */
+  shield?: RbDropItemKey;
+  shieldChancePercent?: number;
 }
 
-function withChance(def: ItemDef, chancePercent: number): RaidBossDropSpec {
+export function withChance(def: ItemDef, chancePercent: number): RaidBossDropSpec {
   return { ...def, chancePercent };
 }
 
@@ -284,13 +290,16 @@ export function buildRbBossDropSpecs(
       : pick.jewelrySlot === 'earring'
         ? tier.earring
         : tier.ring;
-  return [
+  const lines: RaidBossDropSpec[] = [
     withChance(RB_DROP_ITEM[pick.weapon], tier.weapon),
     withChance(RB_DROP_ITEM[pick.mainArmor], tier.mainArmor),
     withChance(RB_DROP_ITEM[pick.minorArmor], tier.minorArmor),
     withChance(RB_DROP_ITEM[pick.jewelry], jewelryChance),
-    ...enchantScrollDrops(tier),
   ];
+  if (pick.shield != null && pick.shieldChancePercent != null) {
+    lines.push(withChance(RB_DROP_ITEM[pick.shield], pick.shieldChancePercent));
+  }
+  return [...lines, ...enchantScrollDrops(tier)];
 }
 
 export function buildRbDropBag(
