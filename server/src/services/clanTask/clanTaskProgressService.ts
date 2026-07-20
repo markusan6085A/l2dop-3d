@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client';
+import { canCharacterAttackRaidBoss } from '../../domain/raidBossLevelRestriction.js';
 import {
-  CLAN_TASK_RAID_BOSS_LEVEL_TOLERANCE,
   getClanTaskDefinition,
   type ClanTaskProgressType,
 } from '../../domain/clanTasks.js';
@@ -57,9 +57,7 @@ export async function addClanTaskProgressForCharacter(
   if (eventType === 'RAID_BOSS_KILLS') {
     const charLevel = input.characterLevel ?? 0;
     const bossLevel = input.raidBossLevel ?? 0;
-    if (
-      Math.abs(charLevel - bossLevel) > CLAN_TASK_RAID_BOSS_LEVEL_TOLERANCE
-    ) {
+    if (!canCharacterAttackRaidBoss(charLevel, bossLevel)) {
       return false;
     }
   }

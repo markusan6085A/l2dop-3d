@@ -13,6 +13,7 @@ import {
   isWithinDungeonPartyBattleRadius,
   resolveLiveDungeonMapPosition,
 } from '../../domain/partyBattlePlayfield.js';
+import { assertCharacterCanAttackRaidBoss } from '../../domain/raidBossLevelRestriction.js';
 import { dungeonMobSpawnToMapWorldSpawn } from '../../data/sevenSignsDungeonMobSpawns.js';
 import { throwIfPartyBattleRouteBlocked } from '../../domain/partyBattleFlags.js';
 import {
@@ -168,6 +169,11 @@ export async function startOrJoinDungeonPartyBattleInTx(
   args: DungeonPartyBattleStartJoinArgs
 ): Promise<{ character: CharacterSnapshot; battle: BattleView }> {
   throwIfPartyBattleRouteBlocked();
+
+  if (args.dungeonMob.kind === 'raid') {
+    const effLv = levelFromTotalExp(args.char.exp);
+    assertCharacterCanAttackRaidBoss(effLv, args.dungeonMob.level);
+  }
 
   const spawn =
     dungeonMobSpawnToMapWorldSpawn(args.dungeonMob) ??

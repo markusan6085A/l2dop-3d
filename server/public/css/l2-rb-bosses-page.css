@@ -188,6 +188,21 @@ body.l2-page-rb-bosses .l2-rb-row__tp:active {
   -webkit-tap-highlight-color: transparent;
 }
 
+body.l2-page-rb-bosses .l2-rb-row__tp:disabled,
+body.l2-page-rb-bosses .l2-rb-row__attack:disabled {
+  color: #6a6258;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+body.l2-page-rb-bosses .l2-rb-row__attack-hint {
+  font-size: 10px;
+  color: #a09080;
+  max-width: 140px;
+  line-height: 1.25;
+  text-align: right;
+}
+
 body.l2-page-rb-bosses .l2-rb-pager {
   display: flex;
   align-items: center;

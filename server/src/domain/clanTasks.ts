@@ -93,8 +93,10 @@ export const CLAN_TASK_DEFINITIONS: Record<ClanTaskId, ClanTaskDefinition> = {
   },
 };
 
-/** Макс. різниця рівня для kill_raid_boss. */
-export const CLAN_TASK_RAID_BOSS_LEVEL_TOLERANCE = 9;
+import { MAX_RAID_BOSS_OVERLEVEL } from './raidBossLevelRestriction.js';
+
+/** Макс. перевищення рівня гравця над РБ для kill_raid_boss (канон = обмеження атаки). */
+export const CLAN_TASK_RAID_BOSS_LEVEL_TOLERANCE = MAX_RAID_BOSS_OVERLEVEL;
 
 export function parseClanTaskId(raw: string | undefined | null): ClanTaskId | null {
   if (!raw) return null;

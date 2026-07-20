@@ -21,6 +21,11 @@ import {
 import { dropDisplayNameShort } from '../utils/dropDisplayName.js';
 import { resolveItemIconPublicUrl } from './l2dopItemIconPath.js';
 import { viewerMaySeeSpoilLoot } from '../domain/dwarfSpoilerLootGate.js';
+import {
+  canCharacterAttackRaidBoss,
+  minRaidBossLevelForCharacter,
+  raidBossAttackBlockedReasonUk,
+} from '../domain/raidBossLevelRestriction.js';
 import type { Prisma } from '@prisma/client';
 
 export { resolveL2dopNpcIdByMobName };
@@ -87,6 +92,8 @@ export interface SpawnCatalogViewerContext {
   race: string;
   l2Profession: string;
   skillsLearnedJson?: Prisma.JsonValue | null;
+  /** Ефективний рівень персонажа (для обмеження атаки РБ). */
+  characterLevel?: number;
 }
 
 export interface SpawnCatalogInfo {
@@ -116,6 +123,12 @@ export interface SpawnCatalogInfo {
   rewardExpSynthetic: boolean;
   /** Застаріле поле API; табличного XML-дропу немає, прев’ю — процедурне (ресурси + адена). */
   dropsSynthetic: boolean;
+  /** Чи може поточний персонаж атакувати цього РБ (лише kind=raid). */
+  canAttackRaidBoss?: boolean;
+  /** Коротка причина блоку атаки РБ українською. */
+  raidBossAttackBlockedReasonUk?: string;
+  /** Мін. рівень РБ для атаки цим персонажем. */
+  minRaidBossLevelForAttack?: number;
 }
 
 export function getSpawnCatalogInfo(
@@ -170,6 +183,19 @@ export function getSpawnCatalogInfo(
     scaleRewardNumber(rw.sp, rewardMult);
   const rewardExpSynthetic =
     sdPreview != null || rbPreview != null ? false : rw.synthetic;
+  const charLevel =
+    typeof viewer?.characterLevel === 'number' && Number.isFinite(viewer.characterLevel)
+      ? Math.floor(viewer.characterLevel)
+      : null;
+  const raidAttack =
+    spawn.kind === 'raid' && charLevel != null
+      ? {
+          canAttackRaidBoss: canCharacterAttackRaidBoss(charLevel, spawn.level),
+          raidBossAttackBlockedReasonUk:
+            raidBossAttackBlockedReasonUk(charLevel, spawn.level) ?? undefined,
+          minRaidBossLevelForAttack: minRaidBossLevelForCharacter(charLevel),
+        }
+      : {};
   return {
     spawnId: spawn.id,
     name: spawn.name,
@@ -193,5 +219,6 @@ export function getSpawnCatalogInfo(
     rewardSp,
     rewardExpSynthetic,
     dropsSynthetic: customDropOnly,
+    ...raidAttack,
   };
 }

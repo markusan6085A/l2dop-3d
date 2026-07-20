@@ -85,6 +85,7 @@
     "test:magic-statue-enchant-stats": "tsx server/scripts/test-magic-statue-enchant-stats.ts",
     "test:drops-shop-bas-col": "tsx server/scripts/test-drops-shop-bas-col-pricing.ts",
     "test:rb20-enchant-scroll-drops": "tsx server/scripts/test-rb20-enchant-scroll-drops.ts",
+    "test:raid-boss-level-restriction": "tsx server/scripts/test-raid-boss-level-restriction.ts",
     "test:identity-renderer-client": "node server/scripts/identity-renderer-client-smoke.mjs",
     "test:party-hud-revision-client": "node server/scripts/party-hud-revision-client-smoke.mjs",
     "test:party-battle-dungeon": "tsx server/scripts/party-battle-dungeon-smoke.ts",

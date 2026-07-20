@@ -26,6 +26,7 @@ import {
   worldCombatStateFromBattleJson,
 } from '../domain/worldCombatState.js';
 import { applyRiposteReflectToBattleMods } from '../domain/riposteStance.js';
+import { assertCharacterCanAttackRaidBoss } from '../domain/raidBossLevelRestriction.js';
 import { prisma } from '../lib/prisma.js';
 import {
   gameConflictFromCharacter,
@@ -158,6 +159,19 @@ export async function startBattleInTx(
   }
   const inv0 = parseInventory(base.inventoryJson);
   const effLv0 = levelFromTotalExp(base.exp);
+  const raidBossLevel =
+    spawn.kind === 'raid'
+      ? spawn.level
+      : dungeonMob?.kind === 'raid'
+        ? dungeonMob.level
+        : null;
+  if (raidBossLevel != null) {
+    const existingBj = parseBattleJson(base.battleJson);
+    const rejoinSameRaid = existingBj?.spawnId === spawnId;
+    if (!rejoinSameRaid) {
+      assertCharacterCanAttackRaidBoss(effLv0, raidBossLevel);
+    }
+  }
   const combat0 = computeCombatStats(
     effLv0,
     base.race,

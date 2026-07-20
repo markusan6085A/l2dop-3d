@@ -343,6 +343,15 @@ button.l2-map-mob-title--tap-full:focus {
   color: #ccc4b8;
 }
 
+.l2-map-mob-modal__battle--disabled,
+.l2-map-mob-modal__battle--disabled:hover,
+.l2-map-mob-modal__battle--disabled:focus {
+  color: #6a6258;
+  cursor: not-allowed;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
 .l2-map-mob-link {
   display: block;
   padding: 4px 6px;

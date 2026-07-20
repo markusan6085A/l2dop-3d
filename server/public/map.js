@@ -1614,16 +1614,39 @@
         }
       }
       if (mobModalNote) {
-        mobModalNote.hidden = true;
-        mobModalNote.textContent = '';
+        if (j.raidBossAttackBlockedReasonUk) {
+          mobModalNote.hidden = false;
+          mobModalNote.textContent = j.raidBossAttackBlockedReasonUk;
+        } else {
+          mobModalNote.hidden = true;
+          mobModalNote.textContent = '';
+        }
       }
       if (mobModalBattle) {
+        var canAttackRb = j.canAttackRaidBoss !== false;
         mobModalBattle.href = '/battle.html?spawnId=' + encodeURIComponent(spawnId);
-        mobModalBattle.onclick = function (ev) {
-          ev.preventDefault();
-          closeMobModal();
-          startBattleFromMap(spawnId);
-        };
+        mobModalBattle.classList.toggle(
+          'l2-map-mob-modal__battle--disabled',
+          !canAttackRb
+        );
+        mobModalBattle.setAttribute('aria-disabled', canAttackRb ? 'false' : 'true');
+        if (!canAttackRb) {
+          mobModalBattle.onclick = function (ev) {
+            ev.preventDefault();
+            var blockedMsg =
+              j.raidBossAttackBlockedReasonUk ||
+              'Недоступно: РБ нижче дозволеного рівня.';
+            if (window.L2 && typeof L2.showToast === 'function') {
+              L2.showToast(blockedMsg);
+            }
+          };
+        } else {
+          mobModalBattle.onclick = function (ev) {
+            ev.preventDefault();
+            closeMobModal();
+            startBattleFromMap(spawnId);
+          };
+        }
       }
       if (mobModal) mobModal.hidden = false;
     }

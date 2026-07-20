@@ -1,4 +1,9 @@
 import { getWorldSpawnById, MAP_WORLD_SPAWNS } from '../data/mapWorldSpawns.js';
+import {
+  canCharacterAttackRaidBoss,
+  minRaidBossLevelForCharacter,
+  raidBossAttackBlockedReasonUk,
+} from '../domain/raidBossLevelRestriction.js';
 import { mobIconUrlForSpawn } from './spawnCatalogService.js';
 
 export const RB_TELEPORT_ADENA_COST = 1;
@@ -18,19 +23,28 @@ export interface RaidBossListRow {
   level: number;
   adenaCost: number;
   icon: string;
+  canAttack: boolean;
+  attackBlockedReasonUk: string | null;
 }
 
 export function listRaidBossesPage(
   page: number,
-  pageSize: number = RB_LIST_PAGE_SIZE
+  pageSize: number = RB_LIST_PAGE_SIZE,
+  characterLevel?: number | null
 ): {
   page: number;
   pageSize: number;
   total: number;
   totalPages: number;
   adenaCost: number;
+  characterLevel: number | null;
+  minRaidBossLevel: number | null;
   bosses: RaidBossListRow[];
 } {
+  const charLv =
+    typeof characterLevel === 'number' && Number.isFinite(characterLevel)
+      ? Math.floor(characterLevel)
+      : null;
   const total = RAID_BOSSES_SORTED.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(Math.max(1, Math.floor(page) || 1), totalPages);
@@ -42,6 +56,12 @@ export function listRaidBossesPage(
       level: spawn.level,
       adenaCost: RB_TELEPORT_ADENA_COST,
       icon: mobIconUrlForSpawn(spawn),
+      canAttack:
+        charLv == null ? true : canCharacterAttackRaidBoss(charLv, spawn.level),
+      attackBlockedReasonUk:
+        charLv == null
+          ? null
+          : raidBossAttackBlockedReasonUk(charLv, spawn.level),
     })
   );
   return {
@@ -50,6 +70,8 @@ export function listRaidBossesPage(
     total,
     totalPages,
     adenaCost: RB_TELEPORT_ADENA_COST,
+    characterLevel: charLv,
+    minRaidBossLevel: charLv != null ? minRaidBossLevelForCharacter(charLv) : null,
     bosses,
   };
 }

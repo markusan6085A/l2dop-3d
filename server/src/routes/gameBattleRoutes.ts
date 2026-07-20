@@ -23,6 +23,9 @@ import {
   startPvpBattle,
 } from '../services/battleService.js';
 import type { BattleActionId } from '../domain/battle.js';
+import { getRaidBossLevelRestrictionMessageUk } from '../domain/raidBossLevelRestriction.js';
+import { levelFromTotalExp } from '../data/l2dopExpgain.js';
+import { prisma } from '../lib/prisma.js';
 import {
   ELVEN_MYSTIC_ACTIVE_L2_ID_SET,
 } from '../data/elvenMysticSkillCatalog.js';
@@ -187,6 +190,18 @@ export function registerGameBattleRoutes(app: FastifyInstance): void {
           return reply.code(400).send({
             error: e.message,
             messageUk: 'Ти знепритомнів. Спочатку натисни «В місто».',
+          });
+        }
+        if (e instanceof Error && e.message === 'raid_boss_level_too_high') {
+          await logRouteMutation(request, 'battle_start', er, 'error', undefined, undefined, 'battle-mutation');
+          const row = await prisma.character.findFirst({
+            where: { userId },
+            select: { exp: true },
+          });
+          const charLevel = row != null ? levelFromTotalExp(row.exp) : 1;
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: getRaidBossLevelRestrictionMessageUk(charLevel),
           });
         }
         if (e instanceof Error && isPartyBattleWrongSpawnMessage(e.message)) {

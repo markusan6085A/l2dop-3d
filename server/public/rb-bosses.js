@@ -265,7 +265,25 @@
     tp.textContent = 'Телепорт';
     tp.setAttribute('data-spawn-id', b.spawnId);
 
+    var atk = document.createElement('button');
+    atk.type = 'button';
+    atk.className = 'l2-rb-row__tp l2-rb-row__attack';
+    atk.textContent = 'Атакувати';
+    atk.setAttribute('data-spawn-id', b.spawnId);
+    if (b.canAttack === false) {
+      atk.disabled = true;
+      atk.title =
+        b.attackBlockedReasonUk || 'Недоступно: РБ нижче дозволеного рівня.';
+    }
+
     right.appendChild(price);
+    if (b.canAttack === false && b.attackBlockedReasonUk) {
+      var hint = document.createElement('span');
+      hint.className = 'l2-rb-row__attack-hint';
+      hint.textContent = b.attackBlockedReasonUk;
+      right.appendChild(hint);
+    }
+    right.appendChild(atk);
     right.appendChild(tp);
     row.appendChild(left);
     row.appendChild(right);

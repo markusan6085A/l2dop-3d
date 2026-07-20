@@ -22,6 +22,7 @@ import { getMapSyncForUser } from '../services/charMapStateService.js';
 import { getMammonMerchantState } from '../services/mammonMerchantService.js';
 import { getMammonBlacksmithState } from '../services/mammonBlacksmithService.js';
 import { prisma } from '../lib/prisma.js';
+import { levelFromTotalExp } from '../data/l2dopExpgain.js';
 import type { CharacterRow } from '../services/charTypes.js';
 import {
   getDungeonViewWithPlayer,
@@ -620,6 +621,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
         race: row.race,
         l2Profession: row.l2Profession,
         skillsLearnedJson: row.skillsLearnedJson,
+        characterLevel: levelFromTotalExp(row.exp),
       });
       if (!info) {
         return reply.code(404).send({ error: 'not_found' });
@@ -636,7 +638,12 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       if (!userId) return;
       const q = request.query as { page?: string };
       const page = q.page != null ? Number(q.page) : 1;
-      return reply.send(listRaidBossesPage(page));
+      const row = await prisma.character.findFirst({
+        where: { userId },
+        select: { exp: true },
+      });
+      const characterLevel = row != null ? levelFromTotalExp(row.exp) : null;
+      return reply.send(listRaidBossesPage(page, undefined, characterLevel));
     }
   );
 
