@@ -310,6 +310,10 @@
   var lastMammonRotationSig = null;
   var lastMapSyncRevision = null;
   var mapSyncInFlight = false;
+  var mapPollTimer = null;
+  var mapPollStopped = false;
+  var mapDefeatReturnInFlight = false;
+  var shownMapDeathEventIds = {};
 
   function compactSpawnListSig(spawns) {
     if (!spawns || !spawns.length) return '0';
@@ -539,13 +543,6 @@
     mainEl.style.setProperty('--l2-map-hero-nick-color', heroNickHex(h) || '#bfa88a');
   }
 
-  var lastMapSyncRevision = null;
-  var mapSyncInFlight = false;
-  var mapPollTimer = null;
-  var mapPollStopped = false;
-  var mapDefeatReturnInFlight = false;
-  var shownMapDeathEventIds = {};
-
   function stopMapPoll() {
     mapPollStopped = true;
     if (mapPollTimer != null) {
@@ -593,13 +590,47 @@
     }
   }
 
+  function hideMapDefeatBlock() {
+    var defRoot = $('map-defeat-root');
+    if (defRoot) defRoot.hidden = true;
+  }
+
+  function clearStaleDefeatFromSnapshot(snap) {
+    if (!snap) return;
+    var touched = false;
+    if (snap.pveDefeat) {
+      delete snap.pveDefeat;
+      touched = true;
+    }
+    if (snap.pvpDefeat) {
+      delete snap.pvpDefeat;
+      touched = true;
+    }
+    if (touched && window.L2 && typeof L2.setLastSnapshot === 'function') {
+      L2.setLastSnapshot(snap);
+    }
+    try {
+      sessionStorage.removeItem('l2battle_pending_defeat_v1');
+    } catch (eClear) {
+      /* ignore */
+    }
+  }
+
+  function mapDefeatDedupeKey(defeat, kind) {
+    if (!defeat) return '';
+    if (defeat.deathEventId) return String(defeat.deathEventId);
+    if (kind === 'pve' && defeat.spawnId) {
+      return 'pve:' + String(defeat.spawnId);
+    }
+    return '';
+  }
+
   function showMapDefeatBlock(defeat, kind) {
     var defRoot = $('map-defeat-root');
     if (!defRoot) return false;
-    var deathId =
-      defeat && defeat.deathEventId ? String(defeat.deathEventId) : '';
-    if (deathId && shownMapDeathEventIds[deathId]) return true;
-    if (deathId) shownMapDeathEventIds[deathId] = true;
+    var dedupeKey = mapDefeatDedupeKey(defeat, kind);
+    if (dedupeKey && shownMapDeathEventIds[dedupeKey]) return true;
+    if (dedupeKey) shownMapDeathEventIds[dedupeKey] = true;
 
     defRoot.hidden = false;
     var mobHead = $('map-defeat-mobhead');
@@ -655,23 +686,43 @@
   }
 
   function handleMapDefeatFromSync(sync, snapshot) {
-    if (sync && sync.pvpDefeat && sync.pvpDefeat.scope !== 'clan_siege') {
-      if (snapshot && sync.pvpDefeat) {
-        snapshot.pvpDefeat = sync.pvpDefeat;
-      }
-      return showMapDefeatBlock(sync.pvpDefeat, 'pvp');
-    }
+    if (!sync) return false;
+
     var snap =
       snapshot ||
       (window.L2 && typeof L2.lastSnapshot === 'function'
         ? L2.lastSnapshot()
         : null);
-    if (snap && snap.pveDefeat) {
-      return showMapDefeatBlock(snap.pveDefeat, 'pve');
+
+    if (sync.pvpDefeat && sync.pvpDefeat.scope === 'clan_siege') {
+      hideMapDefeatBlock();
+      return false;
     }
-    if (sync && sync.pveDefeat) {
+
+    if (sync.pvpDefeat) {
+      if (snap) {
+        snap.pvpDefeat = sync.pvpDefeat;
+        delete snap.pveDefeat;
+        if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+          L2.setLastSnapshot(snap);
+        }
+      }
+      return showMapDefeatBlock(sync.pvpDefeat, 'pvp');
+    }
+
+    if (sync.pveDefeat) {
+      if (snap) {
+        snap.pveDefeat = sync.pveDefeat;
+        delete snap.pvpDefeat;
+        if (window.L2 && typeof L2.setLastSnapshot === 'function') {
+          L2.setLastSnapshot(snap);
+        }
+      }
       return showMapDefeatBlock(sync.pveDefeat, 'pve');
     }
+
+    hideMapDefeatBlock();
+    clearStaleDefeatFromSnapshot(snap);
     return false;
   }
 
@@ -721,6 +772,12 @@
       } else if (window.L2 && L2.setLastSnapshot) {
         L2.setLastSnapshot(payload.character);
       }
+      hideMapDefeatBlock();
+      clearStaleDefeatFromSnapshot(
+        window.L2 && typeof L2.lastSnapshot === 'function'
+          ? L2.lastSnapshot()
+          : payload.character
+      );
       try {
         sessionStorage.removeItem('l2-battle-page-context-v1');
       } catch (eCtx) {
@@ -1681,7 +1738,6 @@
       if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
         L2.applyHudFromSnapshot(c);
       }
-      if (handlePveDefeatRedirect(null, c)) return;
     }
 
     var sync0 = await syncPromise;
