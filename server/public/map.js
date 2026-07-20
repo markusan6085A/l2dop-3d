@@ -339,6 +339,10 @@
           ':' +
           String(h.showPkButton ? 1 : 0) +
           ':' +
+          String(h.profileOnNameClick ? 1 : 0) +
+          ':' +
+          String(h.pvpEligibilityCode || '') +
+          ':' +
           String(h.isPartyMember ? 1 : 0)
       );
     }
@@ -583,6 +587,48 @@
     });
   }
 
+  function appendHeroNameEl(titleLine, h) {
+    var profileOnName = h.profileOnNameClick === true;
+    var nameClass = 'l2-map-hero-name-link';
+    if (h.pvpNickColor === 'pk') nameClass += ' l2-pvp-nick--pk';
+    else if (h.pvpNickColor === 'aggressor') nameClass += ' l2-pvp-nick--aggressor';
+
+    if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
+      var identity = L2.renderPlayerIdentity({
+        name: h.name,
+        clanEmblemId: h.clanEmblemId,
+        emblemSize: 16,
+        pvpNickColor: h.pvpNickColor,
+      });
+      if (profileOnName) {
+        var nameLink = document.createElement('a');
+        nameLink.className = nameClass;
+        nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+        while (identity.firstChild) nameLink.appendChild(identity.firstChild);
+        titleLine.appendChild(nameLink);
+      } else {
+        var nameSpan = document.createElement('span');
+        nameSpan.className = nameClass;
+        while (identity.firstChild) nameSpan.appendChild(identity.firstChild);
+        titleLine.appendChild(nameSpan);
+      }
+      return;
+    }
+
+    if (profileOnName) {
+      var plainLink = document.createElement('a');
+      plainLink.className = nameClass;
+      plainLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+      plainLink.textContent = h.name || '—';
+      titleLine.appendChild(plainLink);
+    } else {
+      var plainSpan = document.createElement('span');
+      plainSpan.className = nameClass;
+      plainSpan.textContent = h.name || '—';
+      titleLine.appendChild(plainSpan);
+    }
+  }
+
   function appendHeroRow(listEl, h) {
     var li = document.createElement('li');
     li.className = 'l2-map-hero-item';
@@ -593,49 +639,12 @@
     var titleLine = document.createElement('div');
     titleLine.className = 'l2-map-hero-item__title';
 
-    if (window.L2 && typeof L2.renderPlayerIdentity === 'function') {
-      var identity = L2.renderPlayerIdentity({
-        name: h.name,
-        clanEmblemId: h.clanEmblemId,
-        emblemSize: 16,
-        pvpNickColor: h.pvpNickColor,
-      });
-      var nameSpan = document.createElement('span');
-      nameSpan.className = 'l2-map-hero-name-link';
-      while (identity.firstChild) nameSpan.appendChild(identity.firstChild);
-      titleLine.appendChild(nameSpan);
-    } else {
-      var nameSpan = document.createElement('span');
-      nameSpan.className = 'l2-map-hero-name-link';
-      if (h.pvpNickColor === 'pk') nameSpan.classList.add('l2-pvp-nick--pk');
-      else if (h.pvpNickColor === 'aggressor') nameSpan.classList.add('l2-pvp-nick--aggressor');
-      nameSpan.textContent = h.name || '—';
-      titleLine.appendChild(nameSpan);
-    }
+    appendHeroNameEl(titleLine, h);
 
     var levelSpan = document.createElement('span');
     levelSpan.className = 'l2-map-hero-level';
     levelSpan.textContent = heroLevelPart(h);
     titleLine.appendChild(levelSpan);
-
-    if (h.isPartyMember) {
-      var partyTag = document.createElement('span');
-      partyTag.className = 'l2-map-hero-party-tag';
-      partyTag.textContent = h.isPartyLeader ? ' · Паті★' : ' · Паті';
-      partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
-      titleLine.appendChild(partyTag);
-    }
-
-    main.appendChild(titleLine);
-
-    var actions = document.createElement('div');
-    actions.className = 'l2-map-hero-item__actions';
-
-    var profileLink = document.createElement('a');
-    profileLink.className = 'l2-map-hero-link__profile';
-    profileLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-    profileLink.textContent = '[профіль]';
-    actions.appendChild(profileLink);
 
     if (h.showPkButton === true) {
       var pkBtn = document.createElement('button');
@@ -649,10 +658,18 @@
         var cid = h.characterId || '';
         if (cid) startPvpFromMap(cid);
       });
-      actions.appendChild(pkBtn);
+      titleLine.appendChild(pkBtn);
     }
 
-    main.appendChild(actions);
+    if (h.isPartyMember) {
+      var partyTag = document.createElement('span');
+      partyTag.className = 'l2-map-hero-party-tag';
+      partyTag.textContent = h.isPartyLeader ? ' · Паті★' : ' · Паті';
+      partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
+      titleLine.appendChild(partyTag);
+    }
+
+    main.appendChild(titleLine);
     li.appendChild(main);
     listEl.appendChild(li);
   }

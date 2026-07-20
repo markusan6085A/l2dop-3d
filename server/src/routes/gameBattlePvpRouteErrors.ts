@@ -14,6 +14,8 @@ const PVP_START_ERRORS: Record<string, string> = {
   pvp_target_offline: 'Гравець офлайн.',
   pvp_attacker_offline: 'Персонаж офлайн.',
   pvp_target_dead: 'Ціль уже мертва.',
+  pvp_level_difference_too_high:
+    'Занадто велика різниця рівнів. PK дозволено при різниці не більше 20 рівнів.',
   already_in_battle: 'Спочатку заверши поточний бій.',
 };
 

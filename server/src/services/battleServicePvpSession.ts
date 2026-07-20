@@ -38,6 +38,7 @@ import {
 } from '../domain/mapPlayfieldContext.js';
 import {
   areCharactersInSamePartyInTx,
+  canCharactersFightWorldPvp,
   characterBlocksWorldPvpStart,
 } from '../domain/worldPvpEligibility.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
@@ -492,6 +493,12 @@ export async function startPvpBattleInTx(
 
   if (await areCharactersInSamePartyInTx(tx, attackerRow.id, targetId)) {
     throw new Error('pvp_party_member');
+  }
+
+  const attackerLevel = levelFromTotalExp(attackerRow.exp);
+  const targetLevel = levelFromTotalExp(targetRow.exp);
+  if (!canCharactersFightWorldPvp(attackerLevel, targetLevel)) {
+    throw new Error('pvp_level_difference_too_high');
   }
 
   const targetHp = Math.max(0, Math.floor(Number(targetRow.hp) || 0));

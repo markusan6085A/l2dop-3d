@@ -202,38 +202,29 @@
       var titleLine = document.createElement('div');
       titleLine.className = 'l2-map-hero-item__title';
 
-      var nameSpan = document.createElement('span');
-      nameSpan.className = 'l2-map-hero-name-link';
-      if (h.pvpNickColor === 'pk') nameSpan.classList.add('l2-pvp-nick--pk');
+      var profileOnName = h.profileOnNameClick === true;
+      var nameClass = 'l2-map-hero-name-link';
+      if (h.pvpNickColor === 'pk') nameClass += ' l2-pvp-nick--pk';
       else if (h.pvpNickColor === 'aggressor') {
-        nameSpan.classList.add('l2-pvp-nick--aggressor');
+        nameClass += ' l2-pvp-nick--aggressor';
       }
-      nameSpan.textContent = h.name || '—';
-      titleLine.appendChild(nameSpan);
+      if (profileOnName) {
+        var nameLink = document.createElement('a');
+        nameLink.className = nameClass;
+        nameLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
+        nameLink.textContent = h.name || '—';
+        titleLine.appendChild(nameLink);
+      } else {
+        var nameSpan = document.createElement('span');
+        nameSpan.className = nameClass;
+        nameSpan.textContent = h.name || '—';
+        titleLine.appendChild(nameSpan);
+      }
 
       var levelSpan = document.createElement('span');
       levelSpan.className = 'l2-map-hero-level';
       levelSpan.textContent = heroLevelPart(h);
       titleLine.appendChild(levelSpan);
-
-      if (h.isPartyMember) {
-        var partyTag = document.createElement('span');
-        partyTag.className = 'l2-map-hero-party-tag';
-        partyTag.textContent = h.isPartyLeader ? ' · Паті★' : ' · Паті';
-        partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
-        titleLine.appendChild(partyTag);
-      }
-
-      main.appendChild(titleLine);
-
-      var actions = document.createElement('div');
-      actions.className = 'l2-map-hero-item__actions';
-
-      var profileLink = document.createElement('a');
-      profileLink.className = 'l2-map-hero-link__profile';
-      profileLink.href = '/player.html?name=' + encodeURIComponent(h.name || '');
-      profileLink.textContent = '[профіль]';
-      actions.appendChild(profileLink);
 
       if (h.showPkButton === true) {
         var pkBtn = document.createElement('button');
@@ -248,10 +239,18 @@
             if (heroId) onPkClick(heroId);
           };
         })(h.characterId));
-        actions.appendChild(pkBtn);
+        titleLine.appendChild(pkBtn);
       }
 
-      main.appendChild(actions);
+      if (h.isPartyMember) {
+        var partyTag = document.createElement('span');
+        partyTag.className = 'l2-map-hero-party-tag';
+        partyTag.textContent = h.isPartyLeader ? ' · Паті★' : ' · Паті';
+        partyTag.title = h.isPartyLeader ? 'Лідер паті' : 'Член паті';
+        titleLine.appendChild(partyTag);
+      }
+
+      main.appendChild(titleLine);
       li.appendChild(main);
       listEl.appendChild(li);
     }

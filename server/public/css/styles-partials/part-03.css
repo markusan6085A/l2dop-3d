@@ -497,11 +497,8 @@ button.l2-map-mob-title--tap-full:focus {
   max-width: 100%;
 }
 
-.l2-map-hero-item__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
+.l2-map-hero-item__title .l2-map-hero-link__pk {
+  flex: 0 0 auto;
 }
 
 .l2-map-hero-party-tag {
@@ -510,22 +507,6 @@ button.l2-map-mob-title--tap-full:focus {
   font-weight: 600;
   font-size: 12px;
   line-height: 1.35;
-}
-
-.l2-map-hero-link__profile {
-  flex: 0 0 auto;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 1.35;
-  color: #bfa88a;
-  text-decoration: none;
-}
-
-.l2-map-hero-link__profile:hover,
-.l2-map-hero-link__profile:focus {
-  color: #d4c4a8;
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 .l2-map-hero-name-link {

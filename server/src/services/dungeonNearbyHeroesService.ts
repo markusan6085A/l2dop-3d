@@ -10,7 +10,7 @@ import {
 } from '../domain/pvpKarma.js';
 import {
   canPkAttackHeroBattleState,
-  resolveShowPkButton,
+  resolveWorldPvpMapEligibility,
 } from '../domain/worldPvpEligibility.js';
 import { resolveDungeonCanonicalLocation } from '../domain/mapPlayfieldContext.js';
 import { parsePvePendingDefeat } from '../domain/pvePendingDefeat.js';
@@ -32,6 +32,9 @@ export interface DungeonNearbyHeroEntry {
   canPkAttack: boolean;
   showPkButton: boolean;
   pvpAllowed: boolean;
+  pvpEligibilityCode: string | null;
+  pvpBlockedReasonUk: string | null;
+  profileOnNameClick: boolean;
   pvpNickColor: PvpNickColor;
   pk: number;
   isPartyMember?: boolean;
@@ -88,6 +91,14 @@ export async function getNearbyHeroesForDungeon(
   if (!key || !exclude) return [];
 
   const viewerLoc = resolveDungeonCanonicalLocation(key);
+
+  const viewerRow = await prisma.character.findUnique({
+    where: { id: exclude },
+    select: { exp: true },
+  });
+  const viewerLevel = viewerRow
+    ? getEffectiveCharacterLevel(viewerRow.exp)
+    : 1;
 
   const R = DUNGEON_NEARBY_RADIUS_PX;
   const R2 = R * R;
@@ -153,9 +164,12 @@ export async function getNearbyHeroesForDungeon(
     const isPartyMember = partyMemberIds.has(row.id);
     const inBattleRange = d <= R;
     const online = isCharacterOnlineNow(row.id);
-    const showPkButton = resolveShowPkButton({
+    const targetLevel = getEffectiveCharacterLevel(row.exp);
+    const eligibility = resolveWorldPvpMapEligibility({
       viewerLocation: viewerLoc,
       targetLocation: viewerLoc,
+      viewerLevel,
+      targetLevel,
       targetIsPartyMember: isPartyMember,
       inBattleRange,
       targetOnline: online,
@@ -165,15 +179,18 @@ export async function getNearbyHeroesForDungeon(
     candidates.push({
       characterId: row.id,
       name: row.name,
-      level: getEffectiveCharacterLevel(row.exp),
+      level: targetLevel,
       mapX: hx,
       mapY: hy,
       distance: Math.round(d),
       inBattleRange,
       inBattle: row.battleJson != null,
       canPkAttack: pkAllowed,
-      showPkButton,
+      showPkButton: eligibility.showPkButton,
       pvpAllowed: viewerLoc.pvpAllowed,
+      pvpEligibilityCode: eligibility.pvpEligibilityCode,
+      pvpBlockedReasonUk: eligibility.pvpBlockedReasonUk,
+      profileOnNameClick: eligibility.profileOnNameClick,
       pvpNickColor,
       pk: karma > 0 ? karma : 0,
       isPartyMember,

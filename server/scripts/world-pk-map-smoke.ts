@@ -11,14 +11,24 @@ config({ path: path.join(__dirname, '../.env') });
 
 import assert from 'node:assert/strict';
 import bcrypt from 'bcryptjs';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { MAP_WORLD_SPAWNS } from '../src/data/mapWorldSpawns.js';
 import { computeCombatStats } from '../src/data/l2dopCombatFormulas.js';
 import { parseInventory } from '../src/data/inventory.js';
-import { levelFromTotalExp } from '../src/data/l2dopExpgain.js';
+import {
+  L2DOP_LEVEL_MIN_EXP,
+  levelFromTotalExp,
+} from '../src/data/l2dopExpgain.js';
 import { isInPvpSafeZone } from '../src/domain/pvpSafeZones.js';
 import { BATTLE_RANGE } from '../src/domain/battle.js';
 import { serializeDungeonState } from '../src/domain/dungeonState.js';
 import { resolveMapLocality } from '../src/data/mapLocalities.js';
+import {
+  canCharactersFightWorldPvp,
+  MAX_WORLD_PVP_LEVEL_DIFFERENCE,
+  WORLD_PVP_LEVEL_DIFF_BLOCKED_REASON_UK,
+} from '../src/domain/worldPvpEligibility.js';
 import { prisma } from '../src/lib/prisma.js';
 import { startBattleInTx } from '../src/services/battleServiceSession.js';
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
@@ -47,6 +57,16 @@ function ok(name: string): void {
 type Acc = { userId: string; characterId: string; name: string };
 
 async function createAccount(label: string, pos?: { worldX: number; worldY: number }): Promise<Acc> {
+  return createAccountAtLevel(label, 29, pos);
+}
+
+async function createAccountAtLevel(
+  label: string,
+  level: number,
+  pos?: { worldX: number; worldY: number }
+): Promise<Acc> {
+  const lv = Math.max(1, Math.min(80, Math.floor(level)));
+  const exp = L2DOP_LEVEL_MIN_EXP[lv - 1]!;
   const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
   const user = await prisma.user.create({
     data: {
@@ -57,8 +77,8 @@ async function createAccount(label: string, pos?: { worldX: number; worldY: numb
           name: `W${label}${suffix.slice(-4)}`.slice(0, 16),
           race: 'Human',
           classBranch: 'fighter',
-          level: 29,
-          exp: BigInt(1_400_000),
+          level: lv,
+          exp,
           cityId: 'l2dop_giran',
           worldX: pos?.worldX ?? WILD_X,
           worldY: pos?.worldY ?? WILD_Y,
@@ -138,6 +158,166 @@ async function expectPvpStartError(
   );
 }
 
+async function expectPvpStartBlockedNoMutation(
+  attacker: Acc,
+  targetId: string,
+  code: string
+): Promise<void> {
+  const [atkBefore, tgtBefore] = await Promise.all([
+    prisma.character.findUniqueOrThrow({ where: { id: attacker.characterId } }),
+    prisma.character.findUniqueOrThrow({ where: { id: targetId } }),
+  ]);
+  await expectPvpStartError(attacker, targetId, code);
+  const [atkAfter, tgtAfter] = await Promise.all([
+    prisma.character.findUniqueOrThrow({ where: { id: attacker.characterId } }),
+    prisma.character.findUniqueOrThrow({ where: { id: targetId } }),
+  ]);
+  assert.equal(atkAfter.revision, atkBefore.revision);
+  assert.equal(atkAfter.hp, atkBefore.hp);
+  assert.equal(atkAfter.battleJson, atkBefore.battleJson);
+  assert.equal(tgtAfter.revision, tgtBefore.revision);
+  assert.equal(tgtAfter.hp, tgtBefore.hp);
+  assert.equal(tgtAfter.battleJson, tgtBefore.battleJson);
+}
+
+async function heroesPairAtLevels(
+  viewerLevel: number,
+  targetLevel: number
+): Promise<{ viewer: Acc; target: Acc; hero: Awaited<ReturnType<typeof getNearbyHeroesForMap>>[number] }> {
+  const viewer = await createAccountAtLevel(`lv${viewerLevel}`, viewerLevel);
+  const target = await createAccountAtLevel(`lv${targetLevel}`, targetLevel);
+  await placeOnline(viewer, WILD_X, WILD_Y);
+  await placeOnline(target, WILD_X + 400, WILD_Y);
+  const heroes = await getNearbyHeroesForMap(WILD_X, WILD_Y, viewer.characterId);
+  const hero = heroes.find((h) => h.characterId === target.characterId);
+  assert.ok(hero, `target level ${targetLevel} should be visible to level ${viewerLevel}`);
+  return { viewer, target, hero: hero! };
+}
+
+function assertMapPlayerRowUiContract(): void {
+  const mapJs = readFileSync(
+    path.join(__dirname, '../public/map.js'),
+    'utf8'
+  );
+  const dungeonJs = readFileSync(
+    path.join(__dirname, '../public/dungeon.js'),
+    'utf8'
+  );
+  assert.doesNotMatch(mapJs, /\[профіль\]/, 'map.js must not render separate [профіль] button');
+  assert.doesNotMatch(dungeonJs, /\[профіль\]/, 'dungeon.js must not render separate [профіль] button');
+  assert.match(mapJs, /h\.profileOnNameClick === true/, 'map.js uses server profileOnNameClick');
+  assert.match(mapJs, /h\.showPkButton === true/, 'map.js uses server showPkButton');
+}
+
+async function testWorldPkLevelRange(): Promise<void> {
+  console.log('\n[world PK level range]');
+
+  assert.equal(MAX_WORLD_PVP_LEVEL_DIFFERENCE, 20);
+  assert.equal(canCharactersFightWorldPvp(52, 32), true);
+  assert.equal(canCharactersFightWorldPvp(32, 52), true);
+  assert.equal(canCharactersFightWorldPvp(52, 31), false);
+  assert.equal(canCharactersFightWorldPvp(40, 20), true);
+  assert.equal(canCharactersFightWorldPvp(40, 19), false);
+  assert.equal(canCharactersFightWorldPvp(30, 50), true);
+  assert.equal(canCharactersFightWorldPvp(30, 51), false);
+  ok('canCharactersFightWorldPvp boundary table');
+
+  const blocked521 = await heroesPairAtLevels(52, 21);
+  assert.equal(blocked521.hero.showPkButton, false);
+  assert.equal(blocked521.hero.pvpEligibilityCode, 'pvp_level_difference_too_high');
+  assert.equal(blocked521.hero.pvpBlockedReasonUk, WORLD_PVP_LEVEL_DIFF_BLOCKED_REASON_UK);
+  assert.equal(blocked521.hero.profileOnNameClick, true);
+  ok('52 vs 21: visible, no PK, profile via nick');
+
+  const allowed5232 = await heroesPairAtLevels(52, 32);
+  assert.equal(allowed5232.hero.showPkButton, true);
+  assert.equal(allowed5232.hero.profileOnNameClick, false);
+  ok('52 vs 32: showPkButton true, nick not profile link');
+
+  const allowed3252 = await heroesPairAtLevels(32, 52);
+  assert.equal(allowed3252.hero.showPkButton, true);
+  ok('32 vs 52: allowed');
+
+  const blocked5231 = await heroesPairAtLevels(52, 31);
+  assert.equal(blocked5231.hero.showPkButton, false);
+  assert.equal(blocked5231.hero.pvpEligibilityCode, 'pvp_level_difference_too_high');
+  ok('52 vs 31: blocked');
+
+  const exact20 = await heroesPairAtLevels(40, 20);
+  assert.equal(exact20.hero.showPkButton, true);
+  ok('level difference exactly 20: allowed');
+
+  const diff21 = await heroesPairAtLevels(40, 19);
+  assert.equal(diff21.hero.showPkButton, false);
+  assert.equal(diff21.hero.pvpEligibilityCode, 'pvp_level_difference_too_high');
+  ok('level difference 21: blocked');
+
+  await expectPvpStartBlockedNoMutation(
+    diff21.viewer,
+    diff21.target.characterId,
+    'pvp_level_difference_too_high'
+  );
+  ok('direct POST with level diff 21 blocked without mutation');
+
+  const partyViewer = await createAccountAtLevel('pLv', 52);
+  const partyMate = await createAccountAtLevel('pMt', 40);
+  await placeOnline(partyViewer, WILD_X, WILD_Y);
+  await placeOnline(partyMate, WILD_X + 400, WILD_Y);
+  await createPartyForUser(partyViewer.userId, partyViewer.characterId);
+  const partyId = (
+    await prisma.partyMember.findUniqueOrThrow({
+      where: { characterId: partyViewer.characterId },
+    })
+  ).partyId;
+  await prisma.partyMember.create({
+    data: { partyId, characterId: partyMate.characterId, slotOrder: 1 },
+  });
+  const partyHeroes = await getNearbyHeroesForMap(
+    WILD_X,
+    WILD_Y,
+    partyViewer.characterId,
+    Date.now(),
+    {
+      memberIds: new Set([partyViewer.characterId, partyMate.characterId]),
+      leaderCharacterId: partyViewer.characterId,
+    }
+  );
+  const partyHero = partyHeroes.find((h) => h.characterId === partyMate.characterId);
+  assert.ok(partyHero);
+  assert.equal(partyHero!.showPkButton, false);
+  assert.equal(partyHero!.profileOnNameClick, true);
+  ok('party member: no PK, profile via nick');
+
+  await prisma.character.update({
+    where: { id: partyViewer.characterId },
+    data: { dungeonStateJson: dungeonState(CATACOMB_ID) },
+  });
+  await prisma.character.update({
+    where: { id: partyMate.characterId },
+    data: {
+      dungeonStateJson: dungeonState(CATACOMB_ID),
+      worldX: WILD_X + 400,
+      worldY: WILD_Y,
+    },
+  });
+  await touchOnlinePresence(partyViewer.userId);
+  await touchOnlinePresence(partyMate.userId);
+  const catHeroes = await getNearbyHeroesForDungeon(
+    CATACOMB_ID,
+    400,
+    400,
+    partyViewer.characterId
+  );
+  const foreignCat = catHeroes.find((h) => h.characterId === partyMate.characterId);
+  assert.ok(foreignCat);
+  assert.equal(foreignCat!.showPkButton, false);
+  assert.equal(foreignCat!.profileOnNameClick, true);
+  ok('forbidden zone: no PK, profile via nick');
+
+  assertMapPlayerRowUiContract();
+  ok('nearby-player row has no separate [профіль] button in map/dungeon JS');
+}
+
 async function testPlayerMapVisibility(): Promise<void> {
   console.log('\n[player map visibility]');
 
@@ -181,6 +361,7 @@ async function testPkEligibility(): Promise<void> {
   const target = heroes.find((h) => h.characterId === b.characterId);
   assert.ok(target);
   assert.equal(target!.showPkButton, true);
+  assert.equal(target!.profileOnNameClick, false);
   ok('PK button available for foreign player in PvP zone');
 
   await createPartyForUser(a.userId, a.characterId);
@@ -203,6 +384,7 @@ async function testPkEligibility(): Promise<void> {
   const mate = partyHeroes.find((h) => h.characterId === b.characterId);
   assert.ok(mate);
   assert.equal(mate!.showPkButton, false);
+  assert.equal(mate!.profileOnNameClick, true);
   assert.equal(mate!.isPartyMember, true);
   ok('no PK button for party member');
 
@@ -424,6 +606,7 @@ async function testPkBattleStart(): Promise<void> {
 async function main(): Promise<void> {
   console.log('world-pk-map smoke\n');
   await testPlayerMapVisibility();
+  await testWorldPkLevelRange();
   await testPkEligibility();
   await testPkBattleStart();
   console.log('\n' + passed + ' passed');

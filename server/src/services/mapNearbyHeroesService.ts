@@ -12,7 +12,7 @@ import {
 } from '../domain/mapPlayfieldContext.js';
 import {
   canPkAttackHeroBattleState,
-  resolveShowPkButton,
+  resolveWorldPvpMapEligibility,
 } from '../domain/worldPvpEligibility.js';
 import {
   resolvePvpNickColor,
@@ -41,6 +41,10 @@ export interface NearbyHeroEntry {
   showPkButton: boolean;
   /** PvP дозволено в поточній локації переглядача. */
   pvpAllowed: boolean;
+  pvpEligibilityCode: string | null;
+  pvpBlockedReasonUk: string | null;
+  /** Нік відкриває профіль (коли [PK] приховано). */
+  profileOnNameClick: boolean;
   /** Колір ніка: default | aggressor | pk */
   pvpNickColor: PvpNickColor;
   clanEmblemId: number | null;
@@ -129,6 +133,14 @@ export async function getNearbyHeroesForMap(
   });
   if (!isWorldMapOpenPlayfield(viewerLoc)) return [];
 
+  const viewerRow = await prisma.character.findUnique({
+    where: { id: exclude },
+    select: { exp: true },
+  });
+  const viewerLevel = viewerRow
+    ? getEffectiveCharacterLevel(viewerRow.exp)
+    : 1;
+
   const rows = await prisma.character.findMany({
     where: {
       id: { not: exclude },
@@ -177,9 +189,12 @@ export async function getNearbyHeroesForMap(
       isPartyMember && partyContext!.leaderCharacterId === row.id;
     const inBattleRange = d <= BATTLE_RANGE;
     const online = isCharacterOnlineNow(row.id);
-    const showPkButton = resolveShowPkButton({
+    const targetLevel = getEffectiveCharacterLevel(row.exp);
+    const eligibility = resolveWorldPvpMapEligibility({
       viewerLocation: viewerLoc,
       targetLocation: targetLoc,
+      viewerLevel,
+      targetLevel,
       targetIsPartyMember: isPartyMember,
       inBattleRange,
       targetOnline: online,
@@ -189,15 +204,18 @@ export async function getNearbyHeroesForMap(
     candidates.push({
       characterId: row.id,
       name: row.name,
-      level: getEffectiveCharacterLevel(row.exp),
+      level: targetLevel,
       worldX: hx,
       worldY: hy,
       distance: Math.round(d),
       inBattleRange,
       inBattle: row.battleJson != null,
       canPkAttack: pkAllowed,
-      showPkButton,
+      showPkButton: eligibility.showPkButton,
       pvpAllowed: viewerLoc.pvpAllowed,
+      pvpEligibilityCode: eligibility.pvpEligibilityCode,
+      pvpBlockedReasonUk: eligibility.pvpBlockedReasonUk,
+      profileOnNameClick: eligibility.profileOnNameClick,
       pvpNickColor,
       clanEmblemId: row.clan?.emblemId ?? null,
       isOnline: online,
