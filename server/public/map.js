@@ -322,31 +322,10 @@
   }
 
   function compactHeroSig(heroes) {
+    var api = heroRowRenderApi();
+    if (api && api.compactHeroSig) return api.compactHeroSig(heroes);
     if (!heroes || !heroes.length) return '0';
-    var hp = [];
-    for (var j = 0; j < heroes.length; j++) {
-      var h = heroes[j];
-      hp.push(
-        String(h.characterId || '') +
-          ':' +
-          String(h.worldX != null ? h.worldX : '') +
-          ':' +
-          String(h.worldY != null ? h.worldY : '') +
-          ':' +
-          String(h.distance != null ? h.distance : '') +
-          ':' +
-          String(h.pvpNickColor || '') +
-          ':' +
-          String((heroRowRenderApi() ? heroRowRenderApi().heroShowsPkButton(h) : h.showPkButton === true) ? 1 : 0) +
-          ':' +
-          String((heroRowRenderApi() ? heroRowRenderApi().profileOnNameClick(h) : h.profileOnNameClick === true) ? 1 : 0) +
-          ':' +
-          String(h.pvpEligibilityCode || '') +
-          ':' +
-          String(h.isPartyMember ? 1 : 0)
-      );
-    }
-    return String(heroes.length) + '|' + hp.join(',');
+    return String(heroes.length);
   }
 
   function compactMarkerSig(spawns) {
@@ -601,38 +580,28 @@
     return !!(h && h.showPkButton === true);
   }
 
+  function normalizeSyncNearbyHeroes(rawList) {
+    var api = heroRowRenderApi();
+    if (api && api.normalizeNearbyHeroes) return api.normalizeNearbyHeroes(rawList);
+    return rawList && rawList.length ? rawList.slice() : [];
+  }
+
   function appendHeroRow(listEl, h) {
     var api = heroRowRenderApi();
     if (!api) return;
-    api.appendHeroRow(listEl, h, { onPkClick: startPvpFromMap });
-  }
-
-  function heroListDomMatchesPayload(listEl, heroes) {
-    if (!listEl || !heroes || !heroes.length) return true;
-    for (var i = 0; i < heroes.length; i++) {
-      var h = heroes[i];
-      if (!heroShowsPkButton(h)) continue;
-      var row = listEl.children[i];
-      if (!row || !row.querySelector('.l2-map-hero-link__pk')) return false;
-    }
-    return true;
+    api.appendHeroRow(listEl, h, {
+      L2: window.L2 || null,
+      onPkClick: startPvpFromMap,
+    });
   }
 
   function renderHeroList(around, listEl, sectionEl) {
-    if (!listEl) return;
-    var heroes = around && around.nearbyHeroes ? around.nearbyHeroes : [];
-    var sig = compactHeroSig(heroes);
-    if (listEl.dataset.l2HeroListSig === sig && heroListDomMatchesPayload(listEl, heroes)) {
-      if (sectionEl) sectionEl.hidden = !heroes.length;
-      return;
-    }
-    listEl.dataset.l2HeroListSig = sig;
-    listEl.innerHTML = '';
-    if (sectionEl) sectionEl.hidden = !heroes.length;
-    if (!heroes.length) return;
-    for (var hi = 0; hi < heroes.length; hi++) {
-      appendHeroRow(listEl, heroes[hi]);
-    }
+    var api = heroRowRenderApi();
+    if (!api || !api.renderHeroList) return;
+    api.renderHeroList(around, listEl, sectionEl, {
+      L2: window.L2 || null,
+      onPkClick: startPvpFromMap,
+    });
   }
 
   function renderHeroMarkers(img, layer, heroes) {
@@ -1293,7 +1262,7 @@
         if (c) writeCachedMapSnapshot(c);
         if (sync.around) {
           aroundData = Object.assign({}, aroundData || {}, {
-            nearbyHeroes: sync.around.nearbyHeroes || [],
+            nearbyHeroes: normalizeSyncNearbyHeroes(sync.around.nearbyHeroes || []),
             partyNearbyMembers: sync.around.partyNearbyMembers || [],
           });
         }
@@ -1331,7 +1300,7 @@
       if (!opts.force && fullSig === lastMapPaintPosSig) {
         if (sync.around && sync.around.nearbyHeroes) {
           aroundData = Object.assign({}, aroundData || {}, {
-            nearbyHeroes: sync.around.nearbyHeroes || [],
+            nearbyHeroes: normalizeSyncNearbyHeroes(sync.around.nearbyHeroes || []),
             partyNearbyMembers:
               sync.around.partyNearbyMembers ||
               (aroundData && aroundData.partyNearbyMembers) ||
@@ -1356,7 +1325,11 @@
       if (c && window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
         L2.applyHudFromSnapshot(c);
       }
-      if (sync.around) aroundData = sync.around;
+      if (sync.around) {
+        aroundData = Object.assign({}, sync.around, {
+          nearbyHeroes: normalizeSyncNearbyHeroes(sync.around.nearbyHeroes || []),
+        });
+      }
       worldSpawns = sync.spawns || [];
       applyPvpIncomingFromSync(sync);
       if (!opts.skipDefeatRedirect) {

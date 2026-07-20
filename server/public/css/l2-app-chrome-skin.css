@@ -1898,9 +1898,14 @@ body.l2-app-l2-chrome.l2-page-options .l2-opt-menu .l2-opt-row--exit:focus {
 }
 
 body.l2-app-l2-chrome.l2-page-map button.l2-map-hero-link__pk {
-  display: inline !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  display: inline;
+  visibility: visible;
+  opacity: 1;
+  width: auto;
+  max-width: none;
+  overflow: visible;
+  font-size: 12px;
+  line-height: 1.35;
   border: none !important;
   border-image: none !important;
   border-radius: 0 !important;

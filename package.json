@@ -91,7 +91,7 @@
     "test:party-battle-dungeon": "tsx server/scripts/party-battle-dungeon-smoke.ts",
     "test:warehouse-deposit-atomic": "tsx server/scripts/warehouse-deposit-atomic-smoke.ts",
     "test:battle-pvp-map-nav": "node server/scripts/battle-pvp-map-nav-smoke.mjs",
-    "test:world-pk-map": "tsx server/scripts/world-pk-map-smoke.ts && node server/scripts/map-hero-pk-render-smoke.mjs",
+    "test:world-pk-map": "tsx server/scripts/world-pk-map-smoke.ts && node server/scripts/map-hero-pk-render-smoke.mjs && node server/scripts/map-hero-list-render-smoke.mjs",
     "check:public-js": "node server/scripts/check-public-js-syntax.mjs",
     "test:stress:rapid": "tsx server/scripts/stress-rapid-actions.ts",
     "sim:adena-farm": "tsx server/scripts/simulate-adena-farm.ts",

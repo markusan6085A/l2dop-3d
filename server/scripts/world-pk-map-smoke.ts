@@ -210,9 +210,11 @@ function assertMapPlayerRowUiContract(): void {
   assert.doesNotMatch(mapJs, /\[профіль\]/, 'map.js must not render separate [профіль] button');
   assert.doesNotMatch(dungeonJs, /\[профіль\]/, 'dungeon.js must not render separate [профіль] button');
   assert.match(mapJs, /L2MapHeroRowRender/, 'map.js uses shared mapHeroRowRender module');
+  assert.match(renderJs, /renderHeroList/, 'mapHeroRowRender defines renderHeroList');
+  assert.match(renderJs, /normalizeNearbyHeroes/, 'mapHeroRowRender normalizes sync heroes');
   assert.match(renderJs, /heroShowsPkButton/, 'mapHeroRowRender defines heroShowsPkButton');
   assert.match(renderJs, /\[PK\]/, 'mapHeroRowRender renders [PK] label');
-  assert.match(mapJs, /heroListDomMatchesPayload/, 'map.js verifies PK button exists in DOM');
+  assert.match(mapJs, /normalizeSyncNearbyHeroes/, 'map.js normalizes nearbyHeroes from sync');
 }
 
 async function testWorldPkLevelRange(): Promise<void> {
