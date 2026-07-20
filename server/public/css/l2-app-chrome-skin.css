@@ -2896,7 +2896,7 @@ body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-clan-emblem:not([hidden]) {
 body.l2-app-l2-chrome.l2-nav-minimal .l2-hud-legacy-clan-emblem__img {
   width: 16px;
   height: 16px;
-  margin: 0 4px 0 0;
+  margin: 0 3px 0 2px;
   vertical-align: middle;
 }
 

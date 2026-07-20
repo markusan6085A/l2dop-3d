@@ -2698,9 +2698,9 @@
         '<div class="l2-hud-legacy-title-inline">L2WAP</div>' +
         '<div class="l2-hud-legacy-body">' +
         '<div class="l2-hud-legacy-headline">' +
-        '<span id="l2-hud-clan-emblem-slot" class="l2-hud-legacy-clan-emblem" hidden></span>' +
         '<span class="l2-hud-legacy-level" id="l2-hud-legacy-lvl">—</span>' +
         ' - ' +
+        '<span id="l2-hud-clan-emblem-slot" class="l2-hud-legacy-clan-emblem" hidden></span>' +
         '<span class="l2-hud-legacy-name" id="l2-hud-legacy-name">—</span>' +
         '</div>' +
         global.L2.getHudWapBarsMarkup() +
