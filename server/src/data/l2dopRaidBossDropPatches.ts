@@ -1,4 +1,4 @@
-import type { DropEntry } from '../types/combatDrop.js';
+import type { DropEntry, DropKind } from '../types/combatDrop.js';
 import type { NpcDropBag } from './npcDropsResolved.js';
 import { raidBossAdenaDropEntry } from './l2dopRaidBossRewardPatches.js';
 
@@ -8,20 +8,47 @@ interface RaidBossDropSpec {
   iconUrl: string;
   /** Шанс одного рядка, % (незалежний roll). */
   chancePercent: number;
+  minQuantity?: number;
+  maxQuantity?: number;
+  kind?: DropKind;
 }
 
 function dropLine(npcId: number, spec: RaidBossDropSpec): DropEntry {
+  const min = spec.minQuantity ?? 1;
+  const max = spec.maxQuantity ?? min;
   return {
     id: `rb${npcId}_${spec.l2ItemId}`,
-    kind: 'equipment',
+    kind: spec.kind ?? 'equipment',
     chance: spec.chancePercent / 100,
-    min: 1,
-    max: 1,
+    min,
+    max,
     l2ItemId: spec.l2ItemId,
     displayName: spec.displayName,
     iconUrl: spec.iconUrl,
   };
 }
+
+/** Спільний bundle-дроп D-grade enchant scrolls для РБ 20 lvl (25372/25375/25378). */
+const RB20_ENCHANT_SCROLL_DROPS: readonly RaidBossDropSpec[] = [
+  {
+    l2ItemId: 910510,
+    displayName: 'Сувій заточення броні D-grade',
+    iconUrl: '/icons/drops/resours/scroll_enchant_armor_d.png',
+    chancePercent: 15,
+    minQuantity: 3,
+    maxQuantity: 6,
+    kind: 'resource',
+  },
+  {
+    l2ItemId: 910511,
+    displayName: 'Сувій заточення зброї D-grade',
+    iconUrl: '/icons/drops/resours/scroll_enchant_weapon_d.png',
+    chancePercent: 8,
+    minQuantity: 2,
+    maxQuantity: 4,
+    kind: 'resource',
+  },
+];
 
 /** Отверженный Стражник (25372): D-grade з магазину дропів — лише іконка + назва. */
 const RB_25372_DROPS: readonly RaidBossDropSpec[] = [
@@ -285,28 +312,21 @@ const RB_25378_DROPS: readonly RaidBossDropSpec[] = [
   },
 ];
 
+function rb20DropBag(npcId: number, equipment: readonly RaidBossDropSpec[]): NpcDropBag {
+  return {
+    drops: [
+      raidBossAdenaDropEntry(npcId),
+      ...equipment.map((row) => dropLine(npcId, row)),
+      ...RB20_ENCHANT_SCROLL_DROPS.map((row) => dropLine(npcId, row)),
+    ],
+    spoil: [],
+  };
+}
+
 const RAID_BOSS_DROP_BAG_BY_NPC_ID: Readonly<Record<number, NpcDropBag>> = {
-  25372: {
-    drops: [
-      raidBossAdenaDropEntry(25372),
-      ...RB_25372_DROPS.map((row) => dropLine(25372, row)),
-    ],
-    spoil: [],
-  },
-  25375: {
-    drops: [
-      raidBossAdenaDropEntry(25375),
-      ...RB_25375_DROPS.map((row) => dropLine(25375, row)),
-    ],
-    spoil: [],
-  },
-  25378: {
-    drops: [
-      raidBossAdenaDropEntry(25378),
-      ...RB_25378_DROPS.map((row) => dropLine(25378, row)),
-    ],
-    spoil: [],
-  },
+  25372: rb20DropBag(25372, RB_25372_DROPS),
+  25375: rb20DropBag(25375, RB_25375_DROPS),
+  25378: rb20DropBag(25378, RB_25378_DROPS),
 };
 
 export function customNpcDropBagForMob(npcId: number): NpcDropBag | undefined {

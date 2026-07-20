@@ -55,7 +55,7 @@
       return String(min) + '–' + String(max) + ' ад.';
     }
     if (min === max) return '×' + String(min);
-    return String(min) + '–' + String(max) + ' шт.';
+    return '×' + String(min) + '–' + String(max);
   }
 
   function renderDropList(container, rows) {
