@@ -34,13 +34,18 @@ import { startBattleInTx } from '../src/services/battleServiceSession.js';
 import { startPvpBattleInTx } from '../src/services/battleServicePvpSession.js';
 import { getNearbyHeroesForMap } from '../src/services/mapNearbyHeroesService.js';
 import { getNearbyHeroesForDungeon } from '../src/services/dungeonNearbyHeroesService.js';
-import { touchOnlinePresence } from '../src/services/onlinePresenceService.js';
+import {
+  getOnlinePresenceSnapshot,
+  setOnlinePresenceCachedLevelForSmoke,
+  touchOnlinePresence,
+} from '../src/services/onlinePresenceService.js';
 import { createPartyForUser } from '../src/services/party/partyService.js';
 import { combatOptsFromRow } from '../src/services/charService.js';
 import type { CharacterRow } from '../src/services/charTypes.js';
 
-const WILD_X = 420_000;
-const WILD_Y = 420_000;
+const SMOKE_RUN_SLOT = Date.now() % 10000;
+const WILD_X = 420_000 + SMOKE_RUN_SLOT * 10_000;
+const WILD_Y = 420_000 + SMOKE_RUN_SLOT * 10_000;
 const FAR_X = 520_000;
 const FAR_Y = 520_000;
 const CATACOMB_ID = 'catacomb_of_the_heretic';
@@ -55,6 +60,8 @@ function ok(name: string): void {
 }
 
 type Acc = { userId: string; characterId: string; name: string };
+
+let heroPairSlot = 0;
 
 async function createAccount(label: string, pos?: { worldX: number; worldY: number }): Promise<Acc> {
   return createAccountAtLevel(label, 29, pos);
@@ -184,11 +191,14 @@ async function heroesPairAtLevels(
   viewerLevel: number,
   targetLevel: number
 ): Promise<{ viewer: Acc; target: Acc; hero: Awaited<ReturnType<typeof getNearbyHeroesForMap>>[number] }> {
+  heroPairSlot += 1;
+  const baseX = WILD_X + heroPairSlot * 50_000;
+  const baseY = WILD_Y + heroPairSlot * 50_000;
   const viewer = await createAccountAtLevel(`lv${viewerLevel}`, viewerLevel);
   const target = await createAccountAtLevel(`lv${targetLevel}`, targetLevel);
-  await placeOnline(viewer, WILD_X, WILD_Y);
-  await placeOnline(target, WILD_X + 400, WILD_Y);
-  const heroes = await getNearbyHeroesForMap(WILD_X, WILD_Y, viewer.characterId);
+  await placeOnline(viewer, baseX, baseY);
+  await placeOnline(target, baseX + 400, baseY);
+  const heroes = await getNearbyHeroesForMap(baseX, baseY, viewer.characterId);
   const hero = heroes.find((h) => h.characterId === target.characterId);
   assert.ok(hero, `target level ${targetLevel} should be visible to level ${viewerLevel}`);
   return { viewer, target, hero: hero! };
@@ -267,6 +277,7 @@ async function testWorldPkLevelRange(): Promise<void> {
 
   const allowed3252 = await heroesPairAtLevels(32, 52);
   assert.equal(allowed3252.hero.showPkButton, true);
+  assert.equal(allowed3252.hero.profileOnNameClick, false);
   ok('32 vs 52: allowed');
 
   const blocked5231 = await heroesPairAtLevels(52, 31);
@@ -347,6 +358,50 @@ async function testWorldPkLevelRange(): Promise<void> {
 
   assertMapPlayerRowUiContract();
   ok('nearby-player row has no separate [профіль] button in map/dungeon JS');
+}
+
+async function testCanonicalLevelIgnoresStalePresence(): Promise<void> {
+  console.log('\n[canonical level vs stale presence]');
+
+  heroPairSlot += 1;
+  const baseX = WILD_X + heroPairSlot * 50_000;
+  const baseY = WILD_Y + heroPairSlot * 50_000;
+
+  const viewer = await createAccountAtLevel('staleV', 22);
+  const target = await createAccountAtLevel('staleT', 10);
+
+  await prisma.character.update({
+    where: { id: target.characterId },
+    data: { level: 7 },
+  });
+
+  await placeOnline(viewer, baseX, baseY);
+  await placeOnline(target, baseX + 400, baseY);
+
+  assert.equal(
+    setOnlinePresenceCachedLevelForSmoke(target.characterId, 7),
+    true,
+    'presence cache should contain target before stale inject'
+  );
+
+  const snapshot = await getOnlinePresenceSnapshot('level');
+  const onlinePlayer = snapshot.players.find((p) => p.characterId === target.characterId);
+  assert.ok(onlinePlayer, 'target should appear in /online snapshot');
+  assert.equal(
+    onlinePlayer!.level,
+    10,
+    '/online must use canonical exp level, not stale presence cache'
+  );
+
+  const heroes = await getNearbyHeroesForMap(baseX, baseY, viewer.characterId);
+  const hero = heroes.find((h) => h.characterId === target.characterId);
+  assert.ok(hero, 'target should appear in nearbyHeroes');
+  assert.equal(hero!.level, 10, 'nearbyHeroes must expose canonical target level');
+  assert.equal(hero!.viewerLevelUsed, 22);
+  assert.equal(hero!.showPkButton, true, '22 vs 10 must allow PK with canonical levels');
+  assert.equal(hero!.pvpEligibilityCode, null);
+
+  ok('stale presence level 7 ignored; canonical level 10 for /online, nearbyHeroes, PK');
 }
 
 async function testPlayerMapVisibility(): Promise<void> {
@@ -638,6 +693,7 @@ async function main(): Promise<void> {
   console.log('world-pk-map smoke\n');
   await testPlayerMapVisibility();
   await testWorldPkLevelRange();
+  await testCanonicalLevelIgnoresStalePresence();
   await testPkEligibility();
   await testPkBattleStart();
   console.log('\n' + passed + ' passed');

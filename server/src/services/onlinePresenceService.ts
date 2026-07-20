@@ -1,4 +1,5 @@
 import { MAP_TOWNS } from '../data/mapLocalities.js';
+import { getEffectiveCharacterLevel } from '../domain/effectiveCharacterLevel.js';
 import { prisma } from '../lib/prisma.js';
 import { HERO_POWER_BASE } from '../domain/heroPower.js';
 import { resolveHeroPowerFromCharacterRow } from './charSnapshotLogic.js';
@@ -47,7 +48,7 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
   return {
     characterId: row?.id?.trim() || '',
     name: row?.name?.trim() || '—',
-    level: row?.level != null ? Number(row.level) : 1,
+    level: row != null ? getEffectiveCharacterLevel(row.exp) : 1,
     heroPower,
     cityId: row?.cityId?.trim() || '',
     cityLabelUk: labels.cityLabelUk,
@@ -114,35 +115,81 @@ function sortPlayers(
   return out;
 }
 
-export function getOnlinePresenceSnapshot(
+async function resolveCanonicalLevelsByCharacterId(
+  characterIds: string[]
+): Promise<Map<string, number>> {
+  const ids = [...new Set(characterIds.map((id) => String(id || '').trim()).filter(Boolean))];
+  if (!ids.length) return new Map();
+
+  const rows = await prisma.character.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, exp: true },
+  });
+  const out = new Map<string, number>();
+  for (const row of rows) {
+    out.set(row.id, getEffectiveCharacterLevel(row.exp));
+  }
+  return out;
+}
+
+export async function getOnlinePresenceSnapshot(
   sort: OnlineSortMode = 'level'
-): OnlinePresenceSnapshot {
+): Promise<OnlinePresenceSnapshot> {
   const now = Date.now();
   pruneExpired(now);
 
-  const players: OnlinePresencePlayer[] = [];
+  const activeEntries: PresenceEntry[] = [];
   for (const entry of byUserId.values()) {
     if (now - entry.lastSeenMs <= ONLINE_TTL_MS) {
-      players.push({
-        characterId: entry.characterId,
-        name: entry.name,
-        level: entry.level,
-        heroPower:
-          typeof entry.heroPower === 'number' && Number.isFinite(entry.heroPower)
-            ? entry.heroPower
-            : HERO_POWER_BASE,
-        cityId: entry.cityId,
+      activeEntries.push(entry);
+    }
+  }
+
+  const canonicalLevels = await resolveCanonicalLevelsByCharacterId(
+    activeEntries.map((entry) => entry.characterId)
+  );
+
+  const players: OnlinePresencePlayer[] = [];
+  for (const entry of activeEntries) {
+    const canonicalLevel = canonicalLevels.get(entry.characterId);
+    if (canonicalLevel != null) {
+      entry.level = canonicalLevel;
+    }
+    players.push({
+      characterId: entry.characterId,
+      name: entry.name,
+      level: canonicalLevel ?? entry.level,
+      heroPower:
+        typeof entry.heroPower === 'number' && Number.isFinite(entry.heroPower)
+          ? entry.heroPower
+          : HERO_POWER_BASE,
+      cityId: entry.cityId,
       cityLabelUk: entry.cityLabelUk,
       cityLabelEn: entry.cityLabelEn,
       clanEmblemId: entry.clanEmblemId,
-      });
-    }
+    });
   }
 
   return {
     count: players.length,
     players: sortPlayers(players, sort),
   };
+}
+
+/** world-pk-map smoke: inject stale cached level without DB change. */
+export function setOnlinePresenceCachedLevelForSmoke(
+  characterId: string,
+  staleLevel: number
+): boolean {
+  const id = String(characterId || '').trim();
+  if (!id) return false;
+  for (const entry of byUserId.values()) {
+    if (entry.characterId === id) {
+      entry.level = Math.max(1, Math.floor(Number(staleLevel) || 1));
+      return true;
+    }
+  }
+  return false;
 }
 
 /** Час останньої активності userId/characterId у presence-map (epoch ms). */

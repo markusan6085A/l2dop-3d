@@ -27,7 +27,7 @@ export function registerGameOnlineRoutes(app: FastifyInstance): void {
       const sort = parseOnlineSort(q?.sort);
 
       await touchOnlinePresence(userId);
-      return reply.send(getOnlinePresenceSnapshot(sort));
+      return reply.send(await getOnlinePresenceSnapshot(sort));
     }
   );
 }
