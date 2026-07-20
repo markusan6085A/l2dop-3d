@@ -687,6 +687,94 @@
       if (en <= 0) return base;
       return '+' + String(en) + ' ' + base;
     },
+    /** Бонус одного рівня заточки від базового stat (не compounding). */
+    enchantLevelBonusFromBase: function (baseStat, enchantLevel, ratePerLevel) {
+      var base = Number(baseStat);
+      var en = Math.max(0, Math.floor(Number(enchantLevel) || 0));
+      var rate = Number(ratePerLevel);
+      if (!Number.isFinite(base) || base <= 0 || !Number.isFinite(rate) || en <= 0) return 0;
+      return Math.round(base * rate * en);
+    },
+    /** Stat предмета з урахуванням заточки (preview, linear від base). */
+    enchantedItemStatValue: function (baseStat, enchantLevel, ratePerLevel) {
+      var base = Number(baseStat);
+      if (!Number.isFinite(base)) return 0;
+      var bonus = global.L2.enchantLevelBonusFromBase(base, enchantLevel, ratePerLevel);
+      return base + bonus;
+    },
+    /** Рядки preview «stat: cur → next (+delta)» для модалки заточки. */
+    buildEnchantSuccessPreviewLines: function (itemId, currentEnchantLevel) {
+      var id = normalizePositiveInt(itemId);
+      var current = Math.max(0, Math.min(25, Math.floor(Number(currentEnchantLevel) || 0)));
+      if (id <= 0 || current >= 25) return [];
+      var st = global.L2.itemStatsById && global.L2.itemStatsById[id];
+      var slot = global.L2.itemSlotById && global.L2.itemSlotById[id];
+      if (!st || typeof st !== 'object' || !slot) return [];
+      var lines = [];
+      function pushLine(labelUk, baseVal, rate) {
+        var base = Number(baseVal);
+        if (!Number.isFinite(base) || base <= 0) return;
+        var curVal = global.L2.enchantedItemStatValue(base, current, rate);
+        var nextVal = global.L2.enchantedItemStatValue(base, current + 1, rate);
+        var delta = nextVal - curVal;
+        if (delta <= 0) return;
+        lines.push({
+          labelUk: labelUk,
+          currentValue: curVal,
+          nextValue: nextVal,
+          delta: delta,
+        });
+      }
+      if (slot === 'rhand') {
+        pushLine('Фізична атака', st.pAtk, 0.02);
+        if (st.mAtk != null && Number(st.mAtk) > 0) {
+          pushLine('Магічна атака', st.mAtk, 0.02);
+        }
+        return lines;
+      }
+      var isJewel =
+        slot === 'ring' ||
+        slot === 'neck' ||
+        slot === 'earring' ||
+        (st.jewelMdefFlat != null && Number(st.jewelMdefFlat) > 0);
+      if (isJewel) {
+        var mdefBase =
+          st.jewelMdefFlat != null && Number(st.jewelMdefFlat) > 0
+            ? Number(st.jewelMdefFlat)
+            : st.pDef;
+        pushLine('Магічний захист', mdefBase, 0.01);
+        return lines;
+      }
+      if (
+        slot === 'chest' ||
+        slot === 'legs' ||
+        slot === 'head' ||
+        slot === 'gloves' ||
+        slot === 'feet' ||
+        slot === 'fullarmor' ||
+        slot === 'lhand' ||
+        slot === 'shield'
+      ) {
+        pushLine('Фізичний захист', st.pDef, 0.01);
+      }
+      return lines;
+    },
+    enchantScrollDescriptionUk: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      var map = {
+        910510: 'Заточує броню, щити та біжутерію D-grade.',
+        910511: 'Заточує зброю D-grade.',
+        910512: 'Заточує броню, щити та біжутерію C-grade.',
+        910513: 'Заточує зброю C-grade.',
+        910514: 'Заточує броню, щити та біжутерію B-grade.',
+        910515: 'Заточує зброю B-grade.',
+        910516: 'Заточує броню, щити та біжутерію A-grade.',
+        910517: 'Заточує зброю A-grade.',
+        910518: 'Заточує броню, щити та біжутерію S-grade.',
+        910519: 'Заточує зброю S-grade.',
+      };
+      return map[id] || '';
+    },
     itemNameClassNames: function (itemId, baseClass) {
       var base =
         baseClass != null && String(baseClass).trim() !== ''
@@ -911,6 +999,15 @@
         return (p >= 0 ? '+' : '') + p + '%';
       }
       if (slot === 'consumable') {
+        var scrollDesc =
+          global.L2.enchantScrollDescriptionUk &&
+          typeof global.L2.enchantScrollDescriptionUk === 'function'
+            ? global.L2.enchantScrollDescriptionUk(id)
+            : '';
+        if (scrollDesc) {
+          lines.push({ labelUk: 'Призначення', valueUk: scrollDesc });
+          return lines;
+        }
         lines.push({ labelUk: 'Тип', valueUk: 'Розхідник' });
         lines.push({
           labelUk: 'Примітка',

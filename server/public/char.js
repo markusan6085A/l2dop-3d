@@ -260,21 +260,8 @@
   }
   var HP_MP_POTION_IDS = { 1060: true, 1061: true, 726: true, 728: true };
   var MAX_ENCHANT_LEVEL = 25;
-  var ENCHANT_SCROLL_META = {
-    910510: { target: 'armor', grade: 'D', nameUk: 'Сувій заточки броні D-grade' },
-    910511: { target: 'weapon', grade: 'D', nameUk: 'Сувій заточки зброї D-grade' },
-    910512: { target: 'armor', grade: 'C', nameUk: 'Сувій заточки броні C-grade' },
-    910513: { target: 'weapon', grade: 'C', nameUk: 'Сувій заточки зброї C-grade' },
-    910514: { target: 'armor', grade: 'B', nameUk: 'Сувій заточки броні B-grade' },
-    910515: { target: 'weapon', grade: 'B', nameUk: 'Сувій заточки зброї B-grade' },
-    910516: { target: 'armor', grade: 'A', nameUk: 'Сувій заточки броні A-grade' },
-    910517: { target: 'weapon', grade: 'A', nameUk: 'Сувій заточки зброї A-grade' },
-    910518: { target: 'armor', grade: 'S', nameUk: 'Сувій заточки броні S-grade' },
-    910519: { target: 'weapon', grade: 'S', nameUk: 'Сувій заточки зброї S-grade' },
-  };
   var craftBookIndex = null;
   var bagModalCtx = null;
-  var enchantRequestInFlight = false;
 
   /** Як у GM-шопу: категорія + грейд + підтип; '' — усі предмети (кнопка «Все»). */
   var bagInvCat = 'weapon';
@@ -751,71 +738,50 @@
     return String(g).trim().toLowerCase();
   }
 
-  function getEnchantSuccessChance(currentEnchantLevel) {
-    var current = Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(currentEnchantLevel) || 0)));
-    if (current <= 2) return 100;
-    if (current === 3) return 70;
-    if (current === 4) return 65;
-    if (current === 5) return 60;
-    if (current === 6) return 55;
-    if (current === 7) return 50;
-    if (current === 8) return 45;
-    if (current === 9) return 40;
-    if (current <= 14) return 30;
-    if (current <= 19) return 20;
-    return 10;
-  }
-
-  function getEnchantFailLevel(currentEnchantLevel) {
-    var current = Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(currentEnchantLevel) || 0)));
-    if (current <= 3) return 3;
-    if (current <= 10) return current - 1;
-    return 10;
-  }
-
-  function isEnchantTargetCompatible(itemId, scrollMeta) {
-    if (!scrollMeta || !itemId) return false;
-    var slot = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
-    if (!slot || slot === 'consumable') return false;
-    var grade = normalizedItemGradeKey(itemId).toUpperCase();
-    if (!grade || grade === 'NG' || grade !== scrollMeta.grade) return false;
-    if (scrollMeta.target === 'weapon') return slot === 'rhand';
+  function isEnchantableEquipment(itemId) {
     return (
-      slot === 'lhand' ||
-      slot === 'chest' ||
-      slot === 'legs' ||
-      slot === 'fullarmor' ||
-      slot === 'head' ||
-      slot === 'gloves' ||
-      slot === 'feet' ||
-      slot === 'neck' ||
-      slot === 'earring' ||
-      slot === 'ring'
+      window.L2CharEnchantModal &&
+      typeof L2CharEnchantModal.isEnchantableEquipment === 'function' &&
+      L2CharEnchantModal.isEnchantableEquipment(itemId)
     );
   }
 
-  function collectEnchantTargets(scrollMeta, snap) {
-    var inv = snap && snap.inventory ? snap.inventory : defaultInventory();
-    var out = [];
-    (inv.stacks || []).forEach(function (st) {
-      var itemId = Number(st.itemId);
-      var qty = Number(st.qty || 0);
-      var enchant = Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(st.enchant) || 0)));
-      if (!itemId || qty <= 0) return;
-      if (!isEnchantTargetCompatible(itemId, scrollMeta)) return;
-      if (enchant >= MAX_ENCHANT_LEVEL) return;
-      out.push({
-        targetInstanceId: 'bag:' + String(itemId) + ':' + String(enchant),
-        itemId: itemId,
-        enchant: enchant,
-        sourceUk: 'Сумка',
-      });
+  function openEnchantForTarget(targetInstanceId, itemId, enchant) {
+    if (!window.L2CharEnchantModal || typeof L2CharEnchantModal.open !== 'function') return;
+    L2CharEnchantModal.open({
+      targetInstanceId: targetInstanceId,
+      itemId: itemId,
+      enchant: enchant,
+      onSnapshot: function (snap) {
+        renderAllIfChanged(snap);
+      },
     });
+  }
+
+  function renderEquipEnchantButtons(inv) {
+    var host = $('char-equip-enchant-actions');
+    if (!host) return;
+    host.innerHTML = '';
+    inv = inv || defaultInventory();
     var eq = inv.eq || {};
-    Object.keys(eq).forEach(function (slotKey) {
-      var slotVal = eq[slotKey];
+    var rows = [
+      { key: 'l1', label: 'Зброя' },
+      { key: 'l2', label: 'Щит' },
+      { key: 'lh', label: 'Шолом' },
+      { key: 'l3', label: 'Броня' },
+      { key: 'l4', label: 'Штани' },
+      { key: 'lg', label: 'Рукавиці' },
+      { key: 'lf', label: 'Чоботи' },
+      { key: 'neck', label: 'Намисто' },
+      { key: 'lr1', label: 'Кільце' },
+      { key: 'lr2', label: 'Кільце' },
+      { key: 'le1', label: 'Сережка' },
+      { key: 'le2', label: 'Сережка' },
+    ];
+    rows.forEach(function (row) {
+      var slotVal = eq[row.key];
       var itemId = eqItemId(slotVal);
-      if (!itemId) return;
+      if (!itemId || !isEnchantableEquipment(itemId)) return;
       var enchant = 0;
       if (slotVal && typeof slotVal === 'object' && slotVal.enchant != null) {
         enchant = Math.max(
@@ -823,16 +789,20 @@
           Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(slotVal.enchant) || 0))
         );
       }
-      if (!isEnchantTargetCompatible(itemId, scrollMeta)) return;
-      if (enchant >= MAX_ENCHANT_LEVEL) return;
-      out.push({
-        targetInstanceId: 'eq:' + String(slotKey),
-        itemId: itemId,
-        enchant: enchant,
-        sourceUk: 'Екіп (' + String(slotKey) + ')',
-      });
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'l2-char-equip-enchant-btn';
+      btn.setAttribute('data-enchant-target', 'eq:' + row.key);
+      btn.setAttribute('data-enchant-item-id', String(itemId));
+      btn.setAttribute('data-enchant-level', String(enchant));
+      if (enchant >= MAX_ENCHANT_LEVEL) {
+        btn.disabled = true;
+        btn.textContent = row.label + ': Максимальна заточка';
+      } else {
+        btn.textContent = row.label + ': Заточити';
+      }
+      host.appendChild(btn);
     });
-    return out;
   }
 
   function stackPassesBagFilters(st) {
@@ -1229,6 +1199,21 @@
         btn.setAttribute('data-item-enchant', String(en));
         actions.appendChild(btn);
       }
+      if (isEnchantableEquipment(st.itemId)) {
+        var enBtn = document.createElement('button');
+        enBtn.type = 'button';
+        enBtn.className = 'l2-char-bag-equip l2-char-bag-equip--enchant';
+        enBtn.setAttribute('data-enchant-target', 'bag:' + String(st.itemId) + ':' + String(en));
+        enBtn.setAttribute('data-enchant-item-id', String(st.itemId));
+        enBtn.setAttribute('data-enchant-level', String(en));
+        if (en >= MAX_ENCHANT_LEVEL) {
+          enBtn.disabled = true;
+          enBtn.textContent = '[Максимальна заточка]';
+        } else {
+          enBtn.textContent = '[Заточити]';
+        }
+        actions.appendChild(enBtn);
+      }
       row.appendChild(actions);
       root.appendChild(row);
     });
@@ -1283,6 +1268,9 @@
     });
     measureRender('renderEquipSlots', function () {
       renderEquipSlots(inv);
+    });
+    measureRender('renderEquipEnchantButtons', function () {
+      renderEquipEnchantButtons(inv);
     });
     var wcur = $('char-w-cur');
     var wmax = $('char-w-max');
@@ -1518,88 +1506,6 @@
     }
   }
 
-  async function apiEnchant(scrollItemId, targetInstanceId, lockBtn) {
-    if (enchantRequestInFlight) return;
-    enchantRequestInFlight = true;
-    if (lockBtn) {
-      lockBtn.disabled = true;
-      lockBtn.setAttribute('aria-busy', 'true');
-    }
-    try {
-      var t = localStorage.getItem('token');
-      var r = await fetch('/game/inventory/enchant', {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + t,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          expectedRevision: expectedRevisionForMutation(),
-          scrollItemId: scrollItemId,
-          targetInstanceId: targetInstanceId,
-        }),
-      });
-      if (r.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        return;
-      }
-      if (r.status === 409) {
-        await resyncCharacterFromServer();
-        return;
-      }
-      var out = {};
-      try {
-        out = await r.json();
-      } catch (_) {
-        out = {};
-      }
-      if (!r.ok) {
-        var failMsg = out && out.messageUk ? out.messageUk : 'Не вдалося виконати заточку.';
-        var stubFail = $('char-stub-msg');
-        if (stubFail) {
-          stubFail.hidden = false;
-          stubFail.textContent = String(failMsg);
-        }
-        return;
-      }
-      var c = out.character;
-      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
-        L2.applyMutationSnapshot(c, function (snap) {
-          renderAllIfChanged(snap);
-        });
-      } else if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
-        L2.applyCharacterSnapshot(c);
-        renderAllIfChanged(c);
-      } else {
-        window.L2.setLastSnapshot(c);
-        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
-          L2.applyHudFromSnapshot(c);
-        }
-        renderAllIfChanged(c);
-      }
-      var okMsg =
-        out && out.messageUk ? String(out.messageUk) : 'Заточка виконана.';
-      var stubOk = $('char-stub-msg');
-      if (stubOk) {
-        stubOk.hidden = false;
-        stubOk.textContent = okMsg;
-      }
-    } catch (_) {
-      var stubNet = $('char-stub-msg');
-      if (stubNet) {
-        stubNet.hidden = false;
-        stubNet.textContent = 'Збій мережі — спробуй ще раз.';
-      }
-    } finally {
-      enchantRequestInFlight = false;
-      if (lockBtn) {
-        lockBtn.disabled = false;
-        lockBtn.removeAttribute('aria-busy');
-      }
-    }
-  }
-
   async function apiUnequip(slotKey) {
     if (equipRequestInFlight) return;
     equipRequestInFlight = true;
@@ -1692,6 +1598,21 @@
     }
   }
 
+  function wireEquipEnchantClicks() {
+    var host = $('char-equip-enchant-actions');
+    if (!host || host.getAttribute('data-wired') === '1') return;
+    host.setAttribute('data-wired', '1');
+    host.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-enchant-target]');
+      if (!btn) return;
+      openEnchantForTarget(
+        btn.getAttribute('data-enchant-target'),
+        Number(btn.getAttribute('data-enchant-item-id')),
+        Number(btn.getAttribute('data-enchant-level') || 0)
+      );
+    });
+  }
+
   function wireEquipSlotClicks() {
     var frame = document.querySelector('.l2-char-equip-frame');
     if (!frame || !window.L2CharEquipFrame) return;
@@ -1718,6 +1639,16 @@
       }
     }
     root.addEventListener('click', function (e) {
+      var enBtn = e.target.closest('[data-enchant-target]');
+      if (enBtn && enBtn.getAttribute('data-enchant-target')) {
+        e.stopPropagation();
+        openEnchantForTarget(
+          enBtn.getAttribute('data-enchant-target'),
+          Number(enBtn.getAttribute('data-enchant-item-id')),
+          Number(enBtn.getAttribute('data-enchant-level') || 0)
+        );
+        return;
+      }
       var depBtn = e.target.closest('[data-wh-item-id]');
       if (depBtn && depBtn.getAttribute('data-wh-item-id')) {
         e.stopPropagation();
@@ -1936,17 +1867,14 @@
     var useRow = $('char-bag-modal-use-row');
     var useBtn = $('char-bag-modal-use');
     var useQty = $('char-bag-modal-use-qty');
-    var scrollMeta = ENCHANT_SCROLL_META[itemId] || null;
     var canEq = canEquipFromBag(itemId);
     var isPotion = isHpMpPotion(itemId);
-    var isEnchantScroll = !!scrollMeta;
     var showCraft = isCraftHintItem(itemId);
 
     bagModalCtx = {
       itemId: itemId,
       qty: Number.isFinite(qty) ? qty : 1,
       enchant: modalEn,
-      scrollMeta: scrollMeta,
     };
 
     if (canEq) {
@@ -1973,7 +1901,7 @@
       }
     }
     if (useRow) {
-      if (isPotion || isEnchantScroll) {
+      if (isPotion) {
         useRow.hidden = false;
         useRow.removeAttribute('hidden');
       } else {
@@ -1982,7 +1910,7 @@
       }
     }
     if (useBtn) {
-      if (isPotion || isEnchantScroll) {
+      if (isPotion) {
         useBtn.hidden = false;
         useBtn.removeAttribute('hidden');
         useBtn.textContent = 'Використати';
@@ -1992,13 +1920,8 @@
       }
     }
     if (useQty) {
-      if (isEnchantScroll) {
-        useQty.hidden = true;
-        useQty.setAttribute('hidden', '');
-      } else {
-        useQty.hidden = false;
-        useQty.removeAttribute('hidden');
-      }
+      useQty.hidden = false;
+      useQty.removeAttribute('hidden');
     }
     if (isPotion && useQty) {
       var maxQ = Math.max(1, Math.floor(Number.isFinite(qty) ? qty : 1));
@@ -2043,67 +1966,6 @@
     if (useBtn) {
       useBtn.addEventListener('click', function () {
         if (!bagModalCtx || bagModalCtx.itemId == null) return;
-        if (bagModalCtx.scrollMeta) {
-          var snapNow =
-            window.L2 && typeof L2.lastSnapshot === 'function'
-              ? L2.lastSnapshot()
-              : null;
-          var targets = collectEnchantTargets(bagModalCtx.scrollMeta, snapNow);
-          if (!targets.length) {
-            var msgNoTargets = $('char-stub-msg');
-            if (msgNoTargets) {
-              msgNoTargets.hidden = false;
-              msgNoTargets.textContent = 'Немає сумісних предметів для цієї заточки.';
-            }
-            return;
-          }
-          var lines = targets.map(function (row, idx) {
-            var chance = getEnchantSuccessChance(row.enchant);
-            var failTo = getEnchantFailLevel(row.enchant);
-            return (
-              String(idx + 1) +
-              '. ' +
-              formatEnchantedName(itemDisplayName(row.itemId), row.enchant) +
-              ' — ' +
-              row.sourceUk +
-              ' | шанс ' +
-              String(chance) +
-              '% | невдача: +' +
-              String(failTo)
-            );
-          });
-          var picked = window.prompt(
-            'Оберіть предмет для заточки (номер):\n' + lines.join('\n'),
-            '1'
-          );
-          if (picked == null) return;
-          var idxPick = Math.floor(Number(picked));
-          if (!Number.isFinite(idxPick) || idxPick < 1 || idxPick > targets.length) {
-            var msgBadPick = $('char-stub-msg');
-            if (msgBadPick) {
-              msgBadPick.hidden = false;
-              msgBadPick.textContent = 'Некоректний номер цілі.';
-            }
-            return;
-          }
-          var selected = targets[idxPick - 1];
-          var chancePick = getEnchantSuccessChance(selected.enchant);
-          var failPick = getEnchantFailLevel(selected.enchant);
-          var question =
-            'Використати ' +
-            String(bagModalCtx.scrollMeta.nameUk) +
-            ' для заточки ' +
-            formatEnchantedName(itemDisplayName(selected.itemId), selected.enchant) +
-            '?\nШанс успіху: ' +
-            String(chancePick) +
-            '%.\nПри невдачі предмет стане +' +
-            String(failPick) +
-            '.';
-          if (!window.confirm(question)) return;
-          closeBagModal();
-          apiEnchant(bagModalCtx.itemId, selected.targetInstanceId, useBtn);
-          return;
-        }
         var q = useQty ? Number(useQty.value) : 1;
         if (!Number.isFinite(q) || q < 1) q = 1;
         q = Math.min(Math.max(1, Math.floor(q)), bagModalCtx.qty || 1);
@@ -2165,6 +2027,7 @@
     wireBagInvFilters();
     wireBagModal();
     wireEquipSlotClicks();
+    wireEquipEnchantClicks();
 
     var errEl = $('char-load-err');
     var content = $('char-content');

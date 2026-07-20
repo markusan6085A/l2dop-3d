@@ -116,6 +116,11 @@
                     </div>
                   </div>
                 </div>
+                <div
+                  id="char-equip-enchant-actions"
+                  class="l2-char-equip-enchant-actions"
+                  aria-label="Заточка екіпіровки"
+                ></div>
                 <div class="l2-char-currency">
                   <span class="l2-char-currency-seg" title="Адена">
                     <img
@@ -243,6 +248,49 @@
             </div>
           </div>
 
+          <div id="char-enchant-modal-overlay" class="l2-gm-modal-overlay" hidden aria-hidden="true">
+            <div
+              class="l2-gm-modal l2-char-enchant-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="char-enchant-modal-heading"
+            >
+              <button
+                type="button"
+                class="l2-gm-modal-close"
+                id="char-enchant-modal-close"
+                aria-label="Закрити"
+              >
+                ×
+              </button>
+              <h2 id="char-enchant-modal-heading" class="l2-item-modal-heading">Заточка предмета</h2>
+              <div class="l2-gm-modal-head">
+                <img id="char-enchant-modal-icon" class="l2-gm-modal-icon" width="48" height="48" alt="" />
+                <div>
+                  <p id="char-enchant-modal-title" class="l2-gm-modal-title"></p>
+                  <p id="char-enchant-modal-enchant" class="l2-gm-modal-sub"></p>
+                </div>
+              </div>
+              <div class="l2-item-modal-stats" id="char-enchant-modal-stats"></div>
+              <p class="l2-char-enchant-modal-section-title">Після успішної заточки</p>
+              <div class="l2-item-modal-stats" id="char-enchant-modal-preview"></div>
+              <p id="char-enchant-modal-chance" class="l2-char-enchant-modal-meta"></p>
+              <p id="char-enchant-modal-fail" class="l2-char-enchant-modal-meta"></p>
+              <p class="l2-char-enchant-modal-section-title">Сумісні сувії в сумці</p>
+              <div id="char-enchant-modal-scrolls" class="l2-char-enchant-modal-scrolls"></div>
+              <p id="char-enchant-modal-no-scroll" class="l2-char-enchant-modal-empty" hidden></p>
+              <p id="char-enchant-modal-result" class="l2-char-enchant-modal-result" hidden></p>
+              <button
+                type="button"
+                class="l2-char-bag-modal-action l2-char-enchant-modal-submit"
+                id="char-enchant-modal-submit"
+                disabled
+              >
+                Заточити
+              </button>
+            </div>
+          </div>
+
           <div id="l2-nav-bottom"></div>
         </div>
       </div>
@@ -254,6 +302,7 @@
     <script src="/armor-set-bonuses-ui.js?v=5"></script>
     <script src="/charEquipFrame.js?v=20260718playerEquip1"></script>
     <script src="/charHeroPortrait.js?v=20260718darkElfFighterPng4"></script>
-    <script src="/char.js?v=20260718playerEquip1"></script>
+    <script src="/charEnchantModal.js?v=20260720enchantUx1"></script>
+    <script src="/char.js?v=20260720enchantUx1"></script>
   </body>
 </html>

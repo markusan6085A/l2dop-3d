@@ -1,0 +1,546 @@
+/**
+ * Модалка заточки предмета — вибір сумісного scroll і POST /game/inventory/enchant.
+ */
+(function (global) {
+  var MAX_ENCHANT_LEVEL = 25;
+  var SCROLL_META = {
+    910510: { target: 'armor', grade: 'D' },
+    910511: { target: 'weapon', grade: 'D' },
+    910512: { target: 'armor', grade: 'C' },
+    910513: { target: 'weapon', grade: 'C' },
+    910514: { target: 'armor', grade: 'B' },
+    910515: { target: 'weapon', grade: 'B' },
+    910516: { target: 'armor', grade: 'A' },
+    910517: { target: 'weapon', grade: 'A' },
+    910518: { target: 'armor', grade: 'S' },
+    910519: { target: 'weapon', grade: 'S' },
+  };
+
+  var ctx = null;
+  var selectedScrollId = null;
+  var inFlight = false;
+  var wired = false;
+  var escBound = false;
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function itemDisplayName(id) {
+    if (global.L2 && typeof L2.itemDisplayNameWithGrade === 'function') {
+      return L2.itemDisplayNameWithGrade(id);
+    }
+    var n = global.L2 && L2.itemNameById && L2.itemNameById[id];
+    return n != null ? n : '#' + id;
+  }
+
+  function formatEnchantedName(name, enchant) {
+    if (global.L2 && typeof L2.formatEnchantedItemName === 'function') {
+      return L2.formatEnchantedItemName(name, enchant);
+    }
+    var en = Math.floor(Number(enchant));
+    if (!Number.isFinite(en) || en <= 0) return String(name || '');
+    return '+' + String(en) + ' ' + String(name || '');
+  }
+
+  function normalizedItemGradeKey(itemId) {
+    var g = global.L2 && L2.itemGradeById && L2.itemGradeById[itemId];
+    if (g == null || String(g).trim() === '') return '';
+    return String(g).trim().toUpperCase();
+  }
+
+  function scrollTargetForItem(itemId) {
+    var slot = global.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (slot === 'rhand') return 'weapon';
+    if (
+      slot === 'lhand' ||
+      slot === 'chest' ||
+      slot === 'legs' ||
+      slot === 'fullarmor' ||
+      slot === 'head' ||
+      slot === 'gloves' ||
+      slot === 'feet' ||
+      slot === 'neck' ||
+      slot === 'earring' ||
+      slot === 'ring'
+    ) {
+      return 'armor';
+    }
+    return null;
+  }
+
+  function isEnchantableEquipment(itemId) {
+    if (!itemId) return false;
+    var grade = normalizedItemGradeKey(itemId);
+    if (!grade || grade === 'NG') return false;
+    return scrollTargetForItem(itemId) != null;
+  }
+
+  function getEnchantSuccessChance(currentEnchantLevel) {
+    var current = Math.max(
+      0,
+      Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(currentEnchantLevel) || 0))
+    );
+    if (current <= 2) return 100;
+    if (current === 3) return 70;
+    if (current === 4) return 65;
+    if (current === 5) return 60;
+    if (current === 6) return 55;
+    if (current === 7) return 50;
+    if (current === 8) return 45;
+    if (current === 9) return 40;
+    if (current <= 14) return 30;
+    if (current <= 19) return 20;
+    return 10;
+  }
+
+  function getEnchantFailLevel(currentEnchantLevel) {
+    var current = Math.max(
+      0,
+      Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(currentEnchantLevel) || 0))
+    );
+    if (current <= 3) return 3;
+    if (current <= 10) return current - 1;
+    return 10;
+  }
+
+  function scrollQtyInBag(snap, scrollItemId) {
+    var inv = snap && snap.inventory ? snap.inventory : { stacks: [] };
+    var total = 0;
+    (inv.stacks || []).forEach(function (st) {
+      if (Number(st.itemId) !== Number(scrollItemId)) return;
+      var q = Number(st.qty || 0);
+      if (Number.isFinite(q) && q > 0) total += Math.floor(q);
+    });
+    return total;
+  }
+
+  function compatibleScrolls(snap, itemId) {
+    var target = scrollTargetForItem(itemId);
+    var grade = normalizedItemGradeKey(itemId);
+    if (!target || !grade || grade === 'NG') return [];
+    var out = [];
+    Object.keys(SCROLL_META).forEach(function (key) {
+      var scrollId = Number(key);
+      var meta = SCROLL_META[scrollId];
+      if (!meta || meta.target !== target || meta.grade !== grade) return;
+      var qty = scrollQtyInBag(snap, scrollId);
+      if (qty <= 0) return;
+      out.push({ scrollItemId: scrollId, qty: qty, meta: meta });
+    });
+    return out;
+  }
+
+  function itemIconUrlForId(id) {
+    if (global.L2 && typeof L2.resolveItemIconUrl === 'function') {
+      return L2.resolveItemIconUrl(id, '/icons/drops/other.svg');
+    }
+    if (id > 0) return '/game/item-icon/' + id;
+    return '/icons/drops/other.svg';
+  }
+
+  function setItemIconSrc(img, itemId) {
+    if (!img) return;
+    img.decoding = 'async';
+    img.src = itemIconUrlForId(itemId);
+    img.onerror = function () {
+      img.onerror = null;
+      img.src = '/icons/drops/other.svg';
+    };
+  }
+
+  function addStatRow(statsEl, k, v) {
+    if (global.L2 && typeof L2.appendItemStatLine === 'function') {
+      L2.appendItemStatLine(statsEl, k, v);
+      return;
+    }
+    var p = document.createElement('p');
+    p.className = 'l2-item-modal-stat';
+    p.textContent = k ? k + ': ' + v : String(v);
+    statsEl.appendChild(p);
+  }
+
+  function fillCurrentStats(statsEl, itemId, enchant) {
+    statsEl.innerHTML = '';
+    if (enchant > 0) addStatRow(statsEl, 'Заточка', '+' + String(enchant));
+    if (global.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
+      var lines = L2.buildItemStatsPreviewLines(itemId);
+      lines.forEach(function (ln) {
+        addStatRow(statsEl, ln.labelUk, ln.valueUk);
+      });
+    }
+  }
+
+  function fillPreviewStats(previewEl, itemId, enchant) {
+    previewEl.innerHTML = '';
+    if (!global.L2 || typeof L2.buildEnchantSuccessPreviewLines !== 'function') return;
+    var lines = L2.buildEnchantSuccessPreviewLines(itemId, enchant);
+    if (!lines.length) {
+      previewEl.textContent = '—';
+      return;
+    }
+    lines.forEach(function (ln) {
+      var p = document.createElement('p');
+      p.className = 'l2-item-modal-stat l2-char-enchant-preview-line';
+      p.textContent =
+        ln.labelUk +
+        ': ' +
+        String(ln.currentValue) +
+        ' → ' +
+        String(ln.nextValue) +
+        ' (+' +
+        String(ln.delta) +
+        ')';
+      previewEl.appendChild(p);
+    });
+  }
+
+  function expectedRevisionForMutation() {
+    var snap = global.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null;
+    return snap && snap.revision != null ? snap.revision : null;
+  }
+
+  function showResultMessage(text) {
+    var el = $('char-enchant-modal-result');
+    if (!el) return;
+    if (!text) {
+      el.hidden = true;
+      el.setAttribute('hidden', '');
+      el.textContent = '';
+      return;
+    }
+    el.hidden = false;
+    el.removeAttribute('hidden');
+    el.textContent = String(text);
+  }
+
+  function renderScrollList(snap) {
+    var listEl = $('char-enchant-modal-scrolls');
+    var emptyEl = $('char-enchant-modal-no-scroll');
+    var submitBtn = $('char-enchant-modal-submit');
+    if (!listEl || !ctx) return;
+
+    listEl.innerHTML = '';
+    selectedScrollId = null;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.removeAttribute('aria-busy');
+    }
+
+    var scrolls = compatibleScrolls(snap, ctx.itemId);
+    var grade = normalizedItemGradeKey(ctx.itemId);
+
+    if (!scrolls.length) {
+      if (emptyEl) {
+        emptyEl.hidden = false;
+        emptyEl.removeAttribute('hidden');
+        emptyEl.textContent =
+          'У сумці немає відповідного сувою заточення ' + grade + '-grade.';
+      }
+      return;
+    }
+
+    if (emptyEl) {
+      emptyEl.hidden = true;
+      emptyEl.setAttribute('hidden', '');
+      emptyEl.textContent = '';
+    }
+
+    scrolls.forEach(function (row, idx) {
+      var wrap = document.createElement('label');
+      wrap.className = 'l2-char-enchant-scroll-row';
+      var radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'char-enchant-scroll-pick';
+      radio.value = String(row.scrollItemId);
+      radio.className = 'l2-char-enchant-scroll-radio';
+      if (idx === 0) {
+        radio.checked = true;
+        selectedScrollId = row.scrollItemId;
+        if (submitBtn) submitBtn.disabled = false;
+      }
+      radio.addEventListener('change', function () {
+        if (!radio.checked) return;
+        selectedScrollId = row.scrollItemId;
+        if (submitBtn && !inFlight) submitBtn.disabled = false;
+        updateChancePreview(ctx.enchant);
+      });
+
+      var ico = document.createElement('img');
+      ico.className = 'l2-char-enchant-scroll-icon';
+      ico.alt = '';
+      ico.width = 28;
+      ico.height = 28;
+      setItemIconSrc(ico, row.scrollItemId);
+
+      var text = document.createElement('span');
+      text.className = 'l2-char-enchant-scroll-text';
+      text.textContent =
+        itemDisplayName(row.scrollItemId) + ' (x' + String(row.qty) + ')';
+
+      wrap.appendChild(radio);
+      wrap.appendChild(ico);
+      wrap.appendChild(text);
+      listEl.appendChild(wrap);
+    });
+
+    updateChancePreview(ctx.enchant);
+  }
+
+  function updateChancePreview(enchant) {
+    var chanceEl = $('char-enchant-modal-chance');
+    var failEl = $('char-enchant-modal-fail');
+    if (!chanceEl || !failEl) return;
+    var chance = getEnchantSuccessChance(enchant);
+    var failTo = getEnchantFailLevel(enchant);
+    chanceEl.textContent = 'Шанс успіху: ' + String(chance) + '%';
+    failEl.textContent = 'При невдачі: стане +' + String(failTo);
+  }
+
+  function refreshModalContent(snap) {
+    if (!ctx) return;
+    snap = snap || (global.L2 && L2.lastSnapshot ? L2.lastSnapshot() : null);
+    if (snap && ctx.targetInstanceId.startsWith('bag:')) {
+      var parts = ctx.targetInstanceId.split(':');
+      var itemId = Number(parts[1]);
+      var enchant = Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(parts[2] || 0))));
+      (snap.inventory && snap.inventory.stacks ? snap.inventory.stacks : []).forEach(function (st) {
+        if (
+          Number(st.itemId) === itemId &&
+          Math.max(0, Math.floor(Number(st.enchant) || 0)) === enchant
+        ) {
+          ctx.enchant = enchant;
+          ctx.targetInstanceId = 'bag:' + String(itemId) + ':' + String(enchant);
+        }
+      });
+    } else if (snap && ctx.targetInstanceId.startsWith('eq:')) {
+      var slotKey = ctx.targetInstanceId.slice(3);
+      var slotVal = snap.inventory && snap.inventory.eq ? snap.inventory.eq[slotKey] : null;
+      if (slotVal) {
+        var en =
+          slotVal && typeof slotVal === 'object' && slotVal.enchant != null
+            ? Math.max(0, Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(slotVal.enchant))))
+            : 0;
+        ctx.enchant = en;
+      }
+    }
+
+    var titleEl = $('char-enchant-modal-title');
+    var enEl = $('char-enchant-modal-enchant');
+    var iconEl = $('char-enchant-modal-icon');
+    var statsEl = $('char-enchant-modal-stats');
+    var previewEl = $('char-enchant-modal-preview');
+    var submitBtn = $('char-enchant-modal-submit');
+
+    if (titleEl) {
+      titleEl.textContent = formatEnchantedName(itemDisplayName(ctx.itemId), ctx.enchant);
+      if (global.L2 && typeof L2.decorateItemNameEl === 'function') {
+        L2.decorateItemNameEl(titleEl, ctx.itemId, 'l2-gm-modal-title');
+      }
+    }
+    if (enEl) enEl.textContent = 'Поточна заточка: +' + String(ctx.enchant);
+    if (iconEl) setItemIconSrc(iconEl, ctx.itemId);
+    if (statsEl) fillCurrentStats(statsEl, ctx.itemId, ctx.enchant);
+    if (previewEl) fillPreviewStats(previewEl, ctx.itemId, ctx.enchant);
+
+    if (ctx.enchant >= MAX_ENCHANT_LEVEL) {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Максимальна заточка';
+      }
+      renderScrollList(snap);
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.textContent = 'Заточити';
+      submitBtn.disabled = true;
+    }
+    renderScrollList(snap);
+  }
+
+  function closeModal() {
+    var ov = $('char-enchant-modal-overlay');
+    if (!ov || ov.hidden) return;
+    ov.hidden = true;
+    ov.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('l2-gm-modal-open');
+    ctx = null;
+    selectedScrollId = null;
+    showResultMessage('');
+    if (escBound) {
+      document.removeEventListener('keydown', onEsc);
+      escBound = false;
+    }
+  }
+
+  function onEsc(e) {
+    if (e.key !== 'Escape') return;
+    var ov = $('char-enchant-modal-overlay');
+    if (!ov || ov.hidden) return;
+    e.preventDefault();
+    closeModal();
+  }
+
+  async function resyncCharacterFromServer() {
+    var t = localStorage.getItem('token');
+    if (!t) return null;
+    try {
+      var r = await fetch('/character', {
+        headers: { Authorization: 'Bearer ' + t },
+      });
+      if (!r.ok) return null;
+      var c = await r.json();
+      if (global.L2 && typeof L2.setLastSnapshot === 'function') L2.setLastSnapshot(c);
+      if (global.L2 && typeof L2.applyHudFromSnapshot === 'function') L2.applyHudFromSnapshot(c);
+      return c;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function submitEnchant() {
+    if (inFlight || !ctx || selectedScrollId == null) return;
+    if (ctx.enchant >= MAX_ENCHANT_LEVEL) return;
+
+    var submitBtn = $('char-enchant-modal-submit');
+    inFlight = true;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+    }
+
+    try {
+      var t = localStorage.getItem('token');
+      var r = await fetch('/game/inventory/enchant', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + t,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          expectedRevision: expectedRevisionForMutation(),
+          scrollItemId: selectedScrollId,
+          targetInstanceId: ctx.targetInstanceId,
+        }),
+      });
+
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+
+      if (r.status === 409) {
+        if (typeof L2.resyncCharacterAfterConflict === 'function') {
+          await L2.resyncCharacterAfterConflict();
+        } else {
+          await resyncCharacterFromServer();
+        }
+        showResultMessage('Стан оновлено — спробуй ще раз.');
+        refreshModalContent(global.L2.lastSnapshot ? L2.lastSnapshot() : null);
+        if (typeof ctx.onSnapshot === 'function') {
+          ctx.onSnapshot(global.L2.lastSnapshot ? L2.lastSnapshot() : null);
+        }
+        return;
+      }
+
+      var out = {};
+      try {
+        out = await r.json();
+      } catch (_) {
+        out = {};
+      }
+
+      if (!r.ok) {
+        showResultMessage(
+          out && out.messageUk ? out.messageUk : 'Не вдалося виконати заточку.'
+        );
+        return;
+      }
+
+      var c = out.character;
+      if (global.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c, function (snap) {
+          if (typeof ctx.onSnapshot === 'function') ctx.onSnapshot(snap);
+        });
+      } else if (global.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(c);
+        if (typeof ctx.onSnapshot === 'function') ctx.onSnapshot(c);
+      } else {
+        global.L2.setLastSnapshot(c);
+        if (global.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
+        if (typeof ctx.onSnapshot === 'function') ctx.onSnapshot(c);
+      }
+
+      showResultMessage(out.messageUk ? String(out.messageUk) : 'Заточка виконана.');
+      refreshModalContent(c);
+    } catch (_) {
+      showResultMessage('Збій мережі — спробуй ще раз.');
+    } finally {
+      inFlight = false;
+      if (submitBtn) {
+        submitBtn.removeAttribute('aria-busy');
+        if (ctx && ctx.enchant < MAX_ENCHANT_LEVEL && selectedScrollId != null) {
+          submitBtn.disabled = false;
+        }
+      }
+    }
+  }
+
+  function wireOnce() {
+    if (wired) return;
+    wired = true;
+    var ov = $('char-enchant-modal-overlay');
+    if (ov && ov.parentNode !== document.body) {
+      document.body.appendChild(ov);
+    }
+    var closeBtn = $('char-enchant-modal-close');
+    var submitBtn = $('char-enchant-modal-submit');
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (submitBtn) submitBtn.addEventListener('click', submitEnchant);
+    if (ov) {
+      ov.addEventListener('click', function (e) {
+        if (e.target === ov) closeModal();
+      });
+    }
+  }
+
+  function openEnchantModal(options) {
+    wireOnce();
+    var ov = $('char-enchant-modal-overlay');
+    if (!ov || !options) return;
+
+    ctx = {
+      targetInstanceId: String(options.targetInstanceId || ''),
+      itemId: Number(options.itemId),
+      enchant: Math.max(
+        0,
+        Math.min(MAX_ENCHANT_LEVEL, Math.floor(Number(options.enchant) || 0))
+      ),
+      onSnapshot: typeof options.onSnapshot === 'function' ? options.onSnapshot : null,
+    };
+
+    showResultMessage('');
+    refreshModalContent(
+      global.L2 && typeof L2.lastSnapshot === 'function' ? L2.lastSnapshot() : null
+    );
+
+    ov.hidden = false;
+    ov.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('l2-gm-modal-open');
+    if (!escBound) {
+      document.addEventListener('keydown', onEsc);
+      escBound = true;
+    }
+  }
+
+  global.L2CharEnchantModal = {
+    open: openEnchantModal,
+    close: closeModal,
+    isEnchantableEquipment: isEnchantableEquipment,
+    maxEnchantLevel: MAX_ENCHANT_LEVEL,
+  };
+})(window);
