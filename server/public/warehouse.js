@@ -60,7 +60,7 @@
     };
   }
 
-  function itemStatsParts(id) {
+  function itemStatsParts(id, enchant) {
     var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[id];
     var seg = null;
     if (sl === 'rhand') seg = 'weapon';
@@ -84,6 +84,13 @@
       seg !== 'accessor'
     ) {
       return [];
+    }
+    if (window.L2 && typeof L2.buildItemEnchantAwareStatLines === 'function') {
+      return L2.buildItemEnchantAwareStatLines(id, enchant, { compact: true }).map(
+        function (ln) {
+          return { label: ln.labelUk, value: ln.valueUk };
+        }
+      );
     }
     if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
       return L2.buildItemStatsPreviewLines(id).map(function (ln) {
@@ -287,14 +294,14 @@
 
       var name = document.createElement('div');
       name.className = itemNameClasses(itemId);
-      var line = formatEnchantedName(warehouseShortName(itemId), enchant) + qtySuffix(qty);
+      var line = warehouseShortName(itemId) + qtySuffix(qty);
       name.textContent = line;
       mid.appendChild(name);
 
       var statsRow = document.createElement('div');
       statsRow.className = 'l2-warehouse-stats-row';
 
-      var statParts = itemStatsParts(itemId);
+      var statParts = itemStatsParts(itemId, enchant);
       if (statParts.length) {
         var statsEl = document.createElement('div');
         statsEl.className = 'l2-warehouse-stats';

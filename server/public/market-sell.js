@@ -64,7 +64,14 @@
     return ' (x' + String(q) + ')';
   }
 
-  function itemStatsParts(id) {
+  function itemStatsParts(id, enchant) {
+    if (window.L2 && typeof L2.buildItemEnchantAwareStatLines === 'function') {
+      return L2.buildItemEnchantAwareStatLines(id, enchant, { compact: true }).map(
+        function (ln) {
+          return { label: ln.labelUk, value: ln.valueUk };
+        }
+      );
+    }
     if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
       return L2.buildItemStatsPreviewLines(id).map(function (ln) {
         return { label: ln.labelUk, value: ln.valueUk };
@@ -250,11 +257,11 @@
         encodeURIComponent(String(enchant)) +
         '&qty=' +
         encodeURIComponent(String(qty));
-      var line = formatEnchantedName(itemDisplayName(itemId), enchant) + qtySuffix(itemId, qty);
+      var line = itemDisplayName(itemId) + qtySuffix(itemId, qty);
       name.textContent = line;
       mid.appendChild(name);
 
-      var statParts = itemStatsParts(itemId);
+      var statParts = itemStatsParts(itemId, enchant);
       if (statParts.length) {
         var statsEl = document.createElement('span');
         statsEl.className = 'l2-char-bag-stats';

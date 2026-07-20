@@ -159,8 +159,15 @@
     );
   }
 
-  function itemStatsParts(id) {
+  function itemStatsParts(id, enchant) {
     if (!itemShowsStats(id)) return [];
+    if (window.L2 && typeof L2.buildItemEnchantAwareStatLines === 'function') {
+      return L2.buildItemEnchantAwareStatLines(id, enchant, { compact: true }).map(
+        function (ln) {
+          return { label: ln.labelUk, value: ln.valueUk };
+        }
+      );
+    }
     if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
       return L2.buildItemStatsPreviewLines(id).map(function (ln) {
         return { label: ln.labelUk, value: ln.valueUk };
@@ -824,11 +831,11 @@
       window.L2 && typeof L2.itemNameClassNames === 'function'
         ? L2.itemNameClassNames(stack.itemId, 'l2-sell-items-row__name')
         : 'l2-sell-items-row__name';
-    var label = formatEnchantedName(itemDisplayName(stack.itemId), stack.enchant);
+    var label = itemDisplayName(stack.itemId);
     if (stack.qty > 1) label += ' ×' + stack.qty;
     name.textContent = label;
 
-    var statParts = itemStatsParts(stack.itemId);
+    var statParts = itemStatsParts(stack.itemId, en);
     if (statParts.length) {
       var statEl = document.createElement('div');
       statEl.className = 'l2-sell-items-row__stats';

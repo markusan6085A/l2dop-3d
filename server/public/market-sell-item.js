@@ -71,7 +71,14 @@
     return ' (x' + String(q) + ')';
   }
 
-  function itemStatsParts(id) {
+  function itemStatsParts(id, enchant) {
+    if (window.L2 && typeof L2.buildItemEnchantAwareStatLines === 'function') {
+      return L2.buildItemEnchantAwareStatLines(id, enchant, { compact: true }).map(
+        function (ln) {
+          return { label: ln.labelUk, value: ln.valueUk };
+        }
+      );
+    }
     if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
       return L2.buildItemStatsPreviewLines(id).map(function (ln) {
         return { label: ln.labelUk, value: ln.valueUk };
@@ -193,13 +200,11 @@
       window.L2 && typeof L2.itemNameClassNames === 'function'
         ? L2.itemNameClassNames(ctx.itemId, 'l2-char-bag-name')
         : 'l2-char-bag-name';
-    var line =
-      formatEnchantedName(itemDisplayName(ctx.itemId), ctx.enchant) +
-      qtySuffix(ctx.qty);
+    var line = itemDisplayName(ctx.itemId) + qtySuffix(ctx.qty);
     name.textContent = line;
     mid.appendChild(name);
 
-    var statParts = itemStatsParts(ctx.itemId);
+    var statParts = itemStatsParts(ctx.itemId, ctx.enchant);
     if (statParts.length) {
       var statsEl = document.createElement('span');
       statsEl.className = 'l2-char-bag-stats';

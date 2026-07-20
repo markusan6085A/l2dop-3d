@@ -85,7 +85,14 @@
     };
   }
 
-  function itemStatsParts(id) {
+  function itemStatsParts(id, enchant) {
+    if (window.L2 && typeof L2.buildItemEnchantAwareStatLines === 'function') {
+      return L2.buildItemEnchantAwareStatLines(id, enchant, { compact: true }).map(
+        function (ln) {
+          return { label: ln.labelUk, value: ln.valueUk };
+        }
+      );
+    }
     if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
       return L2.buildItemStatsPreviewLines(id).map(function (ln) {
         return { label: ln.labelUk, value: ln.valueUk };
@@ -1183,12 +1190,10 @@
         window.L2 && typeof L2.itemNameClassNames === 'function'
           ? L2.itemNameClassNames(st.itemId, 'l2-char-bag-name')
           : 'l2-char-bag-name';
-      var nameLine =
-        formatEnchantedName(itemDisplayName(st.itemId), en) +
-        bagQtySuffix(st.itemId, st.qty);
+      var nameLine = itemDisplayName(st.itemId) + bagQtySuffix(st.itemId, st.qty);
       label.textContent = nameLine;
       mid.appendChild(label);
-      var statParts = itemStatsParts(st.itemId);
+      var statParts = itemStatsParts(st.itemId, en);
       if (statParts.length) {
         var stEl = document.createElement('span');
         stEl.className = 'l2-char-bag-stats';

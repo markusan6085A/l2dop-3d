@@ -10,11 +10,6 @@
     return document.getElementById(id);
   }
 
-  function pctFromMulUk(mul) {
-    var p = Math.round((Number(mul) - 1) * 100);
-    return (p >= 0 ? '+' : '') + p + '%';
-  }
-
   function itemDisplayName(id) {
     var n = global.L2 && L2.itemNameById && L2.itemNameById[id];
     return n != null ? n : '#' + id;
@@ -38,23 +33,6 @@
     return 'Предмет';
   }
 
-  function weaponTypeLabelUk(itemId) {
-    var wt = global.L2 && L2.itemWeaponTypeById && L2.itemWeaponTypeById[itemId];
-    if (!wt) return '';
-    var map = {
-      sword: 'Меч',
-      blunt: 'Булава',
-      dagger: 'Кинджал',
-      bow: 'Лук',
-      bigsword: 'Дворучний меч',
-      bigblunt: 'Дворучний тупий',
-      dual: 'Подвійні мечі',
-      pole: 'Спис',
-      fist: 'Кастети',
-    };
-    return map[wt] || String(wt);
-  }
-
   function itemIconUrlForId(id) {
     if (global.L2 && typeof L2.resolveItemIconUrl === 'function') {
       return L2.resolveItemIconUrl(id, '/icons/drops/other.svg');
@@ -63,7 +41,16 @@
     return '/icons/drops/other.svg';
   }
 
-  function setItemIconSrc(img, itemId) {
+  function setItemIconSrc(img, itemId, enchantLevel) {
+    if (global.L2 && typeof L2.setItemIconWithEnchantBadge === 'function') {
+      L2.setItemIconWithEnchantBadge(
+        img,
+        itemId,
+        enchantLevel != null ? enchantLevel : 0,
+        itemIconUrlForId(itemId)
+      );
+      return;
+    }
     if (!img) return;
     img.decoding = 'async';
     img.src = itemIconUrlForId(itemId);
@@ -146,108 +133,12 @@
     }
   }
 
-  function addStatRow(statsEl, k, v) {
-    if (global.L2 && typeof L2.appendItemStatLine === 'function') {
-      L2.appendItemStatLine(statsEl, k, v);
+  function fillItemStats(statsEl, itemId, modalEn) {
+    if (global.L2 && typeof L2.fillItemEnchantAwareStats === 'function') {
+      L2.fillItemEnchantAwareStats(statsEl, itemId, modalEn);
       return;
     }
-    var p = document.createElement('p');
-    p.className = 'l2-item-modal-stat l2-item-modal-stat--default';
-    p.textContent = k ? k + ': ' + v : String(v);
-    statsEl.appendChild(p);
-  }
-
-  function fillItemStats(statsEl, itemId, modalEn) {
     statsEl.innerHTML = '';
-    if (modalEn > 0) addStatRow(statsEl, 'Заточка', '+' + modalEn);
-
-    var st = global.L2 && L2.itemStatsById && L2.itemStatsById[itemId];
-    var slKind = global.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
-    var hasJewelAuthorModal =
-      st &&
-      typeof st === 'object' &&
-      (st.jewelMdefFlat != null ||
-        st.jewelMaxHp != null ||
-        st.jewelMaxMp != null ||
-        (st.jewelAcc != null && Number(st.jewelAcc) > 0) ||
-        (st.jewelEva != null && Number(st.jewelEva) > 0) ||
-        (st.jewelMpRegenMul != null && Number(st.jewelMpRegenMul) > 1) ||
-        (st.jewelHoldResistMul != null && Number(st.jewelHoldResistMul) > 1));
-    var isJewelModal =
-      slKind === 'ring' ||
-      slKind === 'neck' ||
-      slKind === 'earring' ||
-      hasJewelAuthorModal;
-    var isShieldModal = slKind === 'lhand' || slKind === 'shield';
-    var isArmorModal =
-      slKind === 'head' ||
-      slKind === 'chest' ||
-      slKind === 'legs' ||
-      slKind === 'gloves' ||
-      slKind === 'feet' ||
-      slKind === 'fullarmor';
-
-    if (st && typeof st === 'object') {
-      if (st.pAtk != null) addStatRow(statsEl, 'Фіз. атака', String(st.pAtk));
-      if (isShieldModal) {
-        if (st.pDef != null) addStatRow(statsEl, 'P.Def', String(st.pDef));
-        if (st.shieldRatePercent != null) {
-          addStatRow(statsEl, 'Блок щитом', String(st.shieldRatePercent) + '%');
-        }
-        if (st.shieldDef != null) addStatRow(statsEl, 'Захист щита', String(st.shieldDef));
-      } else if (isJewelModal) {
-        var mdef =
-          st.jewelMdefFlat != null
-            ? st.jewelMdefFlat
-            : st.jewelryMAtk != null
-              ? st.jewelryMAtk
-              : st.mAtk;
-        if (mdef != null) addStatRow(statsEl, 'Маг. захист (M.Def)', String(mdef));
-        if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
-          addStatRow(statsEl, 'HP макс.', '+' + String(st.jewelMaxHp));
-        }
-        if (st.jewelMaxMp != null && st.jewelMaxMp > 0) {
-          addStatRow(statsEl, 'MP макс.', '+' + String(st.jewelMaxMp));
-        }
-        if (st.jewelAcc != null && st.jewelAcc > 0) {
-          addStatRow(statsEl, 'Точність', '+' + String(st.jewelAcc));
-        }
-        if (st.jewelEva != null && st.jewelEva > 0) {
-          addStatRow(statsEl, 'Ухилення', '+' + String(st.jewelEva));
-        }
-        if (
-          st.jewelMpRegenMul != null &&
-          st.jewelMpRegenMul > 1 &&
-          Number.isFinite(Number(st.jewelMpRegenMul))
-        ) {
-          addStatRow(statsEl, 'Реген MP', pctFromMulUk(st.jewelMpRegenMul));
-        }
-        if (
-          st.jewelHoldResistMul != null &&
-          st.jewelHoldResistMul > 1 &&
-          Number.isFinite(Number(st.jewelHoldResistMul))
-        ) {
-          addStatRow(statsEl, 'Стійкість до утримання', pctFromMulUk(st.jewelHoldResistMul));
-        }
-        if (st.pDef != null) addStatRow(statsEl, 'Фіз. захист (P.Def)', String(st.pDef));
-      } else {
-        if (st.mAtk != null) addStatRow(statsEl, 'Маг. атака', String(st.mAtk));
-        if (isArmorModal && st.pDef != null) {
-          addStatRow(statsEl, 'Фіз. захист (P.Def)', String(st.pDef));
-        } else if (st.pDef != null) {
-          addStatRow(statsEl, 'P.Def', String(st.pDef));
-        }
-      }
-      if (st.atkSpd != null) addStatRow(statsEl, 'Швидкість бою', String(st.atkSpd));
-      if (st.wpnCrit != null) addStatRow(statsEl, 'Крит.', String(st.wpnCrit));
-      if (st.rCrit != null && Number(st.rCrit) > 0) {
-        addStatRow(statsEl, 'Крит.', '+' + String(st.rCrit));
-      }
-      var wpnLbl = weaponTypeLabelUk(itemId);
-      if (wpnLbl) addStatRow(statsEl, 'Тип зброї', wpnLbl);
-      if (st.castSpd != null) addStatRow(statsEl, 'Швидкість касту', String(st.castSpd));
-      if (st.mCritPct != null) addStatRow(statsEl, 'Маг. крит', String(st.mCritPct) + '%');
-    }
   }
 
   function openItemStatsModal(itemId, opts) {
@@ -275,13 +166,20 @@
     var ov = $(OVERLAY_ID);
     if (!ov || !title || !statsEl) return;
 
-    title.textContent = itemDisplayName(id);
+    var titleName = itemDisplayName(id);
+    if (global.L2 && typeof L2.formatEnchantedItemName === 'function') {
+      title.textContent = L2.formatEnchantedItemName(titleName, modalEn);
+    } else if (modalEn > 0) {
+      title.textContent = '+' + String(modalEn) + ' ' + titleName;
+    } else {
+      title.textContent = titleName;
+    }
     if (global.L2 && typeof L2.decorateItemNameEl === 'function') {
       L2.decorateItemNameEl(title, id, 'l2-gm-modal-title');
     }
     if (gradeEl) gradeEl.textContent = gradeLabelForItem(id);
     if (kind) kind.textContent = slotKindUk(id);
-    if (icon) setItemIconSrc(icon, id);
+    if (icon) setItemIconSrc(icon, id, modalEn);
 
     fillItemStats(statsEl, id, modalEn);
 

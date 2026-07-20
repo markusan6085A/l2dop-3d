@@ -147,7 +147,14 @@
     input.addEventListener('input', syncPriceDisplay);
   }
 
-  function itemStatsParts(id) {
+  function itemStatsParts(id, enchant) {
+    if (window.L2 && typeof L2.buildItemEnchantAwareStatLines === 'function') {
+      return L2.buildItemEnchantAwareStatLines(id, enchant, { compact: true }).map(
+        function (ln) {
+          return { label: ln.labelUk, value: ln.valueUk };
+        }
+      );
+    }
     if (window.L2 && typeof L2.buildItemStatsPreviewLines === 'function') {
       return L2.buildItemStatsPreviewLines(id).map(function (ln) {
         return { label: ln.labelUk, value: ln.valueUk };
@@ -183,9 +190,9 @@
     var enchant = entry.enchant != null ? Number(entry.enchant) : 0;
     if (!Number.isFinite(enchant) || enchant < 0) enchant = 0;
 
-    var line = formatEnchantedName(itemDisplayName(itemId), enchant);
+    var line = itemDisplayName(itemId);
     if (qty > 1) line = String(qty) + ' ' + line;
-    return { itemId: itemId, line: line };
+    return { itemId: itemId, enchant: enchant, line: line };
   }
 
   function renderPreview(entry) {
@@ -215,7 +222,7 @@
     name.textContent = meta.line;
     mid.appendChild(name);
 
-    var statParts = itemStatsParts(meta.itemId);
+    var statParts = itemStatsParts(meta.itemId, meta.enchant);
     if (statParts.length) {
       var statsEl = document.createElement('span');
       statsEl.className = 'l2-char-bag-stats';

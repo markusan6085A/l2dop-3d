@@ -80,18 +80,12 @@
   }
 
   function itemNameText(itemId, qty, enchant) {
+    void enchant;
     var q = Number(qty);
     if (!Number.isFinite(q) || q < 1) q = 1;
-    var e = Number(enchant);
-    if (!Number.isFinite(e) || e < 0) e = 0;
 
     var nameBase = itemDisplayName(itemId);
-    var name =
-      window.L2 && typeof L2.formatEnchantedItemName === 'function'
-        ? L2.formatEnchantedItemName(nameBase, e)
-        : e > 0
-          ? '+' + String(e) + ' ' + nameBase
-          : nameBase;
+    var name = nameBase;
     if (q > 1) return String(q) + ' ' + name;
     return name;
   }

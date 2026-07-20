@@ -166,6 +166,32 @@ assert.ok(
   })
 );
 
+// compact list stats use final enchanted values (no bonus text)
+L2.itemStatsById = { 128: { pAtk: 105, mAtk: 50 } };
+L2.itemSlotById = { 128: 'rhand' };
+L2.itemWeaponTypeById = { 128: 'bow' };
+var compactLines = L2.buildItemEnchantAwareStatLines(128, 7, { compact: true });
+var patkLine = compactLines.find(function (ln) {
+  return ln.labelUk === 'Фіз. атака';
+});
+var matkLine = compactLines.find(function (ln) {
+  return ln.labelUk === 'Маг. атака';
+});
+assert.ok(patkLine, 'compact lines must include P.Atk');
+assert.equal(patkLine.valueUk, '127');
+assert.ok(matkLine, 'compact lines must include M.Atk');
+assert.equal(matkLine.valueUk, '83');
+assert.ok(
+  !String(patkLine.valueUk).includes('від заточення'),
+  'compact lines must not include bonus suffix'
+);
+
+var detailLines = L2.buildItemEnchantAwareStatLines(128, 7, { compact: false });
+var detailPatk = detailLines.find(function (ln) {
+  return ln.labelUk === 'Фіз. атака';
+});
+assert.ok(String(detailPatk.valueUk).includes('від заточення'));
+
 // technical debt note: stacks merge by itemId+enchant (qty), not per physical instance
 var dupSnap = {
   inventory: {

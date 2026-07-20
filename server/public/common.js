@@ -1360,19 +1360,189 @@
       }
       return lines;
     },
+    /** Базовий stat + kind для рядка preview (заточка). */
+    resolveEnchantableStatForLabel: function (itemId, labelUk) {
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return null;
+      var st = global.L2.itemStatsById && global.L2.itemStatsById[id];
+      if (!st || typeof st !== 'object') return null;
+      var label = String(labelUk || '');
+      if (label === 'Фіз. атака' && st.pAtk != null) {
+        return { base: Number(st.pAtk), kind: 'weaponPatk' };
+      }
+      if (label === 'Маг. атака' && st.mAtk != null) {
+        return { base: Number(st.mAtk), kind: 'weaponMatk' };
+      }
+      if (label === 'Маг. захист (M.Def)') {
+        var mdef =
+          st.jewelMdefFlat != null
+            ? st.jewelMdefFlat
+            : st.jewelryMAtk != null
+              ? st.jewelryMAtk
+              : st.mAtk;
+        if (mdef != null) return { base: Number(mdef), kind: 'jewelMdef' };
+      }
+      if (
+        (label === 'Фіз. захист (P.Def)' ||
+          label === 'P.Def' ||
+          label === 'Фіз. захист') &&
+        st.pDef != null
+      ) {
+        return { base: Number(st.pDef), kind: 'armorPDef' };
+      }
+      return null;
+    },
+    /** Рядки статів з урахуванням заточки (compact — лише фінальні значення). */
+    buildItemEnchantAwareStatLines: function (itemId, enchantLevel, opts) {
+      opts = opts || {};
+      var compact = opts.compact !== false;
+      var en = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
+      var lines = global.L2.buildItemStatsPreviewLines(itemId);
+      if (en <= 0 || !lines.length) return lines;
+      return lines.map(function (ln) {
+        var resolved = global.L2.resolveEnchantableStatForLabel(itemId, ln.labelUk);
+        if (!resolved || !Number.isFinite(resolved.base)) return ln;
+        if (compact) {
+          return {
+            labelUk: ln.labelUk,
+            valueUk: String(
+              global.L2.enchantedItemStatValue(resolved.base, en, resolved.kind)
+            ),
+          };
+        }
+        var formatted = global.L2.formatEnchantedStatLineUk(
+          ln.labelUk,
+          resolved.base,
+          en,
+          resolved.kind
+        );
+        return { labelUk: formatted.labelUk, valueUk: formatted.valueUk };
+      });
+    },
+    /** Стат-блок модалки предмета (як char-bag-modal, з bonus text). */
+    fillItemEnchantAwareStats: function (statsEl, itemId, enchantLevel) {
+      if (!statsEl) return;
+      statsEl.innerHTML = '';
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return;
+      var modalEn = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
+      var st = global.L2.itemStatsById && global.L2.itemStatsById[id];
+      var slKind = global.L2.itemSlotById && global.L2.itemSlotById[id];
+      var hasJewelAuthorModal =
+        st &&
+        typeof st === 'object' &&
+        (st.jewelMdefFlat != null ||
+          st.jewelMaxHp != null ||
+          st.jewelMaxMp != null ||
+          (st.jewelAcc != null && Number(st.jewelAcc) > 0) ||
+          (st.jewelEva != null && Number(st.jewelEva) > 0) ||
+          (st.jewelMpRegenMul != null && Number(st.jewelMpRegenMul) > 1) ||
+          (st.jewelHoldResistMul != null && Number(st.jewelHoldResistMul) > 1));
+      var isJewelModal =
+        slKind === 'ring' ||
+        slKind === 'neck' ||
+        slKind === 'earring' ||
+        hasJewelAuthorModal;
+      var isShieldModal = slKind === 'lhand' || slKind === 'shield';
+      var isArmorModal =
+        slKind === 'head' ||
+        slKind === 'chest' ||
+        slKind === 'legs' ||
+        slKind === 'gloves' ||
+        slKind === 'feet' ||
+        slKind === 'fullarmor';
+      function pctFromMul(mul) {
+        var p = Math.round((Number(mul) - 1) * 100);
+        return (p >= 0 ? '+' : '') + p + '%';
+      }
+      function addRow(k, v) {
+        global.L2.appendItemStatLine(statsEl, k, v);
+      }
+      function addEnchantRow(label, baseVal, kind) {
+        var ln = global.L2.formatEnchantedStatLineUk(label, baseVal, modalEn, kind);
+        addRow(ln.labelUk, ln.valueUk);
+      }
+      if (!st || typeof st !== 'object') return;
+      if (st.pAtk != null) addEnchantRow('Фіз. атака', st.pAtk, 'weaponPatk');
+      if (isShieldModal) {
+        if (st.pDef != null) addEnchantRow('P.Def', st.pDef, 'armorPDef');
+        if (st.shieldRatePercent != null) {
+          addRow('Блок щитом', String(st.shieldRatePercent) + '%');
+        }
+        if (st.shieldDef != null) addRow('Захист щита', String(st.shieldDef));
+      } else if (isJewelModal) {
+        var mdef =
+          st.jewelMdefFlat != null
+            ? st.jewelMdefFlat
+            : st.jewelryMAtk != null
+              ? st.jewelryMAtk
+              : st.mAtk;
+        if (mdef != null) addEnchantRow('Маг. захист (M.Def)', mdef, 'jewelMdef');
+        if (st.jewelMaxHp != null && st.jewelMaxHp > 0) {
+          addRow('HP макс.', '+' + String(st.jewelMaxHp));
+        }
+        if (st.jewelMaxMp != null && st.jewelMaxMp > 0) {
+          addRow('MP макс.', '+' + String(st.jewelMaxMp));
+        }
+        if (st.jewelAcc != null && st.jewelAcc > 0) {
+          addRow('Точність', '+' + String(st.jewelAcc));
+        }
+        if (st.jewelEva != null && st.jewelEva > 0) {
+          addRow('Ухилення', '+' + String(st.jewelEva));
+        }
+        if (
+          st.jewelMpRegenMul != null &&
+          st.jewelMpRegenMul > 1 &&
+          Number.isFinite(Number(st.jewelMpRegenMul))
+        ) {
+          addRow('Реген MP', pctFromMul(st.jewelMpRegenMul));
+        }
+        if (
+          st.jewelHoldResistMul != null &&
+          st.jewelHoldResistMul > 1 &&
+          Number.isFinite(Number(st.jewelHoldResistMul))
+        ) {
+          addRow('Стійкість до утримання', pctFromMul(st.jewelHoldResistMul));
+        }
+        if (st.pDef != null) addEnchantRow('Фіз. захист (P.Def)', st.pDef, 'armorPDef');
+      } else {
+        if (st.mAtk != null) addEnchantRow('Маг. атака', st.mAtk, 'weaponMatk');
+        if (isArmorModal && st.pDef != null) {
+          addEnchantRow('Фіз. захист (P.Def)', st.pDef, 'armorPDef');
+        } else if (st.pDef != null) {
+          addEnchantRow('P.Def', st.pDef, 'armorPDef');
+        }
+      }
+      if (st.atkSpd != null) addRow('Швидкість бою', String(st.atkSpd));
+      if (st.wpnCrit != null) addRow('Крит.', String(st.wpnCrit));
+      if (st.rCrit != null && Number(st.rCrit) > 0) {
+        addRow('Крит.', '+' + String(st.rCrit));
+      }
+      var wk = global.L2.itemWeaponTypeById && global.L2.itemWeaponTypeById[id];
+      if (wk) addRow('Тип зброї', global.L2.weaponKindUk(wk));
+      if (st.castSpd != null) addRow('Швидкість касту', String(st.castSpd));
+      if (st.mCritPct != null) addRow('Маг. крит', String(st.mCritPct) + '%');
+    },
     /** Компактний рядок статів як у крамниці: P.Atk: 25 | Speed: 379 | Crit: 40 */
-    buildItemStatsCompactLine: function (itemId) {
+    buildItemStatsCompactLine: function (itemId, enchantLevel) {
       var id = normalizePositiveInt(itemId);
       if (id <= 0) return '';
       var st = global.L2.itemStatsById && global.L2.itemStatsById[id];
       var slot = global.L2.itemSlotById && global.L2.itemSlotById[id];
       if (!st || typeof st !== 'object') return '';
+      var en = Math.max(0, Math.min(25, Math.floor(Number(enchantLevel) || 0)));
       function dashOrNum(v) {
         return v != null ? String(v) : '—';
       }
       if (slot === 'rhand') {
-        var pAtk = st.pAtk != null ? st.pAtk : null;
-        var mAtk = st.mAtk != null ? st.mAtk : null;
+        var pAtk =
+          st.pAtk != null
+            ? global.L2.enchantedItemStatValue(st.pAtk, en, 'weaponPatk')
+            : null;
+        var mAtk =
+          st.mAtk != null
+            ? global.L2.enchantedItemStatValue(st.mAtk, en, 'weaponMatk')
+            : null;
         var speedStr = dashOrNum(st.atkSpd);
         var isMagic = mAtk != null && (pAtk == null || mAtk > pAtk);
         if (isMagic) {
@@ -1394,7 +1564,12 @@
         slot === 'fullarmor' ||
         slot === 'lhand'
       ) {
-        if (st.pDef != null) return 'P.Def: ' + st.pDef;
+        if (st.pDef != null) {
+          return (
+            'P.Def: ' +
+            String(global.L2.enchantedItemStatValue(st.pDef, en, 'armorPDef'))
+          );
+        }
         return '';
       }
       if (slot === 'ring' || slot === 'neck' || slot === 'earring') {
@@ -1404,15 +1579,26 @@
             : st.jewelryMAtk != null
               ? st.jewelryMAtk
               : st.mAtk;
-        if (mdef != null) return 'M.Def: ' + mdef;
+        if (mdef != null) {
+          return (
+            'M.Def: ' +
+            String(global.L2.enchantedItemStatValue(mdef, en, 'jewelMdef'))
+          );
+        }
         return '';
       }
       return '';
     },
     /** Інлайн-стати в рядку списку (магазин / сумка / склад). */
-    appendItemStatsPreviewInline: function (parent, itemId) {
+    appendItemStatsPreviewInline: function (parent, itemId, enchantLevel) {
       if (!parent) return;
-      var lines = global.L2.buildItemStatsPreviewLines(itemId);
+      var lines =
+        global.L2.buildItemEnchantAwareStatLines &&
+        typeof global.L2.buildItemEnchantAwareStatLines === 'function'
+          ? global.L2.buildItemEnchantAwareStatLines(itemId, enchantLevel, {
+              compact: true,
+            })
+          : global.L2.buildItemStatsPreviewLines(itemId);
       if (!lines.length) return;
       for (var si = 0; si < lines.length; si++) {
         if (si > 0) {
