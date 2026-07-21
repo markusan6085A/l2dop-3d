@@ -334,9 +334,7 @@
     }
     if (j.itemSlotHints && typeof j.itemSlotHints === 'object' && L2.itemSlotById) {
       Object.keys(j.itemSlotHints).forEach(function (k) {
-        if (L2.itemSlotById[k] == null) {
-          L2.itemSlotById[k] = j.itemSlotHints[k];
-        }
+        L2.itemSlotById[k] = j.itemSlotHints[k];
       });
     }
     if (

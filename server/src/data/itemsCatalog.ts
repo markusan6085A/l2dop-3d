@@ -397,7 +397,7 @@ export function itemSlotHintsForClient(): Record<number, string> {
     const id = Number(idStr);
     if (!Number.isFinite(id)) continue;
     if (!m.slot) continue;
-    if (out[id] != null && String(out[id]).trim() !== '') continue;
+    /** Канон `ITEM_CATALOG` завжди перебиває GM/drops hint (fullarmor vs chest). */
     out[id] = m.slot === 'lhand' ? 'lhand' : m.slot;
   }
   /** UI/екіп чекають `lhand`; у `L2DOP_ITEM_SLOT_HINT` лишається legacy `shield`. */
@@ -681,11 +681,15 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
     .map((row) => {
       const canon = gradeArmorCatalogRow(row.itemId);
       if (!canon) return row;
+      const canonRow = {
+        ...row,
+        nameUk: canon.name,
+        slot: canon.slot,
+        armorType: canon.armorType,
+      };
       if (canon.shieldDefense != null) {
         return {
-          ...row,
-          nameUk: canon.name,
-          armorType: canon.armorType,
+          ...canonRow,
           stats: {
             ...row.stats,
             pDef: undefined,
@@ -694,13 +698,11 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
       }
       if (canon.pDef != null) {
         return {
-          ...row,
-          nameUk: canon.name,
-          armorType: canon.armorType,
+          ...canonRow,
           stats: { ...row.stats, pDef: canon.pDef },
         };
       }
-      return row;
+      return canonRow;
     });
 }
 

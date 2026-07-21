@@ -688,6 +688,21 @@
 
   /** Лише зброя / щит / броня / аксесуари — не розхідники й ресурси. */
   function canEquipFromBag(itemId) {
+    if (window.L2 && typeof L2.isEquippableGearItem === 'function') {
+      if (L2.isEquippableGearItem(itemId)) {
+        var tabGear = bagInvTabHint(itemId);
+        if (
+          tabGear === 'recipe' ||
+          tabGear === 'consumable' ||
+          tabGear === 'quest' ||
+          tabGear === 'book' ||
+          tabGear === 'enchantment'
+        ) {
+          return false;
+        }
+        return true;
+      }
+    }
     if (itemInConsumableBagBucket(itemId)) return false;
     var seg = bagEquipSegment(itemId);
     if (!seg) return false;
@@ -1718,6 +1733,7 @@
 
   function slotKindUk(itemId) {
     var sl = window.L2 && L2.itemSlotById && L2.itemSlotById[itemId];
+    if (sl === 'fullarmor') return 'Повний доспех';
     if (sl === 'chest') return 'Обладунки (верх)';
     if (sl === 'legs') return 'Обладунки (низ)';
     if (sl === 'head') return 'Шолом';
