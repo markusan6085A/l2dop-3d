@@ -401,6 +401,9 @@
             global.L2.armorSetByPieceId[aset.pieceIds[api]] = aset;
           }
         }
+        if (aset.optionalShieldId) {
+          global.L2.armorSetByPieceId[aset.optionalShieldId] = aset;
+        }
       }
     }
     if (

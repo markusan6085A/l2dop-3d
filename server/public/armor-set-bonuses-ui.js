@@ -38,7 +38,130 @@
     return catalogByPieceId()[n] || null;
   }
 
-  function buildSetHtml(setInfo, itemId) {
+  function isOptionalShieldItem(setInfo, itemId) {
+    return (
+      setInfo &&
+      setInfo.optionalShieldId != null &&
+      Number(itemId) === Number(setInfo.optionalShieldId)
+    );
+  }
+
+  function collectWornIds() {
+    var worn = {};
+    var eq = g.L2 && g.L2.getCachedCharacter && g.L2.getCachedCharacter();
+    if (!eq || !eq.inventory || !eq.inventory.eq) return worn;
+    var eqObj = eq.inventory.eq;
+    var keys = ['l3', 'l4', 'lh', 'lg', 'lf', 'l2'];
+    for (var ki = 0; ki < keys.length; ki++) {
+      var slot = eqObj[keys[ki]];
+      var id =
+        slot && typeof slot === 'object' && slot.itemId
+          ? Number(slot.itemId)
+          : typeof slot === 'number'
+            ? slot
+            : 0;
+      if (id > 0) worn[id] = true;
+    }
+    return worn;
+  }
+
+  function buildProgressHtml(setInfo, itemId, opts) {
+    opts = opts || {};
+    var worn = collectWornIds();
+    var hasWorn = Object.keys(worn).length > 0;
+    if (!hasWorn) return '';
+
+    var coreCount = 0;
+    if (setInfo.pieceIds) {
+      for (var ci = 0; ci < setInfo.pieceIds.length; ci++) {
+        if (worn[setInfo.pieceIds[ci]]) coreCount++;
+      }
+    }
+    var total = setInfo.pieceIds ? setInfo.pieceIds.length : 0;
+    var progressHtml =
+      '<div class="' +
+      CLS +
+      '__progress">Основні частини: ' +
+      coreCount +
+      '/' +
+      total;
+    if (setInfo.optionalShieldId) {
+      var hoplonEquipped = !!worn[setInfo.optionalShieldId];
+      progressHtml +=
+        '<br>Hoplon: ' + (hoplonEquipped ? 'екіпіровано' : 'не екіпіровано');
+    }
+    progressHtml += '</div>';
+    return progressHtml;
+  }
+
+  function findShieldStage(setInfo) {
+    if (!setInfo.stages) return null;
+    for (var si = 0; si < setInfo.stages.length; si++) {
+      if (setInfo.stages[si].requiresShield) return setInfo.stages[si];
+    }
+    return null;
+  }
+
+  function buildOptionalShieldSetHtml(setInfo, itemId) {
+    var gUk = setInfo.grade || 'D';
+    var partsHtml =
+      '<div class="' +
+      CLS +
+      '__parts-title">Основні частини:</div><ul class="' +
+      CLS +
+      '__parts">';
+    if (setInfo.pieceNames) {
+      for (var pi = 0; pi < setInfo.pieceNames.length; pi++) {
+        partsHtml += '<li>' + setInfo.pieceNames[pi] + '</li>';
+      }
+    }
+    partsHtml += '</ul>';
+
+    var shieldStage = findShieldStage(setInfo);
+    var bonusHtml = '';
+    if (shieldStage && shieldStage.displayLines && shieldStage.displayLines.length) {
+      bonusHtml =
+        '<div class="' +
+        CLS +
+        '__parts-title">Бонус повного комплекту з Hoplon:</div><ul class="' +
+        CLS +
+        '__list">';
+      for (var bi = 0; bi < shieldStage.displayLines.length; bi++) {
+        bonusHtml += '<li>' + shieldStage.displayLines[bi] + '</li>';
+      }
+      bonusHtml += '</ul>';
+    }
+
+    var conditionHtml =
+      '<div class="' +
+      CLS +
+      '__condition">Умова: потрібні всі ' +
+      (setInfo.pieceIds ? setInfo.pieceIds.length : 3) +
+      ' основні частини та екіпірований Hoplon.</div>';
+
+    return (
+      '<div class="' +
+      CLS +
+      '">' +
+      '<div class="' +
+      CLS +
+      '__title">ДОДАТКОВА ЧАСТИНА КОМПЛЕКТУ · ГРЕЙД ' +
+      gUk +
+      '</div>' +
+      '<div class="' +
+      CLS +
+      '__set-name">' +
+      setInfo.name +
+      '</div>' +
+      partsHtml +
+      bonusHtml +
+      conditionHtml +
+      buildProgressHtml(setInfo, itemId) +
+      '</div>'
+    );
+  }
+
+  function buildCoreSetHtml(setInfo, itemId) {
     var gUk = setInfo.grade || 'D';
     var partsHtml = '';
     if (setInfo.pieceNames && setInfo.pieceNames.length) {
@@ -49,8 +172,7 @@
         CLS +
         '__parts">';
       for (var pi = 0; pi < setInfo.pieceNames.length; pi++) {
-        partsHtml +=
-          '<li>' + setInfo.pieceNames[pi] + '</li>';
+        partsHtml += '<li>' + setInfo.pieceNames[pi] + '</li>';
       }
       partsHtml += '</ul>';
     }
@@ -70,43 +192,6 @@
       }
       stagesHtml += '</ul>';
     }
-    var progressHtml = '';
-    var eq = g.L2 && g.L2.getCachedCharacter && g.L2.getCachedCharacter();
-    if (eq && eq.inventory && eq.inventory.eq) {
-      var worn = {};
-      var eqObj = eq.inventory.eq;
-      var keys = ['l3', 'l4', 'lh', 'lg', 'lf', 'l2'];
-      for (var ki = 0; ki < keys.length; ki++) {
-        var slot = eqObj[keys[ki]];
-        var id =
-          slot && typeof slot === 'object' && slot.itemId
-            ? Number(slot.itemId)
-            : typeof slot === 'number'
-              ? slot
-              : 0;
-        if (id > 0) worn[id] = true;
-      }
-      var coreCount = 0;
-      if (setInfo.pieceIds) {
-        for (var ci = 0; ci < setInfo.pieceIds.length; ci++) {
-          if (worn[setInfo.pieceIds[ci]]) coreCount++;
-        }
-      }
-      var total = setInfo.pieceIds ? setInfo.pieceIds.length : 0;
-      progressHtml =
-        '<div class="' +
-        CLS +
-        '__progress">Екіпіровано: ' +
-        coreCount +
-        '/' +
-        total;
-      if (setInfo.optionalShieldId) {
-        progressHtml +=
-          ' · Hoplon: ' +
-          (worn[setInfo.optionalShieldId] ? 'екіпіровано' : 'не екіпіровано');
-      }
-      progressHtml += '</div>';
-    }
     return (
       '<div class="' +
       CLS +
@@ -123,9 +208,16 @@
       '</div>' +
       partsHtml +
       stagesHtml +
-      progressHtml +
+      buildProgressHtml(setInfo, itemId) +
       '</div>'
     );
+  }
+
+  function buildSetHtml(setInfo, itemId) {
+    if (isOptionalShieldItem(setInfo, itemId)) {
+      return buildOptionalShieldSetHtml(setInfo, itemId);
+    }
+    return buildCoreSetHtml(setInfo, itemId);
   }
 
   function showIn(host, _gradeRaw, itemId) {
@@ -151,6 +243,7 @@
     isArmorSlot: isArmorSlot,
     normalizeArmorGrade: normalizeArmorGrade,
     resolveSetForItemId: resolveSetForItemId,
+    isOptionalShieldItem: isOptionalShieldItem,
     showIn: showIn,
     hide: hide,
   };

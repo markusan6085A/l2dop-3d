@@ -158,4 +158,67 @@ console.log('=== D-grade armor sets regression ===\n');
   console.log('N. resolveEquippedArmorSetBonuses ↔ computeCombatStats — OK');
 }
 
+// O. Hoplon buildItemClientView — optional shield role
+{
+  const view = buildItemClientView(628);
+  assert.equal(view.armorSetInfo?.setId, 'd_mithril');
+  assert.equal(view.setItemRole, 'optionalShield');
+  assert.equal(view.armorSetInfo?.optionalShieldId, 628);
+  console.log('O. buildItemClientView(628) → d_mithril, optionalShield — OK');
+}
+
+// P. Hoplon alone — no set bonus
+{
+  const t = resolveEquippedArmorSetBonuses(inv({ l2: 628 }));
+  assert.equal(t.activeSets.length, 0);
+  assert.equal(t.totals.shieldDefensePct, 0);
+  assert.equal(t.totals.maxHpFlat, 0);
+  assert.equal(t.totals.poisonResistancePct, 0);
+  console.log('P. Hoplon alone → no set bonus — OK');
+}
+
+// Q. Mithril 3/3 without Hoplon — no Shield Defense +2.63%
+{
+  const t = resolveEquippedArmorSetBonuses(inv({ lh: 499, l3: 58, l4: 59 }));
+  assert.equal(t.totals.shieldDefensePct, 0);
+  assert.equal(t.totals.poisonResistancePct, 20);
+  console.log('Q. Mithril 3/3 without Hoplon → no Shield Defense — OK');
+}
+
+// R. Mithril 3/3 + Hoplon — Shield Defense +2.63%
+{
+  const t = resolveEquippedArmorSetBonuses(inv({ lh: 499, l3: 58, l4: 59, l2: 628 }));
+  assert.equal(t.totals.shieldDefensePct, 2.63);
+  console.log('R. Mithril 3/3 + Hoplon → Shield Defense +2.63% — OK');
+}
+
+// S. buildItemClientView consistency — shop/inventory/modal/drop (same serializer)
+{
+  const mithrilCoreIds = [499, 58, 59];
+  const hoplonView = buildItemClientView(628);
+  assert.equal(hoplonView.armorSetInfo?.setId, 'd_mithril');
+  assert.equal(hoplonView.setItemRole, 'optionalShield');
+
+  for (const itemId of mithrilCoreIds) {
+    const coreView = buildItemClientView(itemId);
+    assert.equal(coreView.armorSetInfo?.setId, 'd_mithril');
+    assert.equal(coreView.setItemRole, 'core');
+    assert.equal(coreView.armorSetInfo?.setId, hoplonView.armorSetInfo?.setId);
+  }
+
+  const fullSet = inv({ lh: 499, l3: 58, l4: 59, l2: 628 });
+  const hoplonEquipped = buildItemClientView(628, fullSet);
+  assert.equal(hoplonEquipped.equippedSetProgress?.equippedCorePieces, 3);
+  assert.equal(hoplonEquipped.equippedSetProgress?.shieldEquipped, true);
+  assert.deepEqual(hoplonEquipped.activeSetEffects, { shieldDefensePct: 2.63 });
+
+  const breastplateEquipped = buildItemClientView(58, fullSet);
+  assert.equal(breastplateEquipped.setItemRole, 'core');
+  assert.ok(breastplateEquipped.activeSetEffects?.maxHpFlat === 126);
+  assert.ok(breastplateEquipped.activeSetEffects?.poisonResistancePct === 20);
+  assert.ok(breastplateEquipped.activeSetEffects?.shieldDefensePct === 2.63);
+
+  console.log('S. buildItemClientView — Hoplon/core set link consistent — OK');
+}
+
 console.log('\nAll D-grade armor set regression tests passed.');

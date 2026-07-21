@@ -106,6 +106,8 @@ export const D_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   D_MITHRIL_SET,
 ];
 
+export type ArmorSetItemRole = 'core' | 'optionalShield';
+
 /** itemId → setId для частин, що входять у corePieceIds. */
 export const ARMOR_SET_ID_BY_CORE_PIECE: ReadonlyMap<number, string> = (() => {
   const m = new Map<number, string>();
@@ -117,13 +119,33 @@ export const ARMOR_SET_ID_BY_CORE_PIECE: ReadonlyMap<number, string> = (() => {
   return m;
 })();
 
+/** itemId → setId для optionalShieldId (не входить у corePieceIds). */
+export const ARMOR_SET_ID_BY_OPTIONAL_SHIELD: ReadonlyMap<number, string> = (() => {
+  const m = new Map<number, string>();
+  for (const set of D_GRADE_ARMOR_SETS) {
+    if (set.optionalShieldId != null) {
+      m.set(set.optionalShieldId, set.setId);
+    }
+  }
+  return m;
+})();
+
 export function armorSetDefinitionById(setId: string): ArmorSetDefinition | undefined {
   return D_GRADE_ARMOR_SETS.find((s) => s.setId === setId);
 }
 
 export function armorSetDefinitionForItem(itemId: number): ArmorSetDefinition | undefined {
-  const setId = ARMOR_SET_ID_BY_CORE_PIECE.get(Math.floor(itemId));
+  const id = Math.floor(itemId);
+  const setId =
+    ARMOR_SET_ID_BY_CORE_PIECE.get(id) ?? ARMOR_SET_ID_BY_OPTIONAL_SHIELD.get(id);
   return setId ? armorSetDefinitionById(setId) : undefined;
+}
+
+export function armorSetItemRoleForItem(itemId: number): ArmorSetItemRole | null {
+  const id = Math.floor(itemId);
+  if (ARMOR_SET_ID_BY_CORE_PIECE.has(id)) return 'core';
+  if (ARMOR_SET_ID_BY_OPTIONAL_SHIELD.has(id)) return 'optionalShield';
+  return null;
 }
 
 export function armorSetPieceName(itemId: number): string {

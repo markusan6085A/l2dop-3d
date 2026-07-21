@@ -10,7 +10,9 @@ import {
   D_GRADE_ARMOR_SETS,
   armorSetDefinitionById,
   armorSetDefinitionForItem,
+  armorSetItemRoleForItem,
   armorSetPieceName,
+  type ArmorSetItemRole,
 } from './armorSetCatalog.js';
 import { dGradeArmorCatalogRow } from './dGradeArmorCatalog.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
@@ -78,6 +80,7 @@ export type ItemClientView = {
   shieldDefense: number | null;
   shieldBlockRatePct: number | null;
   armorSetInfo: ItemClientViewArmorSetInfo | null;
+  setItemRole: ArmorSetItemRole | null;
   equippedSetProgress: ItemClientViewEquippedProgress | null;
   activeSetEffects: ArmorSetEffects | null;
 };
@@ -283,6 +286,26 @@ function resolveItemStats(itemId: number): {
   };
 }
 
+function shieldOnlySetEffects(effects: ArmorSetEffects | null): ArmorSetEffects | null {
+  if (!effects?.shieldDefensePct) return null;
+  return { shieldDefensePct: effects.shieldDefensePct };
+}
+
+function progressLabelsForItemView(
+  setItemRole: ArmorSetItemRole | null,
+  active: EquippedArmorSetActive | null,
+  coreEquipped: number,
+  totalCore: number,
+  shieldEquipped: boolean
+): string[] {
+  if (setItemRole === 'optionalShield') {
+    return shieldEquipped && coreEquipped >= totalCore && active?.effects.shieldDefensePct
+      ? ['Shield Defense +2.63%']
+      : [];
+  }
+  return active?.displayLines ?? [];
+}
+
 /** Спільний серіалізатор предмета для shop / inventory / modal / drop preview. */
 export function buildItemClientView(
   itemId: number,
@@ -290,6 +313,7 @@ export function buildItemClientView(
 ): ItemClientView {
   const id = Math.floor(itemId);
   const stats = resolveItemStats(id);
+  const setItemRole = armorSetItemRoleForItem(id);
   const setInfo = armorSetInfoForItem(id);
 
   let equippedSetProgress: ItemClientViewEquippedProgress | null = null;
@@ -297,32 +321,37 @@ export function buildItemClientView(
 
   if (characterEquipment && setInfo) {
     const resolved = resolveEquippedArmorSetBonuses(characterEquipment);
-    const active = resolved.activeSets.find((s) => s.setId === setInfo.setId);
-    if (active) {
-      equippedSetProgress = {
-        equippedCorePieces: active.equippedCorePieces,
-        totalCorePieces: active.totalCorePieces,
-        shieldEquipped: active.shieldEquipped,
-        activeStageLabels: active.displayLines,
-      };
+    const active = resolved.activeSets.find((s) => s.setId === setInfo.setId) ?? null;
+    const eq =
+      'eq' in characterEquipment && characterEquipment.eq
+        ? characterEquipment.eq
+        : characterEquipment;
+    const worn = equippedItemIds(eq as InventoryState['eq']);
+    const set = armorSetDefinitionById(setInfo.setId);
+    const coreEquipped = set
+      ? set.corePieceIds.filter((pid) => worn.has(pid)).length
+      : 0;
+    const totalCore = set?.corePieceIds.length ?? setInfo.pieceIds.length;
+    const shieldEquipped =
+      set?.optionalShieldId != null && worn.has(set.optionalShieldId);
+
+    equippedSetProgress = {
+      equippedCorePieces: active?.equippedCorePieces ?? coreEquipped,
+      totalCorePieces: active?.totalCorePieces ?? totalCore,
+      shieldEquipped: active?.shieldEquipped ?? shieldEquipped,
+      activeStageLabels: progressLabelsForItemView(
+        setItemRole,
+        active,
+        coreEquipped,
+        totalCore,
+        shieldEquipped
+      ),
+    };
+
+    if (setItemRole === 'optionalShield') {
+      activeSetEffects = shieldOnlySetEffects(active?.effects ?? null);
+    } else if (active) {
       activeSetEffects = active.effects;
-    } else {
-      const eq =
-        'eq' in characterEquipment && characterEquipment.eq
-          ? characterEquipment.eq
-          : characterEquipment;
-      const worn = equippedItemIds(eq as InventoryState['eq']);
-      const set = armorSetDefinitionById(setInfo.setId);
-      if (set) {
-        const coreEquipped = set.corePieceIds.filter((pid) => worn.has(pid)).length;
-        equippedSetProgress = {
-          equippedCorePieces: coreEquipped,
-          totalCorePieces: set.corePieceIds.length,
-          shieldEquipped:
-            set.optionalShieldId != null && worn.has(set.optionalShieldId),
-          activeStageLabels: [],
-        };
-      }
     }
   }
 
@@ -335,6 +364,7 @@ export function buildItemClientView(
     shieldDefense: stats.shieldDefense,
     shieldBlockRatePct: stats.shieldBlockRatePct,
     armorSetInfo: setInfo,
+    setItemRole,
     equippedSetProgress,
     activeSetEffects,
   };
