@@ -106,18 +106,18 @@ const RAW: Array<[string, DropsShieldPatch]> = [
     'arrom_а/shield_dark_crystal_shield_i00_0.jpg',
     {
       nameUk: 'Dark Crystal Shield',
-      pDef: 92,
+      pDef: 243,
       shieldRatePercent: 20,
-      shieldDef: 47,
+      shieldDef: 243,
     },
   ],
   [
     'arrom_а/shield_shield_of_nightmare_i00_0.jpg',
     {
       nameUk: 'Shield of Nightmare',
-      pDef: 98,
+      pDef: 256,
       shieldRatePercent: 20,
-      shieldDef: 50,
+      shieldDef: 256,
     },
   ],
   [

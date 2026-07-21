@@ -16,6 +16,7 @@ import { ITEM_CATALOG } from './itemsCatalog.js';
 import { D_GRADE_ARMOR_CATALOG } from './dGradeArmorCatalog.js';
 import { C_GRADE_ARMOR_CATALOG } from './cGradeArmorCatalog.js';
 import { B_GRADE_ARMOR_CATALOG } from './bGradeArmorCatalog.js';
+import { A_GRADE_ARMOR_CATALOG } from './aGradeArmorCatalog.js';
 import { ancientAdenaNamesEnForClient } from './ancientAdenaItem.js';
 import { mammonGemstoneNamesEnForClient } from './mammonMerchantGemstones.js';
 import { mammonLifeStoneNamesEnForClient } from './mammonMerchantLifeStones.js';
@@ -166,6 +167,10 @@ export function itemNamesEnForClient(): Record<number, string> {
   }
 
   for (const row of B_GRADE_ARMOR_CATALOG) {
+    put(row.itemId, row.name, true);
+  }
+
+  for (const row of A_GRADE_ARMOR_CATALOG) {
     put(row.itemId, row.name, true);
   }
 

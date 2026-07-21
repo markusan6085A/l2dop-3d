@@ -1,8 +1,14 @@
 /**
- * Канонічний каталог комплектів броні (D/C/B-grade Interlude).
+ * Канонічний каталог комплектів броні (D/C/B/A-grade Interlude).
  * Визначення сетів — через itemId, не через назву.
+ * Спільні частини (шоломи) — many-to-many через ARMOR_SET_IDS_BY_*.
  */
 import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
+import {
+  APELLA_LIGHT_PVP_SPEED_DEBUFF_CHANCE_PCT,
+  APELLA_LIGHT_PVP_SPEED_DEBUFF_EFFECT_ID,
+  APELLA_LIGHT_PVP_SPEED_DEBUFF_SKILL_ID,
+} from './armorSetApellaPvpMetadata.js';
 
 export type ArmorSetArmorType = 'heavy' | 'light' | 'robe';
 
@@ -27,6 +33,16 @@ export type ArmorSetEffects = {
   strFlat?: number;
   conFlat?: number;
   dexFlat?: number;
+  menFlat?: number;
+  maxCpFlat?: number;
+  cpRegenPct?: number;
+  healingReceivedPct?: number;
+  paralysisResistancePct?: number;
+  shieldBlockRateMul?: number;
+  pvpDeathExpPenaltyReductionPct?: number;
+  pvpAttackerSpeedDebuffChancePct?: number;
+  pvpAttackerSpeedDebuffSkillId?: number;
+  pvpAttackerSpeedDebuffEffectId?: number;
 };
 
 export type ArmorSetStage = {
@@ -274,52 +290,202 @@ export const B_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   B_DOOM_LIGHT_SET,
 ];
 
-/** Усі staged-сети (D + C + B). */
+export const A_APELLA_LIGHT_SET: ArmorSetDefinition = {
+  setId: 'a_apella_light',
+  name: 'Apella Light Armor Set',
+  grade: 'A',
+  armorType: 'light',
+  corePieceIds: [7860, 7864, 7865, 7866],
+  stages: [
+    {
+      requiredCorePieces: 4,
+      effects: {
+        maxCpFlat: 195,
+        cpRegenPct: 40,
+        pvpDeathExpPenaltyReductionPct: 10,
+        pvpAttackerSpeedDebuffChancePct: APELLA_LIGHT_PVP_SPEED_DEBUFF_CHANCE_PCT,
+        pvpAttackerSpeedDebuffSkillId: APELLA_LIGHT_PVP_SPEED_DEBUFF_SKILL_ID,
+        pvpAttackerSpeedDebuffEffectId: APELLA_LIGHT_PVP_SPEED_DEBUFF_EFFECT_ID,
+      },
+      displayLines: [
+        'Max CP +195',
+        'CP Recovery Bonus +40%',
+        'PvP death EXP penalty reduced by 10%',
+        '20% chance to cast a Speed reduction curse on the attacking player',
+      ],
+    },
+  ],
+};
+
+export const A_DARK_CRYSTAL_HEAVY_SET: ArmorSetDefinition = {
+  setId: 'a_dark_crystal_heavy',
+  name: 'Dark Crystal Heavy Armor Set',
+  grade: 'A',
+  armorType: 'heavy',
+  corePieceIds: [512, 365, 388, 2472, 563],
+  optionalShieldId: 641,
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { hpRegenPct: 5.24 },
+      displayLines: ['HP Recovery Bonus +5.24%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { healingReceivedPct: 4 },
+      displayLines: ['Healing Received +4%'],
+    },
+    {
+      requiredCorePieces: 4,
+      effects: { paralysisResistancePct: 50 },
+      displayLines: ['Paralysis Resistance +50%'],
+    },
+    {
+      requiredCorePieces: 5,
+      effects: { strFlat: -2, conFlat: 2, maxHpFlat: 238 },
+      displayLines: ['STR -2', 'CON +2', 'Max HP +238'],
+    },
+    {
+      requiredCorePieces: 5,
+      requiresShield: true,
+      effects: { shieldBlockRateMul: 1.24 },
+      displayLines: ['Shield Block Rate +24%'],
+    },
+  ],
+};
+
+export const A_MAJESTIC_ROBE_SET: ArmorSetDefinition = {
+  setId: 'a_majestic_robe',
+  name: 'Majestic Robe Set',
+  grade: 'A',
+  armorType: 'robe',
+  corePieceIds: [2419, 2409, 2482, 583],
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { mpRegenPct: 8 },
+      displayLines: ['MP Recovery Bonus +8%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { menFlat: 1, intFlat: -1, maxMpFlat: 240 },
+      displayLines: ['MEN +1', 'INT -1', 'Max MP +240'],
+    },
+    {
+      requiredCorePieces: 4,
+      effects: { castingSpdPct: 15, stunResistancePct: 50 },
+      displayLines: ['Casting Speed +15%', 'Stun Resistance +50%'],
+    },
+  ],
+};
+
+/** Усі A-grade staged-сети. */
+export const A_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
+  A_APELLA_LIGHT_SET,
+  A_DARK_CRYSTAL_HEAVY_SET,
+  A_MAJESTIC_ROBE_SET,
+];
+
+/** Усі staged-сети (D + C + B + A). */
 export const ALL_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   ...D_GRADE_ARMOR_SETS,
   ...C_GRADE_ARMOR_SETS,
   ...B_GRADE_ARMOR_SETS,
+  ...A_GRADE_ARMOR_SETS,
 ];
 
 export type ArmorSetItemRole = 'core' | 'optionalShield';
 
-/** itemId → setId для частин, що входять у corePieceIds. */
-export const ARMOR_SET_ID_BY_CORE_PIECE: ReadonlyMap<number, string> = (() => {
-  const m = new Map<number, string>();
+/** itemId → setId[] для core pieces (many-to-many). */
+export const ARMOR_SET_IDS_BY_CORE_PIECE: ReadonlyMap<number, readonly string[]> = (() => {
+  const m = new Map<number, string[]>();
   for (const set of ALL_ARMOR_SETS) {
     for (const id of set.corePieceIds) {
-      m.set(id, set.setId);
+      const prev = m.get(id) ?? [];
+      if (!prev.includes(set.setId)) {
+        m.set(id, [...prev, set.setId]);
+      }
     }
   }
   return m;
 })();
 
-/** itemId → setId для optionalShieldId (не входить у corePieceIds). */
-export const ARMOR_SET_ID_BY_OPTIONAL_SHIELD: ReadonlyMap<number, string> = (() => {
-  const m = new Map<number, string>();
+/** itemId → setId[] для optionalShieldId (many-to-many). */
+export const ARMOR_SET_IDS_BY_OPTIONAL_SHIELD: ReadonlyMap<number, readonly string[]> = (() => {
+  const m = new Map<number, string[]>();
   for (const set of ALL_ARMOR_SETS) {
     if (set.optionalShieldId != null) {
-      m.set(set.optionalShieldId, set.setId);
+      const id = set.optionalShieldId;
+      const prev = m.get(id) ?? [];
+      if (!prev.includes(set.setId)) {
+        m.set(id, [...prev, set.setId]);
+      }
     }
   }
   return m;
 })();
+
+/** @deprecated Single-set map; use armorSetIdsForCorePiece. */
+export const ARMOR_SET_ID_BY_CORE_PIECE: ReadonlyMap<number, string> = (() => {
+  const m = new Map<number, string>();
+  for (const [id, setIds] of ARMOR_SET_IDS_BY_CORE_PIECE) {
+    if (setIds[0]) m.set(id, setIds[0]);
+  }
+  return m;
+})();
+
+/** @deprecated Single-set map; use armorSetIdsForOptionalShield. */
+export const ARMOR_SET_ID_BY_OPTIONAL_SHIELD: ReadonlyMap<number, string> = (() => {
+  const m = new Map<number, string>();
+  for (const [id, setIds] of ARMOR_SET_IDS_BY_OPTIONAL_SHIELD) {
+    if (setIds[0]) m.set(id, setIds[0]);
+  }
+  return m;
+})();
+
+export function armorSetIdsForCorePiece(itemId: number): readonly string[] {
+  return ARMOR_SET_IDS_BY_CORE_PIECE.get(Math.floor(itemId)) ?? [];
+}
+
+export function armorSetIdsForOptionalShield(itemId: number): readonly string[] {
+  return ARMOR_SET_IDS_BY_OPTIONAL_SHIELD.get(Math.floor(itemId)) ?? [];
+}
+
+export function getArmorSetsForItem(itemId: number): ArmorSetDefinition[] {
+  const id = Math.floor(itemId);
+  const setIds = new Set<string>();
+  for (const sid of armorSetIdsForCorePiece(id)) setIds.add(sid);
+  for (const sid of armorSetIdsForOptionalShield(id)) setIds.add(sid);
+  return [...setIds]
+    .map((sid) => armorSetDefinitionById(sid))
+    .filter((s): s is ArmorSetDefinition => s != null);
+}
 
 export function armorSetDefinitionById(setId: string): ArmorSetDefinition | undefined {
   return ALL_ARMOR_SETS.find((s) => s.setId === setId);
 }
 
 export function armorSetDefinitionForItem(itemId: number): ArmorSetDefinition | undefined {
+  const sets = getArmorSetsForItem(itemId);
+  return sets[0];
+}
+
+export function armorSetItemRoleForItemInSet(
+  itemId: number,
+  setId: string
+): ArmorSetItemRole | null {
   const id = Math.floor(itemId);
-  const setId =
-    ARMOR_SET_ID_BY_CORE_PIECE.get(id) ?? ARMOR_SET_ID_BY_OPTIONAL_SHIELD.get(id);
-  return setId ? armorSetDefinitionById(setId) : undefined;
+  const set = armorSetDefinitionById(setId);
+  if (!set) return null;
+  if (set.corePieceIds.includes(id)) return 'core';
+  if (set.optionalShieldId === id) return 'optionalShield';
+  return null;
 }
 
 export function armorSetItemRoleForItem(itemId: number): ArmorSetItemRole | null {
   const id = Math.floor(itemId);
-  if (ARMOR_SET_ID_BY_CORE_PIECE.has(id)) return 'core';
-  if (ARMOR_SET_ID_BY_OPTIONAL_SHIELD.has(id)) return 'optionalShield';
+  if (armorSetIdsForCorePiece(id).length > 0) return 'core';
+  if (armorSetIdsForOptionalShield(id).length > 0) return 'optionalShield';
   return null;
 }
 

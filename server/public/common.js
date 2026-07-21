@@ -81,7 +81,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260721bGradeArmorSetsV1';
+  var APP_DATA_VERSION = '20260721aGradeArmorSetsV1';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -392,17 +392,34 @@
     if (j.armorSetCatalog && Array.isArray(j.armorSetCatalog) && global.L2) {
       global.L2.armorSetCatalogById = {};
       global.L2.armorSetByPieceId = {};
+      global.L2.armorSetsByPieceId = {};
       for (var asi = 0; asi < j.armorSetCatalog.length; asi++) {
         var aset = j.armorSetCatalog[asi];
         if (!aset || !aset.setId) continue;
         global.L2.armorSetCatalogById[aset.setId] = aset;
         if (aset.pieceIds) {
           for (var api = 0; api < aset.pieceIds.length; api++) {
-            global.L2.armorSetByPieceId[aset.pieceIds[api]] = aset;
+            var pid = aset.pieceIds[api];
+            global.L2.armorSetByPieceId[pid] = aset;
+            if (!global.L2.armorSetsByPieceId[pid]) {
+              global.L2.armorSetsByPieceId[pid] = [];
+            }
+            if (
+              global.L2.armorSetsByPieceId[pid].indexOf(aset) < 0
+            ) {
+              global.L2.armorSetsByPieceId[pid].push(aset);
+            }
           }
         }
         if (aset.optionalShieldId) {
-          global.L2.armorSetByPieceId[aset.optionalShieldId] = aset;
+          var sid = aset.optionalShieldId;
+          global.L2.armorSetByPieceId[sid] = aset;
+          if (!global.L2.armorSetsByPieceId[sid]) {
+            global.L2.armorSetsByPieceId[sid] = [];
+          }
+          if (global.L2.armorSetsByPieceId[sid].indexOf(aset) < 0) {
+            global.L2.armorSetsByPieceId[sid].push(aset);
+          }
         }
       }
     }
@@ -634,6 +651,7 @@
     armorSetCatalogById: {},
     /** core piece itemId → set definition */
     armorSetByPieceId: {},
+    armorSetsByPieceId: {},
     /** rhand | chest | legs — для fallback іконки й підпису типу */
     itemSlotById: {},
     /** NG | D | C | B | A | S — з GET /character/catalog-hints itemGradeHints + gearCatalog */

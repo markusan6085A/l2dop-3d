@@ -1,7 +1,6 @@
 /**
  * Повні сети броні (l3/l4/lh/lg/lf, без щита l2).
- * D/C/B-grade staged sets — `armorSetCatalog.ts` / `armorSetResolver.ts`.
- * A-grade — Apella Brigandine / Dark Crystal / Majestic Robe.
+ * D/C/B/A-grade staged sets — `armorSetCatalog.ts` / `armorSetResolver.ts`.
  * S-grade — Draconic Leather / Imperial Crusader / Major Arcana.
  */
 import type { InventoryState } from './inventory.js';
@@ -30,61 +29,7 @@ const SET_SLOTS: readonly SetPieceSlots[] = [
   'lf',
 ];
 
-/** A-grade — Apella Brigandine: танк / PvP utility — без DPS-статів. */
-const A_APELLA_BRIGANDINE: DGradeArmorSetDef = {
-  id: 'a_apella_brigandine',
-  pieces: {
-    l3: 7864,
-    l4: 'empty',
-    lh: 7860,
-    lg: 7865,
-    lf: 7866,
-  },
-  bonus: {
-    buffMaxHp: 1.12,
-    buffPdef: 1.06,
-    addStunResistPct: 15,
-    addDebuffResistPct: 10,
-  },
-};
-
-/** Dark Crystal: фіз DPS + легке HP (без raw PATK / crit damage %). */
-const A_DARK_CRYSTAL: DGradeArmorSetDef = {
-  id: 'a_dark_crystal',
-  pieces: {
-    l3: 365,
-    l4: 388,
-    lh: 512,
-    lg: 2472,
-    lf: 563,
-  },
-  bonus: {
-    buffAspd: 1.07,
-    buffAcc: 4,
-    addPhysicalCritChancePct: 3,
-    buffMaxHp: 1.05,
-  },
-};
-
-/** Majestic Robe: каст + mCrit + MP + успіх дебафу (без INT / % M.Atk). */
-const A_MAJESTIC_ROBE: DGradeArmorSetDef = {
-  id: 'a_majestic_robe',
-  pieces: {
-    l3: 2409,
-    l4: 'empty',
-    lh: 2419,
-    lg: 2482,
-    lf: 583,
-  },
-  bonus: {
-    buffCast: 1.08,
-    addMCritPct: 4,
-    buffMaxMp: 1.12,
-    addDebuffLandChancePct: 8,
-  },
-};
-
-/** Draconic Leather: топ light фіз-DPS (aspd/crit/hit/evasion), без PATK і crit dmg %. */
+/** S-grade — Draconic Leather: топ light фіз-DPS (aspd/crit/hit/evasion), без PATK і crit dmg %. */
 const S_DRACONIC_LEATHER: DGradeArmorSetDef = {
   id: 's_draconic_leather',
   pieces: {
@@ -139,9 +84,6 @@ const S_MAJOR_ARCANA_ROBE: DGradeArmorSetDef = {
 };
 
 const LEGACY_FULL_ARMOR_SETS: readonly DGradeArmorSetDef[] = [
-  A_APELLA_BRIGANDINE,
-  A_DARK_CRYSTAL,
-  A_MAJESTIC_ROBE,
   S_DRACONIC_LEATHER,
   S_IMPERIAL_CRUSADER,
   S_MAJOR_ARCANA_ROBE,
@@ -177,9 +119,6 @@ function setMatchesEquipped(
 
 /** Назва повного сету для UI (профіль). */
 const ARMOR_SET_PROFILE_NAME_UK: Record<string, string> = {
-  a_apella_brigandine: 'Apella Brigandine (A)',
-  a_dark_crystal: 'Dark Crystal (A)',
-  a_majestic_robe: 'Majestic Robe (A)',
   s_draconic_leather: 'Draconic Leather (S)',
   s_imperial_crusader: 'Imperial Crusader (S)',
   s_major_arcana_robe: 'Major Arcana (S)',

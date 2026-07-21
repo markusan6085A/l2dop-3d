@@ -8,10 +8,9 @@ import {
   type ArmorSetDefinition,
   type ArmorSetEffects,
   ALL_ARMOR_SETS,
-  armorSetDefinitionById,
-  armorSetDefinitionForItem,
-  armorSetItemRoleForItem,
+  armorSetItemRoleForItemInSet,
   armorSetPieceName,
+  getArmorSetsForItem,
   type ArmorSetItemRole,
 } from './armorSetCatalog.js';
 import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
@@ -56,6 +55,14 @@ export type ArmorSetBonusTotals = {
   strFlat: number;
   conFlat: number;
   dexFlat: number;
+  shieldBlockRateMul: number;
+  maxCpFlat: number;
+  cpRegenPct: number;
+  healingReceivedPct: number;
+  paralysisResistancePct: number;
+  menFlat: number;
+  pvpDeathExpPenaltyReductionPct: number;
+  pvpAttackerSpeedDebuffChancePct: number;
 };
 
 export type ArmorSetFlatStats = {
@@ -64,6 +71,7 @@ export type ArmorSetFlatStats = {
   witFlat: number;
   conFlat: number;
   dexFlat: number;
+  menFlat: number;
 };
 
 export type ResolveEquippedArmorSetBonusesResult = {
@@ -103,8 +111,11 @@ export type ItemClientView = {
   shieldDefense: number | null;
   shieldBlockRatePct: number | null;
   armorSetInfo: ItemClientViewArmorSetInfo | null;
+  armorSetInfos: ItemClientViewArmorSetInfo[];
+  setMemberships: Array<{ setId: string; role: ArmorSetItemRole }>;
   setItemRole: ArmorSetItemRole | null;
   equippedSetProgress: ItemClientViewEquippedProgress | null;
+  equippedSetProgressBySetId: Record<string, ItemClientViewEquippedProgress> | null;
   activeSetEffects: ArmorSetEffects | null;
 };
 
@@ -130,6 +141,14 @@ function emptyTotals(): ArmorSetBonusTotals {
     strFlat: 0,
     conFlat: 0,
     dexFlat: 0,
+    shieldBlockRateMul: 1,
+    maxCpFlat: 0,
+    cpRegenPct: 0,
+    healingReceivedPct: 0,
+    paralysisResistancePct: 0,
+    menFlat: 0,
+    pvpDeathExpPenaltyReductionPct: 0,
+    pvpAttackerSpeedDebuffChancePct: 0,
   };
 }
 
@@ -172,6 +191,33 @@ function mergeEffects(into: ArmorSetEffects, add: ArmorSetEffects): ArmorSetEffe
   if (add.strFlat != null) out.strFlat = (out.strFlat ?? 0) + add.strFlat;
   if (add.conFlat != null) out.conFlat = (out.conFlat ?? 0) + add.conFlat;
   if (add.dexFlat != null) out.dexFlat = (out.dexFlat ?? 0) + add.dexFlat;
+  if (add.menFlat != null) out.menFlat = (out.menFlat ?? 0) + add.menFlat;
+  if (add.maxCpFlat != null) out.maxCpFlat = (out.maxCpFlat ?? 0) + add.maxCpFlat;
+  if (add.cpRegenPct != null) out.cpRegenPct = (out.cpRegenPct ?? 0) + add.cpRegenPct;
+  if (add.healingReceivedPct != null) {
+    out.healingReceivedPct = (out.healingReceivedPct ?? 0) + add.healingReceivedPct;
+  }
+  if (add.paralysisResistancePct != null) {
+    out.paralysisResistancePct =
+      (out.paralysisResistancePct ?? 0) + add.paralysisResistancePct;
+  }
+  if (add.shieldBlockRateMul != null) {
+    out.shieldBlockRateMul = (out.shieldBlockRateMul ?? 1) * add.shieldBlockRateMul;
+  }
+  if (add.pvpDeathExpPenaltyReductionPct != null) {
+    out.pvpDeathExpPenaltyReductionPct =
+      (out.pvpDeathExpPenaltyReductionPct ?? 0) + add.pvpDeathExpPenaltyReductionPct;
+  }
+  if (add.pvpAttackerSpeedDebuffChancePct != null) {
+    out.pvpAttackerSpeedDebuffChancePct =
+      (out.pvpAttackerSpeedDebuffChancePct ?? 0) + add.pvpAttackerSpeedDebuffChancePct;
+  }
+  if (add.pvpAttackerSpeedDebuffSkillId != null) {
+    out.pvpAttackerSpeedDebuffSkillId = add.pvpAttackerSpeedDebuffSkillId;
+  }
+  if (add.pvpAttackerSpeedDebuffEffectId != null) {
+    out.pvpAttackerSpeedDebuffEffectId = add.pvpAttackerSpeedDebuffEffectId;
+  }
   return out;
 }
 
@@ -197,6 +243,14 @@ function effectsToTotals(effects: ArmorSetEffects): ArmorSetBonusTotals {
     strFlat: effects.strFlat ?? 0,
     conFlat: effects.conFlat ?? 0,
     dexFlat: effects.dexFlat ?? 0,
+    shieldBlockRateMul: effects.shieldBlockRateMul ?? 1,
+    maxCpFlat: effects.maxCpFlat ?? 0,
+    cpRegenPct: effects.cpRegenPct ?? 0,
+    healingReceivedPct: effects.healingReceivedPct ?? 0,
+    paralysisResistancePct: effects.paralysisResistancePct ?? 0,
+    menFlat: effects.menFlat ?? 0,
+    pvpDeathExpPenaltyReductionPct: effects.pvpDeathExpPenaltyReductionPct ?? 0,
+    pvpAttackerSpeedDebuffChancePct: effects.pvpAttackerSpeedDebuffChancePct ?? 0,
   };
 }
 
@@ -225,6 +279,23 @@ function sumTotals(a: ArmorSetBonusTotals, b: ArmorSetBonusTotals): ArmorSetBonu
     strFlat: addOptionalNumber(a.strFlat, b.strFlat),
     conFlat: addOptionalNumber(a.conFlat, b.conFlat),
     dexFlat: addOptionalNumber(a.dexFlat, b.dexFlat),
+    shieldBlockRateMul: a.shieldBlockRateMul * (b.shieldBlockRateMul ?? 1),
+    maxCpFlat: addOptionalNumber(a.maxCpFlat, b.maxCpFlat),
+    cpRegenPct: addOptionalNumber(a.cpRegenPct, b.cpRegenPct),
+    healingReceivedPct: addOptionalNumber(a.healingReceivedPct, b.healingReceivedPct),
+    paralysisResistancePct: addOptionalNumber(
+      a.paralysisResistancePct,
+      b.paralysisResistancePct
+    ),
+    menFlat: addOptionalNumber(a.menFlat, b.menFlat),
+    pvpDeathExpPenaltyReductionPct: addOptionalNumber(
+      a.pvpDeathExpPenaltyReductionPct,
+      b.pvpDeathExpPenaltyReductionPct
+    ),
+    pvpAttackerSpeedDebuffChancePct: addOptionalNumber(
+      a.pvpAttackerSpeedDebuffChancePct,
+      b.pvpAttackerSpeedDebuffChancePct
+    ),
   };
 }
 
@@ -302,6 +373,7 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
   buffDelta: Partial<L2dopCombatBuffModifiers>;
   flatMaxHp: number;
   flatMaxMp: number;
+  flatMaxCp: number;
   flatStats: ArmorSetFlatStats;
 } {
   const buffDelta: Partial<L2dopCombatBuffModifiers> = {};
@@ -315,6 +387,9 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
   }
   if (totals.shieldDefensePct > 0) {
     buffDelta.shieldDefenceRatePct = totals.shieldDefensePct;
+  }
+  if (totals.shieldBlockRateMul !== 1) {
+    buffDelta.shieldBlockRateMul = totals.shieldBlockRateMul;
   }
   if (totals.sleepHoldResistancePct > 0) {
     const mul = 1 + totals.sleepHoldResistancePct / 100;
@@ -336,6 +411,15 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
   if (totals.mpRegenPct > 0) {
     buffDelta.regenMpMul = 1 + totals.mpRegenPct / 100;
   }
+  if (totals.cpRegenPct > 0) {
+    buffDelta.regenCpMul = 1 + totals.cpRegenPct / 100;
+  }
+  if (totals.healingReceivedPct !== 0) {
+    buffDelta.addHealReceivedPct = totals.healingReceivedPct;
+  }
+  if (totals.paralysisResistancePct !== 0) {
+    buffDelta.addParalyzeResistPct = totals.paralysisResistancePct;
+  }
   if (totals.speedFlat !== 0) {
     buffDelta.addSpeed = totals.speedFlat;
   }
@@ -346,12 +430,14 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
     buffDelta,
     flatMaxHp: totals.maxHpFlat,
     flatMaxMp: totals.maxMpFlat,
+    flatMaxCp: totals.maxCpFlat,
     flatStats: {
       strFlat: totals.strFlat,
       intFlat: totals.intFlat,
       witFlat: totals.witFlat,
       conFlat: totals.conFlat,
       dexFlat: totals.dexFlat,
+      menFlat: totals.menFlat,
     },
   };
 }
@@ -363,8 +449,8 @@ export function legacyFullArmorSetBonusDelta(
   return dGradeFullArmorSetBonusDeltaLegacyOnly(inv);
 }
 
-export function armorSetCatalogForClient(): ItemClientViewArmorSetInfo[] {
-  return ALL_ARMOR_SETS.map((set) => ({
+export function armorSetInfoViewFromDefinition(set: ArmorSetDefinition): ItemClientViewArmorSetInfo {
+  return {
     setId: set.setId,
     name: set.name,
     grade: set.grade,
@@ -381,13 +467,21 @@ export function armorSetCatalogForClient(): ItemClientViewArmorSetInfo[] {
           optionalShieldName: armorSetPieceName(set.optionalShieldId),
         }
       : {}),
-  }));
+  };
 }
 
+export function armorSetCatalogForClient(): ItemClientViewArmorSetInfo[] {
+  return ALL_ARMOR_SETS.map(armorSetInfoViewFromDefinition);
+}
+
+export function armorSetInfosForItem(itemId: number): ItemClientViewArmorSetInfo[] {
+  return getArmorSetsForItem(itemId).map(armorSetInfoViewFromDefinition);
+}
+
+/** Перший set membership (backward compat). */
 export function armorSetInfoForItem(itemId: number): ItemClientViewArmorSetInfo | null {
-  const set = armorSetDefinitionForItem(itemId);
-  if (!set) return null;
-  return armorSetCatalogForClient().find((s) => s.setId === set.setId) ?? null;
+  const infos = armorSetInfosForItem(itemId);
+  return infos[0] ?? null;
 }
 
 function resolveItemName(itemId: number): string {
@@ -426,8 +520,11 @@ function resolveItemStats(itemId: number): {
 }
 
 function shieldOnlySetEffects(effects: ArmorSetEffects | null): ArmorSetEffects | null {
-  if (!effects?.shieldDefensePct) return null;
-  return { shieldDefensePct: effects.shieldDefensePct };
+  if (!effects) return null;
+  const out: ArmorSetEffects = {};
+  if (effects.shieldDefensePct != null) out.shieldDefensePct = effects.shieldDefensePct;
+  if (effects.shieldBlockRateMul != null) out.shieldBlockRateMul = effects.shieldBlockRateMul;
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 function progressLabelsForItemView(
@@ -435,14 +532,50 @@ function progressLabelsForItemView(
   active: EquippedArmorSetActive | null,
   coreEquipped: number,
   totalCore: number,
-  shieldEquipped: boolean
+  shieldEquipped: boolean,
+  set?: ArmorSetDefinition | null
 ): string[] {
   if (setItemRole === 'optionalShield') {
-    return shieldEquipped && coreEquipped >= totalCore && active?.effects.shieldDefensePct
-      ? ['Shield Defense +2.63%']
-      : [];
+    if (!shieldEquipped || coreEquipped < totalCore || !active) return [];
+    const shieldStage = set?.stages.find((s) => s.requiresShield);
+    if (shieldStage) return [...shieldStage.displayLines];
+    return active.displayLines.filter((line) =>
+      /shield/i.test(line)
+    );
   }
   return active?.displayLines ?? [];
+}
+
+function buildEquippedProgressForSet(
+  set: ArmorSetDefinition,
+  setItemRole: ArmorSetItemRole | null,
+  characterEquipment: InventoryState['eq'] | InventoryState
+): ItemClientViewEquippedProgress {
+  const resolved = resolveEquippedArmorSetBonuses(characterEquipment);
+  const active = resolved.activeSets.find((s) => s.setId === set.setId) ?? null;
+  const eq =
+    'eq' in characterEquipment && characterEquipment.eq
+      ? characterEquipment.eq
+      : characterEquipment;
+  const worn = equippedItemIds(eq as InventoryState['eq']);
+  const coreEquipped = set.corePieceIds.filter((pid) => worn.has(pid)).length;
+  const totalCore = set.corePieceIds.length;
+  const shieldEquipped =
+    set.optionalShieldId != null && worn.has(set.optionalShieldId);
+
+  return {
+    equippedCorePieces: active?.equippedCorePieces ?? coreEquipped,
+    totalCorePieces: active?.totalCorePieces ?? totalCore,
+    shieldEquipped: active?.shieldEquipped ?? shieldEquipped,
+    activeStageLabels: progressLabelsForItemView(
+      setItemRole,
+      active,
+      coreEquipped,
+      totalCore,
+      shieldEquipped,
+      set
+    ),
+  };
 }
 
 /** Спільний серіалізатор предмета для shop / inventory / modal / drop preview. */
@@ -452,41 +585,36 @@ export function buildItemClientView(
 ): ItemClientView {
   const id = Math.floor(itemId);
   const stats = resolveItemStats(id);
-  const setItemRole = armorSetItemRoleForItem(id);
-  const setInfo = armorSetInfoForItem(id);
+  const memberSets = getArmorSetsForItem(id);
+  const setMemberships = memberSets
+    .map((set) => {
+      const role = armorSetItemRoleForItemInSet(id, set.setId);
+      return role ? { setId: set.setId, role } : null;
+    })
+    .filter((m): m is { setId: string; role: ArmorSetItemRole } => m != null);
+  const armorSetInfos = memberSets.map(armorSetInfoViewFromDefinition);
+  const primarySetInfo = armorSetInfos[0] ?? null;
+  const setItemRole = setMemberships[0]?.role ?? null;
 
   let equippedSetProgress: ItemClientViewEquippedProgress | null = null;
+  let equippedSetProgressBySetId: Record<string, ItemClientViewEquippedProgress> | null =
+    null;
   let activeSetEffects: ArmorSetEffects | null = null;
 
-  if (characterEquipment && setInfo) {
+  if (characterEquipment && memberSets.length > 0) {
+    equippedSetProgressBySetId = {};
+    for (const set of memberSets) {
+      const role = armorSetItemRoleForItemInSet(id, set.setId);
+      equippedSetProgressBySetId[set.setId] = buildEquippedProgressForSet(
+        set,
+        role,
+        characterEquipment
+      );
+    }
+    const primarySet = memberSets[0]!;
+    equippedSetProgress = equippedSetProgressBySetId[primarySet.setId] ?? null;
     const resolved = resolveEquippedArmorSetBonuses(characterEquipment);
-    const active = resolved.activeSets.find((s) => s.setId === setInfo.setId) ?? null;
-    const eq =
-      'eq' in characterEquipment && characterEquipment.eq
-        ? characterEquipment.eq
-        : characterEquipment;
-    const worn = equippedItemIds(eq as InventoryState['eq']);
-    const set = armorSetDefinitionById(setInfo.setId);
-    const coreEquipped = set
-      ? set.corePieceIds.filter((pid) => worn.has(pid)).length
-      : 0;
-    const totalCore = set?.corePieceIds.length ?? setInfo.pieceIds.length;
-    const shieldEquipped =
-      set?.optionalShieldId != null && worn.has(set.optionalShieldId);
-
-    equippedSetProgress = {
-      equippedCorePieces: active?.equippedCorePieces ?? coreEquipped,
-      totalCorePieces: active?.totalCorePieces ?? totalCore,
-      shieldEquipped: active?.shieldEquipped ?? shieldEquipped,
-      activeStageLabels: progressLabelsForItemView(
-        setItemRole,
-        active,
-        coreEquipped,
-        totalCore,
-        shieldEquipped
-      ),
-    };
-
+    const active = resolved.activeSets.find((s) => s.setId === primarySet.setId) ?? null;
     if (setItemRole === 'optionalShield') {
       activeSetEffects = shieldOnlySetEffects(active?.effects ?? null);
     } else if (active) {
@@ -503,9 +631,12 @@ export function buildItemClientView(
     pDef: stats.pDef,
     shieldDefense: stats.shieldDefense,
     shieldBlockRatePct: stats.shieldBlockRatePct,
-    armorSetInfo: setInfo,
+    armorSetInfo: primarySetInfo,
+    armorSetInfos,
+    setMemberships,
     setItemRole,
     equippedSetProgress,
+    equippedSetProgressBySetId,
     activeSetEffects,
   };
 }
@@ -576,6 +707,31 @@ export function formatArmorSetBonusLinesUkFromEffects(
   }
   if (effects.dexFlat != null) {
     lines.push(`DEX ${effects.dexFlat > 0 ? '+' : ''}${effects.dexFlat}`);
+  }
+  if (effects.menFlat != null) {
+    lines.push(`MEN ${effects.menFlat > 0 ? '+' : ''}${effects.menFlat}`);
+  }
+  if (effects.maxCpFlat != null) lines.push(`Max CP +${effects.maxCpFlat}`);
+  if (effects.cpRegenPct != null) {
+    lines.push(`CP Recovery Bonus +${effects.cpRegenPct}%`);
+  }
+  if (effects.healingReceivedPct != null) {
+    lines.push(`Healing Received +${effects.healingReceivedPct}%`);
+  }
+  if (effects.paralysisResistancePct != null) {
+    lines.push(`Paralysis Resistance +${effects.paralysisResistancePct}%`);
+  }
+  if (effects.shieldBlockRateMul != null && effects.shieldBlockRateMul !== 1) {
+    const pct = Math.round((effects.shieldBlockRateMul - 1) * 100);
+    lines.push(`Shield Block Rate +${pct}%`);
+  }
+  if (effects.pvpDeathExpPenaltyReductionPct != null) {
+    lines.push(`PvP death EXP penalty reduced by ${effects.pvpDeathExpPenaltyReductionPct}%`);
+  }
+  if (effects.pvpAttackerSpeedDebuffChancePct != null) {
+    lines.push(
+      `${effects.pvpAttackerSpeedDebuffChancePct}% chance to reduce the attacking player's Speed`
+    );
   }
   return lines;
 }

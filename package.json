@@ -62,6 +62,7 @@
     "test:d-grade-armor-sets": "tsx server/scripts/test-d-grade-armor-sets.ts",
     "test:c-grade-armor-sets": "tsx server/scripts/test-c-grade-armor-sets.ts",
     "test:b-grade-armor-sets": "tsx server/scripts/test-b-grade-armor-sets.ts",
+    "test:a-grade-armor-sets": "tsx server/scripts/test-a-grade-armor-sets.ts",
     "test:s-weapons": "tsx server/scripts/test-s-weapons.ts",
     "test:equipment-source-canonical": "tsx server/scripts/test-equipment-source-canonical.ts",
     "test:drops-item-id-collisions": "tsx server/scripts/test-drops-item-id-collisions.ts",

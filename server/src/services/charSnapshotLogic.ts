@@ -4,6 +4,7 @@ import { parseWarehouse, warehouseToSnapshot } from '../data/warehouse.js';
 import {
   computeCombatStats,
   computeCombatStatsOptionsForCharacter,
+  effectiveMaxCpWithFlat,
   effectiveMaxMpWithJewelFlat,
   type ComputeCombatStatsOptions,
 } from '../data/l2dopCombatFormulas.js';
@@ -386,7 +387,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
   const pDefOut = clanHallStatFlats.pDef;
   const mDefOut = clanHallStatFlats.mDef;
   const maxHpOut = maxHp;
-  const maxCp = Math.max(0, Math.floor(vit.maxCp * combat.buffMaxCpMul));
+  const maxCp = effectiveMaxCpWithFlat(vit.maxCp, combat);
   /** У PvE урон по HP не знімає CP. Зниження CP — лише для ПК (окремий стан, коли з’явиться). */
   const battleCp = readBattlePlayerCp(row.battleJson);
   const cp =

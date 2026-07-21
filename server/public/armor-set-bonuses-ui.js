@@ -31,11 +31,23 @@
     return null;
   }
 
-  function resolveSetForItemId(itemId) {
-    if (itemId == null || itemId === '') return null;
+  function catalogSetsByPieceId() {
+    return (g.L2 && g.L2.armorSetsByPieceId) || {};
+  }
+
+  function resolveSetsForItemId(itemId) {
+    if (itemId == null || itemId === '') return [];
     var n = Number(itemId);
-    if (!Number.isFinite(n) || n <= 0) return null;
-    return catalogByPieceId()[n] || null;
+    if (!Number.isFinite(n) || n <= 0) return [];
+    var multi = catalogSetsByPieceId()[n];
+    if (multi && multi.length) return multi.slice();
+    var single = catalogByPieceId()[n];
+    return single ? [single] : [];
+  }
+
+  function resolveSetForItemId(itemId) {
+    var sets = resolveSetsForItemId(itemId);
+    return sets[0] || null;
   }
 
   function isOptionalShieldItem(setInfo, itemId) {
@@ -89,8 +101,14 @@
       total;
     if (setInfo.optionalShieldId) {
       var hoplonEquipped = !!worn[setInfo.optionalShieldId];
+      var shieldLabel =
+        setInfo.optionalShieldName ||
+        ('Щит ' + setInfo.optionalShieldId);
       progressHtml +=
-        '<br>Hoplon: ' + (hoplonEquipped ? 'екіпіровано' : 'не екіпіровано');
+        '<br>' +
+        shieldLabel +
+        ': ' +
+        (hoplonEquipped ? 'екіпіровано' : 'не екіпіровано');
     }
     progressHtml += '</div>';
     return progressHtml;
@@ -123,11 +141,13 @@
     var bonusHtml = '';
     if (shieldStage && shieldStage.displayLines && shieldStage.displayLines.length) {
       bonusHtml =
-        '<div class="' +
-        CLS +
-        '__parts-title">Бонус повного комплекту з Hoplon:</div><ul class="' +
-        CLS +
-        '__list">';
+      '<div class="' +
+      CLS +
+      '__parts-title">Бонус повного комплекту з ' +
+      (setInfo.optionalShieldName || 'щитом') +
+      ':</div><ul class="' +
+      CLS +
+      '__list">';
       for (var bi = 0; bi < shieldStage.displayLines.length; bi++) {
         bonusHtml += '<li>' + shieldStage.displayLines[bi] + '</li>';
       }
@@ -185,7 +205,11 @@
         var st = setInfo.stages[si];
         var label =
           st.requiredCorePieces +
-          (st.requiresShield ? ' основні + Hoplon' : ' частини');
+          (st.requiresShield
+            ? ' основні + ' + (setInfo.optionalShieldName || 'щит')
+            : st.requiredCorePieces === setInfo.pieceIds.length
+              ? ' частини'
+              : ' частини');
         stagesHtml += '<li><strong>' + label + ':</strong><ul>';
         for (var li = 0; li < st.displayLines.length; li++) {
           stagesHtml += '<li>' + st.displayLines[li] + '</li>';
@@ -245,6 +269,7 @@
     isArmorSlot: isArmorSlot,
     normalizeArmorGrade: normalizeArmorGrade,
     resolveSetForItemId: resolveSetForItemId,
+    resolveSetsForItemId: resolveSetsForItemId,
     isOptionalShieldItem: isOptionalShieldItem,
     showIn: showIn,
     hide: hide,

@@ -88,6 +88,8 @@ export interface L2dopCombatBuffModifiers {
   addShieldPDef: number;
   /** Deflect Arrow (112): % зменшення вхідного фіз. урону від лука/арбалета. */
   addBowDefPct: number;
+  /** Множник базового shield block rate (20% × 1.24 = 24.8%). */
+  shieldBlockRateMul: number;
 }
 
 const NEUTRAL: L2dopCombatBuffModifiers = {
@@ -143,6 +145,7 @@ const NEUTRAL: L2dopCombatBuffModifiers = {
   shieldDefenceRatePct: 0,
   addShieldPDef: 0,
   addBowDefPct: 0,
+  shieldBlockRateMul: 1,
 };
 
 export function neutralCombatBuffs(): L2dopCombatBuffModifiers {
@@ -216,6 +219,7 @@ export function applyBuffDelta(
     ),
     addShieldPDef: base.addShieldPDef + (d.addShieldPDef ?? 0),
     addBowDefPct: base.addBowDefPct + (d.addBowDefPct ?? 0),
+    shieldBlockRateMul: base.shieldBlockRateMul * (d.shieldBlockRateMul ?? 1),
   };
 }
 

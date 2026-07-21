@@ -339,6 +339,10 @@ export interface CombatStatsSnapshot {
   buffMaxCpMul: number;
   jewelFlatMaxHp: number;
   jewelFlatMaxMp: number;
+  jewelFlatMaxCp: number;
+  /** Ефективний block rate екіпованого щита після armor-set mul (20% × 1.24 = 24.8). */
+  shieldBlockRatePct: number;
+  shieldBlockRateMul: number;
   cooldownReductionMul: number;
   holdResistMul: number;
   sleepResistMul: number;
@@ -414,6 +418,25 @@ export function sumEquippedArmorPDef(
     sum += base + armorPiecePDefEnchantBonus(slot.enchant);
   }
   return sum;
+}
+
+/** Базовий block rate екіпованого щита × armor-set mul. */
+export function equippedShieldBlockRatePct(
+  eq: InventoryState['eq'],
+  blockRateMul: number = 1
+): number {
+  const shSlot = normalizeEqSlot(eq?.l2);
+  if (!shSlot) return 0;
+  const wSlot = normalizeEqSlot(eq?.l1);
+  const wM = wSlot?.itemId ? ITEM_CATALOG[wSlot.itemId] : undefined;
+  if (wM && itemBlocksShieldSlot(wSlot!.itemId, wM.weaponType)) return 0;
+  const shM = ITEM_CATALOG[shSlot.itemId];
+  if (!shM || shM.slot !== 'lhand') return 0;
+  const patch = dropsShieldPatchForEquipped(shSlot.itemId, shM.nameUk);
+  const base = shM.shieldBlockRatePct ?? patch?.shieldRatePercent;
+  if (typeof base !== 'number' || !Number.isFinite(base) || base <= 0) return 0;
+  const mul = Math.max(0, blockRateMul);
+  return Math.min(100, Math.round(base * mul * 10) / 10);
 }
 
 /** Shield P.Def у snapshot: база предмета × Shield Mastery rate + flat (Shield Fortress). */
@@ -729,6 +752,7 @@ export function computeCombatStats(
   B = applyBuffDelta(B, legacyFullArmorSetBonusDelta(inv));
   const jewelFlatMaxHp = jEq.flatHp + armorSetCombat.flatMaxHp;
   const jewelFlatMaxMp = jEq.flatMp + armorSetCombat.flatMaxMp;
+  const jewelFlatMaxCp = armorSetCombat.flatMaxCp;
   const gradeOk =
     options?.weaponGradeMatchesArmor !== undefined
       ? options.weaponGradeMatchesArmor
@@ -741,7 +765,7 @@ export function computeCombatStats(
   const INT = base.int + armorSetCombat.flatStats.intFlat;
   const DEX = base.dex + armorSetCombat.flatStats.dexFlat;
   const CON = base.con + armorSetCombat.flatStats.conFlat;
-  const MEN = base.men;
+  const MEN = base.men + armorSetCombat.flatStats.menFlat;
   const WIT = base.wit + armorSetCombat.flatStats.witFlat;
   const LVLMOD = lvlMod(LVL);
   const M = computePrimaryStatMultipliers({
@@ -970,6 +994,9 @@ export function computeCombatStats(
     buffMaxCpMul: B.buffMaxCp,
     jewelFlatMaxHp,
     jewelFlatMaxMp,
+    jewelFlatMaxCp,
+    shieldBlockRatePct: equippedShieldBlockRatePct(eq, B.shieldBlockRateMul),
+    shieldBlockRateMul: B.shieldBlockRateMul,
     cooldownReductionMul: B.cooldownReductionMul,
     holdResistMul: B.holdResistMul,
     sleepResistMul: B.sleepResistMul,
@@ -1005,5 +1032,15 @@ export function effectiveMaxMpWithJewelFlat(
   return Math.max(
     1,
     Math.floor(vitMaxMp * combat.buffMaxMpMul) + combat.jewelFlatMaxMp
+  );
+}
+
+export function effectiveMaxCpWithFlat(
+  vitMaxCp: number,
+  combat: Pick<CombatStatsSnapshot, 'buffMaxCpMul' | 'jewelFlatMaxCp'>
+): number {
+  return Math.max(
+    0,
+    Math.floor(vitMaxCp * combat.buffMaxCpMul) + combat.jewelFlatMaxCp
   );
 }
