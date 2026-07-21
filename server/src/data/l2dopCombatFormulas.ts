@@ -46,6 +46,10 @@ import { raceFighterToggleStanceCombatDelta } from './l2dopRaceToggleStanceDelta
 import { deriveCombatStatsFromBaseStats } from '../domain/deriveCombatStatsFromBaseStats.js';
 import { parseWorldCombatState } from '../domain/worldCombatState.js';
 import { resolveFinalBaseStats } from '../domain/resolveFinalBaseStats.js';
+import {
+  resolveStrPhysicalAttackMultiplier,
+  type StrPhysicalAttackMultiplierResult,
+} from '../domain/resolveStrPhysicalAttackMultiplier.js';
 import { normalizeLearnedSkillsJson } from './humanFighterSkillCatalog.js';
 import { filterLearnedSkillEntriesForCharacter } from './charLearnedSkillsFilter.js';
 import { resolveL2ProfessionForSkillsRow } from './l2dopHumanFighterBattleSkills.js';
@@ -722,6 +726,112 @@ export function computeCombatStatsOptionsForCharacter(row: {
   return { ...base, buffs: passive };
 }
 
+/** Баф-модифікатори для computeCombatStats / audit (без final base stats). */
+export function buildCombatBuffModifiers(
+  inv: InventoryState,
+  race: string,
+  options?: ComputeCombatStatsOptions,
+): L2dopCombatBuffModifiers {
+  const r = String(race ?? '').trim().toLowerCase();
+  const zealotDarkElf = r === 'dark elf' || r === 'darkelf' || /^dark\s*elf$/.test(r);
+  const buffExtra: BuffExtraContext = {
+    heroicTier: options?.heroicTier,
+    zealotStacks: options?.zealotStacks,
+    ...(zealotDarkElf ? { zealotDarkElf: true } : {}),
+  };
+  let B = combatBuffsFromActiveJson(
+    options?.activeBuffsJson,
+    buffWeaponContextFromInv(inv),
+    buffExtra,
+  );
+  B = applyBuffDelta(B, options?.buffs ?? {});
+  const jEq = jewelryEquipBuffDelta(inv.eq || {});
+  B = applyBuffDelta(B, jEq.delta);
+  const armorSetResolved = resolveEquippedArmorSetBonuses(inv);
+  const armorSetCombat = armorSetTotalsToCombatDelta(armorSetResolved.totals);
+  B = applyBuffDelta(B, armorSetCombat.buffDelta);
+  B = applyBuffDelta(B, legacyFullArmorSetBonusDelta(inv));
+  return B;
+}
+
+export type PatkFromFinalStrResult = {
+  weaponItemId: number | null;
+  weaponPAtk: number;
+  lvlMod: number;
+  necklacePatk: number;
+  masteryPatk: number;
+  buffPatk: number;
+  addPatk: number;
+  preStrPAtk: number;
+  strBreakdown: StrPhysicalAttackMultiplierResult;
+  patkAfterStr: number;
+  gradeMul: number;
+  pAtk: number;
+};
+
+/**
+ * Канонічний шар P.Atk: preStrPAtk × STR multiplier × grade.
+ * STR multiplier — рівно один раз через resolveStrPhysicalAttackMultiplier.
+ */
+export function computePatkFromFinalStr(params: {
+  level: number;
+  race: string;
+  classBranch: string;
+  inv: InventoryState;
+  B: L2dopCombatBuffModifiers;
+  finalStr: number;
+  gradeOk?: boolean;
+}): PatkFromFinalStrResult {
+  const code = raceAndBranchToL2Code(params.race, params.classBranch);
+  const LVL = Math.max(1, Math.floor(params.level));
+  const eq = params.inv.eq || {};
+  const gradeOk =
+    params.gradeOk !== undefined
+      ? params.gradeOk
+      : inferWeaponGradeMatchesArmor(params.inv);
+
+  const wSlot = normalizeEqSlot(eq.l1);
+  const wId = wSlot?.itemId ?? null;
+  const wEn = wSlot?.enchant ?? 0;
+  let { pAtk: wpnPAtk } = weaponStats(wId ?? undefined, wEn);
+
+  const fighterBranch = String(params.classBranch || '').toLowerCase() === 'fighter';
+  if (!wId && isMageRaceCode(code)) {
+    wpnPAtk += 3;
+  } else if (!wId && fighterBranch) {
+    wpnPAtk += 4;
+  }
+
+  const masteryPatk = isMageRaceCode(code) ? 1.45 : 1.085;
+  const LVLMOD = lvlMod(LVL);
+  const preStrPAtk =
+    wpnPAtk *
+      LVLMOD *
+      params.B.necklacePatk *
+      masteryPatk *
+      params.B.buffPatk +
+    params.B.addPatk;
+  const strBreakdown = resolveStrPhysicalAttackMultiplier(params.finalStr);
+  const patkAfterStr = Math.floor(preStrPAtk * strBreakdown.multiplier);
+  const gradeMul = gradeOk ? 1.1 : 0.75;
+  const pAtk = Math.floor(patkAfterStr * gradeMul);
+
+  return {
+    weaponItemId: wId,
+    weaponPAtk: wpnPAtk,
+    lvlMod: LVLMOD,
+    necklacePatk: params.B.necklacePatk,
+    masteryPatk,
+    buffPatk: params.B.buffPatk,
+    addPatk: params.B.addPatk,
+    preStrPAtk,
+    strBreakdown,
+    patkAfterStr,
+    gradeMul,
+    pAtk,
+  };
+}
+
 /**
  * Повний розрахунок для snapshot: база з rawdata + екіп з ITEM_CATALOG.
  * P.Atk / M.Atk / P.Def як у calc_stats.php; заточка зброї/броні — l2dopEnchant.ts (sums.php).
@@ -733,26 +843,11 @@ export function computeCombatStats(
   inv: InventoryState,
   options?: ComputeCombatStatsOptions
 ): CombatStatsSnapshot {
-  const r = String(race ?? '').trim().toLowerCase();
-  const zealotDarkElf = r === 'dark elf' || r === 'darkelf' || /^dark\s*elf$/.test(r);
-  const buffExtra: BuffExtraContext = {
-    heroicTier: options?.heroicTier,
-    zealotStacks: options?.zealotStacks,
-    ...(zealotDarkElf ? { zealotDarkElf: true } : {}),
-  };
-  let B = combatBuffsFromActiveJson(
-    options?.activeBuffsJson,
-    buffWeaponContextFromInv(inv),
-    buffExtra
-  );
-  B = applyBuffDelta(B, options?.buffs ?? {});
+  const B = buildCombatBuffModifiers(inv, race, options);
   const eq = inv.eq || {};
   const jEq = jewelryEquipBuffDelta(eq);
-  B = applyBuffDelta(B, jEq.delta);
   const armorSetResolved = resolveEquippedArmorSetBonuses(inv);
   const armorSetCombat = armorSetTotalsToCombatDelta(armorSetResolved.totals);
-  B = applyBuffDelta(B, armorSetCombat.buffDelta);
-  B = applyBuffDelta(B, legacyFullArmorSetBonusDelta(inv));
   const jewelFlatMaxHp = jEq.flatHp + armorSetCombat.flatMaxHp;
   const jewelFlatMaxMp = jEq.flatMp + armorSetCombat.flatMaxMp;
   const jewelFlatMaxCp = armorSetCombat.flatMaxCp;
@@ -786,32 +881,22 @@ export function computeCombatStats(
 
   const fighterBranch = String(classBranch || '').toLowerCase() === 'fighter';
 
-  // calc_stats.php ~2261: без зброї маги отримують +3 до «кулаків»
   if (!wId && isMageRaceCode(code)) {
     wpnPAtk += 3;
   } else if (!wId && fighterBranch) {
-    // Без зброї воїнська гілка інакше має wpnPAtk=0 → увесь P.Atk=0; бафи/пасивки множать нуль (у профілі «нічого не змінилося»).
     wpnPAtk += 4;
   }
 
-  /**
-   * MasteryPATK (PHP ~4320–4326): лише константа раси/класу (маг/незмаг),
-   * без додаткового множника STR/LVL — ті вже у `LVLMOD` і `M.strPAtkMul`.
-   */
-  const masteryPatk = isMageRaceCode(code) ? 1.45 : 1.085;
-
-  let patk =
-    wpnPAtk *
-      LVLMOD *
-      B.necklacePatk *
-      masteryPatk *
-      M.strPAtkMul *
-      B.buffPatk +
-    B.addPatk;
-  let patk2 = Math.floor(patk);
-
-  const gradeMul = gradeOk ? 1.1 : 0.75;
-  patk2 = Math.floor(patk2 * gradeMul);
+  const patkLayer = computePatkFromFinalStr({
+    level: LVL,
+    race,
+    classBranch,
+    inv,
+    B,
+    finalStr: STR,
+    gradeOk,
+  });
+  const patk2 = patkLayer.pAtk;
 
   let apdef = sumEquippedArmorPDef(eq) + sumEquippedJewelryPDef(eq);
   if (apdef === 0 && fighterBranch) {
@@ -824,7 +909,7 @@ export function computeCombatStats(
   const matkCoeff = B.necklaceMatk + (isMageRaceCode(code) ? 0.17 : 0);
   let matk = wpnMATK * L2 * M.intMAtkMul * matkCoeff * B.buffMatk + B.addMatk;
   let matk2 = Math.floor(matk);
-  matk2 = Math.floor(matk2 * gradeMul);
+  matk2 = Math.floor(matk2 * patkLayer.gradeMul);
 
   const mysticBranch = String(classBranch || '').toLowerCase() === 'mystic';
   if (mysticBranch) {

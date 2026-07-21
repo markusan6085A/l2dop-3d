@@ -33,10 +33,18 @@ export function l2dopPhysicalBaseDamage(
   attackerAtk: number,
   targetPDef: number
 ): number {
+  const raw = l2dopPhysicalBaseDamageCore(attackerAtk, targetPDef);
+  return physicalDamageAfterVariance(raw);
+}
+
+/** Базовий фіз. урон до ±10% variance (audit/tests). */
+export function l2dopPhysicalBaseDamageCore(
+  attackerAtk: number,
+  targetPDef: number
+): number {
   const def = Math.max(1, Math.floor(targetPDef));
   const atk = Math.max(1, Math.floor(attackerAtk));
-  const raw = (70 * atk) / def;
-  return physicalDamageAfterVariance(raw);
+  return (70 * atk) / def;
 }
 
 function worldBossDamageAfterVariance(rawBeforeFloor: number): number {
@@ -84,12 +92,26 @@ export function l2dopPhysicalCritDamage(
   critDmgMul: number,
   addCritDmg: number
 ): number {
+  const raw = l2dopPhysicalCritDamageCore(
+    attackerAtk,
+    targetPDef,
+    critDmgMul,
+    addCritDmg,
+  );
+  return physicalDamageAfterVariance(raw);
+}
+
+/** Крит до ±10% variance (audit/tests). */
+export function l2dopPhysicalCritDamageCore(
+  attackerAtk: number,
+  targetPDef: number,
+  critDmgMul: number,
+  addCritDmg: number
+): number {
   const def = Math.max(1, Math.floor(targetPDef));
   const atk = Math.max(1, Math.floor(attackerAtk));
   const core = (2 * 70 * atk) / def;
-  const raw =
-    core * Math.max(1, critDmgMul) + Math.max(0, addCritDmg);
-  return physicalDamageAfterVariance(raw);
+  return core * Math.max(1, critDmgMul) + Math.max(0, addCritDmg);
 }
 
 /**

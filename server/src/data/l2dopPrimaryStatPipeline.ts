@@ -1,8 +1,10 @@
 /**
  * Пайплайн первинних статів (фаза 1): множники від STR…MEN відносно опорної точки 20,
  * кламп 0.30–3.00; адитивні похідні (крит %, резисти) — окремі капи.
+ * STR P.Atk — окремий helper resolveStrPhysicalAttackMultiplier (soft-cap від 64, hard cap 4.00).
  * Бафи застосовуються в `computeCombatStats` після цих кроків.
  */
+import { resolveStrPhysicalAttackMultiplier } from '../domain/resolveStrPhysicalAttackMultiplier.js';
 
 export const PRIMARY_STAT_PIVOT = 20;
 
@@ -49,7 +51,7 @@ export interface PrimaryStatMultipliers {
 export function computePrimaryStatMultipliers(s: SixCore): PrimaryStatMultipliers {
   const d = (x: number) => x - PRIMARY_STAT_PIVOT;
   return {
-    strPAtkMul: clampStatMultiplier(1 + d(s.str) * 0.045),
+    strPAtkMul: resolveStrPhysicalAttackMultiplier(s.str).multiplier,
     strCritDmgMul: clampStatMultiplier(1 + d(s.str) * 0.02),
     dexAtkSpeedMul: clampStatMultiplier(1 + d(s.dex) * 0.03),
     conHpMul: clampStatMultiplier(1 + d(s.con) * 0.05),
