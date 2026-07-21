@@ -451,7 +451,7 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
    * Видаляємо лише дубль у l2; справжній щит (інший itemId) не чіпаємо.
    */
   repairDuplicateRhandWeaponInShieldSlot(inv);
-  repairDuplicateFullarmorChestLegs(inv);
+  repairFullarmorEquipmentState(inv);
   return inv;
 }
 
@@ -464,6 +464,23 @@ function repairDuplicateFullarmorChestLegs(inv: InventoryState): void {
   if (meta?.slot !== 'fullarmor') return;
   addStack(inv.stacks, legs.itemId, 1, legs.enchant);
   delete inv.eq.l4;
+}
+
+/** Fullarmor у l3 + окремий l4 — безпечно повертаємо nиз у сумку. */
+function repairFullarmorWithSeparateLegs(inv: InventoryState): void {
+  const top = normalizeEqSlot(inv.eq.l3);
+  if (!top) return;
+  const meta = ITEM_CATALOG[top.itemId];
+  if (meta?.slot !== 'fullarmor') return;
+  const legs = normalizeEqSlot(inv.eq.l4);
+  if (!legs) return;
+  addStack(inv.stacks, legs.itemId, 1, legs.enchant);
+  delete inv.eq.l4;
+}
+
+function repairFullarmorEquipmentState(inv: InventoryState): void {
+  repairDuplicateFullarmorChestLegs(inv);
+  repairFullarmorWithSeparateLegs(inv);
 }
 
 /** Зіпсований стан eq.l1 === eq.l2 для однієї rhand-зброї — l2 має бути щит або порожній. */
@@ -687,6 +704,7 @@ export function equipFromBag(
   } else {
     next.eq[slot] = itemId;
   }
+  repairFullarmorEquipmentState(next);
   return next;
 }
 

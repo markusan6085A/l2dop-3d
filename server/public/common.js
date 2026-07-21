@@ -81,7 +81,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260721allWeaponsCanonicalV1';
+  var APP_DATA_VERSION = '20260721fullarmorEquipV1';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -363,9 +363,7 @@
     }
     if (j.itemSlotHints && typeof j.itemSlotHints === 'object' && global.L2.itemSlotById) {
       Object.keys(j.itemSlotHints).forEach(function (k) {
-        if (global.L2.itemSlotById[k] == null) {
-          global.L2.itemSlotById[k] = j.itemSlotHints[k];
-        }
+        global.L2.itemSlotById[k] = j.itemSlotHints[k];
       });
     }
     if (
@@ -1109,6 +1107,31 @@
     itemWeaponTypeById: {},
     /** Тип броні (heavy/light/magic) — з каталогу */
     itemArmorTypeById: {},
+    /** Чи можна одягнути предмет з сумки (зброя/щит/броня/біжутерія). */
+    isEquippableGearItem: function (itemId) {
+      var id = normalizePositiveInt(itemId);
+      if (id <= 0) return false;
+      var slot = global.L2.itemSlotById && global.L2.itemSlotById[id];
+      if (!slot && global.L2.gearCatalogById) {
+        var gear =
+          global.L2.gearCatalogById[id] || global.L2.gearCatalogById[String(id)];
+        slot = gear && gear.slot;
+      }
+      return (
+        slot === 'rhand' ||
+        slot === 'lhand' ||
+        slot === 'shield' ||
+        slot === 'chest' ||
+        slot === 'legs' ||
+        slot === 'head' ||
+        slot === 'gloves' ||
+        slot === 'feet' ||
+        slot === 'fullarmor' ||
+        slot === 'ring' ||
+        slot === 'neck' ||
+        slot === 'earring'
+      );
+    },
     /** Тип біжутерії — з каталогу */
     itemJewelryKindById: {},
     /** Вкладка сумки (не екіп): enchantment, recipe… — GET /character/catalog-hints itemInventoryTabHints */

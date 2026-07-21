@@ -66,6 +66,7 @@
     "test:b-grade-armor-sets": "tsx server/scripts/test-b-grade-armor-sets.ts",
     "test:a-grade-armor-sets": "tsx server/scripts/test-a-grade-armor-sets.ts",
     "test:s-grade-armor-sets": "tsx server/scripts/test-s-grade-armor-sets.ts",
+    "test:fullarmor-equip": "tsx server/scripts/test-fullarmor-equip.ts",
     "test:s-weapons": "tsx server/scripts/test-s-weapons.ts",
     "test:equipment-source-canonical": "tsx server/scripts/test-equipment-source-canonical.ts",
     "audit:all-weapons": "tsx server/scripts/audit-all-weapons.ts",
