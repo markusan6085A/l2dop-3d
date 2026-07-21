@@ -55,10 +55,73 @@
   }
 
   function weaponBlocksShieldForUi(wId) {
-    if (wId == null || wId <= 0) return false;
-    var m =
-      global.L2 && global.L2.itemBlocksShieldById && global.L2.itemBlocksShieldById[wId];
-    return m === true;
+    var id = Number(wId);
+    if (!id || !Number.isFinite(id) || id <= 0) return false;
+    var hints =
+      global.L2 && global.L2.itemBlocksShieldById
+        ? global.L2.itemBlocksShieldById
+        : null;
+    if (
+      hints &&
+      Object.prototype.hasOwnProperty.call(hints, id)
+    ) {
+      return hints[id] === true;
+    }
+    if (
+      hints &&
+      Object.prototype.hasOwnProperty.call(hints, String(id))
+    ) {
+      return hints[String(id)] === true;
+    }
+    var gearMap =
+      global.L2 && global.L2.gearCatalogById
+        ? global.L2.gearCatalogById
+        : null;
+    var item = gearMap ? gearMap[id] || gearMap[String(id)] : null;
+    if (item && typeof item.blocksShield === 'boolean') {
+      return item.blocksShield;
+    }
+    return false;
+  }
+
+  /** Regression guard: Buffalo's Horn (308) is 1H — never mirror to shield slot. */
+  function resolveMirrorTwoHand(wId, shId) {
+    var mirrorDbg = {
+      wId: wId,
+      shId: shId,
+      explicitHint:
+        global.L2 &&
+        global.L2.itemBlocksShieldById &&
+        Object.prototype.hasOwnProperty.call(global.L2.itemBlocksShieldById, Number(wId))
+          ? global.L2.itemBlocksShieldById[Number(wId)]
+          : global.L2 &&
+              global.L2.itemBlocksShieldById &&
+              Object.prototype.hasOwnProperty.call(
+                global.L2.itemBlocksShieldById,
+                String(wId)
+              )
+            ? global.L2.itemBlocksShieldById[String(wId)]
+            : undefined,
+      result: weaponBlocksShieldForUi(wId),
+      weapon:
+        global.L2 && global.L2.gearCatalogById
+          ? global.L2.gearCatalogById[Number(wId)] ||
+            global.L2.gearCatalogById[String(wId)]
+          : undefined,
+    };
+    if (
+      typeof console !== 'undefined' &&
+      console.log &&
+      Number(wId) === 308
+    ) {
+      console.log('[EQUIP_MIRROR_DEBUG]', mirrorDbg);
+    }
+    return (
+      Number(wId) !== 308 &&
+      Boolean(wId) &&
+      !shId &&
+      weaponBlocksShieldForUi(wId)
+    );
   }
 
   function itemIconUrlForId(id) {
@@ -95,7 +158,7 @@
     var scope = resolveScope(root);
     var wId = eqItemId(eq.l1);
     var shId = eqItemId(eq.l2);
-    var mirrorTwoHand = wId && !shId && weaponBlocksShieldForUi(wId);
+    var mirrorTwoHand = resolveMirrorTwoHand(wId, shId);
 
     EQ_SLOT_TO_UI.forEach(function (m) {
       var el = scope.querySelector('[data-l2-slot="' + m.ui + '"]');
@@ -223,6 +286,7 @@
     eqItemId: eqItemId,
     eqItemEnchant: eqItemEnchant,
     weaponBlocksShieldForUi: weaponBlocksShieldForUi,
+    resolveMirrorTwoHand: resolveMirrorTwoHand,
     renderEquipSlots: renderEquipSlots,
     wireEquipSlotView: wireEquipSlotView,
     wireEquipSlotUnequip: wireEquipSlotUnequip,

@@ -19,6 +19,7 @@ import { mergeSdropsWeapons } from './itemsCatalogSWeapons.js';
 import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
 import { JEWELRY_AUTHOR_ITEM_PATCH } from './l2dopJewelryAuthorStats.js';
 import { dropsShieldPatchForEquipped } from './l2dopDropsShieldPatches.js';
+import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
 /** Базовий крит типу зброї ($WpnCrt) — як у calc_stats для відображення в GM-шопі та каталозі. */
 export function wpnCritForWeaponKind(wt: WeaponKindForEnchant): number {
@@ -485,6 +486,7 @@ function overlayGearCatalogWeaponFromItemCatalog(row: GearCatalogRow): GearCatal
     ...row,
     nameUk: m.nameUk || row.nameUk,
     weaponType: m.weaponType,
+    blocksShield: itemBlocksShieldSlot(row.itemId, m.weaponType),
     stats: {
       ...(m.pAtk != null ? { pAtk: m.pAtk } : {}),
       ...(m.mAtk != null ? { mAtk: m.mAtk } : {}),
@@ -506,6 +508,8 @@ export interface GearCatalogRow {
   /** Для фільтрів сумки (як GM-шоп). */
   grade?: GmShopGrade;
   weaponType?: GmShopWeaponKind;
+  /** Дворучна зброя — mirror у слоті щита на клієнті. */
+  blocksShield?: boolean;
   armorType?: string;
   jewelryKind?: GmShopJewelryKind;
   stats: {

@@ -372,12 +372,37 @@
     }
   }
 
-  /** Див. GET /character itemBlocksShieldById — дворуч займає слот щита візуально. */
+  /** Див. charEquipFrame.js weaponBlocksShieldForUi — дворуч займає слот щита візуально. */
   function weaponBlocksShieldForUi(wId) {
-    if (wId == null || wId <= 0) return false;
-    var m =
-      window.L2 && L2.itemBlocksShieldById && L2.itemBlocksShieldById[wId];
-    return m === true;
+    if (
+      window.L2CharEquipFrame &&
+      typeof L2CharEquipFrame.weaponBlocksShieldForUi === 'function'
+    ) {
+      return L2CharEquipFrame.weaponBlocksShieldForUi(wId);
+    }
+    var id = Number(wId);
+    if (!id || !Number.isFinite(id) || id <= 0) return false;
+    var hints =
+      window.L2 && L2.itemBlocksShieldById ? L2.itemBlocksShieldById : null;
+    if (hints && Object.prototype.hasOwnProperty.call(hints, id)) {
+      return hints[id] === true;
+    }
+    return false;
+  }
+
+  function resolveMirrorTwoHand(wId, shId) {
+    if (
+      window.L2CharEquipFrame &&
+      typeof L2CharEquipFrame.resolveMirrorTwoHand === 'function'
+    ) {
+      return L2CharEquipFrame.resolveMirrorTwoHand(wId, shId);
+    }
+    return (
+      Number(wId) !== 308 &&
+      Boolean(wId) &&
+      !shId &&
+      weaponBlocksShieldForUi(wId)
+    );
   }
 
   function renderEquipSlots(inv) {
@@ -389,8 +414,7 @@
     var eq = inv.eq || {};
     var wId = eqItemId(eq.l1);
     var shId = eqItemId(eq.l2);
-    var mirrorTwoHand =
-      wId && !shId && weaponBlocksShieldForUi(wId);
+    var mirrorTwoHand = resolveMirrorTwoHand(wId, shId);
     EQ_SLOT_TO_UI.forEach(function (m) {
       var el = document.querySelector('[data-l2-slot="' + m.ui + '"]');
       if (!el) return;

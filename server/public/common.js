@@ -81,7 +81,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260719partyHudPollOpt1';
+  var APP_DATA_VERSION = '20260721buffalo308OneHandV2';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -1066,12 +1066,16 @@
     itemInventoryTabById: {},
     /** GET /character/catalog-hints itemBlocksShieldById: дворуч — іконка зброї також у слоті щита */
     itemBlocksShieldById: {},
+    /** itemId → gearCatalog row (blocksShield, weaponType …) */
+    gearCatalogById: {},
     mergeShopCatalog: function (items) {
       var icons = global.L2.itemIconById;
       var names = global.L2.itemNameById;
       var stats = global.L2.itemStatsById;
       var slots = global.L2.itemSlotById;
       var grades = global.L2.itemGradeById;
+      var gearById = (global.L2.gearCatalogById =
+        global.L2.gearCatalogById || {});
       var wpnT = (global.L2.itemWeaponTypeById =
         global.L2.itemWeaponTypeById || {});
       var armT = (global.L2.itemArmorTypeById =
@@ -1081,6 +1085,8 @@
       (items || []).forEach(function (x) {
         if (x.itemId == null) return;
         var id = x.itemId;
+        gearById[id] = x;
+        gearById[String(id)] = x;
         if (x.iconUrl) icons[id] = x.iconUrl;
         if (x.stats && typeof x.stats === 'object') stats[id] = x.stats;
         if (x.slot) slots[id] = x.slot;
