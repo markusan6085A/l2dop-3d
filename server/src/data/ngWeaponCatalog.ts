@@ -32,7 +32,7 @@ function ng(
   blocksShield: boolean,
   atkSpd: number,
   stat:
-    | { mode: 'phys'; pAtk: number; displayCrit: number }
+    | { mode: 'phys'; pAtk: number; displayCrit: number; mAtk?: number }
     | { mode: 'magic'; pAtk: number; mAtk: number },
 ): NgWeaponCanonEntry {
   return {
@@ -45,12 +45,16 @@ function ng(
     atkSpd,
     mode: stat.mode,
     ...(stat.mode === 'phys'
-      ? { pAtk: stat.pAtk, displayCrit: stat.displayCrit }
+      ? {
+          pAtk: stat.pAtk,
+          displayCrit: stat.displayCrit,
+          ...(stat.mAtk != null ? { mAtk: stat.mAtk } : {}),
+        }
       : { pAtk: stat.pAtk, mAtk: stat.mAtk }),
   };
 }
 
-/** Усі 42 NG-предмети з магазину дропів. */
+/** Усі 42 NG-предмети з магазину дропів (включно з Buffalo's Horn). */
 export const NG_WEAPON_CATALOG: readonly NgWeaponCanonEntry[] = [
   ng(7, 'weapon_apprentices_rod_i00.png', 'Жезло недосвідченого NG-grade.', "Apprentice's Rod — rod", 'blunt', false, 379, { mode: 'magic', pAtk: 17, mAtk: 23 }),
   ng(99, 'weapon_apprentices_spellbook_i00.png', 'Посібник недосвідченого NG-grade.', "Apprentice's Spellbook — книга", 'sword', false, 379, { mode: 'magic', pAtk: 15, mAtk: 20 }),
@@ -60,7 +64,7 @@ export const NG_WEAPON_CATALOG: readonly NgWeaponCanonEntry[] = [
   ng(11, 'weapon_bone_dagger_i00.png', 'Кістковий кинжал NG-grade.', 'Bone Dagger', 'dagger', false, 433, { mode: 'phys', pAtk: 25, displayCrit: 80 }),
   ng(14, 'weapon_bow_i00.png', 'Лук NG-grade.', 'Bow', 'bow', true, 293, { mode: 'phys', pAtk: 54, displayCrit: 120 }),
   ng(3, 'weapon_broad_sword_i00.png', 'Широкий меч NG-grade.', 'Broad Sword', 'sword', false, 379, { mode: 'phys', pAtk: 36, displayCrit: 40 }),
-  ng(308, 'weapon_buffalo_horn_i00.png', 'Ріг буйвола NG-grade.', 'Buffalo Horn', 'fist', true, 433, { mode: 'phys', pAtk: 25, displayCrit: 40 }),
+  ng(308, 'weapon_buffalo_horn_i00.png', "Ріг буйвола Buffalo's Horn NG-grade.", "Buffalo's Horn", 'blunt', false, 379, { mode: 'phys', pAtk: 25, displayCrit: 40, mAtk: 8 }),
   ng(155, 'weapon_buzdygan_i00.png', 'Буздиган NG-grade.', 'Buzdygan', 'blunt', false, 379, { mode: 'phys', pAtk: 41, displayCrit: 40 }),
   ng(9, 'weapon_cedar_staff_i00.png', 'Кедровий посох NG-grade.', 'Cedar Staff — посох', 'bigblunt', true, 325, { mode: 'magic', pAtk: 36, mAtk: 40 }),
 
@@ -123,7 +127,10 @@ export const NG_WEAPON_BY_SHOP_KEY_LOWER: ReadonlyMap<string, NgWeaponCanonEntry
   new Map(NG_WEAPON_CATALOG.map((e) => [shopKeyLower(e.shopKey), e]));
 
 /** Запис для ITEM_CATALOG / інвентаря / бою. */
-export function ngWeaponToItemMeta(entry: NgWeaponCanonEntry): ItemMeta {
+export function ngWeaponToItemMeta(
+  entry: NgWeaponCanonEntry,
+  existing?: ItemMeta,
+): ItemMeta {
   const meta: ItemMeta = {
     nameUk: entry.nameUk,
     slot: 'rhand',
@@ -131,7 +138,11 @@ export function ngWeaponToItemMeta(entry: NgWeaponCanonEntry): ItemMeta {
     atkSpd: entry.atkSpd,
   };
   if (entry.pAtk != null) meta.pAtk = entry.pAtk;
-  if (entry.mAtk != null) meta.mAtk = entry.mAtk;
+  if (entry.mAtk != null) {
+    meta.mAtk = entry.mAtk;
+  } else if (existing?.mAtk != null) {
+    meta.mAtk = existing.mAtk;
+  }
   if (entry.mode === 'phys' && entry.displayCrit != null) {
     meta.wpnCrit = entry.displayCrit;
   }

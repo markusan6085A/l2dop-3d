@@ -17,7 +17,6 @@ export const STARTER_ADENA = 50_000;
 
 /** NG Club — фіз. зброя для всіх. */
 const STARTER_WEAPON_PHYS_ID = 4;
-/** Apprentice's Rod — маг. зброя для всіх. */
 const STARTER_WEAPON_MAGIC_ID = 7;
 /** Devotion Helmet / gloves — NG-броня з GM-шопу (синтетичні id). */
 const STARTER_DEVOTION_HELMET_ID = 9002261;
@@ -30,6 +29,17 @@ const STARTER_FIGHTER_SOULSHOT_ID = 1835;
 const STARTER_MYSTIC_SPIRITSHOT_ID = 3947;
 const STARTER_POTION_QTY = 50;
 const STARTER_SHOT_QTY = 1000;
+
+/**
+ * GM legacy: `elysian.jpg` → itemId 290 (bow, 2H). Канонічний Elysian — 164 (1H blunt).
+ * Міграція при читанні інвентаря з БД.
+ */
+export const LEGACY_ELYSIAN_BOW_ITEM_ID = 290;
+export const ELYSIAN_ITEM_ID = 164;
+
+export function remapLegacyElysianItemId(itemId: number): number {
+  return itemId === LEGACY_ELYSIAN_BOW_ITEM_ID ? ELYSIAN_ITEM_ID : itemId;
+}
 
 export type StarterClassBranch = 'fighter' | 'mystic';
 
@@ -395,9 +405,10 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
   for (const row of stacksRaw) {
     if (!row || typeof row !== 'object') continue;
     const r = row as Record<string, unknown>;
-    const itemId = Number(r.itemId);
+    const rawItemId = Number(r.itemId);
     const qty = Number(r.qty);
-    if (Number.isFinite(itemId) && itemId > 0 && Number.isFinite(qty) && qty > 0) {
+    if (Number.isFinite(rawItemId) && rawItemId > 0 && Number.isFinite(qty) && qty > 0) {
+      const itemId = remapLegacyElysianItemId(rawItemId);
       const b: BagStack = { itemId, qty };
       const en = normEnchant(r.enchant);
       if (en > 0) b.enchant = en;
@@ -407,16 +418,17 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
   const eq: Partial<Record<string, EqSlotValue>> = {};
   for (const [k, v] of Object.entries(eqRaw)) {
     if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
-      eq[k] = v;
+      eq[k] = remapLegacyElysianItemId(v);
       continue;
     }
     if (v && typeof v === 'object' && 'itemId' in v) {
       const slot = normalizeEqSlot(v as EqSlotValue);
       if (slot) {
+        const itemId = remapLegacyElysianItemId(slot.itemId);
         eq[k] =
           slot.enchant > 0
-            ? { itemId: slot.itemId, enchant: slot.enchant }
-            : slot.itemId;
+            ? { itemId, enchant: slot.enchant }
+            : itemId;
       }
     }
   }
@@ -435,7 +447,21 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
       }
     }
   }
+  /**
+   * Legacy mirror у БД: та сама rhand-зброя в l1 і l2 (коли предмет був 2H/fist).
+   * Видаляємо лише дубль у l2; справжній щит (інший itemId) не чіпаємо.
+   */
+  repairDuplicateRhandWeaponInShieldSlot(inv);
   return inv;
+}
+
+/** Зіпсований стан eq.l1 === eq.l2 для однієї rhand-зброї — l2 має бути щит або порожній. */
+function repairDuplicateRhandWeaponInShieldSlot(inv: InventoryState): void {
+  const rh = normalizeEqSlot(inv.eq.l1);
+  const lh = normalizeEqSlot(inv.eq.l2);
+  if (!rh || !lh || rh.itemId !== lh.itemId) return;
+  if (ITEM_CATALOG[rh.itemId]?.slot !== 'rhand') return;
+  delete inv.eq.l2;
 }
 
 /**

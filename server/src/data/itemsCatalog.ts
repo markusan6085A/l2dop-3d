@@ -477,6 +477,27 @@ function gearCatalogIconUrl(row: { itemId: number; iconUrl?: string }): string {
   return itemIconUrl(row.itemId);
 }
 
+/** Після merge*Weapons() ITEM_CATALOG має пріоритет над stale GM weaponType/stats. */
+function overlayGearCatalogWeaponFromItemCatalog(row: GearCatalogRow): GearCatalogRow {
+  const m = ITEM_CATALOG[row.itemId];
+  if (!m || m.slot !== 'rhand' || !m.weaponType) return row;
+  return {
+    ...row,
+    nameUk: m.nameUk || row.nameUk,
+    weaponType: m.weaponType,
+    stats: {
+      ...(m.pAtk != null ? { pAtk: m.pAtk } : {}),
+      ...(m.mAtk != null ? { mAtk: m.mAtk } : {}),
+      ...(m.atkSpd != null ? { atkSpd: m.atkSpd } : {}),
+      wpnCrit:
+        typeof m.wpnCrit === 'number'
+          ? m.wpnCrit
+          : wpnCritForWeaponKind(m.weaponType),
+      ...(m.rCrit != null && m.rCrit > 0 ? { rCrit: m.rCrit } : {}),
+    },
+  };
+}
+
 export interface GearCatalogRow {
   itemId: number;
   nameUk: string;
@@ -580,7 +601,9 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
   if (!seen.has(COIN_OF_LUCK_ITEM_ID)) {
     rows.push(coinOfLuckGearCatalogExtra());
   }
-  return rows;
+  return rows.map((row) =>
+    row.slot === 'rhand' ? overlayGearCatalogWeaponFromItemCatalog(row) : row,
+  );
 }
 
 let _itemNamesUkFullCache: Record<number, string> | null = null;

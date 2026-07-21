@@ -15,7 +15,19 @@ import {
   L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER,
   ngWeaponDropsPreviewLines,
 } from '../src/data/l2dopNgWeaponDropsPatches.js';
-import { itemBlocksShieldSlot } from '../src/data/l2dopTwoHandedWeapon.js';
+import {
+  itemBlocksShieldHintsForClient,
+  itemBlocksShieldSlot,
+} from '../src/data/l2dopTwoHandedWeapon.js';
+import {
+  addItemToBag,
+  emptyInventory,
+  equipFromBag,
+  parseInventoryRaw,
+} from '../src/data/inventory.js';
+import { lookupCanonWeaponSubtypeFromDisplayLabel } from '../src/domain/dropsShopWeaponSubtypeCanonLookup.js';
+import { resolveDropsShopWeaponSubtype } from '../src/domain/dropsShopWeaponSubtype.js';
+import { DROPS_SHOP_CATALOG } from '../src/data/dropsShopCatalog.generated.js';
 
 type OverrideRow = { itemId?: number };
 
@@ -31,11 +43,38 @@ function expectEq<T>(label: string, actual: T, expected: T, errors: string[]): v
   }
 }
 
+function expectFalse(label: string, value: boolean, errors: string[]): void {
+  if (value) errors.push(`${label}: expected false`);
+}
+
+function expectTrue(label: string, value: boolean, errors: string[]): void {
+  if (!value) errors.push(`${label}: expected true`);
+}
+
+function eqItemId(slotVal: unknown): number | null {
+  if (typeof slotVal === 'number' && slotVal > 0) return slotVal;
+  if (slotVal && typeof slotVal === 'object' && 'itemId' in slotVal) {
+    const n = Number((slotVal as { itemId: unknown }).itemId);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+  return null;
+}
+
 function main(): void {
   const errors: string[] = [];
 
-  if (NG_WEAPON_CATALOG.length !== 42) {
-    errors.push(`NG_WEAPON_CATALOG length: expected 42, got ${NG_WEAPON_CATALOG.length}`);
+  const expectedNgCount = Object.keys(overrides).filter((k) => k.startsWith('weapon_ng/')).length;
+  if (NG_WEAPON_CATALOG.length !== expectedNgCount) {
+    errors.push(
+      `NG_WEAPON_CATALOG length: expected ${expectedNgCount}, got ${NG_WEAPON_CATALOG.length}`,
+    );
+  }
+
+  const shopNgKeys = Object.keys(overrides).filter((k) => k.startsWith('weapon_ng/'));
+  if (shopNgKeys.length !== NG_WEAPON_CATALOG.length) {
+    errors.push(
+      `NG shop overrides (${shopNgKeys.length}) must match NG_WEAPON_CATALOG (${NG_WEAPON_CATALOG.length})`,
+    );
   }
 
   for (const entry of NG_WEAPON_CATALOG) {
@@ -68,6 +107,9 @@ function main(): void {
     if (entry.mode === 'phys') {
       expectEq(`#${entry.itemId} pAtk`, catalog.pAtk, entry.pAtk, errors);
       expectEq(`#${entry.itemId} wpnCrit`, catalog.wpnCrit, entry.displayCrit, errors);
+      if (entry.mAtk != null) {
+        expectEq(`#${entry.itemId} mAtk`, catalog.mAtk, entry.mAtk, errors);
+      }
       if (catalog.rCrit != null && catalog.rCrit !== 0) {
         errors.push(`#${entry.itemId} unexpected rCrit duplicate: ${catalog.rCrit}`);
       }
@@ -124,8 +166,12 @@ function main(): void {
   expectEq('Sickle weaponType', ITEM_CATALOG[153]?.weaponType, 'sword', errors);
   expectEq('Sickle blocksShield', itemBlocksShieldSlot(153, 'sword'), false, errors);
 
-  for (const id of [308, 255, 254, 253] as const) {
+  for (const id of [255, 254, 253] as const) {
     const e = NG_WEAPON_BY_ITEM_ID.get(id)!;
+    if (!e) {
+      errors.push(`missing NG_WEAPON_BY_ITEM_ID[${id}]`);
+      continue;
+    }
     expectEq(`#${id} fist`, ITEM_CATALOG[id]?.weaponType, 'fist', errors);
     expectEq(`#${id} speed 433`, ITEM_CATALOG[id]?.atkSpd, 433, errors);
     expectEq(
@@ -135,6 +181,78 @@ function main(): void {
       errors,
     );
   }
+
+  const buffaloShopKey = 'weapon_ng/weapon_buffalo_horn_i00.png';
+  const buffaloRow = DROPS_SHOP_CATALOG.find((r) => r.shopKey === buffaloShopKey);
+  if (!buffaloRow) {
+    errors.push('missing DROPS_SHOP_CATALOG row for Buffalo\'s Horn');
+  }
+
+  expectEq("Buffalo's Horn itemId", overrides[buffaloShopKey]?.itemId, 308, errors);
+  expectEq("Buffalo's Horn shop name", NG_WEAPON_BY_ITEM_ID.get(308)?.shopNameUk, "Buffalo's Horn", errors);
+  expectEq("Buffalo's Horn pAtk", ITEM_CATALOG[308]?.pAtk, 25, errors);
+  expectEq("Buffalo's Horn mAtk", ITEM_CATALOG[308]?.mAtk, 8, errors);
+  expectEq("Buffalo's Horn wpnCrit", ITEM_CATALOG[308]?.wpnCrit, 40, errors);
+  expectEq("Buffalo's Horn blunt", ITEM_CATALOG[308]?.weaponType, 'blunt', errors);
+  expectEq("Buffalo's Horn speed", ITEM_CATALOG[308]?.atkSpd, 379, errors);
+  expectEq("Buffalo's Horn 1H", itemBlocksShieldSlot(308, 'blunt'), false, errors);
+  expectEq("Buffalo's Horn client hint", itemBlocksShieldHintsForClient()[308], false, errors);
+  expectEq(
+    "Buffalo's Horn shop blunt",
+    lookupCanonWeaponSubtypeFromDisplayLabel("Buffalo's Horn"),
+    'blunt',
+    errors,
+  );
+  expectFalse(
+    "Buffalo's Horn not fist lookup",
+    lookupCanonWeaponSubtypeFromDisplayLabel("Buffalo's Horn") === 'fist',
+    errors,
+  );
+  if (buffaloRow) {
+    expectEq(
+      "Buffalo's Horn resolve subtype",
+      resolveDropsShopWeaponSubtype(
+        buffaloRow,
+        buffaloShopKey.replace(/\\/g, '/').toLowerCase(),
+        ITEM_CATALOG[308],
+        "Buffalo's Horn",
+      ),
+      'blunt',
+      errors,
+    );
+  }
+
+  let inv = emptyInventory();
+  inv = addItemToBag(inv, 628, 1);
+  inv = addItemToBag(inv, 308, 1);
+  inv = equipFromBag(inv, 628, 0);
+  inv = equipFromBag(inv, 308, 0);
+  expectEq("Buffalo equip l1", eqItemId(inv.eq.l1), 308, errors);
+  expectEq("Buffalo equip l2 shield", eqItemId(inv.eq.l2), 628, errors);
+  expectFalse(
+    "Buffalo equip shield stays",
+    inv.stacks.some((s) => s.itemId === 628),
+    errors,
+  );
+  const buffaloReload = parseInventoryRaw(inv);
+  expectEq("Buffalo reload l1", eqItemId(buffaloReload.eq.l1), 308, errors);
+  expectEq("Buffalo reload l2", eqItemId(buffaloReload.eq.l2), 628, errors);
+
+  expectEq('Spike Glove fist', ITEM_CATALOG[253]?.weaponType, 'fist', errors);
+  expectEq('Spike Glove speed 433', ITEM_CATALOG[253]?.atkSpd, 433, errors);
+  expectEq('Spike Glove 2H blocks shield', itemBlocksShieldSlot(253, 'fist'), true, errors);
+  let invFist = emptyInventory();
+  invFist = addItemToBag(invFist, 628, 1);
+  invFist = addItemToBag(invFist, 253, 1);
+  invFist = equipFromBag(invFist, 628, 0);
+  invFist = equipFromBag(invFist, 253, 0);
+  expectEq('Spike Glove equip l1', eqItemId(invFist.eq.l1), 253, errors);
+  expectEq('Spike Glove clears l2', eqItemId(invFist.eq.l2), null, errors);
+  expectTrue(
+    'Spike Glove returns shield to bag',
+    invFist.stacks.some((s) => s.itemId === 628),
+    errors,
+  );
 
   for (const id of [311, 309, 100] as const) {
     expectEq(`#${id} blunt`, ITEM_CATALOG[id]?.weaponType, 'blunt', errors);
@@ -192,7 +310,7 @@ function main(): void {
     process.exit(1);
   }
 
-  console.log(`NG weapons smoke OK (${NG_WEAPON_CATALOG.length} items)`);
+  console.log(`NG weapons smoke OK (${NG_WEAPON_CATALOG.length} items, incl. Buffalo's Horn #308)`);
 }
 
 main();

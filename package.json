@@ -53,6 +53,8 @@
     "test:c-weapons": "tsx server/scripts/test-c-weapons.ts",
     "test:b-weapons": "tsx server/scripts/test-b-weapons.ts",
     "test:a-weapons": "tsx server/scripts/test-a-weapons.ts",
+    "test:elysian-equip-shield": "tsx server/scripts/test-elysian-equip-shield.ts",
+    "test:buffalo-horn-equip": "tsx server/scripts/test-buffalo-horn-equip.ts",
     "test:s-weapons": "tsx server/scripts/test-s-weapons.ts",
     "test:equipment-source-canonical": "tsx server/scripts/test-equipment-source-canonical.ts",
     "test:drops-item-id-collisions": "tsx server/scripts/test-drops-item-id-collisions.ts",

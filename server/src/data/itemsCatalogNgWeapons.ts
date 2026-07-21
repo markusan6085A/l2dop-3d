@@ -12,6 +12,6 @@ export function mergeNgDropsWeapons(
   target: Record<number, ItemMeta>,
 ): void {
   for (const entry of NG_WEAPON_CATALOG) {
-    target[entry.itemId] = ngWeaponToItemMeta(entry);
+    target[entry.itemId] = ngWeaponToItemMeta(entry, target[entry.itemId]);
   }
 }

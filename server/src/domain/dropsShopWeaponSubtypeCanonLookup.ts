@@ -96,6 +96,8 @@ const ROWS: ReadonlyArray<readonly [string, DropsShopWeaponSubtype]> = [
   ['Heavy Doom Hammer', 'blunt'],
   ['War Axe', 'blunt'],
   ['Yaksa Mace', 'blunt'],
+  ["Buffalo's Horn", 'blunt'],
+  ['Buffalo Horn', 'blunt'],
   ['Art of Battle Axe', 'blunt'],
   ["Deadman's Glory", 'blunt'],
   ['Great Axe', 'blunt'],
@@ -119,7 +121,6 @@ const ROWS: ReadonlyArray<readonly [string, DropsShopWeaponSubtype]> = [
   ["Tiphon's Spear", 'pole'],
   ['Saint Spear', 'pole'],
   // —— Кастети ——
-  ['Buffalo Horn', 'fist'],
   ["Fox's Nail", 'fist'],
   ['Iron Glove', 'fist'],
   ['Spike Glove', 'fist'],

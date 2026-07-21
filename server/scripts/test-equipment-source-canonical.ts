@@ -497,6 +497,9 @@ function main(): void {
   console.log(`  itemsDB_b.ts: not present in repo (canon via *WeaponCatalog → ITEM_CATALOG)`);
   console.log(`  runtime stats path: itemsCatalog.ts → mergeNg/D/C/B/A/S → ITEM_CATALOG`);
   console.log(`  build-time GM gen: gen-l2dop-gm-shop-from-text-rpg.ts → external text-rpg itemsDB.ts`);
+  console.log(
+    `  grade counts: NG ${NG_WEAPON_CATALOG.length} (incl. #308 Buffalo's Horn), D ${D_WEAPON_CATALOG.length}, C ${C_WEAPON_CATALOG.length}, B ${B_WEAPON_CATALOG.length}, A ${A_WEAPON_CATALOG.length}, S ${S_WEAPON_CATALOG.length}`,
+  );
   console.log(`  checked ${total} canonical weapons across shop + RB drop sources`);
 }
 

@@ -29,6 +29,7 @@ export const L2DOP_ITEM_GRADE_UK: Record<number, string> = {
   116: 'NG',
   /** Зброя з ручних рядків у `itemsCatalog.ts` (немає в GM weapons CSV). */
   317: 'D',
+  308: 'NG',
   79: 'B',
   151: 'A',
   164: 'A',
