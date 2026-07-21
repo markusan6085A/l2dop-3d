@@ -107,6 +107,9 @@ import type {
   SkillCooldownSnapshotEntry,
 } from './charTypes.js';
 import { parseDungeonStateJson } from '../domain/dungeonState.js';
+import { buildStatsRenderKey } from '../domain/buildStatsRenderKey.js';
+import { resolveFinalBaseStats } from '../domain/resolveFinalBaseStats.js';
+import type { StatBreakdownDebugPayload } from './charTypes.js';
 
 function buildActiveBuffsSnapshot(
   raw: Prisma.JsonValue | null,
@@ -412,6 +415,46 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     mapMoving
       ? mapAngleDeg(row.worldX, row.worldY, row.targetX, row.targetY)
       : 0;
+  const statsRenderKey = buildStatsRenderKey(combat, maxHpOut, maxMp, maxCp);
+  const statBreakdownDebug: StatBreakdownDebugPayload | undefined =
+    process.env.L2DOP_STAT_DEBUG === '1'
+      ? (() => {
+          const finalBase = resolveFinalBaseStats({
+            level: effectiveLevel,
+            race: row.race,
+            classBranch: row.classBranch,
+            inv,
+          });
+          return {
+            baseStats: finalBase.breakdown.base,
+            statModifiers: {
+              armorSets: finalBase.breakdown.armorSets,
+              dyes: finalBase.breakdown.dyes,
+              passives: finalBase.breakdown.passives,
+              items: finalBase.breakdown.items,
+              other: finalBase.breakdown.other,
+            },
+            finalStats: {
+              str: finalBase.str,
+              dex: finalBase.dex,
+              con: finalBase.con,
+              int: finalBase.int,
+              wit: finalBase.wit,
+              men: finalBase.men,
+            },
+            derivedSnapshot: {
+              pAtk: combat.pAtk,
+              mAtk: combat.mAtk,
+              maxHp: maxHpOut,
+              maxMp,
+              maxCp,
+              pAtkSpd: combat.pAtkSpd,
+              castSpd: combat.castSpd,
+              mCritPct: combat.mCritPct,
+            },
+          };
+        })()
+      : undefined;
   return {
     id: row.id,
     name: row.name,
@@ -478,6 +521,8 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     debuffResistPct: combat.debuffResistPct,
     skillMpCostMul: combat.skillMpCostMul,
     addDebuffLandChancePct: combat.addDebuffLandChancePct,
+    statsRenderKey,
+    ...(statBreakdownDebug ? { statBreakdownDebug } : {}),
     armorSetBonus: resolveActiveArmorSetProfileLines(inv),
     addCritDmg: combat.addCritDmg,
     addCritDisplay: addCritDisplayForProfile(

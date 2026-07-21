@@ -30,16 +30,15 @@ const STARTER_MYSTIC_SPIRITSHOT_ID = 3947;
 const STARTER_POTION_QTY = 50;
 const STARTER_SHOT_QTY = 1000;
 
-/**
- * GM legacy: `elysian.jpg` → itemId 290 (bow, 2H). Канонічний Elysian — 164 (1H blunt).
- * Міграція при читанні інвентаря з БД.
- */
-export const LEGACY_ELYSIAN_BOW_ITEM_ID = 290;
-export const ELYSIAN_ITEM_ID = 164;
-
-export function remapLegacyElysianItemId(itemId: number): number {
-  return itemId === LEGACY_ELYSIAN_BOW_ITEM_ID ? ELYSIAN_ITEM_ID : itemId;
-}
+export {
+  ELYSIAN_ITEM_ID,
+  LEGACY_ELYSIAN_BOW_ITEM_ID,
+  LEGACY_BLOCKED_ACQUISITION_ITEM_IDS,
+  isLegacyBlockedAcquisitionItemId,
+  remapLegacyElysianItemId,
+  resolveAcquisitionIssueItemId,
+} from './legacyElysianConstants.js';
+import { remapLegacyElysianItemId } from './legacyElysianConstants.js';
 
 export type StarterClassBranch = 'fighter' | 'mystic';
 

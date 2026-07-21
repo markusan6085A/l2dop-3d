@@ -7,6 +7,7 @@ import { isMysticClassBranch } from '../data/l2dopHumanMysticBattleSkills.js';
 import { mysticSkillSkipsMobHpByBattleId } from '../data/humanMysticSkillCatalog.js';
 import { fighterCatalogEntryForRace } from '../data/fighterSkillCatalog.byRace.js';
 import { bowArrowItemIdForGrade } from '../data/bowArrowItems.js';
+import { requiresArrowsForWeaponType } from '../data/weaponTypeContract.js';
 import { BATTLE_ACTIONS_NO_MOB_HP, type BattleActionId } from './battle.js';
 
 function battleActionSkipsMobHpLocal(
@@ -30,7 +31,7 @@ export function bowArrowNeedForAction(
   race: string,
   classBranch: string,
 ): { arrowItemId: number; qty: number } | null {
-  if (equippedWeaponKind(inv) !== 'bow') return null;
+  if (!requiresArrowsForWeaponType(equippedWeaponKind(inv))) return null;
   const grade = equippedWeaponGmGrade(inv);
   if (!grade) {
     throw new Error('battle_bow_no_weapon_grade');

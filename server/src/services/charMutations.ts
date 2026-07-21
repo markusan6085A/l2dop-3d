@@ -18,6 +18,47 @@ import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyCharacterReadView } from './charReadView.js';
 import { ensureInventoryReadPatchesRow } from './charInventorySanitize.js';
 import { ensureWorldCombatViciousStanceReadRepairRow } from './charWorldCombatSanitize.js';
+import { clampCharacterVitalsForInventoryChange } from '../domain/clampCharacterVitalsForEquipment.js';
+import { resolveClanHallBonusInTx } from './characterClanHallVitals.js';
+
+function equipInventoryPatch(
+  base: CharacterRow,
+  current: CharacterRow,
+  nextInv: ReturnType<typeof parseInventory>,
+  vitalsPatch: ReturnType<typeof clampCharacterVitalsForInventoryChange>
+): { changed: boolean; data?: Record<string, unknown> } {
+  const inv = parseInventory(base.inventoryJson);
+  const changed =
+    vitalsPatch.hp !== current.hp ||
+    vitalsPatch.maxHp !== current.maxHp ||
+    base.hp !== current.hp ||
+    movementFieldsChanged(current, base) ||
+    JSON.stringify(nextInv) !== JSON.stringify(inv) ||
+    vitalsPatch.worldCombatStateJson !== undefined ||
+    vitalsPatch.battleJson !== undefined;
+  if (!changed) return { changed: false };
+  return {
+    changed: true,
+    data: {
+      hp: vitalsPatch.hp,
+      maxHp: vitalsPatch.maxHp,
+      worldX: base.worldX,
+      worldY: base.worldY,
+      targetX: base.targetX,
+      targetY: base.targetY,
+      moveStartAt: base.moveStartAt,
+      moveFromX: base.moveFromX,
+      moveFromY: base.moveFromY,
+      inventoryJson: nextInv as unknown as Prisma.InputJsonValue,
+      ...(vitalsPatch.worldCombatStateJson !== undefined
+        ? { worldCombatStateJson: vitalsPatch.worldCombatStateJson }
+        : {}),
+      ...(vitalsPatch.battleJson !== undefined
+        ? { battleJson: vitalsPatch.battleJson }
+        : {}),
+    },
+  };
+}
 
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
@@ -159,8 +200,14 @@ export async function applyEquipFromBag(
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
+      include: {
+        clan: {
+          select: { name: true, hallBlessingAt: true, level: true, emblemId: true },
+        },
+      },
     });
     if (!char) throw new Error('no_character');
+    const clanHallBonus = await resolveClanHallBonusInTx(tx, char as CharacterRow);
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,
@@ -169,25 +216,15 @@ export async function applyEquipFromBag(
         const base = normalizePassiveAndMove(current as CharacterRow);
         const inv = parseInventory(base.inventoryJson);
         const nextInv = equipFromBag(inv, itemId, enchant);
-        const changed =
-          base.hp !== current.hp ||
-          movementFieldsChanged(current as CharacterRow, base) ||
-          JSON.stringify(nextInv) !== JSON.stringify(inv);
-        if (!changed) return { changed: false };
-        return {
-          changed: true,
-          data: {
-            hp: base.hp,
-            worldX: base.worldX,
-            worldY: base.worldY,
-            targetX: base.targetX,
-            targetY: base.targetY,
-            moveStartAt: base.moveStartAt,
-            moveFromX: base.moveFromX,
-            moveFromY: base.moveFromY,
-            inventoryJson: nextInv as unknown as Prisma.InputJsonValue,
+        const vitalsPatch = clampCharacterVitalsForInventoryChange({
+          row: {
+            ...base,
+            inventoryJson: nextInv as unknown as CharacterRow['inventoryJson'],
           },
-        };
+          nextInv,
+          clanHallBonus,
+        });
+        return equipInventoryPatch(base, current as CharacterRow, nextInv, vitalsPatch);
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);
@@ -206,8 +243,14 @@ export async function applyUnequip(
     const char = await tx.character.findFirst({
       where: { userId },
       orderBy: { lastUpdate: 'desc' },
+      include: {
+        clan: {
+          select: { name: true, hallBlessingAt: true, level: true, emblemId: true },
+        },
+      },
     });
     if (!char) throw new Error('no_character');
+    const clanHallBonus = await resolveClanHallBonusInTx(tx, char as CharacterRow);
     const result = await mutateCharacterWithRevision(
       tx,
       char.id,
@@ -216,25 +259,15 @@ export async function applyUnequip(
         const base = normalizePassiveAndMove(current as CharacterRow);
         const inv = parseInventory(base.inventoryJson);
         const nextInv = unequipSlot(inv, slot);
-        const changed =
-          base.hp !== current.hp ||
-          movementFieldsChanged(current as CharacterRow, base) ||
-          JSON.stringify(nextInv) !== JSON.stringify(inv);
-        if (!changed) return { changed: false };
-        return {
-          changed: true,
-          data: {
-            hp: base.hp,
-            worldX: base.worldX,
-            worldY: base.worldY,
-            targetX: base.targetX,
-            targetY: base.targetY,
-            moveStartAt: base.moveStartAt,
-            moveFromX: base.moveFromX,
-            moveFromY: base.moveFromY,
-            inventoryJson: nextInv as unknown as Prisma.InputJsonValue,
+        const vitalsPatch = clampCharacterVitalsForInventoryChange({
+          row: {
+            ...base,
+            inventoryJson: nextInv as unknown as CharacterRow['inventoryJson'],
           },
-        };
+          nextInv,
+          clanHallBonus,
+        });
+        return equipInventoryPatch(base, current as CharacterRow, nextInv, vitalsPatch);
       }
     );
     if (!result.ok) throw gameConflictFromMutation(result);

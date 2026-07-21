@@ -11,17 +11,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 config({ path: path.join(__dirname, '../.env') });
 
 import { PrismaClient } from '@prisma/client';
-import { addItemToBag, parseInventory } from '../src/data/inventory.js';
+import { addItemToBag, parseInventory, resolveAcquisitionIssueItemId } from '../src/data/inventory.js';
 import type { CharacterRow } from '../src/services/charService.js';
 
 const prisma = new PrismaClient();
 
 async function main() {
   const name = (process.argv[2] ?? '').trim();
-  const itemId = Math.floor(Number(process.argv[3]));
+  const rawItemId = Math.floor(Number(process.argv[3]));
+  const itemId = resolveAcquisitionIssueItemId(rawItemId);
   const qty = Math.floor(Number(process.argv[4]));
 
-  if (!name || !Number.isFinite(itemId) || itemId <= 0) {
+  if (!name || !Number.isFinite(rawItemId) || rawItemId <= 0) {
     console.error('Usage: grant-item.ts <characterName> <l2ItemId> <qty>');
     process.exit(1);
   }
@@ -47,7 +48,12 @@ async function main() {
     },
   });
 
-  console.log('OK', { name: row.name, itemId, qty });
+  console.log('OK', {
+    name: row.name,
+    itemId,
+    ...(itemId !== rawItemId ? { remappedFrom: rawItemId } : {}),
+    qty,
+  });
 }
 
 main()

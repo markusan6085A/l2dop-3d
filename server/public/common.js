@@ -81,7 +81,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260721sGradeArmorSetsV1';
+  var APP_DATA_VERSION = '20260721allWeaponsCanonicalV1';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -337,6 +337,7 @@
       j.itemGradeHints ||
       j.itemStatsHints ||
       j.itemBlocksShieldById ||
+      j.itemRequiresArrowsById ||
       j.craftResourceIconByItemId ||
       j.itemNameColorSlugById
     );
@@ -430,6 +431,15 @@
     ) {
       Object.keys(j.itemBlocksShieldById).forEach(function (k) {
         global.L2.itemBlocksShieldById[k] = j.itemBlocksShieldById[k];
+      });
+    }
+    if (
+      j.itemRequiresArrowsById &&
+      typeof j.itemRequiresArrowsById === 'object' &&
+      global.L2.itemRequiresArrowsById
+    ) {
+      Object.keys(j.itemRequiresArrowsById).forEach(function (k) {
+        global.L2.itemRequiresArrowsById[k] = j.itemRequiresArrowsById[k];
       });
     }
     if (
@@ -1105,6 +1115,8 @@
     itemInventoryTabById: {},
     /** GET /character/catalog-hints itemBlocksShieldById: дворуч — іконка зброї також у слоті щита */
     itemBlocksShieldById: {},
+    /** GET /character/catalog-hints itemRequiresArrowsById: лук потребує стріл */
+    itemRequiresArrowsById: {},
     /** itemId → gearCatalog row (blocksShield, weaponType …) */
     gearCatalogById: {},
     mergeShopCatalog: function (items) {
@@ -1134,6 +1146,18 @@
         }
         if (x.weaponType != null && String(x.weaponType).trim() !== '') {
           wpnT[id] = x.weaponType;
+        }
+        if (typeof x.blocksShield === 'boolean') {
+          var bsMap = (global.L2.itemBlocksShieldById =
+            global.L2.itemBlocksShieldById || {});
+          bsMap[id] = x.blocksShield;
+          bsMap[String(id)] = x.blocksShield;
+        }
+        if (x.requiresArrows === true) {
+          var arrMap = (global.L2.itemRequiresArrowsById =
+            global.L2.itemRequiresArrowsById || {});
+          arrMap[id] = true;
+          arrMap[String(id)] = true;
         }
         if (x.armorType != null && String(x.armorType).trim() !== '') {
           armT[id] = x.armorType;

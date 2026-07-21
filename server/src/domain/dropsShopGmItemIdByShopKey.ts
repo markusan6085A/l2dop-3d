@@ -8,6 +8,7 @@ import {
   L2DOP_GM_SHOP_JEWELRY,
   L2DOP_GM_SHOP_WEAPONS,
 } from '../data/l2dopGmShopCatalog.generated.js';
+import { isLegacyBlockedAcquisitionItemId } from '../data/legacyElysianConstants.js';
 
 export interface GmShopPurchaseOffer {
   itemId: number;
@@ -42,6 +43,7 @@ function buildPurchaseMap(): Map<string, GmShopPurchaseOffer> {
         ? Math.max(0, Math.floor(priceAdena))
         : NaN;
     if (!Number.isFinite(id) || !Number.isFinite(price)) return;
+    if (isLegacyBlockedAcquisitionItemId(id)) return;
     const rel = dropsShopRelPathFromGmIcon(iconUrl);
     if (!rel || m.has(rel)) return;
     m.set(rel, { itemId: id, priceAdena: price });

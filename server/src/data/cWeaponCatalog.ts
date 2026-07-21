@@ -107,6 +107,7 @@ export function cWeaponToItemMeta(
     nameUk: entry.nameUk,
     slot: 'rhand',
     weaponType: entry.weaponType,
+    blocksShield: entry.blocksShield,
     atkSpd: entry.atkSpd,
     pAtk: entry.pAtk,
     wpnCrit: entry.wpnCrit,

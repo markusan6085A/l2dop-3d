@@ -25,7 +25,9 @@ import { B_GRADE_ARMOR_CATALOG } from './bGradeArmorCatalog.js';
 import { A_GRADE_ARMOR_CATALOG } from './aGradeArmorCatalog.js';
 import { S_GRADE_ARMOR_CATALOG } from './sGradeArmorCatalog.js';
 import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
-import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
+import { requiresArrowsForWeaponType } from './weaponTypeContract.js';
+import { resolveWeaponBlocksShield } from './weaponShieldContract.js';
+import { LEGACY_ELYSIAN_BOW_ITEM_ID } from './legacyElysianConstants.js';
 
 /** Базовий крит типу зброї ($WpnCrt) — як у calc_stats для відображення в GM-шопі та каталозі. */
 export function wpnCritForWeaponKind(wt: WeaponKindForEnchant): number {
@@ -124,6 +126,10 @@ export interface ItemMeta {
   atkSpd?: number;
   /** Базовий крит зброї $WpnCrt (sword 80, blunt/dagger 120 — calc_stats.php). */
   wpnCrit?: number;
+  /** Канонічна дворучність (explicit *WeaponCatalog має пріоритет над generic rule). */
+  blocksShield?: boolean;
+  /** Стріли потрібні лише для bow. */
+  requiresArrows?: boolean;
   /** Бонус до крит-стату з предмета $WpnCRIT (rCrit у items3 / екіп). */
   rCrit?: number;
   /** При екіпі в rhand: цільова швидкість касту (перезаписує розрахунок). */
@@ -143,6 +149,7 @@ export const C_GRADE_APPRENTICES_SPELLBOOK_ITEM_ID = 900225;
 export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   const o: Record<number, ItemMeta> = {};
   for (const row of L2DOP_GM_SHOP_WEAPONS) {
+    if (row.itemId === LEGACY_ELYSIAN_BOW_ITEM_ID) continue;
     const wpnCrit = wpnCritForWeaponKind(row.weaponType);
     o[row.itemId] = {
       nameUk: row.nameUk,
@@ -363,6 +370,20 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
     };
   }
 
+  /** Канонічні weapon contract fields для всієї rhand-зброї. */
+  for (const [idStr, m] of Object.entries(o)) {
+    const id = Number(idStr);
+    if (!Number.isFinite(id) || id <= 0) continue;
+    if (m.slot !== 'rhand' || !m.weaponType) continue;
+    m.blocksShield = resolveWeaponBlocksShield({
+      itemId: id,
+      weaponType: m.weaponType,
+      explicitBlocksShield:
+        typeof m.blocksShield === 'boolean' ? m.blocksShield : undefined,
+    });
+    m.requiresArrows = requiresArrowsForWeaponType(m.weaponType);
+  }
+
   return o;
 })();
 
@@ -530,7 +551,8 @@ function overlayGearCatalogWeaponFromItemCatalog(row: GearCatalogRow): GearCatal
     ...row,
     nameUk: m.nameUk || row.nameUk,
     weaponType: m.weaponType,
-    blocksShield: itemBlocksShieldSlot(row.itemId, m.weaponType),
+    blocksShield: m.blocksShield,
+    requiresArrows: requiresArrowsForWeaponType(m.weaponType),
     stats: {
       ...(m.pAtk != null ? { pAtk: m.pAtk } : {}),
       ...(m.mAtk != null ? { mAtk: m.mAtk } : {}),
@@ -554,6 +576,8 @@ export interface GearCatalogRow {
   weaponType?: GmShopWeaponKind;
   /** Дворучна зброя — mirror у слоті щита на клієнті. */
   blocksShield?: boolean;
+  /** Лук — потрібні стріли для фіз. атаки. */
+  requiresArrows?: boolean;
   armorType?: string;
   jewelryKind?: GmShopJewelryKind;
   stats: {
@@ -587,6 +611,7 @@ function coinOfLuckGearCatalogExtra(): GearCatalogRow {
 export function listGearCatalogForClient(): GearCatalogRow[] {
   const rows: GearCatalogRow[] = [];
   for (const row of L2DOP_GM_SHOP_WEAPONS) {
+    if (row.itemId === LEGACY_ELYSIAN_BOW_ITEM_ID) continue;
     rows.push({
       itemId: row.itemId,
       nameUk: row.nameUk,

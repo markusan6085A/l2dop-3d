@@ -16,6 +16,7 @@ import {
   l2dopTableAt,
 } from '../../data/l2dopRawdataBuffTables.js';
 import { skillCooldownReadyAtMs } from '../../data/skillCooldowns.js';
+import { isTwoHandHeavyWeaponType } from '../../data/weaponTypeContract.js';
 
 import {
   catalogAllowsFighterAction,
@@ -235,8 +236,7 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
     if (legacyBuffOnCd(ctx, 176)) {
       throw new Error('battle_skill_not_allowed');
     }
-    const twoH =
-      ctx.weaponKind === 'bigsword' || ctx.weaponKind === 'bigblunt';
+    const twoH = isTwoHandHeavyWeaponType(ctx.weaponKind);
     const patkMul = twoH
       ? l2dopTableAt(L2DOP_FRENZY2HS, rank)
       : l2dopTableAt(L2DOP_FRENZY, rank);

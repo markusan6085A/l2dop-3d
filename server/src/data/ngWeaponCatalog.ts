@@ -135,6 +135,7 @@ export function ngWeaponToItemMeta(
     nameUk: entry.nameUk,
     slot: 'rhand',
     weaponType: entry.weaponType,
+    blocksShield: entry.blocksShield,
     atkSpd: entry.atkSpd,
   };
   if (entry.pAtk != null) meta.pAtk = entry.pAtk;

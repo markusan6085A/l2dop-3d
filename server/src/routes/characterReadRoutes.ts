@@ -19,7 +19,10 @@ import {
   sealStoneIconHintsForClient,
   sealStoneNameColorSlugForClient,
 } from '../data/sevenSignsSealStoneItems.js';
-import { itemBlocksShieldHintsForClient } from '../data/l2dopTwoHandedWeapon.js';
+import {
+  itemBlocksShieldHintsForClient,
+  itemRequiresArrowsHintsForClient,
+} from '../data/l2dopTwoHandedWeapon.js';
 import { getSnapshotForUser } from '../services/charService.js';
 import { findPvpIncomingForCharacter } from '../services/pvpIncomingService.js';
 import { getCharacterMapStateForUser } from '../services/charMapStateService.js';
@@ -43,6 +46,8 @@ function buildCharacterCatalogHints() {
     itemStatsHints: itemStatsHintsForClient(),
     /** Дворучна зброя (l1 займає «другу руку») — для UI слота щита. */
     itemBlocksShieldById: itemBlocksShieldHintsForClient(),
+    /** Лук → true; інші типи не передаються (explicit false не потрібен). */
+    itemRequiresArrowsById: itemRequiresArrowsHintsForClient(),
     armorSetCatalog: armorSetCatalogForClient(),
     /** itemId → URL іконки як у крафті (`l2dop-by-itemid`), для сумки/ГМ. */
     craftResourceIconByItemId: {

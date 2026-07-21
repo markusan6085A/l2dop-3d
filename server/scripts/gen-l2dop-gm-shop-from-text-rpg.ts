@@ -14,6 +14,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import {
+  isLegacyBlockedAcquisitionItemId,
+  LEGACY_ELYSIAN_BOW_ITEM_ID,
+} from '../src/data/legacyElysianConstants.js';
+import { A_WEAPON_CATALOG } from '../src/data/aWeaponCatalog.js';
+import { B_WEAPON_CATALOG } from '../src/data/bWeaponCatalog.js';
+import { C_WEAPON_CATALOG } from '../src/data/cWeaponCatalog.js';
+import { D_WEAPON_CATALOG } from '../src/data/dWeaponCatalog.js';
+import { NG_WEAPON_CATALOG } from '../src/data/ngWeaponCatalog.js';
+import { S_WEAPON_CATALOG } from '../src/data/sWeaponCatalog.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -152,22 +162,87 @@ function shopKeyLowerFromAnyDropsIcon(icon: string | undefined): string | null {
   return m[1]!.replace(/^\/+/, '').toLowerCase();
 }
 
-function loadDropsOverrideItemIds(repoRoot: string): Set<number> {
+type OverrideRow = {
+  itemId: number;
+  priceAdena?: number;
+};
+
+function loadDropsOverrideByShopKey(repoRoot: string): Map<string, OverrideRow> {
   const p = path.join(repoRoot, 'server/src/data/dropsShopOverrides.json');
-  const out = new Set<number>();
+  const out = new Map<string, OverrideRow>();
   try {
     const raw = fs.readFileSync(p, 'utf8');
     const j = JSON.parse(raw) as unknown;
     if (!j || typeof j !== 'object') return out;
-    for (const v of Object.values(j as Record<string, unknown>)) {
+    for (const [shopKey, v] of Object.entries(j as Record<string, unknown>)) {
       if (!v || typeof v !== 'object') continue;
-      const id = Number((v as Record<string, unknown>).itemId);
-      if (Number.isFinite(id) && id > 0) out.add(Math.floor(id));
+      const itemId = Number((v as Record<string, unknown>).itemId);
+      if (!Number.isFinite(itemId) || itemId <= 0) continue;
+      const priceRaw = (v as Record<string, unknown>).priceAdena;
+      const priceAdena =
+        typeof priceRaw === 'number' && Number.isFinite(priceRaw)
+          ? Math.max(0, Math.floor(priceRaw))
+          : undefined;
+      const key = shopKey.replace(/\\/g, '/').toLowerCase();
+      out.set(key, { itemId: Math.floor(itemId), priceAdena });
     }
   } catch {
     /* файл відсутній або порожній */
   }
   return out;
+}
+
+function loadDropsOverrideItemIds(repoRoot: string): Set<number> {
+  const out = new Set<number>();
+  for (const row of loadDropsOverrideByShopKey(repoRoot).values()) {
+    out.add(row.itemId);
+  }
+  return out;
+}
+
+type CanonWeaponGmSource = {
+  itemId: number;
+  nameUk: string;
+  weaponType: WeaponKind;
+  pAtk: number;
+  mAtk: number;
+  atkSpd: number;
+  rCrit: number;
+};
+
+function buildCanonWeaponGmById(): Map<number, CanonWeaponGmSource> {
+  const m = new Map<number, CanonWeaponGmSource>();
+  const put = (entry: {
+    itemId: number;
+    nameUk: string;
+    weaponType: WeaponKind;
+    atkSpd: number;
+    pAtk?: number;
+    mAtk?: number;
+    wpnCrit: number;
+    displayCrit?: number;
+  }): void => {
+    m.set(entry.itemId, {
+      itemId: entry.itemId,
+      nameUk: entry.nameUk,
+      weaponType: entry.weaponType,
+      pAtk: entry.pAtk ?? 0,
+      mAtk: entry.mAtk ?? 0,
+      atkSpd: entry.atkSpd,
+      rCrit: entry.displayCrit ?? entry.wpnCrit,
+    });
+  };
+  for (const entry of [
+    ...NG_WEAPON_CATALOG,
+    ...D_WEAPON_CATALOG,
+    ...C_WEAPON_CATALOG,
+    ...B_WEAPON_CATALOG,
+    ...A_WEAPON_CATALOG,
+    ...S_WEAPON_CATALOG,
+  ]) {
+    put(entry);
+  }
+  return m;
 }
 
 async function main() {
@@ -230,6 +305,8 @@ async function main() {
   }
 
   const overrideItemIds = loadDropsOverrideItemIds(REPO_ROOT);
+  const overrideByShopKey = loadDropsOverrideByShopKey(REPO_ROOT);
+  const canonWeaponGmById = buildCanonWeaponGmById();
 
   const allRaw: ShopItemLite[] = [
     ...NG_GRADE_SHOP_ITEMS,
@@ -244,24 +321,54 @@ async function main() {
     (s) => s.type === 'weapon' || s.type === 'armor' || s.type === 'jewelry',
   );
 
-  /** Один рядок на itemId (перший у порядку проходу масивів). */
-  const byItemId = new Map<number, ShopItemLite>();
+  /** Один рядок на effective itemId (override shopKey → canonical id). */
+  const byEffectiveItemId = new Map<
+    number,
+    {
+      shop: ShopItemLite;
+      effectiveItemId: number;
+      overrideRow?: OverrideRow;
+      dropsKeyLower: string | null;
+    }
+  >();
   for (const shop of shopEquip) {
-    const id = Number(shop.itemId);
-    if (!Number.isFinite(id) || id <= 0) {
+    const itemIdNum = Number(shop.itemId);
+    if (!Number.isFinite(itemIdNum) || itemIdNum <= 0) {
       console.warn('пропуск: некоректний itemId', shop.id);
       continue;
     }
-    if (byItemId.has(id)) continue;
-    byItemId.set(id, shop);
+    const dropsKeyLower = shopKeyLowerFromAnyDropsIcon(shop.icon);
+    const overrideRow = dropsKeyLower
+      ? overrideByShopKey.get(dropsKeyLower)
+      : undefined;
+    const effectiveItemId = overrideRow?.itemId ?? itemIdNum;
+    if (isLegacyBlockedAcquisitionItemId(effectiveItemId)) continue;
+    if (
+      itemIdNum === LEGACY_ELYSIAN_BOW_ITEM_ID &&
+      effectiveItemId === itemIdNum
+    ) {
+      continue;
+    }
+    if (byEffectiveItemId.has(effectiveItemId)) continue;
+    byEffectiveItemId.set(effectiveItemId, {
+      shop,
+      effectiveItemId,
+      overrideRow,
+      dropsKeyLower,
+    });
   }
 
   const weapons: Record<string, unknown>[] = [];
   const armor: Record<string, unknown>[] = [];
   const jewelryRows: Record<string, unknown>[] = [];
 
-  for (const shop of byItemId.values()) {
-    const itemIdNum = Number(shop.itemId);
+  for (const {
+    shop,
+    effectiveItemId,
+    overrideRow,
+    dropsKeyLower,
+  } of byEffectiveItemId.values()) {
+    const itemIdNum = effectiveItemId;
     const def = itemsDB[shop.id] as ItemDefLite | undefined;
     if (!def) {
       console.warn('[нема itemsDB запису]', shop.id, 'itemId', itemIdNum);
@@ -269,9 +376,11 @@ async function main() {
     }
 
     const st = def.stats || {};
-    const nameUk = pickNameUk(shop);
     const grade = normalizeGrade(shop.grade);
-    const priceAdena = Math.max(0, Math.floor(Number(shop.price ?? 0)));
+    const priceAdena = Math.max(
+      0,
+      Math.floor(Number(overrideRow?.priceAdena ?? shop.price ?? 0)),
+    );
 
     if (!def.stats || Object.keys(def.stats).length === 0) {
       if (shop.type === 'jewelry') {
@@ -281,7 +390,6 @@ async function main() {
       continue;
     }
 
-    const dropsKeyLower = shopKeyLowerFromAnyDropsIcon(shop.icon);
     const inDropsIcons =
       dropsKeyLower != null && dropsShopKeysLower.has(dropsKeyLower);
     const inOverrideIds = overrideItemIds.has(itemIdNum);
@@ -298,6 +406,28 @@ async function main() {
         : undefined;
 
     if (shop.type === 'weapon') {
+      const remappedFromLegacy =
+        overrideRow != null && overrideRow.itemId !== Number(shop.itemId);
+      const canon =
+        remappedFromLegacy ? canonWeaponGmById.get(itemIdNum) : undefined;
+      if (canon) {
+        weapons.push({
+          itemId: itemIdNum,
+          grade,
+          priceAdena,
+          nameUk: canon.nameUk,
+          weaponType: canon.weaponType,
+          pAtk: canon.pAtk,
+          mAtk: canon.mAtk,
+          rCrit: canon.rCrit,
+          weight: 0,
+          crystals: 0,
+          atkSpd: canon.atkSpd,
+          ...(gmIconFromDropsCatalog ? { iconUrl: gmIconFromDropsCatalog } : {}),
+        });
+        continue;
+      }
+
       const pAtk = Number(st.pAtk);
       const mAtk = Number(st.mAtk);
       const atkSpd = Number(st.pAtkSpd);
@@ -314,7 +444,7 @@ async function main() {
         itemId: itemIdNum,
         grade,
         priceAdena,
-        nameUk,
+        nameUk: pickNameUk(shop),
         weaponType,
         pAtk,
         mAtk,
@@ -326,6 +456,8 @@ async function main() {
       });
       continue;
     }
+
+    const nameUk = pickNameUk(shop);
 
     if (shop.type === 'armor') {
       const slot = armorSlotFromShop(shop.bodypart, shop.category);

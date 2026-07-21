@@ -43,13 +43,14 @@ import { learnedPassivesBuffDelta } from './l2dopLearnedPassivesBuffs.js';
 import { learnedMysticPassivesBuffDelta } from './l2dopLearnedMysticPassives.js';
 import { learnedRaceFighterPassivesBuffDelta } from './l2dopLearnedRaceFighterPassives.js';
 import { raceFighterToggleStanceCombatDelta } from './l2dopRaceToggleStanceDelta.js';
+import { deriveCombatStatsFromBaseStats } from '../domain/deriveCombatStatsFromBaseStats.js';
 import { parseWorldCombatState } from '../domain/worldCombatState.js';
+import { resolveFinalBaseStats } from '../domain/resolveFinalBaseStats.js';
 import { normalizeLearnedSkillsJson } from './humanFighterSkillCatalog.js';
 import { filterLearnedSkillEntriesForCharacter } from './charLearnedSkillsFilter.js';
 import { resolveL2ProfessionForSkillsRow } from './l2dopHumanFighterBattleSkills.js';
 import {
   clampMagicCritDmgMulForDamage,
-  computePrimaryStatMultipliers,
   conHpMultiplier,
   critRateStatFromPhysicalCritPct,
   debuffResistPctFromMen,
@@ -253,7 +254,7 @@ function isMageRaceCode(code: L2dopRaceCode): boolean {
 /**
  * База з rawdata + бонус за кожен рівень після 1 (воїн / маг — різний акцент).
  */
-function baseSixForLevel(
+export function computeBaseSixForLevel(
   code: L2dopRaceCode,
   classBranch: string,
   level: number
@@ -762,22 +763,21 @@ export function computeCombatStats(
 
   const code = raceAndBranchToL2Code(race, classBranch);
   const LVL = Math.max(1, Math.floor(level));
-  const base = baseSixForLevel(code, classBranch, LVL);
-  const STR = base.str + armorSetCombat.flatStats.strFlat;
-  const INT = base.int + armorSetCombat.flatStats.intFlat;
-  const DEX = base.dex + armorSetCombat.flatStats.dexFlat;
-  const CON = base.con + armorSetCombat.flatStats.conFlat;
-  const MEN = base.men + armorSetCombat.flatStats.menFlat;
-  const WIT = base.wit + armorSetCombat.flatStats.witFlat;
-  const LVLMOD = lvlMod(LVL);
-  const M = computePrimaryStatMultipliers({
-    str: STR,
-    int: INT,
-    dex: DEX,
-    con: CON,
-    men: MEN,
-    wit: WIT,
+  const finalBase = resolveFinalBaseStats({
+    level: LVL,
+    race,
+    classBranch,
+    inv,
   });
+  const STR = finalBase.str;
+  const INT = finalBase.int;
+  const DEX = finalBase.dex;
+  const CON = finalBase.con;
+  const MEN = finalBase.men;
+  const WIT = finalBase.wit;
+  const derivedPrimary = deriveCombatStatsFromBaseStats(finalBase);
+  const M = derivedPrimary.multipliers;
+  const LVLMOD = lvlMod(LVL);
 
   const wSlot = normalizeEqSlot(eq.l1);
   const wId = wSlot?.itemId;

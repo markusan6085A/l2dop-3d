@@ -10,6 +10,43 @@ import type { BattleHotbarSlot } from '../domain/battleHotbar.js';
 /** Активна сесія Seven Signs подземелля (null — на світовій карті / у місті). */
 export type ActiveDungeonId = string | null;
 
+/** Development-only breakdown базових статів (L2DOP_STAT_DEBUG=1). */
+export type StatBreakdownDebugPayload = {
+  baseStats: {
+    str: number;
+    dex: number;
+    con: number;
+    int: number;
+    wit: number;
+    men: number;
+  };
+  statModifiers: {
+    armorSets: Record<string, number>;
+    dyes: Record<string, number>;
+    passives: Record<string, number>;
+    items: Record<string, number>;
+    other: Record<string, number>;
+  };
+  finalStats: {
+    str: number;
+    dex: number;
+    con: number;
+    int: number;
+    wit: number;
+    men: number;
+  };
+  derivedSnapshot: {
+    pAtk: number;
+    mAtk: number;
+    maxHp: number;
+    maxMp: number;
+    maxCp: number;
+    pAtkSpd: number;
+    castSpd: number;
+    mCritPct: number;
+  };
+};
+
 /** Рядок Character з БД (Prisma XOR інколи «губить» Json у create/update — тут явно). */
 export interface CharacterRow {
   id: string;
@@ -164,6 +201,12 @@ export interface CharacterSnapshot {
   skillMpCostMul: number;
   /** Бонус до шансу дебафу мага (%). */
   addDebuffLandChancePct: number;
+  /**
+   * Ключ для клієнтського dedupe stats HUD (final base + derived vitals/combat).
+   */
+  statsRenderKey: string;
+  /** Лише при L2DOP_STAT_DEBUG=1 на сервері. */
+  statBreakdownDebug?: StatBreakdownDebugPayload;
   /**
    * Повний сет броні з l2dopDGradeArmorSetBonuses — лише для відображення в профілі;
    * бойові числа вже з урахуванням сету в pAtk / maxHp / …

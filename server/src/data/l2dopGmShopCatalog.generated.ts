@@ -63,7 +63,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 86,
     "grade": "D",
-    "priceAdena": 644000,
+    "priceAdena": 280676,
     "nameUk": "Томагавк D-grade. Одноручна зброя.",
     "weaponType": "blunt",
     "pAtk": 51,
@@ -77,7 +77,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 124,
     "grade": "D",
-    "priceAdena": 967000,
+    "priceAdena": 313529,
     "nameUk": "Дворучний меч D-grade.",
     "weaponType": "bigsword",
     "pAtk": 72,
@@ -91,7 +91,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 128,
     "grade": "D",
-    "priceAdena": 644000,
+    "priceAdena": 280676,
     "nameUk": "Меч лицаря D-grade.",
     "weaponType": "sword",
     "pAtk": 51,
@@ -105,7 +105,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 187,
     "grade": "D",
-    "priceAdena": 1800000,
+    "priceAdena": 291912,
     "nameUk": "Молот Атуби D-grade. Дворучна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 90,
@@ -119,7 +119,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 241,
     "grade": "D",
-    "priceAdena": 967000,
+    "priceAdena": 274324,
     "nameUk": "Ніж Шілен D-grade. Кинджал з магічним посиленням.",
     "weaponType": "dagger",
     "pAtk": 45,
@@ -133,7 +133,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 260,
     "grade": "D",
-    "priceAdena": 967000,
+    "priceAdena": 274324,
     "nameUk": "Тригранний Джамадхр D-grade. Дворучна зброя.",
     "weaponType": "fist",
     "pAtk": 78,
@@ -147,7 +147,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 261,
     "grade": "D",
-    "priceAdena": 1400000,
+    "priceAdena": 301235,
     "nameUk": "Подвійний меч Багет D-grade. Дворучна зброя.",
     "weaponType": "fist",
     "pAtk": 96,
@@ -161,7 +161,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 277,
     "grade": "D",
-    "priceAdena": 644000,
+    "priceAdena": 400000,
     "nameUk": "Лук темних ельфів D-grade. Дальня атака.",
     "weaponType": "bow",
     "pAtk": 105,
@@ -175,7 +175,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 293,
     "grade": "D",
-    "priceAdena": 967000,
+    "priceAdena": 313529,
     "nameUk": "Бойовий молот D-grade. Дальня атака (спис).",
     "weaponType": "pole",
     "pAtk": 64,
@@ -189,7 +189,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 84,
     "grade": "C",
-    "priceAdena": 4300000,
+    "priceAdena": 100000000,
     "nameUk": "Меч гомункула C-grade. Магічна зброя.",
     "weaponType": "sword",
     "pAtk": 82,
@@ -203,7 +203,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 89,
     "grade": "C",
-    "priceAdena": 2290000,
+    "priceAdena": 80000000,
     "nameUk": "Великий молот C-grade.",
     "weaponType": "blunt",
     "pAtk": 107,
@@ -215,23 +215,9 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "iconUrl": "/icons/drops/weapon_c/big_hammer.jpg"
   },
   {
-    "itemId": 99,
-    "grade": "C",
-    "priceAdena": 4300000,
-    "nameUk": "Заклинання учня C-grade. Магічна зброя.",
-    "weaponType": "sword",
-    "pAtk": 9,
-    "mAtk": 12,
-    "rCrit": 8,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 379,
-    "iconUrl": "/icons/drops/weapon_c/apprentices_spellbook.jpg"
-  },
-  {
     "itemId": 135,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 90000000,
     "nameUk": "Довгий меч самурая C-grade.",
     "weaponType": "sword",
     "pAtk": 156,
@@ -245,7 +231,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 160,
     "grade": "C",
-    "priceAdena": 2290000,
+    "priceAdena": 100000000,
     "nameUk": "Бойова сокира C-grade.",
     "weaponType": "blunt",
     "pAtk": 107,
@@ -259,7 +245,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 162,
     "grade": "C",
-    "priceAdena": 4300000,
+    "priceAdena": 100000000,
     "nameUk": "Військова сокира C-grade.",
     "weaponType": "blunt",
     "pAtk": 139,
@@ -273,7 +259,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 191,
     "grade": "C",
-    "priceAdena": 2290000,
+    "priceAdena": 90000000,
     "nameUk": "Важкий молот загибелі C-grade. Дворучна магічна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 103,
@@ -287,7 +273,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 194,
     "grade": "C",
-    "priceAdena": 2290000,
+    "priceAdena": 110000000,
     "nameUk": "Важка сокира загибелі C-grade. Дворучна магічна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 103,
@@ -299,37 +285,9 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "iconUrl": "/icons/drops/weapon_c/heavy_doom_axe.jpg"
   },
   {
-    "itemId": 199,
-    "grade": "C",
-    "priceAdena": 4300000,
-    "nameUk": "Молот Паагріан C-grade. Дворучна магічна зброя.",
-    "weaponType": "bigblunt",
-    "pAtk": 135,
-    "mAtk": 111,
-    "rCrit": 4,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 325,
-    "iconUrl": "/icons/drops/weapon_c/heavy_doom_hammer.jpg"
-  },
-  {
-    "itemId": 203,
-    "grade": "C",
-    "priceAdena": 4780000,
-    "nameUk": "Сокира Паагріан C-grade. Дворучна магічна зброя.",
-    "weaponType": "bigblunt",
-    "pAtk": 141,
-    "mAtk": 114,
-    "rCrit": 4,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 325,
-    "iconUrl": "/icons/drops/weapon_c/heavy_doom_axe.jpg"
-  },
-  {
     "itemId": 206,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 110000000,
     "nameUk": "Посох демона C-grade. Дворучна магічна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 75,
@@ -343,7 +301,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 228,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 70000000,
     "nameUk": "Кришталевий кинджал C-grade.",
     "weaponType": "dagger",
     "pAtk": 136,
@@ -357,7 +315,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 233,
     "grade": "C",
-    "priceAdena": 4300000,
+    "priceAdena": 75000000,
     "nameUk": "Темний викрик C-grade.",
     "weaponType": "dagger",
     "pAtk": 122,
@@ -371,7 +329,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 265,
     "grade": "C",
-    "priceAdena": 4300000,
+    "priceAdena": 70000000,
     "nameUk": "Клинок-рукавиця C-grade. Дворучна зброя.",
     "weaponType": "fist",
     "pAtk": 169,
@@ -385,7 +343,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 266,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 75000000,
     "nameUk": "Велика пата C-grade. Дворучна зброя.",
     "weaponType": "fist",
     "pAtk": 190,
@@ -399,7 +357,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 283,
     "grade": "C",
-    "priceAdena": 4300000,
+    "priceAdena": 95000000,
     "nameUk": "Довгий лук Акат C-grade. Дальня атака.",
     "weaponType": "bow",
     "pAtk": 316,
@@ -413,7 +371,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 286,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 85000000,
     "nameUk": "Лук Еміненс C-grade. Дальня атака.",
     "weaponType": "bow",
     "pAtk": 323,
@@ -427,7 +385,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 299,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 100000000,
     "nameUk": "Оркська алебарда C-grade. Дальня атака (спис).",
     "weaponType": "pole",
     "pAtk": 156,
@@ -441,7 +399,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 301,
     "grade": "C",
-    "priceAdena": 4780000,
+    "priceAdena": 65000000,
     "nameUk": "Скорпіон C-grade. Дальня атака (спис).",
     "weaponType": "pole",
     "pAtk": 144,
@@ -455,7 +413,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 303,
     "grade": "C",
-    "priceAdena": 4780000,
+    "priceAdena": 110000000,
     "nameUk": "Творець вдови C-grade. Дальня атака (спис).",
     "weaponType": "pole",
     "pAtk": 144,
@@ -469,7 +427,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 326,
     "grade": "C",
-    "priceAdena": 4300000,
+    "priceAdena": 85000000,
     "nameUk": "Книга язичника C-grade. Магічна зброя.",
     "weaponType": "sword",
     "pAtk": 70,
@@ -483,7 +441,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 2503,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 85000000,
     "nameUk": "Булава Якса C-grade.",
     "weaponType": "blunt",
     "pAtk": 156,
@@ -497,7 +455,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 4233,
     "grade": "C",
-    "priceAdena": 2870000,
+    "priceAdena": 65000000,
     "nameUk": "Кастет C-grade. Дворучна зброя.",
     "weaponType": "fist",
     "pAtk": 148,
@@ -511,7 +469,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 5286,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 100000000,
     "nameUk": "Клинок берсерка C-grade. Дворучна зброя.",
     "weaponType": "bigsword",
     "pAtk": 190,
@@ -525,7 +483,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7882,
     "grade": "C",
-    "priceAdena": 4300000,
+    "priceAdena": 90000000,
     "nameUk": "Меч Паагріан C-grade. Дворучна зброя.",
     "weaponType": "bigsword",
     "pAtk": 169,
@@ -539,7 +497,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7888,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 80000000,
     "nameUk": "Екліптичний меч C-grade. Магічна зброя.",
     "weaponType": "sword",
     "pAtk": 88,
@@ -553,7 +511,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7897,
     "grade": "C",
-    "priceAdena": 6130000,
+    "priceAdena": 85000000,
     "nameUk": "Дворфський молот C-grade. Дворучна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 190,
@@ -565,9 +523,23 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "iconUrl": "/icons/drops/weapon_c/dwarven_hammer.jpg"
   },
   {
+    "itemId": 900225,
+    "grade": "C",
+    "priceAdena": 30000000,
+    "nameUk": "Заклинання учня C-grade. Магічна зброя.",
+    "weaponType": "sword",
+    "pAtk": 9,
+    "mAtk": 95,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 379,
+    "iconUrl": "/icons/drops/weapon_c/apprentices_spellbook.jpg"
+  },
+  {
     "itemId": 78,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 40000000,
     "nameUk": "Книга заклинань учня B-grade. Магічна зброя.",
     "weaponType": "sword",
     "pAtk": 213,
@@ -579,9 +551,23 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "iconUrl": "/icons/drops/weapon_b/apprentices_spellbook.jpg"
   },
   {
+    "itemId": 79,
+    "grade": "B",
+    "priceAdena": 170000000,
+    "nameUk": "Меч Дамаску B-grade.",
+    "weaponType": "sword",
+    "pAtk": 306,
+    "mAtk": 99,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 379,
+    "iconUrl": "/icons/drops/weapon_b/sword_of_damascus.jpg"
+  },
+  {
     "itemId": 7722,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 170000000,
     "nameUk": "Меч Вальгалли B-grade.",
     "weaponType": "sword",
     "pAtk": 98,
@@ -595,7 +581,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7783,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 110000000,
     "nameUk": "Крис B-grade.",
     "weaponType": "dagger",
     "pAtk": 70,
@@ -609,7 +595,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7784,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 180000000,
     "nameUk": "Спіс B-grade. Дворучна зброя.",
     "weaponType": "sword",
     "pAtk": 117,
@@ -623,7 +609,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7788,
     "grade": "B",
-    "priceAdena": 8200000,
+    "priceAdena": 120000000,
     "nameUk": "Кіготь Артро B-grade. Дворучна зброя.",
     "weaponType": "fist",
     "pAtk": 117,
@@ -637,7 +623,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7791,
     "grade": "B",
-    "priceAdena": 12260000,
+    "priceAdena": 160000000,
     "nameUk": "Слава мертвого B-grade. Дворучна зброя.",
     "weaponType": "bigsword",
     "pAtk": 117,
@@ -651,7 +637,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7792,
     "grade": "B",
-    "priceAdena": 8200000,
+    "priceAdena": 150000000,
     "nameUk": "Дворучний меч Багет B-grade. Дворучна зброя.",
     "weaponType": "dual",
     "pAtk": 117,
@@ -665,7 +651,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7813,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 120000000,
     "nameUk": "Кинджал пекла B-grade.",
     "weaponType": "dagger",
     "pAtk": 95,
@@ -679,7 +665,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7834,
     "grade": "B",
-    "priceAdena": 8200000,
+    "priceAdena": 180000000,
     "nameUk": "Бойова сокира мистецтва B-grade.",
     "weaponType": "blunt",
     "pAtk": 194,
@@ -693,7 +679,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7883,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 140000000,
     "nameUk": "Меч вартового B-grade.",
     "weaponType": "bigsword",
     "pAtk": 236,
@@ -707,7 +693,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7889,
     "grade": "B",
-    "priceAdena": 12260000,
+    "priceAdena": 180000000,
     "nameUk": "Посох духа B-grade. Дворучна магічна зброя.",
     "weaponType": "sword",
     "pAtk": 155,
@@ -721,7 +707,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7890,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 170000000,
     "nameUk": "Довгий лук темних ельфів B-grade. Дальня атака.",
     "weaponType": "blunt",
     "pAtk": 63,
@@ -735,7 +721,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7891,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 150000000,
     "nameUk": "Лук небезпеки B-grade. Дальня атака.",
     "weaponType": "blunt",
     "pAtk": 125,
@@ -749,7 +735,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7892,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 160000000,
     "nameUk": "Руйнівник заклинань B-grade.",
     "weaponType": "blunt",
     "pAtk": 98,
@@ -763,7 +749,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7893,
     "grade": "B",
-    "priceAdena": 8600000,
+    "priceAdena": 130000000,
     "nameUk": "Цестус Белліона B-grade. Дворучна зброя.",
     "weaponType": "blunt",
     "pAtk": 155,
@@ -777,7 +763,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7894,
     "grade": "B",
-    "priceAdena": 12260000,
+    "priceAdena": 180000000,
     "nameUk": "Велика сокира B-grade. Дворучна зброя.",
     "weaponType": "blunt",
     "pAtk": 170,
@@ -791,7 +777,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7895,
     "grade": "B",
-    "priceAdena": 12260000,
+    "priceAdena": 180000000,
     "nameUk": "Великий меч B-grade. Дворучна зброя.",
     "weaponType": "blunt",
     "pAtk": 186,
@@ -805,7 +791,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7896,
     "grade": "B",
-    "priceAdena": 12260000,
+    "priceAdena": 160000000,
     "nameUk": "Посох злих духів B-grade. Дворучна магічна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 88,
@@ -819,7 +805,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7900,
     "grade": "B",
-    "priceAdena": 12260000,
+    "priceAdena": 160000000,
     "nameUk": "Молот крижаної бурі B-grade. Дворучна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 213,
@@ -833,7 +819,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 7901,
     "grade": "B",
-    "priceAdena": 12260000,
+    "priceAdena": 140000000,
     "nameUk": "Руйнівник зірок B-grade. Дворучна магічна зброя.",
     "weaponType": "bigblunt",
     "pAtk": 236,
@@ -845,28 +831,70 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "iconUrl": "/icons/drops/weapon_b/star_buster.jpg"
   },
   {
-    "itemId": 88,
+    "itemId": 8336,
+    "grade": "B",
+    "priceAdena": 180000000,
+    "nameUk": "Сльоза чарівника B-grade. Магічна зброя.",
+    "weaponType": "sword",
+    "pAtk": 155,
+    "mAtk": 236,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 379,
+    "iconUrl": "/icons/drops/weapon_b/wizard_s_tear.jpg"
+  },
+  {
+    "itemId": 8340,
+    "grade": "B",
+    "priceAdena": 150000000,
+    "nameUk": "Кістки Каїма Ванула B-grade. Магічна зброя.",
+    "weaponType": "blunt",
+    "pAtk": 155,
+    "mAtk": 176,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 379,
+    "iconUrl": "/icons/drops/weapon_b/kaim_vanul_s_bones.jpg"
+  },
+  {
+    "itemId": 151,
     "grade": "A",
-    "priceAdena": 16000000,
+    "priceAdena": 280000000,
     "nameUk": "Меч див A-grade.",
     "weaponType": "sword",
     "pAtk": 237,
-    "mAtk": 255,
-    "rCrit": 12,
+    "mAtk": 340,
+    "rCrit": 40,
     "weight": 0,
     "crystals": 0,
     "atkSpd": 379,
     "iconUrl": "/icons/drops/weapon_a/sword_of_miracles.jpg"
   },
   {
-    "itemId": 210,
+    "itemId": 164,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 260000000,
+    "nameUk": "Елізій A-grade.",
+    "weaponType": "blunt",
+    "pAtk": 460,
+    "mAtk": 99,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 379,
+    "iconUrl": "/icons/drops/weapon_a/elysian.jpg"
+  },
+  {
+    "itemId": 212,
+    "grade": "A",
+    "priceAdena": 280000000,
     "nameUk": "Посох Даспаріона A-grade.",
     "weaponType": "bigblunt",
     "pAtk": 189,
-    "mAtk": 145,
-    "rCrit": 4,
+    "mAtk": 340,
+    "rCrit": 40,
     "weight": 0,
     "crystals": 0,
     "atkSpd": 325,
@@ -875,7 +903,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 231,
     "grade": "A",
-    "priceAdena": 16000000,
+    "priceAdena": 210000000,
     "nameUk": "Подрібнювач дракона A-grade.",
     "weaponType": "fist",
     "pAtk": 122,
@@ -887,23 +915,23 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "iconUrl": "/icons/drops/weapon_a/dragon_grinder.jpg"
   },
   {
-    "itemId": 290,
+    "itemId": 289,
     "grade": "A",
-    "priceAdena": 18000000,
-    "nameUk": "Елізійський лук A-grade.",
+    "priceAdena": 280000000,
+    "nameUk": "Лук душі A-grade.",
     "weaponType": "bow",
-    "pAtk": 232,
-    "mAtk": 250,
-    "rCrit": 12,
+    "pAtk": 770,
+    "mAtk": 114,
+    "rCrit": 120,
     "weight": 0,
     "crystals": 0,
     "atkSpd": 293,
-    "iconUrl": "/icons/drops/weapon_a/elysian.jpg"
+    "iconUrl": "/icons/drops/weapon_a/soul_bow.jpg"
   },
   {
     "itemId": 304,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 260000000,
     "nameUk": "Алебарда A-grade.",
     "weaponType": "pole",
     "pAtk": 219,
@@ -917,7 +945,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 2500,
     "grade": "A",
-    "priceAdena": 20741000,
+    "priceAdena": 220000000,
     "nameUk": "Клинок темного легіону A-grade.",
     "weaponType": "blunt",
     "pAtk": 232,
@@ -931,7 +959,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 2504,
     "grade": "A",
-    "priceAdena": 14098000,
+    "priceAdena": 220000000,
     "nameUk": "Метеорний дощ A-grade.",
     "weaponType": "blunt",
     "pAtk": 100,
@@ -945,7 +973,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900201,
     "grade": "A",
-    "priceAdena": 15000000,
+    "priceAdena": 60000000,
     "nameUk": "Книга заклинань учня A-grade.",
     "weaponType": "sword",
     "pAtk": 213,
@@ -959,7 +987,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900202,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 230000000,
     "nameUk": "Дворучний меч Багет A-grade.",
     "weaponType": "dual",
     "pAtk": 156,
@@ -973,7 +1001,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900203,
     "grade": "A",
-    "priceAdena": 16000000,
+    "priceAdena": 260000000,
     "nameUk": "Сокира Баракіеля A-grade.",
     "weaponType": "blunt",
     "pAtk": 105,
@@ -987,7 +1015,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900204,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 240000000,
     "nameUk": "Камертон Бегемота A-grade.",
     "weaponType": "bigblunt",
     "pAtk": 232,
@@ -1001,7 +1029,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900205,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 180000000,
     "nameUk": "Кривавий торнадо A-grade.",
     "weaponType": "bigsword",
     "pAtk": 232,
@@ -1015,7 +1043,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900206,
     "grade": "A",
-    "priceAdena": 15000000,
+    "priceAdena": 190000000,
     "nameUk": "Кривава орхідея A-grade.",
     "weaponType": "dagger",
     "pAtk": 232,
@@ -1029,7 +1057,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900207,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 230000000,
     "nameUk": "Гілка материнського дерева A-grade.",
     "weaponType": "bigblunt",
     "pAtk": 232,
@@ -1043,7 +1071,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900209,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 240000000,
     "nameUk": "Лук різанини A-grade.",
     "weaponType": "bow",
     "pAtk": 232,
@@ -1057,7 +1085,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900210,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 260000000,
     "nameUk": "Кристал Даймона A-grade.",
     "weaponType": "bigblunt",
     "pAtk": 232,
@@ -1071,7 +1099,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900211,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 260000000,
     "nameUk": "Вбивця драконів A-grade.",
     "weaponType": "bigsword",
     "pAtk": 232,
@@ -1085,7 +1113,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900212,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 240000000,
     "nameUk": "Інфернальний майстер A-grade.",
     "weaponType": "bigblunt",
     "pAtk": 232,
@@ -1099,7 +1127,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900213,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 210000000,
     "nameUk": "Буря наги A-grade.",
     "weaponType": "bigsword",
     "pAtk": 232,
@@ -1113,7 +1141,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900214,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 240000000,
     "nameUk": "Лук Шіда A-grade.",
     "weaponType": "bow",
     "pAtk": 232,
@@ -1127,7 +1155,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900215,
     "grade": "A",
-    "priceAdena": 16000000,
+    "priceAdena": 200000000,
     "nameUk": "Клинок Сірри A-grade.",
     "weaponType": "sword",
     "pAtk": 232,
@@ -1141,7 +1169,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900216,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 240000000,
     "nameUk": "Ураган Собекка A-grade.",
     "weaponType": "pole",
     "pAtk": 232,
@@ -1155,7 +1183,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900217,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 180000000,
     "nameUk": "Роздільник душ A-grade.",
     "weaponType": "bigsword",
     "pAtk": 232,
@@ -1169,7 +1197,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900218,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 250000000,
     "nameUk": "Духовне око A-grade.",
     "weaponType": "bigblunt",
     "pAtk": 232,
@@ -1183,7 +1211,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900219,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 210000000,
     "nameUk": "Меч Іпоса A-grade.",
     "weaponType": "bigsword",
     "pAtk": 232,
@@ -1197,7 +1225,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900220,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 210000000,
     "nameUk": "Клинок Таллума A-grade.",
     "weaponType": "dual",
     "pAtk": 232,
@@ -1211,7 +1239,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900221,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 240000000,
     "nameUk": "Глефа Таллума A-grade.",
     "weaponType": "pole",
     "pAtk": 232,
@@ -1225,7 +1253,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900222,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 260000000,
     "nameUk": "Язик Теміди A-grade.",
     "weaponType": "bigblunt",
     "pAtk": 232,
@@ -1239,7 +1267,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 900223,
     "grade": "A",
-    "priceAdena": 18000000,
+    "priceAdena": 260000000,
     "nameUk": "Спіс Тіфона A-grade.",
     "weaponType": "pole",
     "pAtk": 232,
@@ -1265,130 +1293,144 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "iconUrl": "/icons/drops/weapon_s/god_s_blade.jpg"
   },
   {
-    "itemId": 20166,
-    "grade": "S",
-    "priceAdena": 40000000,
-    "nameUk": "Роздільник небес S-grade.",
-    "weaponType": "bigsword",
-    "pAtk": 342,
-    "mAtk": 132,
-    "rCrit": 8,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 325,
-    "iconUrl": "/icons/drops/weapon_s/heaven_s_divider.jpg"
-  },
-  {
-    "itemId": 20167,
-    "grade": "S",
-    "priceAdena": 38000000,
-    "nameUk": "Вбивця янголів S-grade.",
-    "weaponType": "dagger",
-    "pAtk": 246,
-    "mAtk": 132,
-    "rCrit": 12,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 433,
-    "iconUrl": "/icons/drops/weapon_s/angel_slayer.jpg"
-  },
-  {
-    "itemId": 20168,
+    "itemId": 6365,
     "grade": "S",
     "priceAdena": 35000000,
     "nameUk": "Базальтовий бойовий молот S-grade.",
     "weaponType": "blunt",
-    "pAtk": 281,
+    "pAtk": 625,
     "mAtk": 132,
-    "rCrit": 4,
+    "rCrit": 40,
     "weight": 0,
     "crystals": 0,
     "atkSpd": 379,
     "iconUrl": "/icons/drops/weapon_s/basalt_battlehammer.jpg"
   },
   {
-    "itemId": 20169,
-    "grade": "S",
-    "priceAdena": 40000000,
-    "nameUk": "Сокира мисливця на драконів S-grade.",
-    "weaponType": "bigblunt",
-    "pAtk": 342,
-    "mAtk": 132,
-    "rCrit": 4,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 325,
-    "iconUrl": "/icons/drops/weapon_s/dragon_hunter_axe.jpg"
-  },
-  {
-    "itemId": 20170,
-    "grade": "S",
-    "priceAdena": 35000000,
-    "nameUk": "Булава аркани S-grade.",
-    "weaponType": "blunt",
-    "pAtk": 185,
-    "mAtk": 260,
-    "rCrit": 4,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 379,
-    "iconUrl": "/icons/drops/weapon_s/arcana_mace.jpg"
-  },
-  {
-    "itemId": 20171,
+    "itemId": 6366,
     "grade": "S",
     "priceAdena": 40000000,
     "nameUk": "Імператорський посох S-grade.",
     "weaponType": "bigblunt",
-    "pAtk": 165,
-    "mAtk": 260,
-    "rCrit": 4,
+    "pAtk": 274,
+    "mAtk": 458,
+    "rCrit": 40,
     "weight": 0,
     "crystals": 0,
     "atkSpd": 325,
     "iconUrl": "/icons/drops/weapon_s/imperial_staff.jpg"
   },
   {
-    "itemId": 20172,
+    "itemId": 6367,
     "grade": "S",
-    "priceAdena": 40000000,
-    "nameUk": "Уламок демона S-grade.",
-    "weaponType": "fist",
-    "pAtk": 342,
+    "priceAdena": 38000000,
+    "nameUk": "Вбивця янголів S-grade.",
+    "weaponType": "dagger",
+    "pAtk": 355,
     "mAtk": 132,
-    "rCrit": 4,
+    "rCrit": 80,
     "weight": 0,
     "crystals": 0,
-    "atkSpd": 325,
-    "iconUrl": "/icons/drops/weapon_s/demon_splinter.jpg"
+    "atkSpd": 433,
+    "iconUrl": "/icons/drops/weapon_s/angel_slayer.jpg"
   },
   {
-    "itemId": 20173,
+    "itemId": 6368,
     "grade": "S",
     "priceAdena": 40000000,
-    "nameUk": "Драконічний лук S-grade.",
+    "nameUk": "Сяючий лук S-grade.",
     "weaponType": "bow",
-    "pAtk": 581,
+    "pAtk": 934,
     "mAtk": 132,
-    "rCrit": 12,
+    "rCrit": 120,
     "weight": 0,
     "crystals": 0,
     "atkSpd": 293,
-    "iconUrl": "/icons/drops/weapon_s/draconic_bow.jpg"
+    "iconUrl": "/icons/drops/weapon_s/shining_bow.jpg"
   },
   {
-    "itemId": 20174,
+    "itemId": 6369,
+    "grade": "S",
+    "priceAdena": 40000000,
+    "nameUk": "Сокира мисливця на драконів S-grade.",
+    "weaponType": "bigblunt",
+    "pAtk": 625,
+    "mAtk": 132,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 325,
+    "iconUrl": "/icons/drops/weapon_s/dragon_hunter_axe.jpg"
+  },
+  {
+    "itemId": 6370,
     "grade": "S",
     "priceAdena": 40000000,
     "nameUk": "Святий спіс S-grade.",
     "weaponType": "pole",
-    "pAtk": 281,
+    "pAtk": 625,
     "mAtk": 132,
-    "rCrit": 8,
+    "rCrit": 40,
     "weight": 0,
     "crystals": 0,
     "atkSpd": 325,
     "iconUrl": "/icons/drops/weapon_s/saint_spear.jpg"
+  },
+  {
+    "itemId": 6371,
+    "grade": "S",
+    "priceAdena": 40000000,
+    "nameUk": "Уламок демона S-grade.",
+    "weaponType": "fist",
+    "pAtk": 355,
+    "mAtk": 132,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 433,
+    "iconUrl": "/icons/drops/weapon_s/demon_splinter.jpg"
+  },
+  {
+    "itemId": 6372,
+    "grade": "S",
+    "priceAdena": 40000000,
+    "nameUk": "Роздільник небес S-grade.",
+    "weaponType": "bigsword",
+    "pAtk": 625,
+    "mAtk": 132,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 325,
+    "iconUrl": "/icons/drops/weapon_s/heaven_s_divider.jpg"
+  },
+  {
+    "itemId": 6579,
+    "grade": "S",
+    "priceAdena": 35000000,
+    "nameUk": "Булава аркани S-grade.",
+    "weaponType": "blunt",
+    "pAtk": 225,
+    "mAtk": 458,
+    "rCrit": 40,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 379,
+    "iconUrl": "/icons/drops/weapon_s/arcana_mace.jpg"
+  },
+  {
+    "itemId": 7575,
+    "grade": "S",
+    "priceAdena": 40000000,
+    "nameUk": "Драконічний лук S-grade.",
+    "weaponType": "bow",
+    "pAtk": 984,
+    "mAtk": 132,
+    "rCrit": 120,
+    "weight": 0,
+    "crystals": 0,
+    "atkSpd": 293,
+    "iconUrl": "/icons/drops/weapon_s/draconic_bow.jpg"
   },
   {
     "itemId": 910201,
@@ -1417,20 +1459,6 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "crystals": 0,
     "atkSpd": 379,
     "iconUrl": "/icons/drops/weapon_s/baguette_s_dualsword.jpg"
-  },
-  {
-    "itemId": 910203,
-    "grade": "S",
-    "priceAdena": 40000000,
-    "nameUk": "Сяючий лук S-grade.",
-    "weaponType": "bow",
-    "pAtk": 581,
-    "mAtk": 132,
-    "rCrit": 12,
-    "weight": 0,
-    "crystals": 0,
-    "atkSpd": 293,
-    "iconUrl": "/icons/drops/weapon_s/shining_bow.jpg"
   }
 ];
 
@@ -1559,7 +1587,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 626,
     "grade": "D",
-    "priceAdena": 50000,
+    "priceAdena": 250000,
     "nameUk": "Бронзовий щит D-grade.",
     "armorSlot": "lhand",
     "pDef": 75,
@@ -1570,7 +1598,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 628,
     "grade": "D",
-    "priceAdena": 60000,
+    "priceAdena": 400000,
     "nameUk": "Гоплон D-grade.",
     "armorSlot": "lhand",
     "pDef": 82,
@@ -1625,7 +1653,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 2494,
     "grade": "D",
-    "priceAdena": 80000,
+    "priceAdena": 650000,
     "nameUk": "Пластинчатий щит D-grade.",
     "armorSlot": "lhand",
     "pDef": 90,
@@ -1636,7 +1664,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 107,
     "grade": "C",
-    "priceAdena": 800000,
+    "priceAdena": 2500000,
     "nameUk": "Композитний щит C-grade.",
     "armorSlot": "lhand",
     "pDef": 124,
@@ -1779,7 +1807,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 2497,
     "grade": "C",
-    "priceAdena": 900000,
+    "priceAdena": 4000000,
     "nameUk": "Повний пластинчастий щит C-grade.",
     "armorSlot": "lhand",
     "pDef": 135,
@@ -1823,7 +1851,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 110,
     "grade": "B",
-    "priceAdena": 2000000,
+    "priceAdena": 11500000,
     "nameUk": "Щит загибелі B-grade.",
     "armorSlot": "lhand",
     "pDef": 180,
@@ -1834,7 +1862,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 111,
     "grade": "B",
-    "priceAdena": 2200000,
+    "priceAdena": 18000000,
     "nameUk": "Щит клятви B-grade.",
     "armorSlot": "lhand",
     "pDef": 180,
@@ -1856,7 +1884,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 673,
     "grade": "B",
-    "priceAdena": 1800000,
+    "priceAdena": 8500000,
     "nameUk": "Щит Авадона B-grade.",
     "armorSlot": "lhand",
     "pDef": 180,
@@ -2054,7 +2082,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 641,
     "grade": "A",
-    "priceAdena": 5000000,
+    "priceAdena": 24000000,
     "nameUk": "Щит темного кристалу A-grade.",
     "armorSlot": "lhand",
     "pDef": 180,
@@ -2109,7 +2137,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 2498,
     "grade": "A",
-    "priceAdena": 5000000,
+    "priceAdena": 30000000,
     "nameUk": "Щит кошмару A-grade.",
     "armorSlot": "lhand",
     "pDef": 180,
@@ -2208,7 +2236,7 @@ export const L2DOP_GM_SHOP_ARMOR: GmShopArmorRow[] = [
   {
     "itemId": 6377,
     "grade": "S",
-    "priceAdena": 15000000,
+    "priceAdena": 55000000,
     "nameUk": "Щит імперського хрестоносця S-grade.",
     "armorSlot": "lhand",
     "pDef": 225,
@@ -2321,7 +2349,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 847,
     "grade": "D",
-    "priceAdena": 50000,
+    "priceAdena": 600000,
     "nameUk": "Сережка червоного півмісяця D-grade.",
     "jewelryKind": "earring",
     "mAtk": 24,
@@ -2332,7 +2360,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 848,
     "grade": "D",
-    "priceAdena": 45000,
+    "priceAdena": 950000,
     "nameUk": "Зачарована сережка D-grade.",
     "jewelryKind": "earring",
     "mAtk": 27,
@@ -2343,7 +2371,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 849,
     "grade": "D",
-    "priceAdena": 55000,
+    "priceAdena": 550000,
     "nameUk": "Сережка тигрового ока D-grade.",
     "jewelryKind": "earring",
     "mAtk": 30,
@@ -2354,7 +2382,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 850,
     "grade": "D",
-    "priceAdena": 60000,
+    "priceAdena": 800000,
     "nameUk": "Ельфійська сережка D-grade.",
     "jewelryKind": "earring",
     "mAtk": 34,
@@ -2365,7 +2393,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 851,
     "grade": "D",
-    "priceAdena": 70000,
+    "priceAdena": 700000,
     "nameUk": "Сережка ока звіра-знамення D-grade.",
     "jewelryKind": "earring",
     "mAtk": 36,
@@ -2376,7 +2404,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 879,
     "grade": "D",
-    "priceAdena": 45000,
+    "priceAdena": 750000,
     "nameUk": "Зачароване кільце D-grade.",
     "jewelryKind": "ring",
     "mAtk": 18,
@@ -2387,7 +2415,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 880,
     "grade": "D",
-    "priceAdena": 50000,
+    "priceAdena": 450000,
     "nameUk": "Кільце з чорної перли D-grade.",
     "jewelryKind": "ring",
     "mAtk": 20,
@@ -2398,7 +2426,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 881,
     "grade": "D",
-    "priceAdena": 60000,
+    "priceAdena": 650000,
     "nameUk": "Ельфійське кільце D-grade.",
     "jewelryKind": "ring",
     "mAtk": 22,
@@ -2409,7 +2437,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 882,
     "grade": "D",
-    "priceAdena": 70000,
+    "priceAdena": 500000,
     "nameUk": "Мітрилове кільце D-grade.",
     "jewelryKind": "ring",
     "mAtk": 24,
@@ -2420,7 +2448,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 890,
     "grade": "D",
-    "priceAdena": 40000,
+    "priceAdena": 550000,
     "nameUk": "Кільце відданості D-grade.",
     "jewelryKind": "ring",
     "mAtk": 16,
@@ -2431,7 +2459,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 910,
     "grade": "D",
-    "priceAdena": 50000,
+    "priceAdena": 950000,
     "nameUk": "Намисто відданості D-grade.",
     "jewelryKind": "neck",
     "mAtk": 32,
@@ -2442,7 +2470,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 911,
     "grade": "D",
-    "priceAdena": 60000,
+    "priceAdena": 1400000,
     "nameUk": "Зачароване намисто D-grade.",
     "jewelryKind": "neck",
     "mAtk": 36,
@@ -2453,7 +2481,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 912,
     "grade": "D",
-    "priceAdena": 70000,
+    "priceAdena": 900000,
     "nameUk": "Намисто близького лісу D-grade.",
     "jewelryKind": "neck",
     "mAtk": 40,
@@ -2464,7 +2492,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 913,
     "grade": "D",
-    "priceAdena": 80000,
+    "priceAdena": 1200000,
     "nameUk": "Ельфійське намисто D-grade.",
     "jewelryKind": "neck",
     "mAtk": 45,
@@ -2475,7 +2503,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 914,
     "grade": "D",
-    "priceAdena": 90000,
+    "priceAdena": 850000,
     "nameUk": "Намисто темряви D-grade.",
     "jewelryKind": "neck",
     "mAtk": 48,
@@ -2486,7 +2514,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 119,
     "grade": "C",
-    "priceAdena": 620000,
+    "priceAdena": 3600000,
     "nameUk": "Намисто зв'язування C-grade.",
     "jewelryKind": "neck",
     "mAtk": 64,
@@ -2497,7 +2525,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 852,
     "grade": "C",
-    "priceAdena": 300000,
+    "priceAdena": 2300000,
     "nameUk": "Сережка місячного каменю C-grade.",
     "jewelryKind": "earring",
     "mAtk": 39,
@@ -2508,7 +2536,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 853,
     "grade": "C",
-    "priceAdena": 350000,
+    "priceAdena": 2800000,
     "nameUk": "Сережка захисту C-grade.",
     "jewelryKind": "earring",
     "mAtk": 42,
@@ -2519,7 +2547,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 854,
     "grade": "C",
-    "priceAdena": 400000,
+    "priceAdena": 2400000,
     "nameUk": "Сережка зв'язування C-grade.",
     "jewelryKind": "earring",
     "mAtk": 45,
@@ -2530,7 +2558,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 855,
     "grade": "C",
-    "priceAdena": 450000,
+    "priceAdena": 3000000,
     "nameUk": "Сережка Нассена C-grade.",
     "jewelryKind": "earring",
     "mAtk": 48,
@@ -2541,7 +2569,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 857,
     "grade": "C",
-    "priceAdena": 420000,
+    "priceAdena": 2700000,
     "nameUk": "Благословенна сережка C-grade.",
     "jewelryKind": "earring",
     "mAtk": 48,
@@ -2552,7 +2580,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 883,
     "grade": "C",
-    "priceAdena": 200000,
+    "priceAdena": 1900000,
     "nameUk": "Кільце аквакаменю C-grade.",
     "jewelryKind": "ring",
     "mAtk": 26,
@@ -2563,7 +2591,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 884,
     "grade": "C",
-    "priceAdena": 250000,
+    "priceAdena": 2300000,
     "nameUk": "Кільце захисту C-grade.",
     "jewelryKind": "ring",
     "mAtk": 28,
@@ -2574,7 +2602,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 885,
     "grade": "C",
-    "priceAdena": 300000,
+    "priceAdena": 1800000,
     "nameUk": "Кільце віків C-grade.",
     "jewelryKind": "ring",
     "mAtk": 30,
@@ -2585,7 +2613,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 886,
     "grade": "C",
-    "priceAdena": 350000,
+    "priceAdena": 2000000,
     "nameUk": "Кільце зв'язування C-grade.",
     "jewelryKind": "ring",
     "mAtk": 32,
@@ -2596,7 +2624,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 888,
     "grade": "C",
-    "priceAdena": 320000,
+    "priceAdena": 2200000,
     "nameUk": "Благословенне кільце C-grade.",
     "jewelryKind": "ring",
     "mAtk": 32,
@@ -2607,7 +2635,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 915,
     "grade": "C",
-    "priceAdena": 500000,
+    "priceAdena": 3500000,
     "nameUk": "Намисто аквакаменю C-grade.",
     "jewelryKind": "neck",
     "mAtk": 52,
@@ -2618,7 +2646,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 916,
     "grade": "C",
-    "priceAdena": 550000,
+    "priceAdena": 4200000,
     "nameUk": "Намисто захисту C-grade.",
     "jewelryKind": "neck",
     "mAtk": 56,
@@ -2629,7 +2657,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 917,
     "grade": "C",
-    "priceAdena": 600000,
+    "priceAdena": 3800000,
     "nameUk": "Намисто русалки C-grade.",
     "jewelryKind": "neck",
     "mAtk": 60,
@@ -2640,7 +2668,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 919,
     "grade": "C",
-    "priceAdena": 580000,
+    "priceAdena": 4000000,
     "nameUk": "Благословенне намисто C-grade.",
     "jewelryKind": "neck",
     "mAtk": 64,
@@ -2651,7 +2679,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 856,
     "grade": "B",
-    "priceAdena": 1500000,
+    "priceAdena": 8500000,
     "nameUk": "Адамантитова сережка B-grade.",
     "jewelryKind": "earring",
     "mAtk": 51,
@@ -2662,7 +2690,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 859,
     "grade": "B",
-    "priceAdena": 1500000,
+    "priceAdena": 8000000,
     "nameUk": "Сережка мани B-grade.",
     "jewelryKind": "earring",
     "mAtk": 51,
@@ -2673,7 +2701,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 860,
     "grade": "B",
-    "priceAdena": 1800000,
+    "priceAdena": 8800000,
     "nameUk": "Сережка мудреця B-grade.",
     "jewelryKind": "earring",
     "mAtk": 54,
@@ -2684,7 +2712,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 861,
     "grade": "B",
-    "priceAdena": 1800000,
+    "priceAdena": 9500000,
     "nameUk": "Сережка Парадії B-grade.",
     "jewelryKind": "earring",
     "mAtk": 54,
@@ -2695,7 +2723,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 863,
     "grade": "B",
-    "priceAdena": 1600000,
+    "priceAdena": 8000000,
     "nameUk": "Сережка сонячного затемнення B-grade.",
     "jewelryKind": "earring",
     "mAtk": 51,
@@ -2706,7 +2734,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 864,
     "grade": "B",
-    "priceAdena": 1900000,
+    "priceAdena": 11000000,
     "nameUk": "Сережка чорної руди B-grade.",
     "jewelryKind": "earring",
     "mAtk": 54,
@@ -2717,7 +2745,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 865,
     "grade": "B",
-    "priceAdena": 1600000,
+    "priceAdena": 8000000,
     "nameUk": "Сережка викликання B-grade.",
     "jewelryKind": "earring",
     "mAtk": 51,
@@ -2728,7 +2756,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 866,
     "grade": "B",
-    "priceAdena": 1900000,
+    "priceAdena": 9500000,
     "nameUk": "Сережка іншого світу B-grade.",
     "jewelryKind": "earring",
     "mAtk": 54,
@@ -2739,7 +2767,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 867,
     "grade": "B",
-    "priceAdena": 1900000,
+    "priceAdena": 9000000,
     "nameUk": "Стихійна сережка B-grade.",
     "jewelryKind": "earring",
     "mAtk": 54,
@@ -2750,7 +2778,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 869,
     "grade": "B",
-    "priceAdena": 1600000,
+    "priceAdena": 8000000,
     "nameUk": "Сережка благодаті B-grade.",
     "jewelryKind": "earring",
     "mAtk": 51,
@@ -2761,7 +2789,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 870,
     "grade": "B",
-    "priceAdena": 1900000,
+    "priceAdena": 8000000,
     "nameUk": "Сережка святого духа B-grade.",
     "jewelryKind": "earring",
     "mAtk": 54,
@@ -2772,7 +2800,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 873,
     "grade": "B",
-    "priceAdena": 1600000,
+    "priceAdena": 8000000,
     "nameUk": "Сережка допомоги B-grade.",
     "jewelryKind": "earring",
     "mAtk": 51,
@@ -2783,7 +2811,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 874,
     "grade": "B",
-    "priceAdena": 1600000,
+    "priceAdena": 8000000,
     "nameUk": "Сережка благословення B-grade.",
     "jewelryKind": "earring",
     "mAtk": 51,
@@ -2794,7 +2822,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 887,
     "grade": "B",
-    "priceAdena": 1000000,
+    "priceAdena": 6500000,
     "nameUk": "Адамантитове кільце B-grade.",
     "jewelryKind": "ring",
     "mAtk": 34,
@@ -2805,7 +2833,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 891,
     "grade": "B",
-    "priceAdena": 1200000,
+    "priceAdena": 6800000,
     "nameUk": "Кільце мудреця B-grade.",
     "jewelryKind": "ring",
     "mAtk": 36,
@@ -2816,7 +2844,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 892,
     "grade": "B",
-    "priceAdena": 1200000,
+    "priceAdena": 7500000,
     "nameUk": "Кільце Парадії B-grade.",
     "jewelryKind": "ring",
     "mAtk": 36,
@@ -2827,7 +2855,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 894,
     "grade": "B",
-    "priceAdena": 1100000,
+    "priceAdena": 6000000,
     "nameUk": "Кільце сонячного затемнення B-grade.",
     "jewelryKind": "ring",
     "mAtk": 34,
@@ -2838,7 +2866,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 895,
     "grade": "B",
-    "priceAdena": 1300000,
+    "priceAdena": 8800000,
     "nameUk": "Кільце чорної руди B-grade.",
     "jewelryKind": "ring",
     "mAtk": 36,
@@ -2849,7 +2877,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 896,
     "grade": "B",
-    "priceAdena": 1100000,
+    "priceAdena": 6000000,
     "nameUk": "Кільце викликання B-grade.",
     "jewelryKind": "ring",
     "mAtk": 34,
@@ -2860,7 +2888,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 897,
     "grade": "B",
-    "priceAdena": 1300000,
+    "priceAdena": 7500000,
     "nameUk": "Кільце іншого світу B-grade.",
     "jewelryKind": "ring",
     "mAtk": 36,
@@ -2871,7 +2899,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 898,
     "grade": "B",
-    "priceAdena": 1300000,
+    "priceAdena": 7000000,
     "nameUk": "Стихійне кільце B-grade.",
     "jewelryKind": "ring",
     "mAtk": 36,
@@ -2882,7 +2910,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 900,
     "grade": "B",
-    "priceAdena": 1100000,
+    "priceAdena": 6000000,
     "nameUk": "Кільце благодаті B-grade.",
     "jewelryKind": "ring",
     "mAtk": 34,
@@ -2893,7 +2921,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 901,
     "grade": "B",
-    "priceAdena": 1300000,
+    "priceAdena": 6000000,
     "nameUk": "Кільце святого духа B-grade.",
     "jewelryKind": "ring",
     "mAtk": 36,
@@ -2904,7 +2932,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 904,
     "grade": "B",
-    "priceAdena": 1100000,
+    "priceAdena": 6000000,
     "nameUk": "Кільце допомоги B-grade.",
     "jewelryKind": "ring",
     "mAtk": 34,
@@ -2915,7 +2943,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 905,
     "grade": "B",
-    "priceAdena": 1100000,
+    "priceAdena": 6000000,
     "nameUk": "Кільце благословення B-grade.",
     "jewelryKind": "ring",
     "mAtk": 34,
@@ -2926,7 +2954,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 918,
     "grade": "B",
-    "priceAdena": 2000000,
+    "priceAdena": 12500000,
     "nameUk": "Адамантитове намисто B-grade.",
     "jewelryKind": "neck",
     "mAtk": 68,
@@ -2937,7 +2965,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 921,
     "grade": "B",
-    "priceAdena": 2000000,
+    "priceAdena": 12000000,
     "nameUk": "Намисто мани B-grade.",
     "jewelryKind": "neck",
     "mAtk": 68,
@@ -2948,7 +2976,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 922,
     "grade": "B",
-    "priceAdena": 2400000,
+    "priceAdena": 13000000,
     "nameUk": "Намисто мудреця B-grade.",
     "jewelryKind": "neck",
     "mAtk": 72,
@@ -2959,7 +2987,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 923,
     "grade": "B",
-    "priceAdena": 2400000,
+    "priceAdena": 14000000,
     "nameUk": "Намисто Парадії B-grade.",
     "jewelryKind": "neck",
     "mAtk": 72,
@@ -2970,7 +2998,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 925,
     "grade": "B",
-    "priceAdena": 2200000,
+    "priceAdena": 12000000,
     "nameUk": "Намисто сонячного затемнення B-grade.",
     "jewelryKind": "neck",
     "mAtk": 68,
@@ -2981,7 +3009,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 926,
     "grade": "B",
-    "priceAdena": 2600000,
+    "priceAdena": 16000000,
     "nameUk": "Намисто чорної руди B-grade.",
     "jewelryKind": "neck",
     "mAtk": 72,
@@ -2992,7 +3020,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 927,
     "grade": "B",
-    "priceAdena": 2200000,
+    "priceAdena": 12000000,
     "nameUk": "Намисто викликання B-grade.",
     "jewelryKind": "neck",
     "mAtk": 68,
@@ -3003,7 +3031,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 928,
     "grade": "B",
-    "priceAdena": 2600000,
+    "priceAdena": 14000000,
     "nameUk": "Намисто іншого світу B-grade.",
     "jewelryKind": "neck",
     "mAtk": 72,
@@ -3014,7 +3042,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 929,
     "grade": "B",
-    "priceAdena": 2600000,
+    "priceAdena": 13500000,
     "nameUk": "Стихійне намисто B-grade.",
     "jewelryKind": "neck",
     "mAtk": 72,
@@ -3025,7 +3053,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 931,
     "grade": "B",
-    "priceAdena": 2200000,
+    "priceAdena": 12000000,
     "nameUk": "Намисто благодаті B-grade.",
     "jewelryKind": "neck",
     "mAtk": 68,
@@ -3036,7 +3064,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 932,
     "grade": "B",
-    "priceAdena": 2600000,
+    "priceAdena": 12000000,
     "nameUk": "Намисто святого духа B-grade.",
     "jewelryKind": "neck",
     "mAtk": 72,
@@ -3047,7 +3075,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 935,
     "grade": "B",
-    "priceAdena": 2200000,
+    "priceAdena": 12000000,
     "nameUk": "Намисто допомоги B-grade.",
     "jewelryKind": "neck",
     "mAtk": 68,
@@ -3058,7 +3086,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 936,
     "grade": "B",
-    "priceAdena": 2200000,
+    "priceAdena": 12000000,
     "nameUk": "Намисто благословення B-grade.",
     "jewelryKind": "neck",
     "mAtk": 68,
@@ -3069,7 +3097,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 862,
     "grade": "A",
-    "priceAdena": 7500000,
+    "priceAdena": 22000000,
     "nameUk": "Сережка величі A-grade.",
     "jewelryKind": "earring",
     "mAtk": 63,
@@ -3080,7 +3108,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 868,
     "grade": "A",
-    "priceAdena": 9000000,
+    "priceAdena": 20000000,
     "nameUk": "Сережка фантому A-grade.",
     "jewelryKind": "earring",
     "mAtk": 60,
@@ -3091,7 +3119,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 871,
     "grade": "A",
-    "priceAdena": 9000000,
+    "priceAdena": 22000000,
     "nameUk": "Сережка фенікса A-grade.",
     "jewelryKind": "earring",
     "mAtk": 60,
@@ -3102,7 +3130,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 872,
     "grade": "A",
-    "priceAdena": 9000000,
+    "priceAdena": 24000000,
     "nameUk": "Сережка цербера A-grade.",
     "jewelryKind": "earring",
     "mAtk": 60,
@@ -3113,7 +3141,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 893,
     "grade": "A",
-    "priceAdena": 5000000,
+    "priceAdena": 18000000,
     "nameUk": "Кільце величі A-grade.",
     "jewelryKind": "ring",
     "mAtk": 42,
@@ -3124,7 +3152,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 899,
     "grade": "A",
-    "priceAdena": 6000000,
+    "priceAdena": 16000000,
     "nameUk": "Кільце фантому A-grade.",
     "jewelryKind": "ring",
     "mAtk": 40,
@@ -3135,7 +3163,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 902,
     "grade": "A",
-    "priceAdena": 6000000,
+    "priceAdena": 18000000,
     "nameUk": "Кільце фенікса A-grade.",
     "jewelryKind": "ring",
     "mAtk": 40,
@@ -3146,7 +3174,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 903,
     "grade": "A",
-    "priceAdena": 6000000,
+    "priceAdena": 19000000,
     "nameUk": "Кільце цербера A-grade.",
     "jewelryKind": "ring",
     "mAtk": 40,
@@ -3157,7 +3185,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 924,
     "grade": "A",
-    "priceAdena": 10000000,
+    "priceAdena": 32000000,
     "nameUk": "Намисто величі A-grade.",
     "jewelryKind": "neck",
     "mAtk": 85,
@@ -3168,7 +3196,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 930,
     "grade": "A",
-    "priceAdena": 12000000,
+    "priceAdena": 30000000,
     "nameUk": "Намисто фантому A-grade.",
     "jewelryKind": "neck",
     "mAtk": 80,
@@ -3179,7 +3207,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 933,
     "grade": "A",
-    "priceAdena": 12000000,
+    "priceAdena": 32000000,
     "nameUk": "Намисто фенікса A-grade.",
     "jewelryKind": "neck",
     "mAtk": 80,
@@ -3190,7 +3218,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 934,
     "grade": "A",
-    "priceAdena": 12000000,
+    "priceAdena": 35000000,
     "nameUk": "Намисто цербера A-grade.",
     "jewelryKind": "neck",
     "mAtk": 80,
@@ -3201,7 +3229,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 858,
     "grade": "S",
-    "priceAdena": 30000000,
+    "priceAdena": 38000000,
     "nameUk": "Сережка Татеосіана S-grade.",
     "jewelryKind": "earring",
     "mAtk": 71,
@@ -3212,7 +3240,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 889,
     "grade": "S",
-    "priceAdena": 20000000,
+    "priceAdena": 30000000,
     "nameUk": "Кільце Татеосіана S-grade.",
     "jewelryKind": "ring",
     "mAtk": 48,
@@ -3223,7 +3251,7 @@ export const L2DOP_GM_SHOP_JEWELRY: GmShopJewelryRow[] = [
   {
     "itemId": 920,
     "grade": "S",
-    "priceAdena": 40000000,
+    "priceAdena": 55000000,
     "nameUk": "Намисто Татеосіана S-grade.",
     "jewelryKind": "neck",
     "mAtk": 95,

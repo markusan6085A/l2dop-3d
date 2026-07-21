@@ -387,6 +387,18 @@
     if (hints && Object.prototype.hasOwnProperty.call(hints, id)) {
       return hints[id] === true;
     }
+    if (
+      hints &&
+      Object.prototype.hasOwnProperty.call(hints, String(id))
+    ) {
+      return hints[String(id)] === true;
+    }
+    var gearMap =
+      window.L2 && L2.gearCatalogById ? L2.gearCatalogById : null;
+    var item = gearMap ? gearMap[id] || gearMap[String(id)] : null;
+    if (item && typeof item.blocksShield === 'boolean') {
+      return item.blocksShield;
+    }
     return false;
   }
 
@@ -1327,7 +1339,7 @@
           action: 'equip',
           itemId: itemId,
           enchant: en,
-          expectedRevision: revision,
+          expectedRevision: expectedRevisionForMutation(),
         }),
       });
       if (r.status === 401) {
@@ -1548,7 +1560,7 @@
         body: JSON.stringify({
           action: 'unequip',
           slot: slotKey,
-          expectedRevision: revision,
+          expectedRevision: expectedRevisionForMutation(),
         }),
       });
       if (r.status === 401) {

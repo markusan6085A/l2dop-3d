@@ -30,6 +30,7 @@ import {
   textRpgHfOwnsActiveBuffSkillId,
 } from './textRpgHfActiveBuffApply.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
+import { isTwoHandHeavyWeaponType } from './weaponTypeContract.js';
 import {
   L2DOP_ACUMEN,
   L2DOP_AGILITY,
@@ -135,7 +136,7 @@ export function buffWeaponContextFromInv(
   const wt = m?.weaponType;
   return {
     isBow: wt === 'bow',
-    isTwoHandHeavy: wt === 'bigsword' || wt === 'bigblunt',
+    isTwoHandHeavy: isTwoHandHeavyWeaponType(wt),
     isDualWield: wt === 'dual',
   };
 }
