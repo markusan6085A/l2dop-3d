@@ -21,6 +21,7 @@ import { JEWELRY_AUTHOR_ITEM_PATCH } from './l2dopJewelryAuthorStats.js';
 import { dropsShieldPatchForEquipped } from './l2dopDropsShieldPatches.js';
 import { D_GRADE_ARMOR_CATALOG } from './dGradeArmorCatalog.js';
 import { C_GRADE_ARMOR_CATALOG } from './cGradeArmorCatalog.js';
+import { B_GRADE_ARMOR_CATALOG } from './bGradeArmorCatalog.js';
 import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
@@ -335,8 +336,8 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   Object.assign(o, mammonGemstoneItemMetaForCatalog());
   Object.assign(o, mammonLifeStoneItemMetaForCatalog());
 
-  /** D/C-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
-  for (const row of [...D_GRADE_ARMOR_CATALOG, ...C_GRADE_ARMOR_CATALOG]) {
+  /** D/C/B-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
+  for (const row of [...D_GRADE_ARMOR_CATALOG, ...C_GRADE_ARMOR_CATALOG, ...B_GRADE_ARMOR_CATALOG]) {
     const prev = o[row.itemId];
     o[row.itemId] = {
       ...(prev ?? {}),
@@ -646,13 +647,27 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
     )
     .map((row) => {
       const canon = gradeArmorCatalogRow(row.itemId);
-      if (!canon || canon.pDef == null) return row;
-      return {
-        ...row,
-        nameUk: canon.name,
-        armorType: canon.armorType,
-        stats: { ...row.stats, pDef: canon.pDef },
-      };
+      if (!canon) return row;
+      if (canon.shieldDefense != null) {
+        return {
+          ...row,
+          nameUk: canon.name,
+          armorType: canon.armorType,
+          stats: {
+            ...row.stats,
+            pDef: undefined,
+          },
+        };
+      }
+      if (canon.pDef != null) {
+        return {
+          ...row,
+          nameUk: canon.name,
+          armorType: canon.armorType,
+          stats: { ...row.stats, pDef: canon.pDef },
+        };
+      }
+      return row;
     });
 }
 

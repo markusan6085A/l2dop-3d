@@ -1,6 +1,6 @@
 /**
- * Канонічний каталог C-grade броні (Lineage 2 Interlude).
- * Єдине джерело itemId → { name, grade, armorType, slot, pDef }.
+ * Канонічний каталог C-grade броні та щитів (Lineage 2 Interlude).
+ * Єдине джерело itemId → { name, grade, armorType, slot, pDef, shieldDefense, shieldBlockRatePct }.
  * Ціни не змінюються — лишаються в GM / dropsShopOverrides.
  */
 import type { ArmorTypeKind, ItemSlotKind } from './itemsCatalog.js';
@@ -11,10 +11,12 @@ export type CGradeArmorCatalogRow = {
   grade: 'C';
   armorType: ArmorTypeKind;
   slot: ItemSlotKind;
-  pDef: number;
+  pDef?: number;
+  shieldDefense?: number;
+  shieldBlockRatePct?: number;
 };
 
-/** Канонічні C-grade частини броні (Karmian, Demon's, Plated Leather). */
+/** Канонічні C-grade частини броні та щити. */
 export const C_GRADE_ARMOR_CATALOG: readonly CGradeArmorCatalogRow[] = [
   // Karmian
   { itemId: 439, name: 'Karmian Tunic', grade: 'C', armorType: 'magic', slot: 'chest', pDef: 60 },
@@ -34,6 +36,25 @@ export const C_GRADE_ARMOR_CATALOG: readonly CGradeArmorCatalogRow[] = [
   { itemId: 2431, name: 'Plated Leather Boots', grade: 'C', armorType: 'light', slot: 'feet', pDef: 32 },
   { itemId: 2455, name: 'Plated Leather Gloves', grade: 'C', armorType: 'light', slot: 'gloves', pDef: 33 },
   { itemId: 20003, name: 'Plated Leather Helmet', grade: 'C', armorType: 'light', slot: 'head', pDef: 52 },
+  // C-grade shields — shieldDefense єдине бойове значення (без окремого pDef у бою)
+  {
+    itemId: 107,
+    name: 'Composite Shield',
+    grade: 'C',
+    armorType: 'heavy',
+    slot: 'lhand',
+    shieldDefense: 190,
+    shieldBlockRatePct: 20,
+  },
+  {
+    itemId: 2497,
+    name: 'Full Plate Shield',
+    grade: 'C',
+    armorType: 'heavy',
+    slot: 'lhand',
+    shieldDefense: 203,
+    shieldBlockRatePct: 20,
+  },
 ] as const;
 
 export const C_GRADE_ARMOR_BY_ID: ReadonlyMap<number, CGradeArmorCatalogRow> = new Map(

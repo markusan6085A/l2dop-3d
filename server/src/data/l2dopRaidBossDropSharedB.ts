@@ -55,29 +55,29 @@ export const RB_DROP_ITEM_B = {
   blueWolfGloves: item(2487, 'Blue Wolf Gloves', `${Ab}/blue_wolf_gloves.jpg`),
   avadonRobe: item(30002, 'Avadon Robe', `${Ab}/avadon_robe.jpg`),
   avadonCirclet: item(30001, 'Avadon Circlet', `${Ab}/avadon_circlet.jpg`),
-  avadoGloves: item(30003, 'Avado Gloves', `${Ab}/avado_gloves.jpg`),
+  avadonGloves: item(30003, 'Avadon Gloves', `${Ab}/avado_gloves.jpg`),
   avadonBoots: item(30004, 'Avadon Boots', `${Ab}/avadon_boots.jpg`),
-  leatherArmorOfDoomOfFortune: item(
+  leatherArmorOfDoom: item(
     30009,
-    'Leather Armor Of Doom Of Fortune',
+    'Leather Armor of Doom',
     `${Ab}/leather_armor_of_doom_of_fortune.jpg`
   ),
-  doomHelmetOfFortune: item(
+  doomHelmet: item(
     30008,
-    'Doom Helmet Of Fortune',
+    'Doom Helmet',
     `${Ab}/doom_helmet_of_fortune.jpg`
   ),
-  doomGlovesOfFortune: item(
+  doomGloves: item(
     30010,
-    'Doom Gloves Of Fortune Light Armor',
+    'Doom Gloves',
     `${Ab}/doom_gloves_of_fortune_light_armor.jpg`
   ),
-  doomBootsOfFortune: item(
+  doomBoots: item(
     30011,
-    'Doom Boots Of Fortune Light Armor',
+    'Doom Boots',
     `${Ab}/doom_boots_of_fortune_light_armor.jpg`
   ),
-  avadonShield: item(673, 'Avadon Shield I00 0', `${Ab}/shield_avadon_shield_i00_0.jpg`),
+  avadonShield: item(673, 'Avadon Shield', `${Ab}/shield_avadon_shield_i00_0.jpg`),
   doomShield: item(110, 'Doom Shield I00 0', `${Ab}/shield_doom_shield_i00_0.jpg`),
   shieldOfPledge: item(111, 'Shield Of Pledge I00 0', `${Ab}/shield_shield_of_pledge_i00_0.jpg`),
   anotherWorldsNecklace: item(

@@ -739,7 +739,7 @@ export function computeCombatStats(
   const base = baseSixForLevel(code, classBranch, LVL);
   const STR = base.str + armorSetCombat.flatStats.strFlat;
   const INT = base.int + armorSetCombat.flatStats.intFlat;
-  const DEX = base.dex;
+  const DEX = base.dex + armorSetCombat.flatStats.dexFlat;
   const CON = base.con + armorSetCombat.flatStats.conFlat;
   const MEN = base.men;
   const WIT = base.wit + armorSetCombat.flatStats.witFlat;

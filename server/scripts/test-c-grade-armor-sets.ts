@@ -10,7 +10,11 @@ import {
 import {
   computeCombatStats,
   effectiveMaxHpWithJewelFlat,
+  equippedShieldPDef,
+  sumEquippedArmorPDef,
 } from '../src/data/l2dopCombatFormulas.js';
+import { dropsShieldPatchForEquipped } from '../src/data/l2dopDropsShieldPatches.js';
+import { loadDropsShopOverrides } from '../src/services/dropsShopService.js';
 import { dGradeFullArmorSetBonusDeltaLegacyOnly } from '../src/data/l2dopDGradeArmorSetBonuses.js';
 import { parseInventory, type InventoryState } from '../src/data/inventory.js';
 import { ITEM_CATALOG } from '../src/data/itemsCatalog.js';
@@ -32,6 +36,13 @@ function inv(pieces: Record<string, number>): InventoryState {
 function totals(field: keyof ReturnType<typeof resolveEquippedArmorSetBonuses>['totals']) {
   return (pieces: Record<string, number>) =>
     resolveEquippedArmorSetBonuses(inv(pieces)).totals[field];
+}
+
+function shopPriceByItemId(itemId: number): number | null {
+  for (const row of Object.values(loadDropsShopOverrides())) {
+    if (row.itemId === itemId) return row.priceAdena;
+  }
+  return null;
 }
 
 console.log('=== C-grade armor sets regression ===\n');
@@ -127,16 +138,25 @@ console.log('=== C-grade armor sets regression ===\n');
     assert.equal(view.name, row.name);
     assert.equal(view.grade, 'C');
     assert.equal(view.armorType, row.armorType);
-    assert.equal(view.pDef, row.pDef);
     const meta = ITEM_CATALOG[row.itemId];
     assert.ok(meta, `ITEM_CATALOG missing ${row.itemId}`);
-    assert.equal(meta.pDef, row.pDef);
-    const coreIds = [439, 471, 2454, 441, 472, 2459, 398, 418, 2431];
-    if (coreIds.includes(row.itemId)) {
-      assert.ok(view.armorSetInfo, `core piece ${row.itemId} should have setInfo`);
-      assert.equal(view.setItemRole, 'core');
+    if (row.shieldDefense != null) {
+      assert.equal(view.pDef, null);
+      assert.equal(view.shieldDefense, row.shieldDefense);
+      assert.equal(view.shieldBlockRatePct, row.shieldBlockRatePct);
+      assert.equal(meta.shieldDefense, row.shieldDefense);
+      assert.equal(meta.pDef, undefined);
+      assert.equal(view.armorSetInfo, null);
     } else {
-      assert.equal(view.armorSetInfo, null, `non-core ${row.itemId} should have no set block`);
+      assert.equal(view.pDef, row.pDef);
+      assert.equal(meta.pDef, row.pDef);
+      const coreIds = [439, 471, 2454, 441, 472, 2459, 398, 418, 2431];
+      if (coreIds.includes(row.itemId)) {
+        assert.ok(view.armorSetInfo, `core piece ${row.itemId} should have setInfo`);
+        assert.equal(view.setItemRole, 'core');
+      } else {
+        assert.equal(view.armorSetInfo, null, `non-core ${row.itemId} should have no set block`);
+      }
     }
   }
   console.log('K. buildItemClientView / ITEM_CATALOG consistent — OK');
@@ -214,6 +234,92 @@ console.log('=== C-grade armor sets regression ===\n');
   assert.equal(plated.name, 'Plated Leather');
   assert.equal(plated.armorSetInfo?.setId, 'c_plated_leather');
   console.log('Modal payloads — Karmian/Demon/Plated Leather core — OK');
+}
+
+console.log('\n=== C-grade shields regression ===\n');
+
+// SH-A. Composite Shield canonical stats
+{
+  const view = buildItemClientView(107);
+  assert.equal(view.name, 'Composite Shield');
+  assert.equal(view.shieldDefense, 190);
+  assert.equal(view.shieldBlockRatePct, 20);
+  assert.equal(view.pDef, null);
+  assert.equal(view.armorSetInfo, null);
+  assert.equal(shopPriceByItemId(107), 2_500_000);
+  console.log('SH-A. Composite Shield 107 → 190/20%, price 2.5M — OK');
+}
+
+// SH-B. Full Plate Shield canonical stats
+{
+  const view = buildItemClientView(2497);
+  assert.equal(view.name, 'Full Plate Shield');
+  assert.equal(view.shieldDefense, 203);
+  assert.equal(view.shieldBlockRatePct, 20);
+  assert.equal(view.pDef, null);
+  assert.equal(view.armorSetInfo, null);
+  assert.equal(shopPriceByItemId(2497), 4_000_000);
+  console.log('SH-B. Full Plate Shield 2497 → 203/20%, price 4M — OK');
+}
+
+// SH-C. Shield not in sumEquippedArmorPDef
+{
+  const withShield = inv({ l2: 107, l3: 439 });
+  const pdef = sumEquippedArmorPDef(withShield.eq!);
+  assert.equal(pdef, 60, 'only chest pDef, not shield');
+  console.log('SH-C. Shield excluded from armor P.Def sum — OK');
+}
+
+// SH-D. Shield defense applies once on successful block (full rate)
+{
+  const pieces = inv({ l2: 107 });
+  const once = equippedShieldPDef(pieces.eq!, 100, 0);
+  assert.equal(once, 190);
+  console.log('SH-D. shieldDefense applied once on block — OK');
+}
+
+// SH-E. No shield defense when block rate is 0
+{
+  const pieces = inv({ l2: 2497 });
+  assert.equal(equippedShieldPDef(pieces.eq!, 0, 0), 0);
+  console.log('SH-E. No shieldDefense when block rate 0 — OK');
+}
+
+// SH-F. Consistent views (patch + client view + catalog)
+{
+  for (const id of [107, 2497] as const) {
+    const view = buildItemClientView(id);
+    const patch = dropsShieldPatchForEquipped(id, view.name);
+    const meta = ITEM_CATALOG[id];
+    assert.equal(patch?.shieldDef, view.shieldDefense);
+    assert.equal(patch?.shieldRatePercent, view.shieldBlockRatePct);
+    assert.equal(meta.shieldDefense, view.shieldDefense);
+    assert.notEqual(patch?.shieldDef, 27);
+    assert.notEqual(patch?.shieldDef, 31);
+    assert.notEqual(patch?.shieldDef, 52);
+    assert.notEqual(patch?.shieldDef, 60);
+  }
+  console.log('SH-F. Shop/inventory/drop/modal consistent — OK');
+}
+
+// SH-G. Legacy 52/27 and 60/31 gone from runtime
+{
+  const composite = dropsShieldPatchForEquipped(107, 'Composite Shield');
+  const fullPlate = dropsShieldPatchForEquipped(2497, 'Full Plate Shield');
+  assert.equal(composite?.shieldDef, 190);
+  assert.equal(fullPlate?.shieldDef, 203);
+  assert.notEqual(composite?.shieldDef, 27);
+  assert.notEqual(fullPlate?.shieldDef, 31);
+  console.log('SH-G. Legacy shieldDef 27/31 removed — OK');
+}
+
+// SH-H. Staged armor sets still OK with shields equipped (no set link)
+{
+  const t = resolveEquippedArmorSetBonuses(inv({ l3: 439, l4: 471, lg: 2454, l2: 107 }));
+  assert.equal(t.totals.sleepHoldResistancePct, 20);
+  assert.equal(t.totals.castingSpdPct, 15);
+  assert.equal(t.totals.shieldDefensePct, 0);
+  console.log('SH-H. Karmian set unaffected by shield — OK');
 }
 
 console.log('\nAll C-grade armor set regression tests passed.');

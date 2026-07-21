@@ -550,7 +550,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/avado_gloves.jpg",
-    "nameUk": "Avado Gloves"
+    "nameUk": "Avadon Gloves"
   },
   {
     "shopKey": "arrom_b/avadon_boots.jpg",
@@ -648,7 +648,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/doom_boots_of_fortune_light_armor.jpg",
-    "nameUk": "Doom Boots Of Fortune Light Armor"
+    "nameUk": "Doom Boots"
   },
   {
     "shopKey": "arrom_b/doom_gloves.jpg",
@@ -662,7 +662,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/doom_gloves_of_fortune_light_armor.jpg",
-    "nameUk": "Doom Gloves Of Fortune Light Armor"
+    "nameUk": "Doom Gloves"
   },
   {
     "shopKey": "arrom_b/doom_helmet.jpg",
@@ -676,14 +676,14 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/doom_helmet_of_fortune.jpg",
-    "nameUk": "Doom Helmet Of Fortune"
+    "nameUk": "Doom Helmet"
   },
   {
     "shopKey": "arrom_b/leather_armor_of_doom_of_fortune.jpg",
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/leather_armor_of_doom_of_fortune.jpg",
-    "nameUk": "Leather Armor Of Doom Of Fortune"
+    "nameUk": "Leather Armor of Doom"
   },
   {
     "shopKey": "arrom_b/stockings_of_doom.jpg",
@@ -1012,7 +1012,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "shield",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/shield_avadon_shield_i00_0.jpg",
-    "nameUk": "Avadon Shield I00 0"
+    "nameUk": "Avadon Shield"
   },
   {
     "shopKey": "arrom_b/shield_doom_shield_i00_0.jpg",

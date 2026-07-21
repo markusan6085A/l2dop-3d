@@ -3,7 +3,7 @@
  */
 import type { DropsShopStatLineUk } from '../domain/dropsShopStatsPreviewUk.js';
 import dropsShopOverrides from './dropsShopOverrides.json';
-import { dGradeArmorCatalogRow } from './dGradeArmorCatalog.js';
+import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
 
 export interface DropsShieldPatch {
   /** Підпис у списку / модалці (англ. назва L2). */
@@ -61,45 +61,45 @@ const RAW: Array<[string, DropsShieldPatch]> = [
     'arrom_c/shield_composite_shield_i00_0.jpg',
     {
       nameUk: 'Composite Shield',
-      pDef: 52,
+      pDef: 190,
       shieldRatePercent: 20,
-      shieldDef: 27,
+      shieldDef: 190,
     },
   ],
   [
     'arrom_c/shield_full_plate_shield_i00_0.jpg',
     {
       nameUk: 'Full Plate Shield',
-      pDef: 60,
+      pDef: 203,
       shieldRatePercent: 20,
-      shieldDef: 31,
+      shieldDef: 203,
     },
   ],
   [
     'arrom_b/shield_avadon_shield_i00_0.jpg',
     {
       nameUk: 'Avadon Shield',
-      pDef: 70,
+      pDef: 216,
       shieldRatePercent: 20,
-      shieldDef: 36,
+      shieldDef: 216,
     },
   ],
   [
     'arrom_b/shield_doom_shield_i00_0.jpg',
     {
       nameUk: 'Doom Shield',
-      pDef: 76,
+      pDef: 230,
       shieldRatePercent: 20,
-      shieldDef: 39,
+      shieldDef: 230,
     },
   ],
   [
     'arrom_b/shield_shield_of_pledge_i00_0.jpg',
     {
       nameUk: 'Shield of Pledge',
-      pDef: 86,
+      pDef: 216,
       shieldRatePercent: 20,
-      shieldDef: 44,
+      shieldDef: 216,
     },
   ],
   [
@@ -197,7 +197,7 @@ export function dropsShieldPatchForEquipped(
 ): DropsShieldPatch | undefined {
   const id = Math.floor(itemId);
   if (Number.isFinite(id) && id > 0) {
-    const canon = dGradeArmorCatalogRow(id);
+    const canon = gradeArmorCatalogRow(id);
     if (canon?.shieldDefense != null) {
       return {
         nameUk: canon.name,

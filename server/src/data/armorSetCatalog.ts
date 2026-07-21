@@ -1,5 +1,5 @@
 /**
- * Канонічний каталог комплектів броні (D/C-grade Interlude).
+ * Канонічний каталог комплектів броні (D/C/B-grade Interlude).
  * Визначення сетів — через itemId, не через назву.
  */
 import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
@@ -12,15 +12,21 @@ export type ArmorSetEffects = {
   mAtkPct?: number;
   addCritDmg?: number;
   poisonResistancePct?: number;
+  bleedResistancePct?: number;
   shieldDefensePct?: number;
   sleepHoldResistancePct?: number;
   castingSpdPct?: number;
   pDefPct?: number;
   stunResistancePct?: number;
+  hpRegenPct?: number;
+  mpRegenPct?: number;
+  speedFlat?: number;
+  pAtkPct?: number;
   intFlat?: number;
   witFlat?: number;
   strFlat?: number;
   conFlat?: number;
+  dexFlat?: number;
 };
 
 export type ArmorSetStage = {
@@ -181,10 +187,98 @@ export const C_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   C_PLATED_LEATHER_SET,
 ];
 
-/** Усі staged-сети (D + C). */
+export const B_AVADON_ROBE_SET: ArmorSetDefinition = {
+  setId: 'b_avadon_robe',
+  name: 'Avadon Robe Set',
+  grade: 'B',
+  armorType: 'robe',
+  corePieceIds: [30002, 30001, 30003, 30004],
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { poisonResistancePct: 60, bleedResistancePct: 60 },
+      displayLines: ['Poison Resistance +60%', 'Bleed Resistance +60%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { pDefPct: 5.26 },
+      displayLines: ['P.Def +5.26%'],
+    },
+    {
+      requiredCorePieces: 4,
+      effects: { castingSpdPct: 15 },
+      displayLines: ['Casting Speed +15%'],
+    },
+  ],
+};
+
+export const B_BLUE_WOLF_HEAVY_SET: ArmorSetDefinition = {
+  setId: 'b_blue_wolf_heavy',
+  name: 'Blue Wolf Heavy Armor Set',
+  grade: 'B',
+  armorType: 'heavy',
+  corePieceIds: [358, 2380, 2416, 2487, 2439],
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { hpRegenPct: 5.24 },
+      displayLines: ['HP Recovery Bonus +5.24%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { speedFlat: 7 },
+      displayLines: ['Speed +7'],
+    },
+    {
+      requiredCorePieces: 4,
+      effects: { stunResistancePct: 30 },
+      displayLines: ['Stun Resistance +30%'],
+    },
+    {
+      requiredCorePieces: 5,
+      effects: { strFlat: 3, conFlat: -1, dexFlat: -2 },
+      displayLines: ['STR +3', 'CON -1', 'DEX -2'],
+    },
+  ],
+};
+
+export const B_DOOM_LIGHT_SET: ArmorSetDefinition = {
+  setId: 'b_doom_light',
+  name: 'Doom Light Armor Set',
+  grade: 'B',
+  armorType: 'light',
+  corePieceIds: [30009, 30008, 30010, 30011],
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { mpRegenPct: 5.26 },
+      displayLines: ['MP Recovery Bonus +5.26%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { pAtkPct: 2.7 },
+      displayLines: ['P.Atk +2.7%'],
+    },
+    {
+      requiredCorePieces: 4,
+      effects: { dexFlat: 3, sleepHoldResistancePct: 50 },
+      displayLines: ['DEX +3', 'Sleep/Hold Resistance +50%'],
+    },
+  ],
+};
+
+/** Усі B-grade staged-сети. */
+export const B_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
+  B_AVADON_ROBE_SET,
+  B_BLUE_WOLF_HEAVY_SET,
+  B_DOOM_LIGHT_SET,
+];
+
+/** Усі staged-сети (D + C + B). */
 export const ALL_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   ...D_GRADE_ARMOR_SETS,
   ...C_GRADE_ARMOR_SETS,
+  ...B_GRADE_ARMOR_SETS,
 ];
 
 export type ArmorSetItemRole = 'core' | 'optionalShield';

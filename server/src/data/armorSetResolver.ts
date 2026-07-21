@@ -41,15 +41,21 @@ export type ArmorSetBonusTotals = {
   mAtkPct: number;
   addCritDmg: number;
   poisonResistancePct: number;
+  bleedResistancePct: number;
   shieldDefensePct: number;
   sleepHoldResistancePct: number;
   castingSpdPct: number;
   pDefPct: number;
   stunResistancePct: number;
+  hpRegenPct: number;
+  mpRegenPct: number;
+  speedFlat: number;
+  pAtkPct: number;
   intFlat: number;
   witFlat: number;
   strFlat: number;
   conFlat: number;
+  dexFlat: number;
 };
 
 export type ArmorSetFlatStats = {
@@ -57,6 +63,7 @@ export type ArmorSetFlatStats = {
   intFlat: number;
   witFlat: number;
   conFlat: number;
+  dexFlat: number;
 };
 
 export type ResolveEquippedArmorSetBonusesResult = {
@@ -108,15 +115,21 @@ function emptyTotals(): ArmorSetBonusTotals {
     mAtkPct: 0,
     addCritDmg: 0,
     poisonResistancePct: 0,
+    bleedResistancePct: 0,
     shieldDefensePct: 0,
     sleepHoldResistancePct: 0,
     castingSpdPct: 0,
     pDefPct: 0,
     stunResistancePct: 0,
+    hpRegenPct: 0,
+    mpRegenPct: 0,
+    speedFlat: 0,
+    pAtkPct: 0,
     intFlat: 0,
     witFlat: 0,
     strFlat: 0,
     conFlat: 0,
+    dexFlat: 0,
   };
 }
 
@@ -133,6 +146,9 @@ function mergeEffects(into: ArmorSetEffects, add: ArmorSetEffects): ArmorSetEffe
   if (add.poisonResistancePct != null) {
     out.poisonResistancePct = (out.poisonResistancePct ?? 0) + add.poisonResistancePct;
   }
+  if (add.bleedResistancePct != null) {
+    out.bleedResistancePct = (out.bleedResistancePct ?? 0) + add.bleedResistancePct;
+  }
   if (add.shieldDefensePct != null) {
     out.shieldDefensePct = (out.shieldDefensePct ?? 0) + add.shieldDefensePct;
   }
@@ -147,10 +163,15 @@ function mergeEffects(into: ArmorSetEffects, add: ArmorSetEffects): ArmorSetEffe
   if (add.stunResistancePct != null) {
     out.stunResistancePct = (out.stunResistancePct ?? 0) + add.stunResistancePct;
   }
+  if (add.hpRegenPct != null) out.hpRegenPct = (out.hpRegenPct ?? 0) + add.hpRegenPct;
+  if (add.mpRegenPct != null) out.mpRegenPct = (out.mpRegenPct ?? 0) + add.mpRegenPct;
+  if (add.speedFlat != null) out.speedFlat = (out.speedFlat ?? 0) + add.speedFlat;
+  if (add.pAtkPct != null) out.pAtkPct = (out.pAtkPct ?? 0) + add.pAtkPct;
   if (add.intFlat != null) out.intFlat = (out.intFlat ?? 0) + add.intFlat;
   if (add.witFlat != null) out.witFlat = (out.witFlat ?? 0) + add.witFlat;
   if (add.strFlat != null) out.strFlat = (out.strFlat ?? 0) + add.strFlat;
   if (add.conFlat != null) out.conFlat = (out.conFlat ?? 0) + add.conFlat;
+  if (add.dexFlat != null) out.dexFlat = (out.dexFlat ?? 0) + add.dexFlat;
   return out;
 }
 
@@ -161,15 +182,21 @@ function effectsToTotals(effects: ArmorSetEffects): ArmorSetBonusTotals {
     mAtkPct: effects.mAtkPct ?? 0,
     addCritDmg: effects.addCritDmg ?? 0,
     poisonResistancePct: effects.poisonResistancePct ?? 0,
+    bleedResistancePct: effects.bleedResistancePct ?? 0,
     shieldDefensePct: effects.shieldDefensePct ?? 0,
     sleepHoldResistancePct: effects.sleepHoldResistancePct ?? 0,
     castingSpdPct: effects.castingSpdPct ?? 0,
     pDefPct: effects.pDefPct ?? 0,
     stunResistancePct: effects.stunResistancePct ?? 0,
+    hpRegenPct: effects.hpRegenPct ?? 0,
+    mpRegenPct: effects.mpRegenPct ?? 0,
+    speedFlat: effects.speedFlat ?? 0,
+    pAtkPct: effects.pAtkPct ?? 0,
     intFlat: effects.intFlat ?? 0,
     witFlat: effects.witFlat ?? 0,
     strFlat: effects.strFlat ?? 0,
     conFlat: effects.conFlat ?? 0,
+    dexFlat: effects.dexFlat ?? 0,
   };
 }
 
@@ -180,6 +207,7 @@ function sumTotals(a: ArmorSetBonusTotals, b: ArmorSetBonusTotals): ArmorSetBonu
     mAtkPct: addOptionalNumber(a.mAtkPct, b.mAtkPct),
     addCritDmg: addOptionalNumber(a.addCritDmg, b.addCritDmg),
     poisonResistancePct: addOptionalNumber(a.poisonResistancePct, b.poisonResistancePct),
+    bleedResistancePct: addOptionalNumber(a.bleedResistancePct, b.bleedResistancePct),
     shieldDefensePct: addOptionalNumber(a.shieldDefensePct, b.shieldDefensePct),
     sleepHoldResistancePct: addOptionalNumber(
       a.sleepHoldResistancePct,
@@ -188,10 +216,15 @@ function sumTotals(a: ArmorSetBonusTotals, b: ArmorSetBonusTotals): ArmorSetBonu
     castingSpdPct: addOptionalNumber(a.castingSpdPct, b.castingSpdPct),
     pDefPct: addOptionalNumber(a.pDefPct, b.pDefPct),
     stunResistancePct: addOptionalNumber(a.stunResistancePct, b.stunResistancePct),
+    hpRegenPct: addOptionalNumber(a.hpRegenPct, b.hpRegenPct),
+    mpRegenPct: addOptionalNumber(a.mpRegenPct, b.mpRegenPct),
+    speedFlat: addOptionalNumber(a.speedFlat, b.speedFlat),
+    pAtkPct: addOptionalNumber(a.pAtkPct, b.pAtkPct),
     intFlat: addOptionalNumber(a.intFlat, b.intFlat),
     witFlat: addOptionalNumber(a.witFlat, b.witFlat),
     strFlat: addOptionalNumber(a.strFlat, b.strFlat),
     conFlat: addOptionalNumber(a.conFlat, b.conFlat),
+    dexFlat: addOptionalNumber(a.dexFlat, b.dexFlat),
   };
 }
 
@@ -277,6 +310,9 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
   if (totals.poisonResistancePct > 0) {
     buffDelta.poisonResistMul = 1 + totals.poisonResistancePct / 100;
   }
+  if (totals.bleedResistancePct > 0) {
+    buffDelta.bleedResistMul = 1 + totals.bleedResistancePct / 100;
+  }
   if (totals.shieldDefensePct > 0) {
     buffDelta.shieldDefenceRatePct = totals.shieldDefensePct;
   }
@@ -294,6 +330,18 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
   if (totals.stunResistancePct > 0) {
     buffDelta.addStunResistPct = totals.stunResistancePct;
   }
+  if (totals.hpRegenPct > 0) {
+    buffDelta.regenHpMul = 1 + totals.hpRegenPct / 100;
+  }
+  if (totals.mpRegenPct > 0) {
+    buffDelta.regenMpMul = 1 + totals.mpRegenPct / 100;
+  }
+  if (totals.speedFlat !== 0) {
+    buffDelta.addSpeed = totals.speedFlat;
+  }
+  if (totals.pAtkPct > 0) {
+    buffDelta.buffPatk = 1 + totals.pAtkPct / 100;
+  }
   return {
     buffDelta,
     flatMaxHp: totals.maxHpFlat,
@@ -303,6 +351,7 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
       intFlat: totals.intFlat,
       witFlat: totals.witFlat,
       conFlat: totals.conFlat,
+      dexFlat: totals.dexFlat,
     },
   };
 }
@@ -482,27 +531,51 @@ export function formatArmorSetBonusLinesUkFromEffects(
   effects: ArmorSetEffects
 ): string[] {
   const lines: string[] = [];
-  if (effects.maxHpFlat) lines.push(`Max HP ${effects.maxHpFlat > 0 ? '+' : ''}${effects.maxHpFlat}`);
-  if (effects.maxMpFlat) lines.push(`Max MP +${effects.maxMpFlat}`);
-  if (effects.mAtkPct) lines.push(`M.Atk +${effects.mAtkPct}%`);
-  if (effects.addCritDmg) lines.push(`P. Critical Damage +${effects.addCritDmg}`);
-  if (effects.poisonResistancePct) {
+  if (effects.maxHpFlat != null) {
+    lines.push(`Max HP ${effects.maxHpFlat > 0 ? '+' : ''}${effects.maxHpFlat}`);
+  }
+  if (effects.maxMpFlat != null) lines.push(`Max MP +${effects.maxMpFlat}`);
+  if (effects.mAtkPct != null) lines.push(`M.Atk +${effects.mAtkPct}%`);
+  if (effects.addCritDmg != null) lines.push(`P. Critical Damage +${effects.addCritDmg}`);
+  if (effects.poisonResistancePct != null) {
     lines.push(`Poison Resistance +${effects.poisonResistancePct}%`);
   }
-  if (effects.shieldDefensePct) {
+  if (effects.bleedResistancePct != null) {
+    lines.push(`Bleed Resistance +${effects.bleedResistancePct}%`);
+  }
+  if (effects.shieldDefensePct != null) {
     lines.push(`Shield Defense +${effects.shieldDefensePct}%`);
   }
-  if (effects.sleepHoldResistancePct) {
+  if (effects.sleepHoldResistancePct != null) {
     lines.push(`Sleep/Hold Resistance +${effects.sleepHoldResistancePct}%`);
   }
-  if (effects.castingSpdPct) lines.push(`Casting Speed +${effects.castingSpdPct}%`);
-  if (effects.pDefPct) lines.push(`P.Def +${effects.pDefPct}%`);
-  if (effects.stunResistancePct) {
+  if (effects.castingSpdPct != null) lines.push(`Casting Speed +${effects.castingSpdPct}%`);
+  if (effects.pDefPct != null) lines.push(`P.Def +${effects.pDefPct}%`);
+  if (effects.stunResistancePct != null) {
     lines.push(`Stun Resistance +${effects.stunResistancePct}%`);
   }
-  if (effects.intFlat) lines.push(`INT ${effects.intFlat > 0 ? '+' : ''}${effects.intFlat}`);
-  if (effects.witFlat) lines.push(`WIT ${effects.witFlat > 0 ? '+' : ''}${effects.witFlat}`);
-  if (effects.strFlat) lines.push(`STR ${effects.strFlat > 0 ? '+' : ''}${effects.strFlat}`);
-  if (effects.conFlat) lines.push(`CON ${effects.conFlat > 0 ? '+' : ''}${effects.conFlat}`);
+  if (effects.hpRegenPct != null) {
+    lines.push(`HP Recovery Bonus +${effects.hpRegenPct}%`);
+  }
+  if (effects.mpRegenPct != null) {
+    lines.push(`MP Recovery Bonus +${effects.mpRegenPct}%`);
+  }
+  if (effects.speedFlat != null) lines.push(`Speed +${effects.speedFlat}`);
+  if (effects.pAtkPct != null) lines.push(`P.Atk +${effects.pAtkPct}%`);
+  if (effects.intFlat != null) {
+    lines.push(`INT ${effects.intFlat > 0 ? '+' : ''}${effects.intFlat}`);
+  }
+  if (effects.witFlat != null) {
+    lines.push(`WIT ${effects.witFlat > 0 ? '+' : ''}${effects.witFlat}`);
+  }
+  if (effects.strFlat != null) {
+    lines.push(`STR ${effects.strFlat > 0 ? '+' : ''}${effects.strFlat}`);
+  }
+  if (effects.conFlat != null) {
+    lines.push(`CON ${effects.conFlat > 0 ? '+' : ''}${effects.conFlat}`);
+  }
+  if (effects.dexFlat != null) {
+    lines.push(`DEX ${effects.dexFlat > 0 ? '+' : ''}${effects.dexFlat}`);
+  }
   return lines;
 }

@@ -1,7 +1,6 @@
 /**
  * Повні сети броні (l3/l4/lh/lg/lf, без щита l2).
- * D/C-grade staged sets — `armorSetCatalog.ts` / `armorSetResolver.ts`.
- * B-grade — Avadon Robe / Blue Wolf / Leather Armor of Doom of Fortune.
+ * D/C/B-grade staged sets — `armorSetCatalog.ts` / `armorSetResolver.ts`.
  * A-grade — Apella Brigandine / Dark Crystal / Majestic Robe.
  * S-grade — Draconic Leather / Imperial Crusader / Major Arcana.
  */
@@ -31,61 +30,7 @@ const SET_SLOTS: readonly SetPieceSlots[] = [
   'lf',
 ];
 
-/** B-grade і вище — повний комплект усіх 5 слотів. */
-const B_AVADON_ROBE: DGradeArmorSetDef = {
-  id: 'b_avadon_robe',
-  pieces: {
-    l3: 30002,
-    l4: 'empty',
-    lh: 30001,
-    lg: 30003,
-    lf: 30004,
-  },
-  bonus: {
-    buffCast: 1.06,
-    buffMaxMp: 1.12,
-    addMCritPct: 3,
-    addDebuffResistPct: 8,
-  },
-};
-
-/** Blue Wolf: важка броня — живучість + трохи DPS/hit (не чистий танк). */
-const B_BLUE_WOLF: DGradeArmorSetDef = {
-  id: 'b_blue_wolf',
-  pieces: {
-    l3: 358,
-    l4: 2380,
-    lh: 2416,
-    lg: 2487,
-    lf: 2439,
-  },
-  bonus: {
-    buffMaxHp: 1.1,
-    buffPdef: 1.05,
-    buffAspd: 1.03,
-    buffAcc: 3,
-  },
-};
-
-/** Leather Armor of Doom of Fortune: крит + aspd (легка, без зайвого захисту в сет-бонусі). */
-const B_DOOM_OF_FORTUNE_LEATHER: DGradeArmorSetDef = {
-  id: 'b_doom_of_fortune_leather',
-  pieces: {
-    l3: 30009,
-    l4: 'empty',
-    lh: 30008,
-    lg: 30010,
-    lf: 30011,
-  },
-  bonus: {
-    buffAspd: 1.06,
-    addPhysicalCritChancePct: 3,
-    buffAcc: 4,
-    buffEva: 2,
-  },
-};
-
-/** Apella Brigandine: танк / PvP utility — без DPS-статів. */
+/** A-grade — Apella Brigandine: танк / PvP utility — без DPS-статів. */
 const A_APELLA_BRIGANDINE: DGradeArmorSetDef = {
   id: 'a_apella_brigandine',
   pieces: {
@@ -194,9 +139,6 @@ const S_MAJOR_ARCANA_ROBE: DGradeArmorSetDef = {
 };
 
 const LEGACY_FULL_ARMOR_SETS: readonly DGradeArmorSetDef[] = [
-  B_AVADON_ROBE,
-  B_BLUE_WOLF,
-  B_DOOM_OF_FORTUNE_LEATHER,
   A_APELLA_BRIGANDINE,
   A_DARK_CRYSTAL,
   A_MAJESTIC_ROBE,
@@ -235,9 +177,6 @@ function setMatchesEquipped(
 
 /** Назва повного сету для UI (профіль). */
 const ARMOR_SET_PROFILE_NAME_UK: Record<string, string> = {
-  b_avadon_robe: 'Avadon Robe (B)',
-  b_blue_wolf: 'Blue Wolf (B)',
-  b_doom_of_fortune_leather: 'Leather Armor of Doom (B)',
   a_apella_brigandine: 'Apella Brigandine (A)',
   a_dark_crystal: 'Dark Crystal (A)',
   a_majestic_robe: 'Majestic Robe (A)',
