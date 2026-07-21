@@ -27,6 +27,7 @@ import { getMagisterDialogForUser } from '../services/skillLearnService.js';
 import { getCharacterBonusesForUser } from '../services/characterBonusesService.js';
 import { characterDbErrorPayload } from './characterRouteErrors.js';
 import { CHARACTER_CATALOG_VERSION } from '../data/characterCatalogVersion.js';
+import { armorSetCatalogForClient } from '../data/armorSetResolver.js';
 
 function buildCharacterCatalogHints() {
   return {
@@ -42,6 +43,7 @@ function buildCharacterCatalogHints() {
     itemStatsHints: itemStatsHintsForClient(),
     /** Дворучна зброя (l1 займає «другу руку») — для UI слота щита. */
     itemBlocksShieldById: itemBlocksShieldHintsForClient(),
+    armorSetCatalog: armorSetCatalogForClient(),
     /** itemId → URL іконки як у крафті (`l2dop-by-itemid`), для сумки/ГМ. */
     craftResourceIconByItemId: {
       ...craftResourceIconHintsForClient(),

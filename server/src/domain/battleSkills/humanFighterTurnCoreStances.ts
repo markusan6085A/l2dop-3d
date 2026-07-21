@@ -30,6 +30,7 @@ import { buildRiposteStanceToggleTurn } from '../riposteStance.js';
 import {
   focusAttackAccuracyFlat,
   focusAttackCritDamagePct,
+  viciousStanceRankFromLearnedMap,
 } from '../../data/l2dopFocusAttack.js';
 import { ACCURACY_STANCE_MP_ACTIVATION } from '../../data/accuracyStanceTables.js';
 import type { FighterTurnCoreArgs } from './humanFighterTurnCoreArgs.js';
@@ -71,7 +72,7 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
         battleModsPatch: { stanceVicious: false },
       };
     }
-    const rank = skillRankForCurrentAction(ctx);
+    const rank = viciousStanceRankFromLearnedMap(ctx.learnedSkillLevelByBattleId);
     return {
       mpCost: 0,
       pDmg: 0,
@@ -81,7 +82,7 @@ export function tryResolveHumanFighterTurnStances(a: FighterTurnCoreArgs): Battl
       magicOutcome: null,
       battleModsPatch: {
         stanceVicious: true,
-        viciousStanceSkillRank: rank >= 1 ? rank : 1,
+        viciousStanceSkillRank: rank,
       },
     };
   }

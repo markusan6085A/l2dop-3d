@@ -36,6 +36,8 @@ import {
 } from '../data/skillCooldowns.js';
 import { resolveBattleSkillCooldownSec } from '../data/skillCooldownScaling.js';
 import { humanFighterCatalogEntry } from '../data/humanFighterSkillCatalog.js';
+import { viciousStanceRankFromLearnedMap } from '../data/l2dopFocusAttack.js';
+import { repairViciousStanceBattleModsInPlace } from '../data/viciousStanceTables.js';
 import {
   parseWorldCombatState,
   hfStanceMpDrainForIntervalSec,
@@ -873,6 +875,10 @@ export async function performBattleActionInTx(
       delete st.warCryPatkMul;
     } else {
       st.battleMods = mergedMods;
+      repairViciousStanceBattleModsInPlace(
+        st.battleMods,
+        viciousStanceRankFromLearnedMap(learnedSkillLevelByBattleId)
+      );
       const wSync = jsonFiniteNum(mergedMods.warCryPatkMul);
       if (wSync !== undefined && wSync > 1) {
         st.warCryPatkMul = wSync;

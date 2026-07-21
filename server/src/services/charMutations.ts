@@ -17,6 +17,7 @@ import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { mutateCharacterWithRevision } from './characterMutation.js';
 import { applyCharacterReadView } from './charReadView.js';
 import { ensureInventoryReadPatchesRow } from './charInventorySanitize.js';
+import { ensureWorldCombatViciousStanceReadRepairRow } from './charWorldCombatSanitize.js';
 
 
 function normalizePassiveAndMove(row: CharacterRow): CharacterRow {
@@ -128,7 +129,9 @@ export async function getSnapshotForUser(
         row = row.clan ? { ...updated, clan: row.clan } : updated;
       }
 
-      const sanitized = await ensureInventoryReadPatchesRow(row);
+      const sanitized = await ensureWorldCombatViciousStanceReadRepairRow(
+        await ensureInventoryReadPatchesRow(row)
+      );
       return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId);
     });
   }
@@ -139,7 +142,9 @@ export async function getSnapshotForUser(
     include: { clan: { select: { name: true, hallBlessingAt: true, level: true, emblemId: true } } },
   });
   if (!row) return null;
-  const sanitized = await ensureInventoryReadPatchesRow(row as CharacterRow);
+  const sanitized = await ensureWorldCombatViciousStanceReadRepairRow(
+    await ensureInventoryReadPatchesRow(row as CharacterRow)
+  );
   return buildCharacterClientSnapshot(applyCharacterReadView(sanitized), userId);
 }
 

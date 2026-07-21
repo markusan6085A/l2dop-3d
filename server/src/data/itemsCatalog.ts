@@ -19,6 +19,7 @@ import { mergeSdropsWeapons } from './itemsCatalogSWeapons.js';
 import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
 import { JEWELRY_AUTHOR_ITEM_PATCH } from './l2dopJewelryAuthorStats.js';
 import { dropsShieldPatchForEquipped } from './l2dopDropsShieldPatches.js';
+import { D_GRADE_ARMOR_CATALOG } from './dGradeArmorCatalog.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
 /** Базовий крит типу зброї ($WpnCrt) — як у calc_stats для відображення в GM-шопі та каталозі. */
@@ -124,6 +125,10 @@ export interface ItemMeta {
   equipCastSpd?: number;
   /** При екіпі в rhand: шанс маг. крита, % (перезаписує cap). */
   equipMCritPct?: number;
+  /** Щит: захист при блоці (Interlude shieldDefense). Не додається до sumEquippedArmorPDef. */
+  shieldDefense?: number;
+  /** Щит: шанс блоку, %. */
+  shieldBlockRatePct?: number;
 }
 
 /** C-grade «Apprentice's Spellbook» у drops shop (синтетичний id, без колізії з NG 99). */
@@ -328,6 +333,25 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   Object.assign(o, mammonGemstoneItemMetaForCatalog());
   Object.assign(o, mammonLifeStoneItemMetaForCatalog());
 
+  /** D-grade броня / щити — канонічний каталог Interlude (перезапис GM-рядків). */
+  for (const row of D_GRADE_ARMOR_CATALOG) {
+    const prev = o[row.itemId];
+    o[row.itemId] = {
+      ...(prev ?? {}),
+      nameUk: row.name,
+      slot: row.slot,
+      armorType: row.armorType,
+      ...(row.pDef != null ? { pDef: row.pDef } : {}),
+      ...(row.shieldDefense != null
+        ? {
+            shieldDefense: row.shieldDefense,
+            shieldBlockRatePct: row.shieldBlockRatePct,
+            pDef: undefined,
+          }
+        : {}),
+    };
+  }
+
   return o;
 })();
 
@@ -385,7 +409,6 @@ export function itemStatsHintsForClient(): Record<number, ItemStatsHintForClient
     const st: ItemStatsHintForClient = {};
     if (typeof m.pAtk === 'number' && m.pAtk !== 0) st.pAtk = m.pAtk;
     if (typeof m.mAtk === 'number' && m.mAtk !== 0) st.mAtk = m.mAtk;
-    if (typeof m.pDef === 'number' && m.pDef !== 0) st.pDef = m.pDef;
     if (typeof m.atkSpd === 'number' && m.atkSpd !== 0) st.atkSpd = m.atkSpd;
     if (typeof m.wpnCrit === 'number' && m.wpnCrit !== 0) st.wpnCrit = m.wpnCrit;
     if (typeof m.rCrit === 'number' && m.rCrit !== 0) st.rCrit = m.rCrit;
@@ -426,11 +449,21 @@ export function itemStatsHintsForClient(): Record<number, ItemStatsHintForClient
     }
     if (m.slot === 'lhand') {
       const shieldPatch = dropsShieldPatchForEquipped(id, m.nameUk);
-      if (shieldPatch) {
-        st.pDef = shieldPatch.pDef;
-        st.shieldRatePercent = shieldPatch.shieldRatePercent;
-        st.shieldDef = shieldPatch.shieldDef;
+      const shieldDef =
+        m.shieldDefense ??
+        shieldPatch?.shieldDef ??
+        (typeof m.pDef === 'number' ? m.pDef : undefined);
+      const shieldRate =
+        m.shieldBlockRatePct ?? shieldPatch?.shieldRatePercent;
+      if (shieldDef != null) {
+        st.shieldDef = shieldDef;
       }
+      if (shieldRate != null) {
+        st.shieldRatePercent = shieldRate;
+      }
+      /** Щити: не показувати окремий P.Def — лише shieldDef + block %. */
+    } else if (typeof m.pDef === 'number' && m.pDef !== 0) {
+      st.pDef = m.pDef;
     }
     if (Object.keys(st).length > 0) out[id] = st;
   }

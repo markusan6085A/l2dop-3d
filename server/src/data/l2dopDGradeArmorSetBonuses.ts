@@ -1,12 +1,10 @@
 /**
  * Повні сети броні (l3/l4/lh/lg/lf, без щита l2).
- * D-grade — Mithril / Reinforced Leather / Tunic of Knowledge.
- * C-grade у каталозі — Demon's / Karmian / Plated Leather.
+ * D-grade — канонічні staged sets у `armorSetCatalog.ts` / `armorSetResolver.ts`.
+ * C-grade — Demon's / Karmian / Plated Leather.
  * B-grade — Avadon Robe / Blue Wolf / Leather Armor of Doom of Fortune.
  * A-grade — Apella Brigandine / Dark Crystal / Majestic Robe.
  * S-grade — Draconic Leather / Imperial Crusader / Major Arcana.
- * У мантії та частини light-сетів у GM немає окремих штанів — для `l4` задається `'empty'`.
- * Без STR/INT і без прямого % damage / crit damage % (на S особливо критично).
  */
 import type { InventoryState } from './inventory.js';
 import { normalizeEqSlot } from './inventory.js';
@@ -34,60 +32,7 @@ const SET_SLOTS: readonly SetPieceSlots[] = [
   'lf',
 ];
 
-/** Mithril: танк / PvE heavy. */
-const D_MITHRIL: DGradeArmorSetDef = {
-  id: 'd_mithril',
-  pieces: {
-    l3: 58,
-    l4: 59,
-    lh: 499,
-    lg: 61,
-    lf: 62,
-  },
-  bonus: {
-    buffMaxHp: 1.08,
-    buffPdef: 1.05,
-    addStunResistPct: 10,
-  },
-};
-
-/** Reinforced Leather: light DPS, синергія з hit без raw damage. */
-const D_REINFORCED_LEATHER: DGradeArmorSetDef = {
-  id: 'd_reinforced_leather',
-  pieces: {
-    l3: 394,
-    l4: 416,
-    lh: 44,
-    lg: 720,
-    lf: 2422,
-  },
-  bonus: {
-    buffAspd: 1.05,
-    buffAcc: 3,
-    buffEva: 2,
-  },
-};
-
-/** Tunic of Knowledge: роба мага — комфорт + легкий mCrit. */
-const D_KNOWLEDGE: DGradeArmorSetDef = {
-  id: 'd_tunic_of_knowledge',
-  pieces: {
-    l3: 436,
-    l4: 469,
-    lh: 41,
-    lg: 2447,
-    lf: 2423,
-  },
-  bonus: {
-    buffMaxMp: 1.1,
-    buffCast: 1.05,
-    addMCritPct: 2,
-  },
-};
-
-/**
- * Demon's Tunic: каст + mCrit + менше MP у бою (itemId — C у l2dopGmShopCatalog).
- */
+/** C-grade і вище — повний комплект усіх 5 слотів. */
 const C_DEMON: DGradeArmorSetDef = {
   id: 'c_demon_tunic',
   pieces: {
@@ -300,10 +245,7 @@ const S_MAJOR_ARCANA_ROBE: DGradeArmorSetDef = {
   },
 };
 
-const D_GRADE_FULL_SETS: readonly DGradeArmorSetDef[] = [
-  D_MITHRIL,
-  D_REINFORCED_LEATHER,
-  D_KNOWLEDGE,
+const LEGACY_FULL_ARMOR_SETS: readonly DGradeArmorSetDef[] = [
   C_DEMON,
   C_KARMIAN,
   C_PLATED_LEATHER,
@@ -348,9 +290,6 @@ function setMatchesEquipped(
 
 /** Назва повного сету для UI (профіль). */
 const ARMOR_SET_PROFILE_NAME_UK: Record<string, string> = {
-  d_mithril: 'Mithril (D)',
-  d_reinforced_leather: 'Reinforced Leather (D)',
-  d_tunic_of_knowledge: 'Tunic of Knowledge (D)',
   c_demon_tunic: "Demon's (C)",
   c_karmian: 'Karmian (C)',
   c_plated_leather: 'Plated Leather (C)',
@@ -434,12 +373,12 @@ export interface ActiveArmorSetProfile {
   linesUk: string[];
 }
 
-/** Активний повний сет на екіпі — для профілю (числа вже в бойових полях snapshot). */
+/** Активний повний сет C+ на екіпі — для профілю (D-grade — armorSetResolver). */
 export function resolveActiveArmorSetProfile(
   inv: InventoryState
 ): ActiveArmorSetProfile | null {
   const worn = equippedArmorPieceIds(inv);
-  for (const set of D_GRADE_FULL_SETS) {
+  for (const set of LEGACY_FULL_ARMOR_SETS) {
     if (!setMatchesEquipped(set, worn)) continue;
     return {
       id: set.id,
@@ -452,13 +391,20 @@ export function resolveActiveArmorSetProfile(
   return null;
 }
 
-/** Дельта бафів, якщо зібрано один із відомих повних сетів (див. список у файлі). */
-export function dGradeFullArmorSetBonusDelta(
+/** Дельта C+ повних сетів (D-grade — armorSetResolver). */
+export function dGradeFullArmorSetBonusDeltaLegacyOnly(
   inv: InventoryState
 ): DGradeArmorSetBonusDelta {
   const worn = equippedArmorPieceIds(inv);
-  for (const set of D_GRADE_FULL_SETS) {
+  for (const set of LEGACY_FULL_ARMOR_SETS) {
     if (setMatchesEquipped(set, worn)) return set.bonus;
   }
   return {};
+}
+
+/** @deprecated Use armorSetResolver + legacyOnly for C+. */
+export function dGradeFullArmorSetBonusDelta(
+  inv: InventoryState
+): DGradeArmorSetBonusDelta {
+  return dGradeFullArmorSetBonusDeltaLegacyOnly(inv);
 }

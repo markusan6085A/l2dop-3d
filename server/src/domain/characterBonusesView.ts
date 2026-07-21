@@ -7,7 +7,7 @@ import {
   type ComputeCombatStatsOptions,
 } from '../data/l2dopCombatFormulas.js';
 import { levelFromTotalExp } from '../data/l2dopExpgain.js';
-import { resolveActiveArmorSetProfile } from '../data/l2dopDGradeArmorSetBonuses.js';
+import { resolveActiveArmorSetProfileLines } from '../data/armorSetResolver.js';
 import { resolveL2ProfessionForSkillsRow } from '../data/l2dopHumanFighterBattleSkills.js';
 import { polearmMasteryPatkFlatAtRank } from '../data/polearmMasteryTables.js';
 import { swordBluntMasteryPatkFlatAtRank } from '../data/swordBluntMasteryTables.js';
@@ -291,7 +291,7 @@ export function buildCharacterBonusesView(row: CharacterRow): CharacterBonusesVi
   const inv = parseInventory(row.inventoryJson);
   const level = levelFromTotalExp(row.exp);
   const opts = combatOptsFromRow(row);
-  const armorSet = resolveActiveArmorSetProfile(inv);
+  const armorSet = resolveActiveArmorSetProfileLines(inv);
 
   return {
     raceBranchLabelUk: raceBranchLabelUk(row),

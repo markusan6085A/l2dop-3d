@@ -3,6 +3,7 @@
  */
 import type { DropsShopStatLineUk } from '../domain/dropsShopStatsPreviewUk.js';
 import dropsShopOverrides from './dropsShopOverrides.json';
+import { dGradeArmorCatalogRow } from './dGradeArmorCatalog.js';
 
 export interface DropsShieldPatch {
   /** Підпис у списку / модалці (англ. назва L2). */
@@ -33,27 +34,27 @@ const RAW: Array<[string, DropsShieldPatch]> = [
     'arrom_d/shield_bronze_shield_i00_0.jpg',
     {
       nameUk: 'Bronze Shield',
-      pDef: 33,
+      pDef: 101,
       shieldRatePercent: 20,
-      shieldDef: 18,
+      shieldDef: 101,
     },
   ],
   [
     'arrom_d/shield_hoplon_i00_0.jpg',
     {
       nameUk: 'Hoplon',
-      pDef: 38,
+      pDef: 128,
       shieldRatePercent: 20,
-      shieldDef: 20,
+      shieldDef: 128,
     },
   ],
   [
     'arrom_d/shield_plate_shield_i00_0.jpg',
     {
       nameUk: 'Plate Shield',
-      pDef: 44,
+      pDef: 154,
       shieldRatePercent: 20,
-      shieldDef: 23,
+      shieldDef: 154,
     },
   ],
   [
@@ -196,6 +197,15 @@ export function dropsShieldPatchForEquipped(
 ): DropsShieldPatch | undefined {
   const id = Math.floor(itemId);
   if (Number.isFinite(id) && id > 0) {
+    const canon = dGradeArmorCatalogRow(id);
+    if (canon?.shieldDefense != null) {
+      return {
+        nameUk: canon.name,
+        pDef: canon.shieldDefense,
+        shieldRatePercent: canon.shieldBlockRatePct ?? 20,
+        shieldDef: canon.shieldDefense,
+      };
+    }
     const byId = L2DOP_DROPS_SHIELD_BY_ITEM_ID[id];
     if (byId) return byId;
   }
@@ -210,12 +220,14 @@ export function dropsShieldShopPreviewLines(
   patch: DropsShieldPatch,
 ): DropsShopStatLineUk[] {
   const lines: DropsShopStatLineUk[] = [
-    { labelUk: 'P.Def', valueUk: String(patch.pDef) },
+    {
+      labelUk: 'Захист щита',
+      valueUk: String(patch.shieldDef ?? patch.pDef),
+    },
     {
       labelUk: 'Блок щитом',
       valueUk: `${patch.shieldRatePercent}%`,
     },
-    { labelUk: 'Захист щита', valueUk: String(patch.shieldDef) },
   ];
   if (patch.weight != null) {
     lines.push({ labelUk: 'Вага', valueUk: String(patch.weight) });

@@ -81,7 +81,7 @@
   var craftBookCache = null;
   var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260721buffalo308OneHandV2';
+  var APP_DATA_VERSION = '20260721dGradeArmorSetsV1';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
@@ -389,6 +389,20 @@
         global.L2.itemStatsById[k] = Object.assign({}, prev, st);
       });
     }
+    if (j.armorSetCatalog && Array.isArray(j.armorSetCatalog) && global.L2) {
+      global.L2.armorSetCatalogById = {};
+      global.L2.armorSetByPieceId = {};
+      for (var asi = 0; asi < j.armorSetCatalog.length; asi++) {
+        var aset = j.armorSetCatalog[asi];
+        if (!aset || !aset.setId) continue;
+        global.L2.armorSetCatalogById[aset.setId] = aset;
+        if (aset.pieceIds) {
+          for (var api = 0; api < aset.pieceIds.length; api++) {
+            global.L2.armorSetByPieceId[aset.pieceIds[api]] = aset;
+          }
+        }
+      }
+    }
     if (
       j.itemBlocksShieldById &&
       typeof j.itemBlocksShieldById === 'object' &&
@@ -613,6 +627,10 @@
     itemNameById: {},
     /** GET /character/catalog-hints gearCatalog: itemId → stats (pAtk, mAtk, pDef, atkSpd, wpnCrit …) */
     itemStatsById: {},
+    /** setId → armor set definition (catalog-hints) */
+    armorSetCatalogById: {},
+    /** core piece itemId → set definition */
+    armorSetByPieceId: {},
     /** rhand | chest | legs — для fallback іконки й підпису типу */
     itemSlotById: {},
     /** NG | D | C | B | A | S — з GET /character/catalog-hints itemGradeHints + gearCatalog */
@@ -1317,13 +1335,14 @@
         slot === 'fullarmor' ||
         slot === 'lhand'
       ) {
-        if (st.pDef != null) {
+        var isShieldPreview = slot === 'lhand' || slot === 'shield';
+        if (st.pDef != null && !(isShieldPreview && st.shieldDef != null)) {
           lines.push({
             labelUk: 'Фіз. захист (P.Def)',
             valueUk: String(st.pDef),
           });
         }
-        if (slot === 'lhand' || slot === 'shield') {
+        if (isShieldPreview) {
           if (st.shieldRatePercent != null) {
             lines.push({
               labelUk: 'Блок щитом',
@@ -1526,11 +1545,11 @@
       if (!st || typeof st !== 'object') return;
       if (st.pAtk != null) addEnchantRow('Фіз. атака', st.pAtk, 'weaponPatk');
       if (isShieldModal) {
-        if (st.pDef != null) addEnchantRow('P.Def', st.pDef, 'armorPDef');
         if (st.shieldRatePercent != null) {
           addRow('Блок щитом', String(st.shieldRatePercent) + '%');
         }
         if (st.shieldDef != null) addRow('Захист щита', String(st.shieldDef));
+        else if (st.pDef != null) addEnchantRow('P.Def', st.pDef, 'armorPDef');
       } else if (isJewelModal) {
         var mdef =
           st.jewelMdefFlat != null

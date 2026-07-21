@@ -16,7 +16,10 @@ import {
   focusAttackRankFromLearnedMap,
   viciousStanceRankFromLearnedMap,
 } from '../data/l2dopFocusAttack.js';
-import { resolveViciousStanceEffectRank } from '../data/viciousStanceTables.js';
+import {
+  resolveViciousStanceEffect,
+  resolveViciousStanceEffectRank,
+} from '../data/viciousStanceTables.js';
 import { applyFocusPowerCritDmgMul } from '../data/focusPowerTables.js';
 import { physicalCritChance } from '../data/l2dopHitResolution.js';
 import { effectiveBattlePatkDisplay } from './battleEffectiveDisplay.js';
@@ -97,26 +100,25 @@ function buildCritLayers(
   }
   if (isStanceViciousActive(mods)) {
     const rk = resolveViciousStanceEffectRank(
-      viciousStanceRankFromLearnedMap(learned),
-      mods
+      viciousStanceRankFromLearnedMap(learned)
     );
-    const d312 = textRpgHfToggleStanceDelta(312, rk);
-    if (d312?.addCritDmg) {
-      addCritDmg += d312.addCritDmg;
+    const vs = resolveViciousStanceEffect(rk);
+    if (vs.addCritDmg) {
+      addCritDmg += vs.addCritDmg;
       flatLayers.push({
         label: `Vicious Stance r${rk} flat`,
-        flat: d312.addCritDmg,
+        flat: vs.addCritDmg,
         running: addCritDmg,
       });
     }
-    if (d312?.addCrit) {
-      critRate = Math.min(500, Math.floor(critRate + d312.addCrit));
+    if (vs.addCrit) {
+      critRate = Math.min(500, Math.floor(critRate + vs.addCrit));
     }
-    if (d312?.critDmgMul != null && d312.critDmgMul > 0 && Number.isFinite(d312.critDmgMul)) {
-      critDmgMul *= d312.critDmgMul;
+    if (vs.critDmgMul > 0 && Number.isFinite(vs.critDmgMul) && vs.critDmgMul !== 1) {
+      critDmgMul *= vs.critDmgMul;
       layers.push({
         label: `Vicious Stance r${rk} %`,
-        mul: d312.critDmgMul,
+        mul: vs.critDmgMul,
         running: critDmgMul,
       });
     }

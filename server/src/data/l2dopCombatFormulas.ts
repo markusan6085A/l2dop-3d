@@ -28,7 +28,11 @@ import {
   partialCombatBuffDeltaFromNeutral,
   type L2dopCombatBuffModifiers,
 } from './l2dopCombatBuffModifiers.js';
-import { dGradeFullArmorSetBonusDelta } from './l2dopDGradeArmorSetBonuses.js';
+import {
+  armorSetTotalsToCombatDelta,
+  legacyFullArmorSetBonusDelta,
+  resolveEquippedArmorSetBonuses,
+} from './armorSetResolver.js';
 import { inferWeaponGradeMatchesArmor } from './l2dopItemGradeRank.js';
 import {
   buffWeaponContextFromInv,
@@ -402,7 +406,10 @@ export function sumEquippedArmorPDef(
   for (const key of ARMOR_PDEF_EQ_KEYS) {
     const slot = normalizeEqSlot(eq[key]);
     if (!slot) continue;
-    const base = ITEM_CATALOG[slot.itemId]?.pDef;
+    const meta = ITEM_CATALOG[slot.itemId];
+    /** Щити (lhand) — лише shieldPDef при блоці, не в сумі P.Def броні. */
+    if (meta?.slot === 'lhand') continue;
+    const base = meta?.pDef;
     if (typeof base !== 'number' || !Number.isFinite(base)) continue;
     sum += base + armorPiecePDefEnchantBonus(slot.enchant);
   }
@@ -423,7 +430,7 @@ export function equippedShieldPDef(
   const shM = ITEM_CATALOG[shSlot.itemId];
   if (!shM || shM.slot !== 'lhand') return 0;
   const patch = dropsShieldPatchForEquipped(shSlot.itemId, shM.nameUk);
-  const base = patch?.shieldDef;
+  const base = shM.shieldDefense ?? patch?.shieldDef;
   if (typeof base !== 'number' || !Number.isFinite(base) || base <= 0) return 0;
   const rate = Math.max(0, Math.min(100, Math.floor(shieldDefenceRatePct)));
   if (rate <= 0) return 0;
@@ -716,9 +723,12 @@ export function computeCombatStats(
   const eq = inv.eq || {};
   const jEq = jewelryEquipBuffDelta(eq);
   B = applyBuffDelta(B, jEq.delta);
-  B = applyBuffDelta(B, dGradeFullArmorSetBonusDelta(inv));
-  const jewelFlatMaxHp = jEq.flatHp;
-  const jewelFlatMaxMp = jEq.flatMp;
+  const armorSetResolved = resolveEquippedArmorSetBonuses(inv);
+  const armorSetCombat = armorSetTotalsToCombatDelta(armorSetResolved.totals);
+  B = applyBuffDelta(B, armorSetCombat.buffDelta);
+  B = applyBuffDelta(B, legacyFullArmorSetBonusDelta(inv));
+  const jewelFlatMaxHp = jEq.flatHp + armorSetCombat.flatMaxHp;
+  const jewelFlatMaxMp = jEq.flatMp + armorSetCombat.flatMaxMp;
   const gradeOk =
     options?.weaponGradeMatchesArmor !== undefined
       ? options.weaponGradeMatchesArmor

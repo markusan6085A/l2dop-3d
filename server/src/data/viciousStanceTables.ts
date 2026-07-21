@@ -11,31 +11,77 @@ import { STANCE_MP_PER_SEC } from '../domain/worldCombatState.js';
 
 export const VICIOUS_STANCE_MAX_RANK = 20;
 
-export function resolveViciousStanceEffectRank(
-  learnedRank: number,
-  mods?: BattleBattleMods
-): number {
-  if (isStanceViciousActive(mods)) {
-    const stored = mods?.viciousStanceSkillRank;
-    if (typeof stored === 'number' && Number.isFinite(stored) && stored >= 1) {
-      return clampViciousStanceRank(stored);
-    }
-  }
+export type ViciousStanceEffect = {
+  critDmgMul: number;
+  addCritDmg: number;
+  addCrit: number;
+};
+
+/** Єдиний runtime-контракт ефекту Vicious Stance за learned rank (1–20). */
+export function resolveViciousStanceEffect(rank: number): ViciousStanceEffect {
+  const r = clampViciousStanceRank(rank);
+  const d = textRpgHfToggleStanceDelta(312, r);
+  const critDmgMul =
+    d?.critDmgMul != null &&
+    d.critDmgMul > 0 &&
+    Number.isFinite(d.critDmgMul)
+      ? d.critDmgMul
+      : 1;
+  return {
+    critDmgMul,
+    addCritDmg: d?.addCritDmg ?? 0,
+    addCrit: d?.addCrit ?? 0,
+  };
+}
+
+/**
+ * Ранг ефекту — лише learned rank з `skillsLearnedJson`.
+ * Persisted `battleMods.viciousStanceSkillRank` не використовується для розрахунку.
+ */
+export function resolveViciousStanceEffectRank(learnedRank: number): number {
   return clampViciousStanceRank(learnedRank);
 }
 
+/**
+ * Read-repair persisted `battleMods` для skill 312 (усі класи).
+ * Повертає true, якщо state змінено.
+ */
+export function repairViciousStanceBattleModsInPlace(
+  mods: BattleBattleMods,
+  learnedRank: number
+): boolean {
+  let changed = false;
+  if (!isStanceViciousActive(mods)) {
+    if (mods.viciousStanceSkillRank != null) {
+      delete mods.viciousStanceSkillRank;
+      changed = true;
+    }
+    return changed;
+  }
+  if (learnedRank < 1) {
+    delete mods.stanceVicious;
+    delete mods.viciousStanceSkillRank;
+    return true;
+  }
+  const correctRank = clampViciousStanceRank(learnedRank);
+  if (mods.viciousStanceSkillRank !== correctRank) {
+    mods.viciousStanceSkillRank = correctRank;
+    changed = true;
+  }
+  return changed;
+}
+
 function formatViciousStanceBonusParts(rank: number): string[] {
-  const d = textRpgHfToggleStanceDelta(312, rank);
-  if (!d) return [];
+  const eff = resolveViciousStanceEffect(rank);
   const parts: string[] = [];
-  if (d.addCrit != null && d.addCrit > 0) {
-    parts.push('+' + d.addCrit + ' крит');
+  if (eff.addCrit > 0) {
+    parts.push('+' + eff.addCrit + ' крит');
   }
-  if (d.critDmgMul != null && d.critDmgMul > 1 && Number.isFinite(d.critDmgMul)) {
-    parts.push('+' + Math.round((d.critDmgMul - 1) * 100) + '% сила криту');
+  if (eff.critDmgMul > 1 && Number.isFinite(eff.critDmgMul)) {
+    parts.push('+' + Math.round((eff.critDmgMul - 1) * 100) + '% сила криту');
   }
-  if (d.addCritDmg != null && d.addCritDmg > 0) {
-    parts.push('+' + d.addCritDmg + ' сила криту (flat)');
+  if (eff.addCritDmg > 0) {
+    parts.push('+' + eff.addCritDmg + ' сила криту (flat)');
   }
   return parts;
 }

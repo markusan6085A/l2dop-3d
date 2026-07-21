@@ -44,7 +44,11 @@ import {
   viciousStanceRankFromLearnedEntries,
 } from '../src/data/l2dopFocusAttack.js';
 import { textRpgHfToggleStanceDelta } from '../src/data/textRpgHfToggleBattleApply.js';
-import { resolveViciousStanceEffectRank } from '../src/data/viciousStanceTables.js';
+import {
+  resolveViciousStanceEffect,
+  resolveViciousStanceEffectRank,
+  repairViciousStanceBattleModsInPlace,
+} from '../src/data/viciousStanceTables.js';
 import {
   isFocusAttackActive,
   isStanceViciousActive,
@@ -252,12 +256,10 @@ async function main(): Promise<void> {
     finalCritMul *= focusAttackCritDmgMultiplier(focusRank);
   }
   if (isStanceViciousActive(displayMods)) {
-    const d312 = textRpgHfToggleStanceDelta(
-      312,
-      resolveViciousStanceEffectRank(viciousRank, displayMods),
-    );
-    if (d312?.critDmgMul && d312.critDmgMul > 1) finalCritMul *= d312.critDmgMul;
-    if (d312?.addCritDmg) addCrit += d312.addCritDmg;
+    const rk = resolveViciousStanceEffectRank(viciousRank);
+    const vs = resolveViciousStanceEffect(rk);
+    if (vs.critDmgMul > 1) finalCritMul *= vs.critDmgMul;
+    if (vs.addCritDmg) addCrit += vs.addCritDmg;
   }
   const zealMul = jsonFiniteNum(displayMods.zealotCritDmgMul);
   if (zealMul !== undefined && zealMul > 1) finalCritMul *= zealMul;

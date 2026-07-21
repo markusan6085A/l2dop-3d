@@ -2,7 +2,7 @@
  * Service Worker: cache-first для статики (фото, ref, css, js).
  * HTML і API — завжди мережа (сервер = джерело правди).
  */
-var GAME_CACHE_VERSION = '20260721buffalo308OneHandV2';
+var GAME_CACHE_VERSION = '20260721dGradeArmorSetsV1';
 var STATIC_CACHE = 'l2dop-static-' + GAME_CACHE_VERSION;
 
 /** Лише безверсійні іконки/рамки — JS/CSS з ?v= не precache (інакше застрягає старий UI). */

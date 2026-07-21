@@ -7,7 +7,7 @@ import {
   effectiveMaxMpWithJewelFlat,
   type ComputeCombatStatsOptions,
 } from '../data/l2dopCombatFormulas.js';
-import { resolveActiveArmorSetProfile } from '../data/l2dopDGradeArmorSetBonuses.js';
+import { resolveActiveArmorSetProfileLines } from '../data/armorSetResolver.js';
 import { computeVitals } from '../data/l2dopVitals.js';
 import { mapAngleDeg } from '../data/l2dopMapCoords.js';
 import {
@@ -70,8 +70,10 @@ import {
   focusAttackRankFromLearnedEntries,
   viciousStanceRankFromLearnedEntries,
 } from '../data/l2dopFocusAttack.js';
-import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
-import { resolveViciousStanceEffectRank } from '../data/viciousStanceTables.js';
+import {
+  resolveViciousStanceEffect,
+  resolveViciousStanceEffectRank,
+} from '../data/viciousStanceTables.js';
 import {
   canonicalBattleSkillId,
   learnedBattleIdsFromEntries,
@@ -238,16 +240,13 @@ function addCritDisplayForProfile(
     mul *= focusAttackCritDmgMultiplier(focusAttackRank);
   }
   if (isStanceViciousActive(displayMods)) {
-    const d = textRpgHfToggleStanceDelta(
-      312,
-      resolveViciousStanceEffectRank(
-        viciousStanceRankFromLearnedEntries(learned),
-        displayMods
-      )
+    const rk = resolveViciousStanceEffectRank(
+      viciousStanceRankFromLearnedEntries(learned)
     );
-    if (d?.addCritDmg) flat += d.addCritDmg;
-    if (d?.critDmgMul != null && d.critDmgMul > 0 && Number.isFinite(d.critDmgMul)) {
-      mul *= d.critDmgMul;
+    const vs = resolveViciousStanceEffect(rk);
+    if (vs.addCritDmg) flat += vs.addCritDmg;
+    if (vs.critDmgMul > 0 && Number.isFinite(vs.critDmgMul)) {
+      mul *= vs.critDmgMul;
     }
   }
   const zCd = jsonFiniteNum(displayMods?.zealotCritDmgMul);
@@ -343,8 +342,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     equippedWeaponKind(inv)
   );
   const viciousRankDisplay = resolveViciousStanceEffectRank(
-    viciousStanceRankFromLearnedEntries(learnedDetail),
-    worldTicked?.battleMods
+    viciousStanceRankFromLearnedEntries(learnedDetail)
   );
   const critRate = effectiveBattleCritRateDisplay(
     combat.critRate,
@@ -479,7 +477,7 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
     debuffResistPct: combat.debuffResistPct,
     skillMpCostMul: combat.skillMpCostMul,
     addDebuffLandChancePct: combat.addDebuffLandChancePct,
-    armorSetBonus: resolveActiveArmorSetProfile(inv),
+    armorSetBonus: resolveActiveArmorSetProfileLines(inv),
     addCritDmg: combat.addCritDmg,
     addCritDisplay: addCritDisplayForProfile(
       combat,

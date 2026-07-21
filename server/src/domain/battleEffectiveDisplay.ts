@@ -1,4 +1,5 @@
 import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
+import { resolveViciousStanceEffect } from '../data/viciousStanceTables.js';
 import { focusAttackAccuracyFlat } from '../data/l2dopFocusAttack.js';
 import type { BattleBattleMods } from './battleTypes.js';
 import {
@@ -323,12 +324,11 @@ export function effectiveBattleCritRateDisplay(
   const mods = resolveDisplayBattleMods(rawBattleJson, worldBattleMods);
   let cr = baseCritRate;
   if (isStanceViciousActive(mods)) {
-    const d = textRpgHfToggleStanceDelta(
-      312,
+    const vs = resolveViciousStanceEffect(
       Math.max(1, viciousStanceSkillRank ?? 1)
     );
-    if (d?.addCrit != null && Number.isFinite(d.addCrit)) {
-      cr = Math.min(500, Math.floor(cr + d.addCrit));
+    if (vs.addCrit > 0 && Number.isFinite(vs.addCrit)) {
+      cr = Math.min(500, Math.floor(cr + vs.addCrit));
     }
   }
   const snC = jsonFiniteNum(mods?.snipeCritRateAdd);

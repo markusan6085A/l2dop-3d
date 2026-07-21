@@ -37,7 +37,10 @@ import {
   focusAttackCritDmgMultiplier,
   focusAttackCritDamagePct,
 } from '../src/data/l2dopFocusAttack.js';
-import { resolveViciousStanceEffectRank } from '../src/data/viciousStanceTables.js';
+import {
+  resolveViciousStanceEffect,
+  resolveViciousStanceEffectRank,
+} from '../src/data/viciousStanceTables.js';
 import { l2dopBuffDeltaFromTextRpgEffect } from '../src/data/textRpgCombatBuffFromEffect.js';
 import {
   L2DOP_FRENZY,
@@ -274,10 +277,10 @@ function printCritBreakdown(
     `| Focus Attack | 317 | Focus Attack | +${focusAttackCritDamagePct(FOCUS_RANK)}% | ${(running / focusMul).toFixed(3)} | ${running.toFixed(3)} |`
   );
 
-  const viciousRank = resolveViciousStanceEffectRank(VICIOUS_RANK, battleMods);
-  const viciousDelta = textRpgHfToggleStanceDelta(312, viciousRank);
+  const viciousRank = resolveViciousStanceEffectRank(VICIOUS_RANK);
+  const viciousDelta = resolveViciousStanceEffect(viciousRank);
   let flat = combat.addCritDmg;
-  if (viciousDelta?.critDmgMul && viciousDelta.critDmgMul > 1) {
+  if (viciousDelta.critDmgMul > 1) {
     const before = running;
     running *= viciousDelta.critDmgMul;
     console.log(
@@ -288,7 +291,7 @@ function printCritBreakdown(
       `| Vicious Stance % | 312 | Vicious Stance r${viciousRank} | (rank>5: лише flat) | ${running.toFixed(3)} | ${running.toFixed(3)} |`
     );
   }
-  if (viciousDelta?.addCritDmg) {
+  if (viciousDelta.addCritDmg) {
     flat += viciousDelta.addCritDmg;
     console.log(
       `| Vicious Stance flat | 312 | Vicious Stance r${viciousRank} | +${viciousDelta.addCritDmg} | addCrit ${flat - viciousDelta.addCritDmg} | ${flat} |`

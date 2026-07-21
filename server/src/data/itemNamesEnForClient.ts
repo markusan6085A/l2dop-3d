@@ -13,6 +13,7 @@ import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatch
 import { L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER } from './l2dopNgWeaponDropsPatches.js';
 import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
+import { D_GRADE_ARMOR_CATALOG } from './dGradeArmorCatalog.js';
 import { ancientAdenaNamesEnForClient } from './ancientAdenaItem.js';
 import { mammonGemstoneNamesEnForClient } from './mammonMerchantGemstones.js';
 import { mammonLifeStoneNamesEnForClient } from './mammonMerchantLifeStones.js';
@@ -152,6 +153,10 @@ export function itemNamesEnForClient(): Record<number, string> {
 
   for (const [idStr, en] of Object.entries(ITEM_NAMES_EN_OVERRIDES)) {
     put(Number(idStr), en, true);
+  }
+
+  for (const row of D_GRADE_ARMOR_CATALOG) {
+    put(row.itemId, row.name, true);
   }
 
   for (const [idStr, m] of Object.entries(ITEM_CATALOG)) {

@@ -23,7 +23,7 @@ export interface BattleBattleMods {
   stanceAccuracy?: boolean;
   /** Жорстка стійка (312). */
   stanceVicious?: boolean;
-  /** Ранг скіла 312 — для `textRpgHfToggleStanceDelta(312, rank)`. */
+  /** Ранг скіла 312 — persisted mirror learned rank (read-repair); ефект — `resolveViciousStanceEffect(learnedRank)`. */
   viciousStanceSkillRank?: number;
   /** Стійка парування (339). */
   stanceParry?: boolean;

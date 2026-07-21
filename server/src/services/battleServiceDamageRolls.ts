@@ -28,7 +28,10 @@ import {
   viciousStanceRankFromLearnedMap,
 } from '../data/l2dopFocusAttack.js';
 import { textRpgHfToggleStanceDelta } from '../data/textRpgHfToggleBattleApply.js';
-import { resolveViciousStanceEffectRank } from '../data/viciousStanceTables.js';
+import {
+  resolveViciousStanceEffect,
+  resolveViciousStanceEffectRank,
+} from '../data/viciousStanceTables.js';
 import { applyFocusChanceCritRateStat } from '../data/focusChanceTables.js';
 import { applyFocusPowerCritDmgMul } from '../data/focusPowerTables.js';
 
@@ -160,20 +163,15 @@ export function rollPlayerPhysicalDmg(
   }
   if (isStanceViciousActive(mods)) {
     const rk = resolveViciousStanceEffectRank(
-      viciousStanceRankFromLearnedMap(learnedSkillLevelByBattleId),
-      mods
+      viciousStanceRankFromLearnedMap(learnedSkillLevelByBattleId)
     );
-    const d312 = textRpgHfToggleStanceDelta(312, rk);
-    if (d312?.addCritDmg) addCritDmg += d312.addCritDmg;
-    if (d312?.addCrit) {
-      critRate = Math.min(500, Math.floor(critRate + d312.addCrit));
+    const vs = resolveViciousStanceEffect(rk);
+    if (vs.addCritDmg) addCritDmg += vs.addCritDmg;
+    if (vs.addCrit) {
+      critRate = Math.min(500, Math.floor(critRate + vs.addCrit));
     }
-    if (
-      d312?.critDmgMul != null &&
-      d312.critDmgMul > 0 &&
-      Number.isFinite(d312.critDmgMul)
-    ) {
-      critDmgMul *= d312.critDmgMul;
+    if (vs.critDmgMul > 0 && Number.isFinite(vs.critDmgMul)) {
+      critDmgMul *= vs.critDmgMul;
     }
   }
   const snP = jsonFiniteNum(mods?.snipePatkFlat);
