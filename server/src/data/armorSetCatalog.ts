@@ -1,5 +1,5 @@
 /**
- * Канонічний каталог комплектів броні (D/C/B/A-grade Interlude).
+ * Канонічний каталог комплектів броні (D/C/B/A/S-grade Interlude).
  * Визначення сетів — через itemId, не через назву.
  * Спільні частини (шоломи) — many-to-many через ARMOR_SET_IDS_BY_*.
  */
@@ -43,6 +43,9 @@ export type ArmorSetEffects = {
   pvpAttackerSpeedDebuffChancePct?: number;
   pvpAttackerSpeedDebuffSkillId?: number;
   pvpAttackerSpeedDebuffEffectId?: number;
+  atkSpdPct?: number;
+  weightLimitFlat?: number;
+  magicCancelReductionPct?: number;
 };
 
 export type ArmorSetStage = {
@@ -386,12 +389,118 @@ export const A_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   A_MAJESTIC_ROBE_SET,
 ];
 
-/** Усі staged-сети (D + C + B + A). */
+export const S_IMPERIAL_CRUSADER_HEAVY_SET: ArmorSetDefinition = {
+  setId: 's_imperial_crusader_heavy',
+  name: 'Imperial Crusader Heavy Armor Set',
+  grade: 'S',
+  armorType: 'heavy',
+  corePieceIds: [6373, 6374, 6378, 6375, 6376],
+  optionalShieldId: 6377,
+  stages: [
+    {
+      requiredCorePieces: 5,
+      effects: {
+        pDefPct: 8,
+        maxHpFlat: 445,
+        sleepHoldResistancePct: 70,
+        strFlat: 2,
+        dexFlat: -2,
+      },
+      displayLines: [
+        'P.Def +8%',
+        'Max HP +445',
+        'Sleep/Hold Resistance +70%',
+        'STR +2',
+        'DEX -2',
+      ],
+    },
+    {
+      requiredCorePieces: 5,
+      requiresShield: true,
+      effects: { poisonResistancePct: 80, bleedResistancePct: 80 },
+      displayLines: ['Poison Resistance +80%', 'Bleed Resistance +80%'],
+    },
+  ],
+};
+
+export const S_DRACONIC_LIGHT_SET: ArmorSetDefinition = {
+  setId: 's_draconic_light',
+  name: 'Draconic Leather Light Armor Set',
+  grade: 'S',
+  armorType: 'light',
+  corePieceIds: [6379, 6382, 6380, 6381],
+  stages: [
+    {
+      requiredCorePieces: 4,
+      effects: {
+        pAtkPct: 4,
+        atkSpdPct: 4,
+        maxMpFlat: 289,
+        weightLimitFlat: 5759,
+        strFlat: 1,
+        dexFlat: 1,
+        conFlat: -2,
+      },
+      displayLines: [
+        'P.Atk +4%',
+        'Attack Speed +4%',
+        'Max MP +289',
+        'Weight Limit +5759',
+        'STR +1',
+        'DEX +1',
+        'CON -2',
+      ],
+    },
+  ],
+};
+
+export const S_MAJOR_ARCANA_ROBE_SET: ArmorSetDefinition = {
+  setId: 's_major_arcana_robe',
+  name: 'Major Arcana Robe Set',
+  grade: 'S',
+  armorType: 'robe',
+  corePieceIds: [6383, 6386, 6384, 6385],
+  stages: [
+    {
+      requiredCorePieces: 4,
+      effects: {
+        mAtkPct: 17,
+        speedFlat: 7,
+        stunResistancePct: 50,
+        magicCancelReductionPct: 50,
+        weightLimitFlat: 5759,
+        witFlat: 1,
+        intFlat: 1,
+        menFlat: -2,
+      },
+      displayLines: [
+        'M.Atk +17%',
+        'Speed +7',
+        'Stun Resistance +50%',
+        'Magic Cancellation Chance -50%',
+        'Weight Limit +5759',
+        'WIT +1',
+        'INT +1',
+        'MEN -2',
+      ],
+    },
+  ],
+};
+
+/** Усі S-grade staged-сети. */
+export const S_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
+  S_IMPERIAL_CRUSADER_HEAVY_SET,
+  S_DRACONIC_LIGHT_SET,
+  S_MAJOR_ARCANA_ROBE_SET,
+];
+
+/** Усі staged-сети (D + C + B + A + S). */
 export const ALL_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   ...D_GRADE_ARMOR_SETS,
   ...C_GRADE_ARMOR_SETS,
   ...B_GRADE_ARMOR_SETS,
   ...A_GRADE_ARMOR_SETS,
+  ...S_GRADE_ARMOR_SETS,
 ];
 
 export type ArmorSetItemRole = 'core' | 'optionalShield';

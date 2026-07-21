@@ -34,7 +34,7 @@ const RB_76_87_DROP_ROWS: Readonly<Record<number, RbBossDropRowS>> = {
     tier: '76_79',
     weapon: 'basaltBattlehammer',
     mainArmor: 'imperialCrusaderBreastplate',
-    leggings: 'boundImperialCrusader',
+    leggings: 'imperialCrusaderGaiters',
     shield: 'imperialCrusaderShield',
   },
   // —— 78 ——
@@ -74,7 +74,7 @@ const RB_76_87_DROP_ROWS: Readonly<Record<number, RbBossDropRowS>> = {
     tier: '76_79',
     weapon: 'saintSpear',
     mainArmor: 'imperialCrusaderBreastplate',
-    minorArmor: 'boundImperialBoots',
+    minorArmor: 'imperialCrusaderBoots',
     shield: 'imperialCrusaderShield',
   },
   25450: {
@@ -115,8 +115,8 @@ const RB_76_87_DROP_ROWS: Readonly<Record<number, RbBossDropRowS>> = {
     tier: '80_84',
     weapon: 'heavensDivider',
     mainArmor: 'imperialCrusaderBreastplate',
-    leggings: 'boundImperialCrusader',
-    minorArmor: 'boundImperialBoots',
+    leggings: 'imperialCrusaderGaiters',
+    minorArmor: 'imperialCrusaderBoots',
   },
   25514: {
     tier: '80_84',
@@ -148,7 +148,7 @@ const RB_76_87_DROP_ROWS: Readonly<Record<number, RbBossDropRowS>> = {
     tier: '80_84',
     weapon: 'saintSpear',
     mainArmor: 'imperialCrusaderBreastplate',
-    leggings: 'boundImperialCrusader',
+    leggings: 'imperialCrusaderGaiters',
     minorArmor: 'imperialCrusaderHelmet',
   },
   // —— 85 ——
@@ -178,7 +178,7 @@ const RB_76_87_DROP_ROWS: Readonly<Record<number, RbBossDropRowS>> = {
     weapon: 'heavensDivider',
     weapon2: 'saintSpear',
     mainArmor: 'imperialCrusaderBreastplate',
-    leggings: 'boundImperialCrusader',
+    leggings: 'imperialCrusaderGaiters',
     minorArmor: 'imperialCrusaderHelmet',
   },
   25316: {
@@ -197,7 +197,7 @@ const RB_76_87_DROP_ROWS: Readonly<Record<number, RbBossDropRowS>> = {
     weapon: 'basaltBattlehammer',
     weapon2: 'apprenticesSpellbook',
     mainArmor: 'imperialCrusaderBreastplate',
-    minorArmor: 'boundImperialBoots',
+    minorArmor: 'imperialCrusaderBoots',
     shield: 'imperialCrusaderShield',
     jewelry: 'tateossianNecklace',
     jewelrySlot: 'necklace',

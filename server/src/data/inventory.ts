@@ -452,7 +452,19 @@ export function parseInventoryRaw(raw: unknown): InventoryState {
    * Видаляємо лише дубль у l2; справжній щит (інший itemId) не чіпаємо.
    */
   repairDuplicateRhandWeaponInShieldSlot(inv);
+  repairDuplicateFullarmorChestLegs(inv);
   return inv;
+}
+
+/** Дубль fullarmor у l3+l4 — лишаємо l3, дубль повертаємо в сумку. */
+function repairDuplicateFullarmorChestLegs(inv: InventoryState): void {
+  const top = normalizeEqSlot(inv.eq.l3);
+  const legs = normalizeEqSlot(inv.eq.l4);
+  if (!top || !legs || top.itemId !== legs.itemId) return;
+  const meta = ITEM_CATALOG[top.itemId];
+  if (meta?.slot !== 'fullarmor') return;
+  addStack(inv.stacks, legs.itemId, 1, legs.enchant);
+  delete inv.eq.l4;
 }
 
 /** Зіпсований стан eq.l1 === eq.l2 для однієї rhand-зброї — l2 має бути щит або порожній. */

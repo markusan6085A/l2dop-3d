@@ -1,7 +1,6 @@
 /**
- * Повні сети броні (l3/l4/lh/lg/lf, без щита l2).
+ * Повні сети броні (legacy) — порожньо після міграції S-grade у armorSetCatalog.
  * D/C/B/A-grade staged sets — `armorSetCatalog.ts` / `armorSetResolver.ts`.
- * S-grade — Draconic Leather / Imperial Crusader / Major Arcana.
  */
 import type { InventoryState } from './inventory.js';
 import { normalizeEqSlot } from './inventory.js';
@@ -29,65 +28,7 @@ const SET_SLOTS: readonly SetPieceSlots[] = [
   'lf',
 ];
 
-/** S-grade — Draconic Leather: топ light фіз-DPS (aspd/crit/hit/evasion), без PATK і crit dmg %. */
-const S_DRACONIC_LEATHER: DGradeArmorSetDef = {
-  id: 's_draconic_leather',
-  pieces: {
-    l3: 6379,
-    l4: 'empty',
-    lh: 6382,
-    lg: 6380,
-    lf: 6381,
-  },
-  bonus: {
-    buffAspd: 1.08,
-    addPhysicalCritChancePct: 4,
-    buffAcc: 5,
-    buffEva: 3,
-  },
-};
-
-/** Imperial Crusader: важкий танк — лише живучість і стійкість до контролю. */
-const S_IMPERIAL_CRUSADER: DGradeArmorSetDef = {
-  id: 's_imperial_crusader',
-  pieces: {
-    l3: 6373,
-    l4: 6374,
-    lh: 6378,
-    lg: 6375,
-    lf: 6376,
-  },
-  bonus: {
-    buffMaxHp: 1.15,
-    buffPdef: 1.08,
-    addStunResistPct: 20,
-    addDebuffResistPct: 15,
-  },
-};
-
-/** Major Arcana Robe: endgame маг — каст/mCrit/MP/land, без INT і без % M.Atk. */
-const S_MAJOR_ARCANA_ROBE: DGradeArmorSetDef = {
-  id: 's_major_arcana_robe',
-  pieces: {
-    l3: 6383,
-    l4: 'empty',
-    lh: 6386,
-    lg: 6384,
-    lf: 6385,
-  },
-  bonus: {
-    buffCast: 1.09,
-    addMCritPct: 5,
-    buffMaxMp: 1.15,
-    addDebuffLandChancePct: 10,
-  },
-};
-
-const LEGACY_FULL_ARMOR_SETS: readonly DGradeArmorSetDef[] = [
-  S_DRACONIC_LEATHER,
-  S_IMPERIAL_CRUSADER,
-  S_MAJOR_ARCANA_ROBE,
-];
+const LEGACY_FULL_ARMOR_SETS: readonly DGradeArmorSetDef[] = [];
 
 function equippedArmorPieceIds(
   inv: InventoryState
@@ -118,11 +59,7 @@ function setMatchesEquipped(
 }
 
 /** Назва повного сету для UI (профіль). */
-const ARMOR_SET_PROFILE_NAME_UK: Record<string, string> = {
-  s_draconic_leather: 'Draconic Leather (S)',
-  s_imperial_crusader: 'Imperial Crusader (S)',
-  s_major_arcana_robe: 'Major Arcana (S)',
-};
+const ARMOR_SET_PROFILE_NAME_UK: Record<string, string> = {};
 
 function pctFromMul(v: number): number {
   return Math.round((v - 1) * 100);
@@ -193,7 +130,7 @@ export interface ActiveArmorSetProfile {
   linesUk: string[];
 }
 
-/** Активний повний сет B+ на екіпі — для профілю (D/C-grade — armorSetResolver). */
+/** Активний повний legacy-сет на екіпі (після міграції S-grade — завжди null). */
 export function resolveActiveArmorSetProfile(
   inv: InventoryState
 ): ActiveArmorSetProfile | null {
@@ -211,7 +148,7 @@ export function resolveActiveArmorSetProfile(
   return null;
 }
 
-/** Дельта B+ повних сетів (D/C-grade — armorSetResolver). */
+/** Дельта legacy full-set (після міграції S-grade — порожня). */
 export function dGradeFullArmorSetBonusDeltaLegacyOnly(
   inv: InventoryState
 ): DGradeArmorSetBonusDelta {

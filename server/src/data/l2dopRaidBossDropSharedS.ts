@@ -48,9 +48,9 @@ export const RB_DROP_ITEM_S = {
     `${As}/imperial_crusader_breastplate.jpg`
   ),
   /** Штани Imperial Crusader (canonical slot: legs). */
-  boundImperialCrusader: item(
+  imperialCrusaderGaiters: item(
     6374,
-    'Bound Imperial Crusader',
+    'Imperial Crusader Gaiters',
     `${As}/bound_imperial_crusader.jpg`
   ),
   imperialCrusaderGauntlets: item(
@@ -58,7 +58,7 @@ export const RB_DROP_ITEM_S = {
     'Imperial Crusader Gauntlets',
     `${As}/imperial_crusader_gauntlets.jpg`
   ),
-  boundImperialBoots: item(6376, 'Bound Imperial Boots', `${As}/bound_imperial_boots.jpg`),
+  imperialCrusaderBoots: item(6376, 'Imperial Crusader Boots', `${As}/bound_imperial_boots.jpg`),
   imperialCrusaderShield: item(
     6377,
     'Imperial Crusader Shield',

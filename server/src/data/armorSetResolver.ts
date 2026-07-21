@@ -63,6 +63,9 @@ export type ArmorSetBonusTotals = {
   menFlat: number;
   pvpDeathExpPenaltyReductionPct: number;
   pvpAttackerSpeedDebuffChancePct: number;
+  atkSpdPct: number;
+  weightLimitFlat: number;
+  magicCancelReductionPct: number;
 };
 
 export type ArmorSetFlatStats = {
@@ -117,6 +120,7 @@ export type ItemClientView = {
   equippedSetProgress: ItemClientViewEquippedProgress | null;
   equippedSetProgressBySetId: Record<string, ItemClientViewEquippedProgress> | null;
   activeSetEffects: ArmorSetEffects | null;
+  occupies: string[] | null;
 };
 
 function emptyTotals(): ArmorSetBonusTotals {
@@ -149,6 +153,9 @@ function emptyTotals(): ArmorSetBonusTotals {
     menFlat: 0,
     pvpDeathExpPenaltyReductionPct: 0,
     pvpAttackerSpeedDebuffChancePct: 0,
+    atkSpdPct: 0,
+    weightLimitFlat: 0,
+    magicCancelReductionPct: 0,
   };
 }
 
@@ -218,6 +225,14 @@ function mergeEffects(into: ArmorSetEffects, add: ArmorSetEffects): ArmorSetEffe
   if (add.pvpAttackerSpeedDebuffEffectId != null) {
     out.pvpAttackerSpeedDebuffEffectId = add.pvpAttackerSpeedDebuffEffectId;
   }
+  if (add.atkSpdPct != null) out.atkSpdPct = (out.atkSpdPct ?? 0) + add.atkSpdPct;
+  if (add.weightLimitFlat != null) {
+    out.weightLimitFlat = (out.weightLimitFlat ?? 0) + add.weightLimitFlat;
+  }
+  if (add.magicCancelReductionPct != null) {
+    out.magicCancelReductionPct =
+      (out.magicCancelReductionPct ?? 0) + add.magicCancelReductionPct;
+  }
   return out;
 }
 
@@ -251,6 +266,9 @@ function effectsToTotals(effects: ArmorSetEffects): ArmorSetBonusTotals {
     menFlat: effects.menFlat ?? 0,
     pvpDeathExpPenaltyReductionPct: effects.pvpDeathExpPenaltyReductionPct ?? 0,
     pvpAttackerSpeedDebuffChancePct: effects.pvpAttackerSpeedDebuffChancePct ?? 0,
+    atkSpdPct: effects.atkSpdPct ?? 0,
+    weightLimitFlat: effects.weightLimitFlat ?? 0,
+    magicCancelReductionPct: effects.magicCancelReductionPct ?? 0,
   };
 }
 
@@ -295,6 +313,12 @@ function sumTotals(a: ArmorSetBonusTotals, b: ArmorSetBonusTotals): ArmorSetBonu
     pvpAttackerSpeedDebuffChancePct: addOptionalNumber(
       a.pvpAttackerSpeedDebuffChancePct,
       b.pvpAttackerSpeedDebuffChancePct
+    ),
+    atkSpdPct: addOptionalNumber(a.atkSpdPct, b.atkSpdPct),
+    weightLimitFlat: addOptionalNumber(a.weightLimitFlat, b.weightLimitFlat),
+    magicCancelReductionPct: addOptionalNumber(
+      a.magicCancelReductionPct,
+      b.magicCancelReductionPct
     ),
   };
 }
@@ -423,8 +447,17 @@ export function armorSetTotalsToCombatDelta(totals: ArmorSetBonusTotals): {
   if (totals.speedFlat !== 0) {
     buffDelta.addSpeed = totals.speedFlat;
   }
-  if (totals.pAtkPct > 0) {
+  if (totals.pAtkPct !== 0) {
     buffDelta.buffPatk = 1 + totals.pAtkPct / 100;
+  }
+  if (totals.atkSpdPct !== 0) {
+    buffDelta.buffAspd = 1 + totals.atkSpdPct / 100;
+  }
+  if (totals.weightLimitFlat !== 0) {
+    buffDelta.addWeightLimitFlat = totals.weightLimitFlat;
+  }
+  if (totals.magicCancelReductionPct !== 0) {
+    buffDelta.addCancelResistPct = totals.magicCancelReductionPct;
   }
   return {
     buffDelta,
@@ -517,6 +550,20 @@ function resolveItemStats(itemId: number): {
     shieldDefense: meta?.shieldDefense ?? null,
     shieldBlockRatePct: meta?.shieldBlockRatePct ?? null,
   };
+}
+
+function optionalShieldStageEffects(
+  set: ArmorSetDefinition,
+  active: EquippedArmorSetActive | null
+): ArmorSetEffects | null {
+  if (!active?.shieldEquipped) return null;
+  if (active.equippedCorePieces < set.corePieceIds.length) return null;
+  let out: ArmorSetEffects = {};
+  for (const stage of set.stages) {
+    if (!stage.requiresShield) continue;
+    out = mergeEffects(out, stage.effects);
+  }
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 function shieldOnlySetEffects(effects: ArmorSetEffects | null): ArmorSetEffects | null {
@@ -616,11 +663,15 @@ export function buildItemClientView(
     const resolved = resolveEquippedArmorSetBonuses(characterEquipment);
     const active = resolved.activeSets.find((s) => s.setId === primarySet.setId) ?? null;
     if (setItemRole === 'optionalShield') {
-      activeSetEffects = shieldOnlySetEffects(active?.effects ?? null);
+      activeSetEffects =
+        optionalShieldStageEffects(primarySet, active) ??
+        shieldOnlySetEffects(active?.effects ?? null);
     } else if (active) {
       activeSetEffects = active.effects;
     }
   }
+
+  const occupies = stats.slot === 'fullarmor' ? (['chest', 'legs'] as const) : null;
 
   return {
     itemId: id,
@@ -628,6 +679,7 @@ export function buildItemClientView(
     grade: gradeArmorCatalogRow(id)?.grade ?? null,
     armorType: stats.armorType,
     slot: stats.slot,
+    occupies: occupies ? [...occupies] : null,
     pDef: stats.pDef,
     shieldDefense: stats.shieldDefense,
     shieldBlockRatePct: stats.shieldBlockRatePct,
@@ -693,6 +745,13 @@ export function formatArmorSetBonusLinesUkFromEffects(
   }
   if (effects.speedFlat != null) lines.push(`Speed +${effects.speedFlat}`);
   if (effects.pAtkPct != null) lines.push(`P.Atk +${effects.pAtkPct}%`);
+  if (effects.atkSpdPct != null) lines.push(`Attack Speed +${effects.atkSpdPct}%`);
+  if (effects.weightLimitFlat != null) {
+    lines.push(`Weight Limit +${effects.weightLimitFlat}`);
+  }
+  if (effects.magicCancelReductionPct != null) {
+    lines.push(`Magic Cancellation Chance -${effects.magicCancelReductionPct}%`);
+  }
   if (effects.intFlat != null) {
     lines.push(`INT ${effects.intFlat > 0 ? '+' : ''}${effects.intFlat}`);
   }

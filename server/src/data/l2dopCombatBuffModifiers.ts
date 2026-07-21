@@ -90,6 +90,8 @@ export interface L2dopCombatBuffModifiers {
   addBowDefPct: number;
   /** Множник базового shield block rate (20% × 1.24 = 24.8%). */
   shieldBlockRateMul: number;
+  /** Плоский бонус до ліміту ваги (armor set). */
+  addWeightLimitFlat: number;
 }
 
 const NEUTRAL: L2dopCombatBuffModifiers = {
@@ -146,6 +148,7 @@ const NEUTRAL: L2dopCombatBuffModifiers = {
   addShieldPDef: 0,
   addBowDefPct: 0,
   shieldBlockRateMul: 1,
+  addWeightLimitFlat: 0,
 };
 
 export function neutralCombatBuffs(): L2dopCombatBuffModifiers {
@@ -220,6 +223,7 @@ export function applyBuffDelta(
     addShieldPDef: base.addShieldPDef + (d.addShieldPDef ?? 0),
     addBowDefPct: base.addBowDefPct + (d.addBowDefPct ?? 0),
     shieldBlockRateMul: base.shieldBlockRateMul * (d.shieldBlockRateMul ?? 1),
+    addWeightLimitFlat: base.addWeightLimitFlat + (d.addWeightLimitFlat ?? 0),
   };
 }
 

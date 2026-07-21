@@ -359,6 +359,8 @@ export interface CombatStatsSnapshot {
   healReceivedPct: number;
   /** Touch of Life: стійкість до Cancel, 0–95. */
   cancelResistPct: number;
+  /** Плоский бонус до ліміту ваги від armor set. */
+  weightLimitBonusFlat: number;
   /** Множник витрат MP у бою за скіл (1 = база). */
   skillMpCostMul: number;
   /** Плоский бонус до шансу накладання дебафу/контролю (додається після резисту моба, у % до шансу). */
@@ -1008,6 +1010,7 @@ export function computeCombatStats(
     debuffResistPct,
     healReceivedPct: Math.max(0, Math.min(95, B.addHealReceivedPct)),
     cancelResistPct: Math.max(0, Math.min(95, B.addCancelResistPct)),
+    weightLimitBonusFlat: B.addWeightLimitFlat,
     skillMpCostMul: Math.max(0.5, Math.min(1.25, B.skillMpCostMul)),
     addDebuffLandChancePct: B.addDebuffLandChancePct,
     magicCritDmgMul,

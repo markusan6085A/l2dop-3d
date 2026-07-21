@@ -8,7 +8,8 @@ import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
 export interface DropsShieldPatch {
   /** Підпис у списку / модалці (англ. назва L2). */
   nameUk: string;
-  pDef: number;
+  /** @deprecated Legacy; для щитів не показувати окремий P.Def. */
+  pDef?: number;
   /** Шанс блоку щитом, %. */
   shieldRatePercent: number;
   shieldDef: number;
@@ -124,9 +125,8 @@ const RAW: Array<[string, DropsShieldPatch]> = [
     'arrom_s/imperial_crusader_shield.jpg',
     {
       nameUk: 'Imperial Crusader Shield',
-      pDef: 110,
       shieldRatePercent: 20,
-      shieldDef: 56,
+      shieldDef: 290,
     },
   ],
 ];
@@ -201,7 +201,6 @@ export function dropsShieldPatchForEquipped(
     if (canon?.shieldDefense != null) {
       return {
         nameUk: canon.name,
-        pDef: canon.shieldDefense,
         shieldRatePercent: canon.shieldBlockRatePct ?? 20,
         shieldDef: canon.shieldDefense,
       };

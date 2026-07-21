@@ -23,6 +23,7 @@ import { D_GRADE_ARMOR_CATALOG } from './dGradeArmorCatalog.js';
 import { C_GRADE_ARMOR_CATALOG } from './cGradeArmorCatalog.js';
 import { B_GRADE_ARMOR_CATALOG } from './bGradeArmorCatalog.js';
 import { A_GRADE_ARMOR_CATALOG } from './aGradeArmorCatalog.js';
+import { S_GRADE_ARMOR_CATALOG } from './sGradeArmorCatalog.js';
 import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
@@ -337,12 +338,13 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   Object.assign(o, mammonGemstoneItemMetaForCatalog());
   Object.assign(o, mammonLifeStoneItemMetaForCatalog());
 
-  /** D/C/B/A-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
+  /** D/C/B/A/S-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
   for (const row of [
     ...D_GRADE_ARMOR_CATALOG,
     ...C_GRADE_ARMOR_CATALOG,
     ...B_GRADE_ARMOR_CATALOG,
     ...A_GRADE_ARMOR_CATALOG,
+    ...S_GRADE_ARMOR_CATALOG,
   ]) {
     const prev = o[row.itemId];
     o[row.itemId] = {
