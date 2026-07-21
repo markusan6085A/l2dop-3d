@@ -57,6 +57,7 @@
     "test:buffalo-horn-equip": "tsx server/scripts/test-buffalo-horn-equip.ts",
     "test:buffalo-horn-equip-mirror": "tsx server/scripts/test-buffalo-horn-equip-mirror.ts",
     "audit:destroyer-damage": "tsx server/scripts/audit-destroyer-damage.ts",
+    "audit:ferdaster-character": "tsx server/scripts/audit-ferdaster-character.ts",
     "test:s-weapons": "tsx server/scripts/test-s-weapons.ts",
     "test:equipment-source-canonical": "tsx server/scripts/test-equipment-source-canonical.ts",
     "test:drops-item-id-collisions": "tsx server/scripts/test-drops-item-id-collisions.ts",
