@@ -11,6 +11,11 @@ import {
 } from './l2dopGmShopCatalog.generated.js';
 import type { WeaponKindForEnchant } from './l2dopEnchant.js';
 import { mergeNgDropsWeapons } from './itemsCatalogNgWeapons.js';
+import { mergeDropsWeapons } from './itemsCatalogDWeapons.js';
+import { mergeCdropsWeapons } from './itemsCatalogCWeapons.js';
+import { mergeBdropsWeapons } from './itemsCatalogBWeapons.js';
+import { mergeAdropsWeapons } from './itemsCatalogAWeapons.js';
+import { mergeSdropsWeapons } from './itemsCatalogSWeapons.js';
 import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
 import { JEWELRY_AUTHOR_ITEM_PATCH } from './l2dopJewelryAuthorStats.js';
 import { dropsShieldPatchForEquipped } from './l2dopDropsShieldPatches.js';
@@ -120,6 +125,9 @@ export interface ItemMeta {
   equipMCritPct?: number;
 }
 
+/** C-grade «Apprentice's Spellbook» у drops shop (синтетичний id, без колізії з NG 99). */
+export const C_GRADE_APPRENTICES_SPELLBOOK_ITEM_ID = 900225;
+
 /** Ключ = item_id у БД l2dop */
 export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   const o: Record<number, ItemMeta> = {};
@@ -160,71 +168,9 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
       pDef: row.pDef,
     };
   }
-  /** Лук душі (`weapon_a/soul_bow.jpg`): id з lineage Interlude — у генерованому GM-каталозі рядку немає. */
-  o[7575] = {
-    nameUk: 'Лук душі A-grade.',
-    slot: 'rhand',
-    pAtk: 304,
-    mAtk: 114,
-    weaponType: 'bow',
-    atkSpd: 293,
-    wpnCrit: wpnCritForWeaponKind('bow'),
-    rCrit: 12,
-  };
-
-  /** B-grade зброя з іконки `weapon_b/…`, немає в GM-CSV. Id з дампу lineage. */
-  o[79] = {
-    nameUk: 'Меч Дамаску B-grade.',
-    slot: 'rhand',
-    pAtk: 306,
-    mAtk: 99,
-    weaponType: 'bigsword',
-    atkSpd: 379,
-    wpnCrit: wpnCritForWeaponKind('bigsword'),
-    rCrit: 8,
-  };
-  o[8336] = {
-    nameUk: 'Сльоза чарівника B-grade.',
-    slot: 'rhand',
-    pAtk: 88,
-    mAtk: 236,
-    weaponType: 'sword',
-    atkSpd: 379,
-    wpnCrit: wpnCritForWeaponKind('sword'),
-    rCrit: 8,
-  };
-  o[8340] = {
-    nameUk: 'Кістки Каїма Ванула B-grade.',
-    slot: 'rhand',
-    pAtk: 88,
-    mAtk: 176,
-    weaponType: 'bigblunt',
-    atkSpd: 379,
-    wpnCrit: wpnCritForWeaponKind('bigblunt'),
-    rCrit: 4,
-  };
-  /** C-grade дуали (`weapon_c/baguette_s_dualsword.jpg`) — немає в генерованому GM-CSV; синтезований id. */
-  o[900224] = {
-    nameUk: 'Дворучний меч Багет C-grade.',
-    slot: 'rhand',
-    pAtk: 222,
-    mAtk: 38,
-    weaponType: 'dual',
-    atkSpd: 325,
-    wpnCrit: wpnCritForWeaponKind('dual'),
-    rCrit: 4,
-  };
-  /** «Tome of Blood» (`weapon_d/tome_of_blood.jpg`), id 317 — у GM-генерації рядка немає. */
-  o[317] = {
-    nameUk: 'Том крові D-grade.',
-    slot: 'rhand',
-    pAtk: 9,
-    mAtk: 80,
-    weaponType: 'sword',
-    atkSpd: 379,
-    wpnCrit: wpnCritForWeaponKind('sword'),
-    rCrit: 8,
-  };
+  /** A-grade «Soul Bow» та інша зброя — канон у `aWeaponCatalog.ts`. */
+  /** B-grade «Sword of Damascus» / «Wizard's Tear» / «Kaim Vanul's Bones» — канон у `bWeaponCatalog.ts`. */
+  /** C-grade «Baguette's Dualsword» / «Apprentice's Spellbook» — канон у `cWeaponCatalog.ts`. */
 
   mergeNgDropsWeapons(o);
   mergeAuthorGiftItems(o);
@@ -318,21 +264,11 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   /**
    * GM-генерація інколи ставить sword/blunt замість pole/bow/bigsword;
    * дворучність l1+l2 (щит) і $WpnType для бою — як у l2dopTwoHandedWeapon.
-   * Tomahawk (автор): дворучна бита → bigblunt.
    */
+  /** B-grade weaponType — канон у `bWeaponCatalog.ts` (mergeBdropsWeapons). */
   const WEAPON_HANDEDNESS_TYPE_PATCH: Partial<
     Record<number, WeaponKindForEnchant>
-  > = {
-    86: 'bigblunt',
-    7784: 'pole',
-    7889: 'bigblunt',
-    7890: 'bow',
-    7891: 'bow',
-    7892: 'bigblunt',
-    7893: 'fist',
-    7894: 'bigblunt',
-    7895: 'bigsword',
-  };
+  > = {};
   for (const [idStr, wt] of Object.entries(WEAPON_HANDEDNESS_TYPE_PATCH)) {
     if (wt == null) continue;
     const id = Number(idStr);
@@ -341,6 +277,12 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
     m.weaponType = wt;
     m.wpnCrit = wpnCritForWeaponKind(wt);
   }
+
+  mergeDropsWeapons(o);
+  mergeCdropsWeapons(o);
+  mergeBdropsWeapons(o);
+  mergeAdropsWeapons(o);
+  mergeSdropsWeapons(o);
 
   /** Розхідники для крамниці (id з Interlude); не перезаписує наявний рядок. Зілля великого зцілення (1539) навмисно виключено. */
   const CONSUMABLE_CATALOG_STUBS: Record<number, { nameUk: string }> = {

@@ -27,7 +27,9 @@ function gearRowFromCatalogItem(
   if (m.mAtk != null) stats.mAtk = m.mAtk;
   if (m.pDef != null) stats.pDef = m.pDef;
   if (m.atkSpd != null) stats.atkSpd = m.atkSpd;
-  if (m.weaponType) {
+  if (typeof m.wpnCrit === 'number') {
+    stats.wpnCrit = m.wpnCrit;
+  } else if (m.weaponType) {
     stats.wpnCrit = wpnCritForWeaponKind(m.weaponType as WeaponKindForEnchant);
   }
   if (m.rCrit != null && m.rCrit > 0) stats.rCrit = m.rCrit;

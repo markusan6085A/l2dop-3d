@@ -47,7 +47,7 @@ export const RB_DROP_ITEM_C = {
   paagrioSword: item(7882, "Pa'agrio Sword", `${Wc}/pa_agrian_sword.jpg`),
   samuraiLongsword: item(135, 'Samurai Longsword', `${Wc}/samurai_longsword.jpg`),
   scorpion: item(301, 'Scorpion', `${Wc}/scorpion.jpg`),
-  spellbookApprentice: item(99, "Apprentice's Spellbook", `${Wc}/apprentices_spellbook.jpg`),
+  spellbookApprentice: item(900225, "Apprentice's Spellbook", `${Wc}/apprentices_spellbook.jpg`),
   warAxe: item(162, 'War Axe', `${Wc}/war_axe.jpg`),
   widowMaker: item(303, 'Widow Maker', `${Wc}/widow_maker.jpg`),
   yaksaMace: item(2503, 'Yaksa Mace', `${Wc}/yaksa_mace.jpg`),

@@ -30,10 +30,31 @@ export const L2DOP_ITEM_GRADE_UK: Record<number, string> = {
   /** Зброя з ручних рядків у `itemsCatalog.ts` (немає в GM weapons CSV). */
   317: 'D',
   79: 'B',
-  7575: 'A',
+  151: 'A',
+  164: 'A',
+  212: 'A',
+  289: 'A',
+  /** S-grade permanent weapon ids (mergeS overrides GM/Event rows). */
+  82: 'S',
+  6365: 'S',
+  6366: 'S',
+  6367: 'S',
+  6368: 'S',
+  6369: 'S',
+  6370: 'S',
+  6371: 'S',
+  6372: 'S',
+  6579: 'S',
+  7575: 'S',
+  910201: 'S',
+  910202: 'S',
   8336: 'B',
   8340: 'B',
   900224: 'C',
+  /** C-grade Apprentice's Spellbook — синтетичний id (NG лишається на lineage 99). */
+  900225: 'C',
+  /** NG Apprentice's Spellbook — lineage id 99 (GM-CSV має C-grade рядок). */
+  99: 'NG',
   9009154: 'NG',
 };
 

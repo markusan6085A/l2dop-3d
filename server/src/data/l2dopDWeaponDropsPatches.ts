@@ -1,11 +1,11 @@
 /**
- * D-grade зброя в магазині дропів: назви + рядок статів як у затвердженій таблиці.
+ * D-grade зброя в магазині дропів — preview з канонічної таблиці `dWeaponCatalog.ts`.
  */
 import type { DropsShopStatLineUk } from '../domain/dropsShopStatsPreviewUk.js';
+import type { DWeaponCanonEntry } from './dWeaponCatalog.js';
+import { D_WEAPON_BY_SHOP_KEY_LOWER } from './dWeaponCatalog.js';
 
-export type DWeaponDropsPatch =
-  | DWeaponPhysPatch
-  | DWeaponMagicBookPatch;
+export type DWeaponDropsPatch = DWeaponPhysPatch | DWeaponMagicBookPatch;
 
 export interface DWeaponPhysPatch {
   nameUk: string;
@@ -22,122 +22,32 @@ export interface DWeaponMagicBookPatch {
   speed: number;
 }
 
-function pathKey(segment: string): string {
-  return segment.replace(/\\/g, '/').toLowerCase();
-}
-
-/** Підпис англійською в рядку — як у дизайнерському тексті автора. */
-const RAW: Array<[string, DWeaponDropsPatch]> = [
-  [
-    'weapon_d/atuba_hammer.jpg',
-    {
-      nameUk: 'Atuba Hammer — булава',
-      mode: 'phys',
-      pAtk: 111,
-      speed: 379,
-      crit: 40,
-    },
-  ],
-  [
-    'weapon_d/baguette_s_dualsword.jpg',
-    {
-      nameUk: "Baguette's Dualsword — dual sword",
-      mode: 'phys',
-      pAtk: 122,
-      speed: 325,
-      crit: 40,
-    },
-  ],
-  [
-    'weapon_d/dark_elven_bow.jpg',
-    {
-      nameUk: 'Dark Elven Bow — лук',
-      mode: 'phys',
-      pAtk: 216,
-      speed: 293,
-      crit: 120,
-    },
-  ],
-  [
-    'weapon_d/knight_s_sword.jpg',
-    {
-      nameUk: "Knight's Sword — меч",
-      mode: 'phys',
-      pAtk: 103,
-      speed: 379,
-      crit: 40,
-    },
-  ],
-  [
-    'weapon_d/shilen_knife.jpg',
-    {
-      nameUk: 'Shilen Knife — кинжал',
-      mode: 'phys',
-      pAtk: 91,
-      speed: 433,
-      crit: 80,
-    },
-  ],
-  [
-    'weapon_d/tomahawk.jpg',
-    {
-      nameUk: 'Tomahawk — булава',
-      mode: 'phys',
-      pAtk: 103,
-      speed: 379,
-      crit: 40,
-    },
-  ],
-  [
-    'weapon_d/tome_of_blood.jpg',
-    {
-      nameUk: 'Tome of Blood — книга',
+function toPatch(entry: DWeaponCanonEntry): DWeaponDropsPatch {
+  if (entry.mode === 'magic') {
+    return {
+      nameUk: entry.shopNameUk,
       mode: 'magic_book',
-      mAtk: 80,
-      speed: 379,
-    },
-  ],
-  [
-    'weapon_d/triple-edged_jamadhr.jpg',
-    {
-      nameUk: 'Triple-Edged Jamadhr — кастети',
-      mode: 'phys',
-      pAtk: 91,
-      speed: 433,
-      crit: 40,
-    },
-  ],
-  [
-    'weapon_d/two_handed_sword.jpg',
-    {
-      nameUk: 'Two-Handed Sword — двуручний меч',
-      mode: 'phys',
-      pAtk: 132,
-      speed: 325,
-      crit: 40,
-    },
-  ],
-  [
-    'weapon_d/war_hammer.jpg',
-    {
-      nameUk: 'War Hammer',
-      mode: 'phys',
-      pAtk: 132,
-      speed: 325,
-      crit: 40,
-    },
-  ],
-];
+      mAtk: entry.mAtk ?? 0,
+      speed: entry.atkSpd,
+    };
+  }
+  return {
+    nameUk: entry.shopNameUk,
+    mode: 'phys',
+    pAtk: entry.pAtk,
+    speed: entry.atkSpd,
+    crit: entry.displayCrit ?? entry.wpnCrit,
+  };
+}
 
 export const L2DOP_D_DROPS_WEAPON_BY_SHOP_KEY_LOWER: Record<
   string,
   DWeaponDropsPatch
-> = RAW.reduce(
-  (acc, [segment, patch]) => {
-    acc[pathKey(segment)] = patch;
-    return acc;
-  },
-  {} as Record<string, DWeaponDropsPatch>,
+> = Object.fromEntries(
+  [...D_WEAPON_BY_SHOP_KEY_LOWER.entries()].map(([key, entry]) => [
+    key,
+    toPatch(entry),
+  ]),
 );
 
 export function dGradeWeaponDropsPreviewLines(

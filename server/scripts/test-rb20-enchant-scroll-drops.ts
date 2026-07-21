@@ -537,7 +537,7 @@ function run(): void {
   assertTierScrollsS(25319, RB_DROP_TIER_85_87);
 
   const ashakiel = customNpcDropBagForMob(25205)!;
-  assert.equal(ashakiel.drops.find((d) => d.l2ItemId === 20171)?.chance, 0.02);
+  assert.equal(ashakiel.drops.find((d) => d.l2ItemId === 6366)?.chance, 0.02);
   assert.equal(ashakiel.drops.find((d) => d.l2ItemId === 920)?.chance, 0.03);
 
   const burningGiant = customNpcDropBagForMob(25524)!;
@@ -548,8 +548,8 @@ function run(): void {
   assert.equal(gordon.drops.find((d) => d.l2ItemId === 6376)?.chance, 0.06);
 
   const ember = customNpcDropBagForMob(25319)!;
-  assert.equal(ember.drops.find((d) => d.l2ItemId === 20173)?.chance, 0.04);
-  assert.equal(ember.drops.find((d) => d.l2ItemId === 20167)?.chance, RB_S_BONUS_WEAPON_CHANCE / 100);
+  assert.equal(ember.drops.find((d) => d.l2ItemId === 7575)?.chance, 0.04);
+  assert.equal(ember.drops.find((d) => d.l2ItemId === 6367)?.chance, RB_S_BONUS_WEAPON_CHANCE / 100);
 
   console.log('test:rb20-enchant-scroll-drops OK');
 }

@@ -209,7 +209,7 @@
     "priceAdena": 220000000
   },
   "weapon_a/dasparion_s_staff.jpg": {
-    "itemId": 210,
+    "itemId": 212,
     "priceAdena": 280000000
   },
   "weapon_a/dragon_grinder.jpg": {
@@ -221,7 +221,7 @@
     "priceAdena": 260000000
   },
   "weapon_a/elysian.jpg": {
-    "itemId": 290,
+    "itemId": 164,
     "priceAdena": 260000000
   },
   "weapon_a/halberd.jpg": {
@@ -253,8 +253,12 @@
     "priceAdena": 240000000
   },
   "weapon_a/soul_bow.jpg": {
-    "itemId": 7575,
+    "itemId": 289,
     "priceAdena": 280000000
+  },
+  "weapon_a/soul_separator.jpg": {
+    "itemId": 900217,
+    "priceAdena": 180000000
   },
   "weapon_a/spiritual_eye.jpg": {
     "itemId": 900218,
@@ -265,7 +269,7 @@
     "priceAdena": 210000000
   },
   "weapon_a/sword_of_miracles.jpg": {
-    "itemId": 88,
+    "itemId": 151,
     "priceAdena": 280000000
   },
   "weapon_a/tallum_blade.jpg": {
@@ -285,7 +289,7 @@
     "priceAdena": 260000000
   },
   "weapon_c/apprentices_spellbook.jpg": {
-    "itemId": 99,
+    "itemId": 900225,
     "priceAdena": 30000000
   },
   "weapon_c/akat_long_bow.jpg": {
@@ -521,7 +525,7 @@
     "priceAdena": 120000000
   },
   "weapon_s/angel_slayer.jpg": {
-    "itemId": 20167,
+    "itemId": 6367,
     "priceAdena": 38000000
   },
   "weapon_s/apprentices_spellbook.jpg": {
@@ -529,7 +533,7 @@
     "priceAdena": 35000000
   },
   "weapon_s/arcana_mace.jpg": {
-    "itemId": 20170,
+    "itemId": 6579,
     "priceAdena": 35000000
   },
   "weapon_s/baguette_s_dualsword.jpg": {
@@ -537,19 +541,19 @@
     "priceAdena": 40000000
   },
   "weapon_s/basalt_battlehammer.jpg": {
-    "itemId": 20168,
+    "itemId": 6365,
     "priceAdena": 35000000
   },
   "weapon_s/demon_splinter.jpg": {
-    "itemId": 20172,
+    "itemId": 6371,
     "priceAdena": 40000000
   },
   "weapon_s/draconic_bow.jpg": {
-    "itemId": 20173,
+    "itemId": 7575,
     "priceAdena": 40000000
   },
   "weapon_s/dragon_hunter_axe.jpg": {
-    "itemId": 20169,
+    "itemId": 6369,
     "priceAdena": 40000000
   },
   "weapon_s/god_s_blade.jpg": {
@@ -557,19 +561,19 @@
     "priceAdena": 38000000
   },
   "weapon_s/heaven_s_divider.jpg": {
-    "itemId": 20166,
+    "itemId": 6372,
     "priceAdena": 40000000
   },
   "weapon_s/imperial_staff.jpg": {
-    "itemId": 20171,
+    "itemId": 6366,
     "priceAdena": 40000000
   },
   "weapon_s/saint_spear.jpg": {
-    "itemId": 20174,
+    "itemId": 6370,
     "priceAdena": 40000000
   },
   "weapon_s/shining_bow.jpg": {
-    "itemId": 910203,
+    "itemId": 6368,
     "priceAdena": 40000000
   },
   "arrom_ng/shield_leather_shield_i00_0.jpg": {

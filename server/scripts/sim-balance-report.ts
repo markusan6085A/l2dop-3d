@@ -62,7 +62,7 @@ const EQ_BY_TIER: Record<Tier, Record<Archetype, EqSet>> = {
   },
   high: {
     warrior: { l1: 79, l2: 673, l3: 358, l4: 2380, lh: 2416, lg: 2487, lf: 2439 },
-    archer: { l1: 7575, l3: 30009, l4: 2380, lh: 30008, lg: 30010, lf: 30011 },
+    archer: { l1: 289, l3: 30009, l4: 2380, lh: 30008, lg: 30010, lf: 30011 },
     mage: { l1: 8336, l3: 30002, l4: 471, lh: 30001, lg: 30003, lf: 30004 },
   },
 };
