@@ -78,10 +78,12 @@
       }
     }
     var total = setInfo.pieceIds ? setInfo.pieceIds.length : 0;
+    var progressLabel = setInfo.optionalShieldId ? 'Основні частини: ' : 'Екіпіровано: ';
     var progressHtml =
       '<div class="' +
       CLS +
-      '__progress">Основні частини: ' +
+      '__progress">' +
+      progressLabel +
       coreCount +
       '/' +
       total;

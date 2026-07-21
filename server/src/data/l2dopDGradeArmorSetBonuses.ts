@@ -1,7 +1,6 @@
 /**
  * Повні сети броні (l3/l4/lh/lg/lf, без щита l2).
- * D-grade — канонічні staged sets у `armorSetCatalog.ts` / `armorSetResolver.ts`.
- * C-grade — Demon's / Karmian / Plated Leather.
+ * D/C-grade staged sets — `armorSetCatalog.ts` / `armorSetResolver.ts`.
  * B-grade — Avadon Robe / Blue Wolf / Leather Armor of Doom of Fortune.
  * A-grade — Apella Brigandine / Dark Crystal / Majestic Robe.
  * S-grade — Draconic Leather / Imperial Crusader / Major Arcana.
@@ -32,58 +31,7 @@ const SET_SLOTS: readonly SetPieceSlots[] = [
   'lf',
 ];
 
-/** C-grade і вище — повний комплект усіх 5 слотів. */
-const C_DEMON: DGradeArmorSetDef = {
-  id: 'c_demon_tunic',
-  pieces: {
-    l3: 441,
-    l4: 472,
-    lh: 20001,
-    lg: 2459,
-    lf: 2435,
-  },
-  bonus: {
-    buffCast: 1.05,
-    addMCritPct: 2,
-    skillMpCostMul: 0.95,
-  },
-};
-
-/** Karmian: максимум cast + MP + дебаф land (синергія з resist моба). */
-const C_KARMIAN: DGradeArmorSetDef = {
-  id: 'c_karmian',
-  pieces: {
-    l3: 439,
-    l4: 471,
-    lh: 20002,
-    lg: 2454,
-    lf: 2430,
-  },
-  bonus: {
-    buffCast: 1.07,
-    buffMaxMp: 1.08,
-    addDebuffLandChancePct: 5,
-  },
-};
-
-/** Plated Leather: легка броня бійця — aspd + точність + фіз. крит. */
-const C_PLATED_LEATHER: DGradeArmorSetDef = {
-  id: 'c_plated_leather',
-  pieces: {
-    l3: 398,
-    l4: 418,
-    lh: 20003,
-    lg: 2455,
-    lf: 2431,
-  },
-  bonus: {
-    buffAspd: 1.04,
-    buffAcc: 3,
-    addPhysicalCritChancePct: 2,
-  },
-};
-
-/** Avadon Robe: універсальний маг — cast, MP, mCrit, стійкість до дебафів. */
+/** B-grade і вище — повний комплект усіх 5 слотів. */
 const B_AVADON_ROBE: DGradeArmorSetDef = {
   id: 'b_avadon_robe',
   pieces: {
@@ -246,9 +194,6 @@ const S_MAJOR_ARCANA_ROBE: DGradeArmorSetDef = {
 };
 
 const LEGACY_FULL_ARMOR_SETS: readonly DGradeArmorSetDef[] = [
-  C_DEMON,
-  C_KARMIAN,
-  C_PLATED_LEATHER,
   B_AVADON_ROBE,
   B_BLUE_WOLF,
   B_DOOM_OF_FORTUNE_LEATHER,
@@ -290,9 +235,6 @@ function setMatchesEquipped(
 
 /** Назва повного сету для UI (профіль). */
 const ARMOR_SET_PROFILE_NAME_UK: Record<string, string> = {
-  c_demon_tunic: "Demon's (C)",
-  c_karmian: 'Karmian (C)',
-  c_plated_leather: 'Plated Leather (C)',
   b_avadon_robe: 'Avadon Robe (B)',
   b_blue_wolf: 'Blue Wolf (B)',
   b_doom_of_fortune_leather: 'Leather Armor of Doom (B)',
@@ -373,7 +315,7 @@ export interface ActiveArmorSetProfile {
   linesUk: string[];
 }
 
-/** Активний повний сет C+ на екіпі — для профілю (D-grade — armorSetResolver). */
+/** Активний повний сет B+ на екіпі — для профілю (D/C-grade — armorSetResolver). */
 export function resolveActiveArmorSetProfile(
   inv: InventoryState
 ): ActiveArmorSetProfile | null {
@@ -391,7 +333,7 @@ export function resolveActiveArmorSetProfile(
   return null;
 }
 
-/** Дельта C+ повних сетів (D-grade — armorSetResolver). */
+/** Дельта B+ повних сетів (D/C-grade — armorSetResolver). */
 export function dGradeFullArmorSetBonusDeltaLegacyOnly(
   inv: InventoryState
 ): DGradeArmorSetBonusDelta {
@@ -402,7 +344,7 @@ export function dGradeFullArmorSetBonusDeltaLegacyOnly(
   return {};
 }
 
-/** @deprecated Use armorSetResolver + legacyOnly for C+. */
+/** @deprecated Use armorSetResolver + legacyOnly for B+. */
 export function dGradeFullArmorSetBonusDelta(
   inv: InventoryState
 ): DGradeArmorSetBonusDelta {

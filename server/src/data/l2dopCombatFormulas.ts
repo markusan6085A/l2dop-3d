@@ -737,12 +737,12 @@ export function computeCombatStats(
   const code = raceAndBranchToL2Code(race, classBranch);
   const LVL = Math.max(1, Math.floor(level));
   const base = baseSixForLevel(code, classBranch, LVL);
-  const STR = base.str;
-  const INT = base.int;
+  const STR = base.str + armorSetCombat.flatStats.strFlat;
+  const INT = base.int + armorSetCombat.flatStats.intFlat;
   const DEX = base.dex;
-  const CON = base.con;
+  const CON = base.con + armorSetCombat.flatStats.conFlat;
   const MEN = base.men;
-  const WIT = base.wit;
+  const WIT = base.wit + armorSetCombat.flatStats.witFlat;
   const LVLMOD = lvlMod(LVL);
   const M = computePrimaryStatMultipliers({
     str: STR,

@@ -1,8 +1,8 @@
 /**
- * Канонічний каталог комплектів броні (D-grade Interlude).
+ * Канонічний каталог комплектів броні (D/C-grade Interlude).
  * Визначення сетів — через itemId, не через назву.
  */
-import { dGradeArmorCatalogRow } from './dGradeArmorCatalog.js';
+import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
 
 export type ArmorSetArmorType = 'heavy' | 'light' | 'robe';
 
@@ -13,6 +13,14 @@ export type ArmorSetEffects = {
   addCritDmg?: number;
   poisonResistancePct?: number;
   shieldDefensePct?: number;
+  sleepHoldResistancePct?: number;
+  castingSpdPct?: number;
+  pDefPct?: number;
+  stunResistancePct?: number;
+  intFlat?: number;
+  witFlat?: number;
+  strFlat?: number;
+  conFlat?: number;
 };
 
 export type ArmorSetStage = {
@@ -106,12 +114,85 @@ export const D_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
   D_MITHRIL_SET,
 ];
 
+export const C_KARMIAN_SET: ArmorSetDefinition = {
+  setId: 'c_karmian',
+  name: 'Karmian Set',
+  grade: 'C',
+  armorType: 'robe',
+  corePieceIds: [439, 471, 2454],
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { sleepHoldResistancePct: 20 },
+      displayLines: ['Sleep/Hold Resistance +20%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { castingSpdPct: 15, pDefPct: 5.26 },
+      displayLines: ['Casting Speed +15%', 'P.Def +5.26%'],
+    },
+  ],
+};
+
+export const C_DEMON_SET: ArmorSetDefinition = {
+  setId: 'c_demon',
+  name: "Demon's Set",
+  grade: 'C',
+  armorType: 'robe',
+  corePieceIds: [441, 472, 2459],
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { stunResistancePct: 10 },
+      displayLines: ['Stun Resistance +10%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { intFlat: 4, witFlat: -1, maxHpFlat: -270 },
+      displayLines: ['INT +4', 'WIT -1', 'Max HP -270'],
+    },
+  ],
+};
+
+export const C_PLATED_LEATHER_SET: ArmorSetDefinition = {
+  setId: 'c_plated_leather',
+  name: 'Plated Leather Set',
+  grade: 'C',
+  armorType: 'light',
+  corePieceIds: [398, 418, 2431],
+  stages: [
+    {
+      requiredCorePieces: 2,
+      effects: { sleepHoldResistancePct: 20 },
+      displayLines: ['Sleep/Hold Resistance +20%'],
+    },
+    {
+      requiredCorePieces: 3,
+      effects: { strFlat: 4, conFlat: -1 },
+      displayLines: ['STR +4', 'CON -1'],
+    },
+  ],
+};
+
+/** Усі C-grade staged-сети. */
+export const C_GRADE_ARMOR_SETS: readonly ArmorSetDefinition[] = [
+  C_KARMIAN_SET,
+  C_DEMON_SET,
+  C_PLATED_LEATHER_SET,
+];
+
+/** Усі staged-сети (D + C). */
+export const ALL_ARMOR_SETS: readonly ArmorSetDefinition[] = [
+  ...D_GRADE_ARMOR_SETS,
+  ...C_GRADE_ARMOR_SETS,
+];
+
 export type ArmorSetItemRole = 'core' | 'optionalShield';
 
 /** itemId → setId для частин, що входять у corePieceIds. */
 export const ARMOR_SET_ID_BY_CORE_PIECE: ReadonlyMap<number, string> = (() => {
   const m = new Map<number, string>();
-  for (const set of D_GRADE_ARMOR_SETS) {
+  for (const set of ALL_ARMOR_SETS) {
     for (const id of set.corePieceIds) {
       m.set(id, set.setId);
     }
@@ -122,7 +203,7 @@ export const ARMOR_SET_ID_BY_CORE_PIECE: ReadonlyMap<number, string> = (() => {
 /** itemId → setId для optionalShieldId (не входить у corePieceIds). */
 export const ARMOR_SET_ID_BY_OPTIONAL_SHIELD: ReadonlyMap<number, string> = (() => {
   const m = new Map<number, string>();
-  for (const set of D_GRADE_ARMOR_SETS) {
+  for (const set of ALL_ARMOR_SETS) {
     if (set.optionalShieldId != null) {
       m.set(set.optionalShieldId, set.setId);
     }
@@ -131,7 +212,7 @@ export const ARMOR_SET_ID_BY_OPTIONAL_SHIELD: ReadonlyMap<number, string> = (() 
 })();
 
 export function armorSetDefinitionById(setId: string): ArmorSetDefinition | undefined {
-  return D_GRADE_ARMOR_SETS.find((s) => s.setId === setId);
+  return ALL_ARMOR_SETS.find((s) => s.setId === setId);
 }
 
 export function armorSetDefinitionForItem(itemId: number): ArmorSetDefinition | undefined {
@@ -149,7 +230,7 @@ export function armorSetItemRoleForItem(itemId: number): ArmorSetItemRole | null
 }
 
 export function armorSetPieceName(itemId: number): string {
-  const canon = dGradeArmorCatalogRow(itemId);
+  const canon = gradeArmorCatalogRow(itemId);
   if (canon) return canon.name;
   return `Item ${itemId}`;
 }

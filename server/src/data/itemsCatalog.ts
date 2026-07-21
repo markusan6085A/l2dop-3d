@@ -20,6 +20,8 @@ import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatch
 import { JEWELRY_AUTHOR_ITEM_PATCH } from './l2dopJewelryAuthorStats.js';
 import { dropsShieldPatchForEquipped } from './l2dopDropsShieldPatches.js';
 import { D_GRADE_ARMOR_CATALOG } from './dGradeArmorCatalog.js';
+import { C_GRADE_ARMOR_CATALOG } from './cGradeArmorCatalog.js';
+import { gradeArmorCatalogRow } from './gradeArmorCatalog.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 
 /** Базовий крит типу зброї ($WpnCrt) — як у calc_stats для відображення в GM-шопі та каталозі. */
@@ -333,8 +335,8 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   Object.assign(o, mammonGemstoneItemMetaForCatalog());
   Object.assign(o, mammonLifeStoneItemMetaForCatalog());
 
-  /** D-grade броня / щити — канонічний каталог Interlude (перезапис GM-рядків). */
-  for (const row of D_GRADE_ARMOR_CATALOG) {
+  /** D/C-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
+  for (const row of [...D_GRADE_ARMOR_CATALOG, ...C_GRADE_ARMOR_CATALOG]) {
     const prev = o[row.itemId];
     o[row.itemId] = {
       ...(prev ?? {}),
@@ -342,7 +344,7 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
       slot: row.slot,
       armorType: row.armorType,
       ...(row.pDef != null ? { pDef: row.pDef } : {}),
-      ...(row.shieldDefense != null
+      ...('shieldDefense' in row && row.shieldDefense != null
         ? {
             shieldDefense: row.shieldDefense,
             shieldBlockRatePct: row.shieldBlockRatePct,
@@ -638,9 +640,20 @@ export function listGearCatalogForClient(): GearCatalogRow[] {
   if (!seen.has(COIN_OF_LUCK_ITEM_ID)) {
     rows.push(coinOfLuckGearCatalogExtra());
   }
-  return rows.map((row) =>
-    row.slot === 'rhand' ? overlayGearCatalogWeaponFromItemCatalog(row) : row,
-  );
+  return rows
+    .map((row) =>
+      row.slot === 'rhand' ? overlayGearCatalogWeaponFromItemCatalog(row) : row,
+    )
+    .map((row) => {
+      const canon = gradeArmorCatalogRow(row.itemId);
+      if (!canon || canon.pDef == null) return row;
+      return {
+        ...row,
+        nameUk: canon.name,
+        armorType: canon.armorType,
+        stats: { ...row.stats, pDef: canon.pDef },
+      };
+    });
 }
 
 let _itemNamesUkFullCache: Record<number, string> | null = null;
