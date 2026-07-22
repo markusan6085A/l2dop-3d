@@ -12,7 +12,6 @@ import {
   canStartPartyBattleViaRoute,
   isPartyBattleDungeonEnabled,
   isPartyBattleEngineEnabled,
-  isPartyBattleRewardDistributionReady,
   throwIfPartyBattleRouteBlocked,
 } from '../../domain/partyBattleFlags.js';
 import type { MapSpawnKind } from '../../data/mapWorldSpawns.js';
@@ -294,7 +293,6 @@ export async function shouldStartPartyBattleInTx(
     return { partyId: membership.partyId, dungeon: true };
   }
 
-  /** Stage C: world open-field — shared session + reward split (не solo на кожного). */
-  if (!isPartyBattleRewardDistributionReady()) return null;
-  return { partyId: membership.partyId, dungeon: false };
+  /** World open-field — незалежний solo battle; party economy на victory (L2-style). */
+  return null;
 }

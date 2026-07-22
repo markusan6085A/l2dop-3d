@@ -7,6 +7,10 @@ import type { BattleSpawnMeta } from '../domain/battlePvpContext.js';
 import { isPvpBattleJson } from '../domain/battlePvpContext.js';
 import { isSharedWorldBossKind } from '../domain/worldBossSession.js';
 import {
+  isWorldOpenFieldPartyKillRewardContext,
+  resolveWorldPartyKillVictoryInTx,
+} from './party/worldPartyKillVictoryTx.js';
+import {
   persistBattleContinueTurnInTx,
   persistBattleVictoryInTx,
 } from './battleServiceBattleOutcomeTx.js';
@@ -136,6 +140,18 @@ export async function resolveMobDeadVictoryInTx(
           lethalMeta: buildLethalVictoryMeta({ st: args.st, mobHp: 0 }),
         })
       : null;
+  }
+  if (isWorldOpenFieldPartyKillRewardContext({
+    spawnKind: args.spawn.kind,
+    spawnId: args.bj.spawnId,
+    st: args.st,
+  })) {
+    const wp = await resolveWorldPartyKillVictoryInTx(tx, args);
+    return wrapVictoryAsFull({
+      ...wp,
+      battle: null,
+      lethalMeta: buildLethalVictoryMeta({ st: args.st, mobHp: 0 }),
+    });
   }
   const v = await persistBattleVictoryInTx(tx, {
     userId: args.userId,

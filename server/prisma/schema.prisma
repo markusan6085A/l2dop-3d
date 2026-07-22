@@ -225,6 +225,22 @@ model PartyKillReward {
   @@id([partyBattleId, characterId])
 }
 
+/** L2 world farm: idempotency party split на solo kill (без PartyBattleSession). */
+model WorldPartyKillReward {
+  killerCharacterId    String
+  spawnId              String
+  killRevision         Int
+  recipientCharacterId String
+  expGain              Int
+  spGain               Int
+  adenaGain            BigInt
+  createdAt            DateTime  @default(now())
+  notifiedAt           DateTime?
+
+  @@id([killerCharacterId, spawnId, killRevision, recipientCharacterId])
+  @@index([recipientCharacterId, notifiedAt])
+}
+
 model PartyMember {
   partyId     String
   characterId String    @unique

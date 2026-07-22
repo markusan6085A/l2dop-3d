@@ -1,5 +1,5 @@
 /**
- * Regression: party battle EXP/SP/adena split after victory.
+ * L2 world party kill rewards — solo battle, shared economy split.
  * npm run test:party-battle-rewards
  */
 import { config } from 'dotenv';
@@ -12,12 +12,11 @@ config({ path: path.join(__dirname, '../.env') });
 import assert from 'node:assert/strict';
 import bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
-import { MAP_WORLD_SPAWNS } from '../src/data/mapWorldSpawns.js';
 import {
-  L2DOP_LEVEL_MIN_EXP,
-  levelFromTotalExp,
-} from '../src/data/l2dopExpgain.js';
-import { resolvePartyBattleRewardEligibleIds } from '../src/domain/partyBattleRewardEligibility.js';
+  MAP_NEARBY_HERO_RADIUS,
+  MAP_WORLD_SPAWNS,
+} from '../src/data/mapWorldSpawns.js';
+import { resolveWorldPartyRewardEligibleIds } from '../src/domain/worldPartyRewardEligibility.js';
 import {
   splitEvenly,
   splitEvenlyBigInt,
@@ -27,17 +26,18 @@ import {
 import { isPartyBattleRewardDistributionReady } from '../src/domain/partyBattleFlags.js';
 import { shouldStartPartyBattleInTx } from '../src/services/party/partyBattleStartJoinService.js';
 import { performBattleActionInTx } from '../src/services/battleServicePerformBattleAction.js';
-import { prisma } from '../src/lib/prisma.js';
 import { startBattleInTx } from '../src/services/battleServiceSession.js';
 import type { BattleJsonState } from '../src/domain/battleTypes.js';
 import { createPartyForUser } from '../src/services/party/partyService.js';
-import { touchOnlinePresence } from '../src/services/onlinePresenceService.js';
-import {
-  buildTerminalLethalResponse,
-  performPartyBattleLethalAttack,
-} from './partyBattleSmokeLethalHelper.js';
+import { touchOnlinePresence, isCharacterOnlineNow } from '../src/services/onlinePresenceService.js';
 
-const CANONICAL_SPAWN = MAP_WORLD_SPAWNS[0]!;
+import { prisma } from '../src/lib/prisma.js';
+
+const SPAWN_A = MAP_WORLD_SPAWNS[0]!;
+const SPAWN_B =
+  MAP_WORLD_SPAWNS.find(
+    (s) => s.id !== SPAWN_A.id && s.kind !== 'raid' && s.kind !== 'epic'
+  ) ?? SPAWN_A;
 let passed = 0;
 
 function ok(name: string): void {
@@ -51,10 +51,13 @@ function withRewardFlags(): void {
   assert.equal(isPartyBattleRewardDistributionReady(), true);
 }
 
-async function createTestAccount(label: string): Promise<{ userId: string; characterId: string }> {
+async function createTestAccount(
+  label: string,
+  pos?: { worldX: number; worldY: number }
+): Promise<{ userId: string; characterId: string }> {
   const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
-  const login = `pbr_${label}_${suffix}`;
-  const name = `R${label}${suffix.slice(-4)}`.slice(0, 16);
+  const login = `wpr_${label}_${suffix}`;
+  const name = `W${label}${suffix.slice(-4)}`.slice(0, 16);
   const user = await prisma.user.create({
     data: {
       login,
@@ -64,12 +67,11 @@ async function createTestAccount(label: string): Promise<{ userId: string; chara
           name,
           race: 'Human',
           classBranch: 'fighter',
-          level: 39,
-          exp: L2DOP_LEVEL_MIN_EXP[38]!,
+          level: 40,
           hp: 5000,
           maxHp: 5000,
-          worldX: CANONICAL_SPAWN.worldX,
-          worldY: CANONICAL_SPAWN.worldY,
+          worldX: pos?.worldX ?? SPAWN_A.worldX,
+          worldY: pos?.worldY ?? SPAWN_A.worldY,
         },
       },
     },
@@ -83,421 +85,314 @@ async function addPartyMember(partyId: string, characterId: string, slotOrder: n
   await prisma.partyMember.create({ data: { partyId, characterId, slotOrder } });
 }
 
-async function joinMateToPartyBattle(
-  mate: { userId: string; characterId: string },
-  partyId: string
-): Promise<void> {
-  const mateChar0 = await prisma.character.findUniqueOrThrow({ where: { id: mate.characterId } });
-  await prisma.$transaction(async (tx) => {
-    const { startOrJoinPartyBattleInTx } = await import(
-      '../src/services/party/partyBattleStartJoinService.js'
-    );
-    await startOrJoinPartyBattleInTx(tx, {
-      userId: mate.userId,
-      char: mateChar0 as never,
-      spawn: CANONICAL_SPAWN,
-      expectedRevision: mateChar0.revision,
-      partyId,
-      wTick: null,
-      nowStartMs: Date.now(),
-    });
-  });
-}
-
-async function startPartyBattle(userId: string, characterId: string): Promise<string> {
+async function startSoloBattle(userId: string, characterId: string, spawnId: string): Promise<number> {
   const char0 = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
   await prisma.$transaction((tx) =>
-    startBattleInTx(tx, userId, CANONICAL_SPAWN.id, char0.revision, { characterId })
+    startBattleInTx(tx, userId, spawnId, char0.revision, { characterId })
   );
   const char1 = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
   const bj = char1.battleJson as BattleJsonState;
-  assert.ok(bj?.partyBattleId);
-  return bj.partyBattleId!;
+  assert.ok(bj?.spawnId === spawnId);
+  assert.equal(bj.partyBattleId, undefined);
+  return char1.revision;
 }
 
-async function lethalKill(userId: string, characterId: string): Promise<void> {
-  const { response } = await performPartyBattleLethalAttack({
-    userId,
-    characterId,
-    battleSpawnId: CANONICAL_SPAWN.id,
-  });
-  if (!response) {
-    const terminal = await buildTerminalLethalResponse(characterId);
-    assert.ok(terminal, 'lethal kill failed');
+async function lethalKill(
+  userId: string,
+  characterId: string,
+  spawnId: string
+): Promise<{ killRevision: number; partyReward?: { recipientCount: number; shared: boolean } }> {
+  process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL = '1';
+  try {
+    let killRevision = 0;
+    let partyReward: { recipientCount: number; shared: boolean } | undefined;
+    await prisma.$transaction(async (tx) => {
+      const char = await tx.character.findUniqueOrThrow({ where: { id: characterId } });
+      const bj = char.battleJson as Record<string, unknown>;
+      assert.ok(bj, 'no battleJson');
+      killRevision = char.revision;
+      await tx.character.update({
+        where: { id: characterId },
+        data: {
+          battleJson: { ...bj, mobHp: 1 } as unknown as Prisma.InputJsonValue,
+        },
+      });
+      const updated = await tx.character.findUniqueOrThrow({ where: { id: characterId } });
+      const result = await performBattleActionInTx(tx, userId, 'attack', updated.revision, {
+        characterId,
+        battleSpawnId: spawnId,
+      });
+      assert.equal(result.kind, 'full');
+      if (result.partyReward) {
+        partyReward = {
+          recipientCount: result.partyReward.recipientCount,
+          shared: result.partyReward.shared,
+        };
+      }
+    });
+    return { killRevision, partyReward };
+  } finally {
+    delete process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL;
   }
 }
 
-// ---- pure split ----
-
-function testTwoMemberSplitExact(): void {
-  console.log('\n[split] two members 1000/100/500');
-  const ids = ['a', 'b'];
-  const exp = splitEvenlyBigInt(1000n, ids, 'a');
-  const sp = splitEvenly(100, ids, 'a');
-  const adena = splitEvenlyBigInt(500n, ids, 'a');
-  assert.equal(exp.get('a'), 500n);
-  assert.equal(exp.get('b'), 500n);
-  assert.equal(sp.get('a'), 50);
-  assert.equal(sp.get('b'), 50);
-  assert.equal(adena.get('a'), 250n);
-  assert.equal(adena.get('b'), 250n);
-  ok('each member 500 EXP / 50 SP / 250 adena');
+function testSplitPure(): void {
+  console.log('\n[split] pure');
+  const ids = ['k', 'b'];
+  assert.equal(splitEvenlyBigInt(1000n, ids, 'k').get('k'), 500n);
+  assert.equal(splitEvenly(100, ids, 'k').get('b'), 50);
+  assert.equal(sumSplitBigIntMap(splitEvenlyBigInt(1000n, ['k', 'b', 'c'], 'k')), 1000n);
+  assert.equal(sumSplitMap(splitEvenly(100, ['k', 'b', 'c'], 'k')), 100);
+  ok('even split + remainder');
 }
 
-function testThreeMemberRemainder(): void {
-  console.log('\n[split] three members with remainder');
-  const ids = ['k', 'b', 'c'];
-  const exp = splitEvenlyBigInt(1000n, ids, 'k');
-  const sp = splitEvenly(100, ids, 'k');
-  const adena = splitEvenlyBigInt(500n, ids, 'k');
-  assert.equal(sumSplitBigIntMap(exp), 1000n);
-  assert.equal(sumSplitMap(sp), 100);
-  assert.equal(sumSplitBigIntMap(adena), 500n);
-  assert.equal(exp.get('k'), 334n);
-  assert.equal(exp.get('b'), 333n);
-  assert.equal(exp.get('c'), 333n);
-  ok('totals exact; remainder to killer first then asc');
+function testWorldStartNoSharedSession(): void {
+  console.log('\n[start] world mob → no shared party battle');
+  withRewardFlags();
+  ok('flags on — shouldStartPartyBattle returns null for world (checked in integration)');
 }
 
-function testInactivePartyMemberExcluded(): void {
-  console.log('\n[eligibility] inactive party member excluded');
-  const eligible = resolvePartyBattleRewardEligibleIds({
+function testEligibilityPure(): void {
+  console.log('\n[eligibility] nearby vs far');
+  const killerPos = { worldX: 0, worldY: 0, dungeonStateJson: null };
+  const nearPos = { worldX: 100, worldY: 0, dungeonStateJson: null };
+  const farPos = { worldX: MAP_NEARBY_HERO_RADIUS + 500, worldY: 0, dungeonStateJson: null };
+  const eligible = resolveWorldPartyRewardEligibleIds({
     killerCharacterId: 'k',
-    battleParticipantIds: ['k', 'fighter'],
+    killerResolved: killerPos,
+    partyMemberIds: ['k', 'near', 'far', 'dead'],
     memberSnapshots: [
-      {
-        characterId: 'k',
-        hp: 100,
-        pvePendingDefeatJson: null,
-        resolvedPosition: { worldX: 0, worldY: 0, dungeonStateJson: null },
-      },
-      {
-        characterId: 'fighter',
-        hp: 100,
-        pvePendingDefeatJson: null,
-        resolvedPosition: { worldX: 0, worldY: 0, dungeonStateJson: null },
-      },
-      {
-        characterId: 'buffer',
-        hp: 100,
-        pvePendingDefeatJson: null,
-        resolvedPosition: { worldX: 0, worldY: 0, dungeonStateJson: null },
-      },
+      { characterId: 'k', hp: 100, pvePendingDefeatJson: null, resolvedPosition: killerPos },
+      { characterId: 'near', hp: 100, pvePendingDefeatJson: null, resolvedPosition: nearPos },
+      { characterId: 'far', hp: 100, pvePendingDefeatJson: null, resolvedPosition: farPos },
+      { characterId: 'dead', hp: 0, pvePendingDefeatJson: null, resolvedPosition: nearPos },
     ],
     isOnline: () => true,
   });
-  assert.deepEqual(eligible, ['fighter', 'k']);
-  ok('buffer in party but not battle participant → no reward');
+  assert.deepEqual(eligible, ['k', 'near']);
+  ok('near party member eligible without battle page');
 }
 
-// ---- integration ----
-
-function testWorldPartyStartHintWhenRewardsOn(): void {
-  console.log('\n[start] world mob + party + REWARDS → party battle hint');
+async function testMateStandsNearbyGetsReward(): Promise<void> {
+  console.log('\n[integration] mate stands nearby — no battle page');
   withRewardFlags();
-  // Pure flag gate — no DB
-  assert.equal(isPartyBattleRewardDistributionReady(), true);
-  ok('world party start enabled when PARTY_BATTLE_REWARDS_ENABLED=true');
-}
+  const a = await createTestAccount('sa');
+  const b = await createTestAccount('sb');
+  const party = await createPartyForUser(a.userId, a.characterId);
+  await addPartyMember(party.party!.id, b.characterId, 1);
+  await touchOnlinePresence(b.userId);
+  assert.equal(isCharacterOnlineNow(b.characterId), true);
 
-async function testWorldPartyBattleViaBattleStartEndpoint(): Promise<void> {
-  console.log('\n[integration] battle.html path — world spawn party split');
-  withRewardFlags();
-  const killer = await createTestAccount('wk');
-  const mate = await createTestAccount('wm');
-  const party = await createPartyForUser(killer.userId, killer.characterId);
-  await addPartyMember(party.party!.id, mate.characterId, 1);
-  await touchOnlinePresence(mate.userId);
+  const aBefore = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
+  const bBefore = await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } });
 
-  const killerChar0 = await prisma.character.findUniqueOrThrow({
-    where: { id: killer.characterId },
-  });
-  const partyHint = await prisma.$transaction((tx) =>
-    shouldStartPartyBattleInTx(tx, killer.characterId, CANONICAL_SPAWN.kind, false)
-  );
-  assert.ok(partyHint);
-  assert.equal(partyHint!.dungeon, false);
-  ok('shouldStartPartyBattleInTx returns world party hint');
+  await startSoloBattle(a.userId, a.characterId, SPAWN_A.id);
+  assert.equal((await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } })).battleJson, null);
 
-  const sessionId = await startPartyBattle(killer.userId, killer.characterId);
-  const killerBj = await prisma.character.findUniqueOrThrow({
-    where: { id: killer.characterId },
-    select: { battleJson: true },
-  });
-  const bjK = killerBj.battleJson as { partyBattleId?: string; spawnId?: string };
-  assert.equal(bjK.partyBattleId, sessionId);
-  assert.equal(bjK.spawnId, CANONICAL_SPAWN.id);
-  ok('killer battleJson has partyBattleId after /game/battle/start equivalent');
+  const { killRevision, partyReward } = await lethalKill(a.userId, a.characterId, SPAWN_A.id);
+  assert.ok(partyReward?.shared);
+  assert.equal(partyReward?.recipientCount, 2);
 
-  await joinMateToPartyBattle(mate, party.party!.id);
-  const participants = await prisma.partyBattleParticipant.findMany({
-    where: { partyBattleId: sessionId, active: true },
-  });
-  assert.equal(participants.length, 2);
-  ok('two active PartyBattleParticipant rows');
-
-  const killerBefore = await prisma.character.findUniqueOrThrow({
-    where: { id: killer.characterId },
-  });
-  const mateBefore = await prisma.character.findUniqueOrThrow({
-    where: { id: mate.characterId },
-  });
-
-  process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL = '1';
-  try {
-    await prisma.$transaction(async (tx) => {
-      const char = await tx.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-      const bj = char.battleJson as Record<string, unknown>;
-      await tx.partyBattleSession.update({
-        where: { id: sessionId },
-        data: { mobHp: 1 },
-      });
-      await tx.character.update({
-        where: { id: killer.characterId },
-        data: {
-          battleJson: { ...bj, mobHp: 1 } as unknown as Prisma.InputJsonValue,
-        },
-      });
-      const updated = await tx.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-      const result = await performBattleActionInTx(tx, killer.userId, 'attack', updated.revision, {
-        characterId: killer.characterId,
-        battleSpawnId: CANONICAL_SPAWN.id,
-      });
-      assert.equal(result.kind, 'full');
-      assert.ok(result.partyReward);
-      assert.equal(result.partyReward!.recipientCount, 2);
-      assert.equal(result.partyReward!.shared, true);
-    });
-  } finally {
-    delete process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL;
-  }
-
-  const rewards = await prisma.partyKillReward.findMany({
-    where: { partyBattleId: sessionId },
-    orderBy: { characterId: 'asc' },
+  const rewards = await prisma.worldPartyKillReward.findMany({
+    where: { killerCharacterId: a.characterId, spawnId: SPAWN_A.id, killRevision },
   });
   assert.equal(rewards.length, 2);
-  const totalExp = rewards.reduce((s, r) => s + r.expGain, 0);
-  const totalSp = rewards.reduce((s, r) => s + r.spGain, 0);
-  const totalAdena = rewards.reduce((s, r) => s + Number(r.adenaGain), 0n);
-  assert.ok(totalExp > 0);
-  assert.ok(totalSp > 0);
-  assert.ok(totalAdena >= 0);
-  assert.ok(rewards[0]!.expGain > 0 && rewards[1]!.expGain > 0);
-  assert.ok(Math.abs(rewards[0]!.expGain - rewards[1]!.expGain) <= 1);
-  assert.ok(rewards[0]!.expGain < totalExp);
-  ok('killer did not receive full solo EXP — split between two');
 
-  const killerAfter = await prisma.character.findUniqueOrThrow({
-    where: { id: killer.characterId },
-  });
-  const mateAfter = await prisma.character.findUniqueOrThrow({
-    where: { id: mate.characterId },
-  });
-  assert.ok(Number(killerAfter.exp) > Number(killerBefore.exp));
-  assert.ok(Number(mateAfter.exp) > Number(mateBefore.exp));
-  assert.ok(killerAfter.sp > killerBefore.sp);
-  assert.ok(mateAfter.sp > mateBefore.sp);
+  const aAfter = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
+  const bAfter = await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } });
+  assert.ok(Number(aAfter.exp) > Number(aBefore.exp));
+  assert.ok(Number(bAfter.exp) > Number(bBefore.exp));
+  assert.ok(bAfter.sp > bBefore.sp);
+  ok('both received EXP/SP without shared battleJson');
 
-  const expBeforeSecond = killerAfter.exp;
-  try {
-    await prisma.$transaction(async (tx) => {
-      const row = await tx.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-      if (row.battleJson) {
-        await performBattleActionInTx(tx, killer.userId, 'attack', row.revision, {
-          characterId: killer.characterId,
-          battleSpawnId: CANONICAL_SPAWN.id,
-        });
-      }
-    });
-  } catch {
-    /* battle ended */
-  }
-  const killerAfterRepeat = await prisma.character.findUniqueOrThrow({
-    where: { id: killer.characterId },
-  });
-  assert.equal(killerAfterRepeat.exp, expBeforeSecond);
-  assert.equal(
-    await prisma.partyKillReward.count({ where: { partyBattleId: sessionId } }),
-    2
-  );
-  ok('repeat action does not double-grant');
-
-  await prisma.partyBattleSession.delete({ where: { id: sessionId } });
-  await prisma.user.deleteMany({ where: { id: { in: [killer.userId, mate.userId] } } });
+  await prisma.user.deleteMany({ where: { id: { in: [a.userId, b.userId] } } });
 }
 
-async function testTwoMemberIntegration(): Promise<void> {
-  console.log('\n[integration] two battle participants receive economy');
+async function testMateFightsDifferentMob(): Promise<void> {
+  console.log('\n[integration] mate fights different mob');
   withRewardFlags();
-  const killer = await createTestAccount('2k');
-  const mate = await createTestAccount('2m');
-  await createPartyForUser(killer.userId, killer.characterId);
-  const membership = await prisma.partyMember.findUniqueOrThrow({
-    where: { characterId: killer.characterId },
-  });
-  await addPartyMember(membership.partyId, mate.characterId, 1);
-  await touchOnlinePresence(mate.userId);
+  const a = await createTestAccount('da');
+  const b = await createTestAccount('db');
+  const party = await createPartyForUser(a.userId, a.characterId);
+  await addPartyMember(party.party!.id, b.characterId, 1);
+  await touchOnlinePresence(b.userId);
 
-  const killerBefore = await prisma.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-  const mateBefore = await prisma.character.findUniqueOrThrow({ where: { id: mate.characterId } });
-  const sessionId = await startPartyBattle(killer.userId, killer.characterId);
-  await joinMateToPartyBattle(mate, membership.partyId);
-
-  await lethalKill(killer.userId, killer.characterId);
-
-  const rewards = await prisma.partyKillReward.findMany({
-    where: { partyBattleId: sessionId },
-    orderBy: { characterId: 'asc' },
-  });
-  assert.equal(rewards.length, 2);
-  const totalExp = rewards.reduce((s, r) => s + r.expGain, 0);
-  const totalSp = rewards.reduce((s, r) => s + r.spGain, 0);
-  const totalAdena = rewards.reduce((s, r) => s + Number(r.adenaGain), 0);
-  assert.ok(totalExp > 0);
-  assert.ok(totalSp > 0);
-  assert.ok(totalAdena >= 0);
-  assert.ok(Math.abs(rewards[0]!.expGain - rewards[1]!.expGain) <= 1);
-
-  const killerAfter = await prisma.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-  const mateAfter = await prisma.character.findUniqueOrThrow({ where: { id: mate.characterId } });
-  assert.ok(Number(killerAfter.exp) > Number(killerBefore.exp));
-  assert.ok(Number(mateAfter.exp) > Number(mateBefore.exp));
-  assert.ok(killerAfter.sp > killerBefore.sp);
-  assert.ok(mateAfter.sp > mateBefore.sp);
-  ok('both participants persisted EXP/SP');
-
-  await prisma.partyBattleSession.delete({ where: { id: sessionId } });
-  await prisma.user.deleteMany({ where: { id: { in: [killer.userId, mate.userId] } } });
-}
-
-async function testLevelUpOneParticipant(): Promise<void> {
-  console.log('\n[integration] level-up only for near-threshold participant');
-  withRewardFlags();
-  const killer = await createTestAccount('lvk');
-  const mate = await createTestAccount('lvm');
-  await createPartyForUser(killer.userId, killer.characterId);
-  const membership = await prisma.partyMember.findUniqueOrThrow({
-    where: { characterId: killer.characterId },
-  });
-  await addPartyMember(membership.partyId, mate.characterId, 1);
-  await touchOnlinePresence(mate.userId);
-
-  const nearLevel40 = L2DOP_LEVEL_MIN_EXP[39]! - 10n;
   await prisma.character.update({
-    where: { id: killer.characterId },
-    data: { exp: nearLevel40, level: levelFromTotalExp(nearLevel40) },
+    where: { id: b.characterId },
+    data: { worldX: SPAWN_B.worldX, worldY: SPAWN_B.worldY },
   });
 
-  const sessionId = await startPartyBattle(killer.userId, killer.characterId);
-  await joinMateToPartyBattle(mate, membership.partyId);
-  const mateBefore = await prisma.character.findUniqueOrThrow({ where: { id: mate.characterId } });
-  const mateLevelBefore = mateBefore.level;
-
-  await lethalKill(killer.userId, killer.characterId);
-
-  const killerAfter = await prisma.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-  const mateAfter = await prisma.character.findUniqueOrThrow({ where: { id: mate.characterId } });
-  assert.ok(killerAfter.level >= 40);
-  assert.equal(mateAfter.level, mateLevelBefore);
-  assert.ok(Number(mateAfter.exp) > Number(mateBefore.exp));
-  ok('killer leveled; mate gained EXP without level-up');
-
-  await prisma.partyBattleSession.delete({ where: { id: sessionId } });
-  await prisma.user.deleteMany({ where: { id: { in: [killer.userId, mate.userId] } } });
-}
-
-async function testDoubleVictoryIdempotent(): Promise<void> {
-  console.log('\n[integration] duplicate victory grants once');
-  withRewardFlags();
-  const killer = await createTestAccount('dup');
-  await createPartyForUser(killer.userId, killer.characterId);
-  const sessionId = await startPartyBattle(killer.userId, killer.characterId);
-  const before = await prisma.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-
-  await lethalKill(killer.userId, killer.characterId);
-  const afterFirst = await prisma.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-  const rewards1 = await prisma.partyKillReward.findMany({ where: { partyBattleId: sessionId } });
-  assert.equal(rewards1.length, 1);
-
-  const expAfterFirst = afterFirst.exp;
-  const spAfterFirst = afterFirst.sp;
-  const adenaAfterFirst = afterFirst.adena;
-
-  await lethalKill(killer.userId, killer.characterId).catch(() => {
-    /* battle already ended */
-  });
-  const afterSecond = await prisma.character.findUniqueOrThrow({ where: { id: killer.characterId } });
-  const rewards2 = await prisma.partyKillReward.findMany({ where: { partyBattleId: sessionId } });
-  assert.equal(rewards2.length, 1);
-  assert.equal(afterSecond.exp, expAfterFirst);
-  assert.equal(afterSecond.sp, spAfterFirst);
-  assert.equal(afterSecond.adena, adenaAfterFirst);
-  assert.ok(Number(afterFirst.exp) > Number(before.exp));
-  ok('second victory attempt does not double-grant');
-
-  await prisma.partyBattleSession.delete({ where: { id: sessionId } });
-  await prisma.user.delete({ where: { id: killer.userId } });
-}
-
-async function testSoloBattleUnchanged(): Promise<void> {
-  console.log('\n[integration] solo battle still grants rewards');
-  withRewardFlags();
-  delete process.env.PARTY_BATTLE_ENABLED;
-  process.env.PARTY_BATTLE_ENABLED = 'false';
-
-  const solo = await createTestAccount('solo');
-  const char0 = await prisma.character.findUniqueOrThrow({ where: { id: solo.characterId } });
-  await prisma.$transaction((tx) =>
-    startBattleInTx(tx, solo.userId, CANONICAL_SPAWN.id, char0.revision, {
-      characterId: solo.characterId,
-    })
-  );
-
-  const before = await prisma.character.findUniqueOrThrow({ where: { id: solo.characterId } });
-  process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL = '1';
-  try {
-    const { performBattleActionInTx } = await import(
-      '../src/services/battleServicePerformBattleAction.js'
-    );
-    await prisma.$transaction(async (tx) => {
-      const char = await tx.character.findUniqueOrThrow({ where: { id: solo.characterId } });
-      const bj = char.battleJson as BattleJsonState;
-      await tx.character.update({
-        where: { id: solo.characterId },
-        data: {
-          battleJson: { ...bj, mobHp: 1 } as unknown as Prisma.InputJsonValue,
-        },
-      });
-      const updated = await tx.character.findUniqueOrThrow({ where: { id: solo.characterId } });
-      await performBattleActionInTx(tx, solo.userId, 'attack', updated.revision, {
-        characterId: solo.characterId,
-        battleSpawnId: CANONICAL_SPAWN.id,
-      });
-    });
-  } finally {
-    delete process.env.PARTY_BATTLE_SMOKE_GUARANTEED_LETHAL;
+  const bBefore = await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } });
+  await startSoloBattle(a.userId, a.characterId, SPAWN_A.id);
+  if (SPAWN_B.id !== SPAWN_A.id) {
+    await startSoloBattle(b.userId, b.characterId, SPAWN_B.id);
   }
 
+  const bBj = await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } });
+  assert.ok(bBj.battleJson);
+  const aBj = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
+  assert.ok(aBj.battleJson);
+  assert.notEqual(
+    (aBj.battleJson as BattleJsonState).spawnId,
+    SPAWN_B.id === SPAWN_A.id ? SPAWN_A.id : (bBj.battleJson as BattleJsonState).spawnId
+  );
+
+  const { killRevision } = await lethalKill(a.userId, a.characterId, SPAWN_A.id);
+  const rewards = await prisma.worldPartyKillReward.findMany({
+    where: { killerCharacterId: a.characterId, spawnId: SPAWN_A.id, killRevision },
+  });
+  assert.equal(rewards.length, 2);
+
+  const bAfter = await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } });
+  assert.ok(Number(bAfter.exp) > Number(bBefore.exp));
+  ok('mate on other spawn still gets kill-A split');
+
+  await prisma.user.deleteMany({ where: { id: { in: [a.userId, b.userId] } } });
+}
+
+async function testSimultaneousDifferentKills(): Promise<void> {
+  console.log('\n[integration] two independent kills same party');
+  withRewardFlags();
+  if (SPAWN_B.id === SPAWN_A.id) {
+    ok('skipped — need two distinct spawns');
+    return;
+  }
+  const a = await createTestAccount('simA');
+  const b = await createTestAccount('simB');
+  const party = await createPartyForUser(a.userId, a.characterId);
+  await addPartyMember(party.party!.id, b.characterId, 1);
+  await touchOnlinePresence(b.userId);
+
+  await prisma.character.update({
+    where: { id: a.characterId },
+    data: { worldX: SPAWN_A.worldX, worldY: SPAWN_A.worldY },
+  });
+  await prisma.character.update({
+    where: { id: b.characterId },
+    data: { worldX: SPAWN_A.worldX, worldY: SPAWN_A.worldY },
+  });
+
+  await startSoloBattle(a.userId, a.characterId, SPAWN_A.id);
+  await startSoloBattle(b.userId, b.characterId, SPAWN_B.id);
+
+  const killA = await lethalKill(a.userId, a.characterId, SPAWN_A.id);
+  const killB = await lethalKill(b.userId, b.characterId, SPAWN_B.id);
+
+  const rewardsA = await prisma.worldPartyKillReward.count({
+    where: { killerCharacterId: a.characterId, spawnId: SPAWN_A.id, killRevision: killA.killRevision },
+  });
+  const rewardsB = await prisma.worldPartyKillReward.count({
+    where: { killerCharacterId: b.characterId, spawnId: SPAWN_B.id, killRevision: killB.killRevision },
+  });
+  assert.equal(rewardsA, 2);
+  assert.equal(rewardsB, 2);
+  ok('each kill split once between A and B');
+
+  await prisma.user.deleteMany({ where: { id: { in: [a.userId, b.userId] } } });
+}
+
+async function testFarMemberExcluded(): Promise<void> {
+  console.log('\n[integration] far member excluded');
+  withRewardFlags();
+  const a = await createTestAccount('fa');
+  const b = await createTestAccount('fb');
+  const party = await createPartyForUser(a.userId, a.characterId);
+  await addPartyMember(party.party!.id, b.characterId, 1);
+  await touchOnlinePresence(b.userId);
+
+  await prisma.character.update({
+    where: { id: b.characterId },
+    data: {
+      worldX: SPAWN_A.worldX + MAP_NEARBY_HERO_RADIUS + 5000,
+      worldY: SPAWN_A.worldY,
+    },
+  });
+
+  const bBefore = await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } });
+  await startSoloBattle(a.userId, a.characterId, SPAWN_A.id);
+  const { killRevision } = await lethalKill(a.userId, a.characterId, SPAWN_A.id);
+
+  const rewards = await prisma.worldPartyKillReward.findMany({
+    where: { killerCharacterId: a.characterId, spawnId: SPAWN_A.id, killRevision },
+  });
+  assert.equal(rewards.length, 1);
+  assert.equal(rewards[0]!.recipientCharacterId, a.characterId);
+
+  const bAfter = await prisma.character.findUniqueOrThrow({ where: { id: b.characterId } });
+  assert.equal(Number(bAfter.exp), Number(bBefore.exp));
+  ok('far mate gets nothing');
+
+  await prisma.user.deleteMany({ where: { id: { in: [a.userId, b.userId] } } });
+}
+
+async function testSoloNoPartyFullReward(): Promise<void> {
+  console.log('\n[integration] solo character 100%');
+  withRewardFlags();
+  const solo = await createTestAccount('solo');
+  const before = await prisma.character.findUniqueOrThrow({ where: { id: solo.characterId } });
+  await startSoloBattle(solo.userId, solo.characterId, SPAWN_A.id);
+  await lethalKill(solo.userId, solo.characterId, SPAWN_A.id);
+
+  const worldRewards = await prisma.worldPartyKillReward.count({
+    where: { killerCharacterId: solo.characterId },
+  });
+  assert.equal(worldRewards, 0);
   const after = await prisma.character.findUniqueOrThrow({ where: { id: solo.characterId } });
   assert.ok(Number(after.exp) > Number(before.exp));
-  assert.ok(after.sp > before.sp);
-  ok('solo EXP/SP granted');
+  ok('solo full reward, no WorldPartyKillReward rows');
 
   await prisma.user.delete({ where: { id: solo.userId } });
 }
 
+async function testDoubleKillIdempotent(): Promise<void> {
+  console.log('\n[integration] duplicate victory idempotent');
+  withRewardFlags();
+  const a = await createTestAccount('dup');
+  await createPartyForUser(a.userId, a.characterId);
+  await startSoloBattle(a.userId, a.characterId, SPAWN_A.id);
+  const { killRevision } = await lethalKill(a.userId, a.characterId, SPAWN_A.id);
+  const afterFirst = await prisma.character.findUniqueOrThrow({ where: { id: a.characterId } });
+
+  try {
+    await lethalKill(a.userId, a.characterId, SPAWN_A.id);
+  } catch {
+    /* battle ended */
+  }
+  const count = await prisma.worldPartyKillReward.count({
+    where: { killerCharacterId: a.characterId, spawnId: SPAWN_A.id, killRevision },
+  });
+  assert.equal(count, 1);
+  ok('one WorldPartyKillReward ledger per kill');
+
+  await prisma.user.delete({ where: { id: a.userId } });
+  void afterFirst;
+}
+
+async function testShouldStartNullForWorld(): Promise<void> {
+  console.log('\n[start] shouldStartPartyBattleInTx null for world');
+  withRewardFlags();
+  const a = await createTestAccount('hint');
+  await createPartyForUser(a.userId, a.characterId);
+  const hint = await prisma.$transaction((tx) =>
+    shouldStartPartyBattleInTx(tx, a.characterId, SPAWN_A.kind, false)
+  );
+  assert.equal(hint, null);
+  ok('world farm does not create PartyBattleSession');
+  await prisma.user.delete({ where: { id: a.userId } });
+}
+
 async function main(): Promise<void> {
-  console.log('party-battle-rewards regression');
-  testTwoMemberSplitExact();
-  testThreeMemberRemainder();
-  testInactivePartyMemberExcluded();
-  testWorldPartyStartHintWhenRewardsOn();
-  await testWorldPartyBattleViaBattleStartEndpoint();
-  await testTwoMemberIntegration();
-  await testLevelUpOneParticipant();
-  await testDoubleVictoryIdempotent();
-  await testSoloBattleUnchanged();
+  console.log('world party kill rewards (L2-style)');
+  testSplitPure();
+  testEligibilityPure();
+  testWorldStartNoSharedSession();
+  await testShouldStartNullForWorld();
+  await testMateStandsNearbyGetsReward();
+  await testMateFightsDifferentMob();
+  await testSimultaneousDifferentKills();
+  await testFarMemberExcluded();
+  await testSoloNoPartyFullReward();
+  await testDoubleKillIdempotent();
   console.log(`\n${passed} passed`);
 }
 
