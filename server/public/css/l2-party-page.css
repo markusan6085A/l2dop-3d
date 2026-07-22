@@ -6,6 +6,14 @@
   background: transparent;
 }
 
+.l2-party-back {
+  margin: 0 0 12px;
+}
+
+.l2-party-back .l2-town-btn {
+  margin: 0;
+}
+
 .l2-party-panel__title {
   margin: 0 0 8px;
   font-size: 14px;
