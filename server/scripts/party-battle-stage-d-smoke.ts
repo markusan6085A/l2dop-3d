@@ -170,18 +170,20 @@ async function main(): Promise<void> {
   const radii = getMapRadiiConfig();
   assert.equal(radii.mobInteractionRadius, BATTLE_RANGE);
   assert.equal(radii.playerVisibilityRadius, MAP_NEARBY_HERO_RADIUS);
+  assert.equal(radii.partyRewardRadius, MAP_NEARBY_HERO_RADIUS);
+  assert.equal(radii.pvpInteractionRadius, BATTLE_RANGE);
   assert.equal(MAP_NEARBY_LIST_RADIUS, BATTLE_RANGE);
-  ok('map radii canonical (yellow=28000, red=12000)');
+  ok('map radii canonical (yellow=20000, red=12000)');
 
   assert.equal(isWithinMobBattleRange(
     { worldX: CANONICAL_SPAWN.worldX, worldY: CANONICAL_SPAWN.worldY },
-    { worldX: CANONICAL_SPAWN.worldX + 27000, worldY: CANONICAL_SPAWN.worldY }
+    { worldX: CANONICAL_SPAWN.worldX + 19000, worldY: CANONICAL_SPAWN.worldY }
   ), true);
   assert.equal(isWithinMobBattleRange(
     { worldX: CANONICAL_SPAWN.worldX, worldY: CANONICAL_SPAWN.worldY },
-    { worldX: CANONICAL_SPAWN.worldX + 29000, worldY: CANONICAL_SPAWN.worldY }
+    { worldX: CANONICAL_SPAWN.worldX + 21000, worldY: CANONICAL_SPAWN.worldY }
   ), false);
-  ok('mob battle range boundary 28000');
+  ok('mob battle range boundary 20000');
 
   process.env.PARTY_BATTLE_ENABLED = 'true';
   process.env.PARTY_BATTLE_DUNGEON_ENABLED = 'true';
@@ -203,6 +205,8 @@ async function main(): Promise<void> {
   assert.ok(mapSync);
   assert.equal(mapSync!.mapRadii.mobInteractionRadius, BATTLE_RANGE);
   assert.equal(mapSync!.mapRadii.playerVisibilityRadius, MAP_NEARBY_HERO_RADIUS);
+  assert.equal(mapSync!.mapRadii.partyRewardRadius, MAP_NEARBY_HERO_RADIUS);
+  assert.equal(mapSync!.mapRadii.pvpInteractionRadius, BATTLE_RANGE);
   ok('GET map sync returns mapRadii DTO');
 
   assert.ok(mapSync!.around.partyNearbyMembers.some((m) => m.characterId === mate.characterId));

@@ -29,7 +29,7 @@ export function isWithinMapNearbyHeroRadius(
   return dx * dx + dy * dy <= radius * radius;
 }
 
-/** Canonical mob battle/join range — BATTLE_RANGE (28_000), не MAP_NEARBY_LIST_RADIUS. */
+/** Canonical mob battle/join range — BATTLE_RANGE (20_000), не MAP_NEARBY_LIST_RADIUS. */
 export function isWithinMobBattleRange(
   character: PlayfieldPosition,
   mob: MobWorldPosition

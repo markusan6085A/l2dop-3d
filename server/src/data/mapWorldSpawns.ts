@@ -31,7 +31,7 @@ export type MapSpawnKind =
  * Радіус «поруч» для списку й маркерів (світові одиниці).
  * Менше ~15k — епіки/зона (на кшталт Валакаса) часто не потрапляли в список; занадто велико — зайвий шум.
  */
-/** Список/маркери мобів — canonical BATTLE_RANGE (28_000), узгоджено з join/attack. */
+/** Список/маркери мобів — canonical BATTLE_RANGE (20_000), узгоджено з join/attack. */
 export const MAP_NEARBY_LIST_RADIUS = BATTLE_RANGE;
 
 /** Радіус «поруч» для інших гравців на карті (менший за мобів). */
@@ -255,8 +255,6 @@ export const MAP_WORLD_SPAWNS: MapWorldSpawn[] = [
   ...buildScatterSpawns(),
   ...SPECIAL_SPAWNS,
 ];
-
-console.log('[MAP] Total world spawns:', MAP_WORLD_SPAWNS.length);
 
 export function getWorldSpawnById(id: string): MapWorldSpawn | undefined {
   const dungeonSpawn = resolveMapWorldSpawnById(id);

@@ -7,6 +7,8 @@
   var serverMapRadii = {
     mobInteractionRadius: null,
     playerVisibilityRadius: null,
+    partyRewardRadius: null,
+    pvpInteractionRadius: null,
   };
   var MOBS_PER_PAGE = 15;
   var mobListPage = 0;
@@ -22,11 +24,56 @@
     if (!sync || !sync.mapRadii) return;
     var mobR = Number(sync.mapRadii.mobInteractionRadius);
     var heroR = Number(sync.mapRadii.playerVisibilityRadius);
+    var partyR = Number(sync.mapRadii.partyRewardRadius);
+    var pvpR = Number(sync.mapRadii.pvpInteractionRadius);
     if (Number.isFinite(mobR) && mobR > 0) {
       serverMapRadii.mobInteractionRadius = mobR;
     }
     if (Number.isFinite(heroR) && heroR > 0) {
       serverMapRadii.playerVisibilityRadius = heroR;
+    }
+    if (Number.isFinite(partyR) && partyR > 0) {
+      serverMapRadii.partyRewardRadius = partyR;
+    }
+    if (Number.isFinite(pvpR) && pvpR > 0) {
+      serverMapRadii.pvpInteractionRadius = pvpR;
+    }
+  }
+
+  function partyRewardRadiusUnits() {
+    return serverMapRadii.partyRewardRadius;
+  }
+
+  function pvpInteractionRadiusUnits() {
+    return serverMapRadii.pvpInteractionRadius;
+  }
+
+  function mapRadiiReady() {
+    return (
+      Number.isFinite(serverMapRadii.mobInteractionRadius) &&
+      serverMapRadii.mobInteractionRadius > 0 &&
+      Number.isFinite(serverMapRadii.playerVisibilityRadius) &&
+      serverMapRadii.playerVisibilityRadius > 0
+    );
+  }
+
+  function updateMapRadiiLegend(legendEl, partyLegendEl) {
+    if (!legendEl) return;
+    if (!mapRadiiReady()) {
+      legendEl.hidden = true;
+      return;
+    }
+    legendEl.hidden = false;
+    if (partyLegendEl) {
+      var partyR = partyRewardRadiusUnits();
+      var heroR = playerVisibilityRadiusUnits();
+      var showParty =
+        Number.isFinite(partyR) &&
+        partyR > 0 &&
+        Number.isFinite(heroR) &&
+        heroR > 0 &&
+        Math.abs(partyR - heroR) > 1;
+      partyLegendEl.hidden = !showParty;
     }
   }
 
@@ -88,7 +135,10 @@
   }
 
   function placeViewRadius(img, el, worldX, worldY, radiusWorld) {
-    if (!img || !el || !img.naturalWidth || !radiusWorld) return;
+    if (!img || !el || !img.naturalWidth || !radiusWorld) {
+      if (el) el.hidden = true;
+      return;
+    }
     var center = worldToMapPixel(worldX, worldY);
     var east = worldToMapPixel(worldX + radiusWorld, worldY);
     var north = worldToMapPixel(worldX, worldY + radiusWorld);
@@ -98,6 +148,24 @@
     var ly = (center.my / img.naturalHeight) * 100;
     var wPct = ((rx * 2) / img.naturalWidth) * 100;
     var hPct = ((ry * 2) / img.naturalHeight) * 100;
+    var sig =
+      String(Math.round(worldX)) +
+      ',' +
+      String(Math.round(worldY)) +
+      '|' +
+      String(radiusWorld) +
+      '|' +
+      lx.toFixed(3) +
+      ',' +
+      ly.toFixed(3) +
+      ',' +
+      wPct.toFixed(3) +
+      ',' +
+      hPct.toFixed(3);
+    if (el.dataset.l2RadiusSig === sig) return;
+    el.dataset.l2RadiusSig = sig;
+    el.hidden = false;
+    el.style.display = '';
     el.style.left = lx + '%';
     el.style.top = ly + '%';
     el.style.width = wPct + '%';
@@ -1294,23 +1362,52 @@
     blockEl.appendChild(names);
   }
 
-  function render(c, img, dot, viewRadiusEl, heroViewRadiusEl, moveTargetEl, viewport, around, centerOnPlayer) {
+  function render(
+    c,
+    img,
+    dot,
+    viewRadiusEl,
+    heroViewRadiusEl,
+    partyRewardRadiusEl,
+    radiiLegendEl,
+    partyLegendEl,
+    moveTargetEl,
+    viewport,
+    around,
+    centerOnPlayer
+  ) {
     if (!c) return;
     var wx = num(c.worldX, 83400);
     var wy = num(c.worldY, 147943);
     placeDot(img, dot, wx, wy);
     var mobR = mobInteractionRadiusUnits();
     var heroR = playerVisibilityRadiusUnits();
+    var partyR = partyRewardRadiusUnits();
     if (Number.isFinite(mobR) && mobR > 0) {
       placeViewRadius(img, viewRadiusEl, wx, wy, mobR);
     } else if (viewRadiusEl) {
-      viewRadiusEl.style.display = 'none';
+      viewRadiusEl.hidden = true;
     }
     if (Number.isFinite(heroR) && heroR > 0) {
       placeViewRadius(img, heroViewRadiusEl, wx, wy, heroR);
     } else if (heroViewRadiusEl) {
-      heroViewRadiusEl.style.display = 'none';
+      heroViewRadiusEl.hidden = true;
     }
+    if (partyRewardRadiusEl) {
+      var showPartyCircle =
+        Number.isFinite(partyR) &&
+        partyR > 0 &&
+        Number.isFinite(heroR) &&
+        heroR > 0 &&
+        Math.abs(partyR - heroR) > 1;
+      if (showPartyCircle) {
+        placeViewRadius(img, partyRewardRadiusEl, wx, wy, partyR);
+      } else {
+        partyRewardRadiusEl.hidden = true;
+        delete partyRewardRadiusEl.dataset.l2RadiusSig;
+      }
+    }
+    updateMapRadiiLegend(radiiLegendEl, partyLegendEl);
     var tgx = c.targetX != null ? Number(c.targetX) : 0;
     var tgy = c.targetY != null ? Number(c.targetY) : 0;
     var hasTarget = Number.isFinite(tgx) && Number.isFinite(tgy) && (tgx !== 0 || tgy !== 0);
@@ -1357,6 +1454,9 @@
     var dot = $('map-dot');
     var viewRadius = $('map-view-radius');
     var heroViewRadius = $('map-hero-view-radius');
+    var partyRewardRadius = $('map-party-reward-radius');
+    var radiiLegend = $('map-radii-legend');
+    var partyLegend = $('map-radii-legend-party');
     var dungeonEnterEl = $('map-dungeon-enter');
     var dungeonEnterLink = $('map-dungeon-enter-link');
     var dungeonEnterLabel = $('map-dungeon-enter-label');
@@ -1669,6 +1769,47 @@
         applyMapSyncPayload: applyMapSyncPayload,
         heroList: heroList,
         heroSection: heroSection,
+        getMapRadii: function () {
+          return {
+            mobInteractionRadius: serverMapRadii.mobInteractionRadius,
+            playerVisibilityRadius: serverMapRadii.playerVisibilityRadius,
+            partyRewardRadius: serverMapRadii.partyRewardRadius,
+            pvpInteractionRadius: serverMapRadii.pvpInteractionRadius,
+          };
+        },
+        paintRadiiAt: function (worldX, worldY) {
+          if (!img) return;
+          if (!img.naturalWidth) {
+            img.naturalWidth = 1812;
+            img.naturalHeight = 2620;
+          }
+          render(
+            { worldX: worldX, worldY: worldY, targetX: 0, targetY: 0 },
+            img,
+            dot,
+            viewRadius,
+            heroViewRadius,
+            partyRewardRadius,
+            radiiLegend,
+            partyLegend,
+            moveTarget,
+            viewport,
+            aroundData,
+            false
+          );
+        },
+        getRadiusElementStyle: function (id) {
+          var el = $(id);
+          if (!el) return null;
+          return {
+            hidden: !!el.hidden,
+            left: el.style.left || '',
+            top: el.style.top || '',
+            width: el.style.width || '',
+            height: el.style.height || '',
+            sig: el.dataset.l2RadiusSig || '',
+          };
+        },
         getAroundData: function () {
           return aroundData;
         },
@@ -1706,7 +1847,20 @@
     }
 
     function paintMain(centerOnPlayer) {
-      render(c, img, dot, viewRadius, heroViewRadius, moveTarget, viewport, aroundData, centerOnPlayer);
+      render(
+        c,
+        img,
+        dot,
+        viewRadius,
+        heroViewRadius,
+        partyRewardRadius,
+        radiiLegend,
+        partyLegend,
+        moveTarget,
+        viewport,
+        aroundData,
+        centerOnPlayer
+      );
       renderHeroList(aroundData, heroList, heroSection);
       renderHeroMarkers(img, heroMarkersLayer, aroundData.nearbyHeroes || []);
       renderPartyNearbyBlock(

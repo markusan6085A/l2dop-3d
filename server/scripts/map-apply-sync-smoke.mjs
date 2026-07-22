@@ -269,7 +269,12 @@ const syncPayload = {
   personalMapSig: 'sig',
   mammonRotationSig: 'mammon',
   revision: 1,
-  mapRadii: { mobInteractionRadius: 28000, playerVisibilityRadius: 12000 },
+  mapRadii: {
+    mobInteractionRadius: 20000,
+    playerVisibilityRadius: 12000,
+    partyRewardRadius: 12000,
+    pvpInteractionRadius: 20000,
+  },
   mapState: {
     id: 'viewer-1',
     revision: 1,

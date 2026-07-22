@@ -109,6 +109,29 @@
                     +
                   </button>
                 </div>
+                <div
+                  id="map-radii-legend"
+                  class="l2-map-radii-legend"
+                  aria-label="Легенда радіусів"
+                  hidden
+                >
+                  <span class="l2-map-radii-legend__item l2-map-radii-legend__item--mob">
+                    <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
+                    Моби / дистанція бою
+                  </span>
+                  <span class="l2-map-radii-legend__item l2-map-radii-legend__item--hero">
+                    <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
+                    Гравці / PvP
+                  </span>
+                  <span
+                    id="map-radii-legend-party"
+                    class="l2-map-radii-legend__item l2-map-radii-legend__item--party"
+                    hidden
+                  >
+                    <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
+                    Радіус нагороди паті
+                  </span>
+                </div>
                 <div class="l2-map-inner" id="map-inner">
                   <img
                     id="map-img"
@@ -120,8 +143,9 @@
                     draggable="false"
                   />
                   <div id="map-move-target" class="l2-map-move-target" hidden aria-hidden="true"></div>
-                  <div id="map-view-radius" class="l2-map-view-radius" aria-hidden="true"></div>
-                  <div id="map-hero-view-radius" class="l2-map-hero-view-radius" aria-hidden="true"></div>
+                  <div id="map-view-radius" class="l2-map-view-radius" aria-hidden="true" hidden></div>
+                  <div id="map-hero-view-radius" class="l2-map-hero-view-radius" aria-hidden="true" hidden></div>
+                  <div id="map-party-reward-radius" class="l2-map-party-reward-radius" aria-hidden="true" hidden></div>
                   <div id="map-hero-markers" class="l2-map-hero-markers" aria-hidden="true"></div>
                   <div id="map-mob-markers" class="l2-map-mob-markers" aria-hidden="true"></div>
                   <div id="map-npc-markers" class="l2-map-npc-markers" aria-hidden="true"></div>

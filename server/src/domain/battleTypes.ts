@@ -1,6 +1,6 @@
 import type { WeaknessKind } from './mobWeaknessFamily.js';
 
-export const BATTLE_RANGE = 28_000;
+export const BATTLE_RANGE = 20_000;
 export const MAX_BATTLE_LOG = 36;
 /** Тривалість ефекту Zealot (мс); після `zealotUntilMs` сервер знімає бонуси. */
 export const ZEALOT_EFFECT_DURATION_MS = 120_000;
