@@ -1,4 +1,8 @@
 import type { DropEntry } from '../types/combatDrop.js';
+import {
+  RB_LV20_25_BOSSES,
+  isRaidBossLv20_25NpcId,
+} from './l2dopRaidBossLv20_25Catalog.js';
 
 export interface RaidBossRewardSpec {
   adenaMin: number;
@@ -9,35 +13,32 @@ export interface RaidBossRewardSpec {
   spMax: number;
 }
 
-/** EXP/SP/адена за кілл — окремі діапазони для кожного з трьох РБ 20 lvl. */
+function rewardSpecFromExpSp(
+  exp: number,
+  sp: number,
+  adena = 0
+): RaidBossRewardSpec {
+  return {
+    adenaMin: adena,
+    adenaMax: adena,
+    expMin: exp,
+    expMax: exp,
+    spMin: sp,
+    spMax: sp,
+  };
+}
+
+const RB_LV20_25_REWARD_BY_NPC_ID: Readonly<Record<number, RaidBossRewardSpec>> =
+  Object.fromEntries(
+    RB_LV20_25_BOSSES.map((spec) => [
+      spec.npcId,
+      rewardSpecFromExpSp(spec.exp, spec.sp),
+    ])
+  );
+
+/** EXP/SP/адена за кілл — окремі діапазони для кастомних РБ поза 20–25 band. */
 const RAID_BOSS_REWARD_BY_NPC_ID: Readonly<Record<number, RaidBossRewardSpec>> = {
-  /** Отверженный Стражник */
-  25372: {
-    adenaMin: 20_000,
-    adenaMax: 50_000,
-    expMin: 150_000,
-    expMax: 180_000,
-    spMin: 45_000,
-    spMax: 50_000,
-  },
-  /** Лорд Зомби Фаракелсус */
-  25375: {
-    adenaMin: 20_000,
-    adenaMax: 50_000,
-    expMin: 181_000,
-    expMax: 215_000,
-    spMin: 51_000,
-    spMax: 55_000,
-  },
-  /** Зверь Безумия */
-  25378: {
-    adenaMin: 20_000,
-    adenaMax: 50_000,
-    expMin: 216_000,
-    expMax: 250_000,
-    spMin: 56_000,
-    spMax: 60_000,
-  },
+  ...RB_LV20_25_REWARD_BY_NPC_ID,
   /** Death Lord Shax — The Disciple's Necropolis (L2DOP tuning). */
   25282: {
     adenaMin: 5896,
@@ -68,8 +69,9 @@ export function raidBossRewardSpecForNpcId(
   return RAID_BOSS_REWARD_BY_NPC_ID[npcId];
 }
 
-export function raidBossAdenaDropEntry(npcId: number): DropEntry {
+export function raidBossAdenaDropEntry(npcId: number): DropEntry | undefined {
   const spec = RAID_BOSS_REWARD_BY_NPC_ID[npcId];
+  if (spec != null && spec.adenaMax <= 0) return undefined;
   const min = spec?.adenaMin ?? 20_000;
   const max = spec?.adenaMax ?? 50_000;
   return {
@@ -108,3 +110,5 @@ export function raidBossRewardPreviewForNpcId(npcId: number):
     spLabel: formatRewardRange(spec.spMin, spec.spMax),
   };
 }
+
+export { isRaidBossLv20_25NpcId };

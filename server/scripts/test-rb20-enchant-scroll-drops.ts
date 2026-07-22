@@ -4,6 +4,7 @@
  */
 import assert from 'node:assert/strict';
 import { customNpcDropBagForMob } from '../src/data/l2dopRaidBossDropPatches.js';
+import { RB_LV20_25_NPC_IDS } from '../src/data/l2dopRaidBossLv20_25Catalog.js';
 import {
   RB_21_39_NPC_IDS,
   RB_21_39_SHIELD_BY_NPC_ID,
@@ -52,47 +53,23 @@ import {
 } from '../src/data/l2dopRaidBossDropSharedS.js';
 import type { DropEntry } from '../src/types/combatDrop.js';
 
-const RB20_NPC_IDS = [25372, 25375, 25378] as const;
+const RB20_NPC_IDS = [] as const;
+
+const RB_EXP_ONLY_NPC_IDS = new Set<number>(RB_LV20_25_NPC_IDS);
 
 const BRONZE_SHIELD_ID = 626;
 const HOPLON_ID = 628;
 const PLATE_SHIELD_ID = 2494;
 
-/** Усі RB з дозволеним D-grade щитом (20 lvl patches + 21–39 table). */
 const RB_ALLOWED_SHIELD_BY_NPC_ID: Readonly<
   Record<number, { shieldId: number; chance: number }>
 > = {
-  25378: { shieldId: BRONZE_SHIELD_ID, chance: 0.06 },
-  25372: { shieldId: BRONZE_SHIELD_ID, chance: 0.06 },
-  25375: { shieldId: HOPLON_ID, chance: 0.06 },
   ...RB_21_39_SHIELD_BY_NPC_ID,
 };
 
 const RB20_NORMALIZED_EQUIP: Readonly<
   Record<number, ReadonlyArray<{ itemId: number; chance: number; min?: number; max?: number }>>
-> = {
-  25378: [
-    { itemId: 260, chance: 0.04 },
-    { itemId: 436, chance: 0.07 },
-    { itemId: 44, chance: 0.09 },
-    { itemId: BRONZE_SHIELD_ID, chance: 0.06 },
-    { itemId: 914, chance: 0.06 },
-  ],
-  25375: [
-    { itemId: 187, chance: 0.04 },
-    { itemId: 394, chance: 0.07 },
-    { itemId: 499, chance: 0.09 },
-    { itemId: HOPLON_ID, chance: 0.06 },
-    { itemId: 848, chance: 0.07 },
-  ],
-  25372: [
-    { itemId: 128, chance: 0.04 },
-    { itemId: 58, chance: 0.07 },
-    { itemId: 2447, chance: 0.09 },
-    { itemId: BRONZE_SHIELD_ID, chance: 0.06 },
-    { itemId: 880, chance: 0.08 },
-  ],
-};
+> = {};
 
 function findScrollDrop(
   drops: DropEntry[],
@@ -216,6 +193,7 @@ function assertShieldAssignments(): void {
 
   for (const [npcIdRaw, spec] of Object.entries(RB_ALLOWED_SHIELD_BY_NPC_ID)) {
     const npcId = Number(npcIdRaw);
+    if (RB_EXP_ONLY_NPC_IDS.has(npcId)) continue;
     const bag = customNpcDropBagForMob(npcId);
     assert.ok(bag, `shield RB ${npcId} must have drop bag`);
     const shieldLine = bag!.drops.find((d) => d.l2ItemId === spec.shieldId);
@@ -226,6 +204,7 @@ function assertShieldAssignments(): void {
   }
 
   for (const npcId of RB_21_39_NPC_IDS) {
+    if (RB_EXP_ONLY_NPC_IDS.has(npcId)) continue;
     const bag = customNpcDropBagForMob(npcId)!;
     const shieldLines = bag.drops.filter((d) =>
       [BRONZE_SHIELD_ID, HOPLON_ID, PLATE_SHIELD_ID].includes(d.l2ItemId ?? 0)
@@ -240,15 +219,15 @@ function assertShieldAssignments(): void {
 }
 
 function assertIndependentRollBounds(): void {
-  const bag = customNpcDropBagForMob(25372)!;
+  const bag = customNpcDropBagForMob(25272)!;
   const armor = findScrollDrop(bag.drops, 910510)!;
   const weapon = findScrollDrop(bag.drops, 910511)!;
 
   const originalRandom = Math.random;
   try {
     Math.random = () => 0;
-    assert.equal(rollDropLine(armor), 3);
-    assert.equal(rollDropLine(weapon), 2);
+    assert.equal(rollDropLine(armor), 4);
+    assert.equal(rollDropLine(weapon), 3);
 
     let call = 0;
     Math.random = () => {
@@ -257,8 +236,8 @@ function assertIndependentRollBounds(): void {
     };
     const armorQty = rollDropLine(armor);
     const weaponQty = rollDropLine(weapon);
-    assert.ok(armorQty >= 3 && armorQty <= 6, `armor qty ${armorQty}`);
-    assert.ok(weaponQty >= 2 && weaponQty <= 4, `weapon qty ${weaponQty}`);
+    assert.ok(armorQty >= 4 && armorQty <= 7, `armor qty ${armorQty}`);
+    assert.ok(weaponQty >= 3 && weaponQty <= 5, `weapon qty ${weaponQty}`);
   } finally {
     Math.random = originalRandom;
   }
@@ -439,15 +418,16 @@ function run(): void {
 
   assert.equal(RB_21_39_NPC_IDS.length, 54, 'expected 54 RB 21–39 entries');
   for (const npcId of RB_21_39_NPC_IDS) {
+    if (RB_EXP_ONLY_NPC_IDS.has(npcId)) continue;
     assertRb21_39Structure(npcId);
   }
 
-  assertTierScrolls(25357, RB_DROP_TIER_21_26);
+  assertTierScrolls(25019, RB_DROP_TIER_21_26);
   assertTierScrolls(25272, RB_DROP_TIER_28_34);
   assertTierScrolls(25398, RB_DROP_TIER_35_39);
 
-  const tier21 = customNpcDropBagForMob(25357)!;
-  const weaponLine = tier21.drops.find((d) => d.l2ItemId === 241);
+  const tier21 = customNpcDropBagForMob(25019)!;
+  const weaponLine = tier21.drops.find((d) => d.l2ItemId === 277);
   assert.equal(weaponLine?.chance, 0.04);
 
   const tier34 = customNpcDropBagForMob(25272)!;

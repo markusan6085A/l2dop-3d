@@ -353,8 +353,9 @@ export function buildRbDropBagB(
   pick: RbBossDropPickB
 ): NpcDropBag {
   const specs = buildRbBossDropSpecsB(tier, pick);
+  const adena = raidBossAdenaDropEntry(npcId);
   return {
-    drops: [raidBossAdenaDropEntry(npcId), ...specs.map((row) => dropLine(npcId, row))],
+    drops: [...(adena ? [adena] : []), ...specs.map((row) => dropLine(npcId, row))],
     spoil: [],
   };
 }

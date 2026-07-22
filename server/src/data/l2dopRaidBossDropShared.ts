@@ -308,9 +308,10 @@ export function buildRbDropBag(
   pick: RbBossDropPick
 ): NpcDropBag {
   const specs = buildRbBossDropSpecs(tier, pick);
+  const adena = raidBossAdenaDropEntry(npcId);
   return {
     drops: [
-      raidBossAdenaDropEntry(npcId),
+      ...(adena ? [adena] : []),
       ...specs.map((row) => dropLine(npcId, row)),
     ],
     spoil: [],
@@ -323,9 +324,10 @@ export function buildRbDropBagFromSpecs(
   scrollSpecs?: readonly RaidBossDropSpec[]
 ): NpcDropBag {
   const scrolls = scrollSpecs ?? [];
+  const adena = raidBossAdenaDropEntry(npcId);
   return {
     drops: [
-      raidBossAdenaDropEntry(npcId),
+      ...(adena ? [adena] : []),
       ...specs.map((row) => dropLine(npcId, row)),
       ...scrolls.map((row) => dropLine(npcId, row)),
     ],

@@ -13,6 +13,7 @@ import { L2DOP_MAP_CHAMPION_SPAWNS } from './l2dopMapChampionSpawns.generated.js
 import { L2DOP_LINEAGE_EPIC_BOSS_SPAWNS } from './l2dopMapEpicBossSpawns.generated.js';
 import { L2DOP_LINEAGE_EPIC_GUARD_SPAWNS } from './l2dopMapEpicGuardSpawns.js';
 import { L2DOP_LINEAGE_RAID_BOSS_SPAWNS } from './l2dopMapRaidBossSpawns.generated.js';
+import { applyRaidBossSpawnPatches } from './l2dopRaidBossSpawnPatches.js';
 import { BATTLE_RANGE } from '../domain/battleTypes.js';
 
 export type MapSpawnKind =
@@ -216,7 +217,9 @@ function buildScatterSpawns(): MapWorldSpawn[] {
  * Генерація: `npm run gen:map-raid-spawns` → l2dopMapRaidBossSpawns / l2dopMapEpicBossSpawns / заглушка чемпіонів.
  */
 const SPECIAL_SPAWNS: MapWorldSpawn[] = [
-  ...(L2DOP_LINEAGE_RAID_BOSS_SPAWNS as unknown as MapWorldSpawn[]),
+  ...applyRaidBossSpawnPatches(
+    L2DOP_LINEAGE_RAID_BOSS_SPAWNS as unknown as MapWorldSpawn[]
+  ),
   ...(L2DOP_LINEAGE_EPIC_BOSS_SPAWNS as unknown as MapWorldSpawn[]),
   ...L2DOP_LINEAGE_EPIC_GUARD_SPAWNS,
   ...(L2DOP_MAP_CHAMPION_SPAWNS as unknown as MapWorldSpawn[]),

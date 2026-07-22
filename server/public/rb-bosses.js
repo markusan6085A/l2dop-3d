@@ -51,11 +51,24 @@
     if (min == null) min = max;
     if (max == null) max = min;
     if (r.kind === 'adena' || r.l2ItemId === 57) {
+      if (!min || min <= 0) return '';
       if (min === max) return String(min) + ' ад.';
       return String(min) + '–' + String(max) + ' ад.';
     }
     if (min === max) return '×' + String(min);
     return '×' + String(min) + '–' + String(max);
+  }
+
+  function filterVisibleDrops(rows) {
+    if (!rows || !rows.length) return [];
+    return rows.filter(function (r) {
+      if (r.kind === 'adena' || r.l2ItemId === 57) {
+        var min = r.min != null ? r.min : r.max;
+        var max = r.max != null ? r.max : r.min;
+        if ((min == null || min <= 0) && (max == null || max <= 0)) return false;
+      }
+      return true;
+    });
   }
 
   function renderDropList(container, rows) {
@@ -154,7 +167,13 @@
       if (j.rewardExp != null) addStat('EXP (за кілл)', j.rewardExp);
       if (j.rewardSp != null) addStat('SP (за кілл)', j.rewardSp);
     }
-    renderDropList($('rb-modal-drops'), j.drops);
+    var visibleDrops = filterVisibleDrops(j.drops);
+    var dropsSection =
+      $('rb-modal-drops') && $('rb-modal-drops').closest
+        ? $('rb-modal-drops').closest('.l2-map-mob-modal__section')
+        : null;
+    if (dropsSection) dropsSection.hidden = visibleDrops.length === 0;
+    renderDropList($('rb-modal-drops'), visibleDrops);
     var spoilWrap = $('rb-modal-spoil-wrap');
     if (spoilWrap) spoilWrap.hidden = j.viewerMaySeeSpoil !== true;
     renderDropList($('rb-modal-spoil'), j.spoil || []);
