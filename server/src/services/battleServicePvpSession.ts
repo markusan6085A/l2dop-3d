@@ -40,6 +40,7 @@ import {
   areCharactersInSamePartyInTx,
   canCharactersFightWorldPvp,
   characterBlocksWorldPvpStart,
+  characterBlocksWorldPkTarget,
 } from '../domain/worldPvpEligibility.js';
 import { isCharacterOnlineNow } from './onlinePresenceService.js';
 import { isPvpTargetUnavailableForWorldPk } from '../domain/pvpPendingDefeat.js';
@@ -549,7 +550,7 @@ export async function startPvpBattleInTx(
     } else {
       throw new Error('pvp_target_busy');
     }
-  } else if (characterBlocksWorldPvpStart(tgtBj)) {
+  } else if (characterBlocksWorldPkTarget(tgtBj)) {
     throw new Error('pvp_target_in_battle');
   }
 

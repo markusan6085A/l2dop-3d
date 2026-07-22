@@ -3321,6 +3321,7 @@
       var siegeBtn = $('battle-defeat-siege');
       if (siegeBtn) {
         siegeBtn.hidden = !isSiege;
+        siegeBtn.style.display = isSiege ? '' : 'none';
       }
       var dlog = $('battle-defeat-log');
       if (dlog) {
@@ -3695,10 +3696,10 @@
       var isPvpDef = defeat && defeat.isPvp && defeat.killerName;
       var siegeBtn = $('battle-defeat-siege');
       if (siegeBtn) {
-        siegeBtn.hidden = !(
-          defeat &&
-          defeat.scope === 'clan_siege'
-        );
+        var showSiegeBtn =
+          defeat && defeat.scope === 'clan_siege' && !isPvpDef;
+        siegeBtn.hidden = !showSiegeBtn;
+        siegeBtn.style.display = showSiegeBtn ? '' : 'none';
       }
       if (isPvpDef) {
         var mobHead = $('battle-defeat-mobhead');

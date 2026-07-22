@@ -545,6 +545,14 @@
     appendMessageTextWithSmiles(textEl, m.text);
   }
 
+  function viewerSelfPkNickColor() {
+    if (!window.L2 || typeof L2.lastSnapshot !== 'function') return null;
+    var snap = L2.lastSnapshot();
+    if (!snap) return null;
+    var karma = Math.max(0, Math.floor(Number(snap.karma) || 0));
+    return karma > 0 ? 'pk' : null;
+  }
+
   function createMessageElement(m, prevMessage) {
     var item = document.createElement('article');
     item.className = 'l2-chat-msg';
@@ -572,6 +580,7 @@
             name: m.characterName,
             clanEmblemId: m.clanEmblemId,
             nickClassName: 'l2-chat-msg__nick',
+            pvpNickColor: isMine ? viewerSelfPkNickColor() : null,
           })
         : window.L2 && typeof L2.createPlayerProfileNickEl === 'function'
           ? L2.createPlayerProfileNickEl({

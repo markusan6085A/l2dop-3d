@@ -1429,45 +1429,19 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-logbox {
   box-shadow: none;
 }
 
-/* battle: поразка — простий текст «Повернутися в місто» */
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity {
-  box-sizing: border-box !important;
-  display: block !important;
-  width: 100% !important;
-  max-width: 280px !important;
-  margin: 14px auto 0 !important;
-  min-height: auto !important;
-  padding: 8px 14px !important;
-  border: 1px solid rgba(199, 173, 128, 0.45) !important;
-  border-radius: 6px !important;
-  border-image: none !important;
-  background: rgba(12, 10, 8, 0.55) !important;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
-  color: #e8dcc8 !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  text-shadow: none !important;
-  filter: none !important;
-  -webkit-filter: none !important;
-  transform: none !important;
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity-wrap {
+  margin: 14px auto 0;
+  text-align: center;
 }
 
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:hover,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:focus,
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:focus-visible {
-  border-color: rgba(220, 190, 140, 0.65) !important;
-  background: rgba(22, 18, 14, 0.72) !important;
-  color: #f5ead6 !important;
-  outline: none !important;
-  transform: none !important;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity-wrap .l2-town-btn {
+  display: inline-block;
+  min-width: 220px;
+  max-width: 280px;
 }
 
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity:active {
-  background: rgba(8, 6, 5, 0.8) !important;
-  transform: none !important;
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-siege[hidden] {
+  display: none !important;
 }
 
 /* battle: модалка хотбару — коробка #1d1c1a; кнопки з PNG-рамкою */
@@ -3191,7 +3165,6 @@ body.l2-app-l2-chrome .l2-hud-legacy-name,
 body.l2-app-l2-chrome .l2-char-name-bracket,
 body.l2-app-l2-chrome .l2-character-panel__nick,
 body.l2-app-l2-chrome .l2-player-panel__headline,
-body.l2-app-l2-chrome .l2-chat-msg__nick,
 body.l2-app-l2-chrome .l2-online-player__nick,
 body.l2-app-l2-chrome .l2-market-row .l2-hud-nick {
   color: var(--l2-nick-color) !important;

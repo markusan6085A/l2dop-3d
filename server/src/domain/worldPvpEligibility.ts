@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { getWorldSpawnById } from '../data/mapWorldSpawns.js';
 import type { BattleJsonState } from './battleTypes.js';
-import { isPvpBattleJson } from './battlePvpContext.js';
+import { isPvpBattleJson, isPvpSpawnId } from './battlePvpContext.js';
 import { isSharedWorldBossKind } from './worldBossSession.js';
 import type { CanonicalMapLocation } from './mapPlayfieldContext.js';
 
@@ -58,7 +58,27 @@ export function characterBlocksWorldPvpStart(
   return true;
 }
 
-/** Ціль доступна для [PK] на карті (не в чужому PvE/RB/party battle). */
+/**
+ * Ціль у party/RB/dungeon/PvP-with-other — блокує world PK.
+ * Solo world PvE (звичайний моб) — дозволено, як на відкритому полі L2.
+ */
+export function characterBlocksWorldPkTarget(
+  bj: BattleJsonState | null | undefined
+): boolean {
+  if (!bj) return false;
+  if (isPvpBattleJson(bj)) return true;
+  if (typeof bj.partyBattleId === 'string' && bj.partyBattleId.trim()) {
+    return true;
+  }
+  const spawnId = String(bj.spawnId || '').trim();
+  if (isPvpSpawnId(spawnId)) return true;
+  const spawn = getWorldSpawnById(spawnId);
+  if (spawn && isSharedWorldBossKind(spawn.kind)) return true;
+  if (spawn) return false;
+  return true;
+}
+
+/** Ціль доступна для [PK] на карті (не в party/RB/dungeon; solo PvE — OK). */
 export function canPkAttackHeroBattleState(
   bj: BattleJsonState | null | undefined,
   viewerCharacterId: string
@@ -67,7 +87,7 @@ export function canPkAttackHeroBattleState(
   if (isPvpBattleJson(bj)) {
     return bj.pvpTargetCharacterId === viewerCharacterId;
   }
-  return false;
+  return !characterBlocksWorldPkTarget(bj);
 }
 
 export function resolveWorldPvpMapEligibility(args: {
