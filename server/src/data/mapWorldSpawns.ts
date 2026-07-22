@@ -132,7 +132,7 @@ function belongsToNearestTeleport(
 function buildDenseTownFieldSpawns(): MapWorldSpawn[] {
   const out: MapWorldSpawn[] = [];
   let idx = 0;
-  const STEP = 280;
+  const STEP = 650;
   const RING = TELEPORT_SPAWN_RING;
   for (const t of MAP_TOWNS) {
     const pool = mobPoolForTeleport(t.teleportId, t.cityId);
@@ -179,7 +179,7 @@ function buildDenseTownFieldSpawns(): MapWorldSpawn[] {
 /** Випадкові точки по всьому світу — щоб між містами й далекими зонами теж були моби. */
 function buildScatterSpawns(): MapWorldSpawn[] {
   const out: MapWorldSpawn[] = [];
-  const TOTAL = 16_000;
+  const TOTAL = 4_000;
   for (let i = 0; i < TOTAL; i++) {
     const rx = -131000 + rng('scx', i) * 359000;
     const ry = -259000 + rng('scy', i) * 521000;
@@ -245,54 +245,18 @@ const SPECIAL_SPAWNS: MapWorldSpawn[] = [
   },
 ];
 
-/**
- * Звичайні моби (пасивні / агресивні / нейтральні) ×3 — окремі точки з легким зміщенням.
- * Чемпіони, РБ, епіки, данжени — без змін (як у l2dop: особливі точки одні).
- */
-function expandRegularSpawnsThreefold(spawns: MapWorldSpawn[]): MapWorldSpawn[] {
-  const out: MapWorldSpawn[] = [];
-  for (const s of spawns) {
-    if (
-      s.kind === 'champion' ||
-      s.kind === 'raid' ||
-      s.kind === 'epic' ||
-      s.kind === 'epic_guard' ||
-      s.kind === 'dungeon'
-    ) {
-      out.push(s);
-      continue;
-    }
-    for (let k = 0; k < 3; k++) {
-      if (k === 0) {
-        out.push(s);
-        continue;
-      }
-      const jx = (rng(s.id + 'dupx', k) - 0.5) * 160;
-      const jy = (rng(s.id + 'dupy', k) - 0.5) * 160;
-      const c = clampWorld(s.worldX + jx, s.worldY + jy);
-      const home = nearestMapTown(s.worldX, s.worldY).teleportId;
-      if (!belongsToNearestTeleport(c.x, c.y, home)) continue;
-      out.push({
-        ...s,
-        id: `${s.id}__dup${k}`,
-        worldX: c.x,
-        worldY: c.y,
-      });
-    }
-  }
-  return out;
-}
-
 import {
   resolveMapWorldSpawnById,
 } from './sevenSignsDungeonMobSpawns.js';
 
 /** Усі спавни для БД/бою (статично; пізніше — spawnlist з l2dop). */
-export const MAP_WORLD_SPAWNS: MapWorldSpawn[] = expandRegularSpawnsThreefold([
+export const MAP_WORLD_SPAWNS: MapWorldSpawn[] = [
   ...buildDenseTownFieldSpawns(),
   ...buildScatterSpawns(),
   ...SPECIAL_SPAWNS,
-]);
+];
+
+console.log('[MAP] Total world spawns:', MAP_WORLD_SPAWNS.length);
 
 export function getWorldSpawnById(id: string): MapWorldSpawn | undefined {
   const dungeonSpawn = resolveMapWorldSpawnById(id);
