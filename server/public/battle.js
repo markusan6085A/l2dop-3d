@@ -38,6 +38,9 @@
 
   function hideDefeatUiPendingSync() {
     clearDefeatBlockContent();
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.remove('l2-battle-defeat-lock');
+    }
     var defRoot =
       typeof document !== 'undefined'
         ? document.getElementById('battle-defeat-root')
@@ -3259,6 +3262,12 @@
       window.location.href = '/city.html';
     }
 
+    function setBattleDefeatLock(active) {
+      if (typeof document === 'undefined' || !document.body) return;
+      if (active) document.body.classList.add('l2-battle-defeat-lock');
+      else document.body.classList.remove('l2-battle-defeat-lock');
+    }
+
     function trapPvpDefeatBack() {
       if (pvpDefeatTrapInstalled) return;
       pvpDefeatTrapInstalled = true;
@@ -3340,6 +3349,7 @@
         }
       }
       hideBackNavForPvpDefeat();
+      setBattleDefeatLock(true);
       trapPvpDefeatBack();
     }
 
@@ -3428,6 +3438,7 @@
       if (active) active.hidden = false;
       hideVictoryInline();
       if (defRoot) defRoot.hidden = true;
+      setBattleDefeatLock(false);
     }
 
     function prepareActiveBattleUi() {
@@ -3712,11 +3723,13 @@
             'Вас вбив гравець [' + defeat.killerName + ']!';
         }
         hideBackNavForPvpDefeat();
+        setBattleDefeatLock(true);
         trapPvpDefeatBack();
       } else {
         fillDefeatMobHead($('battle-defeat-mobhead'), defeat);
         var backMap = $('battle-back-map');
         if (backMap) backMap.hidden = true;
+        setBattleDefeatLock(true);
       }
       var hint = $('battle-defeat-town-hint');
       if (hint && defeat) {

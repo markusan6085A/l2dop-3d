@@ -315,6 +315,43 @@
   var mapPollStopped = false;
   var mapDefeatReturnInFlight = false;
   var shownMapDeathEventIds = {};
+  var mapDefeatTrapInstalled = false;
+
+  function trapMapPvpDefeatBack() {
+    if (mapDefeatTrapInstalled) return;
+    mapDefeatTrapInstalled = true;
+    try {
+      history.pushState({ l2MapPvpDefeatTrap: 1 }, '', location.href);
+    } catch (_eTrap) {
+      /* ignore */
+    }
+    window.addEventListener('popstate', function onMapPvpDefeatPop() {
+      try {
+        history.pushState({ l2MapPvpDefeatTrap: 1 }, '', location.href);
+      } catch (_eTrap2) {
+        /* ignore */
+      }
+    });
+  }
+
+  function isMapDefeatLockActive() {
+    return !!(
+      typeof document !== 'undefined' &&
+      document.body &&
+      document.body.classList.contains('l2-map-defeat-lock')
+    );
+  }
+
+  function setMapDefeatLock(active, kind) {
+    if (typeof document === 'undefined' || !document.body) return;
+    if (active) {
+      document.body.classList.add('l2-map-defeat-lock');
+      stopMapPoll();
+      if (kind === 'pvp') trapMapPvpDefeatBack();
+    } else {
+      document.body.classList.remove('l2-map-defeat-lock');
+    }
+  }
 
   function compactSpawnListSig(spawns) {
     if (!spawns || !spawns.length) return '0';
@@ -604,6 +641,7 @@
 
   function hideMapDefeatBlock() {
     clearMapDefeatBlockContent();
+    setMapDefeatLock(false);
     var defRoot = $('map-defeat-root');
     if (defRoot) {
       defRoot.hidden = true;
@@ -682,6 +720,7 @@
           : [];
       renderMapDefeatLog(dlog, tail);
     }
+    setMapDefeatLock(true, kind);
     if (defeat && defeat.deathEventId && kind === 'pvp') {
       void fetch('/game/battle/pvp-defeat/ack', {
         method: 'POST',
@@ -1552,6 +1591,7 @@
         if (!opts.skipDefeatRedirect) {
           handleMapDefeatFromSync(sync, c);
         }
+        if (isMapDefeatLockActive()) return false;
         renderHeroList(aroundData, heroList, heroSection);
         renderHeroMarkers(img, heroMarkersLayer, (aroundData && aroundData.nearbyHeroes) || []);
         renderPartyNearbyBlock(
@@ -1618,6 +1658,7 @@
       if (!opts.skipDefeatRedirect) {
         handleMapDefeatFromSync(sync, c);
       }
+      if (isMapDefeatLockActive()) return false;
       paintMain(!!opts.centerOnPlayer);
       renderMobMarkers(img, markersLayer, worldSpawns, markerSig);
       return true;

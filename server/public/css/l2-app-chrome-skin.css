@@ -1444,6 +1444,44 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-siege[hidden] {
   display: none !important;
 }
 
+/* map/battle: поразка — лише екран респавну, без карти/меню */
+body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #map-content,
+body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #l2-nav-top,
+body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #l2-nav-bottom,
+body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #l2-pvp-incoming,
+body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #map-load-err {
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #map-defeat-root {
+  display: block !important;
+  margin-top: 8px;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-battle-defeat-tocity-wrap {
+  margin: 14px auto 0;
+  text-align: center;
+}
+
+body.l2-app-l2-chrome.l2-page-map .l2-battle-defeat-tocity-wrap .l2-town-btn {
+  display: inline-block;
+  min-width: 220px;
+  max-width: 280px;
+}
+
+body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #battle-content,
+body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #l2-nav-top,
+body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #l2-nav-bottom,
+body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #battle-back-map,
+body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #l2-pvp-incoming,
+body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #battle-load-err {
+  display: none !important;
+}
+
+body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #battle-defeat-root {
+  display: block !important;
+}
+
 /* battle: модалка хотбару — коробка #1d1c1a; кнопки з PNG-рамкою */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-hotbar-modal__backdrop {
   background: rgba(0, 0, 0, 0.62) !important;
