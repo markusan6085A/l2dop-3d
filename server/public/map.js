@@ -227,9 +227,45 @@
   var battleStartInFlight = false;
   var pvpStartInFlight = false;
 
-  async function startPvpFromMap(targetCharacterId) {
+  function hideMapPkBlockedBlock() {
+    var root = $('map-pk-blocked-root');
+    if (!root) return;
+    root.hidden = true;
+    root.style.display = 'none';
+  }
+
+  function showMapPkBlockedBlock(targetName) {
+    var root = $('map-pk-blocked-root');
+    var msgEl = $('map-pk-blocked-msg');
+    if (!root || !msgEl) return;
+    var nick = String(targetName || '').trim() || 'Гравець';
+    msgEl.textContent = 'Гравець ' + nick + ' знаходиться в Місті.';
+    root.hidden = false;
+    root.style.display = '';
+    try {
+      root.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } catch (eScroll) {
+      /* ignore */
+    }
+  }
+
+  async function markWorldMapSessionOnServer() {
+    var t = localStorage.getItem('token');
+    if (!t) return;
+    try {
+      await fetch('/game/world/enter-map', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + t },
+      });
+    } catch (eMapUi) {
+      /* ignore */
+    }
+  }
+
+  async function startPvpFromMap(targetCharacterId, targetName) {
     if (!targetCharacterId || pvpStartInFlight) return;
     pvpStartInFlight = true;
+    hideMapPkBlockedBlock();
     try {
       var t = localStorage.getItem('token');
       var snap =
@@ -264,12 +300,22 @@
       }
       if (!r.ok) {
         var errMsg = 'Не вдалося розпочати PvP-бій.';
+        var errCode = '';
         try {
           var ej = await r.json();
           if (tryRedirectPveDefeatFromError(ej)) return;
+          if (ej && ej.error) errCode = String(ej.error);
           if (ej && ej.messageUk) errMsg = ej.messageUk;
         } catch (eErr) {
           /* ignore */
+        }
+        if (
+          errCode === 'pvp_target_safe' ||
+          errCode === 'pvp_attacker_safe' ||
+          errCode === 'pvp_location_mismatch'
+        ) {
+          showMapPkBlockedBlock(targetName);
+          return;
         }
         if (window.L2 && typeof L2.showToast === 'function') {
           L2.showToast(errMsg);
@@ -1984,6 +2030,7 @@
         L2.applyHudFromSnapshot(c);
       }
     }
+    void markWorldMapSessionOnServer();
 
     var sync0 = await syncPromise;
     if (sync0) {
@@ -2358,6 +2405,13 @@
       }
     }, MAP_POLL_MS);
     mapPollTimer = poll;
+
+    var mapPkBlockedBackBtn = $('map-pk-blocked-back');
+    if (mapPkBlockedBackBtn) {
+      mapPkBlockedBackBtn.addEventListener('click', function () {
+        hideMapPkBlockedBlock();
+      });
+    }
 
     var mapDefeatTownBtn = $('map-defeat-tocity');
     if (mapDefeatTownBtn) {

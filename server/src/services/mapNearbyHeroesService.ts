@@ -14,6 +14,7 @@ import {
   canPkAttackHeroBattleState,
   resolveWorldPvpMapEligibility,
 } from '../domain/worldPvpEligibility.js';
+import { isCharacterVisibleOnWorldMap } from '../domain/mapHeroWorldVisibility.js';
 import {
   resolvePvpNickColor,
   type PvpNickColor,
@@ -21,6 +22,7 @@ import {
 import { prisma } from '../lib/prisma.js';
 import {
   getPresenceCanonicalLocationKeyForCharacter,
+  getPresencePlayfieldUiForCharacter,
   isCharacterOnlineNow,
 } from './onlinePresenceService.js';
 import { parseBattleJson } from './battleServiceParseBattleJson.js';
@@ -190,6 +192,20 @@ export async function getNearbyHeroesForMap(
 
     const presenceLocKey = getPresenceCanonicalLocationKeyForCharacter(row.id);
     if (presenceLocKey && presenceLocKey !== targetLoc.key) {
+      continue;
+    }
+
+    if (getPresencePlayfieldUiForCharacter(row.id) === 'city') {
+      continue;
+    }
+
+    if (
+      !isCharacterVisibleOnWorldMap({
+        worldX: hx,
+        worldY: hy,
+        dungeonStateJson: row.dungeonStateJson,
+      })
+    ) {
       continue;
     }
 

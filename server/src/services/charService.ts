@@ -43,4 +43,5 @@ export {
   performTeleport,
   performRaidBossTeleport,
   performReturnToNearestTown,
+  performEnterCityHub,
 } from './charWorldMutations.js';

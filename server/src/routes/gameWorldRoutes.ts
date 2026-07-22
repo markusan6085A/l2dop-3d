@@ -15,6 +15,7 @@ import {
   performMapMove,
   performTeleport,
   performRaidBossTeleport,
+  performEnterCityHub,
 } from '../services/charService.js';
 import { getMapAroundForUser, resolvedWorldPositionFromCharacterRow } from '../services/mapAroundService.js';
 import { getMapWorldSpawnsNearPlayer } from '../services/mapSpawnsService.js';
@@ -35,6 +36,7 @@ import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { listSevenSignsDungeonsForMenu } from '../services/sevenSignsDungeonListService.js';
 import { performSevenSignsDungeonTeleport } from '../services/sevenSignsDungeonTeleportService.js';
+import { markCharacterPlayfieldUiForUser } from '../services/onlinePresenceService.js';
 import {
   parseMammonTeleportKind,
   performMammonTeleport,
@@ -977,6 +979,75 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
         await logRouteMutation(request, 'map_move', er, 'error', undefined, undefined, 'game-mutation');
         throw e;
       }
+    }
+  );
+
+  app.post(
+    '/world/enter-city',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const er = parseExpectedRevision(b, reply);
+      if (er == null) return;
+      try {
+        const character = await performEnterCityHub(userId, er);
+        await logRouteMutation(
+          request,
+          'enter_city',
+          er,
+          'ok',
+          character.revision,
+          undefined,
+          'game-mutation'
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(
+            request,
+            'enter_city',
+            er,
+            'conflict',
+            undefined,
+            undefined,
+            'game-mutation'
+          );
+          return sendGameConflict(reply, e);
+        }
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        if (e instanceof Error && e.message === 'teleport_unknown') {
+          return reply.code(400).send({
+            error: e.message,
+            messageUk: 'Не вдалося визначити місто.',
+          });
+        }
+        await logRouteMutation(
+          request,
+          'enter_city',
+          er,
+          'error',
+          undefined,
+          undefined,
+          'game-mutation'
+        );
+        throw e;
+      }
+    }
+  );
+
+  app.post(
+    '/world/enter-map',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      markCharacterPlayfieldUiForUser(userId, 'world_map');
+      return reply.send({ ok: true });
     }
   );
 

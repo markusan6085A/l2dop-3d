@@ -73,6 +73,7 @@
     "audit:base-stat-formulas": "tsx server/scripts/audit-base-stat-formulas.ts",
     "audit:map-spawn-density": "tsx server/scripts/audit-map-spawn-density.ts",
     "test:map-radii": "tsx server/scripts/test-map-radii-smoke.ts",
+    "test:map-hero-visibility": "tsx server/scripts/test-map-hero-visibility.ts",
     "test:s-weapons": "tsx server/scripts/test-s-weapons.ts",
     "test:equipment-source-canonical": "tsx server/scripts/test-equipment-source-canonical.ts",
     "audit:all-weapons": "tsx server/scripts/audit-all-weapons.ts",

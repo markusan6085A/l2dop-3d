@@ -1,4 +1,5 @@
 import { MAP_TOWNS } from '../data/mapLocalities.js';
+import { isCharacterVisibleOnWorldMap } from '../domain/mapHeroWorldVisibility.js';
 import { resolveCanonicalMapLocation } from '../domain/mapPlayfieldContext.js';
 import { getEffectiveCharacterLevel } from '../domain/effectiveCharacterLevel.js';
 import { prisma } from '../lib/prisma.js';
@@ -11,6 +12,8 @@ const ONLINE_TTL_MS = 10 * 60 * 1000;
 
 export type OnlineSortMode = 'level' | 'name' | 'power';
 
+export type CharacterPlayfieldUi = 'world_map' | 'city';
+
 type PresenceEntry = {
   characterId: string;
   name: string;
@@ -22,6 +25,7 @@ type PresenceEntry = {
   cityLabelEn: string;
   clanEmblemId: number | null;
   lastSeenMs: number;
+  playfieldUi: CharacterPlayfieldUi;
 };
 
 const byUserId = new Map<string, PresenceEntry>();
@@ -54,6 +58,15 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
         dungeonStateJson: row.dungeonStateJson,
       }).key
     : '';
+  const playfieldUi: CharacterPlayfieldUi = row
+    ? isCharacterVisibleOnWorldMap({
+        worldX: row.worldX,
+        worldY: row.worldY,
+        dungeonStateJson: row.dungeonStateJson,
+      })
+      ? 'world_map'
+      : 'city'
+    : 'city';
   return {
     characterId: row?.id?.trim() || '',
     name: row?.name?.trim() || '—',
@@ -65,6 +78,7 @@ async function loadPresenceEntry(userId: string): Promise<PresenceEntry> {
     cityLabelEn: labels.cityLabelEn,
     clanEmblemId: row?.clan?.emblemId ?? null,
     lastSeenMs: Date.now(),
+    playfieldUi,
   };
 }
 
@@ -246,6 +260,36 @@ export function getPresenceCityIdForCharacter(characterId: string): string | nul
     }
   }
   return null;
+}
+
+/** UI-шар гравця: world map vs city (anti-stale для nearbyHeroes). */
+export function getPresencePlayfieldUiForCharacter(
+  characterId: string
+): CharacterPlayfieldUi | null {
+  const id = String(characterId || '').trim();
+  if (!id) return null;
+  const now = Date.now();
+  pruneExpired(now);
+  for (const entry of byUserId.values()) {
+    if (entry.characterId === id && now - entry.lastSeenMs <= ONLINE_TTL_MS) {
+      return entry.playfieldUi;
+    }
+  }
+  return null;
+}
+
+/** Оновити playfield UI без reload з БД (map/city navigation). */
+export function markCharacterPlayfieldUiForUser(
+  userId: string,
+  playfieldUi: CharacterPlayfieldUi
+): void {
+  const id = String(userId || '').trim();
+  if (!id) return;
+  const entry = byUserId.get(id);
+  if (entry) {
+    entry.playfieldUi = playfieldUi;
+    entry.lastSeenMs = Date.now();
+  }
 }
 
 /** Чи персонаж зараз у списку онлайн (TTL 10 хв). */

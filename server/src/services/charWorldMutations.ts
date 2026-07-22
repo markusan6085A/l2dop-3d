@@ -29,7 +29,7 @@ import {
   prepareCharacterAfterDefeatInTx,
   forceClearActiveBattleForReturnToTownInTx,
 } from './battleServiceDefeatSanitize.js';
-import { touchOnlinePresence } from './onlinePresenceService.js';
+import { touchOnlinePresence, markCharacterPlayfieldUiForUser } from './onlinePresenceService.js';
 import { RB_TELEPORT_ADENA_COST } from './raidBossListService.js';
 
 function hadDungeonState(row: CharacterRow): boolean {
@@ -411,5 +411,60 @@ export async function performReturnToNearestTown(
     return toSnapshot(result.character as CharacterRow);
   });
   await touchOnlinePresence(userId);
+  markCharacterPlayfieldUiForUser(userId, 'city');
+  return snapshot;
+}
+
+/**
+ * Вхід у місто з UI (city.html): хаб поточного cityId, без defeat-cleanup.
+ * Інші гравці одразу перестають бачити персонажа на world map.
+ */
+export async function performEnterCityHub(
+  userId: string,
+  expectedRevision: number
+): Promise<CharacterSnapshot> {
+  const snapshot = await prisma.$transaction(async (tx) => {
+    const char = (await tx.character.findFirst({
+      where: { userId },
+      orderBy: { lastUpdate: 'desc' },
+    })) as CharacterRow | null;
+    if (!char) throw new Error('no_character');
+
+    const result = await mutateCharacterWithRevision(
+      tx,
+      char.id,
+      expectedRevision,
+      (current) => {
+        const base = normalizePassiveAndMove(current as CharacterRow);
+        const cityId = String(base.cityId || '').trim();
+        const dest =
+          getCityHubTeleportDestination(cityId) ??
+          getCityHubTeleportDestination(
+            nearestMapTown(base.worldX, base.worldY).cityId
+          );
+        if (!dest) throw new Error('teleport_unknown');
+        const wx = Math.floor(dest.worldX);
+        const wy = Math.floor(dest.worldY);
+        return {
+          changed: true,
+          data: {
+            worldX: wx,
+            worldY: wy,
+            targetX: 0,
+            targetY: 0,
+            moveStartAt: null,
+            moveFromX: wx,
+            moveFromY: wy,
+            cityId: dest.cityId,
+            ...clearDungeonStatePatch(current as CharacterRow),
+          } as Prisma.CharacterUpdateManyMutationInput,
+        };
+      }
+    );
+    if (!result.ok) throw gameConflictFromMutation(result);
+    return toSnapshot(result.character as CharacterRow);
+  });
+  await touchOnlinePresence(userId);
+  markCharacterPlayfieldUiForUser(userId, 'city');
   return snapshot;
 }

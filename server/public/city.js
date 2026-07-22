@@ -262,6 +262,38 @@
     }
   }
 
+  async function enterCityHubOnServer(snapshot) {
+    if (!snapshot || snapshot.revision == null) return snapshot;
+    var t = localStorage.getItem('token');
+    if (!t) return snapshot;
+    try {
+      var r = await fetch('/game/world/enter-city', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + t,
+        },
+        body: JSON.stringify({ expectedRevision: snapshot.revision }),
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return null;
+      }
+      if (r.status === 409 && window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
+        await L2.resyncCharacterAfterConflict(null, await r.json().catch(function () { return null; }));
+        var snap2 = window.L2.lastSnapshot ? L2.lastSnapshot() : null;
+        if (snap2) return enterCityHubOnServer(snap2);
+        return snapshot;
+      }
+      if (!r.ok) return snapshot;
+      var j = await r.json();
+      return j.character || snapshot;
+    } catch (eEnter) {
+      return snapshot;
+    }
+  }
+
   async function init() {
     if (window.L2 && typeof L2.mountL2Nav === 'function') {
       L2.mountL2Nav({
@@ -342,6 +374,11 @@
     if (window.L2 && typeof L2.fetchCatalogHints === 'function') {
       await L2.fetchCatalogHints();
     }
+    if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+      L2.applyMutationSnapshot(c);
+    }
+    c = (await enterCityHubOnServer(c)) || c;
+    if (!c) return;
     if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
       L2.applyMutationSnapshot(c);
     }

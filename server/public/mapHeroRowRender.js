@@ -174,7 +174,7 @@
           e.preventDefault();
           e.stopPropagation();
           var cid = pk.dataset.targetCharacterId || hero.characterId || '';
-          if (cid) onPkClick(cid);
+          if (cid) onPkClick(cid, hero.name || '');
         });
       }
       identityContainer.appendChild(pk);
