@@ -2,9 +2,9 @@
  * Формули з l2dop/calc_stats.php + таблиці модифікаторів з l2dop/rawdata.php.
  * Екіп: сумуємо pDef з броні (l3, l4, lh, lg, lf), pAtk/mAtk зброї (l1) — наближення до $apdef у PHP.
  *
- * У PHP BaseSTR… фіксовані по расі; додаткові очки з БД (хенна тощо). У нас без розподілу поінтів
- * застосовується baseSixForLevel — автоматичний ріст шести статів з рівнем, інакше лише LVLMOD
- * дає ~1% P.Atk на рівень і стати в UI «мертві».
+ * У PHP BaseSTR… фіксовані по расі; додаткові очки з БД (хенна тощо). У нас базові шість статів
+ * не ростуть з рівнем — лише racial base + прямі flat-бонуси (сети, татуювання тощо).
+ * Рівень впливає на похідні стати через LVLMOD, HP/MP-криві та Accuracy/Evasion.
  */
 import type { InventoryState } from './inventory.js';
 import {
@@ -102,8 +102,8 @@ export interface BaseSix {
   men: number;
 }
 
-/** calc_stats.php: базові STR/INT/… по расах (рівень 1, без бонусів рівня). */
-function baseSixForRace(code: L2dopRaceCode): BaseSix {
+/** calc_stats.php: базові STR/INT/… по расах (рівень 1, без бонусів). */
+export function baseSixForRace(code: L2dopRaceCode): BaseSix {
   switch (code) {
     case 'HF':
       return { str: 40, con: 43, dex: 30, int: 21, wit: 11, men: 25 };
@@ -256,35 +256,26 @@ function isMageRaceCode(code: L2dopRaceCode): boolean {
 }
 
 /**
- * База з rawdata + бонус за кожен рівень після 1 (воїн / маг — різний акцент).
+ * Канонічна база шести статів: раса + архетип (fighter/mystic), без рівня.
+ */
+export function baseSixForRaceAndBranch(
+  race: string,
+  classBranch: string,
+): BaseSix {
+  const code = raceAndBranchToL2Code(race, classBranch);
+  return baseSixForRace(code);
+}
+
+/**
+ * @deprecated Рівень більше не впливає на base six. Залишено для сумісності імпортів;
+ * делегує до {@link baseSixForRace}.
  */
 export function computeBaseSixForLevel(
   code: L2dopRaceCode,
-  classBranch: string,
-  level: number
+  _classBranch: string,
+  _level: number,
 ): BaseSix {
-  const b = baseSixForRace(code);
-  const L = Math.max(1, Math.floor(level));
-  const n = L - 1;
-  const mystic = String(classBranch || '').toLowerCase() === 'mystic';
-  if (mystic) {
-    return {
-      str: b.str + Math.floor(n * 0.2),
-      int: b.int + Math.floor(n * 0.55),
-      dex: b.dex + Math.floor(n * 0.25),
-      wit: b.wit + Math.floor(n * 0.3),
-      con: b.con + Math.floor(n * 0.2),
-      men: b.men + Math.floor(n * 0.45),
-    };
-  }
-  return {
-    str: b.str + Math.floor(n * 0.5),
-    int: b.int + Math.floor(n * 0.2),
-    dex: b.dex + Math.floor(n * 0.35),
-    wit: b.wit + Math.floor(n * 0.15),
-    con: b.con + Math.floor(n * 0.4),
-    men: b.men + Math.floor(n * 0.2),
-  };
+  return baseSixForRace(code);
 }
 
 export interface CombatStatsSnapshot {
@@ -619,6 +610,8 @@ export interface ComputeCombatStatsOptions {
   heroicTier?: 1 | 2 | 3;
   /** Для Zealot (420): кількість «верств» $zealot у cs1 (типово 1–3). */
   zealotStacks?: number;
+  /** Audit/tests: override racial base six before armor set flats. */
+  baseSixOverride?: BaseSix;
 }
 
 /**
@@ -863,6 +856,7 @@ export function computeCombatStats(
     race,
     classBranch,
     inv,
+    baseSixOverride: options?.baseSixOverride,
   });
   const STR = finalBase.str;
   const INT = finalBase.int;

@@ -8,8 +8,7 @@ import {
   resolveEquippedArmorSetBonuses,
 } from '../data/armorSetResolver.js';
 import {
-  computeBaseSixForLevel,
-  raceAndBranchToL2Code,
+  baseSixForRaceAndBranch,
   type BaseSix,
 } from '../data/l2dopCombatFormulas.js';
 
@@ -34,10 +33,13 @@ export interface FinalBaseStatsResult extends BaseSix {
 }
 
 export interface ResolveFinalBaseStatsInput {
-  level: number;
+  /** Залишено для сумісності викликів; base six від рівня не залежить. */
+  level?: number;
   race: string;
   classBranch: string;
   inv: InventoryState;
+  /** Audit/tests: замість racial base використати задані значення (перед flat сетів). */
+  baseSixOverride?: BaseSix;
 }
 
 function clampStat(n: number): number {
@@ -63,9 +65,8 @@ function applySlice(
 export function resolveFinalBaseStats(
   input: ResolveFinalBaseStatsInput,
 ): FinalBaseStatsResult {
-  const code = raceAndBranchToL2Code(input.race, input.classBranch);
-  const LVL = Math.max(1, Math.floor(input.level));
-  const base = computeBaseSixForLevel(code, input.classBranch, LVL);
+  const base =
+    input.baseSixOverride ?? baseSixForRaceAndBranch(input.race, input.classBranch);
 
   const armorSetResolved = resolveEquippedArmorSetBonuses(input.inv);
   const armorSetCombat = armorSetTotalsToCombatDelta(armorSetResolved.totals);
