@@ -1021,7 +1021,38 @@ export function parseActiveBuffEntries(raw: unknown): ActiveBuffEntry[] {
       }
     }
   }
-  return out;
+  return dedupeActiveBuffEntriesBySkillId(out);
+}
+
+/**
+ * Один skillId → один запис із найвищим рівнем (дублі в JSON/БД не множать buffPatk).
+ * При однаковому рівні лишає запис із пізнішим `expiresAt`, якщо він є.
+ */
+export function dedupeActiveBuffEntriesBySkillId(
+  entries: readonly ActiveBuffEntry[]
+): ActiveBuffEntry[] {
+  const byId = new Map<number, ActiveBuffEntry>();
+  for (const e of entries) {
+    const prev = byId.get(e.skillId);
+    if (!prev) {
+      byId.set(e.skillId, e);
+      continue;
+    }
+    if (e.level > prev.level) {
+      byId.set(e.skillId, e);
+      continue;
+    }
+    if (e.level < prev.level) continue;
+    const prevExp = prev.expiresAt;
+    const nextExp = e.expiresAt;
+    if (
+      nextExp !== undefined &&
+      (prevExp === undefined || nextExp > prevExp)
+    ) {
+      byId.set(e.skillId, e);
+    }
+  }
+  return [...byId.values()];
 }
 
 /**

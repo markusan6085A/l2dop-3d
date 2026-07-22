@@ -2120,30 +2120,26 @@ export const ORC_FIGHTER_SKILL_CATALOG_GENERATED: readonly HumanMysticSkillCatal
         requiredLevel: 5,
         spCost: 190,
         mpCost: 0,
-        power: 2
+        power: 9
       },
       {
         level: 2,
         requiredLevel: 10,
         spCost: 1300,
         mpCost: 0,
-        power: 3
+        power: 18
       },
       {
         level: 3,
         requiredLevel: 15,
         spCost: 4000,
         mpCost: 0,
-        power: 4
+        power: 27
       }
     ],
     effects: [
       {
-        stat: "pAtk",
-        mode: "multiplier"
-      },
-      {
-        stat: "pAtk",
+        stat: "pDef",
         mode: "flat"
       }
     ],

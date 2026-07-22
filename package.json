@@ -69,6 +69,7 @@
     "test:fullarmor-equip": "tsx server/scripts/test-fullarmor-equip.ts",
     "test:base-stat-formula-contract": "tsx server/scripts/test-base-stat-formula-contract.ts",
     "test:base-six-racial-constants": "tsx server/scripts/test-base-six-racial-constants.ts",
+    "test:patk-buff-fixes": "tsx server/scripts/test-patk-buff-fixes.ts",
     "audit:base-stat-formulas": "tsx server/scripts/audit-base-stat-formulas.ts",
     "test:s-weapons": "tsx server/scripts/test-s-weapons.ts",
     "test:equipment-source-canonical": "tsx server/scripts/test-equipment-source-canonical.ts",
