@@ -974,12 +974,15 @@ body.l2-app-l2-chrome .l2-char-cat-btn {
   border-radius: var(--l2s-paper-radius, 3px) !important;
 }
 
-/* Бій / магістр: «Назад…» — як «Взяти квест на професію» */
+/* Бій / магістр / поразка: «Назад…» / «Повернутися в місто» — як у гільдії магів */
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-back-map,
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-victory-backloc,
 body.l2-app-l2-chrome.l2-page-magisters .l2-magisters-back a.l2-town-btn,
 body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn {
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back button.l2-town-btn,
+body.l2-app-l2-chrome.l2-page-map .l2-magister-back button.l2-town-btn,
+body.l2-app-l2-chrome.l2-page-battle .l2-magister-back button.l2-town-btn {
   appearance: none;
   -webkit-appearance: none;
   display: inline-flex !important;
@@ -1025,7 +1028,16 @@ body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn
 body.l2-app-l2-chrome.l2-page-magisters .l2-city-npc-card__actions a.l2-town-btn:focus-visible,
 body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:hover,
 body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus,
-body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus-visible {
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back a.l2-town-btn:focus-visible,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back button.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back button.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-magister .l2-magister-back button.l2-town-btn:focus-visible,
+body.l2-app-l2-chrome.l2-page-map .l2-magister-back button.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-map .l2-magister-back button.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-map .l2-magister-back button.l2-town-btn:focus-visible,
+body.l2-app-l2-chrome.l2-page-battle .l2-magister-back button.l2-town-btn:hover,
+body.l2-app-l2-chrome.l2-page-battle .l2-magister-back button.l2-town-btn:focus,
+body.l2-app-l2-chrome.l2-page-battle .l2-magister-back button.l2-town-btn:focus-visible {
   border: 1px solid #5c4a36 !important;
   border-image: none !important;
   background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
@@ -1429,15 +1441,10 @@ body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-logbox {
   box-shadow: none;
 }
 
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity-wrap {
+body.l2-app-l2-chrome.l2-page-map .l2-battle-defeat-notify .l2-magister-back,
+body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-notify .l2-magister-back {
   margin: 14px auto 0;
   text-align: center;
-}
-
-body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-tocity-wrap .l2-town-btn {
-  display: inline-block;
-  min-width: 220px;
-  max-width: 280px;
 }
 
 body.l2-app-l2-chrome.l2-page-battle .l2-battle-defeat-siege[hidden] {
@@ -1456,17 +1463,6 @@ body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #map-load-err {
 body.l2-app-l2-chrome.l2-page-map.l2-map-defeat-lock #map-defeat-root {
   display: block !important;
   margin-top: 8px;
-}
-
-body.l2-app-l2-chrome.l2-page-map .l2-battle-defeat-tocity-wrap {
-  margin: 14px auto 0;
-  text-align: center;
-}
-
-body.l2-app-l2-chrome.l2-page-map .l2-battle-defeat-tocity-wrap .l2-town-btn {
-  display: inline-block;
-  min-width: 220px;
-  max-width: 280px;
 }
 
 body.l2-app-l2-chrome.l2-page-battle.l2-battle-defeat-lock #battle-content,
