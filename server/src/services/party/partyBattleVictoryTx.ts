@@ -53,6 +53,7 @@ import { ensureClanHallOnRow } from '../charClientSnapshot.js';
 import { resolveL2dopNpcIdByMobName } from '../spawnCatalogService.js';
 import { buildPartyBattleRewardOnlineCheck } from './partyBattleRewardOnline.js';
 import { logPartyBattleRewardEligibilityDebug } from './partyBattleRewardEligibilityDebug.js';
+import { logPartyBattleVictoryTrace } from './partyBattleVictoryDebug.js';
 import type {
   BattleActionFullResponse,
   PartyBattleRewardSummary,
@@ -282,6 +283,7 @@ export async function resolvePartyBattleVictoryInTx(
   });
   const eligibilityInput = {
     killerCharacterId: args.characterId,
+    battleParticipantIds: participantIds,
     killerResolved: {
       worldX: killerResolved.worldX,
       worldY: killerResolved.worldY,
@@ -410,6 +412,22 @@ export async function resolvePartyBattleVictoryInTx(
     adenaGain: killerAdena.toString(),
     shared: true,
   };
+
+  logPartyBattleVictoryTrace({
+    characterId: args.characterId,
+    partyId: sessionAfterDamage.partyId ?? sessionAfterDamage.originPartyId ?? null,
+    partyBattleId: args.sessionId,
+    spawnId: args.bj.spawnId,
+    victoryPath: 'party',
+    participantIds,
+    activeParticipantIds: participantIds,
+    eligibleIds,
+    totalExp: rolled.expGain.toString(),
+    totalSp: rolled.spGain,
+    totalAdena: rolled.adena.toString(),
+    rewardRowsCreated: eligibleIds.length,
+    economyUpdates: eligibleIds.length,
+  });
 
   return wrapVictoryAsFull({
     ...killerVictory,

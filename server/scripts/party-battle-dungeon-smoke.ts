@@ -422,6 +422,7 @@ async function testRewardEligibilityDungeon(): Promise<void> {
   const farDungeon = { dungeonId: DUNGEON_ID, mapX: 200, mapY: 100 };
   const eligible = resolvePartyBattleRewardEligibleIds({
     killerCharacterId: 'k',
+    battleParticipantIds: ['k', 'near'],
     killerResolved: { worldX: 0, worldY: 0, dungeonStateJson: { v: 1, dungeonId: DUNGEON_ID } },
     killerDungeonMap: killerDungeon,
     playfield: 'dungeon',
@@ -452,7 +453,7 @@ async function testRewardEligibilityDungeon(): Promise<void> {
     isOnline: () => true,
   });
   assert.deepEqual(eligible.sort(), ['k', 'near']);
-  ok('near member eligible without damage; far excluded; world coords ignored');
+  ok('near battle participant eligible; far not in battle excluded');
 }
 
 function dungeonEligibilityInput(
@@ -466,6 +467,7 @@ function dungeonEligibilityInput(
   const memberDungeon = { dungeonId: DUNGEON_ID, mapX: memberMapX, mapY: memberMapY };
   return {
     killerCharacterId: 'k',
+    battleParticipantIds: ['k', 'm'],
     killerResolved: { worldX: 0, worldY: 0, dungeonStateJson: { v: 1, dungeonId: DUNGEON_ID } },
     killerDungeonMap: killerDungeon,
     playfield: 'dungeon' as const,
@@ -491,18 +493,25 @@ function dungeonEligibilityInput(
 }
 
 function testDungeonRewardBoundaryPure(): void {
-  console.log('\n[reward] dungeon boundary 70px / 71px');
+  console.log('\n[reward] dungeon battle participants ignore distance');
   const at70 = resolvePartyBattleRewardEligibleIds(
     dungeonEligibilityInput(100, 100, 100 + DUNGEON_NEARBY_RADIUS_PX, 100)
   );
   assert.deepEqual(at70.sort(), ['k', 'm']);
-  ok('70px boundary included');
+  ok('70px boundary: both battle participants eligible');
 
   const at71 = resolvePartyBattleRewardEligibleIds(
     dungeonEligibilityInput(100, 100, 100 + DUNGEON_NEARBY_RADIUS_PX + 1, 100)
   );
-  assert.deepEqual(at71, ['k']);
-  ok('71px boundary excluded');
+  assert.deepEqual(at71.sort(), ['k', 'm']);
+  ok('71px: battle participants still eligible (no geo gate)');
+
+  const partyOnly = resolvePartyBattleRewardEligibleIds({
+    ...dungeonEligibilityInput(100, 100, 100 + DUNGEON_NEARBY_RADIUS_PX + 1, 100),
+    battleParticipantIds: ['k'],
+  });
+  assert.deepEqual(partyOnly, ['k']);
+  ok('party member not in battle excluded');
 }
 
 async function soloDungeonLethalAttack(
@@ -667,6 +676,7 @@ async function testDungeonNearbyMateRewardIntegration(): Promise<void> {
     assert.equal(isOnline(mate.characterId), true);
     const preEligible = resolvePartyBattleRewardEligibleIds({
       killerCharacterId: killer.characterId,
+      battleParticipantIds: [killer.characterId, mate.characterId],
       killerResolved: memberSnapshots[0]!.resolvedPosition,
       killerDungeonMap: memberSnapshots[0]!.dungeonMap,
       playfield: 'dungeon',

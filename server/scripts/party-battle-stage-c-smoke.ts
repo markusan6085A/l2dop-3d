@@ -221,9 +221,7 @@ function testEligibilityPure(): void {
 
   const eligible = resolvePartyBattleRewardEligibleIds({
     killerCharacterId: 'k',
-    killerResolved: killerPos,
-    playfield: 'world',
-    partyMemberIds: ['k', 'near', 'far', 'dead', 'offline'],
+    battleParticipantIds: ['k', 'near', 'far', 'dead', 'offline'],
     memberSnapshots: [
       { characterId: 'k', hp: 100, pvePendingDefeatJson: null, resolvedPosition: killerPos },
       { characterId: 'near', hp: 100, pvePendingDefeatJson: null, resolvedPosition: nearPos },
@@ -233,22 +231,20 @@ function testEligibilityPure(): void {
     ],
     isOnline: (id) => id !== 'offline',
   });
-  assert.deepEqual(eligible, ['k', 'near']);
-  ok('online+alive+near; excludes far/dead/offline');
+  assert.deepEqual(eligible, ['far', 'k', 'near']);
+  ok('battle participants eligible regardless of map distance; excludes dead/offline');
 
   const noParticipantNeeded = resolvePartyBattleRewardEligibleIds({
     killerCharacterId: 'k',
-    killerResolved: killerPos,
-    playfield: 'world',
-    partyMemberIds: ['k', 'buffer'],
+    battleParticipantIds: ['k'],
     memberSnapshots: [
       { characterId: 'k', hp: 100, pvePendingDefeatJson: null, resolvedPosition: killerPos },
       { characterId: 'buffer', hp: 100, pvePendingDefeatJson: null, resolvedPosition: nearPos },
     ],
     isOnline: () => true,
   });
-  assert.deepEqual(noParticipantNeeded.sort(), ['buffer', 'k']);
-  ok('buffer without damage/participant row eligible');
+  assert.deepEqual(noParticipantNeeded, ['k']);
+  ok('party buffer without battle participant row excluded');
 }
 
 // ---- integration ----
@@ -356,8 +352,8 @@ async function testTwoMemberRewardSplit(): Promise<void> {
   await prisma.user.deleteMany({ where: { id: { in: [killer.userId, mate.userId] } } });
 }
 
-async function testFarMemberNoEconomyButCleanup(): Promise<void> {
-  console.log('\n[effects] far participant cleanup without reward');
+async function testFarParticipantGetsReward(): Promise<void> {
+  console.log('\n[reward] far battle participant still receives split');
   withStageCFlags();
   const killer = await createTestAccount('fc');
   const far = await createTestAccount('ff');
@@ -368,6 +364,7 @@ async function testFarMemberNoEconomyButCleanup(): Promise<void> {
   await addPartyMember(membership.partyId, far.characterId, 1);
   await touchOnlinePresence(far.userId);
 
+  const farBefore = await prisma.character.findUniqueOrThrow({ where: { id: far.characterId } });
   const sessionId = await startPartyBattleForKiller(killer.userId, killer.characterId);
   const farChar0 = await prisma.character.findUniqueOrThrow({ where: { id: far.characterId } });
   await prisma.$transaction(async (tx) => {
@@ -406,10 +403,14 @@ async function testFarMemberNoEconomyButCleanup(): Promise<void> {
       },
     },
   });
-  assert.equal(farReward, null);
-  const farChar = await prisma.character.findUniqueOrThrow({ where: { id: far.characterId } });
-  assert.equal(farChar.battleJson, null);
-  ok('far member: no reward, party battleJson cleared');
+  assert.ok(farReward);
+  assert.ok(farReward.expGain > 0);
+  assert.ok(farReward.spGain > 0);
+  const farAfter = await prisma.character.findUniqueOrThrow({ where: { id: far.characterId } });
+  assert.ok(Number(farAfter.exp) > Number(farBefore.exp));
+  assert.ok(farAfter.sp > farBefore.sp);
+  assert.equal(farAfter.battleJson, null);
+  ok('far battle participant: reward granted + battleJson cleared');
 
   await prisma.partyBattleSession.delete({ where: { id: sessionId } });
   await prisma.user.deleteMany({ where: { id: { in: [killer.userId, far.userId] } } });
@@ -609,7 +610,7 @@ async function main(): Promise<void> {
   testEligibilityPure();
   withStageCFlags();
   await testTwoMemberRewardSplit();
-  await testFarMemberNoEconomyButCleanup();
+  await testFarParticipantGetsReward();
   await testNonKillerSoloBattlePreserved();
   await testLeaveBeforeKillExcluded();
   await testDuplicateLethalIdempotent();

@@ -16,11 +16,7 @@ export function logPartyBattleRewardEligibilityDebug(args: {
 }): void {
   if (!isPartyBattleDebugEnabled()) return;
 
-  const activeParticipantIds = new Set(args.participantIds);
-  const explained = explainPartyBattleRewardEligibility(
-    args.eligibilityInput,
-    activeParticipantIds
-  );
+  const explained = explainPartyBattleRewardEligibility(args.eligibilityInput);
 
   console.log('[party-battle-reward-eligibility]', {
     partyBattleId: args.session.id,

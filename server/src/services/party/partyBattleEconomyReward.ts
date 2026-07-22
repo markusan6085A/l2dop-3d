@@ -31,7 +31,7 @@ export async function applyPartyEconomyRewardInTx(
   if (newExp > L2DOP_MAX_TOTAL_EXP_INCLUSIVE) {
     newExp = L2DOP_MAX_TOTAL_EXP_INCLUSIVE;
   }
-  const preLevel = char.level;
+  const preLevel = levelFromTotalExp(char.exp);
   const newLevel = levelFromTotalExp(newExp);
   const rowAfterLevel = { ...char, exp: newExp, level: newLevel } as CharacterRow;
   const clanHallBonus = await resolveClanHallBonusInTx(tx, char);

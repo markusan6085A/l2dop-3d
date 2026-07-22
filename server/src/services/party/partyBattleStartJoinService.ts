@@ -12,6 +12,7 @@ import {
   canStartPartyBattleViaRoute,
   isPartyBattleDungeonEnabled,
   isPartyBattleEngineEnabled,
+  isPartyBattleRewardDistributionReady,
   throwIfPartyBattleRouteBlocked,
 } from '../../domain/partyBattleFlags.js';
 import type { MapSpawnKind } from '../../data/mapWorldSpawns.js';
@@ -276,10 +277,6 @@ export async function shouldStartPartyBattleInTx(
 ): Promise<{ partyId: string; dungeon: boolean } | null> {
   if (!isPartyBattleEngineEnabled()) return null;
   if (isSharedWorldBossKind(spawnKind as MapSpawnKind)) return null;
-  /** Звичайний world farm — solo battle на персонажа; shared session лише для dungeon. */
-  if (!isDungeonMob) return null;
-  if (!isPartyBattleDungeonEnabled()) return null;
-  if (isDungeonRaidMob) return null;
 
   const membership = await tx.partyMember.findUnique({
     where: { characterId },
@@ -291,5 +288,13 @@ export async function shouldStartPartyBattleInTx(
     throwIfPartyBattleRouteBlocked();
   }
 
-  return { partyId: membership.partyId, dungeon: true };
+  if (isDungeonMob) {
+    if (!isPartyBattleDungeonEnabled()) return null;
+    if (isDungeonRaidMob) return null;
+    return { partyId: membership.partyId, dungeon: true };
+  }
+
+  /** Stage C: world open-field — shared session + reward split (не solo на кожного). */
+  if (!isPartyBattleRewardDistributionReady()) return null;
+  return { partyId: membership.partyId, dungeon: false };
 }

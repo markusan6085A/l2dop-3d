@@ -131,6 +131,7 @@ import {
 } from './party/partyBattleOutcomeTx.js';
 import { resolvePartyBattleVictoryInTx } from './party/partyBattleVictoryTx.js';
 import { isPartyBattleRewardDistributionReady } from '../domain/partyBattleFlags.js';
+import { logPartyBattleVictoryTrace } from './party/partyBattleVictoryDebug.js';
 import type { PartyBattleActionLockContext } from './party/partyBattleActionLock.js';
 import { mobMaxCpFromMobMaxHp } from '../data/wrathSkillConstants.js';
 import {
@@ -1827,6 +1828,24 @@ export async function performBattleActionInTx(
         }
         return resolvePartyBattleStageBTestVictoryInTx(tx, partyVictoryBase);
       }
+      logPartyBattleVictoryTrace({
+        characterId: cr.id,
+        partyId: null,
+        partyBattleId:
+          (typeof st.partyBattleId === 'string' && st.partyBattleId.trim()) ||
+          peekPartyBattleIdFromBattleJson(bj) ||
+          null,
+        spawnId: spawn.spawnId,
+        victoryPath: 'solo',
+        participantIds: [],
+        activeParticipantIds: [],
+        eligibleIds: [],
+        totalExp: null,
+        totalSp: null,
+        totalAdena: null,
+        rewardRowsCreated: 0,
+        economyUpdates: 1,
+      });
       const victory = await resolveMobDeadVictoryInTx(tx, {
         ...continueBase,
         cr: char as CharacterRow,
