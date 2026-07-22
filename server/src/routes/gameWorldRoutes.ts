@@ -36,7 +36,7 @@ import { getSpawnCatalogInfo } from '../services/spawnCatalogService.js';
 import { listRaidBossesPage } from '../services/raidBossListService.js';
 import { listSevenSignsDungeonsForMenu } from '../services/sevenSignsDungeonListService.js';
 import { performSevenSignsDungeonTeleport } from '../services/sevenSignsDungeonTeleportService.js';
-import { markCharacterPlayfieldUiForUser } from '../services/onlinePresenceService.js';
+import { syncWorldMapPresenceForUser } from '../services/onlinePresenceService.js';
 import {
   parseMammonTeleportKind,
   performMammonTeleport,
@@ -1046,7 +1046,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
     async (request, reply) => {
       const userId = ensureUserId(request, reply);
       if (!userId) return;
-      markCharacterPlayfieldUiForUser(userId, 'world_map');
+      await syncWorldMapPresenceForUser(userId);
       return reply.send({ ok: true });
     }
   );

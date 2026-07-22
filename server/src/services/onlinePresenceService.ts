@@ -292,6 +292,12 @@ export function markCharacterPlayfieldUiForUser(
   }
 }
 
+/** Свіжі координати з БД + явний world_map UI (map.html / телепорт на поле). */
+export async function syncWorldMapPresenceForUser(userId: string): Promise<void> {
+  await touchOnlinePresence(userId);
+  markCharacterPlayfieldUiForUser(userId, 'world_map');
+}
+
 /** Чи персонаж зараз у списку онлайн (TTL 10 хв). */
 export function isCharacterOnlineNow(characterId: string): boolean {
   const id = String(characterId || '').trim();

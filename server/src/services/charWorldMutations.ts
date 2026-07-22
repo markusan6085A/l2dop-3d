@@ -29,7 +29,11 @@ import {
   prepareCharacterAfterDefeatInTx,
   forceClearActiveBattleForReturnToTownInTx,
 } from './battleServiceDefeatSanitize.js';
-import { touchOnlinePresence, markCharacterPlayfieldUiForUser } from './onlinePresenceService.js';
+import {
+  touchOnlinePresence,
+  markCharacterPlayfieldUiForUser,
+  syncWorldMapPresenceForUser,
+} from './onlinePresenceService.js';
 import { RB_TELEPORT_ADENA_COST } from './raidBossListService.js';
 
 function hadDungeonState(row: CharacterRow): boolean {
@@ -253,6 +257,7 @@ export async function performTeleport(
     if (!result.ok) throw gameConflictFromMutation(result);
     return result.character as CharacterRow;
   });
+  await syncWorldMapPresenceForUser(userId);
   return buildCharacterClientSnapshot(row, userId);
 }
 

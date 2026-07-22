@@ -18,6 +18,7 @@ import {
 } from './mammonBlacksmithService.js';
 import { prisma } from '../lib/prisma.js';
 import { getNearbyHeroesForMap } from './mapNearbyHeroesService.js';
+import { syncWorldMapPresenceForUser } from './onlinePresenceService.js';
 import { buildMapNearbySpawnViews } from './mapNearbySpawnsQuery.js';
 import { applyCharacterReadView } from './charReadView.js';
 import { ensureClanHallOnRow } from './charClientSnapshot.js';
@@ -165,6 +166,8 @@ export async function getMapSyncForUser(
 
   const mapState = await getCharacterMapStateForUser(userId);
   if (!mapState) return null;
+
+  await syncWorldMapPresenceForUser(userId);
 
   const nowMs = Date.now();
   const mobSpawnHpJson = row.mobSpawnHpJson;

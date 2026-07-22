@@ -226,28 +226,7 @@
 
   var battleStartInFlight = false;
   var pvpStartInFlight = false;
-
-  function hideMapPkBlockedBlock() {
-    var root = $('map-pk-blocked-root');
-    if (!root) return;
-    root.hidden = true;
-    root.style.display = 'none';
-  }
-
-  function showMapPkBlockedBlock(targetName) {
-    var root = $('map-pk-blocked-root');
-    var msgEl = $('map-pk-blocked-msg');
-    if (!root || !msgEl) return;
-    var nick = String(targetName || '').trim() || 'Гравець';
-    msgEl.textContent = 'Гравець ' + nick + ' знаходиться в Місті.';
-    root.hidden = false;
-    root.style.display = '';
-    try {
-      root.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    } catch (eScroll) {
-      /* ignore */
-    }
-  }
+  var mapPageReady = false;
 
   async function markWorldMapSessionOnServer() {
     var t = localStorage.getItem('token');
@@ -265,7 +244,6 @@
   async function startPvpFromMap(targetCharacterId, targetName) {
     if (!targetCharacterId || pvpStartInFlight) return;
     pvpStartInFlight = true;
-    hideMapPkBlockedBlock();
     try {
       var t = localStorage.getItem('token');
       var snap =
@@ -314,8 +292,8 @@
           errCode === 'pvp_attacker_safe' ||
           errCode === 'pvp_location_mismatch'
         ) {
-          showMapPkBlockedBlock(targetName);
-          return;
+          var nick = String(targetName || '').trim() || 'Гравець';
+          errMsg = 'Гравець ' + nick + ' знаходиться в Місті.';
         }
         if (window.L2 && typeof L2.showToast === 'function') {
           L2.showToast(errMsg);
@@ -2406,13 +2384,6 @@
     }, MAP_POLL_MS);
     mapPollTimer = poll;
 
-    var mapPkBlockedBackBtn = $('map-pk-blocked-back');
-    if (mapPkBlockedBackBtn) {
-      mapPkBlockedBackBtn.addEventListener('click', function () {
-        hideMapPkBlockedBlock();
-      });
-    }
-
     var mapDefeatTownBtn = $('map-defeat-tocity');
     if (mapDefeatTownBtn) {
       mapDefeatTownBtn.addEventListener('click', function () {
@@ -2423,7 +2394,16 @@
     window.addEventListener('beforeunload', function () {
       stopMapPoll();
     });
+
+    mapPageReady = true;
   }
+
+  window.addEventListener('pageshow', function (ev) {
+    if (!mapPageReady) return;
+    if (ev.persisted) {
+      void markWorldMapSessionOnServer();
+    }
+  });
 
   init();
 })();
