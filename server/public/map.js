@@ -1449,7 +1449,7 @@
     var mapDetail = $('map-mob-detail');
     var detailList = $('map-mob-detail-list');
     var backBtn = $('map-back-to-map');
-    var viewport = $('map-viewport');
+    var viewport = $('map-viewport-scroll') || $('map-viewport');
     var img = $('map-img');
     var dot = $('map-dot');
     var viewRadius = $('map-view-radius');

@@ -1071,13 +1071,30 @@ body.l2-page-map .l2-screen-inner {
   height: min(200px, 34vh);
   min-height: 160px;
   margin: 0 auto 8px;
-  overflow: auto;
+  overflow: hidden;
   border: 1px solid rgba(90, 120, 90, 0.45);
   border-radius: 4px;
   background: linear-gradient(180deg, #1a2820 0%, #0d1210 100%);
+  flex-shrink: 0;
+}
+
+.l2-map-viewport-scroll {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
-  flex-shrink: 0;
+}
+
+.l2-map-viewport-chrome {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.l2-map-viewport-chrome .l2-map-zoom-btns {
+  pointer-events: auto;
 }
 
 .l2-map-inner {
@@ -1125,13 +1142,13 @@ body.l2-page-map .l2-screen-inner {
 
 .l2-map-radii-legend {
   position: absolute;
+  top: 6px;
   left: 6px;
-  bottom: 6px;
-  z-index: 9;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-width: calc(100% - 52px);
+  max-width: min(168px, calc(100% - 56px));
   padding: 4px 6px;
   font-size: 10px;
   line-height: 1.25;

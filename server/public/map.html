@@ -100,39 +100,13 @@
             <p class="l2-map-hint" id="map-hint-line" hidden></p>
 
             <div id="map-stack">
-              <div class="l2-map-viewport" id="map-viewport" aria-label="Вікно карти — прокрутка або перетягування">
-                <div class="l2-map-zoom-btns" role="toolbar" aria-label="Масштаб карти">
-                  <button type="button" class="l2-map-zoom-square" id="map-zoom-out" aria-label="Зменшити карту">
-                    −
-                  </button>
-                  <button type="button" class="l2-map-zoom-square" id="map-zoom-in" aria-label="Збільшити карту">
-                    +
-                  </button>
-                </div>
+              <div class="l2-map-viewport" id="map-viewport">
                 <div
-                  id="map-radii-legend"
-                  class="l2-map-radii-legend"
-                  aria-label="Легенда радіусів"
-                  hidden
+                  class="l2-map-viewport-scroll"
+                  id="map-viewport-scroll"
+                  aria-label="Вікно карти — прокрутка або перетягування"
                 >
-                  <span class="l2-map-radii-legend__item l2-map-radii-legend__item--mob">
-                    <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
-                    Моби / дистанція бою
-                  </span>
-                  <span class="l2-map-radii-legend__item l2-map-radii-legend__item--hero">
-                    <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
-                    Гравці / PvP
-                  </span>
-                  <span
-                    id="map-radii-legend-party"
-                    class="l2-map-radii-legend__item l2-map-radii-legend__item--party"
-                    hidden
-                  >
-                    <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
-                    Радіус нагороди паті
-                  </span>
-                </div>
-                <div class="l2-map-inner" id="map-inner">
+                  <div class="l2-map-inner" id="map-inner">
                   <img
                     id="map-img"
                     class="l2-map-img"
@@ -150,6 +124,40 @@
                   <div id="map-mob-markers" class="l2-map-mob-markers" aria-hidden="true"></div>
                   <div id="map-npc-markers" class="l2-map-npc-markers" aria-hidden="true"></div>
                   <div id="map-dot" class="l2-map-dot" aria-hidden="true"></div>
+                </div>
+                </div>
+                <div class="l2-map-viewport-chrome" aria-hidden="true">
+                  <div class="l2-map-zoom-btns" role="toolbar" aria-label="Масштаб карти">
+                    <button type="button" class="l2-map-zoom-square" id="map-zoom-out" aria-label="Зменшити карту">
+                      −
+                    </button>
+                    <button type="button" class="l2-map-zoom-square" id="map-zoom-in" aria-label="Збільшити карту">
+                      +
+                    </button>
+                  </div>
+                  <div
+                    id="map-radii-legend"
+                    class="l2-map-radii-legend"
+                    aria-label="Легенда радіусів"
+                    hidden
+                  >
+                    <span class="l2-map-radii-legend__item l2-map-radii-legend__item--mob">
+                      <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
+                      Моби / дистанція бою
+                    </span>
+                    <span class="l2-map-radii-legend__item l2-map-radii-legend__item--hero">
+                      <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
+                      Гравці та паті
+                    </span>
+                    <span
+                      id="map-radii-legend-party"
+                      class="l2-map-radii-legend__item l2-map-radii-legend__item--party"
+                      hidden
+                    >
+                      <span class="l2-map-radii-legend__swatch" aria-hidden="true"></span>
+                      Радіус нагороди паті
+                    </span>
+                  </div>
                 </div>
               </div>
 
