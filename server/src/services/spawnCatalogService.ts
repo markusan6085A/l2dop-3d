@@ -142,7 +142,9 @@ export function getSpawnCatalogInfo(
     null;
   const icon = mobIconUrlForSpawn(spawn);
   const c = mobCombatFromSpawn(spawn);
-  const bag = ensureMobDropBag(npcId, spawn.level, spawnId);
+  const bag = ensureMobDropBag(npcId, spawn.level, spawnId, {
+    spawnKind: spawn.kind,
+  });
   const customDropOnly = hasCustomNpcDropBag(npcId, spawnId);
   const showSpoil =
     !customDropOnly &&

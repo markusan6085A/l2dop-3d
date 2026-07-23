@@ -10,6 +10,7 @@ import { config } from 'dotenv';
 import { itemNamesUkForClient } from '../src/data/itemsCatalog.js';
 import { rollKillLoot } from '../src/domain/killLoot.js';
 import { emptyInventory } from '../src/data/inventory.js';
+import { isBasicResourceItemId } from '../src/data/basicResourceCatalog.js';
 import {
   isLegacyResourceItemId,
   stripLegacyResourceItemsFromInventory,
@@ -89,10 +90,12 @@ for (const root of runtimeScanRoots) {
 ok('runtime scan has no legacy craft symbols');
 
 const namesUk = itemNamesUkForClient();
-for (const id of [1864, 1867, 1883, 4039, 5220, 5549, 5550, 1899]) {
-  assert.equal(namesUk[id], undefined, 'catalog still has item ' + id);
+for (const id of [1883, 4039, 5220, 5549, 5550, 1899]) {
+  assert.equal(namesUk[id], undefined, 'catalog still has legacy item ' + id);
 }
-ok('itemNamesUk has no legacy resource ids');
+assert.equal(namesUk[1864], 'Стебло', 'basic resource Stem in catalog');
+assert.equal(namesUk[1867], 'Шкура тварини', 'basic resource Animal Skin in catalog');
+ok('itemNamesUk has no legacy resource ids (basic resources allowed)');
 
 const loot = rollKillLoot(20001, 40, emptyInventory());
 for (const line of loot.items) {
@@ -102,21 +105,28 @@ for (const line of loot.items) {
     'mob loot dropped legacy item ' + line.l2ItemId
   );
 }
-ok('rollKillLoot never drops legacy resource ids');
+ok('rollKillLoot never drops legacy-only resource ids');
+
+assert.equal(isLegacyResourceItemId(1864), false, 'Stem is not legacy cleanup id');
+assert.equal(isBasicResourceItemId(1864), true, 'Stem is basic resource');
 
 const invWithLegacy = stripLegacyResourceItemsFromInventory({
   v: 1,
   stacks: [
-    { itemId: 1864, qty: 10 },
+    { itemId: 1883, qty: 10 },
     { itemId: 57, qty: 5 },
     { itemId: 1899, qty: 2 },
+    { itemId: 1864, qty: 4 },
   ],
-  eq: { l1: 1867 },
+  eq: { l1: 1878 },
 });
 assert.equal(invWithLegacy.removedQty, 12);
-assert.deepEqual(invWithLegacy.next.stacks, [{ itemId: 57, qty: 5 }]);
+assert.deepEqual(invWithLegacy.next.stacks, [
+  { itemId: 57, qty: 5 },
+  { itemId: 1864, qty: 4 },
+]);
 assert.deepEqual(invWithLegacy.next.eq, {});
-ok('cleanup strips only legacy ids');
+ok('cleanup strips only legacy ids (keeps basic resources)');
 
 const invClean = stripLegacyResourceItemsFromInventory({
   v: 1,

@@ -18,6 +18,7 @@ import {
   sealStoneIconHintsForClient,
   sealStoneNameColorSlugForClient,
 } from '../data/sevenSignsSealStoneItems.js';
+import { basicResourceIconHintsForClient } from '../data/itemsCatalogBasicResources.js';
 import {
   itemBlocksShieldHintsForClient,
   itemRequiresArrowsHintsForClient,
@@ -54,6 +55,7 @@ function buildCharacterCatalogHints() {
       ...ancientAdenaIconHintsForClient(),
       ...mammonGemstoneIconHintsForClient(),
       ...mammonLifeStoneIconHintsForClient(),
+      ...basicResourceIconHintsForClient(),
     },
     /** itemId → CSS slug кольору назви (каміння печаті Seven Signs). */
     itemNameColorSlugById: sealStoneNameColorSlugForClient(),

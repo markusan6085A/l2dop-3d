@@ -13,15 +13,20 @@ import {
   type BagStack,
   type EqSlotValue,
 } from '../src/data/inventory.js';
+import { BASIC_RESOURCE_ITEM_IDS } from '../src/data/basicResourceCatalog.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 config({ path: path.join(__dirname, '../.env') });
 
 const prisma = new PrismaClient();
 
-/** Лише для cleanup: старі resource itemId (1864–1899, 4039–4043, 5220, 5549, 5550). */
+const BASIC_RESOURCE_ID_SET = new Set<number>(BASIC_RESOURCE_ITEM_IDS);
+
+/** Лише для cleanup: старі resource itemId (1864–1899, 4039–4043, 5220, 5549, 5550), без нових basic. */
 const LEGACY_RESOURCE_ITEM_IDS = new Set<number>([
-  ...Array.from({ length: 1899 - 1864 + 1 }, (_, i) => 1864 + i),
+  ...Array.from({ length: 1899 - 1864 + 1 }, (_, i) => 1864 + i).filter(
+    (id) => !BASIC_RESOURCE_ID_SET.has(id),
+  ),
   4039,
   4040,
   4041,

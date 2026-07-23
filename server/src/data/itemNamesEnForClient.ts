@@ -21,6 +21,7 @@ import { ancientAdenaNamesEnForClient } from './ancientAdenaItem.js';
 import { mammonGemstoneNamesEnForClient } from './mammonMerchantGemstones.js';
 import { mammonLifeStoneNamesEnForClient } from './mammonMerchantLifeStones.js';
 import { sealStoneNamesEnForClient } from './sevenSignsSealStoneItems.js';
+import { basicResourceNamesEnForClient } from './itemsCatalogBasicResources.js';
 
 type OverrideRow = { itemId?: number };
 
@@ -130,6 +131,10 @@ export function itemNamesEnForClient(): Record<number, string> {
   }
 
   for (const [idStr, en] of Object.entries(sealStoneNamesEnForClient())) {
+    put(Number(idStr), en, true);
+  }
+
+  for (const [idStr, en] of Object.entries(basicResourceNamesEnForClient())) {
     put(Number(idStr), en, true);
   }
 

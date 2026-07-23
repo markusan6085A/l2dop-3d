@@ -29,6 +29,46 @@ function rollDropLine(d: DropEntry): number {
   return rollInt(Math.max(0, d.min), Math.max(d.min, d.max));
 }
 
+function rollExclusiveDropGroup(
+  entries: DropEntry[],
+): { d: DropEntry; qty: number } | null {
+  if (entries.length === 0) return null;
+  const perItemChance = entries[0]!.chance;
+  if (!Number.isFinite(perItemChance) || perItemChance <= 0) return null;
+  const masterChance = perItemChance * entries.length;
+  if (Math.random() >= masterChance) return null;
+  const picked = entries[Math.floor(Math.random() * entries.length)]!;
+  const qty = rollInt(Math.max(0, picked.min), Math.max(picked.min, picked.max));
+  return qty > 0 ? { d: picked, qty } : null;
+}
+
+function rollDropEntries(
+  entries: DropEntry[],
+): Array<{ d: DropEntry; qty: number }> {
+  const byGroup = new Map<string, DropEntry[]>();
+  const standalone: DropEntry[] = [];
+  for (const d of entries) {
+    const group = d.exclusiveGroup;
+    if (group) {
+      if (!byGroup.has(group)) byGroup.set(group, []);
+      byGroup.get(group)!.push(d);
+    } else {
+      standalone.push(d);
+    }
+  }
+
+  const out: Array<{ d: DropEntry; qty: number }> = [];
+  for (const d of standalone) {
+    const qty = rollDropLine(d);
+    if (qty > 0) out.push({ d, qty });
+  }
+  for (const groupEntries of byGroup.values()) {
+    const rolled = rollExclusiveDropGroup(groupEntries);
+    if (rolled) out.push(rolled);
+  }
+  return out;
+}
+
 /** Контекст персонажа для правил спойлу при перемозі в бою. */
 export interface KillLootCharacterContext {
   race: string;
@@ -87,11 +127,11 @@ export function rollKillLoot(
     mobName: opts?.mobName,
   });
 
-  const bag = ensureMobDropBag(npcId, spawnLevel, opts?.spawnId);
+  const bag = ensureMobDropBag(npcId, spawnLevel, opts?.spawnId, {
+    spawnKind: opts?.spawnKind,
+  });
   const customDropOnly = hasCustomNpcDropBag(npcId, opts?.spawnId);
-  for (const d of bag.drops) {
-    const qty = rollDropLine(d);
-    if (qty <= 0) continue;
+  for (const { d, qty } of rollDropEntries(bag.drops)) {
     if (d.kind === 'adena') {
       adena += BigInt(qty * rewardMult);
       adenaLog.push(`+${qty * rewardMult} аден`);
@@ -104,9 +144,7 @@ export function rollKillLoot(
   }
 
   if (allowKillSpoil && !customDropOnly) {
-    for (const d of bag.spoil) {
-      const qty = rollDropLine(d);
-      if (qty <= 0) continue;
+    for (const { d, qty } of rollDropEntries(bag.spoil)) {
       if (d.kind === 'adena') {
         adena += BigInt(qty * rewardMult);
         adenaLog.push(`(спойл) +${qty * rewardMult} аден`);

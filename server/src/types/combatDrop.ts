@@ -12,4 +12,9 @@ export interface DropEntry {
   displayName?: string;
   /** Як у магазині D-grade (`/icons/drops/…`), якщо item-icon не підходить. */
   iconUrl?: string;
+  /**
+   * За одне вбивство успішний roll лише один рядок групи
+   * (basic resources: один normal + один spoil roll).
+   */
+  exclusiveGroup?: string;
 }

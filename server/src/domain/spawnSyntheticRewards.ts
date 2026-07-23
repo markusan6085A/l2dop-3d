@@ -2,7 +2,10 @@ import {
   resolveNpcDropBag,
   type NpcDropBag,
 } from '../data/npcDropsResolved.js';
+import { buildBasicResourceDropOverlay } from '../data/basicResourceMobDrops.js';
+import { hasCustomNpcDropBag } from '../data/npcDropsResolved.js';
 import { L2DOP_NPC_EXP_SP } from '../data/l2dopNpcExpSp.generated.js';
+import type { MapSpawnKind } from '../data/mapWorldSpawns.js';
 import type { DropEntry } from '../types/combatDrop.js';
 import { mobAdenaDropRange } from './mobAdenaDropScale.js';
 
@@ -57,18 +60,52 @@ export function rewardExpSpForSpawn(
 /**
  * Предметів/спойлу з таблиць немає — базова адена за рівнем спавну (як раніше fallback).
  */
+export interface EnsureMobDropBagOptions {
+  spawnKind?: MapSpawnKind;
+}
+
+function mergeBasicResourceOverlay(
+  bag: NpcDropBag,
+  npcId: number | null,
+  spawnLevel: number,
+  spawnId?: string | null,
+  opts?: EnsureMobDropBagOptions | null,
+): NpcDropBag {
+  const customDropBag = hasCustomNpcDropBag(npcId, spawnId);
+  const spawnKind = opts?.spawnKind;
+  const overlay = buildBasicResourceDropOverlay({
+    npcId,
+    level: spawnLevel,
+    spawnId,
+    hasCustomDropBag: customDropBag,
+    isRaidBoss: spawnKind === 'raid',
+    isEpicBoss: spawnKind === 'epic' || spawnKind === 'epic_guard',
+    spawnKind,
+  });
+  if (overlay.drops.length === 0 && overlay.spoil.length === 0) {
+    return bag;
+  }
+  return {
+    ...bag,
+    drops: [...bag.drops, ...overlay.drops],
+    spoil: [...bag.spoil, ...overlay.spoil],
+  };
+}
+
 export function ensureMobDropBag(
   npcId: number | null,
   spawnLevel: number,
-  spawnId?: string | null
+  spawnId?: string | null,
+  opts?: EnsureMobDropBagOptions | null,
 ): NpcDropBag {
-  return resolveNpcDropBag(
+  const base = resolveNpcDropBag(
     npcId,
     spawnLevel,
     () => ({
       drops: [syntheticAdenaDropEntry(spawnLevel)],
       spoil: [],
     }),
-    spawnId
+    spawnId,
   );
+  return mergeBasicResourceOverlay(base, npcId, spawnLevel, spawnId, opts);
 }

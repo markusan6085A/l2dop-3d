@@ -76,6 +76,11 @@ import {
   mammonLifeStoneNamesUkForClient,
 } from './mammonMerchantLifeStones.js';
 import { sealStoneItemMetaForCatalog, sealStoneNamesUkForClient } from './sevenSignsSealStoneItems.js';
+import {
+  basicResourceInventoryTabHints,
+  basicResourceNamesUkForClient,
+  mergeBasicResources,
+} from './itemsCatalogBasicResources.js';
 
 export type ItemSlotKind =
   | 'rhand'
@@ -350,6 +355,7 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   Object.assign(o, ancientAdenaItemMetaForCatalog());
   Object.assign(o, mammonGemstoneItemMetaForCatalog());
   Object.assign(o, mammonLifeStoneItemMetaForCatalog());
+  mergeBasicResources(o);
 
   /** D/C/B/A/S-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
   for (const row of [
@@ -792,6 +798,7 @@ export function itemInventoryTabHintsForClient(): Record<
     ...ITEM_INVENTORY_TAB_EXTRA,
     ...mammonGemstoneInventoryTabHints(),
     ...mammonLifeStoneInventoryTabHints(),
+    ...basicResourceInventoryTabHints(),
   } as Record<number, L2ItemInventoryTabHint>;
 }
 
@@ -828,6 +835,11 @@ export function itemNamesUkForClient(): Record<number, string> {
   }
 
   for (const [idStr, uk] of Object.entries(mammonLifeStoneNamesUkForClient())) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(basicResourceNamesUkForClient())) {
     const id = Number(idStr);
     if (uk && String(uk).trim() !== '') out[id] = uk;
   }
