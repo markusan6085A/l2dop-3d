@@ -1,15 +1,12 @@
 /**
  * Квест 1-ї профи людини-воїна (Warrior / Human Knight / Rogue) — чиста логіка.
  */
-import { countBagQty, removeBagQty, type InventoryState } from '../data/inventory.js';
+import { type InventoryState } from '../data/inventory.js';
 
 export const HUMAN_FIGHTER_FIRST_PROF_QUEST_ID = 'human_fighter_first_prof';
 
-/** Тимчасово: без квесту (моби + шкурки) перед 1-ю профою людини-воїна. */
+/** Тимчасово: без квесту (моби) перед 1-ю профою людини-воїна. */
 export const HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED = false;
-
-export const HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID = 1867;
-export const HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY = 15;
 
 export const HUMAN_FIGHTER_FIRST_PROF_QUEST_REWARD_ADENA = 100_000n;
 export const HUMAN_FIGHTER_FIRST_PROF_QUEST_REWARD_SP = 50_000;
@@ -115,11 +112,8 @@ export function killsRequirementMet(active: FirstProfessionQuestActive): boolean
   return true;
 }
 
-export function itemsRequirementMet(inv: InventoryState): boolean {
-  return (
-    countBagQty(inv, HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID) >=
-    HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY
-  );
+export function itemsRequirementMet(_inv: InventoryState): boolean {
+  return true;
 }
 
 export function firstProfessionQuestReady(
@@ -193,12 +187,7 @@ export function assertFirstProfessionQuestForChange(
   if (!itemsRequirementMet(inv)) {
     throw new Error('profession_quest_items_missing');
   }
-  const nextInv = removeBagQty(
-    inv,
-    HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID,
-    HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY
-  );
-  return { nextInv, cleared: emptyQuestProgressJson() };
+  return { nextInv: inv, cleared: emptyQuestProgressJson() };
 }
 
 export interface FirstProfessionQuestSnapshot {
@@ -222,13 +211,9 @@ export interface FirstProfessionQuestSnapshot {
 
 export function firstProfessionQuestSnapshot(
   state: QuestProgressJson,
-  inv: InventoryState
+  _inv: InventoryState
 ): FirstProfessionQuestSnapshot | null {
   const active = state.active;
-  const itemHave = countBagQty(
-    inv,
-    HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID
-  );
   const kills = HUMAN_FIGHTER_FIRST_PROF_QUEST_MOBS.map((mob) => ({
     npcId: mob.npcId,
     nameUk: mob.nameUk,
@@ -243,10 +228,10 @@ export function firstProfessionQuestSnapshot(
       targetProfession: null,
       ready: !HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED,
       kills,
-      itemId: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID,
-      itemNeed: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY,
-      itemHave,
-      itemNameUk: 'Шкура звіра (Animal Skin)',
+      itemId: 0,
+      itemNeed: 0,
+      itemHave: 0,
+      itemNameUk: '',
     };
   }
   return {
@@ -255,11 +240,11 @@ export function firstProfessionQuestSnapshot(
     targetProfession: active.targetProfession,
     ready:
       !HUMAN_FIGHTER_FIRST_PROF_QUEST_REQUIRED ||
-      firstProfessionQuestReady(active, inv),
+      firstProfessionQuestReady(active, _inv),
     kills,
-    itemId: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_ID,
-    itemNeed: HUMAN_FIGHTER_FIRST_PROF_QUEST_ANIMAL_SKIN_QTY,
-    itemHave,
-    itemNameUk: 'Шкура звіра (Animal Skin)',
+    itemId: 0,
+    itemNeed: 0,
+    itemHave: 0,
+    itemNameUk: '',
   };
 }

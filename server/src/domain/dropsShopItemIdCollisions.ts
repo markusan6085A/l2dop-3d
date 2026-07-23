@@ -96,10 +96,10 @@ function statFingerprint(shopKey: string, itemId: number, grade: string): string
     return [
       'ng-canon',
       `wt=${ngCanon.weaponType}`,
-      ngCanon.pAtk != null ? `p=${ngCanon.pAtk}` : '',
-      ngCanon.mAtk != null ? `m=${ngCanon.mAtk}` : '',
+      `p=${ngCanon.pAtk}`,
+      `m=${ngCanon.mAtk}`,
       `spd=${ngCanon.atkSpd}`,
-      ngCanon.displayCrit != null ? `wc=${ngCanon.displayCrit}` : '',
+      `wc=${ngCanon.wpnCrit}`,
     ]
       .filter(Boolean)
       .join(':');

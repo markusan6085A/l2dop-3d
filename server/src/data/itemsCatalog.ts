@@ -50,7 +50,6 @@ import {
   type L2ItemInventoryTabHint,
 } from './l2dopItemInventoryTab.generated.js';
 import { ENCHANT_SCROLL_DEFINITIONS } from './enchantScrollCatalog.js';
-import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { dropsShopConsumableGearCatalogExtras } from './dropsShopConsumableGearExtras.js';
 import { dropsShopGearCatalogExtras } from './dropsShopGearCatalogExtras.js';
 import { authorGiftGearCatalogExtras, mergeAuthorGiftItems } from './itemsCatalogAuthorGifts.js';
@@ -777,11 +776,6 @@ export function itemNamesUkForClient(): Record<number, string> {
   }
 
   for (const [idStr, uk] of Object.entries(L2DOP_ITEM_DISPLAY_NAME_UK)) {
-    const id = Number(idStr);
-    if (uk && String(uk).trim() !== '') out[id] = uk;
-  }
-
-  for (const [idStr, uk] of Object.entries(RESOURCE_CRAFT_ITEM_NAMES_UK)) {
     const id = Number(idStr);
     if (uk && String(uk).trim() !== '') out[id] = uk;
   }

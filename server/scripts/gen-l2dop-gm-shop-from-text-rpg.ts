@@ -220,7 +220,6 @@ function buildCanonWeaponGmById(): Map<number, CanonWeaponGmSource> {
     pAtk?: number;
     mAtk?: number;
     wpnCrit: number;
-    displayCrit?: number;
   }): void => {
     m.set(entry.itemId, {
       itemId: entry.itemId,
@@ -229,7 +228,7 @@ function buildCanonWeaponGmById(): Map<number, CanonWeaponGmSource> {
       pAtk: entry.pAtk ?? 0,
       mAtk: entry.mAtk ?? 0,
       atkSpd: entry.atkSpd,
-      rCrit: entry.displayCrit ?? entry.wpnCrit,
+      rCrit: entry.wpnCrit,
     });
   };
   for (const entry of [

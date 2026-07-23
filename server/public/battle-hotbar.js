@@ -320,8 +320,8 @@
     if (j.gearCatalog && L2.mergeGearCatalog) {
       L2.mergeGearCatalog(j.gearCatalog);
     }
-    if (L2.mergeCraftResourceIconHints) {
-      L2.mergeCraftResourceIconHints(j);
+    if (L2.mergeItemIconHintsFromCatalog) {
+      L2.mergeItemIconHintsFromCatalog(j);
     }
     if (j.itemNamesEn && typeof j.itemNamesEn === 'object' && L2.itemNameById) {
       Object.keys(j.itemNamesEn).forEach(function (k) {

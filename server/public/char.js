@@ -283,7 +283,6 @@
   }
   var HP_MP_POTION_IDS = { 1060: true, 1061: true, 726: true, 728: true };
   var MAX_ENCHANT_LEVEL = 25;
-  var craftBookIndex = null;
   var bagModalCtx = null;
 
   /** Як у GM-шопу: категорія + грейд + підтип; '' — усі предмети (кнопка «Все»). */
@@ -739,85 +738,6 @@
     if (itemInConsumableBagBucket(itemId)) return ' ×' + q;
     if (q > 1) return ' ×' + q;
     return '';
-  }
-
-  function isCraftHintItem(itemId) {
-    return itemInConsumableBagBucket(itemId) && !isHpMpPotion(itemId);
-  }
-
-  function buildCraftBookIndex(tiers) {
-    var asOutput = {};
-    var asIngredient = {};
-    (tiers || []).forEach(function (tier) {
-      (tier.recipes || []).forEach(function (recipe) {
-        var outId = Number(recipe.outputL2ItemId);
-        if (!Number.isFinite(outId)) return;
-        if (!asOutput[outId]) asOutput[outId] = [];
-        (recipe.ingredients || []).forEach(function (ing) {
-          var ingId = Number(ing.l2ItemId);
-          var cnt = Number(ing.count);
-          if (!Number.isFinite(ingId) || !Number.isFinite(cnt)) return;
-          asOutput[outId].push({ itemId: ingId, count: cnt });
-          if (!asIngredient[ingId]) asIngredient[ingId] = [];
-          asIngredient[ingId].push({ outId: outId, count: cnt, tier: tier.tier });
-        });
-      });
-    });
-    return { asOutput: asOutput, asIngredient: asIngredient };
-  }
-
-  function craftHintForItem(itemId) {
-    var id = Number(itemId);
-    if (!Number.isFinite(id)) return 'Розхідник — не одягається.';
-    if (!craftBookIndex) {
-      return 'Розхідник — не одягається. Для крафту відкрий меню «Крафт».';
-    }
-    var lines = [];
-    var outs = craftBookIndex.asOutput[id];
-    if (outs && outs.length) {
-      var parts = outs.map(function (row) {
-        return row.count + '× ' + itemDisplayName(row.itemId);
-      });
-      lines.push('Отримання: ' + parts.join(', '));
-    }
-    var uses = craftBookIndex.asIngredient[id];
-    if (uses && uses.length) {
-      uses.forEach(function (row) {
-        lines.push(
-          'Потрібно для крафту: ' +
-            itemDisplayName(row.outId) +
-            ' — ' +
-            row.count +
-            '×'
-        );
-      });
-    }
-    if (lines.length) return lines.join('\n');
-    return 'Розхідник — не одягається.';
-  }
-
-  function loadCraftBookForChar(token) {
-    if (!token || craftBookIndex) return Promise.resolve();
-    if (!window.L2 || typeof L2.fetchCraftBook !== 'function') {
-      return fetch('/game/resource-craft/book', {
-        headers: { Authorization: 'Bearer ' + token },
-      })
-        .then(function (r) {
-          if (!r.ok) return null;
-          return r.json();
-        })
-        .then(function (j) {
-          if (!j || !Array.isArray(j.tiers)) return;
-          craftBookIndex = buildCraftBookIndex(j.tiers);
-        })
-        .catch(function () {});
-    }
-    return L2.fetchCraftBook()
-      .then(function (j) {
-        if (!j || !Array.isArray(j.tiers)) return;
-        craftBookIndex = buildCraftBookIndex(j.tiers);
-      })
-      .catch(function () {});
   }
 
   function normalizedItemGradeKey(itemId) {
@@ -1932,13 +1852,11 @@
       }
     }
 
-    var craftHintEl = $('char-bag-modal-craft-hint');
     var useRow = $('char-bag-modal-use-row');
     var useBtn = $('char-bag-modal-use');
     var useQty = $('char-bag-modal-use-qty');
     var canEq = canEquipFromBag(itemId);
     var isPotion = isHpMpPotion(itemId);
-    var showCraft = isCraftHintItem(itemId);
 
     bagModalCtx = {
       itemId: itemId,
@@ -1973,17 +1891,6 @@
 
     configureItemInfoEnchantButton(enchantBtn, itemId, modalEn, targetInstanceId);
 
-    if (craftHintEl) {
-      if (showCraft) {
-        craftHintEl.hidden = false;
-        craftHintEl.removeAttribute('hidden');
-        craftHintEl.textContent = craftHintForItem(itemId);
-      } else {
-        craftHintEl.hidden = true;
-        craftHintEl.setAttribute('hidden', '');
-        craftHintEl.textContent = '';
-      }
-    }
     if (useRow) {
       if (isPotion) {
         useRow.hidden = false;
@@ -2147,8 +2054,6 @@
     if (content) content.hidden = false;
     var nbEarly = $('char-name-bracket');
     if (nbEarly) nbEarly.textContent = '…';
-
-    loadCraftBookForChar(t);
 
     if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
       L2.renderCharacterFromCache();

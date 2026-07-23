@@ -58,9 +58,8 @@ export const REGRESSION_ITEM_IDS = {
   godsBlade: 82,
 } as const;
 
-function ngWpnCrit(entry: (typeof NG_WEAPON_CATALOG)[number]): number | undefined {
-  if (entry.mode === 'magic') return undefined;
-  return entry.displayCrit;
+function ngWpnCrit(entry: (typeof NG_WEAPON_CATALOG)[number]): number {
+  return entry.wpnCrit;
 }
 
 export function collectAllCanonWeapons(): CanonWeaponRow[] {

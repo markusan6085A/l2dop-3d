@@ -8,7 +8,6 @@ import {
   rewardExpSpForSpawn,
   syntheticAdenaDropEntry,
 } from './spawnSyntheticRewards.js';
-import { rollProceduralResourceLoot } from './mobResourceLoot.js';
 import { dropDisplayNameShort } from '../utils/dropDisplayName.js';
 import { viewerMaySeeSpoilLoot } from './dwarfSpoilerLootGate.js';
 import type { Prisma } from '@prisma/client';
@@ -101,22 +100,6 @@ export function rollKillLoot(
       const label = dropDisplayNameShort(d.displayName ?? d.id, d.l2ItemId);
       itemLog.push(`+${qty}× ${label}`);
       items.push({ l2ItemId: d.l2ItemId, qty, spoil: false, label });
-    }
-  }
-
-  if (!customDropOnly) {
-    for (const line of rollProceduralResourceLoot(spawnLevel, {
-      allowSpoil: allowKillSpoil,
-    })) {
-      next = addItemToBag(next, line.l2ItemId, line.qty);
-      const prefix = line.spoil ? '(спойл) ' : '';
-      itemLog.push(`${prefix}+${line.qty}× ${line.label}`);
-      items.push({
-        l2ItemId: line.l2ItemId,
-        qty: line.qty,
-        spoil: line.spoil,
-        label: line.label,
-      });
     }
   }
 

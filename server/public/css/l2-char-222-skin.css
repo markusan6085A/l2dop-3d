@@ -591,15 +591,6 @@ body.l2-app-l2-chrome #l2-item-stats-modal-overlay .l2-item-modal-heading {
   border-bottom-color: rgba(120, 100, 72, 0.35);
 }
 
-body.l2-app-l2-chrome.l2-page-char .l2-char-bag-modal-craft-hint {
-  margin: 8px 0 0;
-  font-size: 11px;
-  line-height: 1.45;
-  color: #c5b398;
-  white-space: pre-line;
-}
-
-body.l2-app-l2-chrome.l2-page-char #char-bag-modal-craft-hint[hidden],
 body.l2-app-l2-chrome.l2-page-char #char-bag-modal-use-row[hidden],
 body.l2-app-l2-chrome.l2-page-char #char-bag-modal-equip[hidden],
 body.l2-app-l2-chrome.l2-page-char #char-bag-modal-use[hidden],

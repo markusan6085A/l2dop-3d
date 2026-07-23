@@ -26,7 +26,6 @@ import {
   itemGradeHintsForClient,
   itemInventoryTabHintsForClient,
 } from '../data/itemsCatalog.js';
-import { RESOURCE_CRAFT_ITEM_NAMES_UK } from '../data/resourceCraftItemNamesUk.js';
 import { applyCGradeWeaponGmShopPrice } from '../domain/dropsShopPurchasePrice.js';
 import {
   resourceSellPriceAdena,
@@ -113,11 +112,6 @@ function buildResourceSellByItemId(): Map<number, number> {
     const id = Number(idStr);
     if (!Number.isFinite(id) || id <= 0) continue;
     if (tabs[id] !== 'resource') continue;
-    m.set(id, resourceSellPriceAdena(id, itemGradeKey(id)));
-  }
-  for (const idStr of Object.keys(RESOURCE_CRAFT_ITEM_NAMES_UK)) {
-    const id = Number(idStr);
-    if (!Number.isFinite(id) || id <= 0 || m.has(id)) continue;
     m.set(id, resourceSellPriceAdena(id, itemGradeKey(id)));
   }
   return m;

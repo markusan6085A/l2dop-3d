@@ -1,9 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {
-  craftResourceIconFileName,
-  craftResourceIconRelUrl,
-} from '../data/resourceCraftIconFileNames.js';
 import { sealStoneIconUrlForItemId } from '../data/sevenSignsSealStoneItems.js';
 import {
   COIN_OF_LUCK_ICON_URL,
@@ -29,7 +25,7 @@ function firstExistingPath(candidates: string[]): string | null {
  * Реальні іконки предметів:
  * 1) L2DOP_ITEM_ICONS_DIR / `{id}.jpg`
  * 2) зовнішній l2dop `img/items/{id}.jpg`
- * 3) статика репо `icons/drops/resours/l2dop-by-itemid/` (`{id}.jpg` або іменний файл)
+ * 3) статика репо `icons/drops/resours/l2dop-by-itemid/{id}.jpg`
  * 4) adena `assets/l2dop/etc_adena_i00.png`
  */
 export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
@@ -43,17 +39,10 @@ export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
     if (fs.existsSync(p)) return p;
   }
 
-  const craftFile = craftResourceIconFileName(itemId);
-  if (craftFile) {
-    const craft = firstExistingPath(
-      publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', craftFile]),
-    );
-    if (craft) return craft;
-    const craftRoot = firstExistingPath(
-      publicDirCandidates(['icons', 'drops', 'resours', craftFile]),
-    );
-    if (craftRoot) return craftRoot;
-  }
+  const byItemId = firstExistingPath(
+    publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', file]),
+  );
+  if (byItemId) return byItemId;
 
   const cwd = process.cwd();
   const legacyCandidates = [
@@ -93,21 +82,12 @@ export function resolveItemIconPublicUrl(itemId: number): string {
   }
   const sealStoneUrl = sealStoneIconUrlForItemId(itemId);
   if (sealStoneUrl) return sealStoneUrl;
-  const craftUrl = craftResourceIconRelUrl(itemId);
-  if (craftUrl) {
-    const craftFile = craftResourceIconFileName(itemId);
-    if (craftFile) {
-      const craft = firstExistingPath(
-        publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', craftFile]),
-      );
-      if (craft) return craftUrl;
-      const craftRoot = firstExistingPath(
-        publicDirCandidates(['icons', 'drops', 'resours', craftFile]),
-      );
-      if (craftRoot) {
-        return `/icons/drops/resours/${craftFile}`;
-      }
-    }
+  const file = `${itemId}.jpg`;
+  const byItemId = firstExistingPath(
+    publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', file]),
+  );
+  if (byItemId) {
+    return `/icons/drops/resours/l2dop-by-itemid/${file}`;
   }
   return `/game/item-icon/${itemId}`;
 }

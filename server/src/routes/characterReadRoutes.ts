@@ -11,7 +11,6 @@ import {
   listGearCatalogForClient,
 } from '../data/itemsCatalog.js';
 import { itemNamesEnForClient } from '../data/itemNamesEnForClient.js';
-import { craftResourceIconHintsForClient } from '../data/resourceCraftIconHints.js';
 import { ancientAdenaIconHintsForClient } from '../data/ancientAdenaItem.js';
 import { mammonGemstoneIconHintsForClient } from '../data/mammonMerchantGemstones.js';
 import { mammonLifeStoneIconHintsForClient } from '../data/mammonMerchantLifeStones.js';
@@ -49,9 +48,8 @@ function buildCharacterCatalogHints() {
     /** Лук → true; інші типи не передаються (explicit false не потрібен). */
     itemRequiresArrowsById: itemRequiresArrowsHintsForClient(),
     armorSetCatalog: armorSetCatalogForClient(),
-    /** itemId → URL іконки як у крафті (`l2dop-by-itemid`), для сумки/ГМ. */
-    craftResourceIconByItemId: {
-      ...craftResourceIconHintsForClient(),
+    /** itemId → URL іконки (seal stones, mammon, ancient adena). */
+    itemIconHintByItemId: {
       ...sealStoneIconHintsForClient(),
       ...ancientAdenaIconHintsForClient(),
       ...mammonGemstoneIconHintsForClient(),

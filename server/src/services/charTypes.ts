@@ -288,8 +288,6 @@ export interface CharacterSnapshot {
   chatUnreadReplyCount?: number;
   /** Версія catalog-hints (інвалідація клієнтського кешу каталогу). */
   catalogVersion?: string;
-  /** Версія книги крафту ресурсів. */
-  bookVersion?: string;
   /** Час формування snapshot на сервері (ms) — tie-break при однаковому revision. */
   snapshotGeneratedAt?: number;
   /** Монотонна версія client snapshot (transport tie-break; не версія даних). */

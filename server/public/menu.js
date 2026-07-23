@@ -1,16 +1,9 @@
 /**
- * Меню: HUD, навігація, кнопка «Крафт», «РБ-боси».
+ * Меню: HUD, навігація, «РБ-боси».
  */
 (function () {
   function $(id) {
     return document.getElementById(id);
-  }
-
-  function wireCraftForCharacter(char) {
-    var wrap = $('l2-menu-craft-wrap');
-    if (!wrap || !window.L2 || typeof L2.canOpenCraft !== 'function') return;
-    var ok = char != null && L2.canOpenCraft(char);
-    wrap.hidden = !ok;
   }
 
   function wireDevBoost(enabled) {
@@ -51,26 +44,15 @@
     var t = localStorage.getItem('token');
     if (!t || !window.L2) {
       if (window.L2 && typeof L2.clearHudPanel === 'function') L2.clearHudPanel();
-      wireCraftForCharacter(null);
       return;
     }
 
     if (window.L2 && typeof L2.renderCharacterFromCache === 'function') {
       L2.renderCharacterFromCache();
     }
-    (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function'
-      ? L2.resyncCharacterWhenRequired()
-      : Promise.resolve(null))
-      .then(function (c) {
-        if (!c) {
-          wireCraftForCharacter(null);
-          return;
-        }
-        wireCraftForCharacter(c);
-      })
-      .catch(function () {
-        wireCraftForCharacter(null);
-      });
+    if (window.L2 && typeof L2.resyncCharacterWhenRequired === 'function') {
+      L2.resyncCharacterWhenRequired().catch(function () {});
+    }
   }
 
   if (document.readyState === 'loading') {

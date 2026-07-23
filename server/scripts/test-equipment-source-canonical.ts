@@ -114,11 +114,9 @@ function checkNgEntry(entry: NgWeaponCanonEntry, errors: string[]): void {
   }
   expectEq(`NG #${entry.itemId} weaponType`, catalog.weaponType, entry.weaponType, errors);
   expectEq(`NG #${entry.itemId} atkSpd`, catalog.atkSpd, entry.atkSpd, errors);
-  if (entry.pAtk != null) expectEq(`NG #${entry.itemId} pAtk`, catalog.pAtk, entry.pAtk, errors);
-  if (entry.mAtk != null) expectEq(`NG #${entry.itemId} mAtk`, catalog.mAtk, entry.mAtk, errors);
-  if (entry.mode === 'phys' && entry.displayCrit != null) {
-    expectEq(`NG #${entry.itemId} wpnCrit`, catalog.wpnCrit, entry.displayCrit, errors);
-  }
+  expectEq(`NG #${entry.itemId} pAtk`, catalog.pAtk, entry.pAtk, errors);
+  expectEq(`NG #${entry.itemId} mAtk`, catalog.mAtk, entry.mAtk, errors);
+  expectEq(`NG #${entry.itemId} wpnCrit`, catalog.wpnCrit, entry.wpnCrit, errors);
   if (catalog.rCrit != null && catalog.rCrit !== 0) {
     errors.push(`NG #${entry.itemId} unexpected rCrit ${catalog.rCrit}`);
   }

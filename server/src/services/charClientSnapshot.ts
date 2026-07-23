@@ -1,7 +1,4 @@
-import {
-  CHARACTER_CATALOG_VERSION,
-  RESOURCE_CRAFT_BOOK_VERSION,
-} from '../data/characterCatalogVersion.js';
+import { CHARACTER_CATALOG_VERSION } from '../data/characterCatalogVersion.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
 import { applyCharacterReadView } from './charReadView.js';
 import { toSnapshot } from './charSnapshotLogic.js';
@@ -33,7 +30,6 @@ function attachClientSnapshotMeta(
   return {
     ...snap,
     catalogVersion: CHARACTER_CATALOG_VERSION,
-    bookVersion: RESOURCE_CRAFT_BOOK_VERSION,
     snapshotGeneratedAt: Date.now(),
     clientSnapshotVersion: id ? nextClientSnapshotVersion(id) : undefined,
     ...extras,

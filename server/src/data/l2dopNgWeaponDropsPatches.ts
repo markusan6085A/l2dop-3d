@@ -36,7 +36,7 @@ function toPatch(entry: NgWeaponCanonEntry): NgWeaponDropsPatch {
     nameUk: entry.shopNameUk,
     pAtk: entry.pAtk ?? 0,
     speed: entry.atkSpd,
-    crit: entry.displayCrit ?? 0,
+    crit: entry.wpnCrit,
   };
 }
 

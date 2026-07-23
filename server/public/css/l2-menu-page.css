@@ -1,5 +1,5 @@
 /**
- * Меню: «Крафт» — 1512125; «Raid Bosses» — текст зліва під заголовком.
+ * Меню: «Raid Bosses» — текст зліва під заголовком.
  */
 body.l2-page-menu .l2-pers-h1 {
   color: #fff;
@@ -80,7 +80,7 @@ body.l2-page-menu .l2-menu-rb-link:active {
   -webkit-tap-highlight-color: transparent;
 }
 
-body.l2-page-menu .l2-menu-craft-wrap {
+body.l2-page-menu .l2-menu-dev-boost-wrap {
   text-align: center;
   margin: 0.35rem 0 0.25rem;
 }
@@ -90,7 +90,6 @@ body.l2-page-menu .l2-teleport-panel__back {
   margin-top: 0.5rem;
 }
 
-body.l2-page-menu #l2-menu-craft-wrap a.l2-town-btn.l2-menu-btn-541,
 body.l2-page-menu #l2-menu-dev-boost-wrap a.l2-town-btn.l2-menu-btn-541,
 body.l2-page-menu a.l2-town-btn.l2-menu-btn-4187 {
   box-sizing: border-box !important;
@@ -124,29 +123,10 @@ body.l2-page-menu a.l2-town-btn.l2-menu-btn-4187 {
   transform: none !important;
 }
 
-body.l2-page-menu #l2-menu-craft-wrap a.l2-town-btn.l2-menu-btn-541 {
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705menuCraft1512') center / 100% 100%
-    no-repeat !important;
-}
-
 body.l2-page-menu #l2-menu-dev-boost-wrap a.l2-town-btn.l2-menu-btn-541,
 body.l2-page-menu a.l2-town-btn.l2-menu-btn-4187 {
   background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705menu1512') center / 100% 100%
     no-repeat !important;
-}
-
-body.l2-page-menu #l2-menu-craft-wrap a.l2-town-btn.l2-menu-btn-541:hover,
-body.l2-page-menu #l2-menu-craft-wrap a.l2-town-btn.l2-menu-btn-541:focus,
-body.l2-page-menu #l2-menu-craft-wrap a.l2-town-btn.l2-menu-btn-541:focus-visible {
-  border: 0 !important;
-  border-image: none !important;
-  background: url('/assets/1512125-removebg-preview-removebg-preview.png?v=20260705menuCraft1512') center / 100% 100%
-    no-repeat !important;
-  transform: none !important;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
-  filter: brightness(1.06) !important;
-  -webkit-filter: brightness(1.06) !important;
 }
 
 body.l2-page-menu #l2-menu-dev-boost-wrap a.l2-town-btn.l2-menu-btn-541:hover,

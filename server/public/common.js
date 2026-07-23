@@ -74,22 +74,17 @@
   var SESSION_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
   var ONLINE_COUNT_CACHE_KEY = 'l2-online-count-cache-v1';
   var CATALOG_HINTS_LS_KEY = 'l2-catalog-hints-v1';
-  var CRAFT_BOOK_LS_KEY = 'l2-craft-book-v1';
   var ITEM_ICON_HINTS_CACHE_KEY = 'l2-item-icon-hints-v1';
   var itemIconHintsPersistTimer = null;
   var knownCatalogVersion = null;
-  var craftBookCache = null;
-  var craftBookFetchPromise = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260721fullarmorEquipV1';
+  var APP_DATA_VERSION = '20260723legacyResourceCraftRemovedV1';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function resetCatalogSessionState() {
     sessionCatalogMerged = false;
     sessionCatalogFetchPromise = null;
     knownCatalogVersion = null;
-    craftBookCache = null;
-    craftBookFetchPromise = null;
   }
 
   function clearPersonalClientCaches() {
@@ -101,7 +96,6 @@
       sessionStorage.removeItem(ONLINE_COUNT_CACHE_KEY);
       sessionStorage.removeItem(ITEM_ICON_HINTS_CACHE_KEY);
       localStorage.removeItem(CATALOG_HINTS_LS_KEY);
-      localStorage.removeItem(CRAFT_BOOK_LS_KEY);
     } catch (eClear) {
       /* ignore */
     }
@@ -112,7 +106,6 @@
       var stored = localStorage.getItem(APP_DATA_VERSION_KEY);
       if (stored === APP_DATA_VERSION) return;
       localStorage.removeItem(CATALOG_HINTS_LS_KEY);
-      localStorage.removeItem(CRAFT_BOOK_LS_KEY);
       sessionStorage.removeItem(SESSION_SNAPSHOT_CACHE_KEY);
       sessionStorage.removeItem('l2-map-snapshot-cache-v1');
       resetCatalogSessionState();
@@ -255,33 +248,6 @@
     return sessionCatalogMerged;
   }
 
-  function readCraftBookFromLocalStorage() {
-    try {
-      var raw = localStorage.getItem(CRAFT_BOOK_LS_KEY);
-      if (!raw) return null;
-      var j = JSON.parse(raw);
-      if (!j || typeof j !== 'object' || !j.bookVersion || !j.tiers) return null;
-      return j;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function writeCraftBookToLocalStorage(bookVersion, tiers) {
-    try {
-      if (!bookVersion || !tiers) return;
-      localStorage.setItem(
-        CRAFT_BOOK_LS_KEY,
-        JSON.stringify({
-          bookVersion: String(bookVersion),
-          tiers: tiers,
-        })
-      );
-    } catch (e) {
-      /* ignore */
-    }
-  }
-
   function loadItemIconHintsFromSession() {
     try {
       var raw = sessionStorage.getItem(ITEM_ICON_HINTS_CACHE_KEY);
@@ -338,7 +304,7 @@
       j.itemStatsHints ||
       j.itemBlocksShieldById ||
       j.itemRequiresArrowsById ||
-      j.craftResourceIconByItemId ||
+      j.itemIconHintByItemId ||
       j.itemNameColorSlugById
     );
   }
@@ -349,8 +315,8 @@
     if (j.gearCatalog && global.L2.mergeGearCatalog) {
       global.L2.mergeGearCatalog(j.gearCatalog);
     }
-    if (global.L2.mergeCraftResourceIconHints) {
-      global.L2.mergeCraftResourceIconHints(j);
+    if (global.L2.mergeItemIconHintsFromCatalog) {
+      global.L2.mergeItemIconHintsFromCatalog(j);
     }
     if (j.itemNamesEn && typeof j.itemNamesEn === 'object' && global.L2.itemNameById) {
       Object.keys(j.itemNamesEn).forEach(function (k) {
@@ -1193,8 +1159,8 @@
     mergeGearCatalog: function (items) {
       global.L2.mergeShopCatalog(items);
     },
-    mergeCraftResourceIconHints: function (payload) {
-      var h = payload && payload.craftResourceIconByItemId;
+    mergeItemIconHintsFromCatalog: function (payload) {
+      var h = payload && payload.itemIconHintByItemId;
       if (!h || typeof h !== 'object') return;
       var icons = global.L2.itemIconById;
       Object.keys(h).forEach(function (k) {
@@ -1985,47 +1951,6 @@
       var t = global.L2.token();
       if (!t) return false;
       return ensureCatalogHintsLoaded(t, opts || {});
-    },
-    fetchCraftBook: async function (opts) {
-      opts = opts || {};
-      if (craftBookCache && !opts.force) return craftBookCache;
-      if (!opts.force) {
-        var lsBook = readCraftBookFromLocalStorage();
-        if (lsBook && lsBook.tiers) {
-          craftBookCache = lsBook;
-          return craftBookCache;
-        }
-      }
-      if (craftBookFetchPromise) return craftBookFetchPromise;
-      var t = global.L2.token();
-      if (!t) return null;
-      craftBookFetchPromise = fetch('/game/resource-craft/book', {
-        headers: { Authorization: 'Bearer ' + t },
-        cache: 'no-store',
-      })
-        .then(function (r) {
-          if (r.status === 401) {
-            global.L2.setToken(null);
-            return null;
-          }
-          if (!r.ok) return null;
-          return r.json();
-        })
-        .then(function (j) {
-          if (!j || !Array.isArray(j.tiers)) return null;
-          craftBookCache = j;
-          if (j.bookVersion) {
-            writeCraftBookToLocalStorage(j.bookVersion, j.tiers);
-          }
-          return craftBookCache;
-        })
-        .catch(function () {
-          return readCraftBookFromLocalStorage();
-        })
-        .finally(function () {
-          craftBookFetchPromise = null;
-        });
-      return craftBookFetchPromise;
     },
     applyCharacterSnapshot: function (snapshot, applyScreenSpecific) {
       if (!snapshot) return null;

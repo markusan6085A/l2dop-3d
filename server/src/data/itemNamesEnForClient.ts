@@ -11,7 +11,6 @@ import dropsShopOverrides from './dropsShopOverrides.json';
 import { dropsGmPurchaseByShopKeyLower } from '../domain/dropsShopGmItemIdByShopKey.js';
 import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
 import { L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER } from './l2dopNgWeaponDropsPatches.js';
-import { RESOURCE_CRAFT_ITEM_NAMES_UK } from './resourceCraftItemNamesUk.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import { D_GRADE_ARMOR_CATALOG } from './dGradeArmorCatalog.js';
 import { C_GRADE_ARMOR_CATALOG } from './cGradeArmorCatalog.js';
@@ -68,11 +67,6 @@ let cache: Record<number, string> | null = null;
 
 function hasCyrillic(s: string): boolean {
   return /[А-Яа-яІіЇїЄєґҐ]/.test(s);
-}
-
-function resourceNameEn(uk: string): string {
-  const m = /\[([^\]]+)\]\s*$/.exec(String(uk || '').trim());
-  return m ? m[1]!.trim() : String(uk || '').trim();
 }
 
 function stripGradeSuffix(name: string): string {
@@ -133,10 +127,6 @@ export function itemNamesEnForClient(): Record<number, string> {
   for (const [key, patch] of Object.entries(L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER)) {
     const id = resolveItemIdForShopKey(key);
     if (id != null) put(id, patch.nameUk, true);
-  }
-
-  for (const [idStr, uk] of Object.entries(RESOURCE_CRAFT_ITEM_NAMES_UK)) {
-    put(Number(idStr), resourceNameEn(uk), true);
   }
 
   for (const [idStr, en] of Object.entries(sealStoneNamesEnForClient())) {

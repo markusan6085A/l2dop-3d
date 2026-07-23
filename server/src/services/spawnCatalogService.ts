@@ -3,7 +3,6 @@ import {
   ensureMobDropBag,
   rewardExpSpForSpawn,
 } from '../domain/spawnSyntheticRewards.js';
-import { resourceDropsForSpawnCatalog } from '../domain/mobResourceLoot.js';
 import { mobCombatFromSpawn } from '../domain/battle.js';
 import { mobKillRewardMult } from '../domain/championMobRules.js';
 import type { DropEntry } from '../types/combatDrop.js';
@@ -145,9 +144,6 @@ export function getSpawnCatalogInfo(
   const c = mobCombatFromSpawn(spawn);
   const bag = ensureMobDropBag(npcId, spawn.level, spawnId);
   const customDropOnly = hasCustomNpcDropBag(npcId, spawnId);
-  const resPreview = customDropOnly
-    ? { drops: [], spoil: [] }
-    : resourceDropsForSpawnCatalog(spawn.level, spawn.id);
   const showSpoil =
     !customDropOnly &&
     viewer != null &&
@@ -164,13 +160,9 @@ export function getSpawnCatalogInfo(
     rbPreview || sdPreview
       ? 1
       : mobKillRewardMult({ spawnKind: spawn.kind, mobName: spawn.name });
-  const drops = [...bag.drops, ...resPreview.drops].map((d) =>
-    serializeDropScaled(d, rewardMult)
-  );
+  const drops = bag.drops.map((d) => serializeDropScaled(d, rewardMult));
   const spoil = showSpoil
-    ? [...bag.spoil, ...resPreview.spoil].map((d) =>
-        serializeDropScaled(d, rewardMult)
-      )
+    ? bag.spoil.map((d) => serializeDropScaled(d, rewardMult))
     : [];
   const rw = rewardExpSpForSpawn(npcId, spawn.level);
   const rewardExp =

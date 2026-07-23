@@ -1,0 +1,160 @@
+/**
+ * Smoke: legacy resource craft system fully removed.
+ * npm run test:legacy-resource-removal
+ */
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config } from 'dotenv';
+import { itemNamesUkForClient } from '../src/data/itemsCatalog.js';
+import { rollKillLoot } from '../src/domain/killLoot.js';
+import { emptyInventory } from '../src/data/inventory.js';
+import {
+  isLegacyResourceItemId,
+  stripLegacyResourceItemsFromInventory,
+} from './cleanup-legacy-resource-items.js';
+import { buildApp } from '../src/app.js';
+import { signAccessToken } from '../src/lib/jwt.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+config({ path: path.join(__dirname, '../.env') });
+
+function ok(name: string): void {
+  console.log('  ✓ ' + name);
+}
+
+const repoRoot = path.resolve(__dirname, '../..');
+const removedFiles = [
+  'server/src/data/resourceCraftRecipes.ts',
+  'server/src/services/resourceCraftService.ts',
+  'server/src/data/resourceCraftItemNamesUk.ts',
+  'server/src/routes/gameResourceCraftRoutes.ts',
+  'server/src/domain/mobResourceLoot.ts',
+  'server/public/craft.html',
+  'server/public/craft.js',
+  'server/public/craftProfessions.js',
+  'server/public/css/l2-craft-page.css',
+];
+
+for (const rel of removedFiles) {
+  assert.equal(
+    fs.existsSync(path.join(repoRoot, rel)),
+    false,
+    'removed file still exists: ' + rel
+  );
+}
+ok('core legacy craft files deleted');
+
+const runtimeScanRoots = [
+  path.join(repoRoot, 'server/src'),
+  path.join(repoRoot, 'server/public'),
+];
+const banned = [
+  'RESOURCE_CRAFT_TIERS',
+  'resourceCraftService',
+  'resourceCraftRecipes',
+  'resourceCraftItemNamesUk',
+  'craftProfessions',
+  '/game/resource-craft',
+  'craft.html',
+  'mobResourceLoot',
+  'rollProceduralResourceLoot',
+];
+for (const root of runtimeScanRoots) {
+  const stack = [root];
+  while (stack.length) {
+    const dir = stack.pop()!;
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        if (ent.name === 'node_modules' || ent.name === 'dist') continue;
+        stack.push(full);
+        continue;
+      }
+      if (!/\.(ts|js|html|css|mjs)$/.test(ent.name)) continue;
+      if (ent.name === 'cleanup-legacy-resource-items.ts') continue;
+      if (ent.name === 'test-legacy-resource-removal.ts') continue;
+      const text = fs.readFileSync(full, 'utf8');
+      for (const token of banned) {
+        assert.equal(
+          text.includes(token),
+          false,
+          `${path.relative(repoRoot, full)} still contains ${token}`
+        );
+      }
+    }
+  }
+}
+ok('runtime scan has no legacy craft symbols');
+
+const namesUk = itemNamesUkForClient();
+for (const id of [1864, 1867, 1883, 4039, 5220, 5549, 5550, 1899]) {
+  assert.equal(namesUk[id], undefined, 'catalog still has item ' + id);
+}
+ok('itemNamesUk has no legacy resource ids');
+
+const loot = rollKillLoot(20001, 40, emptyInventory());
+for (const line of loot.items) {
+  assert.equal(
+    isLegacyResourceItemId(line.l2ItemId),
+    false,
+    'mob loot dropped legacy item ' + line.l2ItemId
+  );
+}
+ok('rollKillLoot never drops legacy resource ids');
+
+const invWithLegacy = stripLegacyResourceItemsFromInventory({
+  v: 1,
+  stacks: [
+    { itemId: 1864, qty: 10 },
+    { itemId: 57, qty: 5 },
+    { itemId: 1899, qty: 2 },
+  ],
+  eq: { l1: 1867 },
+});
+assert.equal(invWithLegacy.removedQty, 12);
+assert.deepEqual(invWithLegacy.next.stacks, [{ itemId: 57, qty: 5 }]);
+assert.deepEqual(invWithLegacy.next.eq, {});
+ok('cleanup strips only legacy ids');
+
+const invClean = stripLegacyResourceItemsFromInventory({
+  v: 1,
+  stacks: [{ itemId: 1060, qty: 3 }],
+  eq: {},
+});
+assert.equal(invClean.changed, false);
+assert.equal(invClean.removedQty, 0);
+ok('cleanup leaves other items untouched');
+
+async function assertLegacyEndpoints404(): Promise<void> {
+  const app = await buildApp();
+  const token = signAccessToken('legacy-resource-removal-smoke-user');
+  const bookRes = await app.inject({
+    method: 'GET',
+    url: '/game/resource-craft/book',
+    headers: { authorization: 'Bearer ' + token },
+  });
+  assert.equal(bookRes.statusCode, 404, 'GET /game/resource-craft/book must 404');
+  const postRes = await app.inject({
+    method: 'POST',
+    url: '/game/resource-craft',
+    headers: {
+      authorization: 'Bearer ' + token,
+      'content-type': 'application/json',
+    },
+    payload: { tier: 1, recipeIndex: 0, expectedRevision: 1 },
+  });
+  assert.equal(postRes.statusCode, 404, 'POST /game/resource-craft must 404');
+  await app.close();
+  ok('legacy craft endpoints return 404');
+}
+
+assertLegacyEndpoints404()
+  .then(function () {
+    console.log('\ntest-legacy-resource-removal: OK');
+  })
+  .catch(function (err) {
+    console.error(err);
+    process.exitCode = 1;
+  });
