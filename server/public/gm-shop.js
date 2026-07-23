@@ -423,6 +423,9 @@
     inp.step = '1';
     inp.value = '1';
     inp.setAttribute('data-buy-qty-input', '');
+    var quickRow = document.createElement('div');
+    quickRow.className = 'l2-drops-buy-qty-quick';
+    quickRow.setAttribute('data-buy-qty-quick', '');
     var total = document.createElement('p');
     total.className = 'l2-drops-stats-modal__hint';
     total.setAttribute('data-buy-total', '');
@@ -446,6 +449,7 @@
     pan.appendChild(unit);
     pan.appendChild(lab);
     pan.appendChild(inp);
+    pan.appendChild(quickRow);
     pan.appendChild(total);
     pan.appendChild(row);
     el.appendChild(bd);
@@ -562,6 +566,67 @@
       });
   }
 
+  function shopMaxAffordableQty(it, snap) {
+    if (!it || !snap) return 1;
+    if (shopItemUsesCoin(it)) {
+      var unitCoin = Math.floor(Number(it.priceCoinOfLuck) || 0);
+      if (unitCoin <= 0) return 1;
+      var haveCoin = 0;
+      if (snap.inventory && Array.isArray(snap.inventory.stacks)) {
+        for (var si = 0; si < snap.inventory.stacks.length; si++) {
+          var st = snap.inventory.stacks[si];
+          if (st && Number(st.itemId) === 4037) {
+            haveCoin += Math.max(0, Math.floor(Number(st.qty) || 0));
+          }
+        }
+      }
+      var maxCoin = Math.floor(haveCoin / unitCoin);
+      return Math.max(1, Math.min(9999, maxCoin || 1));
+    }
+    if (it.priceAdena == null) return 1;
+    try {
+      var adena = BigInt(String(snap.adena != null ? snap.adena : 0));
+      var unit = BigInt(String(it.priceAdena));
+      if (unit <= 0n) return 1;
+      var max = adena / unit;
+      if (max < 1n) return 1;
+      if (max > 9999n) return 9999;
+      return Number(max);
+    } catch (_) {
+      return 1;
+    }
+  }
+
+  function bindBuyQtyQuickButtons(quickRow, inp, it, snap, syncTotal) {
+    if (!quickRow || !inp) return;
+    quickRow.innerHTML = '';
+    var specs = [
+      { label: '+1', delta: 1 },
+      { label: '+10', delta: 10 },
+      { label: '+100', delta: 100 },
+      { label: 'MAX', delta: null },
+    ];
+    for (var qi = 0; qi < specs.length; qi++) {
+      (function (spec) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'l2-drops-buy-qty-quick-btn';
+        btn.textContent = spec.label;
+        btn.addEventListener('click', function () {
+          var cur = parseInt(String(inp.value || '1'), 10);
+          var base = Number.isFinite(cur) && cur >= 1 ? cur : 1;
+          var next =
+            spec.delta == null
+              ? shopMaxAffordableQty(it, snap)
+              : Math.min(9999, base + spec.delta);
+          inp.value = String(Math.max(1, next));
+          syncTotal();
+        });
+        quickRow.appendChild(btn);
+      })(specs[qi]);
+    }
+  }
+
   function openDropsShopBuyQty(
     it,
     snap,
@@ -576,6 +641,7 @@
     var titleEl = modal.querySelector('[data-buy-title]');
     var unitEl = modal.querySelector('[data-buy-unit]');
     var inp = modal.querySelector('[data-buy-qty-input]');
+    var quickRow = modal.querySelector('[data-buy-qty-quick]');
     var totalEl = modal.querySelector('[data-buy-total]');
     var okBtn = modal.querySelector('[data-buy-qty-confirm]');
     if (
@@ -606,6 +672,7 @@
     }
 
     inp.oninput = syncTotal;
+    bindBuyQtyQuickButtons(quickRow, inp, it, snap, syncTotal);
     syncTotal();
 
     okBtn.onclick = function () {

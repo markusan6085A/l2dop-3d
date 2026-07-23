@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sealStoneIconUrlForItemId } from '../data/sevenSignsSealStoneItems.js';
 import { BASIC_RESOURCE_BY_ITEM_ID } from '../data/basicResourceCatalog.js';
+import { GRADE_CRAFT_MATERIAL_BY_ITEM_ID } from '../data/gradeCraftMaterialsCatalog.js';
 import {
   COIN_OF_LUCK_ICON_URL,
   COIN_OF_LUCK_ITEM_ID,
@@ -85,6 +86,8 @@ export function resolveItemIconPublicUrl(itemId: number): string {
   if (sealStoneUrl) return sealStoneUrl;
   const basicResource = BASIC_RESOURCE_BY_ITEM_ID.get(itemId);
   if (basicResource) return basicResource.iconUrl;
+  const craftMaterial = GRADE_CRAFT_MATERIAL_BY_ITEM_ID.get(itemId);
+  if (craftMaterial) return craftMaterial.iconUrl;
   const file = `${itemId}.jpg`;
   const byItemId = firstExistingPath(
     publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', file]),

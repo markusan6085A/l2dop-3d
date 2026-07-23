@@ -118,9 +118,7 @@ export function registerGameWorldRoutes(app: FastifyInstance): void {
       const category =
         typeof b.category === 'string' && b.category.trim()
           ? b.category
-          : b.grade != null
-            ? 'gemstones'
-            : null;
+          : null;
       const itemKey = b.itemKey ?? b.grade;
       const qtyRaw = b.qty ?? b.quantity ?? 1;
       const action = `mammon_merchant_buy:${String(category)}:${String(itemKey)}`;

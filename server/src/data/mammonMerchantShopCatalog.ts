@@ -1,15 +1,10 @@
 import {
-  MAMMON_MERCHANT_GEMSTONES,
-  resolveMammonGemstoneOffer,
-  type MammonGemstoneOffer,
-} from './mammonMerchantGemstones.js';
-import {
   MAMMON_MERCHANT_LIFE_STONES,
   resolveMammonLifeStoneOffer,
   type MammonLifeStoneOffer,
 } from './mammonMerchantLifeStones.js';
 
-export type MammonMerchantShopCategoryId = 'gemstones' | 'life_stones';
+export type MammonMerchantShopCategoryId = 'life_stones';
 
 export interface MammonMerchantShopOfferBase {
   categoryId: MammonMerchantShopCategoryId;
@@ -27,18 +22,6 @@ export interface MammonMerchantShopCategoryDto {
   items: MammonMerchantShopOfferBase[];
 }
 
-function gemstoneToOffer(row: MammonGemstoneOffer): MammonMerchantShopOfferBase {
-  return {
-    categoryId: 'gemstones',
-    itemKey: row.grade,
-    itemId: row.itemId,
-    nameEn: row.nameEn,
-    nameUk: row.nameUk,
-    iconUrl: row.iconUrl,
-    aaPrice: row.aaPrice,
-  };
-}
-
 function lifeStoneToOffer(row: MammonLifeStoneOffer): MammonMerchantShopOfferBase {
   return {
     categoryId: 'life_stones',
@@ -51,13 +34,9 @@ function lifeStoneToOffer(row: MammonLifeStoneOffer): MammonMerchantShopOfferBas
   };
 }
 
+/** Gemstone D–S продаються за Adena у звичайному магазині (див. gradeCraftMaterialsCatalog). */
 export function getMammonMerchantShopCategories(): MammonMerchantShopCategoryDto[] {
   return [
-    {
-      categoryId: 'gemstones',
-      categoryUk: 'Ресурси',
-      items: MAMMON_MERCHANT_GEMSTONES.map(gemstoneToOffer),
-    },
     {
       categoryId: 'life_stones',
       categoryUk: 'Life Stones',
@@ -70,19 +49,11 @@ export function resolveMammonMerchantShopOffer(
   categoryRaw: unknown,
   itemKeyRaw: unknown
 ): MammonMerchantShopOfferBase | null {
-  let category =
+  const category =
     typeof categoryRaw === 'string' ? categoryRaw.trim().toLowerCase() : '';
-  let itemKey =
+  const itemKey =
     typeof itemKeyRaw === 'string' ? itemKeyRaw.trim().toLowerCase() : '';
 
-  /** Legacy: `{ grade: "d" }` без category. */
-  if (!category && itemKey) {
-    category = 'gemstones';
-  }
-  if (category === 'gemstones') {
-    const row = resolveMammonGemstoneOffer(itemKey);
-    return row ? gemstoneToOffer(row) : null;
-  }
   if (category === 'life_stones') {
     const row = resolveMammonLifeStoneOffer(itemKey);
     return row ? lifeStoneToOffer(row) : null;
@@ -90,22 +61,16 @@ export function resolveMammonMerchantShopOffer(
   return null;
 }
 
-export type MammonMerchantShopOffer =
-  | MammonGemstoneOffer
-  | MammonLifeStoneOffer;
+export type MammonMerchantShopOffer = MammonLifeStoneOffer;
 
 export function resolveMammonMerchantShopOfferRow(
   categoryRaw: unknown,
   itemKeyRaw: unknown
 ): MammonMerchantShopOffer | null {
-  let category =
+  const category =
     typeof categoryRaw === 'string' ? categoryRaw.trim().toLowerCase() : '';
-  let itemKey =
+  const itemKey =
     typeof itemKeyRaw === 'string' ? itemKeyRaw.trim().toLowerCase() : '';
-  if (!category && itemKey) category = 'gemstones';
-  if (category === 'gemstones') {
-    return resolveMammonGemstoneOffer(itemKey);
-  }
   if (category === 'life_stones') {
     return resolveMammonLifeStoneOffer(itemKey);
   }

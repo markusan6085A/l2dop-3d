@@ -12,7 +12,7 @@ import {
 } from '../data/itemsCatalog.js';
 import { itemNamesEnForClient } from '../data/itemNamesEnForClient.js';
 import { ancientAdenaIconHintsForClient } from '../data/ancientAdenaItem.js';
-import { mammonGemstoneIconHintsForClient } from '../data/mammonMerchantGemstones.js';
+import { gradeCraftMaterialIconHintsForClient } from '../data/itemsCatalogGradeCraftMaterials.js';
 import { mammonLifeStoneIconHintsForClient } from '../data/mammonMerchantLifeStones.js';
 import {
   sealStoneIconHintsForClient,
@@ -53,9 +53,9 @@ function buildCharacterCatalogHints() {
     itemIconHintByItemId: {
       ...sealStoneIconHintsForClient(),
       ...ancientAdenaIconHintsForClient(),
-      ...mammonGemstoneIconHintsForClient(),
       ...mammonLifeStoneIconHintsForClient(),
       ...basicResourceIconHintsForClient(),
+      ...gradeCraftMaterialIconHintsForClient(),
     },
     /** itemId → CSS slug кольору назви (каміння печаті Seven Signs). */
     itemNameColorSlugById: sealStoneNameColorSlugForClient(),

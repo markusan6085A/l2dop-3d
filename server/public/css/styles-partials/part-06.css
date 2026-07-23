@@ -319,6 +319,30 @@
   color: #f0ead8;
 }
 
+.l2-drops-buy-qty-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.l2-drops-buy-qty-quick-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid rgba(200, 160, 90, 0.45);
+  color: #f0e6b8;
+  background: linear-gradient(180deg, #3a3028, #181410);
+}
+
+.l2-drops-buy-qty-quick-btn:hover,
+.l2-drops-buy-qty-quick-btn:focus {
+  border-color: #d4af37;
+  outline: none;
+}
+
 .l2-drops-buy-qty-actions {
   display: flex;
   flex-wrap: wrap;

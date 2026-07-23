@@ -1248,6 +1248,46 @@
     "itemId": 6519,
     "priceAdena": 100
   },
+  "consumable/resource_gemstone_d": {
+    "itemId": 2130,
+    "priceAdena": 1000
+  },
+  "consumable/resource_gemstone_c": {
+    "itemId": 2131,
+    "priceAdena": 3000
+  },
+  "consumable/resource_gemstone_b": {
+    "itemId": 2132,
+    "priceAdena": 10000
+  },
+  "consumable/resource_gemstone_a": {
+    "itemId": 2133,
+    "priceAdena": 30000
+  },
+  "consumable/resource_gemstone_s": {
+    "itemId": 2134,
+    "priceAdena": 100000
+  },
+  "consumable/resource_crystal_d": {
+    "itemId": 1458,
+    "priceAdena": 650
+  },
+  "consumable/resource_crystal_c": {
+    "itemId": 1459,
+    "priceAdena": 3000
+  },
+  "consumable/resource_crystal_b": {
+    "itemId": 1460,
+    "priceAdena": 9000
+  },
+  "consumable/resource_crystal_a": {
+    "itemId": 1461,
+    "priceAdena": 15000
+  },
+  "consumable/resource_crystal_s": {
+    "itemId": 1462,
+    "priceAdena": 25000
+  },
   "consumable/enchant_scroll_armor_d": {
     "itemId": 910510,
     "priceAdena": 1

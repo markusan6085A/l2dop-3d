@@ -18,7 +18,7 @@ import { B_GRADE_ARMOR_CATALOG } from './bGradeArmorCatalog.js';
 import { A_GRADE_ARMOR_CATALOG } from './aGradeArmorCatalog.js';
 import { S_GRADE_ARMOR_CATALOG } from './sGradeArmorCatalog.js';
 import { ancientAdenaNamesEnForClient } from './ancientAdenaItem.js';
-import { mammonGemstoneNamesEnForClient } from './mammonMerchantGemstones.js';
+import { gradeCraftMaterialNamesEnForClient } from './itemsCatalogGradeCraftMaterials.js';
 import { mammonLifeStoneNamesEnForClient } from './mammonMerchantLifeStones.js';
 import { sealStoneNamesEnForClient } from './sevenSignsSealStoneItems.js';
 import { basicResourceNamesEnForClient } from './itemsCatalogBasicResources.js';
@@ -142,7 +142,7 @@ export function itemNamesEnForClient(): Record<number, string> {
     put(Number(idStr), en, true);
   }
 
-  for (const [idStr, en] of Object.entries(mammonGemstoneNamesEnForClient())) {
+  for (const [idStr, en] of Object.entries(gradeCraftMaterialNamesEnForClient())) {
     put(Number(idStr), en, true);
   }
 
