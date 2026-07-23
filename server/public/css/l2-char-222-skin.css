@@ -194,7 +194,27 @@ body.l2-app-l2-chrome.l2-page-char .l2-char-bag-title {
   letter-spacing: 0.04em;
   margin-left: calc(-1 * var(--l2-char-bag-tab-outset-x));
   padding-left: calc(1px * var(--l2s-char-inv888-bd-x));
+  margin-bottom: 0;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-bag-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-craft-link {
+  color: #e8c878;
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+body.l2-app-l2-chrome.l2-page-char .l2-char-craft-link:hover {
+  text-decoration: underline;
 }
 
 body.l2-app-l2-chrome.l2-page-char .l2-char-bag-notice {

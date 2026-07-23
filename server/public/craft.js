@@ -247,6 +247,22 @@
     });
   }
 
+  function authHeaders(extra) {
+    var h = extra ? Object.assign({}, extra) : {};
+    var t = window.L2 && typeof L2.token === 'function' ? L2.token() : localStorage.getItem('token');
+    if (t) h.Authorization = 'Bearer ' + t;
+    return h;
+  }
+
+  function onUnauthorized() {
+    if (window.L2 && typeof L2.setToken === 'function') {
+      L2.setToken(null);
+    } else {
+      localStorage.removeItem('token');
+    }
+    window.location.href = '/';
+  }
+
   function applyScreenFromSnapshot(character) {
     snap = character || snap;
     if (window.L2 && typeof L2.applyHudFromSnapshot === 'function' && snap) {
@@ -255,9 +271,12 @@
   }
 
   async function loadBook() {
-    var r = await fetch('/game/craft/materials', { credentials: 'include' });
+    var r = await fetch('/game/craft/materials', {
+      headers: authHeaders(),
+      cache: 'no-store',
+    });
     if (r.status === 401) {
-      window.location.href = '/login.html';
+      onUnauthorized();
       return;
     }
     if (!r.ok) throw new Error('book_load_failed');
@@ -277,14 +296,17 @@
     try {
       var r = await fetch('/game/craft/materials', {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
+        headers: authHeaders({ 'content-type': 'application/json' }),
         body: JSON.stringify({
           recipeCode: recipeCode,
           craftCount: getCount(recipeCode),
           expectedRevision: snap.revision,
         }),
       });
+      if (r.status === 401) {
+        onUnauthorized();
+        return;
+      }
       if (r.status === 409) {
         if (window.L2 && typeof L2.resyncCharacterAfterConflict === 'function') {
           await L2.resyncCharacterAfterConflict(null, await r.json().catch(function () { return null; }));
@@ -318,23 +340,41 @@
 
   async function init() {
     try {
+      var t = window.L2 && typeof L2.token === 'function' ? L2.token() : localStorage.getItem('token');
+      if (!t) {
+        onUnauthorized();
+        return;
+      }
+      if (window.L2 && typeof L2.mountL2Nav === 'function') {
+        L2.mountL2Nav({});
+      }
       if (window.L2 && typeof L2.ensureCatalogHintsLoaded === 'function') {
         await L2.ensureCatalogHintsLoaded();
       }
-      if (window.L2 && typeof L2.fetchCharacterSnapshot === 'function') {
-        snap = await L2.fetchCharacterSnapshot();
-        applyScreenFromSnapshot(snap);
+      if (window.L2 && typeof L2.fetchSnapshot === 'function') {
+        snap = await L2.fetchSnapshot();
       } else {
-        var cr = await fetch('/character', { credentials: 'include' });
+        var cr = await fetch('/character', {
+          headers: authHeaders(),
+          cache: 'no-store',
+        });
+        if (cr.status === 401) {
+          onUnauthorized();
+          return;
+        }
         if (cr.ok) {
           var cj = await cr.json();
           snap = cj.character || cj;
           if (window.L2 && typeof L2.setLastSnapshot === 'function') {
             L2.setLastSnapshot(snap);
           }
-          applyScreenFromSnapshot(snap);
         }
       }
+      if (!snap) {
+        setMsg('Увійдіть у гру, щоб відкрити крафт.', false);
+        return;
+      }
+      applyScreenFromSnapshot(snap);
       await loadBook();
     } catch (e) {
       setMsg('Не вдалося завантажити крафт.', false);
