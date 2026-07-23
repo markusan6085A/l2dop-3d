@@ -20,8 +20,8 @@ import {
 
 const ELYSIAN_ID = 164;
 const SHIELD_ID = 628;
-const DRAGON_SLAYER_ID = 900211;
-const SWORD_OF_IPOS_ID = 900219;
+const DRAGON_SLAYER_ID = 81;
+const SWORD_OF_IPOS_ID = 8679;
 
 function eqItemId(slotVal: unknown): number | null {
   if (typeof slotVal === 'number' && slotVal > 0) return slotVal;

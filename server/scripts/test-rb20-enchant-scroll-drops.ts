@@ -496,7 +496,7 @@ function run(): void {
   assertTierScrollsA(25235, RB_DROP_TIER_72_75);
 
   const timiniel = customNpcDropBagForMob(25423)!;
-  assert.equal(timiniel.drops.find((d) => d.l2ItemId === 900207)?.chance, 0.025);
+  assert.equal(timiniel.drops.find((d) => d.l2ItemId === 213)?.chance, 0.025);
   assert.equal(timiniel.drops.find((d) => d.l2ItemId === 933)?.chance, 0.035);
 
   const hekaton = customNpcDropBagForMob(25140)!;

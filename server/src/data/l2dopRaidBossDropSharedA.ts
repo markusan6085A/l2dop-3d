@@ -7,6 +7,7 @@ import {
   type RbJewelrySlot,
   type RaidBossDropSpec,
 } from './l2dopRaidBossDropShared.js';
+import { A_WEAPON_BY_SHOP_KEY_LOWER } from './aWeaponCatalog.js';
 
 const Wa = '/icons/drops/weapon_a';
 const Aa = '/icons/drops/arrom_а';
@@ -14,6 +15,15 @@ const Ja = '/icons/drops/earring_a';
 const R = '/icons/drops/resours';
 
 type ItemDef = Omit<RaidBossDropSpec, 'chancePercent'>;
+
+function weaponId(shopFile: string): number {
+  const key = `weapon_a/${shopFile}`.replace(/\\/g, '/').toLowerCase();
+  const entry = A_WEAPON_BY_SHOP_KEY_LOWER.get(key);
+  if (!entry) {
+    throw new Error(`A weapon shop key not found for RB drop: ${key}`);
+  }
+  return entry.itemId;
+}
 
 function item(
   l2ItemId: number,
@@ -24,37 +34,45 @@ function item(
   return { l2ItemId, displayName, iconUrl, kind };
 }
 
+function weaponItem(
+  shopFile: string,
+  displayName: string,
+  kind: DropKind = 'equipment'
+): ItemDef {
+  return item(weaponId(shopFile), displayName, `${Wa}/${shopFile}`, kind);
+}
+
 /** Канонічні A-grade предмети для таблиць дропу РБ 61–75. */
 export const RB_DROP_ITEM_A = {
-  apprenticesSpellbook: item(900201, "Apprentice's Spellbook", `${Wa}/apprentices_spellbook.jpg`),
-  baguettesDualsword: item(900202, "Baguette's Dualsword", `${Wa}/baguette_s_dualsword.jpg`),
-  barakielsAxe: item(900203, "Barakiel's Axe", `${Wa}/barakiel_s_axe.jpg`),
-  behemothsTuningFork: item(900204, "Behemoth's Tuning Fork", `${Wa}/behemoth_s_tuning_fork.jpg`),
-  bloodTornado: item(900205, 'Blood Tornado', `${Wa}/blood_tornado.jpg`),
-  bloodyOrchid: item(900206, 'Bloody Orchid', `${Wa}/bloody_orchid.jpg`),
-  branchOfMotherTree: item(900207, 'Branch of the Mother Tree', `${Wa}/branch_of_the_mother_tree.jpg`),
-  carnageBow: item(900209, 'Carnage Bow', `${Wa}/carnage_bow.jpg`),
-  daimonCrystal: item(900210, 'Daimon Crystal', `${Wa}/daimon_crystal.jpg`),
-  darkLegionsEdge: item(2500, "Dark Legion's Edge", `${Wa}/dark_legion_s_edge.jpg`),
-  dasparionsStaff: item(212, "Dasparion's Staff", `${Wa}/dasparion_s_staff.jpg`),
-  dragonGrinder: item(231, 'Dragon Grinder', `${Wa}/dragon_grinder.jpg`),
-  dragonSlayer: item(900211, 'Dragon Slayer', `${Wa}/dragon_slayer.jpg`),
-  elysian: item(164, 'Elysian', `${Wa}/elysian.jpg`),
-  infernalMaster: item(900212, 'Infernal Master', `${Wa}/infernal_master.jpg`),
-  meteorShower: item(2504, 'Meteor Shower', `${Wa}/meteor_shower.jpg`),
-  nagaStorm: item(900213, 'Naga Storm', `${Wa}/naga_storm.jpg`),
-  shyeedsBow: item(900214, "Shyeed's Bow", `${Wa}/shyeed_s_bow.jpg`),
-  sirrasBlade: item(900215, "Sirra's Blade", `${Wa}/sirra_s_blade.jpg`),
-  sobekksHurricane: item(900216, "Sobekk's Hurricane", `${Wa}/sobekk_s_hurricane.jpg`),
-  soulBow: item(289, 'Soul Bow', `${Wa}/soul_bow.jpg`),
-  soulSeparator: item(900217, 'Soul Separator', `${Wa}/soul_separator.jpg`),
-  spiritualEye: item(900218, 'Spiritual Eye', `${Wa}/spiritual_eye.jpg`),
-  swordOfIpos: item(900219, 'Sword of Ipos', `${Wa}/sword_of_ipos.jpg`),
-  swordOfMiracles: item(151, 'Sword of Miracles', `${Wa}/sword_of_miracles.jpg`),
-  tallumBlade: item(900220, 'Tallum Blade', `${Wa}/tallum_blade.jpg`),
-  tallumGlaive: item(900221, 'Tallum Glaive', `${Wa}/tallum_glaive.jpg`),
-  themisTongue: item(900222, "Themis' Tongue", `${Wa}/themis_tongue.jpg`),
-  tiphonsSpear: item(900223, "Tiphon's Spear", `${Wa}/tiphon_s_spear.jpg`),
+  apprenticesSpellbook: weaponItem('apprentices_spellbook.jpg', "Apprentice's Spellbook"),
+  baguettesDualsword: weaponItem('baguette_s_dualsword.jpg', "Baguette's Dualsword"),
+  barakielsAxe: weaponItem('barakiel_s_axe.jpg', "Barakiel's Axe"),
+  behemothsTuningFork: weaponItem('behemoth_s_tuning_fork.jpg', "Behemoth's Tuning Fork"),
+  bloodTornado: weaponItem('blood_tornado.jpg', 'Blood Tornado'),
+  bloodyOrchid: weaponItem('bloody_orchid.jpg', 'Bloody Orchid'),
+  branchOfMotherTree: weaponItem('branch_of_the_mother_tree.jpg', 'Branch of the Mother Tree'),
+  carnageBow: weaponItem('carnage_bow.jpg', 'Carnage Bow'),
+  daimonCrystal: weaponItem('daimon_crystal.jpg', 'Daimon Crystal'),
+  darkLegionsEdge: weaponItem('dark_legion_s_edge.jpg', "Dark Legion's Edge"),
+  dasparionsStaff: weaponItem('dasparion_s_staff.jpg', "Dasparion's Staff"),
+  dragonGrinder: weaponItem('dragon_grinder.jpg', 'Dragon Grinder'),
+  dragonSlayer: weaponItem('dragon_slayer.jpg', 'Dragon Slayer'),
+  elysian: weaponItem('elysian.jpg', 'Elysian'),
+  infernalMaster: weaponItem('infernal_master.jpg', 'Infernal Master'),
+  meteorShower: weaponItem('meteor_shower.jpg', 'Meteor Shower'),
+  nagaStorm: weaponItem('naga_storm.jpg', 'Naga Storm'),
+  shyeedsBow: weaponItem('shyeed_s_bow.jpg', "Shyeed's Bow"),
+  sirrasBlade: weaponItem('sirra_s_blade.jpg', "Sirra's Blade"),
+  sobekksHurricane: weaponItem('sobekk_s_hurricane.jpg', "Sobekk's Hurricane"),
+  soulBow: weaponItem('soul_bow.jpg', 'Soul Bow'),
+  soulSeparator: weaponItem('soul_separator.jpg', 'Soul Separator'),
+  spiritualEye: weaponItem('spiritual_eye.jpg', 'Spiritual Eye'),
+  swordOfIpos: weaponItem('sword_of_ipos.jpg', 'Sword of Ipos'),
+  swordOfMiracles: weaponItem('sword_of_miracles.jpg', 'Sword of Miracles'),
+  tallumBlade: weaponItem('tallum_blade.jpg', 'Tallum Blade'),
+  tallumGlaive: weaponItem('tallum_glaive.jpg', 'Tallum Glaive'),
+  themisTongue: weaponItem('themis_tongue.jpg', "Themis' Tongue"),
+  tiphonsSpear: weaponItem('tiphon_s_spear.jpg', "Tiphon's Spear"),
   darkCrystalBreastplate: item(365, 'Dark Crystal Breastplate', `${Aa}/dark_crystal_breastplate.jpg`),
   darkCrystalGaiters: item(388, 'Dark Crystal Gaiters', `${Aa}/dark_crystal_gaiters.jpg`),
   darkCrystalHelmet: item(512, 'Dark Crystal Helmet', `${Aa}/dark_crystal_helmet.jpg`),

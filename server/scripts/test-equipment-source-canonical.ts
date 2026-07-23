@@ -316,7 +316,11 @@ function checkLegacyAItemIds(errors: string[]): void {
     ['soulBow', 289, 'Soul Bow'],
     ['dasparionsStaff', 212, "Dasparion's Staff"],
     ['swordOfMiracles', 151, 'Sword of Miracles'],
-    ['soulSeparator', 900217, 'Soul Separator'],
+    ['soulSeparator', 236, 'Soul Separator'],
+    ['barakielsAxe', 8680, "Barakiel's Axe"],
+    ['dragonGrinder', 270, 'Dragon Grinder'],
+    ['spiritualEye', 7894, 'Spiritual Eye'],
+    ['tallumBlade', 80, 'Tallum Blade'],
   ];
   for (const [key, expectedId, name] of rbChecks) {
     const def = RB_DROP_ITEM_A[key];

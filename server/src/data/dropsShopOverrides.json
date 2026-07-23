@@ -177,31 +177,31 @@
     "priceAdena": 230000000
   },
   "weapon_a/barakiel_s_axe.jpg": {
-    "itemId": 900203,
+    "itemId": 8680,
     "priceAdena": 260000000
   },
   "weapon_a/behemoth_s_tuning_fork.jpg": {
-    "itemId": 900204,
+    "itemId": 8681,
     "priceAdena": 240000000
   },
   "weapon_a/blood_tornado.jpg": {
-    "itemId": 900205,
+    "itemId": 269,
     "priceAdena": 180000000
   },
   "weapon_a/bloody_orchid.jpg": {
-    "itemId": 900206,
+    "itemId": 235,
     "priceAdena": 190000000
   },
   "weapon_a/branch_of_the_mother_tree.jpg": {
-    "itemId": 900207,
+    "itemId": 213,
     "priceAdena": 230000000
   },
   "weapon_a/carnage_bow.jpg": {
-    "itemId": 900209,
+    "itemId": 288,
     "priceAdena": 240000000
   },
   "weapon_a/daimon_crystal.jpg": {
-    "itemId": 900210,
+    "itemId": 8688,
     "priceAdena": 260000000
   },
   "weapon_a/dark_legion_s_edge.jpg": {
@@ -213,11 +213,11 @@
     "priceAdena": 280000000
   },
   "weapon_a/dragon_grinder.jpg": {
-    "itemId": 231,
+    "itemId": 270,
     "priceAdena": 210000000
   },
   "weapon_a/dragon_slayer.jpg": {
-    "itemId": 900211,
+    "itemId": 81,
     "priceAdena": 260000000
   },
   "weapon_a/elysian.jpg": {
@@ -225,11 +225,11 @@
     "priceAdena": 260000000
   },
   "weapon_a/halberd.jpg": {
-    "itemId": 304,
+    "itemId": 98,
     "priceAdena": 260000000
   },
   "weapon_a/infernal_master.jpg": {
-    "itemId": 900212,
+    "itemId": 7884,
     "priceAdena": 240000000
   },
   "weapon_a/meteor_shower.jpg": {
@@ -237,19 +237,19 @@
     "priceAdena": 220000000
   },
   "weapon_a/naga_storm.jpg": {
-    "itemId": 900213,
+    "itemId": 8682,
     "priceAdena": 210000000
   },
   "weapon_a/shyeed_s_bow.jpg": {
-    "itemId": 900214,
+    "itemId": 8684,
     "priceAdena": 240000000
   },
   "weapon_a/sirra_s_blade.jpg": {
-    "itemId": 900215,
+    "itemId": 8678,
     "priceAdena": 200000000
   },
   "weapon_a/sobekk_s_hurricane.jpg": {
-    "itemId": 900216,
+    "itemId": 8685,
     "priceAdena": 240000000
   },
   "weapon_a/soul_bow.jpg": {
@@ -257,15 +257,15 @@
     "priceAdena": 280000000
   },
   "weapon_a/soul_separator.jpg": {
-    "itemId": 900217,
+    "itemId": 236,
     "priceAdena": 180000000
   },
   "weapon_a/spiritual_eye.jpg": {
-    "itemId": 900218,
+    "itemId": 7894,
     "priceAdena": 250000000
   },
   "weapon_a/sword_of_ipos.jpg": {
-    "itemId": 900219,
+    "itemId": 8679,
     "priceAdena": 210000000
   },
   "weapon_a/sword_of_miracles.jpg": {
@@ -273,19 +273,19 @@
     "priceAdena": 280000000
   },
   "weapon_a/tallum_blade.jpg": {
-    "itemId": 900220,
+    "itemId": 80,
     "priceAdena": 210000000
   },
   "weapon_a/tallum_glaive.jpg": {
-    "itemId": 900221,
+    "itemId": 305,
     "priceAdena": 240000000
   },
   "weapon_a/themis_tongue.jpg": {
-    "itemId": 900222,
+    "itemId": 8686,
     "priceAdena": 260000000
   },
   "weapon_a/tiphon_s_spear.jpg": {
-    "itemId": 900223,
+    "itemId": 8683,
     "priceAdena": 260000000
   },
   "weapon_c/apprentices_spellbook.jpg": {

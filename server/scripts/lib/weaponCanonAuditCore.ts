@@ -5,7 +5,7 @@ import { NG_WEAPON_CATALOG } from '../../src/data/ngWeaponCatalog.js';
 import { D_WEAPON_CATALOG } from '../../src/data/dWeaponCatalog.js';
 import { C_WEAPON_CATALOG } from '../../src/data/cWeaponCatalog.js';
 import { B_WEAPON_CATALOG, B_WEAPON_CANONICAL_COUNT, B_WEAPON_CUSTOM_COUNT, B_WEAPON_SHOP_TOTAL } from '../../src/data/bWeaponCatalog.js';
-import { A_WEAPON_CATALOG } from '../../src/data/aWeaponCatalog.js';
+import { A_WEAPON_CATALOG, A_WEAPON_CANONICAL_COUNT, A_WEAPON_CUSTOM_COUNT, A_WEAPON_SHOP_TOTAL } from '../../src/data/aWeaponCatalog.js';
 import { S_WEAPON_CATALOG } from '../../src/data/sWeaponCatalog.js';
 import { ITEM_CATALOG } from '../../src/data/itemsCatalog.js';
 import { L2DOP_GM_SHOP_WEAPONS } from '../../src/data/l2dopGmShopCatalog.generated.js';
@@ -50,6 +50,10 @@ export const EXPECTED_GRADE_COUNTS: Record<WeaponGrade, number> = {
 export const EXPECTED_B_SHOP_TOTAL = B_WEAPON_SHOP_TOTAL;
 export const EXPECTED_B_CANONICAL = B_WEAPON_CANONICAL_COUNT;
 export const EXPECTED_B_CUSTOM = B_WEAPON_CUSTOM_COUNT;
+
+export const EXPECTED_A_SHOP_TOTAL = A_WEAPON_SHOP_TOTAL;
+export const EXPECTED_A_CANONICAL = A_WEAPON_CANONICAL_COUNT;
+export const EXPECTED_A_CUSTOM = A_WEAPON_CUSTOM_COUNT;
 
 export const TOTAL_CANON_WEAPONS =
   NG_WEAPON_CATALOG.length +
@@ -155,7 +159,10 @@ export function collectAllCanonWeapons(): CanonWeaponRow[] {
       wpnCrit: e.wpnCrit,
       blocksShield: e.blocksShield,
       requiresArrows: requiresArrowsForWeaponType(e.weaponType),
-      canonicalSource: 'aWeaponCatalog.ts',
+      canonicalSource:
+        e.canonSource === 'interlude'
+          ? 'aWeaponCatalog.ts'
+          : 'aWeaponCatalog.ts (custom)',
     });
   }
   for (const e of S_WEAPON_CATALOG) {
