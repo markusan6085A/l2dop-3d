@@ -83,7 +83,7 @@ export const CRAFTED_RESOURCE_CATALOG: readonly CraftedResourceEntry[] = [
     code: 'high_grade_suede',
     nameUk: 'Високоякісна замша',
     nameEn: 'High Grade Suede',
-    iconUrl: `${ICON_BASE}/high_grade_suede.jpg`,
+    iconUrl: `${ICON_BASE}/high_grade_Suede.jpg`,
     stackable: true,
     inventoryTab: 'resource',
   },
