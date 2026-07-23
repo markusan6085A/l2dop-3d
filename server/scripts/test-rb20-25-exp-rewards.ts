@@ -104,15 +104,26 @@ function assertExpSpRewards(): void {
   }
 }
 
-function assertNoItemOrAdenaLoot(): void {
-  for (const npcId of RB_LV20_25_NPC_IDS) {
-    const bag = customNpcDropBagForMob(npcId);
-    assert.ok(bag, `${npcId}: custom drop bag`);
-    assert.equal(bag!.drops.length, 0, `${npcId}: no drop lines`);
-    assert.equal(bag!.spoil.length, 0, `${npcId}: no spoil lines`);
+function assertKeyMaterialOrNoLoot(): void {
+  for (const spec of RB_LV20_25_BOSSES) {
+    const bag = customNpcDropBagForMob(spec.npcId);
+    assert.ok(bag, `${spec.npcId}: custom drop bag`);
+    assert.equal(bag!.spoil.length, 0, `${spec.npcId}: no spoil lines`);
+
+    if (spec.npcId === 25149) {
+      assert.equal(bag!.drops.length, 0, `${spec.npcId}: Krool no drop lines`);
+      continue;
+    }
+
+    assert.equal(bag!.drops.length, 1, `${spec.npcId}: one key material drop`);
+    const line = bag!.drops[0]!;
+    assert.ok(line.l2ItemId != null && line.l2ItemId >= 4113);
+    assert.ok(line.chance === 0.11 || line.chance === 0.13);
+    assert.equal(line.min, 1);
+    assert.equal(line.max, 2);
   }
 
-  const sample = RB_LV20_25_BOSSES[0]!;
+  const sample = RB_LV20_25_BOSSES.find((b) => b.npcId === 25372)!;
   const spawn = getWorldSpawnById(sample.spawnId)!;
   const loot = rollKillLoot(sample.npcId, spawn.level, parseInventory(null), null, {
     spawnKind: 'raid',
@@ -120,7 +131,6 @@ function assertNoItemOrAdenaLoot(): void {
     spawnId: sample.spawnId,
   });
   assert.equal(loot.adena, BigInt(0), 'kill loot adena must be 0');
-  assert.equal(loot.items.length, 0, 'kill loot items must be empty');
   assert.equal(Number(loot.expGain), sample.exp, 'kill loot exp');
   assert.equal(loot.spGain, sample.sp, 'kill loot sp');
 }
@@ -136,7 +146,11 @@ function assertSpawnCatalogUi(): void {
     assert.equal(info!.stats.mDef, spec.mDef, `${spec.spawnId}: UI mDef`);
     assert.equal(info!.rewardExp, spec.exp.toLocaleString('uk-UA'));
     assert.equal(info!.rewardSp, spec.sp.toLocaleString('uk-UA'));
-    assert.equal(info!.drops.length, 0, `${spec.spawnId}: UI drops empty`);
+    if (spec.npcId === 25149) {
+      assert.equal(info!.drops.length, 0, `${spec.spawnId}: UI drops empty (Krool)`);
+    } else {
+      assert.equal(info!.drops.length, 1, `${spec.spawnId}: UI key material drop`);
+    }
   }
 }
 
@@ -146,7 +160,7 @@ function run(): void {
   assertCombatStats();
   assertDamageUsesDefenses();
   assertExpSpRewards();
-  assertNoItemOrAdenaLoot();
+  assertKeyMaterialOrNoLoot();
   assertSpawnCatalogUi();
   console.log('[test:rb20-25-exp-rewards] OK — 15 RB 20–25 verified');
 }
