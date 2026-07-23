@@ -90,12 +90,22 @@ for (const root of runtimeScanRoots) {
 ok('runtime scan has no legacy craft symbols');
 
 const namesUk = itemNamesUkForClient();
-for (const id of [1883, 4039, 5220, 5549, 5550, 1899]) {
+for (const id of [1881, 1884, 1883, 4039, 5220, 5549, 5550, 1899]) {
   assert.equal(namesUk[id], undefined, 'catalog still has legacy item ' + id);
 }
 assert.equal(namesUk[1864], 'Стебло', 'basic resource Stem in catalog');
 assert.equal(namesUk[1867], 'Шкура тварини', 'basic resource Animal Skin in catalog');
 ok('itemNamesUk has no legacy resource ids (basic resources allowed)');
+
+for (const id of [1864, 1867, 1877, 920001, 920002, 920003]) {
+  assert.equal(isLegacyResourceItemId(id), false, `basic/synthetic ${id} not legacy cleanup`);
+}
+for (const id of [20166, 20168, 20171, 20173]) {
+  assert.equal(isLegacyResourceItemId(id), false, `legacy S weapon ${id} not resource cleanup`);
+}
+assert.equal(isLegacyResourceItemId(1881), true);
+assert.equal(isLegacyResourceItemId(1884), true);
+ok('legacy cleanup targets #1881/#1884 but not S weapons or basic resources');
 
 const loot = rollKillLoot(20001, 40, emptyInventory());
 for (const line of loot.items) {
@@ -114,19 +124,25 @@ const invWithLegacy = stripLegacyResourceItemsFromInventory({
   v: 1,
   stacks: [
     { itemId: 1883, qty: 10 },
+    { itemId: 1881, qty: 7 },
+    { itemId: 1884, qty: 3 },
+    { itemId: 20166, qty: 1 },
     { itemId: 57, qty: 5 },
     { itemId: 1899, qty: 2 },
     { itemId: 1864, qty: 4 },
+    { itemId: 920002, qty: 9 },
   ],
   eq: { l1: 1878 },
 });
-assert.equal(invWithLegacy.removedQty, 12);
+assert.equal(invWithLegacy.removedQty, 23);
 assert.deepEqual(invWithLegacy.next.stacks, [
+  { itemId: 20166, qty: 1 },
   { itemId: 57, qty: 5 },
   { itemId: 1864, qty: 4 },
+  { itemId: 920002, qty: 9 },
 ]);
 assert.deepEqual(invWithLegacy.next.eq, {});
-ok('cleanup strips only legacy ids (keeps basic resources)');
+ok('cleanup strips legacy ids including #1881/#1884, keeps basic + S weapons');
 
 const invClean = stripLegacyResourceItemsFromInventory({
   v: 1,

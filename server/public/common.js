@@ -69,6 +69,8 @@
   var snapshotFetchInFlight = null;
   var sessionCatalogMerged = false;
   var sessionCatalogFetchPromise = null;
+  var sessionCatalogVersionPromise = null;
+  var sessionCatalogVersionResolved = null;
   var hudFirstFillDone = false;
   var clanInviteRespondInFlight = false;
   var SESSION_SNAPSHOT_CACHE_KEY = 'l2-char-snapshot-cache-v1';
@@ -78,12 +80,36 @@
   var itemIconHintsPersistTimer = null;
   var knownCatalogVersion = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260723legacyResourceCraftRemovedV1';
+  var APP_DATA_VERSION = '20260723-basic-resources-icons-tabs-v2';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
+
+  function clearObjectMap(map) {
+    if (!map) return;
+    Object.keys(map).forEach(function (k) {
+      delete map[k];
+    });
+  }
+
+  function clearCatalogHintMemoryMaps() {
+    if (!global.L2) return;
+    clearObjectMap(global.L2.itemIconById);
+    clearObjectMap(global.L2.itemNameById);
+    clearObjectMap(global.L2.itemInventoryTabById);
+    clearObjectMap(global.L2.itemSlotById);
+    clearObjectMap(global.L2.itemGradeById);
+    clearObjectMap(global.L2.itemStatsById);
+  }
+
+  function isPlaceholderIconUrl(url) {
+    var u = url != null ? String(url).trim() : '';
+    return !u || u === '/icons/drops/other.svg';
+  }
 
   function resetCatalogSessionState() {
     sessionCatalogMerged = false;
     sessionCatalogFetchPromise = null;
+    sessionCatalogVersionPromise = null;
+    sessionCatalogVersionResolved = null;
     knownCatalogVersion = null;
   }
 
@@ -108,7 +134,9 @@
       localStorage.removeItem(CATALOG_HINTS_LS_KEY);
       sessionStorage.removeItem(SESSION_SNAPSHOT_CACHE_KEY);
       sessionStorage.removeItem('l2-map-snapshot-cache-v1');
+      sessionStorage.removeItem(ITEM_ICON_HINTS_CACHE_KEY);
       resetCatalogSessionState();
+      clearCatalogHintMemoryMaps();
       lastSnapshot = null;
       localStorage.setItem(APP_DATA_VERSION_KEY, APP_DATA_VERSION);
     } catch (eInv) {
@@ -243,9 +271,42 @@
     if (sessionCatalogMerged) return true;
     var cached = readCatalogHintsFromLocalStorage();
     if (!cached || !cached.payload) return false;
-    mergeCharacterCatalogHints(cached.payload);
+    mergeCharacterCatalogHints(cached.payload, { replace: true });
     rememberCatalogVersion(cached.catalogVersion);
     return sessionCatalogMerged;
+  }
+
+  function fetchServerCatalogVersion(token) {
+    if (sessionCatalogVersionResolved != null) {
+      return Promise.resolve(sessionCatalogVersionResolved);
+    }
+    if (sessionCatalogVersionPromise) return sessionCatalogVersionPromise;
+    sessionCatalogVersionPromise = fetch('/character/catalog-version', {
+      headers: { Authorization: 'Bearer ' + token },
+      cache: 'no-store',
+    })
+      .then(function (r) {
+        if (r.status === 401) {
+          global.L2.setToken(null);
+          return null;
+        }
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then(function (j) {
+        var ver =
+          j && j.catalogVersion != null ? String(j.catalogVersion).trim() : null;
+        sessionCatalogVersionResolved = ver || null;
+        if (ver) rememberCatalogVersion(ver);
+        return sessionCatalogVersionResolved;
+      })
+      .catch(function () {
+        return null;
+      })
+      .finally(function () {
+        sessionCatalogVersionPromise = null;
+      });
+    return sessionCatalogVersionPromise;
   }
 
   function loadItemIconHintsFromSession() {
@@ -259,7 +320,7 @@
       Object.keys(j).forEach(function (k) {
         var id = normalizePositiveInt(k);
         var url = j[k];
-        if (id > 0 && url != null && String(url).trim() !== '') {
+        if (id > 0 && url != null && String(url).trim() !== '' && !isPlaceholderIconUrl(url)) {
           icons[id] = String(url);
         }
       });
@@ -276,7 +337,10 @@
       if (keys.length > 800) keys = keys.slice(keys.length - 800);
       var out = {};
       for (var i = 0; i < keys.length; i++) {
-        out[keys[i]] = icons[keys[i]];
+        var hintUrl = icons[keys[i]];
+        if (!isPlaceholderIconUrl(hintUrl)) {
+          out[keys[i]] = hintUrl;
+        }
       }
       sessionStorage.setItem(ITEM_ICON_HINTS_CACHE_KEY, JSON.stringify(out));
     } catch (eSaveIcons) {
@@ -309,8 +373,14 @@
     );
   }
 
-  function mergeCharacterCatalogHints(j) {
-    if (!hasCatalogHintsPayload(j) || sessionCatalogMerged) return;
+  function mergeCharacterCatalogHints(j, mergeOpts) {
+    mergeOpts = mergeOpts || {};
+    if (!hasCatalogHintsPayload(j)) return;
+    if (sessionCatalogMerged && !mergeOpts.replace) return;
+    if (mergeOpts.replace) {
+      clearCatalogHintMemoryMaps();
+      sessionCatalogMerged = false;
+    }
     sessionCatalogMerged = true;
     if (j.gearCatalog && global.L2.mergeGearCatalog) {
       global.L2.mergeGearCatalog(j.gearCatalog);
@@ -322,7 +392,8 @@
       Object.keys(j.itemNamesEn).forEach(function (k) {
         global.L2.itemNameById[k] = j.itemNamesEn[k];
       });
-    } else if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && global.L2.itemNameById) {
+    }
+    if (j.itemNamesUk && typeof j.itemNamesUk === 'object' && global.L2.itemNameById) {
       Object.keys(j.itemNamesUk).forEach(function (k) {
         global.L2.itemNameById[k] = j.itemNamesUk[k];
       });
@@ -421,44 +492,69 @@
     opts = opts || {};
     if (!token) return false;
     if (sessionCatalogMerged && !opts.force) return true;
-    if (!opts.force && hydrateCatalogHintsFromLocalStorage()) {
-      return true;
-    }
     if (sessionCatalogFetchPromise) return sessionCatalogFetchPromise;
-    sessionCatalogFetchPromise = fetch('/character/catalog-hints', {
-      headers: { Authorization: 'Bearer ' + token },
-      cache: 'no-store',
-    })
-      .then(function (r) {
-        if (r.status === 401) {
-          global.L2.setToken(null);
-          return null;
-        }
-        if (!r.ok) return null;
-        return r.json();
-      })
-      .then(function (j) {
-        if (!j) return sessionCatalogMerged;
-        var ver = j.catalogVersion;
+
+    sessionCatalogFetchPromise = fetchServerCatalogVersion(token)
+      .then(function (serverVersion) {
         var cached = readCatalogHintsFromLocalStorage();
+
         if (
           !opts.force &&
-          ver &&
+          serverVersion &&
           cached &&
-          cached.catalogVersion === String(ver) &&
+          cached.catalogVersion === String(serverVersion) &&
           cached.payload
         ) {
-          sessionCatalogMerged = false;
-          mergeCharacterCatalogHints(cached.payload);
-          rememberCatalogVersion(ver);
+          mergeCharacterCatalogHints(cached.payload, { replace: true });
+          rememberCatalogVersion(serverVersion);
           return sessionCatalogMerged;
         }
-        sessionCatalogMerged = false;
-        mergeCharacterCatalogHints(j);
-        if (ver) {
-          writeCatalogHintsToLocalStorage(ver, j);
+
+        if (
+          serverVersion &&
+          cached &&
+          cached.catalogVersion !== String(serverVersion)
+        ) {
+          try {
+            localStorage.removeItem(CATALOG_HINTS_LS_KEY);
+            sessionStorage.removeItem(ITEM_ICON_HINTS_CACHE_KEY);
+          } catch (eDropStale) {
+            /* ignore */
+          }
+          clearCatalogHintMemoryMaps();
+          sessionCatalogMerged = false;
         }
-        return sessionCatalogMerged;
+
+        if (!opts.force && serverVersion == null && cached && cached.payload) {
+          mergeCharacterCatalogHints(cached.payload, { replace: true });
+          if (cached.catalogVersion) rememberCatalogVersion(cached.catalogVersion);
+          return sessionCatalogMerged;
+        }
+
+        return fetch('/character/catalog-hints', {
+          headers: { Authorization: 'Bearer ' + token },
+          cache: 'no-store',
+        })
+          .then(function (r) {
+            if (r.status === 401) {
+              global.L2.setToken(null);
+              return null;
+            }
+            if (!r.ok) return null;
+            return r.json();
+          })
+          .then(function (j) {
+            if (!j) {
+              if (cached && cached.payload) {
+                mergeCharacterCatalogHints(cached.payload, { replace: true });
+              }
+              return sessionCatalogMerged;
+            }
+            var ver = j.catalogVersion || serverVersion;
+            mergeCharacterCatalogHints(j, { replace: true });
+            if (ver) writeCatalogHintsToLocalStorage(ver, j);
+            return sessionCatalogMerged;
+          });
       })
       .catch(function () {
         return hydrateCatalogHintsFromLocalStorage();
@@ -1165,7 +1261,9 @@
       var icons = global.L2.itemIconById;
       Object.keys(h).forEach(function (k) {
         var url = h[k];
-        if (url != null && String(url).trim() !== '') icons[k] = String(url);
+        if (url != null && String(url).trim() !== '' && !isPlaceholderIconUrl(url)) {
+          icons[k] = String(url);
+        }
       });
       schedulePersistItemIconHints();
     },
@@ -1173,6 +1271,7 @@
       var id = normalizePositiveInt(itemId);
       if (id <= 0) return;
       if (iconUrl == null || String(iconUrl).trim() === '') return;
+      if (isPlaceholderIconUrl(iconUrl)) return;
       global.L2.itemIconById[id] = String(iconUrl);
       schedulePersistItemIconHints();
     },
@@ -1187,7 +1286,7 @@
         : fb;
       if (id <= 0) return safeFb;
       var u = global.L2.itemIconById && global.L2.itemIconById[id];
-      if (u != null && String(u).trim() !== '') {
+      if (u != null && String(u).trim() !== '' && !isPlaceholderIconUrl(u)) {
         return global.L2.sanitizeClientIconUrl
           ? global.L2.sanitizeClientIconUrl(String(u))
           : String(u);
@@ -3608,7 +3707,6 @@
         global.L2.bootstrapChromeShellEarly();
       }
       loadItemIconHintsFromSession();
-      hydrateCatalogHintsFromLocalStorage();
       bootstrapChatReplyNotify();
       function runDeferredChromeBootstraps() {
         bootstrapGameHelper();

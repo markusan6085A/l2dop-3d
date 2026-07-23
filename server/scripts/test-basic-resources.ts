@@ -11,6 +11,9 @@ import {
   BASIC_RESOURCE_BY_CODE,
   BASIC_RESOURCE_BY_ITEM_ID,
   BASIC_RESOURCE_ITEM_IDS,
+  BASIC_RESOURCE_ARMOR_PIECE_ITEM_ID,
+  BASIC_RESOURCE_WEAPON_PIECE_ITEM_ID,
+  BASIC_RESOURCE_ACCESSORY_GEMSTONE_ITEM_ID,
   isBasicResourceItemId,
   isBasicResourcePieceItemId,
 } from '../src/data/basicResourceCatalog.js';
@@ -29,8 +32,15 @@ import {
   ITEM_CATALOG,
   itemInventoryTabHintsForClient,
   itemNamesUkForClient,
+  itemSlotHintsForClient,
   type ItemMeta,
 } from '../src/data/itemsCatalog.js';
+import { itemNamesEnForClient } from '../src/data/itemNamesEnForClient.js';
+import { basicResourceIconHintsForClient } from '../src/data/itemsCatalogBasicResources.js';
+import {
+  resolveItemIconPublicUrl,
+  resolveL2dopItemIconFilePath,
+} from '../src/services/l2dopItemIconPath.js';
 import { resolveEquipSlotKey } from '../src/data/inventory.js';
 import {
   addItemToBag,
@@ -147,6 +157,42 @@ for (const row of BASIC_RESOURCE_CATALOG) {
 }
 ok('all resources in «Ресурси» tab');
 
+const namesEn = itemNamesEnForClient();
+const namesUk = itemNamesUkForClient();
+const iconHints = basicResourceIconHintsForClient();
+const slotHints = itemSlotHintsForClient();
+for (const row of BASIC_RESOURCE_CATALOG) {
+  assert.ok(namesEn[row.itemId], `${row.code} itemNamesEn`);
+  assert.ok(namesUk[row.itemId], `${row.code} itemNamesUk`);
+  assert.equal(iconHints[row.itemId], row.iconUrl, `${row.code} icon hint`);
+  assert.equal(slotHints[row.itemId], 'consumable', `${row.code} slot consumable`);
+  assert.notEqual(String(namesEn[row.itemId]), `#${row.itemId}`);
+  assert.notEqual(String(namesUk[row.itemId]), `#${row.itemId}`);
+}
+ok('catalog-hints names/icons/tabs for all 17 basic resources');
+
+assert.equal(
+  iconHints[BASIC_RESOURCE_ARMOR_PIECE_ITEM_ID],
+  '/icons/resources/basic/armor_piece.jpg',
+);
+assert.equal(
+  iconHints[BASIC_RESOURCE_WEAPON_PIECE_ITEM_ID],
+  '/icons/resources/basic/weapon_piece.jpg',
+);
+assert.equal(
+  iconHints[BASIC_RESOURCE_ACCESSORY_GEMSTONE_ITEM_ID],
+  '/icons/resources/basic/accessory_gemstone.jpg',
+);
+assert.equal(
+  resolveItemIconPublicUrl(BASIC_RESOURCE_ARMOR_PIECE_ITEM_ID),
+  '/icons/resources/basic/armor_piece.jpg',
+);
+assert.ok(
+  resolveL2dopItemIconFilePath(BASIC_RESOURCE_ARMOR_PIECE_ITEM_ID),
+  'armor piece file path',
+);
+ok('piece resource icon urls resolve correctly');
+
 // 9–10 global collisions
 const bindings = collectGlobalItemIdBindings();
 for (const row of BASIC_RESOURCE_CATALOG) {
@@ -244,7 +290,6 @@ assert.equal(whMove.inventory.stacks.length, 0);
 assert.equal(whMove.warehouse.stacks[0]!.qty, 8);
 ok('warehouse deposit works');
 
-const namesUk = itemNamesUkForClient();
 assert.equal(namesUk[920001], 'Уламок зброї');
 assert.ok(ITEM_CATALOG[920001], 'market-eligible catalog row');
 ok('resource listed in catalog for market/inventory UI');

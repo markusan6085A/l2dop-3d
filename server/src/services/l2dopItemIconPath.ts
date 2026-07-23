@@ -3,6 +3,7 @@ import path from 'node:path';
 import { sealStoneIconUrlForItemId } from '../data/sevenSignsSealStoneItems.js';
 import { BASIC_RESOURCE_BY_ITEM_ID } from '../data/basicResourceCatalog.js';
 import { GRADE_CRAFT_MATERIAL_BY_ITEM_ID } from '../data/gradeCraftMaterialsCatalog.js';
+import { enchantScrollByItemId } from '../data/enchantScrollCatalog.js';
 import {
   COIN_OF_LUCK_ICON_URL,
   COIN_OF_LUCK_ITEM_ID,
@@ -23,17 +24,46 @@ function firstExistingPath(candidates: string[]): string | null {
   return null;
 }
 
+function publicFileFromUrl(iconUrl: string): string | null {
+  const raw = String(iconUrl || '').trim();
+  if (!raw.startsWith('/')) return null;
+  const rel = raw.slice(1).split('/').filter(Boolean);
+  if (rel.length === 0) return null;
+  return firstExistingPath(publicDirCandidates(rel));
+}
+
 /**
- * Реальні іконки предметів:
- * 1) L2DOP_ITEM_ICONS_DIR / `{id}.jpg`
- * 2) зовнішній l2dop `img/items/{id}.jpg`
- * 3) статика репо `icons/drops/resours/l2dop-by-itemid/{id}.jpg`
- * 4) adena `assets/l2dop/etc_adena_i00.png`
+ * Реальні іконки предметів (jpg/png/webp у статичній папці або l2dop legacy).
  */
-export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
+export function resolveL2dopItemIconFilePath(itemId: number): string | null {
   if (!Number.isFinite(itemId) || itemId < 1 || itemId > 9_999_999) {
     return null;
   }
+
+  const basicResource = BASIC_RESOURCE_BY_ITEM_ID.get(itemId);
+  if (basicResource) {
+    const fromCatalog = publicFileFromUrl(basicResource.iconUrl);
+    if (fromCatalog) return fromCatalog;
+  }
+
+  const craftMaterial = GRADE_CRAFT_MATERIAL_BY_ITEM_ID.get(itemId);
+  if (craftMaterial) {
+    const fromCatalog = publicFileFromUrl(craftMaterial.iconUrl);
+    if (fromCatalog) return fromCatalog;
+  }
+
+  const enchantScroll = enchantScrollByItemId(itemId);
+  if (enchantScroll) {
+    const fromCatalog = publicFileFromUrl(enchantScroll.iconUrl);
+    if (fromCatalog) return fromCatalog;
+  }
+
+  const sealStoneUrl = sealStoneIconUrlForItemId(itemId);
+  if (sealStoneUrl) {
+    const fromCatalog = publicFileFromUrl(sealStoneUrl);
+    if (fromCatalog) return fromCatalog;
+  }
+
   const file = `${itemId}.jpg`;
   const baseEnv = process.env.L2DOP_ITEM_ICONS_DIR;
   if (baseEnv) {
@@ -68,6 +98,11 @@ export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
   return null;
 }
 
+/** @deprecated Використовуй resolveL2dopItemIconFilePath — підтримує png/jpg/webp. */
+export function resolveL2dopItemIconJpgPath(itemId: number): string | null {
+  return resolveL2dopItemIconFilePath(itemId);
+}
+
 /** URL для `<img src>`: прямий шлях до статики, інакше проксі `/game/item-icon/`. */
 export function resolveItemIconPublicUrl(itemId: number): string {
   if (!Number.isFinite(itemId) || itemId < 1) {
@@ -88,6 +123,8 @@ export function resolveItemIconPublicUrl(itemId: number): string {
   if (basicResource) return basicResource.iconUrl;
   const craftMaterial = GRADE_CRAFT_MATERIAL_BY_ITEM_ID.get(itemId);
   if (craftMaterial) return craftMaterial.iconUrl;
+  const enchantScroll = enchantScrollByItemId(itemId);
+  if (enchantScroll) return enchantScroll.iconUrl;
   const file = `${itemId}.jpg`;
   const byItemId = firstExistingPath(
     publicDirCandidates(['icons', 'drops', 'resours', 'l2dop-by-itemid', file]),

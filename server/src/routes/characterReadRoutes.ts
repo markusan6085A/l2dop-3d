@@ -19,6 +19,7 @@ import {
   sealStoneNameColorSlugForClient,
 } from '../data/sevenSignsSealStoneItems.js';
 import { basicResourceIconHintsForClient } from '../data/itemsCatalogBasicResources.js';
+import { enchantScrollIconHintsForClient } from '../data/enchantScrollCatalog.js';
 import {
   itemBlocksShieldHintsForClient,
   itemRequiresArrowsHintsForClient,
@@ -56,6 +57,7 @@ function buildCharacterCatalogHints() {
       ...mammonLifeStoneIconHintsForClient(),
       ...basicResourceIconHintsForClient(),
       ...gradeCraftMaterialIconHintsForClient(),
+      ...enchantScrollIconHintsForClient(),
     },
     /** itemId → CSS slug кольору назви (каміння печаті Seven Signs). */
     itemNameColorSlugById: sealStoneNameColorSlugForClient(),
@@ -95,6 +97,21 @@ export function registerCharacterReadRoutes(app: FastifyInstance): void {
         const { code, body } = characterDbErrorPayload(err);
         return reply.code(code).send(body);
       }
+    }
+  );
+
+  /** Легка перевірка версії catalog-hints (без gearCatalog). */
+  app.get(
+    '/catalog-version',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      return reply.send({
+        catalogVersion: CHARACTER_CATALOG_VERSION,
+      });
     }
   );
 

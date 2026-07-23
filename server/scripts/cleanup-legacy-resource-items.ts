@@ -1,7 +1,8 @@
 /**
  * Одноразове очищення legacy resource itemId з БД.
  * npm run cleanup:legacy-resource-items
- * npm run cleanup:legacy-resource-items -- --dry-run
+ * npx tsx server/scripts/cleanup-legacy-resource-items.ts --dry-run
+ * CONFIRM_LEGACY_RESOURCE_CLEANUP=1 npx tsx server/scripts/cleanup-legacy-resource-items.ts --apply
  */
 import { config } from 'dotenv';
 import path from 'node:path';
@@ -14,6 +15,9 @@ import {
   type EqSlotValue,
 } from '../src/data/inventory.js';
 import { BASIC_RESOURCE_ITEM_IDS } from '../src/data/basicResourceCatalog.js';
+import {
+  LEGACY_S_WEAPON_SOURCE_IDS,
+} from '../src/data/sWeaponItemIdMigration.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 config({ path: path.join(__dirname, '../.env') });
@@ -38,7 +42,9 @@ const LEGACY_RESOURCE_ITEM_IDS = new Set<number>([
 ]);
 
 export function isLegacyResourceItemId(itemId: number): boolean {
-  return LEGACY_RESOURCE_ITEM_IDS.has(Math.floor(Number(itemId) || 0));
+  const id = Math.floor(Number(itemId) || 0);
+  if (LEGACY_S_WEAPON_SOURCE_IDS.includes(id)) return false;
+  return LEGACY_RESOURCE_ITEM_IDS.has(id);
 }
 
 function eqItemId(value: EqSlotValue | undefined): number | null {
@@ -50,12 +56,15 @@ function eqItemId(value: EqSlotValue | undefined): number | null {
 
 export function stripLegacyResourceItemsFromInventory(
   inv: InventoryState
-): { next: InventoryState; removedQty: number; changed: boolean } {
+): { next: InventoryState; removedQty: number; changed: boolean; removedByItemId: Record<number, number> } {
   let removedQty = 0;
+  const removedByItemId: Record<number, number> = {};
   const stacks: BagStack[] = [];
   for (const row of inv.stacks) {
     if (isLegacyResourceItemId(row.itemId)) {
-      removedQty += Math.max(0, Math.floor(Number(row.qty) || 0));
+      const q = Math.max(0, Math.floor(Number(row.qty) || 0));
+      removedQty += q;
+      removedByItemId[row.itemId] = (removedByItemId[row.itemId] ?? 0) + q;
       continue;
     }
     stacks.push({ ...row });
@@ -64,6 +73,8 @@ export function stripLegacyResourceItemsFromInventory(
   for (const [slot, value] of Object.entries(eq)) {
     const id = eqItemId(value);
     if (id != null && isLegacyResourceItemId(id)) {
+      removedByItemId[id] = (removedByItemId[id] ?? 0) + 1;
+      removedQty += 1;
       delete eq[slot];
     }
   }
@@ -78,6 +89,7 @@ export function stripLegacyResourceItemsFromInventory(
     },
     removedQty,
     changed,
+    removedByItemId,
   };
 }
 
@@ -86,11 +98,42 @@ function inventoryJsonFromState(state: InventoryState): Record<string, unknown> 
 }
 
 async function main(): Promise<void> {
-  const dryRun = process.argv.includes('--dry-run');
+  const apply = process.argv.includes('--apply');
+  const dryRun = !apply;
+  if (apply && process.env.CONFIRM_LEGACY_RESOURCE_CLEANUP !== '1') {
+    console.error(
+      'Refusing --apply without CONFIRM_LEGACY_RESOURCE_CLEANUP=1'
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    console.log(
+      JSON.stringify(
+        {
+          dryRun,
+          applyRequested: apply,
+          databaseUnavailable: true,
+          legacyItemIdCount: LEGACY_RESOURCE_ITEM_IDS.size,
+          preservedBasicResourceIds: [...BASIC_RESOURCE_ITEM_IDS],
+          preservedLegacySWeaponIds: [...LEGACY_S_WEAPON_SOURCE_IDS],
+          note: 'Start PostgreSQL and re-run dry-run for per-character counts.',
+        },
+        null,
+        2
+      )
+    );
+    return;
+  }
+
   let charactersTouched = 0;
   let inventoryStacksRemoved = 0;
   let warehouseStacksRemoved = 0;
   let marketListingsRemoved = 0;
+  const totalsByItemId = new Map<number, number>();
 
   const rows = await prisma.character.findMany({
     select: {
@@ -114,6 +157,10 @@ async function main(): Promise<void> {
         patch = patch || {};
         patch.inventoryJson = inventoryJsonFromState(stripped.next);
         inventoryStacksRemoved += stripped.removedQty;
+        for (const [idStr, qty] of Object.entries(stripped.removedByItemId)) {
+          const id = Number(idStr);
+          totalsByItemId.set(id, (totalsByItemId.get(id) ?? 0) + qty);
+        }
       }
     }
 
@@ -124,12 +171,16 @@ async function main(): Promise<void> {
         patch = patch || {};
         patch.warehouseJson = inventoryJsonFromState(stripped.next);
         warehouseStacksRemoved += stripped.removedQty;
+        for (const [idStr, qty] of Object.entries(stripped.removedByItemId)) {
+          const id = Number(idStr);
+          totalsByItemId.set(id, (totalsByItemId.get(id) ?? 0) + qty);
+        }
       }
     }
 
     if (patch) {
       charactersTouched += 1;
-      if (!dryRun) {
+      if (apply) {
         await prisma.character.update({
           where: { id: row.id },
           data: patch,
@@ -142,21 +193,29 @@ async function main(): Promise<void> {
     where: { itemId: { in: [...LEGACY_RESOURCE_ITEM_IDS] } },
   });
   marketListingsRemoved = legacyListingCount;
-  if (!dryRun && legacyListingCount > 0) {
+  if (apply && legacyListingCount > 0) {
     await prisma.marketListing.deleteMany({
       where: { itemId: { in: [...LEGACY_RESOURCE_ITEM_IDS] } },
     });
   }
 
+  const byItemId = [...totalsByItemId.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([itemId, qty]) => ({ itemId, qty }));
+
   console.log(
     JSON.stringify(
       {
         dryRun,
+        applyRequested: apply,
         legacyItemIdCount: LEGACY_RESOURCE_ITEM_IDS.size,
         charactersTouched,
         inventoryStacksRemoved,
         warehouseStacksRemoved,
         marketListingsRemoved,
+        legacyIdsFoundInInventories: byItemId,
+        preservedBasicResourceIds: [...BASIC_RESOURCE_ITEM_IDS],
+        preservedLegacySWeaponIds: [...LEGACY_S_WEAPON_SOURCE_IDS],
       },
       null,
       2

@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import path from 'node:path';
 import type { FastifyInstance } from 'fastify';
-import { resolveL2dopItemIconJpgPath } from '../services/l2dopItemIconPath.js';
+import { resolveL2dopItemIconFilePath } from '../services/l2dopItemIconPath.js';
 import { resolveL2dopSkillIconJpgPath } from '../services/l2dopSkillIconPath.js';
 import { renderL2dopSkillIconCrispPng } from '../services/l2dopSkillIconCrispRender.js';
 import {
@@ -20,7 +20,7 @@ export function registerGameIconRoutes(app: FastifyInstance): void {
     if (!Number.isFinite(itemId) || itemId < 1) {
       return reply.code(404).send();
     }
-    const filePath = resolveL2dopItemIconJpgPath(itemId);
+    const filePath = resolveL2dopItemIconFilePath(itemId);
     if (!filePath) {
       return reply.redirect('/icons/drops/other.svg', 302);
     }

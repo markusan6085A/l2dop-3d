@@ -31,11 +31,25 @@
   }
 
   function itemDisplayName(id) {
+    var numId = Math.floor(Number(id) || 0);
     if (window.L2 && typeof L2.resolveCatalogItemName === 'function') {
-      return L2.resolveCatalogItemName(id);
+      var resolved = L2.resolveCatalogItemName(numId);
+      if (resolved && resolved !== '#' + numId) return resolved;
+      if (
+        resolved === '#' + numId &&
+        window.L2.itemNameById &&
+        (L2.itemNameById[numId] != null || L2.itemNameById[String(numId)] != null)
+      ) {
+        var hinted = L2.itemNameById[numId] != null
+          ? L2.itemNameById[numId]
+          : L2.itemNameById[String(numId)];
+        if (hinted != null && String(hinted).trim() !== '') return String(hinted).trim();
+      }
+      return resolved;
     }
-    var n = window.L2 && L2.itemNameById && L2.itemNameById[id];
-    return n != null ? n : '#' + id;
+    var n = window.L2 && L2.itemNameById && L2.itemNameById[numId];
+    if (n == null && window.L2 && L2.itemNameById) n = L2.itemNameById[String(numId)];
+    return n != null ? n : '#' + numId;
   }
 
   function formatEnchantedName(name, enchant) {

@@ -105,6 +105,15 @@ export function enchantScrollByItemId(
   return SCROLL_BY_ITEM_ID.get(itemId) ?? null;
 }
 
+/** itemId → iconUrl для GET /character/catalog-hints. */
+export function enchantScrollIconHintsForClient(): Record<number, string> {
+  const out: Record<number, string> = {};
+  for (const row of ENCHANT_SCROLL_DEFINITIONS) {
+    out[row.itemId] = row.iconUrl;
+  }
+  return out;
+}
+
 export function enchantScrollShopDescriptionUk(
   target: EnchantScrollTarget,
   grade: EnchantScrollGrade
