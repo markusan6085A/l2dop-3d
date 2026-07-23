@@ -10,6 +10,7 @@ import { gameRoutes } from './routes/game.js';
 import { dropsShopRoutes } from './routes/dropsShopRoutes.js';
 import { shopSellRoutes } from './routes/shopSellRoutes.js';
 import { gameCraftRoutes } from './routes/gameCraftRoutes.js';
+import { gameRecipeRoutes } from './routes/gameRecipeRoutes.js';
 import { isDevSelfBoostEnabled } from './services/devSelfBoostService.js';
 
 /** `server/public` з кореня репо або `public`, якщо cwd = `server/`. */
@@ -79,6 +80,7 @@ export async function buildApp() {
   await app.register(dropsShopRoutes, { prefix: '/game' });
   await app.register(shopSellRoutes, { prefix: '/game' });
   await app.register(gameCraftRoutes, { prefix: '/game' });
+  await app.register(gameRecipeRoutes, { prefix: '/game' });
 
   if (!isDevSelfBoostEnabled()) {
     app.get('/dev-boost.html', async (_request, reply) => {

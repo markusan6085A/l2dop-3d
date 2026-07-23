@@ -1,4 +1,4 @@
-import type { CWeaponDropsPatch } from '../data/l2dopCWeaponDropsPatches.js';
+import type { CWeaponCanonEntry } from '../data/cWeaponCatalog.js';
 
 /** GM Shop: C-grade зброя — 600 000 … 900 000 аден за статами. */
 export const C_GRADE_GM_WEAPON_PRICE_MIN = 600_000;
@@ -26,21 +26,21 @@ function speedPriceBonus(speed: number): number {
  * Фіз. зброя: база від P.Atk, + Crit понад 40, + швидкість.
  * Маг.: база від M.Atk (верхня межа нижча за луки), + швидкість.
  */
-export function cGradeWeaponGmShopPriceAdena(patch: CWeaponDropsPatch): number {
-  if (patch.mode === 'magic') {
+export function cGradeWeaponGmShopPriceAdena(entry: CWeaponCanonEntry): number {
+  if (entry.mode === 'magic') {
     const span = Math.max(1, MAGIC_M_ATK_MAX - MAGIC_M_ATK_MIN);
     const magicTop = 750_000;
     const base =
       C_GRADE_GM_WEAPON_PRICE_MIN +
-      ((patch.mAtk - MAGIC_M_ATK_MIN) / span) * (magicTop - C_GRADE_GM_WEAPON_PRICE_MIN);
-    return clampCGradeWeaponPrice(base + speedPriceBonus(patch.speed));
+      ((entry.mAtk - MAGIC_M_ATK_MIN) / span) * (magicTop - C_GRADE_GM_WEAPON_PRICE_MIN);
+    return clampCGradeWeaponPrice(base + speedPriceBonus(entry.atkSpd));
   }
 
   const span = Math.max(1, PHYS_P_ATK_MAX - PHYS_P_ATK_MIN);
   const base =
     C_GRADE_GM_WEAPON_PRICE_MIN +
-    ((patch.pAtk - PHYS_P_ATK_MIN) / span) *
+    ((entry.pAtk - PHYS_P_ATK_MIN) / span) *
       (C_GRADE_GM_WEAPON_PRICE_MAX - C_GRADE_GM_WEAPON_PRICE_MIN);
-  const critBonus = Math.max(0, patch.crit - 40) * 550;
-  return clampCGradeWeaponPrice(base + critBonus + speedPriceBonus(patch.speed));
+  const critBonus = Math.max(0, entry.wpnCrit - 40) * 550;
+  return clampCGradeWeaponPrice(base + critBonus + speedPriceBonus(entry.atkSpd));
 }

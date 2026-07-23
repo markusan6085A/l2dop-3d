@@ -103,6 +103,8 @@ export interface CharacterRow {
   questProgressJson: Prisma.JsonValue | null;
   dungeonStateJson: Prisma.JsonValue | null;
   dailyQuestsJson: Prisma.JsonValue | null;
+  /** D-grade weapon recipe book: `{ v: 1, learned: string[] }`. */
+  recipeBookJson: Prisma.JsonValue | null;
   buffHeroicTier: number | null;
   buffZealotStacks: number | null;
   chatRepliesReadAt: Date;
@@ -280,6 +282,8 @@ export interface CharacterSnapshot {
   firstProfessionQuest: FirstProfessionQuestSnapshot | null;
   /** Прогрес щоденних завдань (лише лічильники; нагороди — окремо). */
   dailyQuests: DailyQuestsSnapshot;
+  /** Вивчені рецепти D-grade зброї. */
+  recipeBook: { v: number; learned: string[] };
   /** Coin of Luck у сумці (item 4037). */
   coinOfLuck: number;
   /** Мощ героя (формула на сервері). */

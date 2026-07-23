@@ -3,6 +3,7 @@ import {
   type NpcDropBag,
 } from '../data/npcDropsResolved.js';
 import { buildBasicResourceDropOverlay } from '../data/basicResourceMobDrops.js';
+import { mergeDGradeWeaponRecipeDropOverlay } from '../data/dGradeWeaponRecipeMobDrops.js';
 import { hasCustomNpcDropBag } from '../data/npcDropsResolved.js';
 import { L2DOP_NPC_EXP_SP } from '../data/l2dopNpcExpSp.generated.js';
 import type { MapSpawnKind } from '../data/mapWorldSpawns.js';
@@ -107,5 +108,8 @@ export function ensureMobDropBag(
     }),
     spawnId,
   );
-  return mergeBasicResourceOverlay(base, npcId, spawnLevel, spawnId, opts);
+  return mergeDGradeWeaponRecipeDropOverlay(
+    mergeBasicResourceOverlay(base, npcId, spawnLevel, spawnId, opts),
+    npcId,
+  );
 }

@@ -94,6 +94,7 @@ import {
   parseQuestProgressJson,
 } from '../domain/humanFighterFirstProfessionQuest.js';
 import { dailyQuestsSnapshot } from '../domain/dailyQuests.js';
+import { normalizeRecipeBookJson } from '../domain/recipeBook.js';
 import { COIN_OF_LUCK_ITEM_ID } from '../domain/dailyQuestRewards.js';
 import {
   computeHeroPower,
@@ -605,6 +606,9 @@ export function toSnapshot(row: CharacterRow): CharacterSnapshot {
       );
     })(),
     dailyQuests: dailyQuestsSnapshot(row.dailyQuestsJson, Date.now()),
+    recipeBook: normalizeRecipeBookJson(
+      (row as CharacterRow & { recipeBookJson?: unknown }).recipeBookJson,
+    ),
     coinOfLuck: countBagQty(inv, COIN_OF_LUCK_ITEM_ID),
     heroPower: computeHeroPower({
       level: effectiveLevel,

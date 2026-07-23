@@ -16,6 +16,7 @@ import {
   L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER,
   ngWeaponDropsPreviewLines,
 } from '../src/data/l2dopNgWeaponDropsPatches.js';
+import { assertWeaponShopPreviewLines } from './lib/weaponShopPreviewTestCore.js';
 import {
   itemBlocksShieldHintsForClient,
   itemBlocksShieldSlot,
@@ -180,45 +181,21 @@ function assertPreviewPatchMatchesExpected(expected: ExpectedNgRow, errors: stri
     return;
   }
   expectEq(`patch #${expected.itemId} nameUk`, patch.nameUk, expected.shopNameUk, errors);
+  expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
+  expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
   expectEq(`patch #${expected.itemId} speed`, patch.speed, expected.atkSpd, errors);
-  if (expected.mode === 'magic') {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'magic', errors);
-    if (patch.mode === 'magic') {
-      expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
-    }
-  } else {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'phys', errors);
-    if (patch.mode === 'phys') {
-      expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
-      expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
-    }
-  }
-  const previewLines = ngWeaponDropsPreviewLines(patch);
-  const previewText = previewLines.map((l) => l.valueUk).join(' ');
-  if (expected.mode === 'phys') {
-    if (!previewText.includes(`P.Atk: ${expected.pAtk}`)) {
-      errors.push(`#${expected.itemId} shop preview missing P.Atk ${expected.pAtk}`);
-    }
-    if (!previewText.includes(`Speed: ${expected.atkSpd}`)) {
-      errors.push(`#${expected.itemId} shop preview missing Speed ${expected.atkSpd}`);
-    }
-    if (!previewText.includes(`Crit: ${expected.wpnCrit}`)) {
-      errors.push(`#${expected.itemId} shop preview missing Crit ${expected.wpnCrit}`);
-    }
-  } else {
-    if (!previewText.includes(`M.Atk: ${expected.mAtk}`)) {
-      errors.push(`#${expected.itemId} shop preview missing M.Atk ${expected.mAtk}`);
-    }
-    if (!previewText.includes(`Speed: ${expected.atkSpd}`)) {
-      errors.push(`#${expected.itemId} shop preview missing Speed ${expected.atkSpd}`);
-    }
-    if (!previewText.includes('Crit: —')) {
-      errors.push(`#${expected.itemId} magic shop preview should show Crit: —`);
-    }
-    if (previewText.includes('P.Atk:')) {
-      errors.push(`#${expected.itemId} magic shop preview must not show P.Atk`);
-    }
-  }
+  expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
+  assertWeaponShopPreviewLines(
+    ngWeaponDropsPreviewLines(patch),
+    {
+      pAtk: expected.pAtk,
+      mAtk: expected.mAtk,
+      atkSpd: expected.atkSpd,
+      wpnCrit: expected.wpnCrit,
+    },
+    expected.itemId,
+    errors,
+  );
 }
 
 function main(): void {

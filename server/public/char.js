@@ -745,6 +745,20 @@
     return !!HP_MP_POTION_IDS[Number(itemId)];
   }
 
+  function isLearnRecipeItem(itemId) {
+    var id = Math.floor(Number(itemId) || 0);
+    if (id >= 921001 && id <= 921008) return true;
+    if (
+      window.L2 &&
+      L2.catalogHints &&
+      L2.catalogHints.itemUseActionByItemId &&
+      L2.catalogHints.itemUseActionByItemId[id] === 'learn_recipe'
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   /** Розхідники — показуємо ×qty; зброя/броня з qty 1 — без «×1». */
   function bagQtySuffix(itemId, qty) {
     var q = Number(qty);
@@ -1495,6 +1509,84 @@
     }
   }
 
+  async function apiLearnRecipe(itemId) {
+    if (equipRequestInFlight) return;
+    equipRequestInFlight = true;
+    try {
+      var t = localStorage.getItem('token');
+      var r = await fetch('/game/recipes/learn', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + t,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemId: itemId,
+          expectedRevision: expectedRevisionForMutation(),
+        }),
+      });
+      if (r.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+        return;
+      }
+      if (r.status === 409) {
+        await resyncCharacterFromServer();
+        return;
+      }
+      if (!r.ok) {
+        var msg = 'Не вдалося вивчити рецепт.';
+        try {
+          var j = await r.json();
+          if (j && j.messageUk) msg = j.messageUk;
+        } catch (e) {
+          /* ignore */
+        }
+        var stub = $('char-stub-msg');
+        if (stub) {
+          stub.hidden = false;
+          stub.textContent = msg;
+        }
+        return;
+      }
+      var out = await r.json();
+      var c = out.character;
+      if (window.L2 && typeof L2.applyMutationSnapshot === 'function') {
+        L2.applyMutationSnapshot(c, function (snap) {
+          renderAllIfChanged(snap);
+        });
+      } else if (window.L2 && typeof L2.applyCharacterSnapshot === 'function') {
+        L2.applyCharacterSnapshot(c);
+        renderAllIfChanged(c);
+      } else {
+        window.L2.setLastSnapshot(c);
+        if (window.L2 && typeof L2.applyHudFromSnapshot === 'function') {
+          L2.applyHudFromSnapshot(c);
+        }
+        renderAllIfChanged(c);
+      }
+      var stubOk = $('char-stub-msg');
+      if (stubOk) {
+        stubOk.hidden = false;
+        stubOk.textContent = 'Рецепт успішно вивчено';
+        window.setTimeout(function () {
+          if (stubOk.textContent === 'Рецепт успішно вивчено') {
+            stubOk.hidden = true;
+            stubOk.textContent = '';
+          }
+        }, 2200);
+      }
+    } catch (_e) {
+      var stubNet = $('char-stub-msg');
+      if (stubNet) {
+        stubNet.hidden = false;
+        stubNet.textContent = 'Збій мережі — спробуй ще раз.';
+      }
+    } finally {
+      equipRequestInFlight = false;
+    }
+  }
+
   async function apiUnequip(slotKey) {
     if (equipRequestInFlight) return;
     equipRequestInFlight = true;
@@ -1871,6 +1963,7 @@
     var useQty = $('char-bag-modal-use-qty');
     var canEq = canEquipFromBag(itemId);
     var isPotion = isHpMpPotion(itemId);
+    var isRecipe = isLearnRecipeItem(itemId);
 
     bagModalCtx = {
       itemId: itemId,
@@ -1906,7 +1999,7 @@
     configureItemInfoEnchantButton(enchantBtn, itemId, modalEn, targetInstanceId);
 
     if (useRow) {
-      if (isPotion) {
+      if (isPotion || isRecipe) {
         useRow.hidden = false;
         useRow.removeAttribute('hidden');
       } else {
@@ -1919,14 +2012,23 @@
         useBtn.hidden = false;
         useBtn.removeAttribute('hidden');
         useBtn.textContent = 'Використати';
+      } else if (isRecipe) {
+        useBtn.hidden = false;
+        useBtn.removeAttribute('hidden');
+        useBtn.textContent = 'Вивчити';
       } else {
         useBtn.hidden = true;
         useBtn.setAttribute('hidden', '');
       }
     }
     if (useQty) {
-      useQty.hidden = false;
-      useQty.removeAttribute('hidden');
+      if (isPotion) {
+        useQty.hidden = false;
+        useQty.removeAttribute('hidden');
+      } else {
+        useQty.hidden = true;
+        useQty.setAttribute('hidden', '');
+      }
     }
     if (isPotion && useQty) {
       var maxQ = Math.max(1, Math.floor(Number.isFinite(qty) ? qty : 1));
@@ -1994,7 +2096,11 @@
         q = Math.min(Math.max(1, Math.floor(q)), bagModalCtx.qty || 1);
         var useItemId = bagModalCtx.itemId;
         closeBagModal();
-        apiUsePotion(useItemId, q);
+        if (isLearnRecipeItem(useItemId)) {
+          apiLearnRecipe(useItemId);
+        } else {
+          apiUsePotion(useItemId, q);
+        }
       });
     }
     if (useQty) {

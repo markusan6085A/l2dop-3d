@@ -20,6 +20,11 @@ import {
 } from '../data/sevenSignsSealStoneItems.js';
 import { basicResourceIconHintsForClient } from '../data/itemsCatalogBasicResources.js';
 import { craftedResourceIconHintsForClient } from '../data/itemsCatalogCraftedResources.js';
+import { dGradeWeaponKeyMaterialIconHintsForClient } from '../data/itemsCatalogDGradeWeaponKeyMaterials.js';
+import {
+  dGradeWeaponRecipeItemIconHintsForClient,
+  dGradeWeaponRecipeItemUseActionHintsForClient,
+} from '../data/itemsCatalogDGradeWeaponRecipes.js';
 import { enchantScrollIconHintsForClient } from '../data/enchantScrollCatalog.js';
 import {
   itemBlocksShieldHintsForClient,
@@ -59,7 +64,13 @@ function buildCharacterCatalogHints() {
       ...basicResourceIconHintsForClient(),
       ...gradeCraftMaterialIconHintsForClient(),
       ...craftedResourceIconHintsForClient(),
+      ...dGradeWeaponKeyMaterialIconHintsForClient(),
+      ...dGradeWeaponRecipeItemIconHintsForClient(),
       ...enchantScrollIconHintsForClient(),
+    },
+    /** itemId → useAction (learn_recipe тощо). */
+    itemUseActionByItemId: {
+      ...dGradeWeaponRecipeItemUseActionHintsForClient(),
     },
     /** itemId → CSS slug кольору назви (каміння печаті Seven Signs). */
     itemNameColorSlugById: sealStoneNameColorSlugForClient(),

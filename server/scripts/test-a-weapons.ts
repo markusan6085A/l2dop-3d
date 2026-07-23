@@ -7,6 +7,7 @@ import {
   L2DOP_A_DROPS_WEAPON_BY_SHOP_KEY_LOWER,
   aGradeWeaponDropsPreviewLines,
 } from '../src/data/l2dopAWeaponDropsPatches.js';
+import { assertWeaponShopPreviewLines } from './lib/weaponShopPreviewTestCore.js';
 import {
   addItemToBag,
   emptyInventory,
@@ -160,23 +161,21 @@ function assertPreviewPatchMatchesExpected(expected: ExpectedARow, errors: strin
     errors.push(`missing shop patch for ${expected.shopKey}`);
     return;
   }
-  if (expected.mode === 'magic') {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'magic', errors);
-    if (patch.mode === 'magic') {
-      expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
-      expectEq(`patch #${expected.itemId} speed`, patch.speed, expected.atkSpd, errors);
-    }
-    const preview = aGradeWeaponDropsPreviewLines(patch).map((l) => l.valueUk).join(' ');
-    if (!preview.includes('Crit: —')) errors.push(`#${expected.itemId} magic preview needs Crit: —`);
-    if (preview.includes('P.Atk:')) errors.push(`#${expected.itemId} magic preview must not show P.Atk`);
-  } else {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'phys', errors);
-    if (patch.mode === 'phys') {
-      expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
-      expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
-      expectEq(`patch #${expected.itemId} speed`, patch.speed, expected.atkSpd, errors);
-    }
-  }
+  expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
+  expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
+  expectEq(`patch #${expected.itemId} speed`, patch.speed, expected.atkSpd, errors);
+  expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
+  assertWeaponShopPreviewLines(
+    aGradeWeaponDropsPreviewLines(patch),
+    {
+      pAtk: expected.pAtk,
+      mAtk: expected.mAtk,
+      atkSpd: expected.atkSpd,
+      wpnCrit: expected.wpnCrit,
+    },
+    expected.itemId,
+    errors,
+  );
 }
 
 function assertRbDropMapping(errors: string[]): void {

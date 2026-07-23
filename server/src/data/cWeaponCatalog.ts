@@ -23,6 +23,8 @@ export interface CWeaponCanonEntry {
   wpnCrit: number;
   masteryFamily: WeaponKindForEnchant | null;
   canonSource: CWeaponCanonSource;
+  /** Фіксована ціна в GM Shop (Interlude); інакше — формула cGradeWeaponGmShopPriceAdena. */
+  shopPriceAdena?: number;
 }
 
 function c(
@@ -39,6 +41,7 @@ function c(
   wpnCrit: number,
   masteryFamily: WeaponKindForEnchant | null,
   canonSource: CWeaponCanonSource,
+  shopPriceAdena?: number,
 ): CWeaponCanonEntry {
   return {
     itemId,
@@ -54,6 +57,7 @@ function c(
     wpnCrit,
     masteryFamily,
     canonSource,
+    ...(shopPriceAdena != null ? { shopPriceAdena } : {}),
   };
 }
 
@@ -79,7 +83,7 @@ export const C_WEAPON_CATALOG: readonly CWeaponCanonEntry[] = [
   c(326, 'heathens_book.jpg', 'Книга язичника C-grade.', "Heathen's Book", 'magic', 'sword', false, 379, 111, 101, 80, null, 'interlude'),
   c(2503, 'yaksa_mace.jpg', 'Булава Якса C-grade.', 'Yaksa Mace', 'phys', 'blunt', false, 379, 156, 83, 40, 'blunt', 'interlude'),
   c(4233, 'knuckle_duster.jpg', 'Кастет C-grade.', 'Knuckle Duster', 'phys', 'fist', true, 325, 148, 68, 40, 'fist', 'interlude'),
-  c(5286, 'berserker_blade.jpg', 'Клинок берсерка C-grade.', 'Berserker Blade', 'phys', 'bigsword', true, 325, 190, 83, 80, 'bigsword', 'interlude'),
+  c(5286, 'berserker_blade.png', 'Клинок Берсерка', 'Berserker Blade', 'phys', 'bigsword', true, 325, 190, 83, 80, 'bigsword', 'interlude', 865_588),
   c(7882, 'pa_agrian_sword.jpg', 'Меч Паагріан C-grade.', "Pa'agrian Sword", 'phys', 'bigsword', true, 325, 169, 76, 80, 'bigsword', 'interlude'),
   c(7888, 'ecliptic_sword.jpg', 'Екліптичний меч C-grade.', 'Ecliptic Sword', 'magic', 'sword', false, 379, 125, 111, 80, 'sword', 'interlude'),
   c(7897, 'dwarven_hammer.jpg', 'Дворфський молот C-grade.', 'Dwarven Hammer', 'phys', 'bigblunt', true, 325, 190, 83, 40, 'bigblunt', 'interlude'),

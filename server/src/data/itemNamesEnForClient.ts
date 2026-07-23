@@ -23,6 +23,8 @@ import { mammonLifeStoneNamesEnForClient } from './mammonMerchantLifeStones.js';
 import { sealStoneNamesEnForClient } from './sevenSignsSealStoneItems.js';
 import { basicResourceNamesEnForClient } from './itemsCatalogBasicResources.js';
 import { craftedResourceNamesEnForClient } from './itemsCatalogCraftedResources.js';
+import { dGradeWeaponKeyMaterialNamesEnForClient } from './itemsCatalogDGradeWeaponKeyMaterials.js';
+import { dGradeWeaponRecipeItemNamesEnForClient } from './itemsCatalogDGradeWeaponRecipes.js';
 
 type OverrideRow = { itemId?: number };
 
@@ -140,6 +142,14 @@ export function itemNamesEnForClient(): Record<number, string> {
   }
 
   for (const [idStr, en] of Object.entries(craftedResourceNamesEnForClient())) {
+    put(Number(idStr), en, true);
+  }
+
+  for (const [idStr, en] of Object.entries(dGradeWeaponKeyMaterialNamesEnForClient())) {
+    put(Number(idStr), en, true);
+  }
+
+  for (const [idStr, en] of Object.entries(dGradeWeaponRecipeItemNamesEnForClient())) {
     put(Number(idStr), en, true);
   }
 

@@ -315,6 +315,23 @@ export function auditAllCanonWeapons(): {
       });
     }
 
+    if (row.pAtk == null || !Number.isFinite(row.pAtk) || row.pAtk <= 0) {
+      issues.push({
+        itemId: row.itemId,
+        name: row.name,
+        kind: 'missing_pAtk',
+        detail: `pAtk=${String(row.pAtk)}`,
+      });
+    }
+    if (row.mAtk == null || !Number.isFinite(row.mAtk) || row.mAtk <= 0) {
+      issues.push({
+        itemId: row.itemId,
+        name: row.name,
+        kind: 'missing_mAtk',
+        detail: `mAtk=${String(row.mAtk)}`,
+      });
+    }
+
     const catalog = ITEM_CATALOG[row.itemId];
     if (!catalog) {
       issues.push({
@@ -349,7 +366,7 @@ export function auditAllCanonWeapons(): {
         detail: `catalog=${catalog.pAtk} canon=${row.pAtk}`,
       });
     }
-    if (row.mAtk != null && catalog.mAtk !== row.mAtk) {
+    if (catalog.mAtk !== row.mAtk) {
       issues.push({
         itemId: row.itemId,
         name: row.name,

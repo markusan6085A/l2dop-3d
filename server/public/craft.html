@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260720hudClanEmblemBeforeNick1" />
-    <link rel="stylesheet" href="/css/l2-craft-page.css?v=20260723-crafted-resource-craft-v1" />
+    <link rel="stylesheet" href="/css/l2-craft-page.css?v=20260723-weapon-shop-patk-matk-v1" />
   </head>
   <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
@@ -42,13 +42,14 @@
 
             <div class="l2-craft-tabs" role="tablist" aria-label="Крафт">
               <button type="button" class="l2-craft-tab is-active" data-tab="materials">Матеріали</button>
-              <button type="button" class="l2-craft-tab" data-tab="weapon" disabled>Зброя</button>
+              <button type="button" class="l2-craft-tab" data-tab="weapon">Зброя</button>
               <button type="button" class="l2-craft-tab" data-tab="armor" disabled>Броня</button>
               <button type="button" class="l2-craft-tab" data-tab="jewelry" disabled>Біжутерія</button>
             </div>
 
             <div id="craft-meta" class="l2-craft-meta"></div>
             <div id="craft-materials-mount"></div>
+            <div id="craft-weapons-mount" hidden></div>
             <div id="craft-stub-mount" class="l2-craft-stub" hidden>Ще не додано.</div>
           </div>
 
@@ -58,9 +59,9 @@
       </div>
     </div>
 
-    <script src="/common.js?v=20260723-crafted-resource-craft-v1"></script>
+    <script src="/common.js?v=20260723-weapon-shop-patk-matk-v1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/craft.js?v=20260723-crafted-resource-craft-v1"></script>
+    <script src="/craft.js?v=20260723-weapon-shop-patk-matk-v1"></script>
   </body>
 </html>

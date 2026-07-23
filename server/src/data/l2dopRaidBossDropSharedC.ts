@@ -28,7 +28,7 @@ function item(
 export const RB_DROP_ITEM_C = {
   akatLongBow: item(283, 'Akat Long Bow', `${Wc}/akat_long_bow.jpg`),
   battleAxe: item(160, 'Battle Axe', `${Wc}/battle_axe.jpg`),
-  berserkerBlade: item(5286, 'Berserker Blade', `${Wc}/berserker_blade.jpg`),
+  berserkerBlade: item(5286, 'Berserker Blade', `${Wc}/berserker_blade.png`),
   bigHammer: item(89, 'Big Hammer', `${Wc}/big_hammer.jpg`),
   crystalDagger: item(228, 'Crystal Dagger', `${Wc}/crystal_dagger.jpg`),
   darkScreamer: item(233, 'Dark Screamer', `${Wc}/dark_screamer.jpg`),

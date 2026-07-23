@@ -1,40 +1,24 @@
 /**
- * A-grade зброя в магазині дропів — preview з канонічної таблиці `aWeaponCatalog.ts`.
+ * A-grade зброя в магазині дропів — preview з канonічної таблиці `aWeaponCatalog.ts`.
  */
 import type { DropsShopStatLineUk } from '../domain/dropsShopStatsPreviewUk.js';
+import { buildWeaponShopPreviewLinesUk } from '../domain/weaponShopPreviewUk.js';
 import type { AWeaponCanonEntry } from './aWeaponCatalog.js';
 import { A_WEAPON_BY_SHOP_KEY_LOWER } from './aWeaponCatalog.js';
 
-export type AWeaponDropsPatch = APhysWeaponPatch | AMagicWeaponPatch;
-
-export interface APhysWeaponPatch {
-  mode: 'phys';
+export interface AWeaponDropsPatch {
   nameUk: string;
   pAtk: number;
+  mAtk: number;
   speed: number;
   crit: number;
 }
 
-export interface AMagicWeaponPatch {
-  mode: 'magic';
-  nameUk: string;
-  mAtk: number;
-  speed: number;
-}
-
 function toPatch(entry: AWeaponCanonEntry): AWeaponDropsPatch {
-  if (entry.mode === 'magic') {
-    return {
-      nameUk: entry.shopNameUk,
-      mode: 'magic',
-      mAtk: entry.mAtk ?? 0,
-      speed: entry.atkSpd,
-    };
-  }
   return {
     nameUk: entry.shopNameUk,
-    mode: 'phys',
     pAtk: entry.pAtk,
+    mAtk: entry.mAtk,
     speed: entry.atkSpd,
     crit: entry.wpnCrit,
   };
@@ -53,18 +37,10 @@ export const L2DOP_A_DROPS_WEAPON_BY_SHOP_KEY_LOWER: Record<
 export function aGradeWeaponDropsPreviewLines(
   patch: AWeaponDropsPatch,
 ): DropsShopStatLineUk[] {
-  if (patch.mode === 'magic') {
-    return [
-      {
-        labelUk: '',
-        valueUk: `M.Atk: ${patch.mAtk} | Speed: ${patch.speed} | Crit: —`,
-      },
-    ];
-  }
-  return [
-    {
-      labelUk: '',
-      valueUk: `P.Atk: ${patch.pAtk} | Speed: ${patch.speed} | Crit: ${patch.crit}`,
-    },
-  ];
+  return buildWeaponShopPreviewLinesUk({
+    pAtk: patch.pAtk,
+    mAtk: patch.mAtk,
+    atkSpd: patch.speed,
+    wpnCrit: patch.crit,
+  });
 }

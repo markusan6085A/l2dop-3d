@@ -7,6 +7,7 @@ import {
   L2DOP_D_DROPS_WEAPON_BY_SHOP_KEY_LOWER,
   dGradeWeaponDropsPreviewLines,
 } from '../src/data/l2dopDWeaponDropsPatches.js';
+import { assertWeaponShopPreviewLines } from './lib/weaponShopPreviewTestCore.js';
 import { ITEM_CATALOG } from '../src/data/itemsCatalog.js';
 import {
   addItemToBag,
@@ -161,33 +162,21 @@ function assertPreviewPatchMatchesExpected(expected: ExpectedDRow, errors: strin
     return;
   }
   expectEq(`patch #${expected.itemId} nameUk`, patch.nameUk, expected.shopNameUk, errors);
+  expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
+  expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
   expectEq(`patch #${expected.itemId} speed`, patch.speed, expected.atkSpd, errors);
-  const previewLines = dGradeWeaponDropsPreviewLines(patch);
-  const previewText = previewLines.map((l) => l.valueUk).join(' ');
-  if (expected.mode === 'magic') {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'magic_book', errors);
-    if (patch.mode === 'magic_book') {
-      expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
-    }
-    if (!previewText.includes(`M.Atk: ${expected.mAtk}`)) {
-      errors.push(`#${expected.itemId} shop preview missing M.Atk ${expected.mAtk}`);
-    }
-    if (!previewText.includes('Crit: —')) {
-      errors.push(`#${expected.itemId} magic preview should show Crit: —`);
-    }
-  } else {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'phys', errors);
-    if (patch.mode === 'phys') {
-      expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
-      expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
-    }
-    if (!previewText.includes(`P.Atk: ${expected.pAtk}`)) {
-      errors.push(`#${expected.itemId} shop preview missing P.Atk ${expected.pAtk}`);
-    }
-    if (!previewText.includes(`Crit: ${expected.wpnCrit}`)) {
-      errors.push(`#${expected.itemId} shop preview missing Crit ${expected.wpnCrit}`);
-    }
-  }
+  expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
+  assertWeaponShopPreviewLines(
+    dGradeWeaponDropsPreviewLines(patch),
+    {
+      pAtk: expected.pAtk,
+      mAtk: expected.mAtk,
+      atkSpd: expected.atkSpd,
+      wpnCrit: expected.wpnCrit,
+    },
+    expected.itemId,
+    errors,
+  );
 }
 
 function main(): void {

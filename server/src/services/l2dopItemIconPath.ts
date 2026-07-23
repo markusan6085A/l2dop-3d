@@ -3,6 +3,8 @@ import path from 'node:path';
 import { sealStoneIconUrlForItemId } from '../data/sevenSignsSealStoneItems.js';
 import { BASIC_RESOURCE_BY_ITEM_ID } from '../data/basicResourceCatalog.js';
 import { CRAFTED_RESOURCE_BY_ITEM_ID } from '../data/craftedResourceCatalog.js';
+import { D_GRADE_WEAPON_KEY_MATERIAL_BY_ITEM_ID } from '../data/dGradeWeaponKeyMaterialsCatalog.js';
+import { D_GRADE_WEAPON_RECIPE_ITEM_BY_ID } from '../data/dGradeWeaponRecipeItemsCatalog.js';
 import { GRADE_CRAFT_MATERIAL_BY_ITEM_ID } from '../data/gradeCraftMaterialsCatalog.js';
 import { enchantScrollByItemId } from '../data/enchantScrollCatalog.js';
 import {
@@ -56,6 +58,18 @@ export function resolveL2dopItemIconFilePath(itemId: number): string | null {
   const craftedResource = CRAFTED_RESOURCE_BY_ITEM_ID.get(itemId);
   if (craftedResource) {
     const fromCatalog = publicFileFromUrl(craftedResource.iconUrl);
+    if (fromCatalog) return fromCatalog;
+  }
+
+  const keyMaterial = D_GRADE_WEAPON_KEY_MATERIAL_BY_ITEM_ID.get(itemId);
+  if (keyMaterial) {
+    const fromCatalog = publicFileFromUrl(keyMaterial.iconPath);
+    if (fromCatalog) return fromCatalog;
+  }
+
+  const recipeItem = D_GRADE_WEAPON_RECIPE_ITEM_BY_ID.get(itemId);
+  if (recipeItem) {
+    const fromCatalog = publicFileFromUrl(recipeItem.iconPath);
     if (fromCatalog) return fromCatalog;
   }
 
@@ -132,6 +146,10 @@ export function resolveItemIconPublicUrl(itemId: number): string {
   if (craftMaterial) return craftMaterial.iconUrl;
   const craftedResource = CRAFTED_RESOURCE_BY_ITEM_ID.get(itemId);
   if (craftedResource) return craftedResource.iconUrl;
+  const keyMaterial = D_GRADE_WEAPON_KEY_MATERIAL_BY_ITEM_ID.get(itemId);
+  if (keyMaterial) return keyMaterial.iconPath;
+  const recipeItem = D_GRADE_WEAPON_RECIPE_ITEM_BY_ID.get(itemId);
+  if (recipeItem) return recipeItem.iconPath;
   const enchantScroll = enchantScrollByItemId(itemId);
   if (enchantScroll) return enchantScroll.iconUrl;
   const file = `${itemId}.jpg`;

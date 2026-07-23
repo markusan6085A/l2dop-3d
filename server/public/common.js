@@ -80,7 +80,7 @@
   var itemIconHintsPersistTimer = null;
   var knownCatalogVersion = null;
   var ONLINE_COUNT_FRESH_MS = 45000;
-  var APP_DATA_VERSION = '20260723-crafted-resource-craft-v1';
+  var APP_DATA_VERSION = '20260723-weapon-shop-patk-matk-v1';
   var APP_DATA_VERSION_KEY = 'l2.appDataVersion';
 
   function clearObjectMap(map) {

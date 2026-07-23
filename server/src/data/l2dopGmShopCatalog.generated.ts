@@ -469,8 +469,8 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
   {
     "itemId": 5286,
     "grade": "C",
-    "priceAdena": 100000000,
-    "nameUk": "Клинок берсерка C-grade. Дворучна зброя.",
+    "priceAdena": 865588,
+    "nameUk": "Клинок Берсерка. Дворучна зброя.",
     "weaponType": "bigsword",
     "pAtk": 190,
     "mAtk": 83,
@@ -478,7 +478,7 @@ export const L2DOP_GM_SHOP_WEAPONS: GmShopWeaponRow[] = [
     "weight": 0,
     "crystals": 0,
     "atkSpd": 325,
-    "iconUrl": "/icons/drops/weapon_c/berserker_blade.jpg"
+    "iconUrl": "/icons/drops/weapon_c/berserker_blade.png"
   },
   {
     "itemId": 7882,

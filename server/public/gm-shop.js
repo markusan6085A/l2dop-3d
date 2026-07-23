@@ -233,6 +233,7 @@
     'charges',
     'resources',
     'enchantment',
+    'craft_test',
   ];
 
   var CONSUMABLE_SUB_LABEL_UK = {
@@ -242,6 +243,7 @@
     charges: 'Заряди',
     resources: 'Ресурси',
     enchantment: 'Заточки',
+    craft_test: 'D-grade Weapon Craft Test',
   };
 
   function $(id) {
@@ -658,7 +660,10 @@
     titleEl.textContent = it.nameUk || it.shopKey || '';
     var unitTxt = shopItemPriceLabel(it);
     unitEl.textContent = 'За одиницю: ' + unitTxt;
-    inp.value = '1';
+    var minQ = Math.max(1, Math.floor(Number(it.minPurchaseQty) || 1));
+    var defQ = Math.max(minQ, Math.floor(Number(it.defaultPurchaseQty) || minQ));
+    inp.min = String(minQ);
+    inp.value = String(defQ);
 
     function syncTotal() {
       var raw = parseInt(String(inp.value || '1'), 10);
@@ -677,10 +682,11 @@
 
     okBtn.onclick = function () {
       var rawQ = parseInt(String(inp.value || '1'), 10);
+      var minQ = Math.max(1, Math.floor(Number(it.minPurchaseQty) || 1));
       var qty =
-        Number.isFinite(rawQ) && rawQ >= 1 && rawQ <= 9999 ? rawQ : NaN;
+        Number.isFinite(rawQ) && rawQ >= minQ && rawQ <= 9999 ? rawQ : NaN;
       if (!Number.isFinite(qty)) {
-        alert('Вкажи кількість від 1 до 9999.');
+        alert('Вкажи кількість від ' + minQ + ' до 9999.');
         return;
       }
       performDropsShopBuy(
@@ -1030,13 +1036,10 @@
           statEl.className = 'l2-gm-shop-row-stat';
           for (var si = 0; si < it.statsPreview.lines.length; si++) {
             var ln = it.statsPreview.lines[si];
-            if (si > 0) {
-              var dotSep = document.createElement('span');
-              dotSep.className = 'l2-item-stat-sep';
-              dotSep.textContent = ' · ';
-              statEl.appendChild(dotSep);
-            }
-            appendShopRowStats(statEl, ln.labelUk, ln.valueUk);
+            var lineEl = document.createElement('div');
+            lineEl.className = 'l2-gm-shop-row-stat-line';
+            appendShopRowStats(lineEl, ln.labelUk, ln.valueUk);
+            statEl.appendChild(lineEl);
           }
           main.appendChild(statEl);
         }

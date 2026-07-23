@@ -1,13 +1,24 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { requireAuth } from '../lib/auth.js';
-import { sendGameConflict } from './routeHttpHelpers.js';
+import {
+  ensureBodyRecord,
+  ensureUserId,
+  logRouteMutation,
+  parseExpectedRevision,
+  sendGameConflict,
+} from './routeHttpHelpers.js';
 import { GameConflictError } from '../services/charErrors.js';
 import {
   applyCraftedResourceCraft,
   buildCraftedResourceMaterialsBook,
 } from '../services/craftedResourceCraftService.js';
+import {
+  applyDGradeWeaponCraft,
+  buildDGradeWeaponCraftBook,
+  weaponCraftErrorMessageUk,
+} from '../services/dGradeWeaponCraftService.js';
 
-/** GET/POST /game/craft/materials — crafted-ресурси (етап 2). */
+/** GET/POST /game/craft/* — crafted-ресурси та D-grade зброя. */
 export const gameCraftRoutes: FastifyPluginAsync = async (app) => {
   app.get(
     '/craft/materials',
@@ -74,6 +85,70 @@ export const gameCraftRoutes: FastifyPluginAsync = async (app) => {
           };
           const msg = map[e.message];
           if (msg) {
+            return reply.code(400).send({ error: e.message, messageUk: msg });
+          }
+        }
+        throw e;
+      }
+    },
+  );
+
+  app.get(
+    '/craft/weapons',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.userId;
+      if (!userId) return reply.code(401).send({ error: 'Unauthorized' });
+      try {
+        return reply.send(await buildDGradeWeaponCraftBook(userId));
+      } catch (e) {
+        if (e instanceof Error && e.message === 'no_character') {
+          return reply.code(404).send({ error: 'forbidden' });
+        }
+        throw e;
+      }
+    },
+  );
+
+  app.post(
+    '/craft/weapons',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = ensureUserId(request, reply);
+      if (!userId) return;
+      const b = ensureBodyRecord(request.body, reply);
+      if (!b) return;
+      const rev = parseExpectedRevision(
+        b,
+        reply,
+        'Передай expectedRevision з відповіді /character.',
+      );
+      if (rev == null) return;
+
+      try {
+        const character = await applyDGradeWeaponCraft(
+          userId,
+          b.recipeCode,
+          rev,
+          b.craftCount,
+        );
+        await logRouteMutation(
+          request,
+          'weapon_craft:' + String(b.recipeCode ?? ''),
+          rev,
+          'ok',
+          character.revision,
+        );
+        return reply.send({ character });
+      } catch (e) {
+        if (e instanceof GameConflictError) {
+          await logRouteMutation(request, 'weapon_craft', rev, 'conflict');
+          return sendGameConflict(reply, e);
+        }
+        if (e instanceof Error) {
+          const msg = weaponCraftErrorMessageUk(e.message);
+          if (msg) {
+            await logRouteMutation(request, 'weapon_craft', rev, 'error');
             return reply.code(400).send({ error: e.message, messageUk: msg });
           }
         }

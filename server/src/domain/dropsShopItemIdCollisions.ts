@@ -54,7 +54,7 @@ function weaponPatchFingerprint(
   shopKeyLower: string,
   grade: string,
 ): string | null {
-  const maps: Array<[string, Record<string, { mode: string; pAtk?: number; mAtk?: number; speed?: number; crit?: number }>]> = [
+  const maps: Array<[string, Record<string, { pAtk: number; mAtk: number; speed: number; crit: number }>]> = [
     ['NG', L2DOP_NG_DROPS_WEAPON_BY_SHOP_KEY_LOWER],
     ['D', L2DOP_D_DROPS_WEAPON_BY_SHOP_KEY_LOWER],
     ['C', L2DOP_C_DROPS_WEAPON_BY_SHOP_KEY_LOWER],
@@ -66,10 +66,7 @@ function weaponPatchFingerprint(
     if (g !== grade) continue;
     const patch = map[shopKeyLower];
     if (!patch) continue;
-    if (patch.mode === 'magic' || patch.mode === 'magic_book') {
-      return `magic:mAtk=${patch.mAtk}:spd=${patch.speed}`;
-    }
-    return `phys:pAtk=${patch.pAtk}:spd=${patch.speed}:crit=${patch.crit}`;
+    return `p=${patch.pAtk}:m=${patch.mAtk}:spd=${patch.speed}:crit=${patch.crit}`;
   }
   return null;
 }

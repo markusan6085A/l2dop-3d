@@ -14,6 +14,14 @@ import { DROPS_SHOP_CONSUMABLE_ROWS } from '../data/dropsShopConsumablesCatalog.
 import { DROPS_SHOP_FIGHTER_SOULSHOT_ROWS } from '../data/dropsShopFighterSoulshotsCatalog.js';
 import { DROPS_SHOP_RESOURCE_ROWS } from '../data/dropsShopResourcesCatalog.js';
 import { DROPS_SHOP_ENCHANT_SCROLL_ROWS } from '../data/dropsShopEnchantScrollsCatalog.js';
+import {
+  buildDGradeWeaponCraftTestShopRows,
+  defaultPurchaseQtyForCraftTestShopKey,
+  isDGradeWeaponCraftTestShopKey,
+  minPurchaseQtyForCraftTestShopKey,
+} from '../data/dGradeWeaponCraftTestShopCatalog.js';
+import { resolveDGradeWeaponCraftTestPurchaseOffer } from '../data/dGradeWeaponCraftTestShopOffers.js';
+import { isDevSelfBoostEnabled } from './devSelfBoostService.js';
 import { prisma } from '../lib/prisma.js';
 import { buildCharacterClientSnapshot } from './charClientSnapshot.js';
 import type { CharacterRow, CharacterSnapshot } from './charTypes.js';
@@ -96,7 +104,8 @@ export type DropsShopConsumableSubtype =
   | 'arrows'
   | 'charges'
   | 'resources'
-  | 'enchantment';
+  | 'enchantment'
+  | 'craft_test';
 
 export interface DropsShopOverrideEntry {
   itemId: number;
@@ -241,6 +250,10 @@ export interface DropsShopItemResponse {
   jewelrySubtype?: DropsShopJewelrySubtype;
   /** Лише розхідники: «Банки» / «Стріли» / «Заряди» / «Ресурси». */
   consumableSubtype?: DropsShopConsumableSubtype;
+  /** Dev craft test: мінімальна кількість покупки. */
+  minPurchaseQty?: number;
+  /** Dev craft test: стартова кількість у модалці. */
+  defaultPurchaseQty?: number;
 }
 
 function resolveDropsShopPurchaseOffer(
@@ -248,6 +261,9 @@ function resolveDropsShopPurchaseOffer(
   overrides: OverridesMap
 ): GmShopPurchaseOffer | null {
   const shopKeyNorm = row.shopKey.replace(/\\/g, '/').toLowerCase();
+  const craftTest = resolveDGradeWeaponCraftTestPurchaseOffer(row.shopKey);
+  if (craftTest) return craftTest;
+
   const iconRel = dropsShopRelPathFromGmIcon(row.iconUrl);
   const o =
     overrides[row.shopKey] ??
@@ -259,6 +275,20 @@ function resolveDropsShopPurchaseOffer(
   const gmOffer =
     (iconRel ? gm.get(iconRel) : undefined) ?? gm.get(shopKeyNorm);
   return gmOffer ?? null;
+}
+
+function allDropsShopCatalogRows(): DropsShopCatalogRow[] {
+  const rows = DROPS_SHOP_CATALOG.concat(
+    DROPS_SHOP_CONSUMABLE_ROWS,
+    DROPS_SHOP_ARROW_ROWS,
+    DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
+    DROPS_SHOP_RESOURCE_ROWS,
+    DROPS_SHOP_ENCHANT_SCROLL_ROWS,
+  );
+  if (isDevSelfBoostEnabled()) {
+    rows.push(...buildDGradeWeaponCraftTestShopRows());
+  }
+  return rows;
 }
 
 function resolveDropsShopPurchaseOfferPriced(
@@ -432,6 +462,10 @@ function rowToClient(
       out.consumableSubtype = 'resources';
     } else if (keyNorm.startsWith('consumable/enchant_scroll_')) {
       out.consumableSubtype = 'enchantment';
+    } else if (keyNorm.startsWith('consumable/craft_test/')) {
+      out.consumableSubtype = 'craft_test';
+      out.minPurchaseQty = minPurchaseQtyForCraftTestShopKey(row.shopKey);
+      out.defaultPurchaseQty = defaultPurchaseQtyForCraftTestShopKey(row.shopKey);
     }
   }
 
@@ -470,13 +504,7 @@ export function buildDropsShopCatalogForClient(): {
   const overrides = loadDropsShopOverrides();
   const byGrade = new Map<DropsShopGradeUk, DropsShopCatalogRow[]>();
   for (const g of DROPS_SHOP_GRADE_ORDER) byGrade.set(g, []);
-  const allCatalogRows = DROPS_SHOP_CATALOG.concat(
-    DROPS_SHOP_CONSUMABLE_ROWS,
-    DROPS_SHOP_ARROW_ROWS,
-    DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
-    DROPS_SHOP_RESOURCE_ROWS,
-    DROPS_SHOP_ENCHANT_SCROLL_ROWS,
-  );
+  const allCatalogRows = allDropsShopCatalogRows();
   for (const row of allCatalogRows) {
     const arr = byGrade.get(row.grade);
     if (arr) arr.push(row);
@@ -524,13 +552,7 @@ export async function applyDropsShopPurchase(
   const normalized = String(shopKeyRaw || '')
     .trim()
     .replace(/\\/g, '/');
-  const allRows = DROPS_SHOP_CATALOG.concat(
-    DROPS_SHOP_CONSUMABLE_ROWS,
-    DROPS_SHOP_ARROW_ROWS,
-    DROPS_SHOP_FIGHTER_SOULSHOT_ROWS,
-    DROPS_SHOP_RESOURCE_ROWS,
-    DROPS_SHOP_ENCHANT_SCROLL_ROWS,
-  );
+  const allRows = allDropsShopCatalogRows();
   const row = allRows.find((r) => {
     const rk = r.shopKey.replace(/\\/g, '/');
     return rk === normalized || rk.toLowerCase() === normalized.toLowerCase();
@@ -558,7 +580,9 @@ export async function applyDropsShopPurchase(
     !useCoinOfLuck && offer.priceAdena != null
       ? BigInt(Math.max(0, Math.floor(offer.priceAdena)))
       : 0n;
-  if (!useCoinOfLuck && unitAdena <= 0n) {
+  const isFreeCraftTest =
+    isDGradeWeaponCraftTestShopKey(normalized) && !useCoinOfLuck && unitAdena === 0n;
+  if (!useCoinOfLuck && unitAdena <= 0n && !isFreeCraftTest) {
     throw new Error('drops_shop_not_configured');
   }
 
@@ -574,6 +598,10 @@ export async function applyDropsShopPurchase(
       throw new Error('drops_shop_bad_qty');
     }
     qty = q;
+  }
+  if (isDGradeWeaponCraftTestShopKey(normalized)) {
+    const minQ = minPurchaseQtyForCraftTestShopKey(normalized);
+    if (qty < minQ) throw new Error('drops_shop_bad_qty');
   }
 
   const characterRow = await prisma.$transaction(async (tx) => {

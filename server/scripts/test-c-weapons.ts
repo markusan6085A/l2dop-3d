@@ -7,6 +7,7 @@ import {
   L2DOP_C_DROPS_WEAPON_BY_SHOP_KEY_LOWER,
   cGradeWeaponDropsPreviewLines,
 } from '../src/data/l2dopCWeaponDropsPatches.js';
+import { assertWeaponShopPreviewLines } from './lib/weaponShopPreviewTestCore.js';
 import {
   C_GRADE_APPRENTICES_SPELLBOOK_ITEM_ID,
   ITEM_CATALOG,
@@ -79,7 +80,7 @@ const EXPECTED_C_WEAPONS: readonly ExpectedCRow[] = [
   { itemId: 326, shopKey: 'weapon_c/heathens_book.jpg', nameUk: 'Книга язичника C-grade.', shopNameUk: "Heathen's Book", canonSource: 'interlude', mode: 'magic', weaponType: 'sword', masteryFamily: null, blocksShield: false, requiresArrows: false, atkSpd: 379, pAtk: 111, mAtk: 101, wpnCrit: 80 },
   { itemId: 2503, shopKey: 'weapon_c/yaksa_mace.jpg', nameUk: 'Булава Якса C-grade.', shopNameUk: 'Yaksa Mace', canonSource: 'interlude', mode: 'phys', weaponType: 'blunt', masteryFamily: 'blunt', blocksShield: false, requiresArrows: false, atkSpd: 379, pAtk: 156, mAtk: 83, wpnCrit: 40 },
   { itemId: 4233, shopKey: 'weapon_c/knuckle_duster.jpg', nameUk: 'Кастет C-grade.', shopNameUk: 'Knuckle Duster', canonSource: 'interlude', mode: 'phys', weaponType: 'fist', masteryFamily: 'fist', blocksShield: true, requiresArrows: false, atkSpd: 325, pAtk: 148, mAtk: 68, wpnCrit: 40 },
-  { itemId: 5286, shopKey: 'weapon_c/berserker_blade.jpg', nameUk: 'Клинок берсерка C-grade.', shopNameUk: 'Berserker Blade', canonSource: 'interlude', mode: 'phys', weaponType: 'bigsword', masteryFamily: 'bigsword', blocksShield: true, requiresArrows: false, atkSpd: 325, pAtk: 190, mAtk: 83, wpnCrit: 80 },
+  { itemId: 5286, shopKey: 'weapon_c/berserker_blade.png', nameUk: 'Клинок Берсерка', shopNameUk: 'Berserker Blade', canonSource: 'interlude', mode: 'phys', weaponType: 'bigsword', masteryFamily: 'bigsword', blocksShield: true, requiresArrows: false, atkSpd: 325, pAtk: 190, mAtk: 83, wpnCrit: 80 },
   { itemId: 7882, shopKey: 'weapon_c/pa_agrian_sword.jpg', nameUk: 'Меч Паагріан C-grade.', shopNameUk: "Pa'agrian Sword", canonSource: 'interlude', mode: 'phys', weaponType: 'bigsword', masteryFamily: 'bigsword', blocksShield: true, requiresArrows: false, atkSpd: 325, pAtk: 169, mAtk: 76, wpnCrit: 80 },
   { itemId: 7888, shopKey: 'weapon_c/ecliptic_sword.jpg', nameUk: 'Екліптичний меч C-grade.', shopNameUk: 'Ecliptic Sword', canonSource: 'interlude', mode: 'magic', weaponType: 'sword', masteryFamily: 'sword', blocksShield: false, requiresArrows: false, atkSpd: 379, pAtk: 125, mAtk: 111, wpnCrit: 80 },
   { itemId: 7897, shopKey: 'weapon_c/dwarven_hammer.jpg', nameUk: 'Дворфський молот C-grade.', shopNameUk: 'Dwarven Hammer', canonSource: 'interlude', mode: 'phys', weaponType: 'bigblunt', masteryFamily: 'bigblunt', blocksShield: true, requiresArrows: false, atkSpd: 325, pAtk: 190, mAtk: 83, wpnCrit: 40 },
@@ -185,33 +186,21 @@ function assertPreviewPatchMatchesExpected(expected: ExpectedCRow, errors: strin
     return;
   }
   expectEq(`patch #${expected.itemId} nameUk`, patch.nameUk, expected.shopNameUk, errors);
+  expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
+  expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
   expectEq(`patch #${expected.itemId} speed`, patch.speed, expected.atkSpd, errors);
-  const previewLines = cGradeWeaponDropsPreviewLines(patch);
-  const previewText = previewLines.map((l) => l.valueUk).join(' ');
-  if (expected.mode === 'magic') {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'magic', errors);
-    if (patch.mode === 'magic') {
-      expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
-    }
-    if (!previewText.includes(`M.Atk: ${expected.mAtk}`)) {
-      errors.push(`#${expected.itemId} shop preview missing M.Atk ${expected.mAtk}`);
-    }
-    if (!previewText.includes('Crit: —')) {
-      errors.push(`#${expected.itemId} magic preview should show Crit: —`);
-    }
-  } else {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'phys', errors);
-    if (patch.mode === 'phys') {
-      expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
-      expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
-    }
-    if (!previewText.includes(`P.Atk: ${expected.pAtk}`)) {
-      errors.push(`#${expected.itemId} shop preview missing P.Atk ${expected.pAtk}`);
-    }
-    if (!previewText.includes(`Crit: ${expected.wpnCrit}`)) {
-      errors.push(`#${expected.itemId} shop preview missing Crit ${expected.wpnCrit}`);
-    }
-  }
+  expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
+  assertWeaponShopPreviewLines(
+    cGradeWeaponDropsPreviewLines(patch),
+    {
+      pAtk: expected.pAtk,
+      mAtk: expected.mAtk,
+      atkSpd: expected.atkSpd,
+      wpnCrit: expected.wpnCrit,
+    },
+    expected.itemId,
+    errors,
+  );
 }
 
 function main(): void {

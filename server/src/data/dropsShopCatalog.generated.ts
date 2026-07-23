@@ -1505,10 +1505,10 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "nameUk": "Battle Axe"
   },
   {
-    "shopKey": "weapon_c/berserker_blade.jpg",
+    "shopKey": "weapon_c/berserker_blade.png",
     "category": "weapon",
     "grade": "C",
-    "iconUrl": "/icons/drops/weapon_c/berserker_blade.jpg",
+    "iconUrl": "/icons/drops/weapon_c/berserker_blade.png",
     "nameUk": "Berserker Blade"
   },
   {

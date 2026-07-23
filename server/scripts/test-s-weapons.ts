@@ -7,6 +7,7 @@ import {
   L2DOP_S_DROPS_WEAPON_BY_SHOP_KEY_LOWER,
   sGradeWeaponDropsPreviewLines,
 } from '../src/data/l2dopSWeaponDropsPatches.js';
+import { assertWeaponShopPreviewLines } from './lib/weaponShopPreviewTestCore.js';
 import {
   addItemToBag,
   emptyInventory,
@@ -140,15 +141,21 @@ function assertPreviewPatchMatchesExpected(expected: ExpectedSRow, errors: strin
     errors.push(`missing shop patch for ${expected.shopKey}`);
     return;
   }
-  if (expected.mode === 'magic') {
-    expectEq(`patch #${expected.itemId} mode`, patch.mode, 'magic', errors);
-    if (patch.mode === 'magic') {
-      expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
-    }
-  } else if (patch.mode === 'phys') {
-    expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
-    expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
-  }
+  expectEq(`patch #${expected.itemId} pAtk`, patch.pAtk, expected.pAtk, errors);
+  expectEq(`patch #${expected.itemId} mAtk`, patch.mAtk, expected.mAtk, errors);
+  expectEq(`patch #${expected.itemId} speed`, patch.speed, expected.atkSpd, errors);
+  expectEq(`patch #${expected.itemId} crit`, patch.crit, expected.wpnCrit, errors);
+  assertWeaponShopPreviewLines(
+    sGradeWeaponDropsPreviewLines(patch),
+    {
+      pAtk: expected.pAtk,
+      mAtk: expected.mAtk,
+      atkSpd: expected.atkSpd,
+      wpnCrit: expected.wpnCrit,
+    },
+    expected.itemId,
+    errors,
+  );
 }
 
 function assertRbDropMapping(errors: string[]): void {

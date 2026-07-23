@@ -97,6 +97,8 @@ model Character {
   dungeonStateJson Json?
   /** Щоденні завдання: `{ v: 1, resetDayKey, playtimeSec, tasks }`. */
   dailyQuestsJson Json?
+  /** Вивчені D-grade weapon recipes: `{ v: 1, learned: ["bonebreaker_100"] }`. */
+  recipeBookJson Json?
   /** cs1.php $heroic: 1 — «атака», 2 — «захист», 3 — «підмога» (геройські скіли 395…). */
   buffHeroicTier    Int?
   /** cs1.php $zealot для скіла 420 (Zealot). */

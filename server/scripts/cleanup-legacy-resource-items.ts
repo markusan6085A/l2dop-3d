@@ -16,6 +16,8 @@ import {
 } from '../src/data/inventory.js';
 import { BASIC_RESOURCE_ITEM_IDS } from '../src/data/basicResourceCatalog.js';
 import { CRAFTED_RESOURCE_ITEM_IDS } from '../src/data/craftedResourceCatalog.js';
+import { D_GRADE_WEAPON_KEY_MATERIAL_ITEM_IDS } from '../src/data/dGradeWeaponKeyMaterialsCatalog.js';
+import { D_GRADE_WEAPON_RECIPE_ITEM_IDS } from '../src/data/dGradeWeaponRecipeItemsCatalog.js';
 import {
   LEGACY_S_WEAPON_SOURCE_IDS,
 } from '../src/data/sWeaponItemIdMigration.js';
@@ -30,6 +32,8 @@ const CRAFTED_RESOURCE_ID_SET = new Set<number>(CRAFTED_RESOURCE_ITEM_IDS);
 const PRESERVED_RESOURCE_ID_SET = new Set<number>([
   ...BASIC_RESOURCE_ITEM_IDS,
   ...CRAFTED_RESOURCE_ITEM_IDS,
+  ...D_GRADE_WEAPON_KEY_MATERIAL_ITEM_IDS,
+  ...D_GRADE_WEAPON_RECIPE_ITEM_IDS,
 ]);
 
 /** Лише для cleanup: старі resource itemId без нових basic/crafted. */

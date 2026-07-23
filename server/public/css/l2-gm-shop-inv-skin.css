@@ -276,6 +276,14 @@ body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-price {
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row-stat {
   font-size: 11px;
   line-height: 1.35;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-row-stat-line {
+  white-space: normal;
+  word-break: break-word;
 }
 
 body.l2-app-l2-chrome.l2-page-gm-shop .l2-gm-shop-stat-sep,

@@ -86,6 +86,16 @@ import {
   craftedResourceNamesUkForClient,
   mergeCraftedResources,
 } from './itemsCatalogCraftedResources.js';
+import {
+  dGradeWeaponKeyMaterialInventoryTabHints,
+  dGradeWeaponKeyMaterialNamesUkForClient,
+  mergeDGradeWeaponKeyMaterials,
+} from './itemsCatalogDGradeWeaponKeyMaterials.js';
+import {
+  dGradeWeaponRecipeItemInventoryTabHints,
+  dGradeWeaponRecipeItemNamesUkForClient,
+  mergeDGradeWeaponRecipeItems,
+} from './itemsCatalogDGradeWeaponRecipes.js';
 
 export type ItemSlotKind =
   | 'rhand'
@@ -362,6 +372,8 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   mergeGradeCraftMaterials(o);
   mergeBasicResources(o);
   mergeCraftedResources(o);
+  mergeDGradeWeaponKeyMaterials(o);
+  mergeDGradeWeaponRecipeItems(o);
 
   /** D/C/B/A/S-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
   for (const row of [
@@ -800,6 +812,8 @@ export function itemInventoryTabHintsForClient(): Record<
     ...mammonLifeStoneInventoryTabHints(),
     ...basicResourceInventoryTabHints(),
     ...craftedResourceInventoryTabHints(),
+    ...dGradeWeaponKeyMaterialInventoryTabHints(),
+    ...dGradeWeaponRecipeItemInventoryTabHints(),
     ...gradeCraftMaterialInventoryTabHints(),
   } as Record<number, L2ItemInventoryTabHint>;
 }
@@ -847,6 +861,16 @@ export function itemNamesUkForClient(): Record<number, string> {
   }
 
   for (const [idStr, uk] of Object.entries(craftedResourceNamesUkForClient())) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(dGradeWeaponKeyMaterialNamesUkForClient())) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(dGradeWeaponRecipeItemNamesUkForClient())) {
     const id = Number(idStr);
     if (uk && String(uk).trim() !== '') out[id] = uk;
   }
