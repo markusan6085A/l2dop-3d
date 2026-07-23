@@ -6,7 +6,7 @@ import { D_WEAPON_CATALOG } from '../../src/data/dWeaponCatalog.js';
 import { C_WEAPON_CATALOG } from '../../src/data/cWeaponCatalog.js';
 import { B_WEAPON_CATALOG, B_WEAPON_CANONICAL_COUNT, B_WEAPON_CUSTOM_COUNT, B_WEAPON_SHOP_TOTAL } from '../../src/data/bWeaponCatalog.js';
 import { A_WEAPON_CATALOG, A_WEAPON_CANONICAL_COUNT, A_WEAPON_CUSTOM_COUNT, A_WEAPON_SHOP_TOTAL } from '../../src/data/aWeaponCatalog.js';
-import { S_WEAPON_CATALOG } from '../../src/data/sWeaponCatalog.js';
+import { S_WEAPON_CATALOG, S_WEAPON_CUSTOM_COUNT, S_WEAPON_INTERLUDE_COUNT, S_WEAPON_SHOP_TOTAL } from '../../src/data/sWeaponCatalog.js';
 import { ITEM_CATALOG } from '../../src/data/itemsCatalog.js';
 import { L2DOP_GM_SHOP_WEAPONS } from '../../src/data/l2dopGmShopCatalog.generated.js';
 import { listGearCatalogForClient } from '../../src/data/itemsCatalog.js';
@@ -54,6 +54,10 @@ export const EXPECTED_B_CUSTOM = B_WEAPON_CUSTOM_COUNT;
 export const EXPECTED_A_SHOP_TOTAL = A_WEAPON_SHOP_TOTAL;
 export const EXPECTED_A_CANONICAL = A_WEAPON_CANONICAL_COUNT;
 export const EXPECTED_A_CUSTOM = A_WEAPON_CUSTOM_COUNT;
+
+export const EXPECTED_S_SHOP_TOTAL = S_WEAPON_SHOP_TOTAL;
+export const EXPECTED_S_INTERLUDE = S_WEAPON_INTERLUDE_COUNT;
+export const EXPECTED_S_CUSTOM = S_WEAPON_CUSTOM_COUNT;
 
 export const TOTAL_CANON_WEAPONS =
   NG_WEAPON_CATALOG.length +
@@ -178,7 +182,10 @@ export function collectAllCanonWeapons(): CanonWeaponRow[] {
       wpnCrit: e.wpnCrit,
       blocksShield: e.blocksShield,
       requiresArrows: requiresArrowsForWeaponType(e.weaponType),
-      canonicalSource: 'sWeaponCatalog.ts',
+      canonicalSource:
+        e.canonSource === 'interlude'
+          ? 'sWeaponCatalog.ts'
+          : 'sWeaponCatalog.ts (custom)',
     });
   }
 

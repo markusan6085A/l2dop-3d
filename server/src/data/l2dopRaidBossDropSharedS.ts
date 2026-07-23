@@ -8,6 +8,8 @@ import {
   type RaidBossDropSpec,
 } from './l2dopRaidBossDropShared.js';
 
+import { S_WEAPON_BY_SHOP_KEY_LOWER } from './sWeaponCatalog.js';
+
 const Ws = '/icons/drops/weapon_s';
 const As = '/icons/drops/arrom_s';
 const Js = '/icons/drops/earring_s';
@@ -27,21 +29,38 @@ function item(
   return { l2ItemId, displayName, iconUrl, kind };
 }
 
+function sWeaponId(shopFile: string): number {
+  const key = `weapon_s/${shopFile}`.replace(/\\/g, '/').toLowerCase();
+  const entry = S_WEAPON_BY_SHOP_KEY_LOWER.get(key);
+  if (!entry) {
+    throw new Error(`Unknown S-grade weapon shopKey: ${key}`);
+  }
+  return entry.itemId;
+}
+
+function weaponItem(
+  shopFile: string,
+  displayName: string,
+  kind: DropKind = 'equipment'
+): ItemDef {
+  return item(sWeaponId(shopFile), displayName, `${Ws}/${shopFile}`, kind);
+}
+
 /** Канонічні S-grade предмети для таблиць дропу РБ 76–87. */
 export const RB_DROP_ITEM_S = {
-  apprenticesSpellbook: item(910201, "Apprentice's Spellbook", `${Ws}/apprentices_spellbook.jpg`),
-  angelSlayer: item(6367, 'Angel Slayer', `${Ws}/angel_slayer.jpg`),
-  arcanaMace: item(6579, 'Arcana Mace', `${Ws}/arcana_mace.jpg`),
-  baguettesDualsword: item(910202, "Baguette's Dualsword", `${Ws}/baguette_s_dualsword.jpg`),
-  basaltBattlehammer: item(6365, 'Basalt Battlehammer', `${Ws}/basalt_battlehammer.jpg`),
-  demonSplinter: item(6371, 'Demon Splinter', `${Ws}/demon_splinter.jpg`),
-  draconicBow: item(7575, 'Draconic Bow', `${Ws}/draconic_bow.jpg`),
-  dragonHunterAxe: item(6369, 'Dragon Hunter Axe', `${Ws}/dragon_hunter_axe.jpg`),
-  godsBlade: item(82, "God's Blade", `${Ws}/god_s_blade.jpg`),
-  heavensDivider: item(6372, "Heaven's Divider", `${Ws}/heaven_s_divider.jpg`),
-  imperialStaff: item(6366, 'Imperial Staff', `${Ws}/imperial_staff.jpg`),
-  saintSpear: item(6370, 'Saint Spear', `${Ws}/saint_spear.jpg`),
-  shiningBow: item(6368, 'Shining Bow', `${Ws}/shining_bow.jpg`),
+  apprenticesSpellbook: weaponItem('apprentices_spellbook.jpg', "Apprentice's Spellbook"),
+  angelSlayer: weaponItem('angel_slayer.jpg', 'Angel Slayer'),
+  arcanaMace: weaponItem('arcana_mace.jpg', 'Arcana Mace'),
+  baguettesDualsword: weaponItem('baguette_s_dualsword.jpg', "Baguette's Dualsword"),
+  basaltBattlehammer: weaponItem('basalt_battlehammer.jpg', 'Basalt Battlehammer'),
+  demonSplinter: weaponItem('demon_splinter.jpg', 'Demon Splinter'),
+  draconicBow: weaponItem('draconic_bow.jpg', 'Draconic Bow'),
+  dragonHunterAxe: weaponItem('dragon_hunter_axe.jpg', 'Dragon Hunter Axe'),
+  godsBlade: weaponItem('god_s_blade.jpg', "God's Blade"),
+  heavensDivider: weaponItem('heaven_s_divider.jpg', "Heaven's Divider"),
+  imperialStaff: weaponItem('imperial_staff.jpg', 'Imperial Staff'),
+  saintSpear: weaponItem('saint_spear.jpg', 'Saint Spear'),
+  shiningBow: weaponItem('shining_bow.jpg', 'Shining Bow'),
   imperialCrusaderBreastplate: item(
     6373,
     'Imperial Crusader Breastplate',
