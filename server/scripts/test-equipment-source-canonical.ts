@@ -188,9 +188,13 @@ function checkDcbEntry(
 
 function checkLegacyBItemIds(errors: string[]): void {
   const wrongShopBindings: Array<[string, number]> = [
-    ['weapon_b/kaim_vanul_s_bones.jpg', 7893],
+    ['weapon_b/kaim_vanul_s_bones.jpg', 8340],
     ['weapon_b/sword_of_damascus.jpg', 7897],
-    ['weapon_b/wizard_s_tear.jpg', 7889],
+    ['weapon_b/wizard_s_tear.jpg', 8336],
+    ['weapon_b/bellion_cestus.jpg', 7893],
+    ['weapon_b/spirit_s_staff.jpg', 7889],
+    ['weapon_b/great_sword.jpg', 7895],
+    ['weapon_b/apprentices_spellbook.jpg', 78],
   ];
   for (const [shopKey, badId] of wrongShopBindings) {
     if (overrides[shopKey]?.itemId === badId) {
@@ -199,10 +203,13 @@ function checkLegacyBItemIds(errors: string[]): void {
   }
 
   const rbChecks: Array<[keyof typeof RB_DROP_ITEM_B, number, string]> = [
-    ['kaimVanulsBones', 8340, "Kaim Vanul's Bones"],
+    ['kaimVanulsBones', 7893, "Kaim Vanul's Bones"],
     ['swordOfDamascus', 79, 'Sword of Damascus'],
-    ['wizardsTear', 8336, "Wizard's Tear"],
-    ['spiritsStaff', 7889, "Spirit's Staff"],
+    ['wizardsTear', 7889, "Wizard's Tear"],
+    ['spiritsStaff', 92, "Sprite's Staff"],
+    ['greatSword', 78, 'Great Sword'],
+    ['apprenticesSpellbook', 910101, "Apprentice's Spellbook"],
+    ['bellionCestus', 268, 'Bellion Cestus'],
   ];
   for (const [key, expectedId, name] of rbChecks) {
     const def = RB_DROP_ITEM_B[key];
@@ -210,10 +217,10 @@ function checkLegacyBItemIds(errors: string[]): void {
     expectNoEmbeddedStats(def as unknown as Record<string, unknown>, `RB_DROP_ITEM_B.${String(key)}`, errors);
   }
 
-  // 7893 = Bellion, 7897 = C Dwarven Hammer — must not be B Damascus/Kaim/Wizard
-  expectEq('7893 is Bellion in B canon shop', overrides['weapon_b/bellion_cestus.jpg']?.itemId, 7893, errors);
+  expectEq('Bellion Cestus shop id', overrides['weapon_b/bellion_cestus.jpg']?.itemId, 268, errors);
   expectEq('7897 is C Dwarven Hammer shop', overrides['weapon_c/dwarven_hammer.jpg']?.itemId, 7897, errors);
-  expectEq('7889 is Spirit Staff shop', overrides['weapon_b/spirit_s_staff.jpg']?.itemId, 7889, errors);
+  expectEq("Sprite's Staff shop id", overrides['weapon_b/spirit_s_staff.jpg']?.itemId, 92, errors);
+  expectEq('Great Sword shop id', overrides['weapon_b/great_sword.jpg']?.itemId, 78, errors);
 }
 
 function checkLegacySItemIds(errors: string[]): void {

@@ -3,7 +3,7 @@
  * Human Knight → Dark Avenger; також Orc Destroyer / Raider, Gladiator (інші SP).
  */
 import { fighterPassiveHintUk } from './fighterCommonPassiveSkillDisplay.js';
-import { ITEM_CATALOG } from './itemsCatalog.js';
+import { ITEM_CATALOG, resolveWeaponMasteryKind } from './itemsCatalog.js';
 
 export const SWORD_BLUNT_MASTERY_L2_SKILL_ID = 257;
 export const SWORD_BLUNT_MASTERY_BATTLE_ID = 'l2_257';
@@ -88,7 +88,9 @@ export function swordBluntMasteryApplies(
   weaponKind: string | undefined,
   itemId?: number,
 ): boolean {
-  if (!isSwordOrBluntWeaponKind(weaponKind)) return false;
+  const masteryKind = resolveWeaponMasteryKind(weaponKind, itemId);
+  if (masteryKind == null || masteryKind === '') return false;
+  if (!isSwordOrBluntWeaponKind(masteryKind)) return false;
   if (typeof itemId === 'number' && itemId > 0) {
     if (ITEM_CATALOG[itemId]?.excludeFromSwordBluntMastery) return false;
   }

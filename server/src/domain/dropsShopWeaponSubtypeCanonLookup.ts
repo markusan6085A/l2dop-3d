@@ -36,9 +36,10 @@ const ROWS: ReadonlyArray<readonly [string, DropsShopWeaponSubtype]> = [
   ['Elven Long Sword', 'sword'],
   ['Two-Handed Sword', 'bigsword'],
   ['Claymore', 'bigsword'],
-  ['Berserker Blade', 'sword'],
+  ['Berserker Blade', 'bigsword'],
   ['Ecliptic Sword', 'sword'],
-  ["Pa'agrio Sword", 'sword'],
+  ["Pa'agrio Sword", 'bigsword'],
+  ["Pa'agrian Sword", 'bigsword'],
   ['Samurai Longsword', 'sword'],
   ['Guardian Sword', 'sword'],
   ['Sword of Damascus', 'sword'],
@@ -114,7 +115,7 @@ const ROWS: ReadonlyArray<readonly [string, DropsShopWeaponSubtype]> = [
   ['Buffalo Horn', 'blunt'],
   ['Art of Battle Axe', 'blunt'],
   ["Deadman's Glory", 'blunt'],
-  ['Great Axe', 'blunt'],
+  ['Great Axe', 'pole'],
   ['Ice Storm Hammer', 'blunt'],
   ['Star Buster', 'blunt'],
   ["Barakiel's Axe", 'blunt'],
@@ -172,6 +173,7 @@ const ROWS: ReadonlyArray<readonly [string, DropsShopWeaponSubtype]> = [
   ["Homunkulus's Sword", 'magic'],
   ["Kaim Vanul's Bones", 'magic'],
   ['Spell Breaker', 'magic'],
+  ["Sprite's Staff", 'magic'],
   ["Spirit's Staff", 'magic'],
   ['Staff of Evil Spirits', 'magic'],
   ['Sword of Valhalla', 'magic'],
@@ -210,7 +212,7 @@ const ROWS: ReadonlyArray<readonly [string, DropsShopWeaponSubtype]> = [
   ['Sobekk S Hurricane', 'fist'],
   ['Tiphon S Spear', 'pole'],
   /** У каталозі дропів помилково «Agrian» замість Pa'agrio. */
-  ['Pa Agrian Sword', 'sword'],
+  ['Pa Agrian Sword', 'bigsword'],
   ['Baguette S Dualsword', 'dual'],
 ];
 

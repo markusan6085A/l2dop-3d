@@ -5,7 +5,7 @@
  */
 import type { InventoryState } from './inventory.js';
 import { normalizeEqSlot } from './inventory.js';
-import { ITEM_CATALOG } from './itemsCatalog.js';
+import { ITEM_CATALOG, resolveWeaponMasteryKind } from './itemsCatalog.js';
 import type { BattleActionId } from '../domain/battle.js';
 import type { GmShopGrade } from './l2dopGmShopCatalog.generated.js';
 import { gmShopGradeForWeaponItemId } from './l2dopItemGradeRank.js';
@@ -40,6 +40,13 @@ export function equippedWeaponKind(inv: InventoryState): string | undefined {
   const id = equippedWeaponItemId(inv);
   if (id == null) return undefined;
   return ITEM_CATALOG[id]?.weaponType;
+}
+
+/** Тип для weapon mastery (null у masteryFamily → без бонусів). */
+export function equippedWeaponMasteryKind(inv: InventoryState): string | undefined {
+  const id = equippedWeaponItemId(inv);
+  const wk = id != null ? ITEM_CATALOG[id]?.weaponType : undefined;
+  return resolveWeaponMasteryKind(wk, id);
 }
 
 /** Грейд зброї в правій руці — лише якщо предмет у каталозі як зброя (`weaponType`). */

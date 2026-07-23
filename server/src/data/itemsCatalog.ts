@@ -12,8 +12,11 @@ import {
 import type { WeaponKindForEnchant } from './l2dopEnchant.js';
 import { mergeNgDropsWeapons } from './itemsCatalogNgWeapons.js';
 import { mergeDropsWeapons } from './itemsCatalogDWeapons.js';
+import { D_WEAPON_CATALOG } from './dWeaponCatalog.js';
 import { mergeCdropsWeapons } from './itemsCatalogCWeapons.js';
+import { C_WEAPON_CATALOG } from './cWeaponCatalog.js';
 import { mergeBdropsWeapons } from './itemsCatalogBWeapons.js';
+import { B_WEAPON_CATALOG } from './bWeaponCatalog.js';
 import { mergeAdropsWeapons } from './itemsCatalogAWeapons.js';
 import { mergeSdropsWeapons } from './itemsCatalogSWeapons.js';
 import { L2DOP_NG_DROPS_ARMOR_BY_SHOP_KEY_LOWER } from './l2dopNgArmorDropsPatches.js';
@@ -141,6 +144,8 @@ export interface ItemMeta {
   shieldBlockRatePct?: number;
   /** ETC-зброя з runtime sword/blunt — без Sword/Blunt Mastery (l2_257). */
   excludeFromSwordBluntMastery?: boolean;
+  /** null = жодна weapon mastery; undefined = fallback на weaponType. */
+  masteryFamily?: WeaponKindForEnchant | null;
 }
 
 /** C-grade «Apprentice's Spellbook» у drops shop (синтетичний id, без колізії з NG 99). */
@@ -518,7 +523,32 @@ export function itemGradeHintsForClient(): Record<number, string> {
   for (const [idStr, g] of Object.entries(L2DOP_ITEM_GRADE_UK)) {
     out[Number(idStr)] = g;
   }
+  for (const e of D_WEAPON_CATALOG) {
+    out[e.itemId] = 'D';
+  }
+  for (const e of C_WEAPON_CATALOG) {
+    out[e.itemId] = 'C';
+  }
+  for (const e of B_WEAPON_CATALOG) {
+    out[e.itemId] = 'B';
+  }
   return out;
+}
+
+/** Тип для перевірок weapon mastery: null = без бонусів, undefined = fallback на weaponType. */
+export function resolveWeaponMasteryKind(
+  weaponType: string | undefined,
+  itemId?: number,
+): string | undefined {
+  if (typeof itemId === 'number' && itemId > 0) {
+    const meta = ITEM_CATALOG[itemId];
+    if (meta && Object.prototype.hasOwnProperty.call(meta, 'masteryFamily')) {
+      const mf = meta.masteryFamily;
+      if (mf === null) return undefined;
+      if (mf !== undefined) return mf;
+    }
+  }
+  return weaponType;
 }
 
 export function itemGradeForItemId(itemId: number): string | null {

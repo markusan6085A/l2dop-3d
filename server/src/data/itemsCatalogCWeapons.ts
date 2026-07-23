@@ -12,6 +12,6 @@ export function mergeCdropsWeapons(
   target: Record<number, ItemMeta>,
 ): void {
   for (const entry of C_WEAPON_CATALOG) {
-    target[entry.itemId] = cWeaponToItemMeta(entry, target[entry.itemId]);
+    target[entry.itemId] = cWeaponToItemMeta(entry);
   }
 }

@@ -471,7 +471,7 @@ function run(): void {
   assertTierScrollsB(25162, RB_DROP_TIER_58_60);
 
   const pingolpin = customNpcDropBagForMob(25496)!;
-  assert.equal(pingolpin.drops.find((d) => d.l2ItemId === 7891)?.chance, 0.03);
+  assert.equal(pingolpin.drops.find((d) => d.l2ItemId === 287)?.chance, 0.03);
   assert.equal(pingolpin.drops.find((d) => d.l2ItemId === 928)?.chance, 0.04);
 
   const chaosGolem = customNpcDropBagForMob(25512)!;

@@ -20,7 +20,7 @@ import {
 import {
   weaponMasteryPatkAtRank,
 } from './weaponMasteryTables.js';
-import { equippedWeaponItemId, equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import { equippedWeaponItemId, equippedWeaponKind, equippedWeaponMasteryKind } from './l2dopHumanFighterBattleSkills.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import {
@@ -142,8 +142,9 @@ export function textRpgPassiveDeltaForSkill(
 
   const wk = equippedWeaponKind(inv) ?? '';
   const wItemId = equippedWeaponItemId(inv);
+  const masteryWk = equippedWeaponMasteryKind(inv) ?? '';
   const swordBlunt = swordBluntMasteryApplies(wk, wItemId);
-  const pole = wk === 'pole';
+  const pole = masteryWk === 'pole';
   const armorKind = equippedArmorKindForPassives(inv);
 
   const reqA = row.requiresArmor;
@@ -211,17 +212,17 @@ export function textRpgPassiveDeltaForSkill(
 
   if (id === 216 && !pole) return undefined;
   if (id === 257 && !swordBlunt) return undefined;
-  if (id === 144 && wk !== 'dual' && wk !== 'dualsword') return undefined;
+  if (id === 144 && masteryWk !== 'dual' && masteryWk !== 'dualsword') return undefined;
   /** Bow / Dagger Mastery — бонус лише з відповідною зброєю в руці (l1). */
-  if (id === 208 && wk !== 'bow') return undefined;
-  if (id === 209 && wk !== 'dagger') return undefined;
-  if (row.requiresWeapon === 'pole' && wk !== 'pole') return undefined;
+  if (id === 208 && masteryWk !== 'bow') return undefined;
+  if (id === 209 && masteryWk !== 'dagger') return undefined;
+  if (row.requiresWeapon === 'pole' && masteryWk !== 'pole') return undefined;
   if (row.requiresWeapon === 'sword_blunt' && !swordBlunt) return undefined;
-  if (row.requiresWeapon === 'dual' && wk !== 'dual' && wk !== 'dualsword') {
+  if (row.requiresWeapon === 'dual' && masteryWk !== 'dual' && masteryWk !== 'dualsword') {
     return undefined;
   }
-  if (row.requiresWeapon === 'bow' && wk !== 'bow') return undefined;
-  if (row.requiresWeapon === 'dagger' && wk !== 'dagger') return undefined;
+  if (row.requiresWeapon === 'bow' && masteryWk !== 'bow') return undefined;
+  if (row.requiresWeapon === 'dagger' && masteryWk !== 'dagger') return undefined;
 
   const pairs =
     row.effectPairs.length > 0

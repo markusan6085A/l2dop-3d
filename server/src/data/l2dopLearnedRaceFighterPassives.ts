@@ -24,7 +24,7 @@ import {
 } from './fighterSkillCatalog.byRace.js';
 import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from './l2dopXmlSkillLevels.lookup.js';
-import { equippedWeaponItemId, equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import { equippedWeaponItemId, equippedWeaponKind, equippedWeaponMasteryKind } from './l2dopHumanFighterBattleSkills.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import {
@@ -162,8 +162,8 @@ export function learnedRaceFighterPassivesBuffDelta(
       continue;
     }
     if (cat.l2SkillId === 144) {
-      const wk = equippedWeaponKind(_inv) ?? '';
-      if (wk !== 'dual' && wk !== 'dualsword') continue;
+      const masteryWk = equippedWeaponMasteryKind(_inv) ?? '';
+      if (masteryWk !== 'dual' && masteryWk !== 'dualsword') continue;
       const patk = dualWeaponMasteryPatkFlatAtRank(r);
       if (patk > 0) acc = applyBuffDelta(acc, { addPatk: patk });
       continue;
@@ -210,9 +210,9 @@ export function learnedRaceFighterPassivesBuffDelta(
       continue;
     }
     if (cat.l2SkillId === 208) {
-      if ((equippedWeaponKind(_inv) ?? '') !== 'bow') continue;
+      if ((equippedWeaponMasteryKind(_inv) ?? '') !== 'bow') continue;
     } else if (cat.l2SkillId === 209) {
-      if ((equippedWeaponKind(_inv) ?? '') !== 'dagger') continue;
+      if ((equippedWeaponMasteryKind(_inv) ?? '') !== 'dagger') continue;
     } else if (cat.l2SkillId === 227) {
       if (equippedArmorKindForPassives(_inv) !== 'light') continue;
     }

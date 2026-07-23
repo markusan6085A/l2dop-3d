@@ -4,7 +4,7 @@
 import { NG_WEAPON_CATALOG } from '../../src/data/ngWeaponCatalog.js';
 import { D_WEAPON_CATALOG } from '../../src/data/dWeaponCatalog.js';
 import { C_WEAPON_CATALOG } from '../../src/data/cWeaponCatalog.js';
-import { B_WEAPON_CATALOG } from '../../src/data/bWeaponCatalog.js';
+import { B_WEAPON_CATALOG, B_WEAPON_CANONICAL_COUNT, B_WEAPON_CUSTOM_COUNT, B_WEAPON_SHOP_TOTAL } from '../../src/data/bWeaponCatalog.js';
 import { A_WEAPON_CATALOG } from '../../src/data/aWeaponCatalog.js';
 import { S_WEAPON_CATALOG } from '../../src/data/sWeaponCatalog.js';
 import { ITEM_CATALOG } from '../../src/data/itemsCatalog.js';
@@ -47,7 +47,17 @@ export const EXPECTED_GRADE_COUNTS: Record<WeaponGrade, number> = {
   S: 13,
 };
 
-export const TOTAL_CANON_WEAPONS = 155;
+export const EXPECTED_B_SHOP_TOTAL = B_WEAPON_SHOP_TOTAL;
+export const EXPECTED_B_CANONICAL = B_WEAPON_CANONICAL_COUNT;
+export const EXPECTED_B_CUSTOM = B_WEAPON_CUSTOM_COUNT;
+
+export const TOTAL_CANON_WEAPONS =
+  NG_WEAPON_CATALOG.length +
+  D_WEAPON_CATALOG.length +
+  C_WEAPON_CATALOG.length +
+  B_WEAPON_CATALOG.length +
+  A_WEAPON_CATALOG.length +
+  S_WEAPON_CATALOG.length;
 
 export const REGRESSION_ITEM_IDS = {
   buffaloHorn: 308,
@@ -126,7 +136,10 @@ export function collectAllCanonWeapons(): CanonWeaponRow[] {
       wpnCrit: e.wpnCrit,
       blocksShield: e.blocksShield,
       requiresArrows: requiresArrowsForWeaponType(e.weaponType),
-      canonicalSource: 'bWeaponCatalog.ts',
+      canonicalSource:
+        e.canonSource === 'interlude'
+          ? 'bWeaponCatalog.ts'
+          : 'bWeaponCatalog.ts (custom)',
     });
   }
   for (const e of A_WEAPON_CATALOG) {

@@ -434,7 +434,7 @@
   },
   "weapon_d/bonebreaker.png": {
     "itemId": 159,
-    "priceAdena": 364879
+    "priceAdena": 439856
   },
   "weapon_d/claymore.png": {
     "itemId": 70,
@@ -466,7 +466,7 @@
   },
   "weapon_d/weapon_life_stick.png": {
     "itemId": 189,
-    "priceAdena": 338000
+    "priceAdena": 440000
   },
   "weapon_d/weapon_morning_star.png": {
     "itemId": 88,
@@ -477,39 +477,39 @@
     "priceAdena": 364879
   },
   "weapon_b/apprentices_spellbook.jpg": {
-    "itemId": 78,
+    "itemId": 910101,
     "priceAdena": 40000000
   },
   "weapon_b/art_of_battle_axe.jpg": {
-    "itemId": 7834,
+    "itemId": 175,
     "priceAdena": 180000000
   },
   "weapon_b/baguette_s_dualsword.jpg": {
-    "itemId": 7792,
+    "itemId": 910102,
     "priceAdena": 150000000
   },
   "weapon_b/bellion_cestus.jpg": {
-    "itemId": 7893,
+    "itemId": 268,
     "priceAdena": 130000000
   },
   "weapon_b/bow_of_peril.jpg": {
-    "itemId": 7891,
+    "itemId": 287,
     "priceAdena": 150000000
   },
   "weapon_b/dark_elven_long_bow.jpg": {
-    "itemId": 7890,
+    "itemId": 284,
     "priceAdena": 170000000
   },
   "weapon_b/deadman_s_glory.jpg": {
-    "itemId": 7791,
+    "itemId": 171,
     "priceAdena": 160000000
   },
   "weapon_b/great_axe.jpg": {
-    "itemId": 7894,
+    "itemId": 300,
     "priceAdena": 180000000
   },
   "weapon_b/great_sword.jpg": {
-    "itemId": 7895,
+    "itemId": 78,
     "priceAdena": 180000000
   },
   "weapon_b/guardian_sword.jpg": {
@@ -517,7 +517,7 @@
     "priceAdena": 140000000
   },
   "weapon_b/hell_knife.jpg": {
-    "itemId": 7813,
+    "itemId": 243,
     "priceAdena": 120000000
   },
   "weapon_b/ice_storm_hammer.jpg": {
@@ -525,15 +525,15 @@
     "priceAdena": 160000000
   },
   "weapon_b/kaim_vanul_s_bones.jpg": {
-    "itemId": 8340,
+    "itemId": 7893,
     "priceAdena": 150000000
   },
   "weapon_b/kris.jpg": {
-    "itemId": 7783,
+    "itemId": 229,
     "priceAdena": 110000000
   },
   "weapon_b/lance.jpg": {
-    "itemId": 7784,
+    "itemId": 97,
     "priceAdena": 180000000
   },
   "weapon_b/spell_breaker.jpg": {
@@ -541,11 +541,11 @@
     "priceAdena": 160000000
   },
   "weapon_b/spirit_s_staff.jpg": {
-    "itemId": 7889,
+    "itemId": 92,
     "priceAdena": 180000000
   },
   "weapon_b/staff_of_evil_spirits.jpg": {
-    "itemId": 7896,
+    "itemId": 210,
     "priceAdena": 160000000
   },
   "weapon_b/star_buster.jpg": {
@@ -557,15 +557,15 @@
     "priceAdena": 170000000
   },
   "weapon_b/sword_of_valhalla.jpg": {
-    "itemId": 7722,
+    "itemId": 148,
     "priceAdena": 170000000
   },
   "weapon_b/wizard_s_tear.jpg": {
-    "itemId": 8336,
+    "itemId": 7889,
     "priceAdena": 180000000
   },
   "weapon_b/arthro_nail.jpg": {
-    "itemId": 7788,
+    "itemId": 267,
     "priceAdena": 120000000
   },
   "weapon_s/angel_slayer.jpg": {
