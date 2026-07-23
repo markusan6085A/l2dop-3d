@@ -139,6 +139,8 @@ export interface ItemMeta {
   shieldDefense?: number;
   /** Щит: шанс блоку, %. */
   shieldBlockRatePct?: number;
+  /** ETC-зброя з runtime sword/blunt — без Sword/Blunt Mastery (l2_257). */
+  excludeFromSwordBluntMastery?: boolean;
 }
 
 /** C-grade «Apprentice's Spellbook» у drops shop (синтетичний id, без колізії з NG 99). */

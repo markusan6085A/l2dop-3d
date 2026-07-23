@@ -550,7 +550,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/avado_gloves.jpg",
-    "nameUk": "Avadon Gloves"
+    "nameUk": "Avado Gloves"
   },
   {
     "shopKey": "arrom_b/avadon_boots.jpg",
@@ -648,7 +648,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/doom_boots_of_fortune_light_armor.jpg",
-    "nameUk": "Doom Boots"
+    "nameUk": "Doom Boots Of Fortune Light Armor"
   },
   {
     "shopKey": "arrom_b/doom_gloves.jpg",
@@ -662,7 +662,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/doom_gloves_of_fortune_light_armor.jpg",
-    "nameUk": "Doom Gloves"
+    "nameUk": "Doom Gloves Of Fortune Light Armor"
   },
   {
     "shopKey": "arrom_b/doom_helmet.jpg",
@@ -676,14 +676,14 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/doom_helmet_of_fortune.jpg",
-    "nameUk": "Doom Helmet"
+    "nameUk": "Doom Helmet Of Fortune"
   },
   {
     "shopKey": "arrom_b/leather_armor_of_doom_of_fortune.jpg",
     "category": "armor",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/leather_armor_of_doom_of_fortune.jpg",
-    "nameUk": "Leather Armor of Doom"
+    "nameUk": "Leather Armor Of Doom Of Fortune"
   },
   {
     "shopKey": "arrom_b/stockings_of_doom.jpg",
@@ -1012,7 +1012,7 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "category": "shield",
     "grade": "B",
     "iconUrl": "/icons/drops/arrom_b/shield_avadon_shield_i00_0.jpg",
-    "nameUk": "Avadon Shield"
+    "nameUk": "Avadon Shield I00 0"
   },
   {
     "shopKey": "arrom_b/shield_doom_shield_i00_0.jpg",
@@ -1988,6 +1988,20 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "nameUk": "Baguette S Dualsword"
   },
   {
+    "shopKey": "weapon_d/bonebreaker.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/bonebreaker.png",
+    "nameUk": "Bonebreaker"
+  },
+  {
+    "shopKey": "weapon_d/claymore.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/claymore.png",
+    "nameUk": "Claymore"
+  },
+  {
     "shopKey": "weapon_d/dark_elven_bow.jpg",
     "category": "weapon",
     "grade": "D",
@@ -1995,11 +2009,46 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "nameUk": "Dark Elven Bow"
   },
   {
+    "shopKey": "weapon_d/elven-long-sword.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/elven-long-sword.png",
+    "nameUk": "Elven Long Sword"
+  },
+  {
+    "shopKey": "weapon_d/glaive.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/glaive.png",
+    "nameUk": "Glaive"
+  },
+  {
     "shopKey": "weapon_d/knight_s_sword.jpg",
     "category": "weapon",
     "grade": "D",
     "iconUrl": "/icons/drops/weapon_d/knight_s_sword.jpg",
     "nameUk": "Knight S Sword"
+  },
+  {
+    "shopKey": "weapon_d/light-crossbow.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/light-crossbow.png",
+    "nameUk": "Light Crossbow"
+  },
+  {
+    "shopKey": "weapon_d/mithril-dagger.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/mithril-dagger.png",
+    "nameUk": "Mithril Dagger"
+  },
+  {
+    "shopKey": "weapon_d/scallop_jamadhr.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/scallop_jamadhr.png",
+    "nameUk": "Scallop Jamadhr"
   },
   {
     "shopKey": "weapon_d/shilen_knife.jpg",
@@ -2042,6 +2091,34 @@ export const DROPS_SHOP_CATALOG: DropsShopCatalogRow[] = [
     "grade": "D",
     "iconUrl": "/icons/drops/weapon_d/war_hammer.jpg",
     "nameUk": "War Hammer"
+  },
+  {
+    "shopKey": "weapon_d/weapon_goathead_staff.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/weapon_goathead_staff.png",
+    "nameUk": "Weapon Goathead Staff"
+  },
+  {
+    "shopKey": "weapon_d/weapon_life_stick.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/weapon_life_stick.png",
+    "nameUk": "Weapon Life Stick"
+  },
+  {
+    "shopKey": "weapon_d/weapon_morning_star.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/weapon_morning_star.png",
+    "nameUk": "Weapon Morning Star"
+  },
+  {
+    "shopKey": "weapon_d/weapon_tarbar.png",
+    "category": "weapon",
+    "grade": "D",
+    "iconUrl": "/icons/drops/weapon_d/weapon_tarbar.png",
+    "nameUk": "Weapon Tarbar"
   },
   {
     "shopKey": "arrom_ng/devotion_bots.jpg",

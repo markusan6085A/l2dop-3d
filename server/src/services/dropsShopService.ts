@@ -100,7 +100,7 @@ export type DropsShopConsumableSubtype =
 
 export interface DropsShopOverrideEntry {
   itemId: number;
-  priceAdena: number;
+  priceAdena: number | null;
 }
 
 type OverridesMap = Record<string, DropsShopOverrideEntry>;
@@ -142,18 +142,16 @@ function parseOverridesJson(raw: unknown): OverridesMap {
     if (!v || typeof v !== 'object') continue;
     const o = v as Record<string, unknown>;
     const itemId = Number(o.itemId);
-    const priceAdena = Number(o.priceAdena);
-    if (
-      !Number.isFinite(itemId) ||
-      itemId <= 0 ||
-      !Number.isFinite(priceAdena) ||
-      priceAdena < 0
-    ) {
-      continue;
-    }
+    if (!Number.isFinite(itemId) || itemId <= 0) continue;
+    const priceRaw = o.priceAdena;
+    const hasPrice =
+      priceRaw !== undefined &&
+      priceRaw !== null &&
+      Number.isFinite(Number(priceRaw)) &&
+      Number(priceRaw) >= 0;
     out[k] = {
       itemId: Math.floor(itemId),
-      priceAdena: Math.floor(priceAdena),
+      priceAdena: hasPrice ? Math.floor(Number(priceRaw)) : null,
     };
   }
   return out;

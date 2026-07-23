@@ -20,7 +20,7 @@ import {
 import {
   weaponMasteryPatkAtRank,
 } from './weaponMasteryTables.js';
-import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import { equippedWeaponItemId, equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import {
@@ -34,7 +34,7 @@ import {
   lightArmorMasteryRogueEvasionFlatAtRank,
   lightArmorMasteryRogueFlatPdefAtRank,
 } from './lightArmorMasteryTables.js';
-import { isSwordOrBluntWeaponKind, swordBluntMasteryPatkFlatAtRank } from './swordBluntMasteryTables.js';
+import { swordBluntMasteryApplies, swordBluntMasteryPatkFlatAtRank } from './swordBluntMasteryTables.js';
 import { bowMasteryPatkFlatAtRank } from './bowMasteryTables.js';
 import { daggerMasteryPatkFlatAtRank } from './daggerMasteryTables.js';
 import { focusMindMpRegenFlatAtRank } from './focusMindTables.js';
@@ -141,7 +141,8 @@ export function textRpgPassiveDeltaForSkill(
   if (p <= 0) return undefined;
 
   const wk = equippedWeaponKind(inv) ?? '';
-  const swordBlunt = isSwordOrBluntWeaponKind(wk);
+  const wItemId = equippedWeaponItemId(inv);
+  const swordBlunt = swordBluntMasteryApplies(wk, wItemId);
   const pole = wk === 'pole';
   const armorKind = equippedArmorKindForPassives(inv);
 

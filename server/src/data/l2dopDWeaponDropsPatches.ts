@@ -36,7 +36,7 @@ function toPatch(entry: DWeaponCanonEntry): DWeaponDropsPatch {
     mode: 'phys',
     pAtk: entry.pAtk,
     speed: entry.atkSpd,
-    crit: entry.displayCrit ?? entry.wpnCrit,
+    crit: entry.wpnCrit,
   };
 }
 

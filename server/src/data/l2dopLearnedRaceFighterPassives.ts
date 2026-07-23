@@ -24,7 +24,7 @@ import {
 } from './fighterSkillCatalog.byRace.js';
 import { raceFighterCatalogEntryVisibleForProfession } from './raceFighterSkillCatalog.professionRules.js';
 import { l2dopXmlSkillRow } from './l2dopXmlSkillLevels.lookup.js';
-import { equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
+import { equippedWeaponItemId, equippedWeaponKind } from './l2dopHumanFighterBattleSkills.js';
 import { itemBlocksShieldSlot } from './l2dopTwoHandedWeapon.js';
 import { ITEM_CATALOG } from './itemsCatalog.js';
 import {
@@ -36,8 +36,8 @@ import {
   shieldMasteryDefenceRatePctAtRank,
 } from './shieldMasteryTables.js';
 import {
-  isSwordOrBluntWeaponKind,
   SWORD_BLUNT_MASTERY_MAX_RANK,
+  swordBluntMasteryApplies,
   swordBluntMasteryPatkFlatAtRank,
 } from './swordBluntMasteryTables.js';
 import {
@@ -199,7 +199,8 @@ export function learnedRaceFighterPassivesBuffDelta(
     }
     if (cat.l2SkillId === 257) {
       const wk = equippedWeaponKind(_inv) ?? '';
-      if (!isSwordOrBluntWeaponKind(wk)) continue;
+      const wItemId = equippedWeaponItemId(_inv);
+      if (!swordBluntMasteryApplies(wk, wItemId)) continue;
       const r = Math.max(
         1,
         Math.min(SWORD_BLUNT_MASTERY_MAX_RANK, Math.floor(e.level))

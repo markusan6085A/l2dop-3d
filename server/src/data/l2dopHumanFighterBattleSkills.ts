@@ -28,11 +28,17 @@ function equippedRightHandSlot(inv: InventoryState) {
   );
 }
 
-/** Тип зброї в l1 (для Whirlwind — лише `pole`). */
-export function equippedWeaponKind(inv: InventoryState): string | undefined {
+/** itemId зброї в правій руці (l1). */
+export function equippedWeaponItemId(inv: InventoryState): number | undefined {
   const w = equippedRightHandSlot(inv);
   const id = w?.itemId;
-  if (typeof id !== 'number' || id <= 0) return undefined;
+  return typeof id === 'number' && id > 0 ? id : undefined;
+}
+
+/** Тип зброї в l1 (для Whirlwind — лише `pole`). */
+export function equippedWeaponKind(inv: InventoryState): string | undefined {
+  const id = equippedWeaponItemId(inv);
+  if (id == null) return undefined;
   return ITEM_CATALOG[id]?.weaponType;
 }
 

@@ -110,7 +110,7 @@ function statFingerprint(shopKey: string, itemId: number, grade: string): string
       'd-canon',
       `wt=${dCanon.weaponType}`,
       `p=${dCanon.pAtk}`,
-      dCanon.mAtk != null ? `m=${dCanon.mAtk}` : '',
+      `m=${dCanon.mAtk}`,
       `spd=${dCanon.atkSpd}`,
       `wc=${dCanon.wpnCrit}`,
     ]

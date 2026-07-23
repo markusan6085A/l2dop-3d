@@ -432,6 +432,39 @@
     "itemId": 293,
     "priceAdena": 313529
   },
+  "weapon_d/bonebreaker.png": {
+    "itemId": 159
+  },
+  "weapon_d/claymore.png": {
+    "itemId": 70
+  },
+  "weapon_d/elven-long-sword.png": {
+    "itemId": 2499
+  },
+  "weapon_d/glaive.png": {
+    "itemId": 297
+  },
+  "weapon_d/light-crossbow.png": {
+    "itemId": 280
+  },
+  "weapon_d/mithril-dagger.png": {
+    "itemId": 225
+  },
+  "weapon_d/scallop_jamadhr.png": {
+    "itemId": 262
+  },
+  "weapon_d/weapon_goathead_staff.png": {
+    "itemId": 90
+  },
+  "weapon_d/weapon_life_stick.png": {
+    "itemId": 189
+  },
+  "weapon_d/weapon_morning_star.png": {
+    "itemId": 88
+  },
+  "weapon_d/weapon_tarbar.png": {
+    "itemId": 158
+  },
   "weapon_b/apprentices_spellbook.jpg": {
     "itemId": 78,
     "priceAdena": 40000000

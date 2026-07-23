@@ -40,14 +40,14 @@ export interface CanonWeaponRow {
 
 export const EXPECTED_GRADE_COUNTS: Record<WeaponGrade, number> = {
   NG: 42,
-  D: 10,
+  D: 21,
   C: 26,
   B: 23,
   A: 30,
   S: 13,
 };
 
-export const TOTAL_CANON_WEAPONS = 144;
+export const TOTAL_CANON_WEAPONS = 155;
 
 export const REGRESSION_ITEM_IDS = {
   buffaloHorn: 308,

@@ -46,7 +46,7 @@ function resolveBuyOfferForRow(
     overrides[row.shopKey] ??
     overrides[shopKeyNorm] ??
     (iconRel ? overrides[iconRel] : undefined);
-  if (o && o.itemId > 0 && o.priceAdena > 0) {
+  if (o && o.itemId > 0 && o.priceAdena != null && o.priceAdena > 0) {
     const priced = applyCGradeWeaponGmShopPrice(row, {
       itemId: o.itemId,
       priceAdena: o.priceAdena,

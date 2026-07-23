@@ -157,11 +157,9 @@ function checkDcbEntry(
   }
   expectEq(`${grade} #${entry.itemId} weaponType`, catalog.weaponType, entry.weaponType, errors);
   expectEq(`${grade} #${entry.itemId} pAtk`, catalog.pAtk, entry.pAtk, errors);
+  expectEq(`${grade} #${entry.itemId} mAtk`, catalog.mAtk, entry.mAtk, errors);
   expectEq(`${grade} #${entry.itemId} atkSpd`, catalog.atkSpd, entry.atkSpd, errors);
   expectEq(`${grade} #${entry.itemId} wpnCrit`, catalog.wpnCrit, entry.wpnCrit, errors);
-  if (entry.mAtk != null) {
-    expectEq(`${grade} #${entry.itemId} mAtk`, catalog.mAtk, entry.mAtk, errors);
-  }
   if (catalog.rCrit != null && catalog.rCrit !== 0) {
     errors.push(`${grade} #${entry.itemId} unexpected rCrit ${catalog.rCrit}`);
   }
@@ -177,8 +175,7 @@ function checkDcbEntry(
   } else {
     expectEq(`${grade} preview pAtk ${entry.itemId}`, patch.pAtk, entry.pAtk, errors);
     expectEq(`${grade} preview speed ${entry.itemId}`, patch.speed, entry.atkSpd, errors);
-    const displayCrit = 'displayCrit' in entry ? entry.displayCrit : entry.wpnCrit;
-    expectEq(`${grade} preview crit ${entry.itemId}`, patch.crit, displayCrit ?? entry.wpnCrit, errors);
+    expectEq(`${grade} preview crit ${entry.itemId}`, patch.crit, entry.wpnCrit, errors);
   }
 
   expectEq(

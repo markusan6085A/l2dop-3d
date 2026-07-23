@@ -17,9 +17,11 @@ import { lookupCanonWeaponSubtypeFromDisplayLabel } from './dropsShopWeaponSubty
 
 export type DropsShopWeaponSubtype =
   | 'sword'
+  | 'bigsword'
   | 'dagger'
   | 'bow'
   | 'blunt'
+  | 'bigblunt'
   | 'pole'
   | 'fist'
   | 'dual'
@@ -27,9 +29,11 @@ export type DropsShopWeaponSubtype =
 
 export const DROPS_SHOP_WEAPON_SUBTYPE_ORDER = [
   'sword',
+  'bigsword',
   'dagger',
   'bow',
   'blunt',
+  'bigblunt',
   'pole',
   'fist',
   'dual',
@@ -83,15 +87,17 @@ function mapWeaponKindToSubtype(
     case 'dual':
       return 'dual';
     case 'sword':
-    case 'bigsword':
       return 'sword';
+    case 'bigsword':
+      return 'bigsword';
     case 'dagger':
       return 'dagger';
     case 'bow':
       return 'bow';
     case 'blunt':
-    case 'bigblunt':
       return 'blunt';
+    case 'bigblunt':
+      return 'bigblunt';
     case 'pole':
       return 'pole';
     case 'fist':
