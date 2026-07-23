@@ -9,6 +9,7 @@ import { clientConfigRoutes } from './routes/clientConfigRoutes.js';
 import { gameRoutes } from './routes/game.js';
 import { dropsShopRoutes } from './routes/dropsShopRoutes.js';
 import { shopSellRoutes } from './routes/shopSellRoutes.js';
+import { gameCraftRoutes } from './routes/gameCraftRoutes.js';
 import { isDevSelfBoostEnabled } from './services/devSelfBoostService.js';
 
 /** `server/public` з кореня репо або `public`, якщо cwd = `server/`. */
@@ -77,6 +78,7 @@ export async function buildApp() {
   await app.register(gameRoutes, { prefix: '/game' });
   await app.register(dropsShopRoutes, { prefix: '/game' });
   await app.register(shopSellRoutes, { prefix: '/game' });
+  await app.register(gameCraftRoutes, { prefix: '/game' });
 
   if (!isDevSelfBoostEnabled()) {
     app.get('/dev-boost.html', async (_request, reply) => {
@@ -88,7 +90,7 @@ export async function buildApp() {
   }
 
   /** Явна віддача нових HTML-сторінок (разом із fastifyStatic). */
-  for (const page of ['daily-quests.html', 'ratings.html'] as const) {
+  for (const page of ['daily-quests.html', 'ratings.html', 'craft.html'] as const) {
     app.get('/' + page, async (_request, reply) => {
       const filePath = path.join(publicDir, page);
       if (!fs.existsSync(filePath)) {

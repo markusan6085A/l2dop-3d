@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
 import { CHARACTER_CATALOG_VERSION } from '../src/data/characterCatalogVersion.js';
 import { BASIC_RESOURCE_CATALOG } from '../src/data/basicResourceCatalog.js';
+import { CRAFTED_RESOURCE_CATALOG } from '../src/data/craftedResourceCatalog.js';
 import { ENCHANT_SCROLL_DEFINITIONS } from '../src/data/enchantScrollCatalog.js';
 import { buildApp } from '../src/app.js';
 import { signAccessToken } from '../src/lib/jwt.js';
@@ -24,14 +25,14 @@ function ok(name: string): void {
 
 assert.equal(
   CHARACTER_CATALOG_VERSION,
-  '20260723-basic-resources-icons-tabs-v2',
+  '20260723-crafted-resource-craft-v1',
   'server catalog version bumped',
 );
 ok('CHARACTER_CATALOG_VERSION matches cache bump');
 
 const commonJs = fs.readFileSync(commonJsPath, 'utf8');
 assert.ok(
-  commonJs.includes("APP_DATA_VERSION = '20260723-basic-resources-icons-tabs-v2'"),
+  commonJs.includes("APP_DATA_VERSION = '20260723-crafted-resource-craft-v1'"),
   'APP_DATA_VERSION in common.js',
 );
 assert.ok(
@@ -105,6 +106,15 @@ async function runRouteTests(): Promise<void> {
     assert.notEqual(hints.itemNamesUk?.[id], `#${row.itemId}`);
   }
   ok('all 17 basic resources present in catalog-hints with names/icons/tabs');
+
+  for (const row of CRAFTED_RESOURCE_CATALOG) {
+    const id = String(row.itemId);
+    assert.ok(hints.itemNamesEn?.[id], `crafted itemNamesEn ${row.itemId}`);
+    assert.ok(hints.itemNamesUk?.[id], `crafted itemNamesUk ${row.itemId}`);
+    assert.equal(hints.itemInventoryTabHints?.[id], 'resource');
+    assert.equal(hints.itemIconHintByItemId?.[id], row.iconUrl);
+  }
+  ok('all 20 crafted resources present in catalog-hints');
 
   for (const row of ENCHANT_SCROLL_DEFINITIONS) {
     const id = String(row.itemId);

@@ -15,6 +15,7 @@ import {
   type EqSlotValue,
 } from '../src/data/inventory.js';
 import { BASIC_RESOURCE_ITEM_IDS } from '../src/data/basicResourceCatalog.js';
+import { CRAFTED_RESOURCE_ITEM_IDS } from '../src/data/craftedResourceCatalog.js';
 import {
   LEGACY_S_WEAPON_SOURCE_IDS,
 } from '../src/data/sWeaponItemIdMigration.js';
@@ -25,11 +26,16 @@ config({ path: path.join(__dirname, '../.env') });
 const prisma = new PrismaClient();
 
 const BASIC_RESOURCE_ID_SET = new Set<number>(BASIC_RESOURCE_ITEM_IDS);
+const CRAFTED_RESOURCE_ID_SET = new Set<number>(CRAFTED_RESOURCE_ITEM_IDS);
+const PRESERVED_RESOURCE_ID_SET = new Set<number>([
+  ...BASIC_RESOURCE_ITEM_IDS,
+  ...CRAFTED_RESOURCE_ITEM_IDS,
+]);
 
-/** Лише для cleanup: старі resource itemId (1864–1899, 4039–4043, 5220, 5549, 5550), без нових basic. */
+/** Лише для cleanup: старі resource itemId без нових basic/crafted. */
 const LEGACY_RESOURCE_ITEM_IDS = new Set<number>([
   ...Array.from({ length: 1899 - 1864 + 1 }, (_, i) => 1864 + i).filter(
-    (id) => !BASIC_RESOURCE_ID_SET.has(id),
+    (id) => !PRESERVED_RESOURCE_ID_SET.has(id),
   ),
   4039,
   4040,
@@ -37,8 +43,6 @@ const LEGACY_RESOURCE_ITEM_IDS = new Set<number>([
   4042,
   4043,
   5220,
-  5549,
-  5550,
 ]);
 
 export function isLegacyResourceItemId(itemId: number): boolean {
@@ -119,6 +123,7 @@ async function main(): Promise<void> {
           databaseUnavailable: true,
           legacyItemIdCount: LEGACY_RESOURCE_ITEM_IDS.size,
           preservedBasicResourceIds: [...BASIC_RESOURCE_ITEM_IDS],
+          preservedCraftedResourceIds: [...CRAFTED_RESOURCE_ITEM_IDS],
           preservedLegacySWeaponIds: [...LEGACY_S_WEAPON_SOURCE_IDS],
           note: 'Start PostgreSQL and re-run dry-run for per-character counts.',
         },
@@ -215,6 +220,7 @@ async function main(): Promise<void> {
         marketListingsRemoved,
         legacyIdsFoundInInventories: byItemId,
         preservedBasicResourceIds: [...BASIC_RESOURCE_ITEM_IDS],
+        preservedCraftedResourceIds: [...CRAFTED_RESOURCE_ITEM_IDS],
         preservedLegacySWeaponIds: [...LEGACY_S_WEAPON_SOURCE_IDS],
       },
       null,

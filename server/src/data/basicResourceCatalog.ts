@@ -124,6 +124,16 @@ export const BASIC_RESOURCE_CATALOG: readonly BasicResourceEntry[] = [
   },
   {
     itemId: 1874,
+    code: 'oriharukon_ore',
+    nameUk: 'Руда оріхарукону',
+    nameEn: 'Oriharukon Ore',
+    iconUrl: `${ICON_BASE}/oriharukon_ore.jpg`,
+    stackable: true,
+    sourceType: 'drop_spoil',
+    tier: 4,
+  },
+  {
+    itemId: 1875,
     code: 'stone_of_purity',
     nameUk: 'Камінь чистоти',
     nameEn: 'Stone of Purity',
@@ -133,7 +143,7 @@ export const BASIC_RESOURCE_CATALOG: readonly BasicResourceEntry[] = [
     tier: 3,
   },
   {
-    itemId: 1875,
+    itemId: 1876,
     code: 'mithril_ore',
     nameUk: 'Міфрилова руда',
     nameEn: 'Mithril Ore',
@@ -141,16 +151,6 @@ export const BASIC_RESOURCE_CATALOG: readonly BasicResourceEntry[] = [
     stackable: true,
     sourceType: 'drop_spoil',
     tier: 3,
-  },
-  {
-    itemId: 1876,
-    code: 'oriharukon_ore',
-    nameUk: 'Руда оріхарукону',
-    nameEn: 'Oriharukon Ore',
-    iconUrl: `${ICON_BASE}/oriharukon_ore.jpg`,
-    stackable: true,
-    sourceType: 'drop_spoil',
-    tier: 4,
   },
   {
     itemId: 1877,

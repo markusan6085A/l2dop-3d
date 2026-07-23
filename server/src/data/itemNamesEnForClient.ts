@@ -22,6 +22,7 @@ import { gradeCraftMaterialNamesEnForClient } from './itemsCatalogGradeCraftMate
 import { mammonLifeStoneNamesEnForClient } from './mammonMerchantLifeStones.js';
 import { sealStoneNamesEnForClient } from './sevenSignsSealStoneItems.js';
 import { basicResourceNamesEnForClient } from './itemsCatalogBasicResources.js';
+import { craftedResourceNamesEnForClient } from './itemsCatalogCraftedResources.js';
 
 type OverrideRow = { itemId?: number };
 
@@ -135,6 +136,10 @@ export function itemNamesEnForClient(): Record<number, string> {
   }
 
   for (const [idStr, en] of Object.entries(basicResourceNamesEnForClient())) {
+    put(Number(idStr), en, true);
+  }
+
+  for (const [idStr, en] of Object.entries(craftedResourceNamesEnForClient())) {
     put(Number(idStr), en, true);
   }
 

@@ -81,6 +81,11 @@ import {
   basicResourceNamesUkForClient,
   mergeBasicResources,
 } from './itemsCatalogBasicResources.js';
+import {
+  craftedResourceInventoryTabHints,
+  craftedResourceNamesUkForClient,
+  mergeCraftedResources,
+} from './itemsCatalogCraftedResources.js';
 
 export type ItemSlotKind =
   | 'rhand'
@@ -356,6 +361,7 @@ export const ITEM_CATALOG: Record<number, ItemMeta> = (() => {
   Object.assign(o, mammonLifeStoneItemMetaForCatalog());
   mergeGradeCraftMaterials(o);
   mergeBasicResources(o);
+  mergeCraftedResources(o);
 
   /** D/C/B/A/S-grade броня — канонічний каталог Interlude (перезапис GM-рядків). */
   for (const row of [
@@ -793,6 +799,7 @@ export function itemInventoryTabHintsForClient(): Record<
     ...ITEM_INVENTORY_TAB_EXTRA,
     ...mammonLifeStoneInventoryTabHints(),
     ...basicResourceInventoryTabHints(),
+    ...craftedResourceInventoryTabHints(),
     ...gradeCraftMaterialInventoryTabHints(),
   } as Record<number, L2ItemInventoryTabHint>;
 }
@@ -835,6 +842,11 @@ export function itemNamesUkForClient(): Record<number, string> {
   }
 
   for (const [idStr, uk] of Object.entries(basicResourceNamesUkForClient())) {
+    const id = Number(idStr);
+    if (uk && String(uk).trim() !== '') out[id] = uk;
+  }
+
+  for (const [idStr, uk] of Object.entries(craftedResourceNamesUkForClient())) {
     const id = Number(idStr);
     if (uk && String(uk).trim() !== '') out[id] = uk;
   }

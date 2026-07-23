@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sealStoneIconUrlForItemId } from '../data/sevenSignsSealStoneItems.js';
 import { BASIC_RESOURCE_BY_ITEM_ID } from '../data/basicResourceCatalog.js';
+import { CRAFTED_RESOURCE_BY_ITEM_ID } from '../data/craftedResourceCatalog.js';
 import { GRADE_CRAFT_MATERIAL_BY_ITEM_ID } from '../data/gradeCraftMaterialsCatalog.js';
 import { enchantScrollByItemId } from '../data/enchantScrollCatalog.js';
 import {
@@ -49,6 +50,12 @@ export function resolveL2dopItemIconFilePath(itemId: number): string | null {
   const craftMaterial = GRADE_CRAFT_MATERIAL_BY_ITEM_ID.get(itemId);
   if (craftMaterial) {
     const fromCatalog = publicFileFromUrl(craftMaterial.iconUrl);
+    if (fromCatalog) return fromCatalog;
+  }
+
+  const craftedResource = CRAFTED_RESOURCE_BY_ITEM_ID.get(itemId);
+  if (craftedResource) {
+    const fromCatalog = publicFileFromUrl(craftedResource.iconUrl);
     if (fromCatalog) return fromCatalog;
   }
 
@@ -123,6 +130,8 @@ export function resolveItemIconPublicUrl(itemId: number): string {
   if (basicResource) return basicResource.iconUrl;
   const craftMaterial = GRADE_CRAFT_MATERIAL_BY_ITEM_ID.get(itemId);
   if (craftMaterial) return craftMaterial.iconUrl;
+  const craftedResource = CRAFTED_RESOURCE_BY_ITEM_ID.get(itemId);
+  if (craftedResource) return craftedResource.iconUrl;
   const enchantScroll = enchantScrollByItemId(itemId);
   if (enchantScroll) return enchantScroll.iconUrl;
   const file = `${itemId}.jpg`;

@@ -19,6 +19,7 @@ import {
   sealStoneNameColorSlugForClient,
 } from '../data/sevenSignsSealStoneItems.js';
 import { basicResourceIconHintsForClient } from '../data/itemsCatalogBasicResources.js';
+import { craftedResourceIconHintsForClient } from '../data/itemsCatalogCraftedResources.js';
 import { enchantScrollIconHintsForClient } from '../data/enchantScrollCatalog.js';
 import {
   itemBlocksShieldHintsForClient,
@@ -57,6 +58,7 @@ function buildCharacterCatalogHints() {
       ...mammonLifeStoneIconHintsForClient(),
       ...basicResourceIconHintsForClient(),
       ...gradeCraftMaterialIconHintsForClient(),
+      ...craftedResourceIconHintsForClient(),
       ...enchantScrollIconHintsForClient(),
     },
     /** itemId → CSS slug кольору назви (каміння печаті Seven Signs). */

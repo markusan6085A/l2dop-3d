@@ -1,5 +1,5 @@
 /**
- * Smoke: legacy resource craft system fully removed.
+ * Smoke: legacy resource craft system fully removed; crafted resources preserved.
  * npm run test:legacy-resource-removal
  */
 import assert from 'node:assert/strict';
@@ -11,6 +11,7 @@ import { itemNamesUkForClient } from '../src/data/itemsCatalog.js';
 import { rollKillLoot } from '../src/domain/killLoot.js';
 import { emptyInventory } from '../src/data/inventory.js';
 import { isBasicResourceItemId } from '../src/data/basicResourceCatalog.js';
+import { CRAFTED_RESOURCE_ITEM_IDS } from '../src/data/craftedResourceCatalog.js';
 import {
   isLegacyResourceItemId,
   stripLegacyResourceItemsFromInventory,
@@ -32,10 +33,7 @@ const removedFiles = [
   'server/src/data/resourceCraftItemNamesUk.ts',
   'server/src/routes/gameResourceCraftRoutes.ts',
   'server/src/domain/mobResourceLoot.ts',
-  'server/public/craft.html',
-  'server/public/craft.js',
   'server/public/craftProfessions.js',
-  'server/public/css/l2-craft-page.css',
 ];
 
 for (const rel of removedFiles) {
@@ -58,7 +56,6 @@ const banned = [
   'resourceCraftItemNamesUk',
   'craftProfessions',
   '/game/resource-craft',
-  'craft.html',
   'mobResourceLoot',
   'rollProceduralResourceLoot',
 ];
@@ -89,23 +86,29 @@ for (const root of runtimeScanRoots) {
 }
 ok('runtime scan has no legacy craft symbols');
 
+assert.ok(fs.existsSync(path.join(repoRoot, 'server/public/craft.html')));
+assert.ok(fs.existsSync(path.join(repoRoot, 'server/public/craft.js')));
+ok('new crafted-resource craft UI present');
+
 const namesUk = itemNamesUkForClient();
-for (const id of [1881, 1884, 1883, 4039, 5220, 5549, 5550, 1899]) {
+for (const id of [4039, 5220, 1899]) {
   assert.equal(namesUk[id], undefined, 'catalog still has legacy item ' + id);
+}
+for (const id of [1881, 1884, 1883, 5549, 5550, 1878]) {
+  assert.ok(namesUk[id], 'crafted resource in catalog ' + id);
 }
 assert.equal(namesUk[1864], 'Стебло', 'basic resource Stem in catalog');
 assert.equal(namesUk[1867], 'Шкура тварини', 'basic resource Animal Skin in catalog');
-ok('itemNamesUk has no legacy resource ids (basic resources allowed)');
+ok('itemNamesUk has crafted resources; legacy ids removed');
 
-for (const id of [1864, 1867, 1877, 920001, 920002, 920003]) {
-  assert.equal(isLegacyResourceItemId(id), false, `basic/synthetic ${id} not legacy cleanup`);
+for (const id of [1864, 1867, 1877, 920001, 920002, 920003, ...CRAFTED_RESOURCE_ITEM_IDS]) {
+  assert.equal(isLegacyResourceItemId(id), false, `basic/crafted ${id} not legacy cleanup`);
 }
 for (const id of [20166, 20168, 20171, 20173]) {
   assert.equal(isLegacyResourceItemId(id), false, `legacy S weapon ${id} not resource cleanup`);
 }
-assert.equal(isLegacyResourceItemId(1881), true);
-assert.equal(isLegacyResourceItemId(1884), true);
-ok('legacy cleanup targets #1881/#1884 but not S weapons or basic resources');
+assert.equal(isLegacyResourceItemId(1899), true);
+ok('legacy cleanup keeps crafted/basic; removes 1899 etc');
 
 const loot = rollKillLoot(20001, 40, emptyInventory());
 for (const line of loot.items) {
@@ -134,15 +137,18 @@ const invWithLegacy = stripLegacyResourceItemsFromInventory({
   ],
   eq: { l1: 1878 },
 });
-assert.equal(invWithLegacy.removedQty, 23);
+assert.equal(invWithLegacy.removedQty, 2);
 assert.deepEqual(invWithLegacy.next.stacks, [
+  { itemId: 1883, qty: 10 },
+  { itemId: 1881, qty: 7 },
+  { itemId: 1884, qty: 3 },
   { itemId: 20166, qty: 1 },
   { itemId: 57, qty: 5 },
   { itemId: 1864, qty: 4 },
   { itemId: 920002, qty: 9 },
 ]);
-assert.deepEqual(invWithLegacy.next.eq, {});
-ok('cleanup strips legacy ids including #1881/#1884, keeps basic + S weapons');
+assert.deepEqual(invWithLegacy.next.eq, { l1: 1878 });
+ok('cleanup strips only legacy ids; keeps crafted resources');
 
 const invClean = stripLegacyResourceItemsFromInventory({
   v: 1,
@@ -172,8 +178,15 @@ async function assertLegacyEndpoints404(): Promise<void> {
     payload: { tier: 1, recipeIndex: 0, expectedRevision: 1 },
   });
   assert.equal(postRes.statusCode, 404, 'POST /game/resource-craft must 404');
+
+  const newBook = await app.inject({
+    method: 'GET',
+    url: '/game/craft/materials',
+    headers: { authorization: 'Bearer ' + token },
+  });
+  assert.notEqual(newBook.statusCode, 404, 'GET /game/craft/materials exists');
   await app.close();
-  ok('legacy craft endpoints return 404');
+  ok('legacy craft endpoints 404; new craft endpoint registered');
 }
 
 assertLegacyEndpoints404()
