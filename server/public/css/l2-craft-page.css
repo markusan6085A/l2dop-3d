@@ -18,28 +18,6 @@
   margin-bottom: 12px;
 }
 
-.l2-craft-tab {
-  flex: 1 1 auto;
-  min-width: 72px;
-  padding: 6px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(0, 0, 0, 0.25);
-  color: inherit;
-  cursor: pointer;
-  text-align: center;
-  font-size: 12px;
-}
-
-.l2-craft-tab.is-active {
-  border-color: rgba(255, 220, 120, 0.55);
-  background: rgba(80, 60, 20, 0.45);
-}
-
-.l2-craft-tab:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-
 .l2-craft-meta {
   font-size: 12px;
   margin-bottom: 10px;
@@ -118,26 +96,15 @@
 .l2-craft-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   margin-top: 6px;
 }
 
 .l2-craft-count-input {
-  width: 64px;
+  width: 52px;
   padding: 4px 6px;
   text-align: center;
-}
-
-.l2-craft-btn {
-  padding: 4px 8px;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.l2-craft-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .l2-craft-summary {
@@ -152,6 +119,96 @@
   margin-top: 4px;
 }
 
-.l2-craft-msg.ok {
-  color: #8fd48f;
+.l2-craft-msg {
+  text-align: center;
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.l2-craft-msg--ok {
+  color: #bfa88a;
+}
+
+.l2-craft-msg-qty {
+  color: #fff;
+  font-weight: 700;
+}
+
+.l2-craft-msg--err {
+  color: #e88;
+}
+
+/* Кнопки крафту — той самий стиль, що «Назад до міста» (magisters), трохи менші */
+body.l2-page-craft .l2-craft-tabs .l2-craft-tab.l2-town-btn,
+body.l2-page-craft .l2-craft-controls .l2-town-btn,
+body.l2-page-craft .l2-craft-recipe > .l2-town-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  min-width: 56px !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 5px 10px !important;
+  font-family: var(--l2-font-display);
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
+  line-height: 1.25 !important;
+  text-align: center;
+  color: #fff !important;
+  text-shadow: none !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  border: 1px solid #5c4a36 !important;
+  border-image: none !important;
+  border-radius: 6px !important;
+  background: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
+  background-image: linear-gradient(180deg, #4a4034 0%, #2e2820 55%, #1f1a14 100%) !important;
+  background-color: transparent !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  filter: none !important;
+  transform: none !important;
+  transition: filter 0.12s ease;
+}
+
+body.l2-page-craft .l2-craft-tabs .l2-craft-tab.l2-town-btn {
+  flex: 1 1 auto;
+  min-width: 64px !important;
+}
+
+body.l2-page-craft .l2-craft-tab.is-active.l2-town-btn {
+  filter: brightness(1.12) !important;
+  border-color: #6d5840 !important;
+}
+
+body.l2-page-craft .l2-craft-tab:disabled.l2-town-btn {
+  opacity: 0.55;
+  cursor: default;
+}
+
+body.l2-page-craft .l2-craft-tabs .l2-craft-tab.l2-town-btn:hover,
+body.l2-page-craft .l2-craft-tabs .l2-craft-tab.l2-town-btn:focus,
+body.l2-page-craft .l2-craft-tabs .l2-craft-tab.l2-town-btn:focus-visible,
+body.l2-page-craft .l2-craft-controls .l2-town-btn:hover,
+body.l2-page-craft .l2-craft-controls .l2-town-btn:focus,
+body.l2-page-craft .l2-craft-controls .l2-town-btn:focus-visible,
+body.l2-page-craft .l2-craft-recipe > .l2-town-btn:hover,
+body.l2-page-craft .l2-craft-recipe > .l2-town-btn:focus,
+body.l2-page-craft .l2-craft-recipe > .l2-town-btn:focus-visible {
+  color: #fff !important;
+  border-color: #5c4a36 !important;
+  filter: brightness(1.1) !important;
+  outline: none;
+}
+
+body.l2-page-craft .l2-craft-btn:disabled.l2-town-btn,
+body.l2-page-craft .l2-craft-tab:disabled.l2-town-btn {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: none !important;
 }

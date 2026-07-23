@@ -19,13 +19,35 @@
     if (!text) {
       el.hidden = true;
       el.textContent = '';
-      el.classList.remove('ok', 'err');
+      el.innerHTML = '';
+      el.className = 'l2-craft-msg';
       return;
     }
     el.hidden = false;
     el.textContent = text;
-    el.classList.toggle('ok', !!ok);
-    el.classList.toggle('err', !ok);
+    el.innerHTML = '';
+    el.className = 'l2-craft-msg' + (ok ? ' l2-craft-msg--ok' : ' l2-craft-msg--err');
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function setCraftSuccess(nameUk, qty) {
+    var el = $('craft-msg');
+    if (!el) return;
+    var q = Math.max(1, Math.floor(Number(qty) || 1));
+    el.hidden = false;
+    el.className = 'l2-craft-msg l2-craft-msg--ok';
+    el.innerHTML =
+      'Створено. ' +
+      escapeHtml(nameUk) +
+      '! <span class="l2-craft-msg-qty">' +
+      q +
+      '</span>';
   }
 
   function iconUrl(itemId, hint) {
@@ -204,7 +226,7 @@
 
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'l2-craft-btn';
+      btn.className = 'l2-craft-btn l2-town-btn';
       btn.textContent = 'Створити';
 
       function refreshCard() {
@@ -223,21 +245,16 @@
 
       input.addEventListener('change', refreshCard);
 
-      ['+1', '+10', '+100', 'MAX'].forEach(function (label) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'l2-craft-btn';
-        b.textContent = label;
-        b.addEventListener('click', function () {
-          if (label === 'MAX') {
-            setCount(recipe.code, recipe.maxCraftable, recipe.maxCraftable);
-          } else {
-            setCount(recipe.code, getCount(recipe.code) + Number(label.slice(1)), recipe.maxCraftable);
-          }
-          refreshCard();
-        });
-        controls.appendChild(b);
+      var maxBtn = document.createElement('button');
+      maxBtn.type = 'button';
+      maxBtn.className = 'l2-craft-btn l2-town-btn';
+      maxBtn.textContent = 'MAX';
+      maxBtn.addEventListener('click', function () {
+        var max = recipe.maxCraftable > 0 ? recipe.maxCraftable : 1;
+        input.value = String(max);
+        refreshCard();
       });
+      controls.appendChild(maxBtn);
 
       controls.appendChild(input);
       btn.addEventListener('click', function () {
@@ -340,7 +357,7 @@
 
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'l2-craft-btn';
+      btn.className = 'l2-craft-btn l2-town-btn';
       btn.textContent = 'Створити';
       btn.disabled = craftInFlight || weaponRecipeBlocked(recipe);
       btn.addEventListener('click', function () {
@@ -445,7 +462,8 @@
       }
       var recipe = (materialsBook && materialsBook.recipes || []).find(function (x) { return x.code === recipeCode; });
       var outName = recipe ? recipe.output.nameUk : recipeCode;
-      setMsg('Створено: ' + outName, true);
+      var craftQty = getCount(recipeCode);
+      setCraftSuccess(outName, craftQty);
       await reloadActiveBooks();
     } catch (e) {
       setMsg('Помилка мережі.', false);
@@ -496,7 +514,7 @@
       }
       var recipe = (weaponsBook && weaponsBook.recipes || []).find(function (x) { return x.recipeCode === recipeCode; });
       var outName = outNameHint || (recipe ? recipe.output.nameUk : recipeCode);
-      setMsg('Створено: ' + outName, true);
+      setCraftSuccess(outName, 1);
       await reloadActiveBooks();
     } catch (e) {
       setMsg('Помилка мережі.', false);

@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="/styles.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-game-chrome.css?v=20260717perf2" />
     <link rel="stylesheet" href="/css/l2-chrome-ui.css?v=20260720hudClanEmblemBeforeNick1" />
-    <link rel="stylesheet" href="/css/l2-craft-page.css?v=20260723-weapon-shop-patk-matk-v1" />
+    <link rel="stylesheet" href="/css/l2-craft-page.css?v=20260723-d-grade-recipe-qty-v1" />
   </head>
-  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-has-fixed-nav l2-app-l2-chrome">
+  <body class="l2-body l2-page-city l2-city-ui-l2 l2-page-craft l2-page-has-fixed-nav l2-app-l2-chrome">
     <div class="l2-shell">
       <div class="l2-screen l2-outer-sframe-host">
         <div class="l2-outer-sframe" aria-hidden="true">
@@ -38,13 +38,13 @@
 
           <div id="craft-root" class="l2-craft-page">
             <div class="l2-craft-badge">Створення предметів</div>
-            <p class="err" id="craft-msg" hidden></p>
+            <p id="craft-msg" class="l2-craft-msg" hidden></p>
 
             <div class="l2-craft-tabs" role="tablist" aria-label="Крафт">
-              <button type="button" class="l2-craft-tab is-active" data-tab="materials">Матеріали</button>
-              <button type="button" class="l2-craft-tab" data-tab="weapon">Зброя</button>
-              <button type="button" class="l2-craft-tab" data-tab="armor" disabled>Броня</button>
-              <button type="button" class="l2-craft-tab" data-tab="jewelry" disabled>Біжутерія</button>
+              <button type="button" class="l2-craft-tab l2-town-btn is-active" data-tab="materials">Матеріали</button>
+              <button type="button" class="l2-craft-tab l2-town-btn" data-tab="weapon">Зброя</button>
+              <button type="button" class="l2-craft-tab l2-town-btn" data-tab="armor" disabled>Броня</button>
+              <button type="button" class="l2-craft-tab l2-town-btn" data-tab="jewelry" disabled>Біжутерія</button>
             </div>
 
             <div id="craft-meta" class="l2-craft-meta"></div>
@@ -62,6 +62,6 @@
     <script src="/common.js?v=20260723-weapon-shop-patk-matk-v1"></script>
     <script src="/ui-i18n.js"></script>
     <script src="/l2-nav.js?v=20260718layoutStable2"></script>
-    <script src="/craft.js?v=20260723-weapon-shop-patk-matk-v1"></script>
+    <script src="/craft.js?v=20260723-d-grade-recipe-qty-v1"></script>
   </body>
 </html>

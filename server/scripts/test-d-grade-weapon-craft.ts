@@ -90,13 +90,95 @@ for (const row of D_GRADE_WEAPON_RECIPE_ITEM_CATALOG) {
 }
 ok('all iconPath exist');
 
+/** Етап 3D.1 — канонічні кількості (key ×8, mp 129, success 100%). */
+const EXPECTED_RECIPE_QUANTITIES: Record<
+  string,
+  Array<{ itemId: number; quantity: number }>
+> = {
+  bonebreaker_100: [
+    { itemId: 4113, quantity: 8 },
+    { itemId: 1880, quantity: 12 },
+    { itemId: 1879, quantity: 12 },
+    { itemId: 1885, quantity: 6 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 135 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 31 },
+  ],
+  glaive_100: [
+    { itemId: 4117, quantity: 8 },
+    { itemId: 1880, quantity: 12 },
+    { itemId: 1879, quantity: 7 },
+    { itemId: 1885, quantity: 4 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 115 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 30 },
+  ],
+  elven_long_sword_100: [
+    { itemId: 4116, quantity: 8 },
+    { itemId: 1880, quantity: 10 },
+    { itemId: 1879, quantity: 10 },
+    { itemId: 1883, quantity: 1 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 90 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 22 },
+  ],
+  claymore_100: [
+    { itemId: 4114, quantity: 8 },
+    { itemId: 1880, quantity: 13 },
+    { itemId: 1879, quantity: 8 },
+    { itemId: 1883, quantity: 1 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 115 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 28 },
+  ],
+  mithril_dagger_100: [
+    { itemId: 4119, quantity: 8 },
+    { itemId: 1880, quantity: 8 },
+    { itemId: 1879, quantity: 8 },
+    { itemId: 1883, quantity: 1 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 85 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 26 },
+  ],
+  light_crossbow_100: [
+    { itemId: 4118, quantity: 8 },
+    { itemId: 1880, quantity: 18 },
+    { itemId: 1885, quantity: 4 },
+    { itemId: 1878, quantity: 4 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 185 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 45 },
+  ],
+  scallop_jamadhr_100: [
+    { itemId: 4120, quantity: 8 },
+    { itemId: 1880, quantity: 10 },
+    { itemId: 1879, quantity: 10 },
+    { itemId: 1885, quantity: 6 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 105 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 28 },
+  ],
+  staff_of_life_100: [
+    { itemId: 4121, quantity: 8 },
+    { itemId: 1880, quantity: 10 },
+    { itemId: 1881, quantity: 14 },
+    { itemId: 1878, quantity: 8 },
+    { itemId: CRYSTAL_D_ITEM_ID, quantity: 145 },
+    { itemId: GEMSTONE_D_ITEM_ID, quantity: 32 },
+  ],
+};
+
 for (const recipe of D_GRADE_WEAPON_CRAFT_RECIPES) {
-  const crystal = recipe.ingredients.find((i) => i.itemId === CRYSTAL_D_ITEM_ID);
-  const gem = recipe.ingredients.find((i) => i.itemId === GEMSTONE_D_ITEM_ID);
-  assert.ok(crystal && crystal.quantity === 550);
-  assert.ok(gem && gem.quantity === 185);
+  assert.equal(recipe.mpCost, 129, `${recipe.recipeCode} mpCost`);
+  assert.equal(recipe.successRate, 100, `${recipe.recipeCode} successRate`);
+  assert.equal(recipe.outputCount, 1, `${recipe.recipeCode} outputCount`);
+  const expected = EXPECTED_RECIPE_QUANTITIES[recipe.recipeCode];
+  assert.ok(expected, `expected map for ${recipe.recipeCode}`);
+  assert.equal(recipe.ingredients.length, expected!.length);
+  for (const exp of expected!) {
+    const ing = recipe.ingredients.find((i) => i.itemId === exp.itemId);
+    assert.ok(ing, `${recipe.recipeCode} has item ${exp.itemId}`);
+    assert.equal(ing!.quantity, exp.quantity, `${recipe.recipeCode} qty ${exp.itemId}`);
+  }
+  const keyMat = recipe.ingredients.find((i) =>
+    D_GRADE_WEAPON_KEY_MATERIAL_ITEM_IDS.includes(i.itemId),
+  );
+  assert.ok(keyMat && keyMat.quantity === 8, `${recipe.recipeCode} key ×8`);
 }
-ok('Crystal D=1458 and Gemstone D=2130 in all recipes');
+ok('all 8 recipes have exact stage-3D.1 quantities');
 
 assert.equal(normalizeRecipeBookJson(null).learned.length, 0);
 assert.equal(normalizeRecipeBookJson({ learned: ['bonebreaker_100', 'bonebreaker_100', 'bad'] }).learned.join(','), 'bonebreaker_100');
@@ -226,7 +308,9 @@ async function runDbTests(): Promise<void> {
   }
 
   for (const prof of ['dwarf_warsmith', 'dwarf_maestro'] as const) {
-    const { userId } = await createCrafterUser(prof);
+    const { userId } = await createCrafterUser(prof, {
+      inventory: addItemToBag(emptyInventory(), 921002, 1),
+    });
     try {
       const before = await prisma.character.findFirstOrThrow({ where: { userId } });
       const r = await applyLearnRecipeFromBag(userId, 921002, before.revision);
@@ -273,12 +357,21 @@ async function runDbTests(): Promise<void> {
       inventory: inv,
     });
     try {
+      await prisma.character.update({
+        where: { id: characterId },
+        data: {
+          worldCombatStateJson: {
+            playerMp: 500,
+            lastTickAt: Date.now(),
+            expiresAt: Date.now() + 30 * 60 * 1000,
+            battleMods: {},
+          },
+        },
+      });
       const before = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
       const recipe = D_GRADE_WEAPON_CRAFT_RECIPE_BY_CODE.get(code)!;
       const scrollBefore = countBagQty(parseInventory(before.inventoryJson), recipe.recipeItemId);
-      const mpBefore = (
-        before.worldCombatStateJson as { playerMp?: number }
-      ).playerMp!;
+      const mpBefore = 500;
       const snap = await applyDGradeWeaponCraft(userId, code, before.revision);
       const after = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
       const invAfter = parseInventory(after.inventoryJson);
@@ -294,6 +387,34 @@ async function runDbTests(): Promise<void> {
       assert.equal(mpAfter, mpBefore - 129);
       assert.equal(snap.revision, before.revision + 1);
       ok(`${code} craft deducts exact materials and adds weapon`);
+    } finally {
+      await cleanupUser(userId);
+    }
+  }
+
+  // insufficient by 1 unit — per weapon
+  for (const { code } of craftCases) {
+    const recipe = D_GRADE_WEAPON_CRAFT_RECIPE_BY_CODE.get(code)!;
+    const shortIng = recipe.ingredients[1]!;
+    let inv = emptyInventory();
+    for (const ing of recipe.ingredients) {
+      const qty =
+        ing.itemId === shortIng.itemId ? ing.quantity - 1 : ing.quantity;
+      inv = addItemToBag(inv, ing.itemId, qty);
+    }
+    const { userId, characterId } = await createCrafterUser('dwarf_warsmith', {
+      recipeBook: [code],
+      inventory: inv,
+    });
+    try {
+      const before = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
+      await assert.rejects(
+        () => applyDGradeWeaponCraft(userId, code, before.revision),
+        (e: unknown) => e instanceof Error && e.message === 'craft_no_materials',
+      );
+      const after = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
+      assert.equal(after.revision, before.revision);
+      ok(`${code} rejects craft when one material short by 1`);
     } finally {
       await cleanupUser(userId);
     }
